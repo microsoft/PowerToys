@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using Microsoft.CmdPal.Core.Common.Helpers;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
@@ -31,7 +31,7 @@ internal static class UrlHelper
         }
 
         // Check if it's a valid file path (local or network)
-        if (IsValidFilePath(url))
+        if (PathHelper.IsValidFilePath(url))
         {
             return true;
         }
@@ -78,7 +78,7 @@ internal static class UrlHelper
         url = url.Trim();
 
         // If it's a valid file path, convert to file:// URI
-        if (IsValidFilePath(url) && !url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+        if (!url.StartsWith("file://", StringComparison.OrdinalIgnoreCase) && PathHelper.IsValidFilePath(url))
         {
             try
             {
@@ -104,41 +104,5 @@ internal static class UrlHelper
         }
 
         return url;
-    }
-
-    /// <summary>
-    /// Checks if a string represents a valid file path (local or network)
-    /// </summary>
-    /// <param name="path">The string to check</param>
-    /// <returns>True if the string is a valid file path, false otherwise</returns>
-    private static bool IsValidFilePath(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return false;
-        }
-
-        try
-        {
-            // Check for UNC paths (network paths starting with \\)
-            if (path.StartsWith(@"\\", StringComparison.Ordinal))
-            {
-                // Basic UNC path validation: \\server\share or \\server\share\path
-                var parts = path.Substring(2).Split('\\', StringSplitOptions.RemoveEmptyEntries);
-                return parts.Length >= 2; // At minimum: server and share
-            }
-
-            // Check for drive letters (C:\ or C:)
-            if (path.Length >= 2 && char.IsLetter(path[0]) && path[1] == ':')
-            {
-                return true;
-            }
-
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }
