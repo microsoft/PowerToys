@@ -59,10 +59,17 @@ public sealed partial class ListPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ListViewModel lvm)
+        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
         {
-            ViewModel = lvm;
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
+
+        if (navigationRequest.TargetViewModel is not ListViewModel listViewModel)
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ListViewModel)}");
+        }
+
+        ViewModel = listViewModel;
 
         if (e.NavigationMode == NavigationMode.Back
             || (e.NavigationMode == NavigationMode.New && ItemView.Items.Count > 0))
