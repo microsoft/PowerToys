@@ -231,7 +231,7 @@
                             Padding="20,16"
                             AutomationProperties.AccessibilityView="Raw"
                             Content="{Binding}"
-                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            CornerRadius="{StaticResource OverlayCornerRadius}"
                             FontSize="16"
                             FontWeight="SemiBold"
                             IsTabStop="False"
