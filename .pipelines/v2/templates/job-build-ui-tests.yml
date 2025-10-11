@@ -90,6 +90,7 @@ jobs:
           /p:RestorePackagesConfig=true
           /p:BuildProjectReferences=true
           /p:CIBuild=true
+          /p:BuildInParallel=true
           /bl:$(LogOutputDirectory)\build-all-uitests.binlog
           $(NUGET_RESTORE_MSBUILD_ARGS)
         platform: $(BuildPlatform)
@@ -111,6 +112,7 @@ jobs:
             /p:RestorePackagesConfig=true
             /p:BuildProjectReferences=true
             /p:CIBuild=true
+            /p:BuildInParallel=true
             /bl:$(LogOutputDirectory)\build-${{ module }}.binlog
             $(NUGET_RESTORE_MSBUILD_ARGS)
           platform: $(BuildPlatform)
