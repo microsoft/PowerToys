@@ -89,8 +89,9 @@ namespace AdvancedPaste.ViewModels
                 }
 
                 return _userSettings.IsAdvancedAIEnabled
-                    ? _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI)
-                    : _credentialsProvider.IsConfigured(AICredentialScope.PasteAI);
+                     ? _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI) : true;
+
+                // : _credentialsProvider.IsConfigured(AICredentialScope.PasteAI);
             }
         }
 

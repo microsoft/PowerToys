@@ -16,6 +16,13 @@ namespace AdvancedPaste.Services.CustomActions;
 
 public sealed class FoundryLocalPasteProvider : IPasteAIProvider
 {
+    private static readonly IReadOnlyCollection<AIServiceType> SupportedTypes = new[]
+    {
+        AIServiceType.FoundryLocal,
+    };
+
+    public static PasteAIProviderRegistration Registration { get; } = new(SupportedTypes, config => new FoundryLocalPasteProvider(config));
+
     private static readonly LanguageModelService LanguageModels = LanguageModelService.CreateDefault();
 
     private readonly PasteAIConfig _config;

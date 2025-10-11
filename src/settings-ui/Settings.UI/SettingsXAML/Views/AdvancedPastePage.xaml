@@ -716,6 +716,139 @@
                             PlaceholderText="Describe how the AI should reformat clipboard content"
                             Text="{x:Bind ViewModel.PasteAIConfiguration.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
+                        <Grid
+                            x:Name="FoundryLocalPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <StackPanel
+                                x:Name="FoundryLocalLoadingPanel"
+                                HorizontalAlignment="Center"
+                                Orientation="Vertical"
+                                Spacing="12">
+                                <ProgressRing Width="32" Height="32" IsActive="True" />
+                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Checking Foundry Local status..." />
+                            </StackPanel>
+                            <StackPanel
+                                x:Name="FoundryLocalUnavailablePanel"
+                                Margin="0,8,0,0"
+                                Orientation="Vertical"
+                                Spacing="8"
+                                Visibility="Collapsed">
+                                <FontIcon
+                                    FontSize="24"
+                                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                    Glyph="&#xEA39;" />
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Text="Foundry Local is not installed on this device."
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap">
+                                    <Run Text="Install Foundry Local to download and use local models." />
+                                </TextBlock>
+                                <HyperlinkButton
+                                    Content="Learn how to install Foundry Local"
+                                    NavigateUri="https://aka.ms/fl-install-from-gallery" />
+                            </StackPanel>
+                            <StackPanel
+                                x:Name="FoundryLocalAvailablePanel"
+                                Margin="0,8,0,0"
+                                Orientation="Vertical"
+                                Spacing="16"
+                                Visibility="Collapsed">
+                                <StackPanel Orientation="Vertical" Spacing="4">
+                                    <TextBlock
+                                        FontWeight="SemiBold"
+                                        Text="Downloaded models" />
+                                    <TextBlock
+                                        x:Name="FoundryLocalCachedEmptyText"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="No models downloaded yet. Download a model below to get started."
+                                        TextWrapping="Wrap"
+                                        Visibility="Collapsed" />
+                                    <ListView
+                                        x:Name="FoundryLocalCachedModelsList"
+                                        MaxHeight="220"
+                                        SelectionMode="Single"
+                                        SelectionChanged="FoundryLocalCachedModelsList_SelectionChanged">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Vertical" Spacing="2">
+                                                    <TextBlock
+                                                        FontWeight="SemiBold"
+                                                        Text="{Binding Name}"
+                                                        TextWrapping="Wrap"
+                                                        ToolTipService.ToolTip="{Binding Name}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding Description}"
+                                                        TextWrapping="Wrap"
+                                                        ToolTipService.ToolTip="{Binding Description}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical" Spacing="8">
+                                    <TextBlock
+                                        FontWeight="SemiBold"
+                                        Text="Downloadable models" />
+                                    <ListView
+                                        x:Name="FoundryLocalDownloadableModelsList"
+                                        MaxHeight="220"
+                                        SelectionMode="None">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Vertical" Spacing="2">
+                                                        <TextBlock
+                                                            FontWeight="SemiBold"
+                                                            Text="{Binding Name}"
+                                                            TextWrapping="Wrap"
+                                                            ToolTipService.ToolTip="{Binding Name}" />
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Text="{Binding Description}"
+                                                            TextWrapping="Wrap"
+                                                            ToolTipService.ToolTip="{Binding Description}" />
+                                                        <ProgressBar
+                                                            Margin="0,6,12,0"
+                                                            Height="4"
+                                                            Maximum="100"
+                                                            Minimum="0"
+                                                            Value="{Binding ProgressPercent}"
+                                                            Visibility="{Binding ProgressVisibility}" />
+                                                    </StackPanel>
+                                                    <Button
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Content="{Binding ActionLabel}"
+                                                        IsEnabled="{Binding CanDownload}"
+                                                        Click="FoundryLocalDownloadButton_Click" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                                <TextBlock
+                                    x:Name="FoundryLocalStatusTextBlock"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
                         <TextBox
                             x:Name="PasteAIEndpointUrlTextBox"
                             MinWidth="200"
