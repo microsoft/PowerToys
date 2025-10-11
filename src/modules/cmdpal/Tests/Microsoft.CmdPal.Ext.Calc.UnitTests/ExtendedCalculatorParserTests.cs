@@ -192,7 +192,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     private static IEnumerable<object[]> Interpret_MustReturnExpectedResult_WhenCalled_Data =>
         [
 
-            // ["factorial(5)", 120M], ToDo: this don't support now
+            ["factorial(5)", 120M],
+            ["factorial(0)", 1M],
+            ["factorial(1)", 1M],
+            ["factorial(3)", 6M],
             // ["sign(-2)", -1M],
             // ["sign(2)", +1M],
             ["abs(-2)", 2M],

@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <limits>
+#include <cmath>
 
 namespace ExprtkCalculator::internal
 {
@@ -12,6 +14,27 @@ namespace ExprtkCalculator::internal
         std::wostringstream oss;
         oss << std::fixed << std::setprecision(15) << value;
         return oss.str();
+    }
+
+    // Factorial function implementation
+    double factorial(double n)
+    {
+        if (n < 0 || n != std::floor(n))
+        {
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+        
+        if (n > 170) // Prevent overflow
+        {
+            return std::numeric_limits<double>::infinity();
+        }
+        
+        double result = 1.0;
+        for (int i = 2; i <= static_cast<int>(n); ++i)
+        {
+            result *= i;
+        }
+        return result;
     }
 
     std::wstring EvaluateExpression(
@@ -24,6 +47,9 @@ namespace ExprtkCalculator::internal
         {
             symbol_table.add_constant(name, value);
         }
+
+        // Add factorial function to the symbol table
+        symbol_table.add_function("factorial", factorial);
 
         exprtk::expression<double> expression;
         expression.register_symbol_table(symbol_table);
