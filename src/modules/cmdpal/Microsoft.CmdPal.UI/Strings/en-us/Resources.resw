@@ -257,7 +257,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Disabled</value>
     <comment>Displayed when an extension is disabled</comment>
   </data>
-	<data name="ExtensionEnable.Text" xml:space="preserve">
+  <data name="ExtensionEnable.Text" xml:space="preserve">
     <value>Enable</value>
     <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
   </data>
@@ -314,13 +314,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
     <value>A short keyword used to navigate to this command.</value>
   </data>
-	<data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
     <value>Alias activation</value>
   </data>
-	<data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
     <value>Choose when the alias runs. Direct runs as soon as you type the alias. Indirect runs after a trailing space.</value>
-  </data> 
-	<data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
     <value>Built-in</value>
   </data>
   <data name="Settings_ExtensionPage_Builtin_SettingsCard.Description" xml:space="preserve">
@@ -441,7 +441,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_InDirectComboBox.Content" xml:space="preserve">
     <value>Indirect</value>
   </data>
-	<data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
     <value>Enter alias</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -463,7 +463,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
   </data>
   <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
-    <value>For Developers</value>
+    <value>For developers</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">
     <value>an untitled</value>
