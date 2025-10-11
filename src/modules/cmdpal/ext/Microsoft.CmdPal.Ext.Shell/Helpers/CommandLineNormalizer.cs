@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.FileSystem;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
@@ -19,37 +19,10 @@ namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 public static class CommandLineNormalizer
 {
 #pragma warning disable SA1310 // Field names should not contain underscore
-    private const int MAX_PATH = 260;
     private const uint INVALID_FILE_ATTRIBUTES = 0xFFFFFFFF;
-    private const uint FILE_ATTRIBUTE_DIRECTORY = 0x10;
+
+    private const int MAX_PATH = 260;
 #pragma warning restore SA1310 // Field names should not contain underscore
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern uint ExpandEnvironmentStringsW(
-        [MarshalAs(UnmanagedType.LPWStr)] string lpSrc,
-        [MarshalAs(UnmanagedType.LPWStr)] StringBuilder lpDst,
-        uint nSize);
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern IntPtr CommandLineToArgvW(
-        [MarshalAs(UnmanagedType.LPWStr)] string lpCmdLine,
-        out int pNumArgs);
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern uint SearchPathW(
-        [MarshalAs(UnmanagedType.LPWStr)] string? lpPath,
-        [MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
-        [MarshalAs(UnmanagedType.LPWStr)] string? lpExtension,
-        uint nBufferLength,
-        [MarshalAs(UnmanagedType.LPWStr)] StringBuilder lpBuffer,
-        out IntPtr lpFilePart);
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern uint GetFileAttributesW(
-        [MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
-
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr LocalFree(IntPtr hMem);
 
     /// <summary>
     /// Normalizes a command line string by expanding environment variables, resolving executable paths,
@@ -78,7 +51,7 @@ public static class CommandLineNormalizer
     ///
     /// The resulting strings are used for comparisons in profile matching.
     /// </remarks>
-    public static string NormalizeCommandLine(string commandLine)
+    public static string NormalizeCommandLine(string commandLine, bool allowDirectory)
     {
         if (string.IsNullOrEmpty(commandLine))
         {
@@ -106,7 +79,7 @@ public static class CommandLineNormalizer
         // The given commandLine should start with an executable name or path.
         // This loop tries to resolve relative paths, as well as executable names in %PATH%
         // into absolute paths and normalizes them.
-        var executablePath = ResolveExecutablePath(argv, ref startOfArguments);
+        var executablePath = ResolveExecutablePath(argv, allowDirectory, ref startOfArguments);
 
         // We've (hopefully) finished resolving the path to the executable.
         // We're now going to append all remaining arguments to the resulting string.
@@ -129,9 +102,9 @@ public static class CommandLineNormalizer
     private static string ExpandEnvironmentVariables(string input)
     {
         const int initialBufferSize = 1024;
-        var buffer = new StringBuilder(initialBufferSize);
+        var buffer = new char[initialBufferSize];
 
-        var result = ExpandEnvironmentStringsW(input, buffer, (uint)buffer.Capacity);
+        var result = PInvoke.ExpandEnvironmentStrings(input, buffer);
 
         if (result == 0)
         {
@@ -139,11 +112,11 @@ public static class CommandLineNormalizer
             return input;
         }
 
-        if (result > buffer.Capacity)
+        if (result > buffer.Length)
         {
             // Buffer was too small, resize and try again
-            buffer.Capacity = (int)result;
-            result = ExpandEnvironmentStringsW(input, buffer, (uint)buffer.Capacity);
+            buffer = new char[result];
+            result = PInvoke.ExpandEnvironmentStrings(input, buffer);
 
             if (result == 0)
             {
@@ -151,7 +124,7 @@ public static class CommandLineNormalizer
             }
         }
 
-        return buffer.ToString();
+        return new string(buffer, 0, (int)result - 1); // -1 to exclude null terminator
     }
 
     /// <summary>
@@ -159,28 +132,30 @@ public static class CommandLineNormalizer
     /// </summary>
     private static string[] ParseCommandLineToArguments(string commandLine)
     {
-        var argv = CommandLineToArgvW(commandLine, out var argc);
-
-        if (argv == IntPtr.Zero || argc == 0)
+        unsafe
         {
-            return Array.Empty<string>();
-        }
+            var argv = PInvoke.CommandLineToArgv(commandLine, out var argc);
 
-        try
-        {
-            var args = new string[argc];
-
-            for (var i = 0; i < argc; i++)
+            if (argv == null || argc == 0)
             {
-                var argPtr = Marshal.ReadIntPtr(argv, i * IntPtr.Size);
-                args[i] = Marshal.PtrToStringUni(argPtr) ?? string.Empty;
+                return Array.Empty<string>();
             }
 
-            return args;
-        }
-        finally
-        {
-            LocalFree(argv);
+            try
+            {
+                var args = new string[argc];
+
+                for (var i = 0; i < argc; i++)
+                {
+                    args[i] = new string(argv[i]);
+                }
+
+                return args;
+            }
+            finally
+            {
+                PInvoke.LocalFree(new HLOCAL(argv));
+            }
         }
     }
 
@@ -188,7 +163,7 @@ public static class CommandLineNormalizer
     /// Resolves the executable path from the command line arguments.
     /// Handles cases where the path contains spaces and was split during parsing.
     /// </summary>
-    private static string ResolveExecutablePath(string[] argv, ref int startOfArguments)
+    private static string ResolveExecutablePath(string[] argv, bool allowDirectory, ref int startOfArguments)
     {
         if (argv.Length == 0)
         {
@@ -208,7 +183,7 @@ public static class CommandLineNormalizer
             }
 
             var candidatePath = pathBuilder.ToString();
-            var resolvedPath = TryResolveExecutable(candidatePath);
+            var resolvedPath = TryResolveExecutable(candidatePath, allowDirectory);
 
             if (!string.IsNullOrEmpty(resolvedPath))
             {
@@ -225,41 +200,52 @@ public static class CommandLineNormalizer
     /// <summary>
     /// Attempts to resolve an executable path using SearchPathW.
     /// </summary>
-    private static string TryResolveExecutable(string executableName)
+    private static string TryResolveExecutable(string executableName, bool allowDirectory)
     {
-        var buffer = new StringBuilder(MAX_PATH);
+        var buffer = new char[MAX_PATH];
 
-        var result = SearchPathW(
-            null,           // Use default search path
-            executableName,
-            ".exe",         // Default extension
-            (uint)buffer.Capacity,
-            buffer,
-            out var _);   // We don't need the file part
-
-        if (result == 0)
+        unsafe
         {
-            return string.Empty;
-        }
+            var outParam = default(PWSTR); // ultimately discarded
 
-        if (result > buffer.Capacity)
-        {
-            // Buffer was too small, resize and try again
-            buffer.Capacity = (int)result;
-            result = SearchPathW(null, executableName, ".exe", (uint)buffer.Capacity, buffer, out var _);
+            var result = PInvoke.SearchPath(
+                null,           // Use default search path
+                executableName,
+                ".exe",         // Default extension
+                buffer,
+                &outParam);     // We don't need the file part
 
             if (result == 0)
             {
                 return string.Empty;
             }
+
+            if (result > buffer.Length)
+            {
+                // Buffer was too small, resize and try again
+                buffer = new char[result];
+                result = PInvoke.SearchPath(null, executableName, ".exe", buffer, &outParam);
+
+                if (result == 0)
+                {
+                    return string.Empty;
+                }
+            }
+
+            var resolvedPath = new string(buffer, 0, (int)result);
+
+            // Verify the resolved path exists...
+            var attributes = PInvoke.GetFileAttributes(resolvedPath);
+
+            // ... and if we don't want to allow directories, reject paths that are dirs
+            var rejectDirectory = !allowDirectory &&
+                 (attributes & (uint)FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+            return attributes == INVALID_FILE_ATTRIBUTES ||
+                   rejectDirectory ?
+                    string.Empty :
+                    resolvedPath;
         }
-
-        var resolvedPath = buffer.ToString();
-
-        // Verify the resolved path exists and is not a directory
-        var attributes = GetFileAttributesW(resolvedPath);
-
-        return attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0 ? string.Empty : resolvedPath;
     }
 
     /// <summary>
