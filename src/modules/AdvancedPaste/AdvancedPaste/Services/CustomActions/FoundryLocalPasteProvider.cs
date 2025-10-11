@@ -11,8 +11,6 @@ using AdvancedPaste.Models;
 using LanguageModelProvider;
 using Microsoft.Extensions.AI;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AdvancedPaste.Services.CustomActions;
 
@@ -38,16 +36,24 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
         return await FoundryLocalModelProvider.Instance.IsAvailable().ConfigureAwait(false);
     }
 
-    public async Task<PasteAIProviderResult> ProcessPasteAsync(PasteAIRequest request, CancellationToken cancellationToken, IProgress<double> progress)
+    public async Task<string> ProcessPasteAsync(PasteAIRequest request, CancellationToken cancellationToken, IProgress<double> progress)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (request.ChatHistory is null)
+        var systemPrompt = request.SystemPrompt;
+        if (string.IsNullOrWhiteSpace(systemPrompt))
         {
-            throw new ArgumentException("Chat history must be provided", nameof(request));
+            throw new ArgumentException("System prompt must be provided", nameof(request));
         }
 
-        var modelReference = request.ModelId ?? _config?.Model;
+        var prompt = request.Prompt;
+        var inputText = request.InputText;
+        if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrWhiteSpace(inputText))
+        {
+            throw new ArgumentException("Prompt and input text must be provided", nameof(request));
+        }
+
+        var modelReference = _config?.Model;
         if (string.IsNullOrWhiteSpace(modelReference))
         {
             throw new InvalidOperationException("Foundry Local requires a model identifier (for example, 'fl://model-name').");
@@ -60,8 +66,23 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
             throw new InvalidOperationException($"Unable to resolve Foundry Local client for '{modelReference}'. Ensure the model is downloaded.");
         }
 
-        var chatMessages = ConvertToChatMessages(request.ChatHistory);
-        var chatOptions = CreateChatOptions(request.ExecutionSettings ?? _config?.ExecutionSettings, _config?.SystemPrompt, modelReference);
+        var userMessageContent = $"""
+            User instructions:
+            {prompt}
+
+            Clipboard Content:
+            {inputText}
+
+            Output:
+            """;
+
+        var chatMessages = new List<ChatMessage>
+        {
+            new ChatMessage(ChatRole.System, systemPrompt),
+            new ChatMessage(ChatRole.User, userMessageContent),
+        };
+
+        var chatOptions = CreateChatOptions(_config?.SystemPrompt, modelReference);
 
         progress?.Report(0.1);
 
@@ -70,51 +91,14 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
         progress?.Report(0.8);
 
         var responseText = GetResponseText(response);
-        if (!string.IsNullOrWhiteSpace(responseText))
-        {
-            request.ChatHistory.Add(new ChatMessageContent(AuthorRole.Assistant, responseText));
-        }
-
-        var usage = ToUsage(response.Usage);
+        request.Usage = ToUsage(response.Usage);
 
         progress?.Report(1.0);
 
-        return new PasteAIProviderResult(responseText ?? string.Empty, usage);
+        return responseText ?? string.Empty;
     }
 
-    private static IReadOnlyList<ChatMessage> ConvertToChatMessages(ChatHistory history)
-    {
-        List<ChatMessage> messages = new(history.Count);
-
-        foreach (var item in history)
-        {
-            if (item is null)
-            {
-                continue;
-            }
-
-            var text = item.Content;
-
-            if (string.IsNullOrWhiteSpace(text) && item.Items is not null)
-            {
-                var itemTexts = item.Items
-                    .Select(i => i?.ToString())
-                    .Where(s => !string.IsNullOrWhiteSpace(s));
-                text = string.Join(Environment.NewLine, itemTexts);
-            }
-
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                continue;
-            }
-
-            messages.Add(new ChatMessage(MapRole(item.Role), text));
-        }
-
-        return messages;
-    }
-
-    private static ChatOptions CreateChatOptions(PromptExecutionSettings executionSettings, string systemPrompt, string modelReference)
+    private static ChatOptions CreateChatOptions(string systemPrompt, string modelReference)
     {
         var options = new ChatOptions
         {
@@ -126,32 +110,7 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
             options.Instructions = systemPrompt;
         }
 
-        if (!string.IsNullOrWhiteSpace(PromptExecutionSettings.DefaultServiceId))
-        {
-            options.ConversationId = PromptExecutionSettings.DefaultServiceId;
-        }
-
         return options;
-    }
-
-    private static ChatRole MapRole(AuthorRole role)
-    {
-        if (role == AuthorRole.Assistant)
-        {
-            return ChatRole.Assistant;
-        }
-
-        if (role == AuthorRole.Tool)
-        {
-            return ChatRole.Tool;
-        }
-
-        if (role == AuthorRole.System || role == AuthorRole.Developer)
-        {
-            return ChatRole.System;
-        }
-
-        return ChatRole.User;
     }
 
     private static string GetResponseText(ChatResponse response)
