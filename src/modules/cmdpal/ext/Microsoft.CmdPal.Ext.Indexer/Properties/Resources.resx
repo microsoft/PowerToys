@@ -196,4 +196,13 @@ You can try searching all files on this PC or adjust your indexing settings.</va
   <data name="Indexer_Command_SearchAllFiles" xml:space="preserve">
     <value>Search all files</value>
   </data>
+  <data name="Indexer_Filter_All" xml:space="preserve">
+    <value>Files and folders</value>
+  </data>
+  <data name="Indexer_Filter_Folders_Only" xml:space="preserve">
+    <value>Folders</value>
+  </data>
+  <data name="Indexer_Filter_Files_Only" xml:space="preserve">
+    <value>Files</value>
+  </data>
 </root>
