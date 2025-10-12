@@ -23,7 +23,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// An indicator if the window belongs to an 'Universal Windows Platform (UWP)' process
     /// </summary>
-    private readonly bool _isUwpAppFrameHost;
+    private bool _isUwpAppFrameHost;
 
     /// <summary>
     /// Gets the id of the process
@@ -132,7 +132,7 @@ internal sealed class WindowProcess
     internal ProcessPackagingInfo ProcessType
     {
         get; private set;
-    } = ProcessPackagingInfo.Empty;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowProcess"/> class.
@@ -142,8 +142,8 @@ internal sealed class WindowProcess
     /// <param name="name">New process name.</param>
     internal WindowProcess(uint pid, uint tid, string name)
     {
+        ProcessType = ProcessPackagingInfo.Empty;
         UpdateProcessInfo(pid, tid, name);
-        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -164,6 +164,7 @@ internal sealed class WindowProcess
 
         // Update process type
         ProcessType = ProcessPackagingInspector.Inspect((int)pid);
+        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
