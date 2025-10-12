@@ -162,6 +162,7 @@
                                     x:Name="SettingsFrame"
                                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
                                     CornerRadius="{StaticResource ControlCornerRadius}"
                                     Visibility="{x:Bind ViewModel.HasSettings}">
                                     <controls:SwitchPresenter
