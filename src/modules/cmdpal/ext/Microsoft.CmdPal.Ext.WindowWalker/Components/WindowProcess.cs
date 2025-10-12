@@ -127,7 +127,7 @@ internal sealed class WindowProcess
     }
 
     /// <summary>
-    /// Gets the type of the process (UPW app, packaged Win32 app, unpackaged Win32 app, ...).
+    /// Gets the type of the process (UWP app, packaged Win32 app, unpackaged Win32 app, ...).
     /// </summary>
     internal ProcessPackagingInfo ProcessType
     {
