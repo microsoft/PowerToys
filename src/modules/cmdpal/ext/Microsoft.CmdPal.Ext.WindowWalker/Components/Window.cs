@@ -191,8 +191,8 @@ internal sealed class Window
     /// <summary>
     /// Tries to get the window icon.
     /// </summary>
-    /// <param name="icon">The window icon if found, otherwise null.</param>
-    /// <returns>True if an icon was found, false otherwise.</returns>
+    /// <param name="icon">The window icon if found; otherwise, null.</param>
+    /// <returns>True if an icon was found; otherwise, false.</returns>
     internal bool TryGetWindowIcon(out System.Drawing.Icon? icon)
     {
         icon = null;
