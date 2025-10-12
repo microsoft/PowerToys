@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!-- CI Build Configuration -->
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <ForceCIPackaging>true</ForceCIPackaging>
+    <NoSignCI>true</NoSignCI>
+  </PropertyGroup>
+
+  <!-- Target to generate sparse MSIX package -->
+  <Target Name="GenerateSparsePackage" BeforeTargets="PrepareForBuild">
+    <!-- Use NoSign for Debug builds or CI builds to avoid certificate issues -->
+    <PropertyGroup>
+      <NoSignParam Condition="'$(Configuration)' == 'Debug' OR '$(NoSignCI)' == 'true'">-NoSign</NoSignParam>
+      <NoSignParam Condition="'$(Configuration)' != 'Debug' AND '$(NoSignCI)' != 'true'"></NoSignParam>
+    </PropertyGroup>
+    
+    <Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam)" 
+          ContinueOnError="false"
+          WorkingDirectory="$(MSBuildThisFileDirectory)" />
+  </Target>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{E2A5A82E-1E5B-4C8D-9A4F-2B1A8F9E5C3D}</ProjectGuid>
+    <RootNamespace>PackageIdentity</RootNamespace>
+    <ProjectName>PackageIdentity</ProjectName>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Solution.props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+
+  <ItemGroup>
+    <None Include="AppxManifest.xml" />
+    <None Include="BuildSparsePackage.ps1" />
+    <None Include="BuildSparsePackage.cmd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Image Include="Images\Square150x150Logo.png">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\Square44x44Logo.png">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\StoreLogo.png">
+      <Filter>Images</Filter>
+    </Image>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+
+</Project>

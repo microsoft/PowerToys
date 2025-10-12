@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Sparse package manifest (moved to PackagingSparse folder for cleaner organization).
+<!-- Sparse package manifest (moved to PackageIdentity folder for cleaner organization).
      Based on Windows AI Foundry WPF sparse sample with PowerOCR customizations. -->
 <Package 
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
