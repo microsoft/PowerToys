@@ -43,7 +43,6 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
                         dataWriter.StoreAsync().AsTask().Wait();
                         dataWriter.FlushAsync().AsTask().Wait();
                         Icon = IconInfo.FromStream(raStream);
-                        icon.Dispose();
                     }
                     catch
                     {
