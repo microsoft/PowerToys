@@ -229,7 +229,7 @@ internal sealed class Window
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
-            NativeMethods.DestroyIcon((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)iconHandle);
             return true;
         }
 
@@ -237,7 +237,7 @@ internal sealed class Window
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
-            NativeMethods.DestroyIcon((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)iconHandle);
             return true;
         }
 

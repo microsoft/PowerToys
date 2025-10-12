@@ -31,17 +31,27 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
             {
                 if (_window.TryGetWindowIcon(out var icon) && icon is not null)
                 {
-                    using var bitmap = icon.ToBitmap();
-                    using var memoryStream = new MemoryStream();
-                    bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                    var raStream = new InMemoryRandomAccessStream();
-                    using var outputStream = raStream.GetOutputStreamAt(0);
-                    using var dataWriter = new DataWriter(outputStream);
-                    dataWriter.WriteBytes(memoryStream.ToArray());
-                    dataWriter.StoreAsync().AsTask().Wait();
-                    dataWriter.FlushAsync().AsTask().Wait();
-                    Icon = IconInfo.FromStream(raStream);
-                    icon.Dispose();
+                    try
+                    {
+                        using var bitmap = icon.ToBitmap();
+                        using var memoryStream = new MemoryStream();
+                        bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                        var raStream = new InMemoryRandomAccessStream();
+                        using var outputStream = raStream.GetOutputStreamAt(0);
+                        using var dataWriter = new DataWriter(outputStream);
+                        dataWriter.WriteBytes(memoryStream.ToArray());
+                        dataWriter.StoreAsync().AsTask().Wait();
+                        dataWriter.FlushAsync().AsTask().Wait();
+                        Icon = IconInfo.FromStream(raStream);
+                        icon.Dispose();
+                    }
+                    catch
+                    {
+                    }
+                    finally
+                    {
+                        icon.Dispose();
+                    }
                 }
             }
 
