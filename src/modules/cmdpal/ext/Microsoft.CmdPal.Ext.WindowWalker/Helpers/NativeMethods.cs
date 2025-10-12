@@ -82,9 +82,6 @@ public static partial class NativeMethods
     public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
 
     [DllImport("user32.dll")]
-    public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
-    [DllImport("user32.dll")]
     public static extern int SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, IntPtr lParam, int fuFlags, int uTimeout, out int lpdwResult);
 
     [DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
