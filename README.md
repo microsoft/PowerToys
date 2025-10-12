@@ -231,10 +231,10 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Development (Area-Build & Area-Tests) 
 - Allowed debug launches to continue when modules fail to load, speeding developer iteration. 
-- Fixed spellchecker dictionary entry (advapi) to eliminate false error. 
+- Fixed spell checker dictionary entry (advapi) to eliminate false error. 
 - Added VS Code development guide and launch configs to streamline cross-editor workflows. 
 - Upgraded Windows App SDK and related dependencies to 1.8 for newer platform features. 
-- Rewrote YAML comment to resolve new spellchecker forbidden pattern. Thanks [@jiripolasek](https://github.com/jiripolasek)! 
+- Rewrote YAML comment to resolve new spell checker forbidden pattern. Thanks [@jiripolasek](https://github.com/jiripolasek)! 
 - Corrected solution structure by returning misplaced Common project, reducing build confusion. 
 - Modernized build scripts with shared helpers and VS environment autodetection for simpler CLI builds. 
 - Standardized build scripts and platform detection to improve reliability and reuse. 
@@ -249,16 +249,11 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Added Screen Ruler UI test coverage to validate core measurement workflows. 
 
 ## 🛣️ Roadmap 
-For [v0.96][github-next-release-work], we'll work on the items below: 
-- Continued Command Palette polish 
-- Working on Shortcut Guide v2 (Thanks [@noraa-junker](https://github.com/noraa-junker)!) 
-- Upgrading Keyboard Manager's editor UI 
-- UI tweaking utility with day/night theme switcher 
-- DSC v3 support for top utilities 
-- New UI automation tests - Stability, bug fixes 
+We are planning some nice new features and improvements for the next releases – a revamped Keyboard Manager UI, custom endpoint and local model support for Advanced Paste, Commmand Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.96][github-next-release-work]!
 
 ## ❤️ PowerToys Community 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month! 
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!
+
 ## Contributing 
 This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows. We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort. Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so. For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile. 
 
