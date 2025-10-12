@@ -182,7 +182,7 @@ public static class Win32Constants
     /// <summary>
     /// Retrieves a handle to the small icon associated with the class.
     /// </summary>
-    public const int GCLP_HICON_SM = -34;
+    public const int GCLP_HICONSM = -34;
 
     /// <summary>
     /// RPC call succeeded

@@ -233,7 +233,7 @@ internal sealed class Window
             return true;
         }
 
-        iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICON_SM);
+        iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICONSM);
         if (iconHandle != IntPtr.Zero)
         {
             icon = System.Drawing.Icon.FromHandle(iconHandle);
