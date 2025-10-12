@@ -635,7 +635,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
-hiconsm
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
