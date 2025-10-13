@@ -126,7 +126,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Enabled AOT by default for performance while simplifying publish configs.
+ - Enabled AOT by default for improved performance while also simplifying publish configs.
  - Cleaned and codified .editorconfig without behavior change. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Replaced service state color dots with play/pause/stop icons for accessibility. Thanks [@samrueby](https://github.com/samrueby)!
  - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks [@jiripolasek](https://github.com/jiripolasek)!
