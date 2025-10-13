@@ -135,7 +135,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Restored focus to More button after ESC closes context menu improving keyboard flow.
  - Marked main and toast windows as tool windows to keep them out of Alt+Tab while preserving style. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed AOT template + theming issues for filter separators. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Introduced grid layouts (small/medium/gallery) for richer page presentation.
+ - Introduced grid layouts (small / medium / gallery) for richer page presentation.
  - Materialized result lists to avoid rescoring overhead.
  - Disabled problematic selection TextToSuggest behind env flag.
  - Resolved AOT warning by making IconMarginConverter partial. Thanks [@samrueby](https://github.com/samrueby)!
