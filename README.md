@@ -128,7 +128,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Enabled AOT by default for improved performance while also simplifying publish configs.
  - Cleaned and codified .editorconfig without behavior change. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Replaced service state color dots with play/pause/stop icons for accessibility. Thanks [@samrueby](https://github.com/samrueby)!
+ - Replaced service state color dots with play / pause / stop icons for enhanced accessibility. Thanks [@samrueby](https://github.com/samrueby)!
  - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Ensured long links wrap correctly in details view.
  - Removed animation + enforced min width on filter dropdown for clarity. Thanks [@jiripolasek](https://github.com/jiripolasek)!
