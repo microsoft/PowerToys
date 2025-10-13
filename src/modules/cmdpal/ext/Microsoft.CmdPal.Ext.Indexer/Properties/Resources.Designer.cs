@@ -178,7 +178,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All files &amp; folders.
+        ///   Looks up a localized string similar to Files and folders.
         /// </summary>
         internal static string Indexer_Filter_All {
             get {
@@ -187,7 +187,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Files only.
+        ///   Looks up a localized string similar to Files.
         /// </summary>
         internal static string Indexer_Filter_Files_Only {
             get {
@@ -196,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Folders only.
+        ///   Looks up a localized string similar to Folders.
         /// </summary>
         internal static string Indexer_Filter_Folders_Only {
             get {
