@@ -147,7 +147,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Migrated settings window to WinUI TitleBar control. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Prevented crash on duplicate keybindings and simplified matching. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Centralized fullscreen ignore-hotkey logic for summon handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Hid search box on content pages; improved focus and a11y; added Home title. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Search box hidden on content pages, improving focus and accessibility. Home title added. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Synced generated resource comment to eliminate noisy diffs. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Blocked Ctrl+I from inserting stray tab in search box.
  - Logged HRESULT codes in error logs for deeper diagnostics. Thanks [@jiripolasek](https://github.com/jiripolasek)!
