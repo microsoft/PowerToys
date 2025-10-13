@@ -113,7 +113,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 **✨ Highlights**
  - **NEW:** The **Light Switch** utility in PowerToys allows you to automatically switch between light and dark themes in Windows based on the time of day.
  - Command Palette delivered major search performance gains (new fuzzy matcher and smarter fallbacks) improving relevance and speed.
- - Peek can now be used activated using the Space bar!
+ - Peek can now be activated using just the Spacebar!
  - Find My Mouse added transparent spotlight with independent backdrop opacity, boosting focus and accessibility.
  - Settings now lets you delete shortcuts entirely and ignore conflicts.
  - Mouse Pointer Crosshairs gained orientation options (vertical / horizontal / both) for customizable accessibility. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
