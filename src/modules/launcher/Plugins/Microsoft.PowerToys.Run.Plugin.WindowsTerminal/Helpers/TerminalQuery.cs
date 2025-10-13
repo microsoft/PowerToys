@@ -59,7 +59,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
         private IEnumerable<TerminalPackage> GetTerminals()
         {
             var user = WindowsIdentity.GetCurrent().User;
-            var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+            var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
             foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Contains(p.Id.Name)))
             {
