@@ -245,8 +245,18 @@ private:
         }
         create_pipe_thread = std::thread(&ImageResizerContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
 
+        // Select Package Family Name based on build configuration
+        std::wstring packageFamilyName;
+#if !defined(CIBUILD)
+        // Non-CI Release build
+        packageFamilyName = L"djwsxzxb4ksa8";
+#else
+        // Debug build or CI build
+        packageFamilyName = L"8wekyb3d8bbwe";
+#endif
+
         std::wstring aumidTarget =
-            L"shell:AppsFolder\\Microsoft.PowerToys.SparseApp_djwsxzxb4ksa8!PowerToys.ImageResizerUI"; // PFN!AppId
+            L"shell:AppsFolder\\Microsoft.PowerToys.SparseApp_" + packageFamilyName + L"!PowerToys.ImageResizerUI"; // PFN!AppId
         std::wstring args = L"--pipe \"" + pipe_name + L"\"";
 
         // Use ShellExecuteEx so you get a process handle:
@@ -263,9 +273,17 @@ private:
         }
         else
         {
-            Logger::error(L"Failed to start ImageResizer (sparse). {}", get_last_error_or_default(GetLastError()));
+            Logger::warn(L"Failed to start ImageResizer (sparse). {}. Trying fallback to exe.", get_last_error_or_default(GetLastError()));
+            // Fallback to traditional exe if MSIX launch fails
+            if (RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst)))
+            {
+                Logger::trace(L"Started ImageResizer (exe) with pipe {} as fallback", pipe_name);
+            }
+            else
+            {
+                Logger::error(L"Failed to start ImageResizer (exe) fallback. {}", get_last_error_or_default(GetLastError()));
+            }
         }
-        // RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
 
         create_pipe_thread.join();
 

@@ -289,28 +289,56 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 
     PROCESS_INFORMATION processInformation;
 
-    // Start the resizer
-    CreateProcess(
-        NULL,
-        lpszCommandLine,
-        NULL,
-        NULL,
-        TRUE,
-        0,
-        NULL,
-        NULL,
-        &startupInfo,
-        &processInformation);
-    delete[] lpszCommandLine;
-    if (!CloseHandle(processInformation.hProcess))
+    // Try MSIX sparse package first
+    std::wstring packageFamilyName;
+#if !defined(CIBUILD)
+        // Non-CI Release build
+        packageFamilyName = L"djwsxzxb4ksa8";
+#else
+        // Debug build or CI build
+        packageFamilyName = L"8wekyb3d8bbwe";
+#endif
+    std::wstring aumidTarget = L"shell:AppsFolder\\Microsoft.PowerToys.SparseApp_" + packageFamilyName + L"!PowerToys.ImageResizerUI";
+    
+    SHELLEXECUTEINFOW sei{ sizeof(sei) };
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+    sei.lpVerb = L"open";
+    sei.lpFile = aumidTarget.c_str();
+    sei.lpParameters = lpszCommandLine + wcslen(lpApplicationName) + 3; // Skip the exe path and quotes
+    sei.nShow = pici ? static_cast<WORD>(pici->nShow) : SW_SHOWNORMAL;
+
+    if (ShellExecuteExW(&sei) && reinterpret_cast<INT_PTR>(sei.hInstApp) > 32)
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        return hr;
+        // MSIX launch succeeded, use existing pipe communication
+        // (no changes to the rest of the function)
+        delete[] lpszCommandLine;
     }
-    if (!CloseHandle(processInformation.hThread))
+    else
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        return hr;
+        // Fallback to traditional exe
+        // Start the resizer
+        CreateProcess(
+            NULL,
+            lpszCommandLine,
+            NULL,
+            NULL,
+            TRUE,
+            0,
+            NULL,
+            NULL,
+            &startupInfo,
+            &processInformation);
+        delete[] lpszCommandLine;
+        if (!CloseHandle(processInformation.hProcess))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        if (!CloseHandle(processInformation.hThread))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
     }
 
     // psiItemArray is NULL if called from InvokeCommand. This part is used for the MSI installer. It is not NULL if it is called from Invoke (MSIX).

@@ -81,7 +81,7 @@ function Write-BuildLog {
     param([string]$Message, [string]$Level = "Info")
     
     $colors = @{ Error = "Red"; Warning = "Yellow"; Success = "Green"; Info = "Cyan" }
-    $color = $colors[$Level] ?? "White"
+    $color = if ($colors.ContainsKey($Level)) { $colors[$Level] } else { "White" }
     
     Write-Host "[$(Get-Date -f 'HH:mm:ss')] $Message" -ForegroundColor $color
 }
@@ -197,19 +197,14 @@ if ($needNewCert) {
         -Password (ConvertTo-SecureString -String $plainPwd -AsPlainText -Force) | Out-Null
 }
 
-# Build (restore + compile). This assumes msbuild is on PATH (VS Developer Prompt) or dev shell.
-Write-BuildLog "(Info) Build step skipped: integrate real project build here if needed (Platform=$Platform Configuration=$Configuration)." -Level Info
-#msbuild /restore /p:Platform=$Platform /p:Configuration=$Configuration "$ProjectRoot\PowerOCR.csproj"
-#msbuild /p:Platform=$Platform /p:Configuration=$Configuration "$ProjectRoot\PowerOCR.csproj"
+# Determine output directory - using PowerToys standard structure
+# Navigate to PowerToys root (two levels up from src/PackageIdentity)
+$PowerToysRoot = Split-Path (Split-Path $ProjectRoot -Parent) -Parent
+$outDir = Join-Path $PowerToysRoot "$Platform\$Configuration"
 
-# Determine output directory (adjust if TFM changes)
-#$tfmFolder = 'net8.0-windows10.0.22621.0'
-#$outDir = Join-Path $ProjectRoot "bin/$Platform/$Configuration/$tfmFolder"
-
-$outDir = Join-Path $ProjectRoot "bin/"
 if (-not (Test-Path $outDir)) {
     Write-BuildLog "Creating output directory: $outDir" -Level Info
-    New-Item -ItemType Directory -Path $outDir | Out-Null
+    New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 }
 
 # PackageIdentity folder (this script location) containing the sparse manifest and assets
