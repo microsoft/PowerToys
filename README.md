@@ -118,7 +118,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Settings now lets you delete shortcuts entirely and ignore conflicts.
  - Mouse Pointer Crosshairs gained orientation options (vertical / horizontal / both) for customizable accessibility. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
  - PowerRename fixed enumeration counter skipping ensuring reliable batch renames. Thanks [@daverayment](https://github.com/daverayment)!
- - ZoomIt restored legacy draw/snipping behaviors and fixed recording races improving reliability. Thanks [@chakrik73](https://github.com/chakrik73)!
+ - ZoomIt restored legacy draw and snipping behaviors, and fixed recording issues, improving reliability. Thanks [@chakrik73](https://github.com/chakrik73)!
 
 ### Command Palette
  - Reorganized core projects and introduced CoreLogger to reduce dependencies.
