@@ -201,7 +201,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Continued Common class refactor (part 5/7) by extracting clipboard and init/cleanup logic into focused classes. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### Peek
- - Added optional single Space key activation with context-aware eligibility and telemetry.
+ - Added the option to activate Peek with just the Spacebar.
 
 ### PowerRename
  - Fixed enumeration counter skipping when regex replacement equals original filename (counters now advance reliably). Thanks [@daverayment](https://github.com/daverayment)!
