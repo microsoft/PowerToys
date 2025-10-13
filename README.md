@@ -169,7 +169,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Removed LINQ from All Apps extension for performance.
  - Added standardized key chord system + shortcuts to File Search commands. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added Terminal channel filter & remembered selection option. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Enabled loading local/data/app images in markdown with sizing hints. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added support for embedding local, data, and app images in Markdown, with options to specify their size. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added external extension reload via x-cmdpal://reload (configurable). Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Instant WebSearch history updates with in-memory store & events. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added keep-after-paste option and safe delete with confirmation for Clipboard History. Thanks [@jiripolasek](https://github.com/jiripolasek)!
