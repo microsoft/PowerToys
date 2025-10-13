@@ -181,7 +181,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Adopted WinUI TitleBar to simplify window chrome while preserving appearance.
 
 ### Find My Mouse
- - Added transparent spotlight support with separate backdrop opacity; migrated to WASDK composition.
+ - Added transparent spotlight support with separate backdrop opacity; migrated to Windows App SDK composition APIs.
 
 ### Hosts File Editor
  - Migrated to native WinUI TitleBar for cleaner, maintainable window chrome.
