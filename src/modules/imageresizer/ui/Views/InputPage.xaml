@@ -7,6 +7,20 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:v="clr-namespace:ImageResizer.Views">
 
+    <UserControl.Resources>
+        <Style x:Key="ReadableDisabledButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <!-- Improved disabled state: keep readable but clearly disabled -->
+                    <Setter Property="Foreground" Value="#AAAAAA" />
+                    <Setter Property="Background" Value="#3A3A3A" />
+                    <Setter Property="BorderBrush" Value="#555555" />
+                    <Setter Property="Opacity" Value="0.75" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -15,18 +29,22 @@
             <!--  other controls  -->
         </Grid.RowDefinitions>
 
-        <ComboBox
-            Name="SizeComboBox"
-            Grid.Row="0"
-            Height="64"
-            Margin="16"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            VerticalContentAlignment="Stretch"
-            AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
-            AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
-            ItemsSource="{Binding Settings.AllSizes}"
-            SelectedIndex="{Binding Settings.SelectedSizeIndex}">
+        <StackPanel Grid.Row="0" Margin="16">
+            <!-- Traditional Size Selector: Only show when not in AI mode -->
+            <Grid 
+                HorizontalAlignment="Stretch"
+                Visibility="{Binding ShowTraditionalSizeSelector, Converter={StaticResource BoolValueConverter}}">
+
+                <ComboBox
+                    Name="SizeComboBox"
+                    Height="64"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
+                    AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
+                    ItemsSource="{Binding Settings.AllSizes}"
+                    SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}">
             <ComboBox.ItemContainerStyle>
                 <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
                     <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
@@ -68,7 +86,83 @@
                     </Grid>
                 </DataTemplate>
             </ComboBox.Resources>
-        </ComboBox>
+                </ComboBox>
+            </Grid>
+
+            <!--  AI Model Download Prompt  -->
+            <StackPanel Margin="0,8,0,0">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowModelDownloadPrompt}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <ui:InfoBar
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Message="{Binding ModelStatusMessage}" />
+
+                <ui:Button
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Stretch"
+                    Appearance="Primary"
+                    Command="{Binding DownloadModelCommand}"
+                    Content="{x:Static p:Resources.Input_AiModelDownloadButton}"
+                    Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}, ConverterParameter=Inverted}" />
+
+                <StackPanel
+                    Margin="0,8,0,0"
+                    Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}}">
+                    <ui:ProgressRing IsIndeterminate="True" />
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Center"
+                        Text="{Binding ModelStatusMessage}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!--  AI Scale Controls  -->
+            <StackPanel Margin="0,8,0,0">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowAiControls}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <TextBlock
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="{Binding AiScaleDescription}" />
+                <Slider
+                    Margin="0,8,0,0"
+                    Minimum="1"
+                    Maximum="8"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    IsSelectionRangeEnabled="False"
+                    TickPlacement="BottomRight"
+                    Ticks="1,2,3,4,5,6,7,8"
+                    Value="{Binding AiSuperResolutionScale, Mode=TwoWay}"
+                    AutomationProperties.Name="{x:Static p:Resources.Input_AiScaleLabel}" />
+
+                <StackPanel
+                    Margin="0,8,0,0"
+                    Visibility="{Binding ShowAiSizeDescriptions, Converter={StaticResource BoolValueConverter}}">
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{Binding CurrentResolutionDescription}" />
+                    <TextBlock Margin="0,4,0,0" Style="{StaticResource BodyTextBlockStyle}" Text="{Binding NewResolutionDescription}" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -211,6 +305,15 @@
                 Grid.Row="1"
                 Margin="16"
                 Orientation="Vertical">
+                <CheckBox 
+                    AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" 
+                    IsChecked="{Binding Settings.UseAiSuperResolution}"
+                    Visibility="{Binding ShowEnableAiCheckBox, Converter={StaticResource BoolValueConverter}}">
+                    <CheckBox.Content>
+                        <AccessText Text="{x:Static p:Resources.Input_EnableAiSuperResolution}" TextWrapping="Wrap" />
+                    </CheckBox.Content>
+                </CheckBox>
+
                 <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
@@ -280,7 +383,8 @@
                     Appearance="Primary"
                     AutomationProperties.Name="{x:Static p:Resources.Resize_Tooltip}"
                     Command="{Binding ResizeCommand}"
-                    IsDefault="True">
+                    IsDefault="True"
+                    Style="{StaticResource ReadableDisabledButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon FontSize="16" Symbol="ResizeLarge16" />
                         <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.Input_Resize}" />
