@@ -151,7 +151,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Synced generated resource comment to eliminate noisy diffs. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Blocked Ctrl+I from inserting stray tab in search box.
  - Logged HRESULT codes in error logs for deeper diagnostics. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Advanced font/emoji icon classification & alignment improvements. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Advanced font / emoji icon classification and alignment improvements. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Preserved fallback item icons in Settings by storing initial icon. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed breadcrumb margin misalignment (visual polish). Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Truncated overly long command labels with ellipsis to prevent overflow.
