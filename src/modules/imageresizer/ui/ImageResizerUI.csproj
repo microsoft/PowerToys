@@ -58,4 +58,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+  
+  <!-- Ensure Resources directory and ImageResizer.png are available for dependent projects -->
+  <Target Name="CopyResourcesToSharedLocation" AfterTargets="Build">
+    <ItemGroup>
+      <ResourceFiles Include="$(MSBuildProjectDirectory)\Resources\ImageResizer.png" />
+    </ItemGroup>
+    <MakeDir Directories="$(OutputPath)Resources" Condition="!Exists('$(OutputPath)Resources')" />
+    <Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(OutputPath)Resources" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
