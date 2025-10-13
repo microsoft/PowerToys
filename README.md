@@ -162,7 +162,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Added actionable empty-state hints for File Search (search PC / open indexing settings). Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Ensured all WinGet extension assets copy reliably to output. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Improved Run command line parsing for paths with spaces; sped up related tests.
- - Updated WebSearch extension icon set for clarity and contrast. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Updated WebSearch extension icon set for enhanced clarity and contrast. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added Terminal profile sort order setting including MRU tracking. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added Uninstall Application command (UWP direct, Win32 via Settings). Thanks [@mKpwnz](https://github.com/mKpwnz)!
  - Deferred WinGet details loading and added timing logs.
