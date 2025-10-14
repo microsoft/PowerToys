@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class RecentCommandsManager : ObservableObject
+public partial class RecentCommandsManager : ObservableObject, IRecentCommandsManager
 {
     [JsonInclude]
     internal List<HistoryItem> History { get; set; } = [];
@@ -79,4 +79,11 @@ public partial class RecentCommandsManager : ObservableObject
             }
         }
     }
+}
+
+public interface IRecentCommandsManager
+{
+    int GetCommandHistoryWeight(string commandId);
+
+    void AddHistoryItem(string commandId);
 }

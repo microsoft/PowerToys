@@ -29,8 +29,8 @@ steps:
   displayName: 'Touchdown Build - 37400, PRODEXT'
   inputs:
     teamId: 37400
-    TDBuildServiceConnection: $(TouchdownServiceConnection)
-    authType: SubjectNameIssuer
+    FederatedIdentityTDBuildServiceConnection: $(TouchdownServiceConnection)
+    authType: FederatedIdentityTDBuild
     resourceFilePath: |
      src\**\Resources.resx
      src\**\Resource.resx
