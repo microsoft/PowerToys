@@ -27,6 +27,14 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         useFileTime = true;
     }
 
+    int id = -1;
+    winrt::check_hresult(spItem->GetId(&id));
+
+    bool isFolder = false;
+    bool isSubFolderContent = false;
+    winrt::check_hresult(spItem->GetIsFolder(&isFolder));
+    winrt::check_hresult(spItem->GetIsSubFolderContent(&isSubFolderContent));
+
     // Get metadata type to check if metadata patterns are used
     PowerRenameLib::MetadataType metadataType;
     HRESULT hr = spRenameRegEx->GetMetadataType(&metadataType);
@@ -36,19 +44,18 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         metadataType = PowerRenameLib::MetadataType::EXIF;
     }
 
-    if (isMetadataUsed(replaceTerm, metadataType))
+    // Check if metadata is used AND if this file type supports metadata
+    // Get file path early for metadata type checking
+    PWSTR filePath = nullptr;
+    winrt::check_hresult(spItem->GetPath(&filePath));
+    
+    if (isMetadataUsed(replaceTerm, metadataType, filePath, isFolder))
     {
         useMetadata = true;
     }
+    
     CoTaskMemFree(replaceTerm);
-
-    int id = -1;
-    winrt::check_hresult(spItem->GetId(&id));
-
-    bool isFolder = false;
-    bool isSubFolderContent = false;
-    winrt::check_hresult(spItem->GetIsFolder(&isFolder));
-    winrt::check_hresult(spItem->GetIsSubFolderContent(&isSubFolderContent));
+    CoTaskMemFree(filePath);
     if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
         (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
         (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)) ||
@@ -104,11 +111,12 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     if (useMetadata)
     {
         // Extract metadata patterns from the file
-        PWSTR filePath = nullptr;
-        winrt::check_hresult(spItem->GetPath(&filePath));
+        // Note: filePath has already been obtained earlier for type checking
+        PWSTR filePathForExtraction = nullptr;
+        winrt::check_hresult(spItem->GetPath(&filePathForExtraction));
         
-        std::wstring filePathStr(filePath);
-        CoTaskMemFree(filePath);
+        std::wstring filePathStr(filePathForExtraction);
+        CoTaskMemFree(filePathForExtraction);
         
         // Get metadata type using the interface method
         PowerRenameLib::MetadataType metadataType;
@@ -119,6 +127,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
             metadataType = PowerRenameLib::MetadataType::EXIF;
         }
         // Extract all patterns for the selected metadata type
+        // At this point we know the file is a supported image format (jpg/jpeg/png/tif/tiff)
         static std::mutex s_metadataMutex; // Mutex to protect static variables
         static std::once_flag s_metadataExtractorInitFlag;
         static std::shared_ptr<PowerRenameLib::MetadataPatternExtractor> s_metadataExtractor;

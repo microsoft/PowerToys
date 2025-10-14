@@ -319,10 +319,53 @@ bool isFileTimeUsed(_In_ PCWSTR source)
     return used;
 }
 
-bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataType)
+bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataType, _In_opt_ PCWSTR filePath, bool isFolder)
 {
     if (!source) return false;
     
+    // Early exit: If file path is provided, check file type first (fastest checks)
+    // This avoids expensive pattern matching for files that don't support metadata
+    if (filePath != nullptr)
+    {
+        // Folders don't support metadata extraction
+        if (isFolder)
+        {
+            return false;
+        }
+
+        // Check if file path is valid
+        if (wcslen(filePath) == 0)
+        {
+            return false;
+        }
+
+        // Get file extension
+        std::wstring extension = fs::path(filePath).extension().wstring();
+        
+        // Convert to lowercase for case-insensitive comparison
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+
+        // According to the metadata support table, only these formats support metadata extraction:
+        // - JPEG (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
+        // - TIFF (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding  
+        // - PNG (text chunks)
+        static const std::unordered_set<std::wstring> supportedExtensions = {
+            L".jpg",
+            L".jpeg",
+            L".png",
+            L".tif",
+            L".tiff"
+        };
+
+        // If file type doesn't support metadata, no need to check patterns
+        if (supportedExtensions.find(extension) == supportedExtensions.end())
+        {
+            return false;
+        }
+    }
+    
+    // Now check if any metadata pattern exists in the source string
+    // This is the most expensive check, so we do it last
     std::wstring str(source);
     
     // Get supported patterns for the specified metadata type
@@ -338,6 +381,7 @@ bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataTyp
         }
     }
     
+    // No metadata pattern found
     return false;
 }
 
