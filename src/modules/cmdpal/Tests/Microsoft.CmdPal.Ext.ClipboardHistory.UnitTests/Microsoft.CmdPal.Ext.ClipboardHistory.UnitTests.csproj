@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+		<RootNamespace>Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests</RootNamespace>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Moq" />
+		<PackageReference Include="MSTest" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
+		<ProjectReference Include="..\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj" />
+	</ItemGroup>
+</Project>

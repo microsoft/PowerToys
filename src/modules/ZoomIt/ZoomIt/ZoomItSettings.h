@@ -14,6 +14,7 @@ DWORD   g_SnipToggleKey = ((HOTKEYF_CONTROL) << 8) | '6';
 DWORD	g_ShowExpiredTime = 1;
 DWORD	g_SliderZoomLevel = 3;
 BOOLEAN g_AnimateZoom = TRUE;
+BOOLEAN g_SmoothImage = TRUE;
 DWORD	g_PenColor = COLOR_RED;
 DWORD	g_BreakPenColor = COLOR_RED;
 DWORD   g_RootPenWidth = PEN_WIDTH;
@@ -72,6 +73,7 @@ REG_SETTING RegSettings[] = {
     { L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
     // NOTE: AnimateZoom is misspelled, but since it is a user setting stored in the registry we must continue to misspell it.
     { L"AnimnateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, static_cast<DOUBLE>(g_AnimateZoom) },
+    { L"SmoothImage", SETTING_TYPE_BOOLEAN, 0, &g_SmoothImage, static_cast<DOUBLE>(g_SmoothImage) },
     { L"TelescopeZoomOut", SETTING_TYPE_BOOLEAN, 0, &g_TelescopeZoomOut, static_cast<DOUBLE>(g_TelescopeZoomOut) },
     { L"SnapToGrid", SETTING_TYPE_BOOLEAN, 0, &g_SnapToGrid, static_cast<DOUBLE>(g_SnapToGrid) },
     { L"ZoominSliderLevel", SETTING_TYPE_DWORD, 0, &g_SliderZoomLevel, static_cast<DOUBLE>(g_SliderZoomLevel) },
