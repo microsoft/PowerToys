@@ -275,17 +275,17 @@ bool isFileTimeUsed(_In_ PCWSTR source)
     return used;
 }
 
-bool isMetadataUsed(_In_ PCWSTR source)
+bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataType)
 {
     if (!source) return false;
     
     std::wstring str(source);
     
-    // Get all possible metadata patterns from the extractor
-    auto allPatterns = PowerRenameLib::MetadataPatternExtractor::GetAllPossiblePatterns();
+    // Get supported patterns for the specified metadata type
+    auto supportedPatterns = PowerRenameLib::MetadataPatternExtractor::GetSupportedPatterns(metadataType);
     
     // Check if any metadata pattern exists in the source string
-    for (const auto& pattern : allPatterns)
+    for (const auto& pattern : supportedPatterns)
     {
         std::wstring searchPattern = L"$" + pattern;
         if (str.find(searchPattern) != std::wstring::npos)

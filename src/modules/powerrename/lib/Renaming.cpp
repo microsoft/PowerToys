@@ -27,7 +27,16 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         useFileTime = true;
     }
 
-    if (isMetadataUsed(replaceTerm))
+    // Get metadata type to check if metadata patterns are used
+    PowerRenameLib::MetadataType metadataType;
+    HRESULT hr = spRenameRegEx->GetMetadataType(&metadataType);
+    if (FAILED(hr))
+    {
+        // Fallback to default metadata type if call fails
+        metadataType = PowerRenameLib::MetadataType::EXIF;
+    }
+
+    if (isMetadataUsed(replaceTerm, metadataType))
     {
         useMetadata = true;
     }
