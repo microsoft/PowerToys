@@ -122,8 +122,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Command Palette
  - Applied conditional margin for icon-only tags to tighten layout. Thanks [@samrueby](https://github.com/samrueby)
- - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks [@jiripolasek](https://github.com/jiripolasek)
- - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Improved the reliability of accessing Command Palette settings through PowerToys Settings and executing other x-cmdpal:// protocol commands. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Enabled AOT by default for improved performance while simplifying publish configs.
  - Replaced service state color dots with play/pause/stop icons for enhanced accessibility. Thanks [@samrueby](https://github.com/samrueby)
  - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks [@jiripolasek](https://github.com/jiripolasek)
@@ -135,7 +134,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Introduced grid layouts (small, medium, gallery) for richer page presentation.
  - Materialized result lists to avoid rescoring overhead.
  - Disabled problematic selection TextToSuggest behind environment flag.
- - Resolved AOT warning by making IconMarginConverter partial. Thanks [@samrueby](https://github.com/samrueby)
  - Major search performance improvements (new fuzzy matcher, smarter fallbacks, fewer exceptions).
  - Added context menu "Show Details" command when details pane is hidden.
  - Reduced window flicker by avoiding unnecessary cloaking. Thanks [@jiripolasek](https://github.com/jiripolasek)
@@ -151,7 +149,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Ensured that fallback command icons are visible on the extension settings page. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Fixed breadcrumb margin misalignment (visual polish). Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Truncated overly long command labels with ellipsis to prevent overflow.
- - Allowed any image format to be used as an icon for protocol bookmarks. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Added a setting to configure the page transition animation.
  - Collection of small improvements and nits for Run Commands.
  - Improved bookmarks performance and experience. Thanks [@jiripolasek](https://github.com/jiripolasek)
