@@ -23,6 +23,9 @@ public partial class ShellViewModel : ObservableObject,
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
 
+    // Cancellation token source for page loading/navigation operations
+    private CancellationTokenSource? _navigationCts;
+
     [ObservableProperty]
     public partial bool IsLoaded { get; set; } = false;
 
@@ -66,6 +69,8 @@ public partial class ShellViewModel : ObservableObject,
 
     public bool IsNested => _isNested;
 
+    public PageViewModel NullPage { get; private set; }
+
     public ShellViewModel(
         TaskScheduler scheduler,
         IRootPageService rootPageService,
@@ -77,6 +82,7 @@ public partial class ShellViewModel : ObservableObject,
         _rootPageService = rootPageService;
         _appHostService = appHostService;
 
+        NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
 
         // Register to receive messages
@@ -113,7 +119,7 @@ public partial class ShellViewModel : ObservableObject,
         return true;
     }
 
-    public async Task LoadPageViewModelAsync(PageViewModel viewModel)
+    private async Task LoadPageViewModelAsync(PageViewModel viewModel, CancellationToken cancellationToken = default)
     {
         // Note: We removed the general loading state, extensions sometimes use their `IsLoading`, but it's inconsistently implemented it seems.
         // IsInitialized is our main indicator of the general overall state of loading props/items from a page we use for the progress bar
@@ -125,44 +131,80 @@ public partial class ShellViewModel : ObservableObject,
         if (!viewModel.IsInitialized
             && viewModel.InitializeCommand is not null)
         {
-            var outer = Task.Run(async () =>
-            {
-                // You know, this creates the situation where we wait for
-                // both loading page properties, AND the items, before we
-                // display anything.
-                //
-                // We almost need to do an async await on initialize, then
-                // just a fire-and-forget on FetchItems.
-                // RE: We do set the CurrentPage in ShellPage.xaml.cs as well, so, we kind of are doing two different things here.
-                // Definitely some more clean-up to do, but at least its centralized to one spot now.
-                viewModel.InitializeCommand.Execute(null);
-
-                await viewModel.InitializeCommand.ExecutionTask!;
-
-                if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+            var outer = Task.Run(
+                async () =>
                 {
-                    if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
+                    // You know, this creates the situation where we wait for
+                    // both loading page properties, AND the items, before we
+                    // display anything.
+                    //
+                    // We almost need to do an async await on initialize, then
+                    // just a fire-and-forget on FetchItems.
+                    // RE: We do set the CurrentPage in ShellPage.xaml.cs as well, so, we kind of are doing two different things here.
+                    // Definitely some more clean-up to do, but at least its centralized to one spot now.
+                    viewModel.InitializeCommand.Execute(null);
+
+                    await viewModel.InitializeCommand.ExecutionTask!;
+
+                    if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
                     {
-                        CoreLogger.LogError(ex.ToString());
-                    }
-                }
-                else
-                {
-                    var t = Task.Factory.StartNew(
-                        () =>
+                        if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                         {
-                            CurrentPage = viewModel;
-                        },
-                        CancellationToken.None,
-                        TaskCreationOptions.None,
-                        _scheduler);
-                    await t;
-                }
-            });
+                            CoreLogger.LogError(ex.ToString());
+                        }
+                    }
+                    else
+                    {
+                        var t = Task.Factory.StartNew(
+                            () =>
+                            {
+                                if (cancellationToken.IsCancellationRequested)
+                                {
+                                    if (viewModel is IDisposable disposable)
+                                    {
+                                        try
+                                        {
+                                            disposable.Dispose();
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            CoreLogger.LogError(ex.ToString());
+                                        }
+                                    }
+
+                                    return;
+                                }
+
+                                CurrentPage = viewModel;
+                            },
+                            cancellationToken,
+                            TaskCreationOptions.None,
+                            _scheduler);
+                        await t;
+                    }
+                },
+                cancellationToken);
             await outer;
         }
         else
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                if (viewModel is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreLogger.LogError(ex.ToString());
+                    }
+                }
+
+                return;
+            }
+
             CurrentPage = viewModel;
         }
     }
@@ -174,6 +216,28 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
+        // Create/replace the navigation cancellation token.
+        // If one already exists, cancel and dispose it first.
+        var newCts = new CancellationTokenSource();
+        var oldCts = Interlocked.Exchange(ref _navigationCts, newCts);
+        if (oldCts is not null)
+        {
+            try
+            {
+                oldCts.Cancel();
+            }
+            catch (Exception ex)
+            {
+                CoreLogger.LogError(ex.ToString());
+            }
+            finally
+            {
+                oldCts.Dispose();
+            }
+        }
+
+        var navigationToken = newCts.Token;
+
         var command = message.Command.Unsafe;
         if (command is null)
         {
@@ -201,15 +265,26 @@ public partial class ShellViewModel : ObservableObject,
                     throw new NotSupportedException();
                 }
 
+                // Clear command bar, ViewModel initialization can already set new commands if it wants to
+                OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
+
                 // Kick off async loading of our ViewModel
-                LoadPageViewModelAsync(pageViewModel)
+                LoadPageViewModelAsync(pageViewModel, navigationToken)
                     .ContinueWith(
                         (Task t) =>
                         {
-                            OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
-                            WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
+                            // clean up the navigation token if it's still ours
+                            if (Interlocked.CompareExchange(ref _navigationCts, null, newCts) == newCts)
+                            {
+                                newCts.Dispose();
+                            }
                         },
+                        navigationToken,
+                        TaskContinuationOptions.None,
                         _scheduler);
+
+                // While we're loading in the background, immediately move to the next page.
+                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation, navigationToken));
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
@@ -367,5 +442,10 @@ public partial class ShellViewModel : ObservableObject,
             CancellationToken.None,
             TaskCreationOptions.None,
             _scheduler);
+    }
+
+    public void CancelNavigation()
+    {
+        _navigationCts?.Cancel();
     }
 }

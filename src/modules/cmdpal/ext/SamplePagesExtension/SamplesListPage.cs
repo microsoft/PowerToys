@@ -48,6 +48,11 @@ public partial class SamplesListPage : ListPage
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
         },
+        new ListItem(new SlowListPage())
+        {
+            Title = "Slow loading list page",
+            Subtitle = "A demo of a list page that takes a while to load",
+        },
 
         // Content pages
         new ListItem(new SampleContentPage())

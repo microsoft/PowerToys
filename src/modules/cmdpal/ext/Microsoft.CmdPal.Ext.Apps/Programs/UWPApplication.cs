@@ -103,7 +103,8 @@ public class UWPApplication : IUWPApplication
             new CommandContextItem(
                 new OpenFileCommand(Location)
                 {
-                    Name = Resources.open_containing_folder,
+                    Icon = new("\uE838"),
+                    Name = Resources.open_location,
                 })
             {
                 RequestedShortcut = KeyChords.OpenFileLocation,
