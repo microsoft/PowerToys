@@ -55,6 +55,7 @@
     <ClCompile Include="MockPowerRenameRegExEvents.cpp" />
     <ClCompile Include="PowerRenameRegExBoostTests.cpp" />
     <ClCompile Include="PowerRenameManagerTests.cpp" />
+    <ClCompile Include="MetadataFormatHelperTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>

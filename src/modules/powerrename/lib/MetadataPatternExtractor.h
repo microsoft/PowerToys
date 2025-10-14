@@ -35,12 +35,5 @@ namespace PowerRenameLib
 
         MetadataPatternMap ExtractEXIFPatterns(const std::wstring& filePath);
         MetadataPatternMap ExtractXMPPatterns(const std::wstring& filePath);
-
-        static std::wstring FormatAperture(double aperture);
-        static std::wstring FormatShutterSpeed(double speed);
-        static std::wstring FormatISO(int64_t iso);
-        static std::wstring FormatFlash(int64_t flashValue);
-        static std::wstring FormatCoordinate(double coord, bool isLatitude);
-        static std::wstring FormatSystemTime(const SYSTEMTIME& st);
     };
 }

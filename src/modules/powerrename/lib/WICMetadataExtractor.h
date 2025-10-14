@@ -55,21 +55,8 @@ namespace PowerRenameLib
         std::optional<int64_t> ReadInteger(IWICMetadataQueryReader* reader, const std::wstring& path);
         std::optional<double> ReadDouble(IWICMetadataQueryReader* reader, const std::wstring& path);
 
-        // GPS utilities
-        static double ParseGPSRational(const PROPVARIANT& pv);
-        static double ParseSingleRational(const uint8_t* bytes, size_t offset);
-        static double ParseSingleSRational(const uint8_t* bytes, size_t offset);
-        static std::pair<double, double> ParseGPSCoordinates(
-            const PROPVARIANT& latitude,
-            const PROPVARIANT& longitude,
-            const PROPVARIANT& latRef,
-            const PROPVARIANT& lonRef);
-
         // Helper methods
         std::optional<PropVariantValue> ReadMetadata(IWICMetadataQueryReader* reader, const std::wstring& path);
-
-        // Helper for sanitizing file names
-        static std::wstring SanitizeForFileName(const std::wstring& str);
 
     private:
         MetadataResultCache cache;

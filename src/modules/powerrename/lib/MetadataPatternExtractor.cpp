@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "MetadataPatternExtractor.h"
+#include "MetadataFormatHelper.h"
 #include "WICMetadataExtractor.h"
 #include <algorithm>
 #include <format>
@@ -25,15 +26,29 @@ MetadataPatternMap MetadataPatternExtractor::ExtractPatterns(
     const std::wstring& filePath,
     MetadataType type)
 {
+    MetadataPatternMap patterns;
+    
     switch (type)
     {
     case MetadataType::EXIF:
-        return ExtractEXIFPatterns(filePath);
+        patterns = ExtractEXIFPatterns(filePath);
+        break;
     case MetadataType::XMP:
-        return ExtractXMPPatterns(filePath);
+        patterns = ExtractXMPPatterns(filePath);
+        break;
     default:
         return MetadataPatternMap();
     }
+
+    // Sanitize all pattern values for filename safety before returning
+    // This ensures all metadata values are safe to use in filenames (removes illegal chars like <>:"/\|?*)
+    // IMPORTANT: Only call SanitizeForFileName here to avoid performance waste
+    for (auto& [key, value] : patterns)
+    {
+        value = MetadataFormatHelper::SanitizeForFileName(value);
+    }
+
+    return patterns;
 }
 
 void MetadataPatternExtractor::ClearCache()
@@ -71,17 +86,17 @@ MetadataPatternMap MetadataPatternExtractor::ExtractEXIFPatterns(const std::wstr
 
     if (exif.iso.has_value())
     {
-        patterns[MetadataPatterns::ISO] = FormatISO(exif.iso.value());
+        patterns[MetadataPatterns::ISO] = MetadataFormatHelper::FormatISO(exif.iso.value());
     }
 
     if (exif.aperture.has_value())
     {
-        patterns[MetadataPatterns::APERTURE] = FormatAperture(exif.aperture.value());
+        patterns[MetadataPatterns::APERTURE] = MetadataFormatHelper::FormatAperture(exif.aperture.value());
     }
 
     if (exif.shutterSpeed.has_value())
     {
-        patterns[MetadataPatterns::SHUTTER] = FormatShutterSpeed(exif.shutterSpeed.value());
+        patterns[MetadataPatterns::SHUTTER] = MetadataFormatHelper::FormatShutterSpeed(exif.shutterSpeed.value());
     }
 
     if (exif.focalLength.has_value())
@@ -91,7 +106,7 @@ MetadataPatternMap MetadataPatternExtractor::ExtractEXIFPatterns(const std::wstr
 
     if (exif.flash.has_value())
     {
-        patterns[MetadataPatterns::FLASH] = FormatFlash(exif.flash.value());
+        patterns[MetadataPatterns::FLASH] = MetadataFormatHelper::FormatFlash(exif.flash.value());
     }
 
     if (exif.width.has_value())
@@ -116,12 +131,12 @@ MetadataPatternMap MetadataPatternExtractor::ExtractEXIFPatterns(const std::wstr
 
     if (exif.latitude.has_value())
     {
-        patterns[MetadataPatterns::LATITUDE] = FormatCoordinate(exif.latitude.value(), true);
+        patterns[MetadataPatterns::LATITUDE] = MetadataFormatHelper::FormatCoordinate(exif.latitude.value(), true);
     }
 
     if (exif.longitude.has_value())
     {
-        patterns[MetadataPatterns::LONGITUDE] = FormatCoordinate(exif.longitude.value(), false);
+        patterns[MetadataPatterns::LONGITUDE] = MetadataFormatHelper::FormatCoordinate(exif.longitude.value(), false);
     }
 
     // Only extract DATE_TAKEN patterns (most commonly used)
@@ -256,78 +271,7 @@ MetadataPatternMap MetadataPatternExtractor::ExtractXMPPatterns(const std::wstri
 
 // AddDatePatterns function has been removed as dynamic patterns are no longer supported.
 // Date patterns are now directly added inline for DATE_TAKEN and CREATE_DATE only.
-
-std::wstring MetadataPatternExtractor::FormatAperture(double aperture)
-{
-    return std::format(L"f/{:.1f}", aperture);
-}
-
-std::wstring MetadataPatternExtractor::FormatShutterSpeed(double speed)
-{
-    if (speed <= 0.0)
-    {
-        return L"0";
-    }
-
-    if (speed >= 1.0)
-    {
-        return std::format(L"{:.1f}s", speed);
-    }
-
-    const double reciprocal = std::round(1.0 / speed);
-    if (reciprocal <= 1.0)
-    {
-        return std::format(L"{:.3f}s", speed);
-    }
-
-    return std::format(L"1/{:.0f}s", reciprocal);
-}
-
-std::wstring MetadataPatternExtractor::FormatISO(int64_t iso)
-{
-    if (iso <= 0)
-    {
-        return L"ISO";
-    }
-
-    return std::format(L"ISO {}", iso);
-}
-
-std::wstring MetadataPatternExtractor::FormatFlash(int64_t flashValue)
-{
-    switch (flashValue & 0x1)
-    {
-    case 0:
-        return L"Flash Off";
-    case 1:
-        return L"Flash On";
-    default:
-        break;
-    }
-
-    return std::format(L"Flash 0x{:X}", static_cast<unsigned int>(flashValue));
-}
-
-std::wstring MetadataPatternExtractor::FormatCoordinate(double coord, bool isLatitude)
-{
-    wchar_t direction = isLatitude ? (coord >= 0.0 ? L'N' : L'S') : (coord >= 0.0 ? L'E' : L'W');
-    double absolute = std::abs(coord);
-    int degrees = static_cast<int>(absolute);
-    double minutes = (absolute - static_cast<double>(degrees)) * 60.0;
-
-    return std::format(L"{:d}°{:.2f}'{}", degrees, minutes, direction);
-}
-
-std::wstring MetadataPatternExtractor::FormatSystemTime(const SYSTEMTIME& st)
-{
-    return std::format(L"{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}",
-        st.wYear,
-        st.wMonth,
-        st.wDay,
-        st.wHour,
-        st.wMinute,
-        st.wSecond);
-}
+// Formatting functions have been moved to MetadataFormatHelper for better testability.
 
 std::vector<std::wstring> MetadataPatternExtractor::GetSupportedPatterns(MetadataType type)
 {

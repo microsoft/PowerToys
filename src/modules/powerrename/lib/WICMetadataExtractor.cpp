@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "WICMetadataExtractor.h"
+#include "MetadataFormatHelper.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -565,7 +566,7 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
         const PROPVARIANT& latRefVar = latRef ? latRef->Get() : emptyLatRef.Get();
         const PROPVARIANT& lonRefVar = lonRef ? lonRef->Get() : emptyLonRef.Get();
 
-        auto coords = ParseGPSCoordinates(
+        auto coords = MetadataFormatHelper::ParseGPSCoordinates(
             lat->Get(),
             lon->Get(),
             latRefVar,
@@ -578,7 +579,7 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
     auto alt = ReadMetadata(reader, GPS_ALTITUDE);
     if (alt)
     {
-        metadata.altitude = ParseGPSRational(alt->Get());
+        metadata.altitude = MetadataFormatHelper::ParseGPSRational(alt->Get());
     }
 }
 
@@ -693,40 +694,7 @@ std::wstring result;
         }
     }
     
-    // For XMP strings, also sanitize for file names
-    if (!result.empty())
-    {
-        result = SanitizeForFileName(result);
-    }
-    
     return result.empty() ? std::nullopt : std::make_optional(result);
-}
-
-std::wstring WICMetadataExtractor::SanitizeForFileName(const std::wstring& str)
-{
-    // Windows illegal filename characters: < > : " / \ | ? *
-    // Also control characters (0-31) and some others
-    std::wstring sanitized = str;
-    
-    // Replace illegal characters with underscore
-    for (auto& ch : sanitized)
-    {
-        // Check for illegal characters
-        if (ch == L'<' || ch == L'>' || ch == L':' || ch == L'"' ||
-            ch == L'/' || ch == L'\\' || ch == L'|' || ch == L'?' || ch == L'*' ||
-            ch < 32)  // Control characters
-        {
-            ch = L'_';
-        }
-    }
-    
-    // Also remove trailing dots and spaces (Windows doesn't like them at end of filename)
-    while (!sanitized.empty() && (sanitized.back() == L'.' || sanitized.back() == L' '))
-    {
-        sanitized.pop_back();
-    }
-    
-    return sanitized;
 }
 
 std::optional<int64_t> WICMetadataExtractor::ReadInteger(IWICMetadataQueryReader* reader, const std::wstring& path)
@@ -771,19 +739,22 @@ double result = 0.0;
     case VT_UI1 | VT_VECTOR:
     case VT_UI4 | VT_VECTOR:
         // Handle rational number (common for EXIF values)
-        // Check if this is signed rational (SRATIONAL) for ExposureBias
+        // Rational data is stored as 8 bytes: 4-byte numerator + 4-byte denominator
         if (propVar->Get().caub.cElems >= 8)
         {
-            // For ExposureBias and similar fields, we need signed rational
-            // The path contains "37380" which is ExposureBiasValue tag
-            if (path.find(L"37380") != std::wstring::npos)
+            // ExposureBias (EXIF tag 37380) uses SRATIONAL type (signed rational)
+            // which can represent negative values like -0.33 EV for exposure compensation.
+            // Most other EXIF fields use RATIONAL type (unsigned) for values like aperture, shutter speed.
+            if (path == EXIF_EXPOSURE_BIAS)
             {
-                result = ParseSingleSRational(propVar->Get().caub.pElems, 0);
+                // Parse as signed rational: int32_t / int32_t
+                result = MetadataFormatHelper::ParseSingleSRational(propVar->Get().caub.pElems, 0);
                 break;
             }
             else
             {
-                // Extract denominator to check if the rational is valid
+                // Parse as unsigned rational: uint32_t / uint32_t
+                // First check if denominator is valid (non-zero) to avoid division by zero
                 const uint8_t* bytes = propVar->Get().caub.pElems;
                 uint32_t denominator = static_cast<uint32_t>(bytes[4]) |
                                      (static_cast<uint32_t>(bytes[5]) << 8) |
@@ -792,7 +763,7 @@ double result = 0.0;
                 
                 if (denominator != 0)
                 {
-                    result = ParseSingleRational(propVar->Get().caub.pElems, 0);
+                    result = MetadataFormatHelper::ParseSingleRational(propVar->Get().caub.pElems, 0);
                     break;
                 }
             }
@@ -807,11 +778,12 @@ double result = 0.0;
         case VT_I4: result = static_cast<double>(propVar->Get().lVal); break;
         case VT_I8: 
             {
-                // Check if this is ExposureBias (SRATIONAL stored as VT_I8)
-                if (path.find(L"37380") != std::wstring::npos)
+                // ExposureBias (EXIF tag 37380) may be stored as VT_I8 in some WIC implementations
+                // It represents a signed rational (SRATIONAL) packed into a 64-bit integer
+                if (path == EXIF_EXPOSURE_BIAS)
                 {
-                    // ExposureBias: signed rational stored as int64
-                    // For EXIF SRATIONAL in WIC: low 32 bits = numerator, high 32 bits = denominator
+                    // Parse signed rational from int64: low 32 bits = numerator, high 32 bits = denominator
+                    // Some implementations may reverse the order, so we try both
                     int32_t numerator = static_cast<int32_t>(propVar->Get().hVal.QuadPart & 0xFFFFFFFF);
                     int32_t denominator = static_cast<int32_t>(propVar->Get().hVal.QuadPart >> 32);
                     if (denominator != 0)
@@ -820,7 +792,7 @@ double result = 0.0;
                     }
                     else
                     {
-                        // If denominator is 0, try the other way around
+                        // Try reversed order: high 32 bits = numerator, low 32 bits = denominator
                         numerator = static_cast<int32_t>(propVar->Get().hVal.QuadPart >> 32);
                         denominator = static_cast<int32_t>(propVar->Get().hVal.QuadPart & 0xFFFFFFFF);
                         if (denominator != 0)
@@ -829,12 +801,13 @@ double result = 0.0;
                         }
                         else
                         {
-                            result = 0.0; // Default to 0 for ExposureBias if can't parse
+                            result = 0.0; // Default to 0 if both attempts fail
                         }
                     }
                 }
                 else
                 {
+                    // For other fields, treat VT_I8 as a simple 64-bit integer
                     result = static_cast<double>(propVar->Get().hVal.QuadPart);
                 }
             }
@@ -844,11 +817,12 @@ double result = 0.0;
         case VT_UI4: result = static_cast<double>(propVar->Get().ulVal); break;
         case VT_UI8: 
             {
-                // Check if this is ExposureBias (SRATIONAL stored as VT_UI8)
-                if (path.find(L"37380") != std::wstring::npos)
+                // ExposureBias (EXIF tag 37380) may be stored as VT_UI8 in some WIC implementations
+                // Even though it's unsigned, we need to reinterpret it as signed for SRATIONAL
+                if (path == EXIF_EXPOSURE_BIAS)
                 {
-                    // ExposureBias: signed rational stored as uint64 but should be interpreted as signed
-                    // For EXIF SRATIONAL in WIC: low 32 bits = numerator, high 32 bits = denominator
+                    // Parse signed rational from uint64 (reinterpret as signed)
+                    // Low 32 bits = numerator, high 32 bits = denominator
                     int32_t numerator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
                     int32_t denominator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart >> 32);
                     if (denominator != 0)
@@ -857,7 +831,7 @@ double result = 0.0;
                     }
                     else
                     {
-                        // If denominator is 0, try the other way around
+                        // Try reversed order: high 32 bits = numerator, low 32 bits = denominator
                         numerator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart >> 32);
                         denominator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
                         if (denominator != 0)
@@ -866,13 +840,13 @@ double result = 0.0;
                         }
                         else
                         {
-                            result = 0.0; // Default to 0 for ExposureBias if can't parse
+                            result = 0.0; // Default to 0 if both attempts fail
                         }
                     }
                 }
                 else
                 {
-                    // VT_UI8 for EXIF rational: Try both orders to handle different encodings
+                    // For other EXIF rational fields (unsigned), try both byte orders to handle different encodings
                     // First try: low 32 bits = numerator, high 32 bits = denominator
                     uint32_t numerator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
                     uint32_t denominator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart >> 32);
@@ -923,123 +897,7 @@ std::optional<PropVariantValue> WICMetadataExtractor::ReadMetadata(IWICMetadataQ
     return std::nullopt;
 }
 
-double WICMetadataExtractor::ParseGPSRational(const PROPVARIANT& pv)
-{
-    if ((pv.vt & VT_VECTOR) && pv.caub.cElems >= 8)
-    {
-        return ParseSingleRational(pv.caub.pElems, 0);
-    }
-    return 0.0;
-}
-
-double WICMetadataExtractor::ParseSingleRational(const uint8_t* bytes, size_t offset)
-{
-    // Parse a single rational number (8 bytes: numerator + denominator)
-    if (!bytes)
-        return 0.0;
-        
-    const uint8_t* rationalBytes = bytes + offset;
-    
-    // Parse as little-endian uint32_t values
-    uint32_t numerator = static_cast<uint32_t>(rationalBytes[0]) |
-                        (static_cast<uint32_t>(rationalBytes[1]) << 8) |
-                        (static_cast<uint32_t>(rationalBytes[2]) << 16) |
-                        (static_cast<uint32_t>(rationalBytes[3]) << 24);
-                        
-    uint32_t denominator = static_cast<uint32_t>(rationalBytes[4]) |
-                          (static_cast<uint32_t>(rationalBytes[5]) << 8) |
-                          (static_cast<uint32_t>(rationalBytes[6]) << 16) |
-                          (static_cast<uint32_t>(rationalBytes[7]) << 24);
-    
-    if (denominator != 0)
-    {
-        return static_cast<double>(numerator) / static_cast<double>(denominator);
-    }
-    
-    return 0.0;
-}
-
-double WICMetadataExtractor::ParseSingleSRational(const uint8_t* bytes, size_t offset)
-{
-    // Parse a single signed rational number (8 bytes: signed numerator + signed denominator)
-    if (!bytes)
-        return 0.0;
-        
-    const uint8_t* rationalBytes = bytes + offset;
-    
-    // Parse as little-endian int32_t values (signed)
-    // First construct as unsigned, then reinterpret as signed
-    uint32_t numerator_uint = static_cast<uint32_t>(rationalBytes[0]) |
-                              (static_cast<uint32_t>(rationalBytes[1]) << 8) |
-                              (static_cast<uint32_t>(rationalBytes[2]) << 16) |
-                              (static_cast<uint32_t>(rationalBytes[3]) << 24);
-                        
-    uint32_t denominator_uint = static_cast<uint32_t>(rationalBytes[4]) |
-                                (static_cast<uint32_t>(rationalBytes[5]) << 8) |
-                                (static_cast<uint32_t>(rationalBytes[6]) << 16) |
-                                (static_cast<uint32_t>(rationalBytes[7]) << 24);
-    
-    // Reinterpret as signed
-    int32_t numerator = static_cast<int32_t>(numerator_uint);
-    int32_t denominator = static_cast<int32_t>(denominator_uint);
-    
-    if (denominator != 0)
-    {
-        return static_cast<double>(numerator) / static_cast<double>(denominator);
-    }
-    
-    return 0.0;
-}
-
-std::pair<double, double> WICMetadataExtractor::ParseGPSCoordinates(
-    const PROPVARIANT& latitude,
-    const PROPVARIANT& longitude,
-    const PROPVARIANT& latRef,
-    const PROPVARIANT& lonRef)
-{
-    double lat = 0.0, lon = 0.0;
-    
-    // Parse latitude - typically stored as 3 rationals (degrees, minutes, seconds)
-    if ((latitude.vt & VT_VECTOR) && latitude.caub.cElems >= 24) // 3 rationals * 8 bytes each
-    {
-        const uint8_t* bytes = latitude.caub.pElems;
-        
-        // degrees, minutes, seconds (each rational is 8 bytes)
-        double degrees = ParseSingleRational(bytes, 0);
-        double minutes = ParseSingleRational(bytes, 8);
-        double seconds = ParseSingleRational(bytes, 16);
-        
-        lat = degrees + minutes / 60.0 + seconds / 3600.0;
-    }
-    
-    // Parse longitude
-    if ((longitude.vt & VT_VECTOR) && longitude.caub.cElems >= 24)
-    {
-        const uint8_t* bytes = longitude.caub.pElems;
-        
-        double degrees = ParseSingleRational(bytes, 0);
-        double minutes = ParseSingleRational(bytes, 8);
-        double seconds = ParseSingleRational(bytes, 16);
-        
-        lon = degrees + minutes / 60.0 + seconds / 3600.0;
-    }
-    
-    // Apply direction references (N/S for latitude, E/W for longitude)
-    if (latRef.vt == VT_LPSTR && latRef.pszVal)
-    {
-        if (strcmp(latRef.pszVal, "S") == 0)
-            lat = -lat;
-    }
-    
-    if (lonRef.vt == VT_LPSTR && lonRef.pszVal)
-    {
-        if (strcmp(lonRef.pszVal, "W") == 0)
-            lon = -lon;
-    }
-    
-    return {lat, lon};
-}
-
+// GPS parsing functions have been moved to MetadataFormatHelper for better testability
 
 bool WICMetadataExtractor::ExtractXMPMetadata(
     const std::wstring& filePath,
