@@ -306,33 +306,18 @@ try {
 if ($NoSign) {
     Write-BuildLog "Skipping signing (NoSign specified for CI build)" -Level Warning
 } else {
-    $plainPwd = (Get-Content -Path $CertPwdFile -Raw).Trim()
-    # Try to load the PFX with the password to verify it is correct before signing
-    try {
-        # Use constructor instead of Import for better platform compatibility
-        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($CertPfxFile, $plainPwd, 'Exportable,PersistKeySet')
-        if (-not $cert.HasPrivateKey) {
-            throw "Certificate does not have a private key."
-        }
-        Write-BuildLog "Certificate password verified successfully." -Level Success
-        $cert.Dispose()
-    } catch {
-        Write-Warning "Certificate password verification failed: $_"
-        Write-Warning "Run with -ForceCert to regenerate the dev certificate and retry."
-        exit 1
-    }
-    # Find SignTool.exe from Windows SDK
+    # Use certificate thumbprint for signing (safer, no password)
+    $certThumbprint = (Get-Content -Path $CertThumbFile -Raw).Trim()
     try {
         $signToolPath = Find-WindowsSDKTool -ToolName "signtool.exe"
     } catch {
         Write-Error "SignTool.exe not found. Please ensure Windows SDK is installed."
         exit 1
     }
-
-    Write-BuildLog "Signing sparse MSIX..." -Level Info
-    & $signToolPath sign /fd SHA256 /a /f $CertPfxFile /p $plainPwd $msixPath
+    Write-BuildLog "Signing sparse MSIX using cert thumbprint $certThumbprint..." -Level Info
+    & $signToolPath sign /fd SHA256 /sha1 $certThumbprint $msixPath
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "SignTool failed (exit $LASTEXITCODE). If this is a password mismatch, run with -ForceCert to regenerate the dev certificate and retry."
+        Write-Warning "SignTool failed (exit $LASTEXITCODE). Ensure the certificate is in CurrentUser\\My and try -ForceCert if needed."
         exit $LASTEXITCODE
     }
 }

@@ -13,7 +13,7 @@
   IgnorableNamespaces="uap uap2 uap3 rescap desktop uap10 systemai">
   <Identity
     Name="Microsoft.PowerToys.SparseApp"
-    Publisher="CN=PowerToys Dev, O=PowerToys, L=Redmond, S=Washington, C=US"
+    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
 
   <Properties>
