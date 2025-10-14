@@ -327,7 +327,6 @@ std::vector<std::wstring> MetadataPatternExtractor::GetSupportedPatterns(Metadat
             MetadataPatterns::CREATE_DATE_HH,
             MetadataPatterns::CREATE_DATE_mm,
             MetadataPatterns::CREATE_DATE_SS
-            // MODIFY_DATE and METADATA_DATE patterns have been removed for simplicity
         };
 
     default:

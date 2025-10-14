@@ -533,48 +533,6 @@
   <data name="MetadataCheatSheet_CreateDateSecond" xml:space="preserve">
     <value>Second from XMP create date (00-59)</value>
   </data>
-  <data name="MetadataCheatSheet_ModifyDateYear4" xml:space="preserve">
-    <value>Year from XMP modify date (4 digits)</value>
-  </data>
-  <data name="MetadataCheatSheet_ModifyDateYear2" xml:space="preserve">
-    <value>Year from XMP modify date (2 digits)</value>
-  </data>
-  <data name="MetadataCheatSheet_ModifyDateMonth" xml:space="preserve">
-    <value>Month from XMP modify date (01-12)</value>
-  </data>
-  <data name="MetadataCheatSheet_ModifyDateDay" xml:space="preserve">
-    <value>Day from XMP modify date (01-31)</value>
-  </data>
-  <data name="MetadataCheatSheet_ModifyDateHour" xml:space="preserve">
-    <value>Hour from XMP modify date (00-23)</value>
-  </data>
-  <data name="MetadataCheatSheet_ModifyDateMinute" xml:space="preserve">
-    <value>Minute from XMP modify date (00-59)</value>
-  </data>
-  <data name="MetadataCheatSheet_ModifyDateSecond" xml:space="preserve">
-    <value>Second from XMP modify date (00-59)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateYear4" xml:space="preserve">
-    <value>Year from XMP metadata date (4 digits)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateYear2" xml:space="preserve">
-    <value>Year from XMP metadata date (2 digits)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateMonth" xml:space="preserve">
-    <value>Month from XMP metadata date (01-12)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateDay" xml:space="preserve">
-    <value>Day from XMP metadata date (01-31)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateHour" xml:space="preserve">
-    <value>Hour from XMP metadata date (00-23)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateMinute" xml:space="preserve">
-    <value>Minute from XMP metadata date (00-59)</value>
-  </data>
-  <data name="MetadataCheatSheet_MetadataDateSecond" xml:space="preserve">
-    <value>Second from XMP metadata date (00-59)</value>
-  </data>
 
   <!-- XMP patterns -->
   <data name="MetadataCheatSheet_CreatorTool" xml:space="preserve">
