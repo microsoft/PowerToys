@@ -50,16 +50,16 @@ namespace Settings.UI.Library
                 Version = Version,
                 Properties = new LightSwitchProperties()
                 {
-                    ChangeSystem = Properties.ChangeSystem,
-                    ChangeApps = Properties.ChangeApps,
-                    ScheduleMode = Properties.ScheduleMode,
-                    LightTime = Properties.LightTime,
-                    DarkTime = Properties.DarkTime,
-                    SunriseOffset = Properties.SunriseOffset,
-                    SunsetOffset = Properties.SunsetOffset,
-                    Latitude = Properties.Latitude,
-                    Longitude = Properties.Longitude,
-                    ToggleThemeHotkey = Properties.ToggleThemeHotkey,
+                    ChangeSystem = new BoolProperty(Properties.ChangeSystem.Value),
+                    ChangeApps = new BoolProperty(Properties.ChangeApps.Value),
+                    ScheduleMode = new StringProperty(Properties.ScheduleMode.Value),
+                    LightTime = new IntProperty((int)Properties.LightTime.Value),
+                    DarkTime = new IntProperty((int)Properties.DarkTime.Value),
+                    SunriseOffset = new IntProperty((int)Properties.SunriseOffset.Value),
+                    SunsetOffset = new IntProperty((int)Properties.SunsetOffset.Value),
+                    Latitude = new StringProperty(Properties.Latitude.Value),
+                    Longitude = new StringProperty(Properties.Longitude.Value),
+                    ToggleThemeHotkey = new KeyboardKeysProperty(Properties.ToggleThemeHotkey.Value),
                 },
             };
         }
