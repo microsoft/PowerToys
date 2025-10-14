@@ -269,7 +269,7 @@
                     </controls:Card>
                     <controls:Card
                         x:Name="ModulesCard"
-                        Title="Modules"
+                        x:Uid="UtilitiesHeader"
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         MinWidth="400"

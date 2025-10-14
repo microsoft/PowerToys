@@ -29,6 +29,7 @@ using MouseWithoutBorders.Core;
 // </history>
 using MouseWithoutBorders.Exceptions;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.SocketStuff.#SendData(System.Byte[])", Justification = "Dotnet port with style preservation")]
@@ -281,7 +282,7 @@ namespace MouseWithoutBorders.Class
              * */
 
             Common.GetMachineName(); // IPs might have been changed
-            Common.UpdateMachineTimeAndID();
+            InitAndCleanup.UpdateMachineTimeAndID();
 
             Logger.LogDebug("Creating sockets...");
 
@@ -308,7 +309,7 @@ namespace MouseWithoutBorders.Class
                             {
                                 Logger.TelemetryLogTrace("Restarting the service dues to WSAEADDRINUSE.", SeverityLevel.Warning);
                                 Program.StartService();
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                             }
 
                             break;
@@ -1248,7 +1249,7 @@ namespace MouseWithoutBorders.Class
             // WSAECONNRESET
             if (e is ExpectedSocketException se && se.ShouldReconnect)
             {
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                 Logger.Log($"MainTCPRoutine: {nameof(FlagReopenSocketIfNeeded)}");
             }
         }
@@ -1306,7 +1307,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (ObjectDisposedException e)
             {
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                 UpdateTcpSockets(currentTcp, SocketStatus.ForceClosed);
                 currentSocket.Close();
                 Logger.Log($"{nameof(MainTCPRoutine)}: The socket could have been closed/disposed by other threads: {e.Message}");
@@ -1353,10 +1354,10 @@ namespace MouseWithoutBorders.Class
                              * In this case, we should give ONE try to reconnect.
                              */
 
-                            if (Common.ReopenSocketDueToReadError)
+                            if (InitAndCleanup.ReopenSocketDueToReadError)
                             {
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
-                                Common.ReopenSocketDueToReadError = false;
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
+                                InitAndCleanup.ReopenSocketDueToReadError = false;
                             }
 
                             break;
@@ -1641,7 +1642,7 @@ namespace MouseWithoutBorders.Class
 
                 bool clientPushData = true;
                 ClipboardPostAction postAction = ClipboardPostAction.Other;
-                bool handShaken = Common.ShakeHand(ref remoteEndPoint, s, out Stream enStream, out Stream deStream, ref clientPushData, ref postAction);
+                bool handShaken = Clipboard.ShakeHand(ref remoteEndPoint, s, out Stream enStream, out Stream deStream, ref clientPushData, ref postAction);
 
                 if (!handShaken)
                 {
@@ -1656,7 +1657,7 @@ namespace MouseWithoutBorders.Class
 
                 if (clientPushData)
                 {
-                    Common.ReceiveAndProcessClipboardData(remoteEndPoint, s, enStream, deStream, $"{postAction}");
+                    Clipboard.ReceiveAndProcessClipboardData(remoteEndPoint, s, enStream, deStream, $"{postAction}");
                 }
                 else
                 {
@@ -1680,23 +1681,23 @@ namespace MouseWithoutBorders.Class
             const int CLOSE_TIMEOUT = 10;
             byte[] header = new byte[1024];
             string headerString = string.Empty;
-            if (Common.LastDragDropFile != null)
+            if (Clipboard.LastDragDropFile != null)
             {
                 string fileName = null;
 
                 if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                 {
-                    if (!File.Exists(Common.LastDragDropFile))
+                    if (!File.Exists(Clipboard.LastDragDropFile))
                     {
-                        headerString = Directory.Exists(Common.LastDragDropFile)
-                            ? $"{0}*{Common.LastDragDropFile} - Folder is not supported, zip it first!"
-                            : Common.LastDragDropFile.Contains("- File too big")
-                                ? $"{0}*{Common.LastDragDropFile}"
-                                : $"{0}*{Common.LastDragDropFile} not found!";
+                        headerString = Directory.Exists(Clipboard.LastDragDropFile)
+                            ? $"{0}*{Clipboard.LastDragDropFile} - Folder is not supported, zip it first!"
+                            : Clipboard.LastDragDropFile.Contains("- File too big")
+                                ? $"{0}*{Clipboard.LastDragDropFile}"
+                                : $"{0}*{Clipboard.LastDragDropFile} not found!";
                     }
                     else
                     {
-                        fileName = Common.LastDragDropFile;
+                        fileName = Clipboard.LastDragDropFile;
                         headerString = $"{new FileInfo(fileName).Length}*{fileName}";
                     }
                 }))
@@ -1739,11 +1740,11 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(log);
                 }
             }
-            else if (!Common.IsClipboardDataImage && Common.LastClipboardData != null)
+            else if (!Clipboard.IsClipboardDataImage && Clipboard.LastClipboardData != null)
             {
                 try
                 {
-                    byte[] data = Common.LastClipboardData;
+                    byte[] data = Clipboard.LastClipboardData;
 
                     headerString = $"{data.Length}*{"text"}";
                     Common.GetBytesU(headerString).CopyTo(header, 0);
@@ -1773,9 +1774,9 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(log);
                 }
             }
-            else if (Common.LastClipboardData != null && Common.LastClipboardData.Length > 0)
+            else if (Clipboard.LastClipboardData != null && Clipboard.LastClipboardData.Length > 0)
             {
-                byte[] data = Common.LastClipboardData;
+                byte[] data = Clipboard.LastClipboardData;
 
                 headerString = $"{data.Length}*{"image"}";
                 Common.GetBytesU(headerString).CopyTo(header, 0);
@@ -1984,8 +1985,8 @@ namespace MouseWithoutBorders.Class
                             {
                                 tcp = null;
                                 Setting.Values.MachineId = Common.Ran.Next();
-                                Common.UpdateMachineTimeAndID();
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_HOTKEY;
+                                InitAndCleanup.UpdateMachineTimeAndID();
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_HOTKEY;
 
                                 Logger.TelemetryLogTrace("MachineID conflict.", SeverityLevel.Information);
                             }

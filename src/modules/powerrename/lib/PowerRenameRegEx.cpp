@@ -154,8 +154,7 @@ HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
                 std::find_if(
                     m_randomizer.begin(),
                     m_randomizer.end(),
-                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }
-                ))
+                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }))
             {
                 // Only add as enumerator if we didn't find a randomizer already at this offset.
                 // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allows any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
@@ -440,11 +439,8 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         }
 
         std::wstring sourceToUse;
-        std::wstring originalSource;
         sourceToUse.reserve(MAX_PATH);
-        originalSource.reserve(MAX_PATH);
         sourceToUse = source;
-        originalSource = sourceToUse;
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
@@ -532,27 +528,46 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             }
         }
 
-        bool replacedSomething = false;
+        bool shouldIncrementCounter = false;
+        const bool isCaseInsensitive = !(m_flags & CaseSensitive);
+
         if (m_flags & UseRegularExpressions)
         {
             replaceTerm = regex_replace(replaceTerm, zeroGroupRegex, L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, otherGroupsRegex, L"$1$0$4");
 
-            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, !(m_flags & CaseSensitive));
-            replacedSomething = originalSource != res;
+            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, isCaseInsensitive);
+
+            // Use regex search to determine if a match exists. This is the basis for incrementing
+            // the counter.
+            if (_useBoostLib)
+            {
+                boost::wregex pattern(m_searchTerm, boost::wregex::ECMAScript | (isCaseInsensitive ? boost::wregex::icase : boost::wregex::normal));
+                shouldIncrementCounter = boost::regex_search(sourceToUse, pattern);
+            }
+            else
+            {
+                auto regexFlags = std::wregex::ECMAScript;
+                if (isCaseInsensitive)
+                {
+                    regexFlags |= std::wregex::icase;
+                }
+                std::wregex pattern(m_searchTerm, regexFlags);
+                shouldIncrementCounter = std::regex_search(sourceToUse, pattern);
+            }
         }
         else
         {
-            // Simple search and replace
+            // Simple search and replace.
             size_t pos = 0;
             do
             {
-                pos = _Find(sourceToUse, searchTerm, (!(m_flags & CaseSensitive)), pos);
+                pos = _Find(sourceToUse, searchTerm, isCaseInsensitive, pos);
                 if (pos != std::string::npos)
                 {
                     res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
                     pos += replaceTerm.length();
-                    replacedSomething = true;
+                    shouldIncrementCounter = true;
                 }
                 if (!(m_flags & MatchAllOccurrences))
                 {
@@ -561,7 +576,8 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             } while (pos != std::string::npos);
         }
         hr = SHStrDup(res.c_str(), result);
-        if (replacedSomething)
+
+        if (shouldIncrementCounter)
             enumIndex++;
     }
     catch (regex_error e)
