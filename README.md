@@ -126,7 +126,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Enabled AOT by default for improved performance while simplifying publish configs.
- - Cleaned and codified .editorconfig without behavior change. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Replaced service state color dots with play/pause/stop icons for enhanced accessibility. Thanks [@samrueby](https://github.com/samrueby)
  - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Ensured long links wrap correctly in details view.
@@ -145,20 +144,19 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Saved new state even if prior app state file was corrupt (better resilience). Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Migrated settings window to WinUI TitleBar control. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Prevented crash on duplicate keybindings and simplified matching. Thanks [@jiripolasek](https://github.com/jiripolasek)
- - Centralized fullscreen ignore-hotkey logic for summon handling. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Hotkeys now always respect the “Ignore shortcut in fullscreen” setting. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Hid search box on content pages, improving focus and accessibility, and added Home title. Thanks [@jiripolasek](https://github.com/jiripolasek)
- - Synced generated resource comment to eliminate noisy diffs. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Blocked Ctrl+I from inserting stray tabs in search box.
  - Logged HRESULT codes in error logs for deeper diagnostics. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Advanced font and emoji icon classification and alignment improvements. Thanks [@jiripolasek](https://github.com/jiripolasek)
- - Preserved fallback item icons in Settings by storing initial icon. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Ensured that fallback command icons are visible on the extension settings page. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Fixed breadcrumb margin misalignment (visual polish). Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Truncated overly long command labels with ellipsis to prevent overflow.
  - Allowed any image format to be used as an icon for protocol bookmarks. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Added a setting to configure the page transition animation.
  - Collection of small improvements and nits for Run Commands.
  - Improved bookmarks performance and experience. Thanks [@jiripolasek](https://github.com/jiripolasek)
- - Added Ctrl+O shortcut in Clipboard History to open links directly. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Added Ctrl+O shortcut in Clipboard History to open links directly.
 
 
 ### Command Palette Extensions
