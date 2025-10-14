@@ -73,16 +73,6 @@
       </Component>
     </DirectoryRef>
 
-    <!-- PackageIdentity MSIX file in root install folder -->
-    <DirectoryRef Id="INSTALLFOLDER">
-      <Component Id="PackageIdentityMSIX" Guid="A5D5E12A-3C7F-4B5D-9E1F-8F2A3B4C5D6E" Bitness="always64">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="PackageIdentityMSIX" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Id="PowerToysSparse.msix" Name="PowerToysSparse.msix" Source="$(var.BinDir)PowerToysSparse.msix" />
-      </Component>
-    </DirectoryRef>
-
     <?if $(var.PerUser) = "true" ?>
     <!-- DSC module files for PerUser handled in InstallDSCModule custom action. -->
     <?else?>
@@ -144,7 +134,6 @@
   <ComponentRef Id="powertoys_env_path_machine" />
   <?endif?>
       <ComponentRef Id="powertoys_toast_clsid" />
-      <ComponentRef Id="PackageIdentityMSIX" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="DesktopShortcut" />
