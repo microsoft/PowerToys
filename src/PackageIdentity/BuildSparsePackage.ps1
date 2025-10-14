@@ -9,7 +9,7 @@ Param(
     [Parameter(Mandatory=$false)]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-    
+
     [switch]$Clean,
     [switch]$ForceCert,
     [switch]$NoSign
@@ -45,6 +45,7 @@ function Find-WindowsSDKTool {
     # Simple fallback: check common Windows SDK locations
     $commonPaths = @(
         "${env:ProgramFiles}\Windows Kits\10\bin\*\$Architecture\$ToolName",
+        "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\$Architecture\$ToolName",
         "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x86\$ToolName"  # SignTool fallback
     )
     
@@ -62,12 +63,12 @@ function Find-WindowsSDKTool {
 }
 
 function Test-CertificateValidity {
-    param([string]$PfxPath, [string]$PasswordFile)
+    param([string]$PfxPath, [string]$SecretFilePath)
     
-    if (-not (Test-Path $PfxPath) -or -not (Test-Path $PasswordFile)) { return $false }
+    if (-not (Test-Path $PfxPath) -or -not (Test-Path $SecretFilePath)) { return $false }
     
     try {
-        $password = (Get-Content $PasswordFile -Raw).Trim()
+        $password = (Get-Content $SecretFilePath -Raw).Trim()
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($PfxPath, $password)
         $isValid = $cert.HasPrivateKey -and $cert.NotAfter -gt (Get-Date)
         $cert.Dispose()
@@ -131,7 +132,7 @@ try {
         Get-ChildItem "Cert:\CurrentUser\My" -ErrorAction SilentlyContinue | Out-Null
     }
 } catch {
-    Write-BuildLog "Note: Certificate provider setup may need manual configuration: $_" -Level Warning
+    Write-BuildLog ("Note: Certificate provider setup may need manual configuration: {0}" -f $_) -Level Warning
 }
 
 # Project root folder (now set to current script folder for local builds)
@@ -163,7 +164,7 @@ if ($ForceCert -and (Test-Path $UserFolder)) {
 }
 
 # Ensure dev cert (development only; not for production use) - skip if NoSign specified
-$needNewCert = -not $NoSign -and (-not (Test-Path $CertPfxFile) -or $ForceCert -or -not (Test-CertificateValidity -PfxPath $CertPfxFile -PasswordFile $CertPwdFile))
+$needNewCert = -not $NoSign -and (-not (Test-Path $CertPfxFile) -or $ForceCert -or -not (Test-CertificateValidity -PfxPath $CertPfxFile -SecretFilePath $CertPwdFile))
 
 if ($needNewCert) {
     Write-BuildLog "Generating development certificate (prefix=$($script:Config.CertPrefix))..." -Level Info
@@ -212,6 +213,30 @@ $sparseDir = $PSScriptRoot
 $manifestPath = Join-Path $sparseDir 'AppxManifest.xml'
 if (-not (Test-Path $manifestPath)) { throw "Missing AppxManifest.xml in PackageIdentity folder: $manifestPath" }
 
+$versionPropsPath = Join-Path $PowerToysRoot 'src\Version.props'
+$targetManifestVersion = $null
+$versionCandidate = $null
+if (Test-Path $versionPropsPath) {
+    try {
+        [xml]$propsXml = Get-Content -Path $versionPropsPath -Raw
+        $versionCandidate = $propsXml.Project.PropertyGroup.Version
+    } catch {
+        Write-BuildLog ("Unable to read version from {0}: {1}" -f $versionPropsPath, $_) -Level Warning
+    }
+} else {
+    Write-BuildLog "Version.props not found at $versionPropsPath; manifest version will remain unchanged." -Level Warning
+}
+
+if ($versionCandidate) {
+    $targetManifestVersion = $versionCandidate.Trim()
+    if (($targetManifestVersion -split '\.').Count -lt 4) {
+        $targetManifestVersion = "$targetManifestVersion.0"
+    }
+    Write-BuildLog "Using sparse package version from Version.props: $targetManifestVersion" -Level Info
+} else {
+    Write-BuildLog "No version value provided; manifest version will remain unchanged." -Level Info
+}
+
 # Find MakeAppx.exe from Windows SDK
 try {
     $makeAppxPath = Find-WindowsSDKTool -ToolName "makeappx.exe" -Architecture $Platform
@@ -230,7 +255,7 @@ if (Test-Path $msixPath) {
         Remove-Item $msixPath -Force -ErrorAction Stop
         Write-BuildLog "Successfully removed existing MSIX file" -Level Success
     } catch {
-        Write-BuildLog "Warning: Could not remove existing MSIX file: $_" -Level Warning
+    Write-BuildLog ("Warning: Could not remove existing MSIX file: {0}" -f $_) -Level Warning
     }
 }
 
@@ -277,6 +302,37 @@ try {
         }
     }
     
+    # Ensure publisher matches the dev certificate for local builds
+    $manifestStagingPath = Join-Path $stagingDir 'AppxManifest.xml'
+    $shouldUseDevPublisher = $env:CIBuild -ne 'true'
+    if (Test-Path $manifestStagingPath) {
+        try {
+            [xml]$manifestXml = Get-Content -Path $manifestStagingPath -Raw
+            $identityNode = $manifestXml.Package.Identity
+            $manifestChanged = $false
+
+            if ($identityNode) {
+                if ($targetManifestVersion -and $identityNode.Version -ne $targetManifestVersion) {
+                    Write-BuildLog "Updating manifest version to $targetManifestVersion" -Level Info
+                    $identityNode.SetAttribute('Version', $targetManifestVersion)
+                    $manifestChanged = $true
+                }
+
+                if ($shouldUseDevPublisher -and $identityNode.Publisher -ne $script:Config.CertSubject) {
+                    Write-BuildLog "Updating manifest publisher for local build" -Level Warning
+                    $identityNode.SetAttribute('Publisher', $script:Config.CertSubject)
+                    $manifestChanged = $true
+                }
+            }
+
+            if ($manifestChanged) {
+                $manifestXml.Save($manifestStagingPath)
+            }
+        } catch {
+            Write-BuildLog ("Unable to adjust manifest metadata: {0}" -f $_) -Level Warning
+        }
+    }
+
     Write-BuildLog "Staging directory prepared with essential files only" -Level Success
     
     # Pack MSIX using staging directory
@@ -297,7 +353,7 @@ try {
             Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
             Write-BuildLog "Cleaned up staging directory" -Level Info
         } catch {
-            Write-BuildLog "Warning: Could not clean up staging directory: $_" -Level Warning
+            Write-BuildLog ("Warning: Could not clean up staging directory: {0}" -f $_) -Level Warning
         }
     }
 }
@@ -332,5 +388,5 @@ if ($NoSign) {
 }
 
 Write-BuildLog "Register sparse package:" -Level Info
-Write-BuildLog "  Add-AppxPackage -Register `"$msixPath`" -ExternalLocation `"$outDir`"" -Level Warning
+Write-BuildLog "  Add-AppxPackage -Path `"$msixPath`" -ExternalLocation `"$outDir`"" -Level Warning
 Write-BuildLog "(If already installed and you changed manifest only): Add-AppxPackage -Register `"$manifestPath`" -ExternalLocation `"$outDir`" -ForceApplicationShutdown" -Level Warning

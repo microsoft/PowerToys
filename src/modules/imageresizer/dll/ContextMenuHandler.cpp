@@ -101,16 +101,16 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
 
     free(pszPath);
+
     bool dragDropFlag = false;
-    // If selected file is an image...
     if (type == PERCEIVED_TYPE_IMAGE)
     {
         HRESULT hr = E_UNEXPECTED;
-        wchar_t strResizePictures[128] = { 0 };
-        // If handling drag-and-drop...
+        wchar_t strResizePictures[128] = {};
+
         if (m_pidlFolder)
         {
-            dragDropFlag=true;
+            dragDropFlag = true;
             wcscpy_s(strResizePictures, ARRAYSIZE(strResizePictures), context_menu_caption_here.c_str());
         }
         else
@@ -118,13 +118,15 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
             wcscpy_s(strResizePictures, ARRAYSIZE(strResizePictures), context_menu_caption.c_str());
         }
 
-        MENUITEMINFO mii;
+        MENUITEMINFO mii{};
         mii.cbSize = sizeof(MENUITEMINFO);
-        mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_STATE;
-        mii.wID = idCmdFirst + ID_RESIZE_PICTURES;
+        mii.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STATE | MIIM_STRING;
         mii.fType = MFT_STRING;
-        mii.dwTypeData = (PWSTR)strResizePictures;
+        mii.wID = idCmdFirst + ID_RESIZE_PICTURES;
+        mii.dwTypeData = strResizePictures;
+        mii.cch = ARRAYSIZE(strResizePictures);
         mii.fState = MFS_ENABLED;
+
         HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
         if (hIcon)
         {
@@ -139,21 +141,14 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
         if (dragDropFlag)
         {
-            // Insert the menu entry at indexMenu+1 since the first entry should be "Copy here"
             indexMenu++;
         }
         else
         {
-            // indexMenu gets the first possible menu item index based on the location of the shellex registry key.
-            // If the registry entry is under SystemFileAssociations for the image formats, ShellImagePreview (in Windows by default) will be at indexMenu=0
-            // Shell ImagePreview consists of 4 menu items, a separator, Rotate right, Rotate left, and another separator
-            // Check if the entry at indexMenu is a separator, insert the new menu item at indexMenu+1 if true
-            MENUITEMINFO miiExisting;
-            miiExisting.dwTypeData = NULL;
-            miiExisting.fMask = MIIM_TYPE;
+            MENUITEMINFO miiExisting{};
             miiExisting.cbSize = sizeof(MENUITEMINFO);
-            GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting);
-            if (miiExisting.fType == MFT_SEPARATOR)
+            miiExisting.fMask = MIIM_TYPE;
+            if (GetMenuItemInfo(hmenu, indexMenu, TRUE, &miiExisting) && miiExisting.fType == MFT_SEPARATOR)
             {
                 indexMenu++;
             }
@@ -173,6 +168,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         {
             hr = MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
         }
+
         return hr;
     }
 
@@ -235,111 +231,146 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 {
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_imageResizer);
-    path = path + L"\\PowerToys.ImageResizer.exe";
-    LPTSTR lpApplicationName = &path[0];
-    // Create an anonymous pipe to stream filenames
-    SECURITY_ATTRIBUTES sa;
-    HANDLE hReadPipe;
-    HANDLE hWritePipe;
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.lpSecurityDescriptor = NULL;
-    sa.bInheritHandle = TRUE;
+    path += L"\\PowerToys.ImageResizer.exe";
+    LPTSTR lpApplicationName = path.data();
     HRESULT hr = E_FAIL;
-    if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
+
+    GUID pipeGuid{};
+    if (FAILED(CoCreateGuid(&pipeGuid)))
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
         return hr;
     }
-    if (!SetHandleInformation(hWritePipe, HANDLE_FLAG_INHERIT, 0))
+
+    wchar_t guidBuffer[64] = {};
+    StringFromGUID2(pipeGuid, guidBuffer, ARRAYSIZE(guidBuffer));
+
+    std::wstring pipeName = L"\\\\.\\pipe\\PowerToysImageResizer_";
+    std::wstring guidString(guidBuffer);
+    if (guidString.length() > 2)
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        return hr;
+        pipeName.append(guidString.substr(1, guidString.length() - 2));
     }
-    CAtlFile writePipe(hWritePipe);
+    else
+    {
+        pipeName.append(guidString);
+    }
+
+    HANDLE hNamedPipe = CreateNamedPipeW(
+        pipeName.c_str(),
+        PIPE_ACCESS_OUTBOUND,
+        PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+        1,
+        0,
+        0,
+        0,
+        nullptr);
+
+    if (hNamedPipe == INVALID_HANDLE_VALUE)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
 
     CString commandLine;
     commandLine.Format(_T("\"%s\""), lpApplicationName);
+
+    CString arguments;
 
     // Set the output directory
     if (m_pidlFolder)
     {
         TCHAR szFolder[MAX_PATH];
-        SHGetPathFromIDList(m_pidlFolder, szFolder);
-
-        commandLine.AppendFormat(_T(" /d \"%s\""), szFolder);
+        if (SHGetPathFromIDList(m_pidlFolder, szFolder))
+        {
+            arguments.AppendFormat(_T("/d \"%s\""), szFolder);
+        }
     }
 
-    int nSize = commandLine.GetLength() + 1;
-    LPTSTR lpszCommandLine = new TCHAR[nSize];
-    _tcscpy_s(lpszCommandLine, nSize, commandLine);
+    CString pipeArgument(pipeName.c_str());
+    if (!arguments.IsEmpty())
+    {
+        arguments.Append(_T(" "));
+    }
+    arguments.Append(pipeArgument);
 
-    STARTUPINFO startupInfo;
-    ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+    if (!arguments.IsEmpty())
+    {
+        commandLine.Append(_T(" "));
+        commandLine.Append(arguments);
+    }
+
+    STARTUPINFO startupInfo{};
     startupInfo.cb = sizeof(STARTUPINFO);
-    startupInfo.hStdInput = hReadPipe;
-    startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
-    if (pici)
-    {
-        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
-    }
-    else
-    {
-        startupInfo.wShowWindow = SW_SHOWNORMAL;
-    }
+    startupInfo.dwFlags = STARTF_USESHOWWINDOW;
+    startupInfo.wShowWindow = pici ? static_cast<WORD>(pici->nShow) : SW_SHOWNORMAL;
 
-    PROCESS_INFORMATION processInformation;
+    PROCESS_INFORMATION processInformation{};
+
+    bool launchSucceeded = false;
 
     // Try MSIX sparse package first
     std::wstring packageFamilyName;
 #if !defined(CIBUILD)
-        // Non-CI Release build
-        packageFamilyName = L"djwsxzxb4ksa8";
+    packageFamilyName = L"djwsxzxb4ksa8";
 #else
-        // Debug build or CI build
-        packageFamilyName = L"8wekyb3d8bbwe";
+    packageFamilyName = L"8wekyb3d8bbwe";
 #endif
     std::wstring aumidTarget = L"shell:AppsFolder\\Microsoft.PowerToys.SparseApp_" + packageFamilyName + L"!PowerToys.ImageResizerUI";
-    
+
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+    sei.fMask = SEE_MASK_FLAG_NO_UI;
     sei.lpVerb = L"open";
     sei.lpFile = aumidTarget.c_str();
-    sei.lpParameters = lpszCommandLine + wcslen(lpApplicationName) + 3; // Skip the exe path and quotes
+    sei.lpParameters = arguments.IsEmpty() ? nullptr : arguments.GetString();
     sei.nShow = pici ? static_cast<WORD>(pici->nShow) : SW_SHOWNORMAL;
 
     if (ShellExecuteExW(&sei) && reinterpret_cast<INT_PTR>(sei.hInstApp) > 32)
     {
-        // MSIX launch succeeded, use existing pipe communication
-        // (no changes to the rest of the function)
-        delete[] lpszCommandLine;
+        launchSucceeded = true;
     }
     else
     {
-        // Fallback to traditional exe
-        // Start the resizer
-        CreateProcess(
-            NULL,
-            lpszCommandLine,
-            NULL,
-            NULL,
-            TRUE,
+        LPWSTR mutableCommandLine = commandLine.GetBuffer();
+        BOOL created = CreateProcess(
+            nullptr,
+            mutableCommandLine,
+            nullptr,
+            nullptr,
+            FALSE,
             0,
-            NULL,
-            NULL,
+            nullptr,
+            nullptr,
             &startupInfo,
             &processInformation);
-        delete[] lpszCommandLine;
-        if (!CloseHandle(processInformation.hProcess))
+        commandLine.ReleaseBuffer();
+        if (!created)
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
+            CloseHandle(hNamedPipe);
             return hr;
         }
-        if (!CloseHandle(processInformation.hThread))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            return hr;
-        }
+
+        CloseHandle(processInformation.hProcess);
+        CloseHandle(processInformation.hThread);
+        launchSucceeded = true;
     }
+
+    if (!launchSucceeded)
+    {
+        CloseHandle(hNamedPipe);
+        return E_FAIL;
+    }
+
+    BOOL connected = ConnectNamedPipe(hNamedPipe, nullptr);
+    if (!connected && GetLastError() != ERROR_PIPE_CONNECTED)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        CloseHandle(hNamedPipe);
+        return hr;
+    }
+
+    CAtlFile writePipe;
+    writePipe.Attach(hNamedPipe);
+    hNamedPipe = INVALID_HANDLE_VALUE;
 
     // psiItemArray is NULL if called from InvokeCommand. This part is used for the MSI installer. It is not NULL if it is called from Invoke (MSIX).
     if (!psiItemArray)
@@ -351,33 +382,49 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
             CString fileName(i.CurrentItem());
             fileName.Append(_T("\r\n"));
 
-            writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            hr = writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            if (FAILED(hr))
+            {
+                writePipe.Close();
+                return hr;
+            }
         }
     }
     else
     {
-        //m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
+        // m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
         DWORD fileCount = 0;
-        // Gets the list of files currently selected using the IShellItemArray
         psiItemArray->GetCount(&fileCount);
-        // Iterate over the list of files
         for (DWORD i = 0; i < fileCount; i++)
         {
             IShellItem* shellItem;
             psiItemArray->GetItemAt(i, &shellItem);
             LPWSTR itemName;
-            // Retrieves the entire file system path of the file from its shell item
             shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
             CString fileName(itemName);
             fileName.Append(_T("\r\n"));
-            // Write the file path into the input stream for image resizer
-            writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+
+            hr = writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+            if (FAILED(hr))
+            {
+                writePipe.Close();
+                CoTaskMemFree(itemName);
+                shellItem->Release();
+                return hr;
+            }
+            CoTaskMemFree(itemName);
+            shellItem->Release();
         }
     }
 
+    hr = writePipe.Flush();
+    if (FAILED(hr))
+    {
+        writePipe.Close();
+        return hr;
+    }
     writePipe.Close();
-    hr = S_OK;
-    return hr;
+    return S_OK;
 }
 
 HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
