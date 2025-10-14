@@ -3754,6 +3754,7 @@ LRESULT APIENTRY MainWndProc(
     OPENFILENAME	openFileName;
     static TCHAR	filePath[MAX_PATH] = {L"zoomit"};
     NOTIFYICONDATA	tNotifyIconData;
+    static DWORD64  g_TelescopingZoomLastTick = 0ull;
 
     const auto drawAllRightJustifiedLines = [&rc]( long lineHeight, bool doPop = false ) {
         rc.top = textPt.y - static_cast<LONG>(g_TextBufferPreviousLines.size()) * lineHeight;
@@ -3777,6 +3778,97 @@ LRESULT APIENTRY MainWndProc(
             rc.left = textPt.x - (rc.right - rc.left);
             rc.right = textPt.x;
             DrawText( hdcScreenCompat, g_TextBuffer.c_str(), static_cast<int>(g_TextBuffer.length()), &rc, DT_LEFT );
+        }
+    };
+
+    const auto doTelescopingZoomTimer = [hWnd, wParam, lParam, &x, &y]( bool invalidate = true ) {
+        if( zoomTelescopeStep != 0.0f )
+        {
+            zoomLevel *= zoomTelescopeStep;
+            g_TelescopingZoomLastTick = GetTickCount64();
+            if( (zoomTelescopeStep > 1 && zoomLevel >= zoomTelescopeTarget) ||
+                (zoomTelescopeStep < 1 && zoomLevel <= zoomTelescopeTarget) )
+            {
+                zoomLevel = zoomTelescopeTarget;
+
+                g_TelescopingZoomLastTick = 0ull;
+                KillTimer( hWnd, wParam );
+                OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
+                            monInfo.rcMonitor.left,
+                            monInfo.rcMonitor.top,
+                            cursorPos.x,
+                            cursorPos.y );
+                SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
+                             monInfo.rcMonitor.top + cursorPos.y );
+            }
+        }
+        else
+        {
+            // Case where we didn't zoom at all
+            g_TelescopingZoomLastTick = 0ull;
+            KillTimer( hWnd, wParam );
+        }
+        if( wParam == 2 && zoomLevel == 1 )
+        {
+            g_Zoomed = FALSE;
+            if( g_ZoomOnLiveZoom )
+            {
+                GetCursorPos( &cursorPos );
+                cursorPos = ScalePointInRects( cursorPos, monInfo.rcMonitor, g_LiveZoomSourceRect );
+                SetCursorPos( cursorPos.x, cursorPos.y );
+                SendMessage( hWnd, WM_HOTKEY, LIVE_HOTKEY, 0 );
+            }
+            else if( lParam != SHALLOW_ZOOM )
+            {
+                // Figure out where final unzoomed cursor should be
+                if( g_Drawing )
+                {
+                    cursorPos = prevPt;
+                }
+                OutputDebug( L"FINAL MOUSE: x: %d y: %d\n", cursorPos.x, cursorPos.y );
+                GetZoomedTopLeftCoordinates( zoomLevel, &cursorPos, &x, width, &y, height );
+                cursorPos.x = monInfo.rcMonitor.left + x + static_cast<int>((cursorPos.x - x) * zoomLevel);
+                cursorPos.y = monInfo.rcMonitor.top + y + static_cast<int>((cursorPos.y - y) * zoomLevel);
+                SetCursorPos( cursorPos.x, cursorPos.y );
+            }
+            if( hTargetWindow )
+            {
+                SetWindowPos( hTargetWindow, HWND_BOTTOM, rcTargetWindow.left, rcTargetWindow.top, rcTargetWindow.right - rcTargetWindow.left, rcTargetWindow.bottom - rcTargetWindow.top, 0 );
+                hTargetWindow = NULL;
+            }
+            DeleteDrawUndoList( &drawUndoList );
+
+            // Restore live zoom if we came from that mode
+            if( g_ZoomOnLiveZoom )
+            {
+                SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), reinterpret_cast<LPARAM>(&g_LiveZoomSourceRect) );
+                g_ZoomOnLiveZoom = FALSE;
+                forcePenResize = TRUE;
+            }
+
+            SetForegroundWindow( g_ActiveWindow );
+            ClipCursor( NULL );
+            g_HaveDrawn = FALSE;
+            g_TypeMode = TypeModeOff;
+            g_HaveTyped = FALSE;
+            g_Drawing = FALSE;
+            EnableDisableStickyKeys( TRUE );
+            DeleteObject( hTypingFont );
+            DeleteDC( hdcScreen );
+            DeleteDC( hdcScreenCompat );
+            DeleteDC( hdcScreenCursorCompat );
+            DeleteDC( hdcScreenSaveCompat );
+            DeleteObject( hbmpCompat );
+            DeleteObject (hbmpCursorCompat );
+            DeleteObject( hbmpDrawingCompat );
+            DeleteObject( hDrawingPen );
+
+            SetFocus( g_ActiveWindow );
+            ShowWindow( hWnd, SW_HIDE );
+        }
+        if( invalidate )
+        {
+            InvalidateRect( hWnd, NULL, FALSE );
         }
     };
 
@@ -4613,8 +4705,11 @@ LRESULT APIENTRY MainWndProc(
 
                         zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                         zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
-                        if( g_AnimateZoom ) 
-                            zoomLevel = static_cast<float>(1.0) * zoomTelescopeStep; 
+                        if( g_AnimateZoom )
+                        {
+                            zoomLevel = static_cast<float>(1.0) * zoomTelescopeStep;
+                            g_TelescopingZoomLastTick = GetTickCount64();
+                        }
                         else
                             zoomLevel = zoomTelescopeTarget;
                         SetTimer( hWnd, 1, ZOOM_LEVEL_STEP_TIME, NULL );
@@ -4632,6 +4727,7 @@ LRESULT APIENTRY MainWndProc(
                         // Start telescoping zoom. 
                         zoomTelescopeStep = ZOOM_LEVEL_STEP_OUT;
                         zoomTelescopeTarget = 1.0;
+                        g_TelescopingZoomLastTick = GetTickCount64();
                         SetTimer( hWnd, 2, ZOOM_LEVEL_STEP_TIME, NULL );
 
                     } else {
@@ -5308,6 +5404,14 @@ LRESULT APIENTRY MainWndProc(
             g_Zoomed, g_Drawing, g_Tracing);
 
         OutputDebug(L"Window visible: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
+        if( g_Zoomed && g_TelescopingZoomLastTick != 0ull && !g_Drawing && !g_Tracing )
+        {
+            ULONG64 now = GetTickCount64();
+            if( now - g_TelescopingZoomLastTick >= ZOOM_LEVEL_STEP_TIME )
+            {
+                doTelescopingZoomTimer( false );
+            }
+        }
 
         if( g_Zoomed && (g_TypeMode == TypeModeOff) && !g_bSaveInProgress ) {
 
@@ -6566,88 +6670,7 @@ LRESULT APIENTRY MainWndProc(
 
         case 2:
         case 1:
-            //
-            // Telescoping zoom timer
-            //
-            if( zoomTelescopeStep ) {
-
-                zoomLevel *= zoomTelescopeStep;
-                if( (zoomTelescopeStep > 1 && zoomLevel >= zoomTelescopeTarget ) ||
-                    (zoomTelescopeStep < 1 && zoomLevel <= zoomTelescopeTarget )) {
-
-                    zoomLevel = zoomTelescopeTarget;
-                    KillTimer( hWnd, wParam );
-                    OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
-                            monInfo.rcMonitor.left, monInfo.rcMonitor.top, cursorPos.x, cursorPos.y );
-                    SetCursorPos( monInfo.rcMonitor.left + cursorPos.x, 
-                                        monInfo.rcMonitor.top + cursorPos.y );
-                } 
-
-            } else {
-
-                // Case where we didn't zoom at all
-                KillTimer( hWnd, wParam );
-            }
-            if( wParam == 2 && zoomLevel == 1 ) {
-
-                g_Zoomed = FALSE;
-                if( g_ZoomOnLiveZoom )
-                {
-                    GetCursorPos( &cursorPos );
-                    cursorPos = ScalePointInRects( cursorPos, monInfo.rcMonitor, g_LiveZoomSourceRect );
-                    SetCursorPos( cursorPos.x, cursorPos.y );
-                    SendMessage(hWnd, WM_HOTKEY, LIVE_HOTKEY, 0);
-                }
-                else if( lParam != SHALLOW_ZOOM )
-                {
-                    // Figure out where final unzoomed cursor should be
-                    if (g_Drawing) {
-                        cursorPos = prevPt;
-                    }
-                    OutputDebug(L"FINAL MOUSE: x: %d y: %d\n", cursorPos.x, cursorPos.y );
-                    GetZoomedTopLeftCoordinates(zoomLevel, &cursorPos, &x, width, &y, height);
-                    cursorPos.x = monInfo.rcMonitor.left + x + static_cast<int>((cursorPos.x - x) * zoomLevel);
-                    cursorPos.y = monInfo.rcMonitor.top + y + static_cast<int>((cursorPos.y - y) * zoomLevel);		
-                    SetCursorPos(cursorPos.x, cursorPos.y);
-                }
-                if( hTargetWindow ) {
-
-                    SetWindowPos( hTargetWindow, HWND_BOTTOM, rcTargetWindow.left, rcTargetWindow.top,
-                            rcTargetWindow.right - rcTargetWindow.left, 
-                            rcTargetWindow.bottom - rcTargetWindow.top, 0 );
-                    hTargetWindow = NULL;
-                }
-                DeleteDrawUndoList( &drawUndoList );
-
-                // Restore live zoom if we came from that mode
-                if( g_ZoomOnLiveZoom ) {
-
-                    SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), reinterpret_cast<LPARAM>(&g_LiveZoomSourceRect) );
-                    g_ZoomOnLiveZoom = FALSE;
-                    forcePenResize = TRUE;
-                }
-
-                SetForegroundWindow( g_ActiveWindow );
-                ClipCursor( NULL );
-                g_HaveDrawn = FALSE;
-                g_TypeMode = TypeModeOff;
-                g_HaveTyped = FALSE;
-                g_Drawing = FALSE;
-                EnableDisableStickyKeys( TRUE );
-                DeleteObject( hTypingFont );
-                DeleteDC( hdcScreen );
-                DeleteDC( hdcScreenCompat );
-                DeleteDC( hdcScreenCursorCompat );
-                DeleteDC( hdcScreenSaveCompat );
-                DeleteObject( hbmpCompat );
-                DeleteObject( hbmpCursorCompat );
-                DeleteObject( hbmpDrawingCompat );
-                DeleteObject( hDrawingPen );
-
-                SetFocus( g_ActiveWindow );
-                ShowWindow( hWnd, SW_HIDE );
-            }
-            InvalidateRect( hWnd, NULL, FALSE );
+            doTelescopingZoomTimer();
             break;
 
         case 3:
