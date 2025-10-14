@@ -41,6 +41,9 @@
     <ClCompile Include="PwaHelperTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CommandLineArgsHelperTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
