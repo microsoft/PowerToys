@@ -121,44 +121,45 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - ZoomIt restored legacy draw and snipping behaviors, and fixed recording issues, improving reliability. Thanks [@chakrik73](https://github.com/chakrik73)!
 
 ### Command Palette
- - Applied conditional margin for icon-only tags to tighten layout. Thanks @samrueby!
- - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks @jiripolasek!
- - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks @jiripolasek!
- - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks @jiripolasek!
+ - Applied conditional margin for icon-only tags to tighten layout. Thanks [@samrueby](https://github.com/samrueby)
+ - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Enabled AOT by default for improved performance while simplifying publish configs.
- - Cleaned and codified .editorconfig without behavior change. Thanks @jiripolasek!
- - Replaced service state color dots with play/pause/stop icons for enhanced accessibility. Thanks @samrueby!
- - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks @jiripolasek!
+ - Cleaned and codified .editorconfig without behavior change. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Replaced service state color dots with play/pause/stop icons for enhanced accessibility. Thanks [@samrueby](https://github.com/samrueby)
+ - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Ensured long links wrap correctly in details view.
- - Removed animation and enforced minimum width on filter dropdown for clarity. Thanks @jiripolasek!
- - Restored focus to More button after ESC closes context menu, improving keyboard flow. Thanks @chatasweetie!
- - Marked main and toast windows as tool windows to keep them out of Alt+Tab while preserving style. Thanks @jiripolasek!
- - Fixed AOT template and theming issues for filter separators. Thanks @jiripolasek!
+ - Removed animation and enforced minimum width on filter dropdown for clarity. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Restored focus to More button after ESC closes context menu, improving keyboard flow. Thanks [@chatasweetie](https://github.com/chatasweetie)
+ - Marked main and toast windows as tool windows to keep them out of Alt+Tab while preserving style. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Fixed AOT template and theming issues for filter separators. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Introduced grid layouts (small, medium, gallery) for richer page presentation.
  - Materialized result lists to avoid rescoring overhead.
  - Disabled problematic selection TextToSuggest behind environment flag.
- - Resolved AOT warning by making IconMarginConverter partial. Thanks @samrueby!
+ - Resolved AOT warning by making IconMarginConverter partial. Thanks [@samrueby](https://github.com/samrueby)
  - Major search performance improvements (new fuzzy matcher, smarter fallbacks, fewer exceptions).
  - Added context menu "Show Details" command when details pane is hidden.
- - Reduced window flicker by avoiding unnecessary cloaking. Thanks @jiripolasek!
- - Restored EmptyContent rendering for blank states. Thanks @DevLGuilherme!
- - Saved new state even if prior app state file was corrupt (better resilience). Thanks @jiripolasek!
- - Migrated settings window to WinUI TitleBar control. Thanks @jiripolasek!
- - Prevented crash on duplicate keybindings and simplified matching. Thanks @jiripolasek!
- - Centralized fullscreen ignore-hotkey logic for summon handling. Thanks @jiripolasek!
- - Hid search box on content pages, improving focus and accessibility, and added Home title. Thanks @jiripolasek!
- - Synced generated resource comment to eliminate noisy diffs. Thanks @jiripolasek!
+ - Reduced window flicker by avoiding unnecessary cloaking. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Restored EmptyContent rendering for blank states. Thanks [@DevLGuilherme](https://github.com/DevLGuilherme)
+ - Saved new state even if prior app state file was corrupt (better resilience). Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Migrated settings window to WinUI TitleBar control. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Prevented crash on duplicate keybindings and simplified matching. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Centralized fullscreen ignore-hotkey logic for summon handling. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Hid search box on content pages, improving focus and accessibility, and added Home title. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Synced generated resource comment to eliminate noisy diffs. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Blocked Ctrl+I from inserting stray tabs in search box.
- - Logged HRESULT codes in error logs for deeper diagnostics. Thanks @jiripolasek!
- - Advanced font and emoji icon classification and alignment improvements. Thanks @jiripolasek!
- - Preserved fallback item icons in Settings by storing initial icon. Thanks @jiripolasek!
- - Fixed breadcrumb margin misalignment (visual polish). Thanks @jiripolasek!
+ - Logged HRESULT codes in error logs for deeper diagnostics. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Advanced font and emoji icon classification and alignment improvements. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Preserved fallback item icons in Settings by storing initial icon. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Fixed breadcrumb margin misalignment (visual polish). Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Truncated overly long command labels with ellipsis to prevent overflow.
- - Allowed any image format to be used as an icon for protocol bookmarks. Thanks @jiripolasek!
+ - Allowed any image format to be used as an icon for protocol bookmarks. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Added a setting to configure the page transition animation.
  - Collection of small improvements and nits for Run Commands.
- - Improved bookmarks performance and experience. Thanks @jiripolasek!
- - Added Ctrl+O shortcut in Clipboard History to open links directly. Thanks @jiripolase - k!
+ - Improved bookmarks performance and experience. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Added Ctrl+O shortcut in Clipboard History to open links directly. Thanks [@jiripolasek](https://github.com/jiripolasek)
+
 
 ### Command Palette Extensions
  - Replaced localized WebSearch setting keys with stable literals and numeric history count. Thanks [@jiripolasek](https://github.com/jiripolasek)!
@@ -171,12 +172,12 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Added Uninstall Application command (UWP direct, Win32 via Settings). Thanks [@mKpwnz](https://github.com/mKpwnz)!
  - Deferred WinGet details loading and added timing logs.
  - Removed LINQ from All Apps extension for performance.
- - Added standardized key chord system + shortcuts to File Search commands. Thanks @jiripolasek!
- - Added Terminal channel filter & remembered selection option. Thanks @jiripolasek!
- - Enabled loading local/data/app images in markdown with sizing hints. Thanks @jiripolasek!
- - Added external extension reload via x-cmdpal://reload (configurable). Thanks @jiripolasek!
- - Instant WebSearch history updates with in-memory store & events. Thanks @jiripolasek!
- - Added keep-after-paste option and safe delete with confirmation for Clipboard History. Thanks @jiripolasek!
+ - Added standardized key chord system + shortcuts to File Search commands. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added Terminal channel filter & remembered selection option. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Enabled loading local/data/app images in markdown with sizing hints. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added external extension reload via x-cmdpal://reload (configurable). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Instant WebSearch history updates with in-memory store & events. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added keep-after-paste option and safe delete with confirmation for Clipboard History. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Environment Variables
  - Replaced custom window chrome with WinUI TitleBar for cleaner, maintainable Environment Variables UI.
@@ -226,9 +227,9 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Improved search results page accessibility and conditional module grouping.
 
 ### ZoomIt
- - Updated resource file to reflect standalone v9.01 and current copyright year. Thanks @foxmsft!
- - Restored legacy draw/snipping behaviors and fixed recording race conditions. Thanks @chakrik73!
- - Added smooth image option for improved zoom quality using GDI+ for static zoom and Magnifier API for live zoom. Thanks @markrussinovich!
+ - Updated resource file to reflect standalone v9.01 and current copyright year. Thanks [@foxmsft](https://github.com/foxmsft)!
+ - Restored legacy draw/snipping behaviors and fixed recording race conditions. Thanks [@chakrik73](https://github.com/chakrik73)!
+ - Added smooth image option for improved zoom quality using GDI+ for static zoom and Magnifier API for live zoom. Thanks [@markrussinovich](https://github.com/markrussinovich)!
 
  ### Documentation
  - New Microsoft Learn documentation for the Light Switch module.
