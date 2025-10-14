@@ -453,7 +453,7 @@
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
-                                    <!-- Media Metadata -->
+                                    <!--  Media Metadata  -->
                                     <TextBlock
                                         x:Uid="MetadataCheatSheet_Title"
                                         Grid.Row="6"
@@ -615,7 +615,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- File Time Section -->
+                    <!--  File Time Section  -->
                     <TextBlock
                         x:Name="FileTimeLabel"
                         x:Uid="TextBlock_FileTime"
@@ -624,7 +624,7 @@
                         Margin="0,0,0,8"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    
+
                     <ComboBox
                         x:Name="comboBox_fileTimeParts"
                         Grid.Row="1"
@@ -637,7 +637,7 @@
                         <ComboBoxItem x:Uid="FileTimeParts_AccessTime" />
                     </ComboBox>
 
-                    <!-- Metadata Source Section -->
+                    <!--  Metadata Source Section  -->
                     <TextBlock
                         x:Name="MetadataSourceLabel"
                         x:Uid="TextBlock_MetadataSource"
@@ -646,7 +646,7 @@
                         Margin="0,0,0,8"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    
+
                     <ComboBox
                         x:Name="comboBox_metadataSource"
                         Grid.Row="1"
