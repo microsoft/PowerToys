@@ -34,14 +34,14 @@ namespace WICMetadataExtractorTests
     public:
         TEST_METHOD(ExtractEXIF_InvalidFile_ReturnsFalse)
         {
-            // Test that EXIF extraction fails for non-existent file
+            // Test that EXIF extraction fails for nonexistent file
             WICMetadataExtractor extractor;
             EXIFMetadata metadata;
 
             std::wstring testFile = GetTestDataPath() + L"\\nonexistent.jpg";
             bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
 
-            Assert::IsFalse(result, L"EXIF extraction should fail for non-existent file");
+            Assert::IsFalse(result, L"EXIF extraction should fail for nonexistent file");
         }
 
         TEST_METHOD(ExtractEXIF_ExifTest_AllFields)
@@ -141,14 +141,14 @@ namespace WICMetadataExtractorTests
     public:
         TEST_METHOD(ExtractXMP_InvalidFile_ReturnsFalse)
         {
-            // Test that XMP extraction fails for non-existent file
+            // Test that XMP extraction fails for nonexistent file
             WICMetadataExtractor extractor;
             XMPMetadata metadata;
 
             std::wstring testFile = GetTestDataPath() + L"\\nonexistent.jpg";
             bool result = extractor.ExtractXMPMetadata(testFile, metadata);
 
-            Assert::IsFalse(result, L"XMP extraction should fail for non-existent file");
+            Assert::IsFalse(result, L"XMP extraction should fail for nonexistent file");
         }
 
         TEST_METHOD(ExtractXMP_XmpTest_AllFields)

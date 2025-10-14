@@ -43,7 +43,7 @@ namespace
     }
 
     // Helper function: Get the replacement value for a pattern
-    // Returns the actual metadata value if available, otherwise returns the pattern name itself
+    // Returns the actual metadata value if available; if not, returns the pattern name itself
     std::wstring GetPatternValue(
         const std::wstring& patternName,
         const PowerRenameLib::MetadataPatternMap& patterns)
