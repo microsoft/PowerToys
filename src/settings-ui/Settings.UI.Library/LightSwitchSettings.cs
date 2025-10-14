@@ -3,14 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Settings.UI.Library
 {
-    public class LightSwitchSettings : BasePTModuleSettings, ISettingsConfig, ICloneable
+    public class LightSwitchSettings : BasePTModuleSettings, ISettingsConfig, ICloneable, IHotkeyConfig
     {
         public const string ModuleName = "LightSwitch";
 
@@ -23,6 +26,21 @@ namespace Settings.UI.Library
 
         [JsonPropertyName("properties")]
         public LightSwitchProperties Properties { get; set; }
+
+        public HotkeyAccessor[] GetAllHotkeyAccessors()
+        {
+            var hotkeyAccessors = new List<HotkeyAccessor>
+            {
+                new HotkeyAccessor(
+                    () => Properties.ToggleThemeHotkey.Value,
+                    value => Properties.ToggleThemeHotkey.Value = value ?? LightSwitchProperties.DefaultToggleThemeHotkey,
+                    "LightSwitch_ThemeToggle_Shortcut"),
+            };
+
+            return hotkeyAccessors.ToArray();
+        }
+
+        public ModuleType GetModuleType() => ModuleType.LightSwitch;
 
         public object Clone()
         {

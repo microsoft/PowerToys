@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -20,8 +21,10 @@ using Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class LightSwitchViewModel : Observable
+    public partial class LightSwitchViewModel : PageViewModelBase
     {
+        protected override string ModuleName => LightSwitchSettings.ModuleName;
+
         private Func<string, int> SendConfigMSG { get; }
 
         public ObservableCollection<SearchLocation> SearchLocations { get; } = new();
@@ -35,12 +38,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
 
             AvailableScheduleModes = new ObservableCollection<string>
-        {
-            "FixedHours",
-            "SunsetToSunrise",
-        };
+            {
+                "FixedHours",
+                "SunsetToSunrise",
+            };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ToggleThemeActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         private void ForceLightNow()
