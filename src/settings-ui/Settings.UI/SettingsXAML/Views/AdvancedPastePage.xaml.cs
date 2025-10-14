@@ -226,10 +226,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             string selectedType = AdvancedAIServiceTypeListView.SelectedValue.ToString();
-            bool isAzureOpenAI = selectedType == "AzureOpenAI";
 
-            AdvancedAIEndpointUrlTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
-            AdvancedAIDeploymentNameTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
+            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
+            bool requiresApiKey = RequiresApiKeyForService(selectedType);
+
+            if (ViewModel.AdvancedAIConfiguration is not null)
+            {
+                ViewModel.AdvancedAIConfiguration.EndpointUrl = ViewModel.GetAdvancedAIEndpoint(selectedType);
+            }
+
+            AdvancedAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
+
+            if (requiresApiKey)
+            {
+                AdvancedAIApiKeyPasswordBox.Password = ViewModel.GetAdvancedAIApiKey(selectedType);
+            }
+            else
+            {
+                AdvancedAIApiKeyPasswordBox.Password = string.Empty;
+            }
         }
 
         private void UpdatePasteAIUIVisibility()
@@ -240,48 +262,89 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
-            bool isAzureOpenAI = selectedType == "AzureOpenAI";
-            bool isOnnx = selectedType == "Onnx";
 
-            PasteAIApiKeyPasswordBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIDeploymentNameTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            bool isOnnx = string.Equals(selectedType, "Onnx", StringComparison.OrdinalIgnoreCase);
+            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
+            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
+            bool requiresApiKey = RequiresApiKeyForService(selectedType);
+
+            if (ViewModel.PasteAIConfiguration is not null)
+            {
+                ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(selectedType);
+            }
+
+            PasteAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIApiKeyPasswordBox.Visibility = !isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
+
+            if (requiresApiKey)
+            {
+                PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(selectedType);
+            }
+            else
+            {
+                PasteAIApiKeyPasswordBox.Password = string.Empty;
+            }
         }
 
         private async void AdvancedAIProviderConfigureButton_Click(object sender, RoutedEventArgs e)
         {
+            UpdateAdvancedAIUIVisibility();
             await AdvancedAIProviderConfigurationDialog.ShowAsync();
         }
 
         private void AdvancedAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            if (!string.IsNullOrEmpty(AdvancedAIApiKeyPasswordBox.Password))
-            {
-                string serviceType = AdvancedAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
-                ViewModel.SaveAdvancedAICredential(serviceType, AdvancedAIApiKeyPasswordBox.Password);
-                AdvancedAIApiKeyPasswordBox.Password = string.Empty;
+            string serviceType = AdvancedAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
+            string apiKey = AdvancedAIApiKeyPasswordBox.Password;
+            string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
+            string endpoint = (ViewModel.AdvancedAIConfiguration.EndpointUrl ?? string.Empty).Trim();
 
-                // Show success message
-                ShowApiKeySavedMessage("Advanced AI");
+            if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
+            {
+                args.Cancel = true;
+                return;
             }
+
+            ViewModel.AdvancedAIConfiguration.EndpointUrl = endpoint;
+            ViewModel.SaveAdvancedAICredential(serviceType, endpoint, trimmedApiKey);
+            ViewModel.AdvancedAIConfiguration.EndpointUrl = ViewModel.GetAdvancedAIEndpoint(serviceType);
+            AdvancedAIApiKeyPasswordBox.Password = ViewModel.GetAdvancedAIApiKey(serviceType);
+
+            // Show success message
+            ShowApiKeySavedMessage("Advanced AI");
         }
 
         private void PasteAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            if (!string.IsNullOrEmpty(PasteAIApiKeyPasswordBox.Password))
-            {
-                string serviceType = PasteAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
-                ViewModel.SavePasteAICredential(serviceType, PasteAIApiKeyPasswordBox.Password);
-                PasteAIApiKeyPasswordBox.Password = string.Empty;
+            string serviceType = PasteAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
+            string apiKey = PasteAIApiKeyPasswordBox.Password;
+            string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
+            string endpoint = (ViewModel.PasteAIConfiguration.EndpointUrl ?? string.Empty).Trim();
 
-                // Show success message
-                ShowApiKeySavedMessage("Paste AI");
+            if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
+            {
+                args.Cancel = true;
+                return;
             }
+
+            ViewModel.PasteAIConfiguration.EndpointUrl = endpoint;
+            ViewModel.SavePasteAICredential(serviceType, endpoint, trimmedApiKey);
+            ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(serviceType);
+            PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(serviceType);
+
+            // Show success message
+            ShowApiKeySavedMessage("Paste AI");
         }
 
         private async void PasteAIProviderConfigureButton_Click(object sender, RoutedEventArgs e)
         {
+            UpdatePasteAIUIVisibility();
             await PasteAIProviderConfigurationDialog.ShowAsync();
         }
 
@@ -293,6 +356,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdatePasteAIUIVisibility();
+        }
+
+        private static bool RequiresApiKeyForService(string serviceType)
+        {
+            if (string.IsNullOrWhiteSpace(serviceType))
+            {
+                return true;
+            }
+
+            return serviceType.Equals("Onnx", StringComparison.OrdinalIgnoreCase)
+                ? false
+                : !serviceType.Equals("Ollama", StringComparison.OrdinalIgnoreCase)
+                    && !serviceType.Equals("FoundryLocal", StringComparison.OrdinalIgnoreCase)
+                    && !serviceType.Equals("WindowsML", StringComparison.OrdinalIgnoreCase)
+                    && !serviceType.Equals("Anthropic", StringComparison.OrdinalIgnoreCase)
+                    && !serviceType.Equals("AmazonBedrock", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

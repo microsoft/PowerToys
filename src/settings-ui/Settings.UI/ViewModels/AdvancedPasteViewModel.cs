@@ -26,7 +26,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class AdvancedPasteViewModel : PageViewModelBase
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
+        private static readonly HashSet<string> AdvancedAITrackedProperties = new(StringComparer.Ordinal)
+        {
+            nameof(AdvancedAIConfiguration.ModelName),
+            nameof(AdvancedAIConfiguration.EndpointUrl),
+            nameof(AdvancedAIConfiguration.ApiVersion),
+            nameof(AdvancedAIConfiguration.DeploymentName),
+            nameof(AdvancedAIConfiguration.ModelPath),
+            nameof(AdvancedAIConfiguration.SystemPrompt),
+        };
+
+        private static readonly HashSet<string> PasteAITrackedProperties = new(StringComparer.Ordinal)
+        {
+            nameof(PasteAIConfiguration.ModelName),
+            nameof(PasteAIConfiguration.EndpointUrl),
+            nameof(PasteAIConfiguration.ApiVersion),
+            nameof(PasteAIConfiguration.DeploymentName),
+            nameof(PasteAIConfiguration.ModelPath),
+            nameof(PasteAIConfiguration.SystemPrompt),
+        };
+
         private bool _disposed;
+        private bool _isLoadingAdvancedAIProviderConfiguration;
+        private bool _isLoadingPasteAIProviderConfiguration;
 
         protected override string ModuleName => AdvancedPasteSettings.ModuleName;
 
@@ -65,11 +87,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
+            SeedProviderConfigurationSnapshots();
 
             AttachConfigurationHandlers();
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+
+            LoadAdvancedAIProviderConfiguration();
+            LoadPasteAIProviderConfiguration();
 
             InitializeEnabledValue();
 
@@ -505,29 +531,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal void SaveAdvancedAICredential(string serviceType, string apiKey)
+        internal void SaveAdvancedAICredential(string serviceType, string endpoint, string apiKey)
         {
             try
             {
+                endpoint = endpoint?.Trim() ?? string.Empty;
+                apiKey = apiKey?.Trim() ?? string.Empty;
                 string credentialResource = GetAdvancedAICredentialResource(serviceType);
                 string credentialUserName = GetAdvancedAICredentialUserName(serviceType);
+                string endpointCredentialUserName = GetAdvancedAIEndpointCredentialUserName(serviceType);
 
                 PasswordVault vault = new();
+                TryRemoveCredential(vault, credentialResource, credentialUserName);
+                TryRemoveCredential(vault, credentialResource, endpointCredentialUserName);
 
-                // Remove existing credential if it exists
-                try
+                bool storeApiKey = RequiresCredentialStorage(serviceType) && !string.IsNullOrWhiteSpace(apiKey);
+                if (storeApiKey)
                 {
-                    PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
-                    vault.Remove(existingCred);
-                }
-                catch (Exception)
-                {
-                    // Credential doesn't exist, which is fine
+                    PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
+                    vault.Add(cred);
                 }
 
-                // Add new credential
-                PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
-                vault.Add(cred);
+                if (!string.IsNullOrWhiteSpace(endpoint))
+                {
+                    PasswordCredential endpointCred = new(credentialResource, endpointCredentialUserName, endpoint);
+                    vault.Add(endpointCred);
+                }
+
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
                 NotifySettingsChanged();
             }
@@ -536,80 +566,185 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal void SavePasteAICredential(string serviceType, string apiKey)
+        internal void SavePasteAICredential(string serviceType, string endpoint, string apiKey)
         {
             try
             {
-                if (string.Equals(serviceType, "Onnx", StringComparison.OrdinalIgnoreCase))
-                {
-                    return;
-                }
-
+                endpoint = endpoint?.Trim() ?? string.Empty;
+                apiKey = apiKey?.Trim() ?? string.Empty;
                 string credentialResource = GetPasteAICredentialResource(serviceType);
                 string credentialUserName = GetPasteAICredentialUserName(serviceType);
+                string endpointCredentialUserName = GetPasteAIEndpointCredentialUserName(serviceType);
                 PasswordVault vault = new();
+                TryRemoveCredential(vault, credentialResource, credentialUserName);
+                TryRemoveCredential(vault, credentialResource, endpointCredentialUserName);
 
-                // Remove existing credential if it exists
-                try
+                bool storeApiKey = RequiresCredentialStorage(serviceType) && !string.IsNullOrWhiteSpace(apiKey);
+                if (storeApiKey)
                 {
-                    PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
-                    vault.Remove(existingCred);
-                }
-                catch (Exception)
-                {
-                    // Credential doesn't exist, which is fine
+                    PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
+                    vault.Add(cred);
                 }
 
-                // Add new credential
-                PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
-                vault.Add(cred);
+                if (!string.IsNullOrWhiteSpace(endpoint))
+                {
+                    PasswordCredential endpointCred = new(credentialResource, endpointCredentialUserName, endpoint);
+                    vault.Add(endpointCred);
+                }
+
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
                 NotifySettingsChanged();
             }
             catch (Exception)
             {
             }
+        }
+
+        internal string GetAdvancedAIApiKey(string serviceType)
+        {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
+            return RetrieveCredentialValue(
+                GetAdvancedAICredentialResource(serviceType),
+                GetAdvancedAICredentialUserName(serviceType));
+        }
+
+        internal string GetPasteAIApiKey(string serviceType)
+        {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
+            return RetrieveCredentialValue(
+                GetPasteAICredentialResource(serviceType),
+                GetPasteAICredentialUserName(serviceType));
+        }
+
+        internal string GetAdvancedAIEndpoint(string serviceType)
+        {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
+            return RetrieveCredentialValue(
+                GetAdvancedAICredentialResource(serviceType),
+                GetAdvancedAIEndpointCredentialUserName(serviceType));
+        }
+
+        internal string GetPasteAIEndpoint(string serviceType)
+        {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
+            return RetrieveCredentialValue(
+                GetPasteAICredentialResource(serviceType),
+                GetPasteAIEndpointCredentialUserName(serviceType));
         }
 
         private string GetAdvancedAICredentialResource(string serviceType)
         {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return serviceType.ToLowerInvariant() switch
             {
                 "openai" => "https://platform.openai.com/api-keys",
                 "azureopenai" => "https://azure.microsoft.com/products/ai-services/openai-service",
+                "azureaiinference" => "https://azure.microsoft.com/products/ai-services/ai-inference",
+                "mistral" => "https://console.mistral.ai/account/api-keys",
+                "google" => "https://ai.google.dev/",
+                "huggingface" => "https://huggingface.co/settings/tokens",
+                "anthropic" => "https://console.anthropic.com/account/keys",
+                "amazonbedrock" => "https://aws.amazon.com/bedrock/",
+                "ollama" => "https://ollama.com/",
                 _ => "https://platform.openai.com/api-keys",
             };
         }
 
         private string GetAdvancedAICredentialUserName(string serviceType)
         {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return serviceType.ToLowerInvariant() switch
             {
                 "openai" => "PowerToys_AdvancedPaste_AdvancedAI_OpenAI",
                 "azureopenai" => "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI",
+                "azureaiinference" => "PowerToys_AdvancedPaste_AdvancedAI_AzureAIInference",
+                "mistral" => "PowerToys_AdvancedPaste_AdvancedAI_Mistral",
+                "google" => "PowerToys_AdvancedPaste_AdvancedAI_Google",
+                "huggingface" => "PowerToys_AdvancedPaste_AdvancedAI_HuggingFace",
+                "anthropic" => "PowerToys_AdvancedPaste_AdvancedAI_Anthropic",
+                "amazonbedrock" => "PowerToys_AdvancedPaste_AdvancedAI_AmazonBedrock",
+                "ollama" => "PowerToys_AdvancedPaste_AdvancedAI_Ollama",
                 _ => "PowerToys_AdvancedPaste_AdvancedAI_OpenAI",
             };
         }
 
+        private string GetAdvancedAIEndpointCredentialUserName(string serviceType)
+        {
+            return GetAdvancedAICredentialUserName(serviceType) + "_Endpoint";
+        }
+
         private string GetPasteAICredentialResource(string serviceType)
         {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return serviceType.ToLowerInvariant() switch
             {
                 "openai" => "https://platform.openai.com/api-keys",
                 "azureopenai" => "https://azure.microsoft.com/products/ai-services/openai-service",
+                "azureaiinference" => "https://azure.microsoft.com/products/ai-services/ai-inference",
+                "mistral" => "https://console.mistral.ai/account/api-keys",
+                "google" => "https://ai.google.dev/",
+                "huggingface" => "https://huggingface.co/settings/tokens",
+                "anthropic" => "https://console.anthropic.com/account/keys",
+                "amazonbedrock" => "https://aws.amazon.com/bedrock/",
+                "ollama" => "https://ollama.com/",
                 _ => "https://platform.openai.com/api-keys",
             };
         }
 
         private string GetPasteAICredentialUserName(string serviceType)
         {
+            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return serviceType.ToLowerInvariant() switch
             {
                 "openai" => "PowerToys_AdvancedPaste_PasteAI_OpenAI",
                 "azureopenai" => "PowerToys_AdvancedPaste_PasteAI_AzureOpenAI",
+                "azureaiinference" => "PowerToys_AdvancedPaste_PasteAI_AzureAIInference",
                 "onnx" => "PowerToys_AdvancedPaste_PasteAI_Onnx", // Onnx doesn't need credentials but keeping consistency
+                "mistral" => "PowerToys_AdvancedPaste_PasteAI_Mistral",
+                "google" => "PowerToys_AdvancedPaste_PasteAI_Google",
+                "huggingface" => "PowerToys_AdvancedPaste_PasteAI_HuggingFace",
+                "anthropic" => "PowerToys_AdvancedPaste_PasteAI_Anthropic",
+                "amazonbedrock" => "PowerToys_AdvancedPaste_PasteAI_AmazonBedrock",
+                "ollama" => "PowerToys_AdvancedPaste_PasteAI_Ollama",
                 _ => "PowerToys_AdvancedPaste_PasteAI_OpenAI",
             };
+        }
+
+        private string GetPasteAIEndpointCredentialUserName(string serviceType)
+        {
+            return GetPasteAICredentialUserName(serviceType) + "_Endpoint";
+        }
+
+        private static bool RequiresCredentialStorage(string serviceType)
+        {
+            if (string.IsNullOrWhiteSpace(serviceType))
+            {
+                return true;
+            }
+
+            return serviceType.ToLowerInvariant() switch
+            {
+                "onnx" => false,
+                "ollama" => false,
+                "foundrylocal" => false,
+                "windowsml" => false,
+                "anthropic" => false,
+                "amazonbedrock" => false,
+                _ => true,
+            };
+        }
+
+        private static void TryRemoveCredential(PasswordVault vault, string credentialResource, string credentialUserName)
+        {
+            try
+            {
+                PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
+                vault.Remove(existingCred);
+            }
+            catch (Exception)
+            {
+                // Credential doesn't exist, which is fine
+            }
         }
 
         internal AdvancedPasteCustomAction GetNewCustomAction(string namePrefix)
@@ -761,12 +896,201 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnAdvancedAIConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (_isLoadingAdvancedAIProviderConfiguration)
+            {
+                return;
+            }
+
+            if (string.Equals(e.PropertyName, nameof(AdvancedAIConfiguration.ServiceType), StringComparison.Ordinal))
+            {
+                LoadAdvancedAIProviderConfiguration();
+                SaveAndNotifySettings();
+                return;
+            }
+
+            if (e.PropertyName is not null && AdvancedAITrackedProperties.Contains(e.PropertyName))
+            {
+                PersistAdvancedAIProviderConfiguration();
+            }
+
             SaveAndNotifySettings();
         }
 
         private void OnPasteAIConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (_isLoadingPasteAIProviderConfiguration)
+            {
+                return;
+            }
+
+            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ServiceType), StringComparison.Ordinal))
+            {
+                LoadPasteAIProviderConfiguration();
+                SaveAndNotifySettings();
+                return;
+            }
+
+            if (e.PropertyName is not null && PasteAITrackedProperties.Contains(e.PropertyName))
+            {
+                PersistPasteAIProviderConfiguration();
+            }
+
             SaveAndNotifySettings();
+        }
+
+        private void SeedProviderConfigurationSnapshots()
+        {
+            var advancedConfig = _advancedPasteSettings?.Properties?.AdvancedAIConfiguration;
+            if (advancedConfig is not null && !advancedConfig.HasProviderConfiguration(advancedConfig.ServiceType))
+            {
+                advancedConfig.SetProviderConfiguration(
+                    advancedConfig.ServiceType,
+                    new AIProviderConfigurationSnapshot
+                    {
+                        ModelName = advancedConfig.ModelName,
+                        EndpointUrl = advancedConfig.EndpointUrl,
+                        ApiVersion = advancedConfig.ApiVersion,
+                        DeploymentName = advancedConfig.DeploymentName,
+                        ModelPath = advancedConfig.ModelPath,
+                        SystemPrompt = advancedConfig.SystemPrompt,
+                    });
+            }
+
+            var pasteConfig = _advancedPasteSettings?.Properties?.PasteAIConfiguration;
+            if (pasteConfig is not null && !pasteConfig.HasProviderConfiguration(pasteConfig.ServiceType))
+            {
+                pasteConfig.SetProviderConfiguration(
+                    pasteConfig.ServiceType,
+                    new AIProviderConfigurationSnapshot
+                    {
+                        ModelName = pasteConfig.ModelName,
+                        EndpointUrl = pasteConfig.EndpointUrl,
+                        ApiVersion = pasteConfig.ApiVersion,
+                        DeploymentName = pasteConfig.DeploymentName,
+                        ModelPath = pasteConfig.ModelPath,
+                        SystemPrompt = pasteConfig.SystemPrompt,
+                    });
+            }
+        }
+
+        private void LoadAdvancedAIProviderConfiguration()
+        {
+            var config = _advancedPasteSettings?.Properties?.AdvancedAIConfiguration;
+            if (config is null)
+            {
+                return;
+            }
+
+            var snapshot = config.GetOrCreateProviderConfiguration(config.ServiceType);
+            _isLoadingAdvancedAIProviderConfiguration = true;
+            try
+            {
+                config.ModelName = snapshot.ModelName ?? string.Empty;
+                config.EndpointUrl = snapshot.EndpointUrl ?? string.Empty;
+                config.ApiVersion = snapshot.ApiVersion ?? string.Empty;
+                config.DeploymentName = snapshot.DeploymentName ?? string.Empty;
+                config.ModelPath = snapshot.ModelPath ?? string.Empty;
+                config.SystemPrompt = snapshot.SystemPrompt ?? string.Empty;
+                string storedEndpoint = GetAdvancedAIEndpoint(config.ServiceType);
+                config.EndpointUrl = storedEndpoint;
+                snapshot.EndpointUrl = storedEndpoint;
+            }
+            finally
+            {
+                _isLoadingAdvancedAIProviderConfiguration = false;
+            }
+        }
+
+        private void LoadPasteAIProviderConfiguration()
+        {
+            var config = _advancedPasteSettings?.Properties?.PasteAIConfiguration;
+            if (config is null)
+            {
+                return;
+            }
+
+            var snapshot = config.GetOrCreateProviderConfiguration(config.ServiceType);
+            _isLoadingPasteAIProviderConfiguration = true;
+            try
+            {
+                config.ModelName = snapshot.ModelName ?? string.Empty;
+                config.EndpointUrl = snapshot.EndpointUrl ?? string.Empty;
+                config.ApiVersion = snapshot.ApiVersion ?? string.Empty;
+                config.DeploymentName = snapshot.DeploymentName ?? string.Empty;
+                config.ModelPath = snapshot.ModelPath ?? string.Empty;
+                config.SystemPrompt = snapshot.SystemPrompt ?? string.Empty;
+                string storedEndpoint = GetPasteAIEndpoint(config.ServiceType);
+                config.EndpointUrl = storedEndpoint;
+                snapshot.EndpointUrl = storedEndpoint;
+            }
+            finally
+            {
+                _isLoadingPasteAIProviderConfiguration = false;
+            }
+        }
+
+        private void PersistAdvancedAIProviderConfiguration()
+        {
+            if (_isLoadingAdvancedAIProviderConfiguration)
+            {
+                return;
+            }
+
+            var config = _advancedPasteSettings?.Properties?.AdvancedAIConfiguration;
+            if (config is null)
+            {
+                return;
+            }
+
+            var snapshot = config.GetOrCreateProviderConfiguration(config.ServiceType);
+            snapshot.ModelName = config.ModelName ?? string.Empty;
+            snapshot.EndpointUrl = config.EndpointUrl ?? string.Empty;
+            snapshot.ApiVersion = config.ApiVersion ?? string.Empty;
+            snapshot.DeploymentName = config.DeploymentName ?? string.Empty;
+            snapshot.ModelPath = config.ModelPath ?? string.Empty;
+            snapshot.SystemPrompt = config.SystemPrompt ?? string.Empty;
+        }
+
+        private void PersistPasteAIProviderConfiguration()
+        {
+            if (_isLoadingPasteAIProviderConfiguration)
+            {
+                return;
+            }
+
+            var config = _advancedPasteSettings?.Properties?.PasteAIConfiguration;
+            if (config is null)
+            {
+                return;
+            }
+
+            var snapshot = config.GetOrCreateProviderConfiguration(config.ServiceType);
+            snapshot.ModelName = config.ModelName ?? string.Empty;
+            snapshot.EndpointUrl = config.EndpointUrl ?? string.Empty;
+            snapshot.ApiVersion = config.ApiVersion ?? string.Empty;
+            snapshot.DeploymentName = config.DeploymentName ?? string.Empty;
+            snapshot.ModelPath = config.ModelPath ?? string.Empty;
+            snapshot.SystemPrompt = config.SystemPrompt ?? string.Empty;
+        }
+
+        private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)
+        {
+            if (string.IsNullOrWhiteSpace(credentialResource) || string.IsNullOrWhiteSpace(credentialUserName))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                PasswordVault vault = new();
+                PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
+                existingCred?.RetrievePassword();
+                return existingCred?.Password?.Trim() ?? string.Empty;
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
         }
 
         private void UpdateCustomActionsCanMoveUpDown()

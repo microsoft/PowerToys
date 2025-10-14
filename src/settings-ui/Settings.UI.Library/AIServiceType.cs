@@ -14,5 +14,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         AzureOpenAI,
         Onnx,
         ML,
+        Mistral,
+        Google,
+        HuggingFace,
+        AzureAIInference,
+        Ollama,
+        Anthropic,
+        AmazonBedrock,
     }
 }

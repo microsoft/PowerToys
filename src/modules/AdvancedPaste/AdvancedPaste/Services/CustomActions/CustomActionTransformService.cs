@@ -140,7 +140,14 @@ namespace AdvancedPaste.Services.CustomActions
 
         private static bool RequiresApiKey(AIServiceType serviceType)
         {
-            return serviceType is not AIServiceType.Onnx;
+            return serviceType switch
+            {
+                AIServiceType.Onnx => false,
+                AIServiceType.Ollama => false,
+                AIServiceType.Anthropic => false,
+                AIServiceType.AmazonBedrock => false,
+                _ => true,
+            };
         }
     }
 }

@@ -140,12 +140,17 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
 
     private static (string Resource, string Username)? GetAdvancedAiEntry(AIServiceType serviceType)
     {
-        var normalizedKey = serviceType.ToNormalizedKey();
-
         return serviceType switch
         {
             AIServiceType.OpenAI => ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_OpenAI"),
             AIServiceType.AzureOpenAI => ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI"),
+            AIServiceType.AzureAIInference => ("https://azure.microsoft.com/products/ai-services/ai-inference", "PowerToys_AdvancedPaste_AdvancedAI_AzureAIInference"),
+            AIServiceType.Mistral => ("https://console.mistral.ai/account/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_Mistral"),
+            AIServiceType.Google => ("https://ai.google.dev/", "PowerToys_AdvancedPaste_AdvancedAI_Google"),
+            AIServiceType.HuggingFace => ("https://huggingface.co/settings/tokens", "PowerToys_AdvancedPaste_AdvancedAI_HuggingFace"),
+            AIServiceType.Ollama => null,
+            AIServiceType.Anthropic => null,
+            AIServiceType.AmazonBedrock => null,
             _ => null,
         };
     }
@@ -156,6 +161,13 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         {
             AIServiceType.OpenAI => ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_PasteAI_OpenAI"),
             AIServiceType.AzureOpenAI => ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_PasteAI_AzureOpenAI"),
+            AIServiceType.AzureAIInference => ("https://azure.microsoft.com/products/ai-services/ai-inference", "PowerToys_AdvancedPaste_PasteAI_AzureAIInference"),
+            AIServiceType.Mistral => ("https://console.mistral.ai/account/api-keys", "PowerToys_AdvancedPaste_PasteAI_Mistral"),
+            AIServiceType.Google => ("https://ai.google.dev/", "PowerToys_AdvancedPaste_PasteAI_Google"),
+            AIServiceType.HuggingFace => ("https://huggingface.co/settings/tokens", "PowerToys_AdvancedPaste_PasteAI_HuggingFace"),
+            AIServiceType.Ollama => null,
+            AIServiceType.Anthropic => null,
+            AIServiceType.AmazonBedrock => null,
             _ => null,
         };
     }

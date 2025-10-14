@@ -11,6 +11,12 @@ using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference;
+using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.MistralAI;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services.CustomActions
@@ -21,6 +27,13 @@ namespace AdvancedPaste.Services.CustomActions
         {
             AIServiceType.OpenAI,
             AIServiceType.AzureOpenAI,
+            AIServiceType.Mistral,
+            AIServiceType.Google,
+            AIServiceType.HuggingFace,
+            AIServiceType.AzureAIInference,
+            AIServiceType.Ollama,
+            AIServiceType.Anthropic,
+            AIServiceType.AmazonBedrock,
         };
 
         public static PasteAIProviderRegistration Registration { get; } = new(SupportedTypes, config => new SemanticKernelPasteProvider(config));
@@ -106,16 +119,43 @@ namespace AdvancedPaste.Services.CustomActions
         private Kernel CreateKernel()
         {
             var kernelBuilder = Kernel.CreateBuilder();
+            var endpoint = string.IsNullOrWhiteSpace(_config.Endpoint) ? null : _config.Endpoint.Trim();
+            var apiKey = _config.ApiKey?.Trim() ?? string.Empty;
+
+            if (RequiresApiKey(_serviceType) && string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new InvalidOperationException($"API key is required for {_serviceType} but was not provided.");
+            }
 
             switch (_serviceType)
             {
                 case AIServiceType.OpenAI:
-                    kernelBuilder.AddOpenAIChatCompletion(_config.Model, _config.ApiKey, serviceId: _config.Model);
+                    kernelBuilder.AddOpenAIChatCompletion(_config.Model, apiKey, serviceId: _config.Model);
                     break;
-
                 case AIServiceType.AzureOpenAI:
                     var deploymentName = string.IsNullOrWhiteSpace(_config.DeploymentName) ? _config.Model : _config.DeploymentName;
-                    kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, _config.Endpoint, _config.ApiKey, serviceId: _config.Model);
+                    kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey, serviceId: _config.Model);
+                    break;
+                case AIServiceType.Mistral:
+                    kernelBuilder.AddMistralChatCompletion(_config.Model, apiKey: apiKey);
+                    break;
+                case AIServiceType.Google:
+                    kernelBuilder.AddGoogleAIGeminiChatCompletion(_config.Model, apiKey: apiKey);
+                    break;
+                case AIServiceType.HuggingFace:
+                    kernelBuilder.AddHuggingFaceChatCompletion(_config.Model, apiKey: apiKey);
+                    break;
+                case AIServiceType.AzureAIInference:
+                    kernelBuilder.AddAzureAIInferenceChatCompletion(_config.Model, apiKey: apiKey);
+                    break;
+                case AIServiceType.Ollama:
+                    kernelBuilder.AddOllamaChatCompletion(_config.Model, endpoint: new Uri(endpoint));
+                    break;
+                case AIServiceType.Anthropic:
+                    kernelBuilder.AddBedrockChatCompletionService(_config.Model);
+                    break;
+                case AIServiceType.AmazonBedrock:
+                    kernelBuilder.AddBedrockChatCompletionService(_config.Model);
                     break;
 
                 default:
@@ -137,6 +177,27 @@ namespace AdvancedPaste.Services.CustomActions
                 },
                 _ => new PromptExecutionSettings(),
             };
+        }
+
+        private static bool RequiresApiKey(AIServiceType serviceType)
+        {
+            return serviceType switch
+            {
+                AIServiceType.Ollama => false,
+                AIServiceType.Anthropic => false,
+                AIServiceType.AmazonBedrock => false,
+                _ => true,
+            };
+        }
+
+        private static string RequireEndpoint(string endpoint, AIServiceType serviceType)
+        {
+            if (!string.IsNullOrWhiteSpace(endpoint))
+            {
+                return endpoint;
+            }
+
+            throw new InvalidOperationException($"Endpoint is required for {serviceType} but was not provided.");
         }
     }
 }
