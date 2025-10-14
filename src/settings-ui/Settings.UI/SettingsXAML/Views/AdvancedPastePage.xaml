@@ -550,90 +550,6 @@
                             <TextBlock Text="Azure OpenAI" />
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Mistral">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE753;" />
-                            <TextBlock Text="Mistral" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Google">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE774;" />
-                            <TextBlock Text="Google" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="HuggingFace">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xEB52;" />
-                            <TextBlock Text="Hugging Face" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureAIInference">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE774;" />
-                            <TextBlock Text="Azure AI Inference" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Ollama">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE7F8;" />
-                            <TextBlock Text="Ollama" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Anthropic">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE13D;" />
-                            <TextBlock Text="Anthropic" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AmazonBedrock">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="16"
-                                Height="16"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="16"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE12A;" />
-                            <TextBlock Text="Amazon Bedrock" />
-                        </StackPanel>
-                    </ListViewItem>
                     <ListViewHeaderItem
                         Margin="0,12,0,0"
                         Content="Local models"
@@ -743,97 +659,55 @@
                         Style="{StaticResource ModelHeaderStyle}" />
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="OpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="{ThemeResource OpenAIIconImage}" />
+                            <Image Width="16" Source="{ThemeResource OpenAIIconImage}" />
                             <TextBlock Text="OpenAI" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureOpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="/Assets/Settings/Icons/Models/Azure.svg" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Azure.svg" />
                             <TextBlock Text="Azure OpenAI" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Mistral">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE753;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Mistral.svg" />
                             <TextBlock Text="Mistral" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Google">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE774;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Gemini.svg" />
                             <TextBlock Text="Google" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="HuggingFace">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xEB52;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/HuggingFace.svg" />
                             <TextBlock Text="Hugging Face" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureAIInference">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE774;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/AzureAI.svg" />
                             <TextBlock Text="Azure AI Inference" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Ollama">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE7F8;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Ollama.svg" />
                             <TextBlock Text="Ollama" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Anthropic">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE13D;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Anthropic.svg" />
                             <TextBlock Text="Anthropic" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AmazonBedrock">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <FontIcon
-                                Width="20"
-                                Height="20"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="20"
-                                VerticalAlignment="Center"
-                                Glyph="&#xE12A;" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Bedrock.svg" />
                             <TextBlock Text="Amazon Bedrock" />
                         </StackPanel>
                     </ListViewItem>
@@ -843,12 +717,6 @@
                         IsEnabled="False"
                         IsHitTestVisible="False"
                         Style="{StaticResource ModelHeaderStyle}" />
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Onnx">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="/Assets/Settings/Icons/Models/Onnx.svg" />
-                            <TextBlock Text="Onnx" />
-                        </StackPanel>
-                    </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="FoundryLocal">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Image Width="16" Source="/Assets/Settings/Icons/Models/FoundryLocal.svg" />
