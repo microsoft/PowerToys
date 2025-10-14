@@ -122,7 +122,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Command Palette
  - Applied conditional margin for icon-only tags to tighten layout. Thanks [@samrueby](https://github.com/samrueby)
- - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Enabled AOT by default for improved performance while simplifying publish configs.
@@ -162,6 +161,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### Command Palette Extensions
  - Replaced localized WebSearch setting keys with stable literals and numeric history count. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Enabled advanced markdown tables and emphasis extensions. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Added actionable empty-state hints for File Search (search PC / open indexing settings). Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Ensured all WinGet extension assets copy reliably to output. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Improved Run command line parsing for paths with spaces; sped up related tests.
