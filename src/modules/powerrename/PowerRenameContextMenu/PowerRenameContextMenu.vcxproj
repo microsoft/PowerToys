@@ -51,7 +51,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>runtimeobject.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
     </Link>
     <PreBuildEvent>
