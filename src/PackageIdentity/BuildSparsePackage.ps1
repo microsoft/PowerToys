@@ -12,7 +12,8 @@ Param(
 
     [switch]$Clean,
     [switch]$ForceCert,
-    [switch]$NoSign
+    [switch]$NoSign,
+    [switch]$CIBuild
 )
 
 # PowerToys sparse packaging helper.
@@ -20,6 +21,13 @@ Param(
 # Multiple applications (PowerOCR, Settings UI, etc.) can share this single sparse identity.
 
 $ErrorActionPreference = 'Stop'
+
+$isCIBuild = $false
+if ($CIBuild.IsPresent) {
+    $isCIBuild = $true
+} elseif ($env:CIBuild) {
+    $isCIBuild = $env:CIBuild -ieq 'true'
+}
 
 # Configuration constants - centralized management
 $script:Config = @{
@@ -239,7 +247,8 @@ if ($versionCandidate) {
 
 # Find MakeAppx.exe from Windows SDK
 try {
-    $makeAppxPath = Find-WindowsSDKTool -ToolName "makeappx.exe" -Architecture $Platform
+    $hostSdkArchitecture = if ([System.Environment]::Is64BitProcess) { 'x64' } else { 'x86' }
+    $makeAppxPath = Find-WindowsSDKTool -ToolName "makeappx.exe" -Architecture $hostSdkArchitecture
 } catch {
     Write-Error "MakeAppx.exe not found. Please ensure Windows SDK is installed."
     exit 1
@@ -304,7 +313,7 @@ try {
     
     # Ensure publisher matches the dev certificate for local builds
     $manifestStagingPath = Join-Path $stagingDir 'AppxManifest.xml'
-    $shouldUseDevPublisher = $env:CIBuild -ne 'true'
+    $shouldUseDevPublisher = -not $isCIBuild
     if (Test-Path $manifestStagingPath) {
         try {
             [xml]$manifestXml = Get-Content -Path $manifestStagingPath -Raw

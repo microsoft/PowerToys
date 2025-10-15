@@ -13,9 +13,11 @@
     <PropertyGroup>
       <NoSignParam Condition="'$(Configuration)' == 'Debug' OR '$(NoSignCI)' == 'true'">-NoSign</NoSignParam>
       <NoSignParam Condition="'$(Configuration)' != 'Debug' AND '$(NoSignCI)' != 'true'"></NoSignParam>
+      <CIBuildParam Condition="'$(CIBuild)' == 'true'">-CIBuild</CIBuildParam>
+      <CIBuildParam Condition="'$(CIBuild)' != 'true'"></CIBuildParam>
     </PropertyGroup>
     
-  <Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam)" 
+  <Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam) $(CIBuildParam)" 
           ContinueOnError="false"
           WorkingDirectory="$(MSBuildThisFileDirectory)" />
   </Target>
