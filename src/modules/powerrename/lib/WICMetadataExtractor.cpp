@@ -654,7 +654,7 @@ std::optional<std::wstring> WICMetadataExtractor::ReadString(IWICMetadataQueryRe
     if (!propVar.has_value())
         return std::nullopt;
 
-std::wstring result;
+    std::wstring result;
     switch (propVar->Get().vt)
     {
     case VT_LPWSTR:
@@ -703,19 +703,19 @@ std::optional<int64_t> WICMetadataExtractor::ReadInteger(IWICMetadataQueryReader
     if (!propVar.has_value())
         return std::nullopt;
 
-int64_t result = 0;
+    int64_t result = 0;
     switch (propVar->Get().vt)
     {
-    case VT_I1: result = propVar->Get().cVal; break;
-    case VT_I2: result = propVar->Get().iVal; break;
-    case VT_I4: result = propVar->Get().lVal; break;
-    case VT_I8: result = propVar->Get().hVal.QuadPart; break;
-    case VT_UI1: result = propVar->Get().bVal; break;
-    case VT_UI2: result = propVar->Get().uiVal; break;
-    case VT_UI4: result = propVar->Get().ulVal; break;
-    case VT_UI8: result = static_cast<int64_t>(propVar->Get().uhVal.QuadPart); break;
-    default:
-        return std::nullopt;
+        case VT_I1: result = propVar->Get().cVal; break;
+        case VT_I2: result = propVar->Get().iVal; break;
+        case VT_I4: result = propVar->Get().lVal; break;
+        case VT_I8: result = propVar->Get().hVal.QuadPart; break;
+        case VT_UI1: result = propVar->Get().bVal; break;
+        case VT_UI2: result = propVar->Get().uiVal; break;
+        case VT_UI4: result = propVar->Get().ulVal; break;
+        case VT_UI8: result = static_cast<int64_t>(propVar->Get().uhVal.QuadPart); break;
+        default:
+            return std::nullopt;
     }
     
     return result;
@@ -727,155 +727,155 @@ std::optional<double> WICMetadataExtractor::ReadDouble(IWICMetadataQueryReader* 
     if (!propVar.has_value())
         return std::nullopt;
 
-double result = 0.0;
+    double result = 0.0;
     switch (propVar->Get().vt)
     {
-    case VT_R4: 
-        result = static_cast<double>(propVar->Get().fltVal); 
-        break;
-    case VT_R8: 
-        result = propVar->Get().dblVal; 
-        break;
-    case VT_UI1 | VT_VECTOR:
-    case VT_UI4 | VT_VECTOR:
-        // Handle rational number (common for EXIF values)
-        // Rational data is stored as 8 bytes: 4-byte numerator + 4-byte denominator
-        if (propVar->Get().caub.cElems >= 8)
-        {
-            // ExposureBias (EXIF tag 37380) uses SRATIONAL type (signed rational)
-            // which can represent negative values like -0.33 EV for exposure compensation.
-            // Most other EXIF fields use RATIONAL type (unsigned) for values like aperture, shutter speed.
-            if (path == EXIF_EXPOSURE_BIAS)
+        case VT_R4: 
+            result = static_cast<double>(propVar->Get().fltVal); 
+            break;
+        case VT_R8: 
+            result = propVar->Get().dblVal; 
+            break;
+        case VT_UI1 | VT_VECTOR:
+        case VT_UI4 | VT_VECTOR:
+            // Handle rational number (common for EXIF values)
+            // Rational data is stored as 8 bytes: 4-byte numerator + 4-byte denominator
+            if (propVar->Get().caub.cElems >= 8)
             {
-                // Parse as signed rational: int32_t / int32_t
-                result = MetadataFormatHelper::ParseSingleSRational(propVar->Get().caub.pElems, 0);
-                break;
-            }
-            else
-            {
-                // Parse as unsigned rational: uint32_t / uint32_t
-                // First check if denominator is valid (non-zero) to avoid division by zero
-                const uint8_t* bytes = propVar->Get().caub.pElems;
-                uint32_t denominator = static_cast<uint32_t>(bytes[4]) |
-                                     (static_cast<uint32_t>(bytes[5]) << 8) |
-                                     (static_cast<uint32_t>(bytes[6]) << 16) |
-                                     (static_cast<uint32_t>(bytes[7]) << 24);
-                
-                if (denominator != 0)
+                // ExposureBias (EXIF tag 37380) uses SRATIONAL type (signed rational)
+                // which can represent negative values like -0.33 EV for exposure compensation.
+                // Most other EXIF fields use RATIONAL type (unsigned) for values like aperture, shutter speed.
+                if (path == EXIF_EXPOSURE_BIAS)
                 {
-                    result = MetadataFormatHelper::ParseSingleRational(propVar->Get().caub.pElems, 0);
+                    // Parse as signed rational: int32_t / int32_t
+                    result = MetadataFormatHelper::ParseSingleSRational(propVar->Get().caub.pElems, 0);
                     break;
                 }
-            }
-        }
-        return std::nullopt;
-    default:
-        // Try integer conversion
-        switch (propVar->Get().vt)
-        {
-        case VT_I1: result = static_cast<double>(propVar->Get().cVal); break;
-        case VT_I2: result = static_cast<double>(propVar->Get().iVal); break;
-        case VT_I4: result = static_cast<double>(propVar->Get().lVal); break;
-        case VT_I8: 
-            {
-                // ExposureBias (EXIF tag 37380) may be stored as VT_I8 in some WIC implementations
-                // It represents a signed rational (SRATIONAL) packed into a 64-bit integer
-                if (path == EXIF_EXPOSURE_BIAS)
-                {
-                    // Parse signed rational from int64: low 32 bits = numerator, high 32 bits = denominator
-                    // Some implementations may reverse the order, so we try both
-                    int32_t numerator = static_cast<int32_t>(propVar->Get().hVal.QuadPart & 0xFFFFFFFF);
-                    int32_t denominator = static_cast<int32_t>(propVar->Get().hVal.QuadPart >> 32);
-                    if (denominator != 0)
-                    {
-                        result = static_cast<double>(numerator) / static_cast<double>(denominator);
-                    }
-                    else
-                    {
-                        // Try reversed order: high 32 bits = numerator, low 32 bits = denominator
-                        numerator = static_cast<int32_t>(propVar->Get().hVal.QuadPart >> 32);
-                        denominator = static_cast<int32_t>(propVar->Get().hVal.QuadPart & 0xFFFFFFFF);
-                        if (denominator != 0)
-                        {
-                            result = static_cast<double>(numerator) / static_cast<double>(denominator);
-                        }
-                        else
-                        {
-                            result = 0.0; // Default to 0 if both attempts fail
-                        }
-                    }
-                }
                 else
                 {
-                    // For other fields, treat VT_I8 as a simple 64-bit integer
-                    result = static_cast<double>(propVar->Get().hVal.QuadPart);
-                }
-            }
-            break;
-        case VT_UI1: result = static_cast<double>(propVar->Get().bVal); break;
-        case VT_UI2: result = static_cast<double>(propVar->Get().uiVal); break;
-        case VT_UI4: result = static_cast<double>(propVar->Get().ulVal); break;
-        case VT_UI8: 
-            {
-                // ExposureBias (EXIF tag 37380) may be stored as VT_UI8 in some WIC implementations
-                // Even though it's unsigned, we need to reinterpret it as signed for SRATIONAL
-                if (path == EXIF_EXPOSURE_BIAS)
-                {
-                    // Parse signed rational from uint64 (reinterpret as signed)
-                    // Low 32 bits = numerator, high 32 bits = denominator
-                    int32_t numerator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
-                    int32_t denominator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart >> 32);
+                    // Parse as unsigned rational: uint32_t / uint32_t
+                    // First check if denominator is valid (non-zero) to avoid division by zero
+                    const uint8_t* bytes = propVar->Get().caub.pElems;
+                    uint32_t denominator = static_cast<uint32_t>(bytes[4]) |
+                                         (static_cast<uint32_t>(bytes[5]) << 8) |
+                                         (static_cast<uint32_t>(bytes[6]) << 16) |
+                                         (static_cast<uint32_t>(bytes[7]) << 24);
+                
                     if (denominator != 0)
                     {
-                        result = static_cast<double>(numerator) / static_cast<double>(denominator);
-                    }
-                    else
-                    {
-                        // Try reversed order: high 32 bits = numerator, low 32 bits = denominator
-                        numerator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart >> 32);
-                        denominator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
-                        if (denominator != 0)
-                        {
-                            result = static_cast<double>(numerator) / static_cast<double>(denominator);
-                        }
-                        else
-                        {
-                            result = 0.0; // Default to 0 if both attempts fail
-                        }
-                    }
-                }
-                else
-                {
-                    // For other EXIF rational fields (unsigned), try both byte orders to handle different encodings
-                    // First try: low 32 bits = numerator, high 32 bits = denominator
-                    uint32_t numerator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
-                    uint32_t denominator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart >> 32);
-                    
-                    if (denominator != 0)
-                    {
-                        result = static_cast<double>(numerator) / static_cast<double>(denominator);
-                    }
-                    else
-                    {
-                        // Second try: high 32 bits = numerator, low 32 bits = denominator
-                        numerator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart >> 32);
-                        denominator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
-                        if (denominator != 0)
-                        {
-                            result = static_cast<double>(numerator) / static_cast<double>(denominator);
-                        }
-                        else
-                        {
-                            // Fall back to treating as regular integer if denominator is 0
-                            result = static_cast<double>(propVar->Get().uhVal.QuadPart);
-                        }
+                        result = MetadataFormatHelper::ParseSingleRational(propVar->Get().caub.pElems, 0);
+                        break;
                     }
                 }
             }
-            break;
-        default:
             return std::nullopt;
-        }
+        default:
+            // Try integer conversion
+            switch (propVar->Get().vt)
+            {
+            case VT_I1: result = static_cast<double>(propVar->Get().cVal); break;
+            case VT_I2: result = static_cast<double>(propVar->Get().iVal); break;
+            case VT_I4: result = static_cast<double>(propVar->Get().lVal); break;
+            case VT_I8: 
+                {
+                    // ExposureBias (EXIF tag 37380) may be stored as VT_I8 in some WIC implementations
+                    // It represents a signed rational (SRATIONAL) packed into a 64-bit integer
+                    if (path == EXIF_EXPOSURE_BIAS)
+                    {
+                        // Parse signed rational from int64: low 32 bits = numerator, high 32 bits = denominator
+                        // Some implementations may reverse the order, so we try both
+                        int32_t numerator = static_cast<int32_t>(propVar->Get().hVal.QuadPart & 0xFFFFFFFF);
+                        int32_t denominator = static_cast<int32_t>(propVar->Get().hVal.QuadPart >> 32);
+                        if (denominator != 0)
+                        {
+                            result = static_cast<double>(numerator) / static_cast<double>(denominator);
+                        }
+                        else
+                        {
+                            // Try reversed order: high 32 bits = numerator, low 32 bits = denominator
+                            numerator = static_cast<int32_t>(propVar->Get().hVal.QuadPart >> 32);
+                            denominator = static_cast<int32_t>(propVar->Get().hVal.QuadPart & 0xFFFFFFFF);
+                            if (denominator != 0)
+                            {
+                                result = static_cast<double>(numerator) / static_cast<double>(denominator);
+                            }
+                            else
+                            {
+                                result = 0.0; // Default to 0 if both attempts fail
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // For other fields, treat VT_I8 as a simple 64-bit integer
+                        result = static_cast<double>(propVar->Get().hVal.QuadPart);
+                    }
+                }
+                break;
+            case VT_UI1: result = static_cast<double>(propVar->Get().bVal); break;
+            case VT_UI2: result = static_cast<double>(propVar->Get().uiVal); break;
+            case VT_UI4: result = static_cast<double>(propVar->Get().ulVal); break;
+            case VT_UI8: 
+                {
+                    // ExposureBias (EXIF tag 37380) may be stored as VT_UI8 in some WIC implementations
+                    // Even though it's unsigned, we need to reinterpret it as signed for SRATIONAL
+                    if (path == EXIF_EXPOSURE_BIAS)
+                    {
+                        // Parse signed rational from uint64 (reinterpret as signed)
+                        // Low 32 bits = numerator, high 32 bits = denominator
+                        int32_t numerator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
+                        int32_t denominator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart >> 32);
+                        if (denominator != 0)
+                        {
+                            result = static_cast<double>(numerator) / static_cast<double>(denominator);
+                        }
+                        else
+                        {
+                            // Try reversed order: high 32 bits = numerator, low 32 bits = denominator
+                            numerator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart >> 32);
+                            denominator = static_cast<int32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
+                            if (denominator != 0)
+                            {
+                                result = static_cast<double>(numerator) / static_cast<double>(denominator);
+                            }
+                            else
+                            {
+                                result = 0.0; // Default to 0 if both attempts fail
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // For other EXIF rational fields (unsigned), try both byte orders to handle different encodings
+                        // First try: low 32 bits = numerator, high 32 bits = denominator
+                        uint32_t numerator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
+                        uint32_t denominator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart >> 32);
+                    
+                        if (denominator != 0)
+                        {
+                            result = static_cast<double>(numerator) / static_cast<double>(denominator);
+                        }
+                        else
+                        {
+                            // Second try: high 32 bits = numerator, low 32 bits = denominator
+                            numerator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart >> 32);
+                            denominator = static_cast<uint32_t>(propVar->Get().uhVal.QuadPart & 0xFFFFFFFF);
+                            if (denominator != 0)
+                            {
+                                result = static_cast<double>(numerator) / static_cast<double>(denominator);
+                            }
+                            else
+                            {
+                                // Fall back to treating as regular integer if denominator is 0
+                                result = static_cast<double>(propVar->Get().uhVal.QuadPart);
+                            }
+                        }
+                    }
+                }
+                break;
+            default:
+                return std::nullopt;
+            }
     }
     
     return result;
