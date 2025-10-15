@@ -73,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             this.InitializeComponent();
             this.Loaded += LightSwitchPage_Loaded;
+            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
