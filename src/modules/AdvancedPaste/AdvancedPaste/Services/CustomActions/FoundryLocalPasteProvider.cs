@@ -77,7 +77,7 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
             User instructions:
             {prompt}
 
-            Clipboard Content:
+            Text:
             {inputText}
 
             Output:
@@ -85,8 +85,8 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
 
         var chatMessages = new List<ChatMessage>
         {
-            new ChatMessage(ChatRole.System, systemPrompt),
-            new ChatMessage(ChatRole.User, userMessageContent),
+            new(ChatRole.System, systemPrompt),
+            new(ChatRole.User, userMessageContent),
         };
 
         var chatOptions = CreateChatOptions(_config?.SystemPrompt, modelReference);

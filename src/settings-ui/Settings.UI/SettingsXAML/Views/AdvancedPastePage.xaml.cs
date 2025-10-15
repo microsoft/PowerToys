@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using LanguageModelProvider;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -44,14 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            if (FoundryLocalCachedModelsList is not null)
+            if (FoundryLocalPicker is not null)
             {
-                FoundryLocalCachedModelsList.ItemsSource = _foundryCachedModels;
-            }
-
-            if (FoundryLocalDownloadableModelsList is not null)
-            {
-                FoundryLocalDownloadableModelsList.ItemsSource = _foundryDownloadableModels;
+                FoundryLocalPicker.CachedModels = _foundryCachedModels;
+                FoundryLocalPicker.DownloadableModels = _foundryDownloadableModels;
+                FoundryLocalPicker.SelectionChanged += FoundryLocalPicker_SelectionChanged;
+                FoundryLocalPicker.DownloadRequested += FoundryLocalPicker_DownloadRequested;
             }
 
             Loaded += async (s, e) =>
@@ -176,12 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (existingCustomAction == null)
             {
-                /* TO DO: Re-enable with SettingsExpander, not a P0 though
                 ViewModel.AddCustomAction(dialogCustomAction);
-
-                var element = (ContentPresenter)AdvancedPasteUIActions.ContainerFromIndex(CustomActions.Items.Count - 1);
-                element.StartBringIntoView(new BringIntoViewOptions { VerticalOffset = -60, AnimationDesired = true });
-                element.Focus(FocusState.Programmatic); */
             }
             else
             {
@@ -189,7 +183,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private static AdvancedPasteCustomAction GetBoundCustomAction(object sender) => (AdvancedPasteCustomAction)((FrameworkElement)sender).DataContext;
+        private static AdvancedPasteCustomAction GetBoundCustomAction(object sender)
+        {
+            if (sender is FrameworkElement element)
+            {
+                if (element.DataContext is AdvancedPasteCustomAction action)
+                {
+                    return action;
+                }
+
+                if (element.Tag is AdvancedPasteCustomAction taggedAction)
+                {
+                    return taggedAction;
+                }
+            }
+
+            throw new InvalidOperationException("Unable to determine Advanced Paste custom action from sender.");
+        }
 
         private void BrowsePasteAIModelPath_Click(object sender, RoutedEventArgs e)
         {
@@ -290,9 +300,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 _foundryModelLoadCts?.Cancel();
                 _isFoundryLocalAvailable = false;
-                if (FoundryLocalStatusTextBlock is not null)
+                if (FoundryLocalPicker is not null)
                 {
-                    FoundryLocalStatusTextBlock.Text = string.Empty;
+                    FoundryLocalPicker.IsLoading = false;
+                    FoundryLocalPicker.IsAvailable = false;
+                    FoundryLocalPicker.StatusText = string.Empty;
+                    FoundryLocalPicker.SelectedModel = null;
                 }
 
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
@@ -372,24 +385,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             _isFoundryLocalAvailable = false;
 
-            if (FoundryLocalLoadingPanel is not null)
+            if (FoundryLocalPicker is not null)
             {
-                FoundryLocalLoadingPanel.Visibility = Visibility.Visible;
-            }
-
-            if (FoundryLocalUnavailablePanel is not null)
-            {
-                FoundryLocalUnavailablePanel.Visibility = Visibility.Collapsed;
-            }
-
-            if (FoundryLocalAvailablePanel is not null)
-            {
-                FoundryLocalAvailablePanel.Visibility = Visibility.Collapsed;
-            }
-
-            if (FoundryLocalStatusTextBlock is not null)
-            {
-                FoundryLocalStatusTextBlock.Text = string.Empty;
+                FoundryLocalPicker.IsLoading = true;
+                FoundryLocalPicker.IsAvailable = false;
+                FoundryLocalPicker.StatusText = string.Empty;
+                FoundryLocalPicker.SelectedModel = null;
             }
         }
 
@@ -397,57 +398,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             _isFoundryLocalAvailable = false;
 
-            if (FoundryLocalLoadingPanel is not null)
+            if (FoundryLocalPicker is not null)
             {
-                FoundryLocalLoadingPanel.Visibility = Visibility.Collapsed;
-            }
-
-            if (FoundryLocalUnavailablePanel is not null)
-            {
-                FoundryLocalUnavailablePanel.Visibility = Visibility.Visible;
-            }
-
-            if (FoundryLocalAvailablePanel is not null)
-            {
-                FoundryLocalAvailablePanel.Visibility = Visibility.Collapsed;
-            }
-
-            if (FoundryLocalStatusTextBlock is not null)
-            {
-                FoundryLocalStatusTextBlock.Text = message ?? "Foundry Local was not detected. Install it to use local models.";
+                FoundryLocalPicker.IsLoading = false;
+                FoundryLocalPicker.IsAvailable = false;
+                FoundryLocalPicker.SelectedModel = null;
+                FoundryLocalPicker.StatusText = message ?? "Foundry Local was not detected. Install it to use local models.";
             }
 
             _foundryCachedModels.Clear();
             _foundryDownloadableModels.Clear();
-
-            if (FoundryLocalCachedEmptyText is not null)
-            {
-                FoundryLocalCachedEmptyText.Visibility = Visibility.Collapsed;
-            }
         }
 
         private void ShowFoundryAvailableState()
         {
             _isFoundryLocalAvailable = true;
 
-            if (FoundryLocalLoadingPanel is not null)
+            if (FoundryLocalPicker is not null)
             {
-                FoundryLocalLoadingPanel.Visibility = Visibility.Collapsed;
-            }
-
-            if (FoundryLocalUnavailablePanel is not null)
-            {
-                FoundryLocalUnavailablePanel.Visibility = Visibility.Collapsed;
-            }
-
-            if (FoundryLocalAvailablePanel is not null)
-            {
-                FoundryLocalAvailablePanel.Visibility = Visibility.Visible;
-            }
-
-            if (FoundryLocalStatusTextBlock is not null && _foundryCachedModels.Count == 0)
-            {
-                FoundryLocalStatusTextBlock.Text = "Download a model to enable Advanced Paste.";
+                FoundryLocalPicker.IsLoading = false;
+                FoundryLocalPicker.IsAvailable = true;
+                if (_foundryCachedModels.Count == 0)
+                {
+                    FoundryLocalPicker.StatusText = "Download a model to enable Advanced Paste.";
+                }
+                else if (string.IsNullOrWhiteSpace(FoundryLocalPicker.StatusText))
+                {
+                    FoundryLocalPicker.StatusText = "Select a downloaded model to enable Advanced Paste.";
+                }
             }
 
             UpdateFoundrySaveButtonState();
@@ -460,11 +438,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             foreach (var model in cachedModels.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase))
             {
                 _foundryCachedModels.Add(model);
-            }
-
-            if (FoundryLocalCachedEmptyText is not null)
-            {
-                FoundryLocalCachedEmptyText.Visibility = _foundryCachedModels.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
 
             var cachedReferences = new HashSet<string>(_foundryCachedModels.Select(m => NormalizeFoundryModelReference(m.Url ?? m.Name)), StringComparer.OrdinalIgnoreCase);
@@ -485,7 +458,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void RestoreFoundrySelection(IReadOnlyCollection<ModelDetails> cachedModels)
         {
-            if (FoundryLocalCachedModelsList is null)
+            if (FoundryLocalPicker is null)
             {
                 return;
             }
@@ -501,8 +474,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     string.Equals(NormalizeFoundryModelReference(model.Url ?? model.Name), normalizedReference, StringComparison.OrdinalIgnoreCase));
             }
 
+            if (FoundryLocalPicker is null)
+            {
+                return;
+            }
+
             _suppressFoundrySelectionChanged = true;
-            FoundryLocalCachedModelsList.SelectedItem = matchingModel;
+            FoundryLocalPicker.SelectedModel = matchingModel;
             _suppressFoundrySelectionChanged = false;
 
             if (matchingModel is null)
@@ -512,9 +490,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ViewModel.PasteAIConfiguration.ModelName = string.Empty;
                 }
 
-                if (FoundryLocalStatusTextBlock is not null)
+                if (FoundryLocalPicker is not null)
                 {
-                    FoundryLocalStatusTextBlock.Text = _foundryCachedModels.Count == 0
+                    FoundryLocalPicker.StatusText = _foundryCachedModels.Count == 0
                         ? "Download a model to enable Advanced Paste."
                         : "Select a downloaded model to enable Advanced Paste.";
                 }
@@ -526,9 +504,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(matchingModel.Url ?? matchingModel.Name);
                 }
 
-                if (FoundryLocalStatusTextBlock is not null)
+                if (FoundryLocalPicker is not null)
                 {
-                    FoundryLocalStatusTextBlock.Text = $"{matchingModel.Name} selected.";
+                    FoundryLocalPicker.StatusText = $"{matchingModel.Name} selected.";
                 }
             }
 
@@ -556,9 +534,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             downloadableModel.StartDownload();
-            if (FoundryLocalStatusTextBlock is not null)
+            if (FoundryLocalPicker is not null)
             {
-                FoundryLocalStatusTextBlock.Text = $"Downloading {downloadableModel.Name}...";
+                FoundryLocalPicker.StatusText = $"Downloading {downloadableModel.Name}...";
             }
 
             UpdateFoundrySaveButtonState();
@@ -574,9 +552,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     downloadableModel.MarkDownloaded();
 
-                    if (FoundryLocalStatusTextBlock is not null)
+                    if (FoundryLocalPicker is not null)
                     {
-                        FoundryLocalStatusTextBlock.Text = $"Downloaded {downloadableModel.Name}.";
+                        FoundryLocalPicker.StatusText = $"Downloaded {downloadableModel.Name}.";
                     }
 
                     if (ViewModel?.PasteAIConfiguration is not null)
@@ -589,18 +567,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 else
                 {
                     downloadableModel.Reset();
-                    if (FoundryLocalStatusTextBlock is not null)
+                    if (FoundryLocalPicker is not null)
                     {
-                        FoundryLocalStatusTextBlock.Text = $"Failed to download {downloadableModel.Name}.";
+                        FoundryLocalPicker.StatusText = $"Failed to download {downloadableModel.Name}.";
                     }
                 }
             }
             catch (Exception ex)
             {
                 downloadableModel.Reset();
-                if (FoundryLocalStatusTextBlock is not null)
+                if (FoundryLocalPicker is not null)
                 {
-                    FoundryLocalStatusTextBlock.Text = $"Failed to download {downloadableModel.Name}.";
+                    FoundryLocalPicker.StatusText = $"Failed to download {downloadableModel.Name}.";
                 }
 
                 System.Diagnostics.Debug.WriteLine($"[AdvancedPastePage] Failed to download Foundry Local model: {ex}");
@@ -632,27 +610,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            bool hasSelection = FoundryLocalCachedModelsList?.SelectedItem is ModelDetails;
+            bool hasSelection = FoundryLocalPicker?.SelectedModel is ModelDetails;
             PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = hasSelection;
         }
 
-        private void FoundryLocalCachedModelsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void FoundryLocalPicker_SelectionChanged(object sender, ModelDetails? selectedModel)
         {
             if (_suppressFoundrySelectionChanged)
             {
                 return;
             }
 
-            if (FoundryLocalCachedModelsList?.SelectedItem is ModelDetails selectedModel)
+            if (selectedModel is not null)
             {
                 if (ViewModel?.PasteAIConfiguration is not null)
                 {
                     ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(selectedModel.Url ?? selectedModel.Name);
                 }
 
-                if (FoundryLocalStatusTextBlock is not null)
+                if (FoundryLocalPicker is not null)
                 {
-                    FoundryLocalStatusTextBlock.Text = $"{selectedModel.Name} selected.";
+                    FoundryLocalPicker.StatusText = $"{selectedModel.Name} selected.";
                 }
             }
             else
@@ -662,18 +640,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ViewModel.PasteAIConfiguration.ModelName = string.Empty;
                 }
 
-                if (FoundryLocalStatusTextBlock is not null)
+                if (FoundryLocalPicker is not null)
                 {
-                    FoundryLocalStatusTextBlock.Text = "Select a downloaded model to enable Advanced Paste.";
+                    FoundryLocalPicker.StatusText = "Select a downloaded model to enable Advanced Paste.";
                 }
             }
 
             UpdateFoundrySaveButtonState();
         }
 
-        private async void FoundryLocalDownloadButton_Click(object sender, RoutedEventArgs e)
+        private async void FoundryLocalPicker_DownloadRequested(object sender, object? args)
         {
-            if (sender is Button button && button.DataContext is FoundryDownloadableModel downloadableModel)
+            if (args is FoundryDownloadableModel downloadableModel)
             {
                 await DownloadFoundryModelAsync(downloadableModel);
             }
@@ -684,10 +662,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             private double _progress;
             private bool _isDownloading;
             private bool _isDownloaded;
+            private readonly List<string> _deviceTags;
 
             public FoundryDownloadableModel(ModelDetails modelDetails)
             {
                 ModelDetails = modelDetails ?? throw new ArgumentNullException(nameof(modelDetails));
+                SizeTag = FoundryLocalModelPicker.GetModelSizeText(ModelDetails.Size);
+                LicenseTag = FoundryLocalModelPicker.GetLicenseShortText(ModelDetails.License);
+                _deviceTags = FoundryLocalModelPicker
+                    .GetDeviceTags(ModelDetails.HardwareAccelerators)
+                    .ToList();
             }
 
             public ModelDetails ModelDetails { get; }
@@ -695,6 +679,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             public string Name => string.IsNullOrWhiteSpace(ModelDetails.Name) ? "Model" : ModelDetails.Name;
 
             public string Description => string.IsNullOrWhiteSpace(ModelDetails.Description) ? "No description provided." : ModelDetails.Description;
+
+            public string SizeTag { get; }
+
+            public bool HasSizeTag => !string.IsNullOrWhiteSpace(SizeTag);
+
+            public string LicenseTag { get; }
+
+            public bool HasLicenseTag => !string.IsNullOrWhiteSpace(LicenseTag);
+
+            public IReadOnlyList<string> DeviceTags => _deviceTags;
+
+            public bool HasDeviceTags => _deviceTags.Count > 0;
 
             public double ProgressPercent => Math.Round(_progress * 100, 2);
 

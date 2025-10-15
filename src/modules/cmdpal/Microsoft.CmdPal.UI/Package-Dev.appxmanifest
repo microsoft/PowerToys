@@ -20,7 +20,7 @@
 
   <Identity
     Name="Microsoft.CommandPalette.Dev"
-    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    Publisher="CN=Vanzue"
     Version="0.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="69b8faa1-5ada-484f-999d-4998c7ff2082" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
