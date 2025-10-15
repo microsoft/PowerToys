@@ -14,6 +14,8 @@ namespace AdvancedPaste.Settings
     {
         public bool IsAdvancedAIEnabled { get; }
 
+        public bool IsAIEnabled { get; }
+
         public bool ShowCustomPreview { get; }
 
         public bool CloseAfterLosingFocus { get; }

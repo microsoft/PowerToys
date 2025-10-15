@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private AdvancedPasteViewModel ViewModel { get; set; }
 
-        public ICommand SaveOpenAIKeyCommand => new RelayCommand(SaveOpenAIKey);
+        public ICommand EnableAdvancedPasteAICommand => new RelayCommand(EnableAdvancedPasteAI);
 
         public AdvancedPastePage()
         {
@@ -46,39 +46,25 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
-        private void SaveOpenAIKey()
+        private void EnableAdvancedPasteAI() => ViewModel.EnableAI();
+
+        private void AdvancedPaste_EnableAIToggle_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(AdvancedPaste_EnableAIDialogOpenAIApiKey.Text))
+            if (ViewModel is null)
             {
-                ViewModel.EnableAI(AdvancedPaste_EnableAIDialogOpenAIApiKey.Text);
+                return;
             }
-        }
 
-        private async void AdvancedPaste_EnableAIButton_Click(object sender, RoutedEventArgs e)
-        {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            EnableAIDialog.PrimaryButtonText = resourceLoader.GetString("EnableAIDialog_SaveBtnText");
-            EnableAIDialog.SecondaryButtonText = resourceLoader.GetString("EnableAIDialog_CancelBtnText");
-            EnableAIDialog.PrimaryButtonCommand = SaveOpenAIKeyCommand;
+            var toggle = (ToggleSwitch)sender;
 
-            AdvancedPaste_EnableAIDialogOpenAIApiKey.Text = string.Empty;
-
-            await ShowEnableDialogAsync();
-        }
-
-        private async Task ShowEnableDialogAsync()
-        {
-            await EnableAIDialog.ShowAsync();
-        }
-
-        private void AdvancedPaste_DisableAIButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DisableAI();
-        }
-
-        private void AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            EnableAIDialog.IsPrimaryButtonEnabled = AdvancedPaste_EnableAIDialogOpenAIApiKey.Text.Length > 0;
+            if (toggle.IsOn)
+            {
+                ViewModel.EnableAI();
+            }
+            else
+            {
+                ViewModel.DisableAI();
+            }
         }
 
         public async void DeleteCustomActionButton_Click(object sender, RoutedEventArgs e)

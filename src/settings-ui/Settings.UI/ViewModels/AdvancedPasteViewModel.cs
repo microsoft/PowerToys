@@ -163,10 +163,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             _onlineAIModelsGpoRuleConfiguration = GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue();
-            if (_onlineAIModelsGpoRuleConfiguration == GpoRuleConfigured.Disabled)
-            {
-                _onlineAIModelsDisallowedByGPO = true;
+            _onlineAIModelsDisallowedByGPO = _onlineAIModelsGpoRuleConfiguration == GpoRuleConfigured.Disabled;
 
+            if (_onlineAIModelsDisallowedByGPO)
+            {
                 // disable AI if it was enabled
                 DisableAI();
             }
@@ -203,24 +203,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
-        private bool OpenAIKeyExists()
-        {
-            PasswordVault vault = new PasswordVault();
-            PasswordCredential cred = null;
+        public bool IsAIEnabled => _advancedPasteSettings.Properties.IsAIEnabled;
 
-            try
-            {
-                cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return cred is not null;
-        }
-
-        public bool IsOpenAIEnabled => OpenAIKeyExists() && !IsOnlineAIModelsDisallowedByGPO;
+        public bool IsAISettingEnabled => !IsOnlineAIModelsDisallowedByGPO;
 
         public bool IsEnabledGpoConfigured
         {
@@ -472,6 +457,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(ShowOnlineAIModelsGpoConfiguredInfoBar));
             OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
+            OnPropertyChanged(nameof(IsAIEnabled));
+            OnPropertyChanged(nameof(IsAISettingEnabled));
         }
 
         protected override void Dispose(bool disposing)
@@ -506,27 +493,66 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                PasswordVault vault = new PasswordVault();
-                PasswordCredential cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
-                vault.Remove(cred);
-                OnPropertyChanged(nameof(IsOpenAIEnabled));
-                NotifySettingsChanged();
+                bool stateChanged = false;
+
+                if (_advancedPasteSettings.Properties.IsAIEnabled)
+                {
+                    _advancedPasteSettings.Properties.IsAIEnabled = false;
+                    stateChanged = true;
+                }
+
+                if (stateChanged)
+                {
+                    SaveAndNotifySettings();
+                }
+                else
+                {
+                    NotifySettingsChanged();
+                }
+
+                OnPropertyChanged(nameof(IsAIEnabled));
+                OnPropertyChanged(nameof(IsAISettingEnabled));
             }
             catch (Exception)
             {
             }
         }
 
-        internal void EnableAI(string password)
+        internal void EnableAI()
         {
             try
             {
-                PasswordVault vault = new();
-                PasswordCredential cred = new("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
-                vault.Add(cred);
-                OnPropertyChanged(nameof(IsOpenAIEnabled));
-                IsAdvancedAIEnabled = true; // new users should get Semantic Kernel benefits immediately
-                NotifySettingsChanged();
+                if (IsOnlineAIModelsDisallowedByGPO)
+                {
+                    return;
+                }
+
+                bool stateChanged = false;
+
+                if (!_advancedPasteSettings.Properties.IsAIEnabled)
+                {
+                    _advancedPasteSettings.Properties.IsAIEnabled = true;
+                    stateChanged = true;
+                }
+
+                if (!_advancedPasteSettings.Properties.IsAdvancedAIEnabled)
+                {
+                    _advancedPasteSettings.Properties.IsAdvancedAIEnabled = true; // new users should get Semantic Kernel benefits immediately
+                    stateChanged = true;
+                }
+
+                if (stateChanged)
+                {
+                    SaveAndNotifySettings();
+                }
+                else
+                {
+                    NotifySettingsChanged();
+                }
+
+                OnPropertyChanged(nameof(IsAIEnabled));
+                OnPropertyChanged(nameof(IsAISettingEnabled));
+                OnPropertyChanged(nameof(IsAdvancedAIEnabled));
             }
             catch (Exception)
             {
@@ -560,7 +586,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     vault.Add(endpointCred);
                 }
 
-                OnPropertyChanged(nameof(IsOpenAIEnabled));
+                OnPropertyChanged(nameof(IsAIEnabled));
                 NotifySettingsChanged();
             }
             catch (Exception)
@@ -594,7 +620,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     vault.Add(endpointCred);
                 }
 
-                OnPropertyChanged(nameof(IsOpenAIEnabled));
+                OnPropertyChanged(nameof(IsAIEnabled));
                 NotifySettingsChanged();
             }
             catch (Exception)

@@ -626,6 +626,18 @@ opera.exe</value>
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
     <value>Enable Paste with AI</value>
   </data>
+  <data name="AdvancedPaste_EnableAIDialogMarkdown.Text" xml:space="preserve">
+    <value>## Preview Terms
+
+Please review the placeholder content that represents the final terms and usage guidance for Advanced Paste.
+
+1. This is sample information.
+2. Real policy content will be provided later.
+3. Continue only if you are comfortable with the above.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
+    <value>I have read and accept the information above.</value>
+  </data>
   <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
     <value>Enable OpenAI content moderation</value>
   </data>
