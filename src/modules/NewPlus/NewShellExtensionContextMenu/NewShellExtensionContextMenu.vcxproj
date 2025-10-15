@@ -181,6 +181,9 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ProjectReference Include="..\..\..\common\version\version.vcxproj">
       <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\\..\\..\\common\\utils\\utils.vcxproj">
+      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Generated Files/new.rc" />

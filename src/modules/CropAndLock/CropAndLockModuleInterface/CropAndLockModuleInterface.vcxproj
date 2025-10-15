@@ -75,6 +75,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\\..\\..\\common\\utils\\utils.vcxproj">
+      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\CropAndLock\ModuleConstants.h" />
     <ClInclude Include="..\CropAndLock\trace.h" />
     <ClInclude Include="pch.h" />
