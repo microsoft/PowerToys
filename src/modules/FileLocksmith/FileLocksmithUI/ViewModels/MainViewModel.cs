@@ -86,7 +86,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to read paths from file", ex);
+                Logger.LogError("Failed to read paths from the FileLocksmith temporary file during initialization. FileLocksmith will start with an empty file list.", ex);
                 paths = Array.Empty<string>();
             }
 
