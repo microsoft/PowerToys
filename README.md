@@ -200,6 +200,8 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### Mouse Without Borders
  - Continued Common class refactor (part 5/7) by extracting clipboard and init/cleanup logic into focused classes. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
+ - Fix connection failures caused by conflicting MachineId across machines.  Thanks [@noraa-junker](https://github.com/noraa-junker) for troubleshooting!
+
 ### Peek
  - Added the option to activate Peek with just the Spacebar.
 
