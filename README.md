@@ -153,6 +153,12 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Collection of small improvements and nits for Run Commands.
  - Improved bookmarks performance and experience. Thanks [@jiripolasek](https://github.com/jiripolasek)
  - Added Ctrl+O shortcut in Clipboard History to open links directly.
+ - Resolved conflict with external software that blocked Command Palette from hiding.
+ - Updated context menu items to reflect name and icon changes, and ensured application icons are displayed correctly. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Added Alt+Home shortcut to return immediately to the Command Palette home page. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Fixed a crash when displaying code blocks in markdown on detail or content pages. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Fixed an issue where the search bar icon and title were not updated when rapidly switching pages. Thanks [@jiripolasek](https://github.com/jiripolasek)
+ - Improved the appearance of the search box in the context menu.
 
 
 ### Command Palette Extensions
