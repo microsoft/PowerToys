@@ -22,7 +22,7 @@ pwsh "$repoRoot/src/PackageIdentity/BuildSparsePackage.ps1" -Platform x64 -Confi
 
 Supported switches:
 
-- `-Clean` removes previous `bin`/`obj` outputs and unregisters existing installations.
+- `-Clean` removes previous `bin`/`obj` outputs and uninstalls existing installation.
 - `-ForceCert` regenerates the local dev certificate (.pfx/.cer/.pwd/.thumbprint) under `src/PackageIdentity/.user`.
 - `-NoSign` skips signing. The MSIX still builds but must be signed before deployment.
 - `-CIBuild` (or setting `$env:CIBuild = 'true'`) keeps the manifest publisher intact and skips the local cert substitution.

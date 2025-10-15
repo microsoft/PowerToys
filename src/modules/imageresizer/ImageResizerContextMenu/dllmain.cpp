@@ -273,7 +273,7 @@ private:
         }
         else
         {
-            Logger::warn(L"Failed to start ImageResizer (sparse). {}. Trying fallback to exe.", get_last_error_or_default(GetLastError()));
+            Logger::warn(L"Failed to start ImageResizer (sparse). {}. Trying use exe as fallback.", get_last_error_or_default(GetLastError()));
             // Fallback to traditional exe if MSIX launch fails
             if (RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst)))
             {
