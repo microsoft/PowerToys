@@ -51,57 +51,14 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-<<<<<<< HEAD
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-=======
-      <AdditionalIncludeDirectories>..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
->>>>>>> 2978ce163a (dev)
+      <AdditionalIncludeDirectories>..\\..\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-<<<<<<< HEAD
-    <ClInclude Include="package.h" />
-    <ClInclude Include="elevation.h" />
-    <ClInclude Include="registry.h" />
-    <ClInclude Include="gpo.h" />
-    <ClInclude Include="shell_ext_registration.h" />
-    <ClInclude Include="modulesRegistry.h" />
-    <ClInclude Include="resources.h" />
-    <ClInclude Include="UnhandledExceptionHandler.h" />
-    <ClInclude Include="exec.h" />
-    <ClInclude Include="process_path.h" />
-    <ClInclude Include="processApi.h" />
-    <ClInclude Include="excluded_apps.h" />
-    <ClInclude Include="window.h" />
-    <ClInclude Include="string_utils.h" />
-    <ClInclude Include="winapi_error.h" />
-    <ClInclude Include="color.h" />
-    <ClInclude Include="appMutex.h" />
-    <ClInclude Include="game_mode.h" />
-    <ClInclude Include="MsWindowsSettings.h" />
-    <ClInclude Include="os-detect.h" />
-    <ClInclude Include="json.h" />
-    <ClInclude Include="HttpClient.h" />
-    <ClInclude Include="language_helper.h" />
-    <ClInclude Include="logger_helper.h" />
-    <ClInclude Include="MsiUtils.h" />
-    <ClInclude Include="timeutil.h" />
-    <ClInclude Include="serialized.h" />
-    <ClInclude Include="EventLocker.h" />
-    <ClInclude Include="EventWaiter.h" />
-    <ClInclude Include="HDropIterator.h" />
-    <ClInclude Include="OnThreadExecutor.h" />
-    <ClInclude Include="ProcessWaiter.h" />
-    <ClInclude Include="com_object_factory.h" />
-    <ClInclude Include="clean_video_conference.h" />
-    <ClInclude Include="pch.h" />
-  </ItemGroup>
-  <ItemGroup>
-=======
     <ClInclude Include="pch.h" />
     <ClInclude Include="package.h" />
     <ClInclude Include="elevation.h" />
@@ -113,18 +70,11 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
->>>>>>> 2978ce163a (dev)
     <ClCompile Include="package.cpp" />
     <ClCompile Include="elevation.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="gpo.cpp" />
     <ClCompile Include="registry.cpp" />
-<<<<<<< HEAD
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
-    </ClCompile>
-=======
->>>>>>> 2978ce163a (dev)
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\logging\logging.vcxproj">
@@ -154,3 +104,7 @@
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
 </Project>
+
+
+<!-- modified -->
+

@@ -19,17 +19,11 @@ namespace
             return false;
         }
 
-<<<<<<< HEAD
-        CComVariant vtLoc(static_cast<long>(CSIDL_DESKTOP));
-=======
         CComVariant vtLoc(CSIDL_DESKTOP);
->>>>>>> 2978ce163a (dev)
         CComVariant vtEmpty;
         long lhwnd;
         CComPtr<IDispatch> spdisp;
-        result = spShellWindows->FindWindowSW(
-            &vtLoc, &vtEmpty, SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp);
-
+        result = spShellWindows->FindWindowSW(&vtLoc, &vtEmpty, SWC_DESKTOP, &lhwnd, SWFO_NEEDDISPATCH, &spdisp);
         if (result != S_OK || spdisp == nullptr)
         {
             Logger::warn(L"Failed to find the window. {}", GetErrorString(result));
@@ -37,8 +31,7 @@ namespace
         }
 
         CComPtr<IShellBrowser> spBrowser;
-        result = CComQIPtr<IServiceProvider>(spdisp)->QueryService(SID_STopLevelBrowser,
-                                                                   IID_PPV_ARGS(&spBrowser));
+        result = CComQIPtr<IServiceProvider>(spdisp)->QueryService(SID_STopLevelBrowser, IID_PPV_ARGS(&spBrowser));
         if (result != S_OK || spBrowser == nullptr)
         {
             Logger::warn(L"Failed to query service. {}", GetErrorString(result));
@@ -83,12 +76,11 @@ namespace
                 Logger::warn(L"FindDesktopFolderView() max attempts reached");
                 return false;
             }
-<<<<<<< HEAD
-            Sleep(100);
+            Sleep(3000);
         }
 
         CComPtr<IDispatch> spdispView;
-        HRESULT result = spsv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&spdispView));
+        auto result = spsv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&spdispView));
         if (result != S_OK || spdispView == nullptr)
         {
             Logger::warn(L"spsv->GetItemObject() failed. {}", GetErrorString(result));
@@ -122,8 +114,8 @@ namespace
             return false;
         }
 
-        CComVariant args(parameters);
-        CComVariant dir(directory);
+        CComVariant args(parameters ? parameters : L"");
+        CComVariant dir(directory ? directory : L"");
         CComVariant operation(L"open");
         CComVariant show(SW_SHOWNORMAL);
         result = shell->ShellExecute(CComBSTR(file), args, dir, operation, show);
@@ -133,49 +125,6 @@ namespace
             return false;
         }
 
-=======
-
-            Sleep(3000);
-        }
-
-        CComPtr<IDispatch> spdispView;
-        auto result = spsv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&spdispView));
-        if (result != S_OK)
-        {
-            Logger::warn(L"GetItemObject() failed. {}", GetErrorString(result));
-            return false;
-        }
-
-        result = spdispView->QueryInterface(riid, ppv);
-        if (result != S_OK)
-        {
-            Logger::warn(L"QueryInterface() failed. {}", GetErrorString(result));
-            return false;
-        }
-
-        return true;
-    }
-
-    bool ShellExecuteFromExplorer(
-        PCWSTR pszFile,
-        PCWSTR pszParameters = nullptr,
-        PCWSTR workingDir = L"")
-    {
-        CComPtr<IShellDispatch2> spdispShell;
-        if (!GetDesktopAutomationObject(IID_PPV_ARGS(&spdispShell)))
-        {
-            Logger::warn(L"GetDesktopAutomationObject() failed");
-            return false;
-        }
-
-        CComQIPtr<IShellDispatch2>(spdispShell)
-            ->ShellExecuteW(CComBSTR(pszFile),
-                            CComVariant(pszParameters ? pszParameters : L""),
-                            CComVariant(workingDir),
-                            CComVariant(L""),
-                            CComVariant(SW_SHOWNORMAL));
-
->>>>>>> 2978ce163a (dev)
         return true;
     }
 }
@@ -218,24 +167,23 @@ bool drop_elevated_privileges()
     PSID medium_sid = NULL;
     if (!::ConvertStringSidToSid(SDDL_ML_MEDIUM, &medium_sid))
     {
+        CloseHandle(token);
         return false;
     }
 
-    TOKEN_MANDATORY_LABEL label = { 0 };
-    label.Label.Attributes = SE_GROUP_INTEGRITY;
-    label.Label.Sid = medium_sid;
-    DWORD size = static_cast<DWORD>(sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(medium_sid));
-
-    BOOL result = SetTokenInformation(token, TokenIntegrityLevel, &label, size);
+    TOKEN_MANDATORY_LABEL tml = {};
+    tml.Label.Attributes = SE_GROUP_INTEGRITY;
+    tml.Label.Sid = medium_sid;
+    DWORD dwLen = sizeof(TOKEN_MANDATORY_LABEL) + ::GetLengthSid(medium_sid);
+    BOOL res = ::SetTokenInformation(token, TokenIntegrityLevel, &tml, dwLen);
     LocalFree(medium_sid);
     CloseHandle(token);
-
-    return result;
+    return res == TRUE;
 }
 
 HANDLE run_as_different_user(const std::wstring& file, const std::wstring& params, const wchar_t* workingDir, const bool showWindow)
 {
-    Logger::info(L"run_elevated with params={}", params);
+    Logger::info(L"run_as_different_user with params={}", params);
     SHELLEXECUTEINFOW exec_info = { 0 };
     exec_info.cbSize = sizeof(SHELLEXECUTEINFOW);
     exec_info.lpVerb = L"runAsUser";
@@ -245,19 +193,7 @@ HANDLE run_as_different_user(const std::wstring& file, const std::wstring& param
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     exec_info.lpDirectory = workingDir;
     exec_info.hInstApp = 0;
-    if (showWindow)
-    {
-        exec_info.nShow = SW_SHOWDEFAULT;
-    }
-    else
-    {
-<<<<<<< HEAD
-=======
-        // might have limited success, but only option with ShellExecuteExW
->>>>>>> 2978ce163a (dev)
-        exec_info.nShow = SW_HIDE;
-    }
-
+    exec_info.nShow = showWindow ? SW_SHOWDEFAULT : SW_HIDE; // may have limited effect
     return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
 }
 
@@ -273,22 +209,8 @@ HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const 
     exec_info.fMask = SEE_MASK_NOCLOSEPROCESS;
     exec_info.lpDirectory = workingDir;
     exec_info.hInstApp = 0;
-
-    if (showWindow)
-    {
-        exec_info.nShow = SW_SHOWDEFAULT;
-    }
-    else
-    {
-<<<<<<< HEAD
-=======
-        // might have limited success, but only option with ShellExecuteExW
->>>>>>> 2978ce163a (dev)
-        exec_info.nShow = SW_HIDE;
-    }
-
+    exec_info.nShow = showWindow ? SW_SHOWDEFAULT : SW_HIDE; // may have limited effect
     BOOL result = ShellExecuteExW(&exec_info);
-
     return result ? exec_info.hProcess : nullptr;
 }
 
@@ -312,7 +234,6 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
         {
             Logger::error(L"GetShellWindow() failed. {}", get_last_error_or_default(GetLastError()));
         }
-
         return false;
     }
     DWORD pid;
@@ -326,7 +247,6 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
     }
 
     SIZE_T size = 0;
-
     InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
     auto pproc_buffer = std::make_unique<char[]>(size);
     auto pptal = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(pproc_buffer.get());
@@ -365,11 +285,11 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
     {
         siex.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
         siex.StartupInfo.wShowWindow = SW_HIDE;
-        dwCreationFlags = CREATE_NO_WINDOW;
     }
 
+    std::wstring cmdLine = executable_args;
     auto succeeded = CreateProcessW(file.c_str(),
-                                    &executable_args[0],
+                                    &cmdLine[0],
                                     nullptr,
                                     nullptr,
                                     FALSE,
@@ -378,15 +298,15 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
                                     workingDir,
                                     &siex.StartupInfo,
                                     &pi);
+
     if (succeeded)
     {
+        if (returnPid)
+        {
+            *returnPid = pi.dwProcessId;
+        }
         if (pi.hProcess)
         {
-            if (returnPid)
-            {
-                *returnPid = GetProcessId(pi.hProcess);
-            }
-
             CloseHandle(pi.hProcess);
         }
         if (pi.hThread)
@@ -394,11 +314,8 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
             CloseHandle(pi.hThread);
         }
     }
-    else
-    {
-        Logger::error(L"CreateProcessW() failed. {}", get_last_error_or_default(GetLastError()));
-    }
 
+    DeleteProcThreadAttributeList(pptal);
     return succeeded;
 }
 
@@ -429,7 +346,7 @@ std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, cons
     {
         Logger::warn(L"RunNonElevatedEx() failed. Trying fallback");
         std::wstring action_runner_path = get_module_folderpath() + L"\\PowerToys.ActionRunner.exe";
-        std::wstring newParams = fmt::format(L"-run-non-elevated -target \"{}\" {}", file, params);
+        std::wstring newParams = L"-run-non-elevated -target \"" + file + L"\" " + params;
         launched = run_non_elevated(action_runner_path, newParams, nullptr, working_dir.c_str());
         if (launched)
         {
@@ -443,14 +360,14 @@ std::optional<ProcessInfo> RunNonElevatedFailsafe(const std::wstring& file, cons
     }
 
     auto handles = getProcessHandlesByName(std::filesystem::path{ file }.filename().wstring(), PROCESS_QUERY_INFORMATION | SYNCHRONIZE | handleAccess);
-
     if (handles.empty())
+    {
         return std::nullopt;
+    }
 
     ProcessInfo result;
     result.processID = GetProcessId(handles[0].get());
     result.processHandle = std::move(handles[0]);
-
     return result;
 }
 
@@ -484,10 +401,8 @@ bool run_same_elevation(const std::wstring& file, const std::wstring& params, DW
             {
                 *returnPid = GetProcessId(pi.hProcess);
             }
-
             CloseHandle(pi.hProcess);
         }
-
         if (pi.hThread)
         {
             CloseHandle(pi.hThread);
@@ -515,19 +430,13 @@ bool check_user_is_admin()
     SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
     PSID pSID = NULL;
 
-<<<<<<< HEAD
-=======
     // Open a handle to the access token for the calling process.
->>>>>>> 2978ce163a (dev)
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
     {
         return true;
     }
 
-<<<<<<< HEAD
-=======
     // Call GetTokenInformation to get the buffer size.
->>>>>>> 2978ce163a (dev)
     if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
     {
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
@@ -536,35 +445,24 @@ bool check_user_is_admin()
         }
     }
 
-<<<<<<< HEAD
-    pGroupInfo = static_cast<PTOKEN_GROUPS>(GlobalAlloc(GPTR, dwSize));
-
-=======
     // Allocate the buffer.
     pGroupInfo = static_cast<PTOKEN_GROUPS>(GlobalAlloc(GPTR, dwSize));
 
     // Call GetTokenInformation again to get the group information.
->>>>>>> 2978ce163a (dev)
     if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))
     {
         freeMemory(pSID, pGroupInfo);
         return true;
     }
 
-<<<<<<< HEAD
-=======
-    // Create a SID for the BUILTIN\Administrators group.
->>>>>>> 2978ce163a (dev)
+    // Create a SID for the BUILTIN\\Administrators group.
     if (!AllocateAndInitializeSid(&SIDAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pSID))
     {
         freeMemory(pSID, pGroupInfo);
         return true;
     }
 
-<<<<<<< HEAD
-=======
     // Loop through the group SIDs looking for the administrator SID.
->>>>>>> 2978ce163a (dev)
     for (DWORD i = 0; i < pGroupInfo->GroupCount; ++i)
     {
         if (EqualSid(pSID, pGroupInfo->Groups[i].Sid))
@@ -604,3 +502,4 @@ bool IsProcessOfWindowElevated(HWND window)
     }
     return false;
 }
+
