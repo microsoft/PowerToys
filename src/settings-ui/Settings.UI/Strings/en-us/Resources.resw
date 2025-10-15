@@ -555,6 +555,10 @@ opera.exe</value>
     <value>Color Picker</value>
     <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
+  <data name="Shell_PowerDisplay.Content" xml:space="preserve">
+    <value>Power Display</value>
+    <comment>Product name: Navigation view item name for Power Display</comment>
+  </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
@@ -5298,5 +5302,164 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
+  </data>
+  <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
+    <value>A display management utility for brightness and power control</value>
+  </data>
+  <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
+    <value>Enable Power Display</value>
+  </data>
+  <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
+  <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Launch the Power Display utility</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup.Header" xml:space="preserve">
+    <value>Launch at startup</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup.Description" xml:space="preserve">
+    <value>Automatically start Power Display when Windows starts</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_LaunchAtStartup_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_Theme.Header" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="PowerDisplay_Theme.Description" xml:space="preserve">
+    <value>Select theme for Power Display</value>
+  </data>
+  <data name="PowerDisplay_BrightnessUpdateRate.Header" xml:space="preserve">
+    <value>Brightness update rate</value>
+  </data>
+  <data name="PowerDisplay_BrightnessUpdateRate.Description" xml:space="preserve">
+    <value>How frequently to update brightness values</value>
+  </data>
+  <data name="PowerDisplay_Monitor_HideMonitor.Header" xml:space="preserve">
+    <value>Hide monitor</value>
+  </data>
+  <data name="PowerDisplay_Monitor_HideMonitor.Description" xml:space="preserve">
+    <value>Hide this monitor from the Power Display interface</value>
+  </data>
+  <data name="PowerDisplay_Monitor_HideMonitor_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_Monitor_HideMonitor_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_Monitors.Header" xml:space="preserve">
+    <value>Monitors</value>
+  </data>
+  <data name="PowerDisplay_NoMonitorsDetected.Title" xml:space="preserve">
+    <value>No monitors detected</value>
+  </data>
+  <data name="PowerDisplay_NoMonitorsDetected.Message" xml:space="preserve">
+    <value>Please ensure your external monitors are connected and powered on.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Name.Header" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="PowerDisplay_Monitor_InternalName.Header" xml:space="preserve">
+    <value>Internal name</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Type.Header" xml:space="preserve">
+    <value>Monitor type</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CommunicationMethod.Header" xml:space="preserve">
+    <value>Communication method</value>
+  </data>
+  <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
+    <value>Learn more about Power Display</value>
+  </data>
+  <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
+    <value>Power Display provides advanced display management features including brightness control, auto-brightness, and power management settings.</value>
+  </data>
+  <data name="Launch_PowerDisplay.Content" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Brightness.Header" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="PowerDisplay_Monitor_ColorTemperature.Header" xml:space="preserve">
+    <value>Color Temperature</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Reset.Header" xml:space="preserve">
+    <value>Reset Settings</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Reset.Description" xml:space="preserve">
+    <value>Reset brightness and color temperature to default values</value>
+  </data>
+  <data name="PowerDisplay_Monitor_ResetButton.Content" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature.Header" xml:space="preserve">
+    <value>Enable color temperature</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature.Description" xml:space="preserve">
+    <value>Show color temperature control for this monitor</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableContrast.Header" xml:space="preserve">
+    <value>Enable contrast</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableContrast.Description" xml:space="preserve">
+    <value>Show contrast control for this monitor</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableContrast_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableContrast_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableVolume.Header" xml:space="preserve">
+    <value>Enable volume</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableVolume.Description" xml:space="preserve">
+    <value>Show volume control for this monitor</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableVolume_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableVolume_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_MCP_GroupSettings.Header" xml:space="preserve">
+    <value>Model Context Protocol (MCP)</value>
+  </data>
+  <data name="PowerDisplay_EnableMcpServer.Header" xml:space="preserve">
+    <value>Enable MCP Server</value>
+  </data>
+  <data name="PowerDisplay_EnableMcpServer.Description" xml:space="preserve">
+    <value>Allow MCP clients like Claude Desktop to control monitor settings through standardized protocol</value>
+  </data>
+  <data name="PowerDisplay_McpServerPort.Header" xml:space="preserve">
+    <value>MCP Server Port</value>
+  </data>
+  <data name="PowerDisplay_McpServerPort.Description" xml:space="preserve">
+    <value>Port number for the MCP server to listen on (default: 5000)</value>
+  </data>
+  <data name="PowerDisplay_McpAutoStart.Header" xml:space="preserve">
+    <value>MCP Auto Start</value>
+  </data>
+  <data name="PowerDisplay_McpAutoStart.Description" xml:space="preserve">
+    <value>Automatically start MCP server when PowerDisplay launches</value>
   </data>
 </root>
