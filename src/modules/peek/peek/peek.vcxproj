@@ -58,6 +58,11 @@
   <ItemGroup>
     <ResourceCompile Include="peek.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\utils\utils.vcxproj">
+      <Project>{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />

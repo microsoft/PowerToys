@@ -2,6 +2,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utils", "src\common\utils\utils.vcxproj", "{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runner", "src\runner\runner.vcxproj", "{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}"
 	ProjectSection(ProjectDependencies) = postProject
 		{031AC72E-FA28-4AB7-B690-6F7B9C28AA73} = {031AC72E-FA28-4AB7-B690-6F7B9C28AA73}
@@ -254,42 +256,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Display", "src\common\Display\Display.vcxproj", "{CABA8DFB-823B-4BF2-93AC-3F31984150D9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Themes", "src\common\Themes\Themes.vcxproj", "{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643-4663-475E-B329-03F0C9918D48}"
-	ProjectSection(SolutionItems) = preProject
-		src\common\utils\appMutex.h = src\common\utils\appMutex.h
-		src\common\utils\color.h = src\common\utils\color.h
-		src\common\utils\com_object_factory.h = src\common\utils\com_object_factory.h
-		src\common\utils\elevation.h = src\common\utils\elevation.h
-		src\common\utils\EventLocker.h = src\common\utils\EventLocker.h
-		src\common\utils\EventWaiter.h = src\common\utils\EventWaiter.h
-		src\common\utils\excluded_apps.h = src\common\utils\excluded_apps.h
-		src\common\utils\exec.h = src\common\utils\exec.h
-		src\common\utils\game_mode.h = src\common\utils\game_mode.h
-		src\common\utils\gpo.h = src\common\utils\gpo.h
-		src\common\utils\HDropIterator.h = src\common\utils\HDropIterator.h
-		src\common\utils\HttpClient.h = src\common\utils\HttpClient.h
-		src\common\utils\json.h = src\common\utils\json.h
-		src\common\utils\language_helper.h = src\common\utils\language_helper.h
-		src\common\utils\logger_helper.h = src\common\utils\logger_helper.h
-		src\common\utils\modulesRegistry.h = src\common\utils\modulesRegistry.h
-		src\common\utils\MsiUtils.h = src\common\utils\MsiUtils.h
-		src\common\utils\MsWindowsSettings.h = src\common\utils\MsWindowsSettings.h
-		src\common\utils\OnThreadExecutor.h = src\common\utils\OnThreadExecutor.h
-		src\common\utils\os-detect.h = src\common\utils\os-detect.h
-		src\common\utils\package.h = src\common\utils\package.h
-		src\common\utils\ProcessWaiter.h = src\common\utils\ProcessWaiter.h
-		src\common\utils\process_path.h = src\common\utils\process_path.h
-		src\common\utils\registry.h = src\common\utils\registry.h
-		src\common\utils\resources.h = src\common\utils\resources.h
-		src\common\utils\serialized.h = src\common\utils\serialized.h
-		src\common\utils\shell_ext_registration.h = src\common\utils\shell_ext_registration.h
-		src\common\utils\string_utils.h = src\common\utils\string_utils.h
-		src\common\utils\timeutil.h = src\common\utils\timeutil.h
-		src\common\utils\UnhandledExceptionHandler.h = src\common\utils\UnhandledExceptionHandler.h
-		src\common\utils\winapi_error.h = src\common\utils\winapi_error.h
-		src\common\utils\window.h = src\common\utils\window.h
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Telemetry", "Telemetry", "{8F62026A-294B-41C6-8839-87463613F216}"
 	ProjectSection(SolutionItems) = preProject
@@ -833,6 +799,14 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Debug|x64.ActiveCfg = Debug|x64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Debug|x64.Build.0 = Debug|x64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Release|ARM64.Build.0 = Release|ARM64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Release|x64.ActiveCfg = Release|x64
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}.Release|x64.Build.0 = Release|x64
 		{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}.Debug|ARM64.Build.0 = Debug|ARM64
 		{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}.Debug|x64.ActiveCfg = Debug|x64
@@ -3000,6 +2974,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{3BB8493E-D18E-4485-A320-CB40F90F55AE} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{D1D6BC88-09AE-4FB4-AD24-5DED46A791DD} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
@@ -3072,7 +3047,6 @@ Global
 		{7319089E-46D6-4400-BC65-E39BDF1416EE} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{CABA8DFB-823B-4BF2-93AC-3F31984150D9} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{98537082-0FDB-40DE-ABD8-0DC5A4269BAB} = {1AFB6476-670D-4E80-A464-657E01DFF482}
-		{B39DC643-4663-475E-B329-03F0C9918D48} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{8F62026A-294B-41C6-8839-87463613F216} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{C3A17DCA-217B-462C-BB0C-BE086AF80081} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{69E1EE8D-143A-4060-9129-4658ACF14AAF} = {2F305555-C296-497E-AC20-5FA1B237996A}

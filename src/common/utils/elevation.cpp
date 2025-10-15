@@ -19,7 +19,11 @@ namespace
             return false;
         }
 
+<<<<<<< HEAD
         CComVariant vtLoc(static_cast<long>(CSIDL_DESKTOP));
+=======
+        CComVariant vtLoc(CSIDL_DESKTOP);
+>>>>>>> 2978ce163a (dev)
         CComVariant vtEmpty;
         long lhwnd;
         CComPtr<IDispatch> spdisp;
@@ -79,6 +83,7 @@ namespace
                 Logger::warn(L"FindDesktopFolderView() max attempts reached");
                 return false;
             }
+<<<<<<< HEAD
             Sleep(100);
         }
 
@@ -128,6 +133,49 @@ namespace
             return false;
         }
 
+=======
+
+            Sleep(3000);
+        }
+
+        CComPtr<IDispatch> spdispView;
+        auto result = spsv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&spdispView));
+        if (result != S_OK)
+        {
+            Logger::warn(L"GetItemObject() failed. {}", GetErrorString(result));
+            return false;
+        }
+
+        result = spdispView->QueryInterface(riid, ppv);
+        if (result != S_OK)
+        {
+            Logger::warn(L"QueryInterface() failed. {}", GetErrorString(result));
+            return false;
+        }
+
+        return true;
+    }
+
+    bool ShellExecuteFromExplorer(
+        PCWSTR pszFile,
+        PCWSTR pszParameters = nullptr,
+        PCWSTR workingDir = L"")
+    {
+        CComPtr<IShellDispatch2> spdispShell;
+        if (!GetDesktopAutomationObject(IID_PPV_ARGS(&spdispShell)))
+        {
+            Logger::warn(L"GetDesktopAutomationObject() failed");
+            return false;
+        }
+
+        CComQIPtr<IShellDispatch2>(spdispShell)
+            ->ShellExecuteW(CComBSTR(pszFile),
+                            CComVariant(pszParameters ? pszParameters : L""),
+                            CComVariant(workingDir),
+                            CComVariant(L""),
+                            CComVariant(SW_SHOWNORMAL));
+
+>>>>>>> 2978ce163a (dev)
         return true;
     }
 }
@@ -203,6 +251,10 @@ HANDLE run_as_different_user(const std::wstring& file, const std::wstring& param
     }
     else
     {
+<<<<<<< HEAD
+=======
+        // might have limited success, but only option with ShellExecuteExW
+>>>>>>> 2978ce163a (dev)
         exec_info.nShow = SW_HIDE;
     }
 
@@ -228,6 +280,10 @@ HANDLE run_elevated(const std::wstring& file, const std::wstring& params, const 
     }
     else
     {
+<<<<<<< HEAD
+=======
+        // might have limited success, but only option with ShellExecuteExW
+>>>>>>> 2978ce163a (dev)
         exec_info.nShow = SW_HIDE;
     }
 
@@ -459,11 +515,19 @@ bool check_user_is_admin()
     SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
     PSID pSID = NULL;
 
+<<<<<<< HEAD
+=======
+    // Open a handle to the access token for the calling process.
+>>>>>>> 2978ce163a (dev)
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
     {
         return true;
     }
 
+<<<<<<< HEAD
+=======
+    // Call GetTokenInformation to get the buffer size.
+>>>>>>> 2978ce163a (dev)
     if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize))
     {
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
@@ -472,20 +536,35 @@ bool check_user_is_admin()
         }
     }
 
+<<<<<<< HEAD
     pGroupInfo = static_cast<PTOKEN_GROUPS>(GlobalAlloc(GPTR, dwSize));
 
+=======
+    // Allocate the buffer.
+    pGroupInfo = static_cast<PTOKEN_GROUPS>(GlobalAlloc(GPTR, dwSize));
+
+    // Call GetTokenInformation again to get the group information.
+>>>>>>> 2978ce163a (dev)
     if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))
     {
         freeMemory(pSID, pGroupInfo);
         return true;
     }
 
+<<<<<<< HEAD
+=======
+    // Create a SID for the BUILTIN\Administrators group.
+>>>>>>> 2978ce163a (dev)
     if (!AllocateAndInitializeSid(&SIDAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pSID))
     {
         freeMemory(pSID, pGroupInfo);
         return true;
     }
 
+<<<<<<< HEAD
+=======
+    // Loop through the group SIDs looking for the administrator SID.
+>>>>>>> 2978ce163a (dev)
     for (DWORD i = 0; i < pGroupInfo->GroupCount; ++i)
     {
         if (EqualSid(pSID, pGroupInfo->Groups[i].Sid))

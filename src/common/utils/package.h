@@ -15,9 +15,6 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
 
-#include "../logger/logger.h"
-#include "../version/version.h"
-
 namespace package
 {
     using namespace winrt::Windows::Foundation;
@@ -25,30 +22,7 @@ namespace package
     using namespace winrt::Windows::Management::Deployment;
     using Microsoft::WRL::ComPtr;
 
-    inline BOOL IsWin11OrGreater()
-    {
-        OSVERSIONINFOEX osvi{};
-        DWORDLONG dwlConditionMask = 0;
-        byte op = VER_GREATER_EQUAL;
-
-        // Initialize the OSVERSIONINFOEX structure.
-        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-        osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WINTHRESHOLD);
-        osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WINTHRESHOLD);
-        // Windows 11 build number
-        osvi.dwBuildNumber = 22000;
-
-        // Initialize the condition mask.
-        VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, op);
-        VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, op);
-        VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, op);
-
-        // Perform the test.
-        return VerifyVersionInfo(
-            &osvi,
-            VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER,
-            dwlConditionMask);
-    }
+    BOOL IsWin11OrGreater();
 
     struct PACKAGE_VERSION
     {
@@ -61,22 +35,9 @@ namespace package
     class ComInitializer
     {
     public:
-        explicit ComInitializer(DWORD coInitFlags = COINIT_MULTITHREADED) :
-            _initialized(false)
-        {
-            const HRESULT hr = CoInitializeEx(nullptr, coInitFlags);
-            _initialized = SUCCEEDED(hr);
-        }
-
-        ~ComInitializer()
-        {
-            if (_initialized)
-            {
-                CoUninitialize();
-            }
-        }
-
-        bool Succeeded() const { return _initialized; }
+        explicit ComInitializer(DWORD coInitFlags = COINIT_MULTITHREADED);
+        ~ComInitializer();
+        bool Succeeded() const;
 
     private:
         bool _initialized;
@@ -89,10 +50,7 @@ namespace package
 
     std::optional<Package> GetRegisteredPackage(std::wstring packageDisplayName, bool checkVersion);
 
-    inline bool IsPackageRegisteredWithPowerToysVersion(std::wstring packageDisplayName)
-    {
-        return GetRegisteredPackage(packageDisplayName, true).has_value();
-    }
+    bool IsPackageRegisteredWithPowerToysVersion(std::wstring packageDisplayName);
 
     bool RegisterSparsePackage(const std::wstring& externalLocation, const std::wstring& sparsePkgPath);
 

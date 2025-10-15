@@ -127,6 +127,9 @@
     <ProjectReference Include="..\common\updating\updating.vcxproj">
       <Project>{17da04df-e393-4397-9cf0-84dabe11032e}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\common\utils\utils.vcxproj">
+      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -174,4 +177,9 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\common\utils\utils.vcxproj">
+      <Project>{E8470E15-88C4-4C4B-B872-7F1A8F8E7D7E}</Project>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
