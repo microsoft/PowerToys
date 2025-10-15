@@ -99,11 +99,6 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\\..\\..\\common\\utils\\utils.vcxproj">
-      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Generated Files/PowerRenameContextMenu.rc" />
     <None Include="PowerRenameContextMenu.base.rc" />
   </ItemGroup>
@@ -142,6 +137,9 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
     </ProjectReference>
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
       <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\utils.vcxproj">
+      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
