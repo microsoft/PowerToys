@@ -612,6 +612,12 @@
                             MinWidth="200"
                             Header="API key"
                             PlaceholderText="Enter API Key" />
+
+                        <CheckBox
+                            x:Name="AdvancedAIModerationToggle"
+                            x:Uid="AdvancedPaste_EnableAdvancedAIModerationToggle"
+                            IsChecked="{x:Bind ViewModel.AdvancedAIConfiguration.ModerationEnabled, Mode=TwoWay}"
+                            Visibility="Collapsed" />
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
@@ -797,6 +803,11 @@
                             MinWidth="200"
                             Header="API key"
                             PlaceholderText="Enter API Key" />
+                        <CheckBox
+                            x:Name="PasteAIModerationToggle"
+                            x:Uid="AdvancedPaste_EnablePasteAIModerationToggle"
+                            IsChecked="{x:Bind ViewModel.PasteAIConfiguration.ModerationEnabled, Mode=TwoWay}"
+                            Visibility="Collapsed" />
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

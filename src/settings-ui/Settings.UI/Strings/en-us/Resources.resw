@@ -626,6 +626,12 @@ opera.exe</value>
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
     <value>Enable Paste with AI</value>
   </data>
+  <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
+    <value>Enable OpenAI content moderation</value>
+  </data>
+  <data name="AdvancedPaste_EnablePasteAIModerationToggle.Content" xml:space="preserve">
+    <value>Enable OpenAI content moderation</value>
+  </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
     <value>Access Clipboard History</value>
   </data>

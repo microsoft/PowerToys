@@ -234,6 +234,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
             bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
             bool requiresApiKey = RequiresApiKeyForService(selectedType);
+            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
 
             if (ViewModel.AdvancedAIConfiguration is not null)
             {
@@ -242,6 +243,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             AdvancedAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
             AdvancedAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
             AdvancedAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
 
             if (requiresApiKey)
@@ -271,6 +273,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
             bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
             bool requiresApiKey = RequiresApiKeyForService(selectedType);
+            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
 
             if (ViewModel.PasteAIConfiguration is not null)
             {
@@ -280,6 +283,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
             PasteAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
 
             if (requiresApiKey)

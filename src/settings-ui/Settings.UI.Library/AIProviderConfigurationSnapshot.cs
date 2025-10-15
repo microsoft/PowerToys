@@ -28,5 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("system-prompt")]
         public string SystemPrompt { get; set; } = string.Empty;
+
+        [JsonPropertyName("moderation-enabled")]
+        public bool ModerationEnabled { get; set; } = true;
     }
 }

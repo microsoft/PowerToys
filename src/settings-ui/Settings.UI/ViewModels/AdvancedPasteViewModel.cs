@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             nameof(AdvancedAIConfiguration.DeploymentName),
             nameof(AdvancedAIConfiguration.ModelPath),
             nameof(AdvancedAIConfiguration.SystemPrompt),
+            nameof(AdvancedAIConfiguration.ModerationEnabled),
         };
 
         private static readonly HashSet<string> PasteAITrackedProperties = new(StringComparer.Ordinal)
@@ -44,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             nameof(PasteAIConfiguration.DeploymentName),
             nameof(PasteAIConfiguration.ModelPath),
             nameof(PasteAIConfiguration.SystemPrompt),
+            nameof(PasteAIConfiguration.ModerationEnabled),
         };
 
         private bool _disposed;
@@ -953,6 +955,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         DeploymentName = advancedConfig.DeploymentName,
                         ModelPath = advancedConfig.ModelPath,
                         SystemPrompt = advancedConfig.SystemPrompt,
+                        ModerationEnabled = advancedConfig.ModerationEnabled,
                     });
             }
 
@@ -969,6 +972,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         DeploymentName = pasteConfig.DeploymentName,
                         ModelPath = pasteConfig.ModelPath,
                         SystemPrompt = pasteConfig.SystemPrompt,
+                        ModerationEnabled = pasteConfig.ModerationEnabled,
                     });
             }
         }
@@ -991,6 +995,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 config.DeploymentName = snapshot.DeploymentName ?? string.Empty;
                 config.ModelPath = snapshot.ModelPath ?? string.Empty;
                 config.SystemPrompt = snapshot.SystemPrompt ?? string.Empty;
+                config.ModerationEnabled = snapshot.ModerationEnabled;
                 string storedEndpoint = GetAdvancedAIEndpoint(config.ServiceType);
                 config.EndpointUrl = storedEndpoint;
                 snapshot.EndpointUrl = storedEndpoint;
@@ -1019,6 +1024,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 config.DeploymentName = snapshot.DeploymentName ?? string.Empty;
                 config.ModelPath = snapshot.ModelPath ?? string.Empty;
                 config.SystemPrompt = snapshot.SystemPrompt ?? string.Empty;
+                config.ModerationEnabled = snapshot.ModerationEnabled;
                 string storedEndpoint = GetPasteAIEndpoint(config.ServiceType);
                 config.EndpointUrl = storedEndpoint;
                 snapshot.EndpointUrl = storedEndpoint;
@@ -1049,6 +1055,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             snapshot.DeploymentName = config.DeploymentName ?? string.Empty;
             snapshot.ModelPath = config.ModelPath ?? string.Empty;
             snapshot.SystemPrompt = config.SystemPrompt ?? string.Empty;
+            snapshot.ModerationEnabled = config.ModerationEnabled;
         }
 
         private void PersistPasteAIProviderConfiguration()
@@ -1071,6 +1078,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             snapshot.DeploymentName = config.DeploymentName ?? string.Empty;
             snapshot.ModelPath = config.ModelPath ?? string.Empty;
             snapshot.SystemPrompt = config.SystemPrompt ?? string.Empty;
+            snapshot.ModerationEnabled = config.ModerationEnabled;
         }
 
         private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)

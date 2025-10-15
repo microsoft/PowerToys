@@ -63,7 +63,11 @@ namespace AdvancedPaste.Services.CustomActions
 
             var fullPrompt = (systemPrompt ?? string.Empty) + "\n\n" + (inputText ?? string.Empty);
 
-            // await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
+            if (ShouldModerate(providerConfig))
+            {
+                await promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
+            }
+
             try
             {
                 var provider = providerFactory.CreateProvider(providerConfig);
@@ -122,6 +126,7 @@ namespace AdvancedPaste.Services.CustomActions
                 DeploymentName = config.DeploymentName,
                 ModelPath = config.ModelPath,
                 SystemPrompt = systemPrompt,
+                ModerationEnabled = config.ModerationEnabled,
             };
 
             return providerConfig;
@@ -148,6 +153,16 @@ namespace AdvancedPaste.Services.CustomActions
                 AIServiceType.AmazonBedrock => false,
                 _ => true,
             };
+        }
+
+        private static bool ShouldModerate(PasteAIConfig providerConfig)
+        {
+            if (providerConfig is null)
+            {
+                return false;
+            }
+
+            return providerConfig.ProviderType == AIServiceType.OpenAI && providerConfig.ModerationEnabled;
         }
     }
 }

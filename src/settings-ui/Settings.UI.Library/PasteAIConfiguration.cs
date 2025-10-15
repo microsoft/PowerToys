@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _modelPath = string.Empty;
         private bool _useSharedCredentials = true;
         private string _systemPrompt = string.Empty;
+        private bool _moderationEnabled = true;
         private Dictionary<string, AIProviderConfigurationSnapshot> _providerConfigurations = new(StringComparer.OrdinalIgnoreCase);
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -89,6 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get => _systemPrompt;
             set => SetProperty(ref _systemPrompt, value?.Trim() ?? string.Empty);
+        }
+
+        [JsonPropertyName("moderation-enabled")]
+        public bool ModerationEnabled
+        {
+            get => _moderationEnabled;
+            set => SetProperty(ref _moderationEnabled, value);
         }
 
         [JsonPropertyName("provider-configurations")]
