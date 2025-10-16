@@ -150,9 +150,10 @@ private:
             unsigned long powertoys_pid = GetCurrentProcessId();
 
             std::wstring executable_args = L"--pid " + std::to_wstring(powertoys_pid);
-            std::wstring application_path = L"WinUI3Apps\\PowerToys.PowerDisplay.exe";
-            std::wstring full_command_path = application_path + L" " + executable_args;
-            Logger::trace(L"PowerDisplay launching with parameters: " + executable_args);
+            std::wstring module_path = get_module_folderpath();
+            std::wstring application_path = module_path + L"\\WinUI3Apps\\PowerToys.PowerDisplay.exe";
+            std::wstring full_command_path = L"\"" + application_path + L"\" " + executable_args;
+            Logger::trace(L"PowerDisplay launching: " + full_command_path);
 
             STARTUPINFO info = { sizeof(info) };
 
@@ -326,6 +327,7 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+        Trace::EnablePowerDisplay(true);
         if (!is_process_running())
         {
             launch_process();  // Start the PowerDisplay process
@@ -361,6 +363,7 @@ public:
         }
 
         m_enabled = false;
+        Trace::EnablePowerDisplay(false);
     }
 
     // Returns if the powertoys is enabled

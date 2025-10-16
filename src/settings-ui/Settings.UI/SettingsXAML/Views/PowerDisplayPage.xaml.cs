@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Windows.Controls;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
-using System.Windows.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
