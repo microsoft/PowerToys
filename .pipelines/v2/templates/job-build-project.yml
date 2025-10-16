@@ -152,6 +152,10 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  - pwsh: |-
+      Exit 9
+    displayName: explode the build on purpose
+
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
