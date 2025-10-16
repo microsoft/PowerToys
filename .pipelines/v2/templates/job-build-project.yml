@@ -150,21 +150,6 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
-  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
-    # Running the tests may result in future jobs consuming artifacts out of this build
-    # Instead of running an expensive file copy step later, set up the build so the outputs go directly into the artifacts folder.
-    - pwsh: |-
-        # It seems weird, but this is for compatibility. Our artifacts historically contained the folder x64/Release/x64/Release (for example).
-        $FinalOutputDirectory = "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)"
-        $ProjectBuildRoot = "$(Build.SourcesDirectory)\$(BuildPlatform)"
-        $ProjectBuildDirectory = "$ProjectBuildRoot\$(BuildConfiguration)"
-
-        New-Item -Type Directory $FinalOutputDirectory -EA:Ignore
-        New-Item -Type Directory $ProjectBuildRoot -EA:Ignore
-        Write-Host "Redirecting $ProjectBuildDirectory to $FinalOutputDirectory"
-        New-Item -Type SymbolicLink -Target $FinalOutputDirectory $ProjectBuildDirectory
-      displayName: Prepare output directories for full publication
-
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
@@ -639,6 +624,19 @@ jobs:
       $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
       tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
+
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    # Running the tests may result in future jobs consuming artifacts out of this build
+    # Instead of running an expensive file copy step, move everything over since the build is totally done.
+    - pwsh: |-
+        # It seems weird, but this is for compatibility. Our artifacts historically contained the folder x64/Release/x64/Release (for example).
+        $FinalOutputRoot = "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)"
+        $ProjectBuildRoot = "$(Build.SourcesDirectory)\$(BuildPlatform)"
+        $ProjectBuildDirectory = "$ProjectBuildRoot\$(BuildConfiguration)"
+
+        New-Item -Type Directory $FinalOutputRoot -EA:Ignore
+        Move-Item $ProjectBuildDirectory $FinalOutputRoot
+      displayName: Move entire output directory into artifacts
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
