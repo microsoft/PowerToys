@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.Data.Json;
@@ -19,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public static IPCResponseService Instance => _instance ??= new IPCResponseService();
 
         public static event EventHandler<AllHotkeyConflictsEventArgs> AllHotkeyConflictsReceived;
+        public static event EventHandler<MonitorInfo[]> PowerDisplayMonitorsReceived;
 
         public void RegisterForIPC()
         {
@@ -46,6 +49,10 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     else if (responseType.Equals("all_hotkey_conflicts", StringComparison.Ordinal))
                     {
                         ProcessAllHotkeyConflicts(json);
+                    }
+                    else if (responseType.Equals("powerdisplay_monitors", StringComparison.Ordinal))
+                    {
+                        ProcessPowerDisplayMonitors(json);
                     }
                 }
             }
@@ -194,6 +201,86 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             return conflictGroup;
+        }
+
+        private void ProcessPowerDisplayMonitors(JsonObject json)
+        {
+            try
+            {
+                var monitors = new List<MonitorInfo>();
+
+                if (json.TryGetValue("monitors", out IJsonValue monitorsValue) &&
+                    monitorsValue.ValueType == JsonValueType.Array)
+                {
+                    var monitorsArray = monitorsValue.GetArray();
+                    foreach (var monitorItem in monitorsArray)
+                    {
+                        if (monitorItem.ValueType == JsonValueType.Object)
+                        {
+                            var monitorObj = monitorItem.GetObject();
+
+                            string name = string.Empty;
+                            string internalName = string.Empty;
+                            string hardwareId = string.Empty;
+                            string communicationMethod = string.Empty;
+                            string monitorType = string.Empty;
+                            int currentBrightness = 0;
+                            int colorTemperature = 6500;
+
+                            if (monitorObj.TryGetValue("name", out IJsonValue nameValue) &&
+                                nameValue.ValueType == JsonValueType.String)
+                            {
+                                name = nameValue.GetString();
+                            }
+
+                            if (monitorObj.TryGetValue("internalName", out IJsonValue internalNameValue) &&
+                                internalNameValue.ValueType == JsonValueType.String)
+                            {
+                                internalName = internalNameValue.GetString();
+                            }
+
+                            if (monitorObj.TryGetValue("hardwareId", out IJsonValue hardwareIdValue) &&
+                                hardwareIdValue.ValueType == JsonValueType.String)
+                            {
+                                hardwareId = hardwareIdValue.GetString();
+                            }
+
+                            if (monitorObj.TryGetValue("communicationMethod", out IJsonValue communicationMethodValue) &&
+                                communicationMethodValue.ValueType == JsonValueType.String)
+                            {
+                                communicationMethod = communicationMethodValue.GetString();
+                            }
+
+                            if (monitorObj.TryGetValue("monitorType", out IJsonValue monitorTypeValue) &&
+                                monitorTypeValue.ValueType == JsonValueType.String)
+                            {
+                                monitorType = monitorTypeValue.GetString();
+                            }
+
+                            if (monitorObj.TryGetValue("currentBrightness", out IJsonValue currentBrightnessValue) &&
+                                currentBrightnessValue.ValueType == JsonValueType.Number)
+                            {
+                                currentBrightness = (int)currentBrightnessValue.GetNumber();
+                            }
+
+                            if (monitorObj.TryGetValue("colorTemperature", out IJsonValue colorTemperatureValue) &&
+                                colorTemperatureValue.ValueType == JsonValueType.Number)
+                            {
+                                colorTemperature = (int)colorTemperatureValue.GetNumber();
+                            }
+
+                            var monitorInfo = new MonitorInfo(name, internalName, hardwareId, communicationMethod, monitorType, currentBrightness, colorTemperature);
+                            monitors.Add(monitorInfo);
+                        }
+                    }
+                }
+
+                PowerDisplayMonitorsReceived?.Invoke(this, monitors.ToArray());
+            }
+            catch (Exception)
+            {
+                // Ignore JSON parsing errors
+            }
         }
     }
 }

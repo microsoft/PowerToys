@@ -52,6 +52,7 @@
       <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
+      <ComponentGroupRef Id="PowerDisplayComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
