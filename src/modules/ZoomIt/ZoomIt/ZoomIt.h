@@ -96,7 +96,10 @@ typedef struct {
 #define SHALLOW_DESTROY 2
 #define LIVE_DRAW_ZOOM   3
 
-#define PEN_COLOR_HIGHLIGHT(Pencolor)	(Pencolor >> 24) != 0xFF
+#define PEN_COLOR_HIGHLIGHT(Pencolor)	((Pencolor >> 24) != 0xFF)
+#define PEN_COLOR_BLUR(Pencolor)        ((Pencolor & 0x00FFFFFF) == COLOR_BLUR)
+
+#define CURSOR_SAVE_MARGIN  4
 
 
 typedef BOOL (__stdcall *type_pGetMonitorInfo)(
@@ -143,7 +146,14 @@ typedef BOOL(__stdcall *type_pMagSetWindowFilterList)(
     int   count,
     HWND* pHWND
 );
-typedef BOOL (__stdcall *type_pMagInitialize)(VOID);
+typedef BOOL(__stdcall* type_pMagSetLensUseBitmapSmoothing)(
+    _In_ HWND, 
+    _In_ BOOL
+);
+typedef BOOL(__stdcall* type_MagSetFullscreenUseBitmapSmoothing)(
+    BOOL fUseBitmapSmoothing
+);
+typedef BOOL(__stdcall* type_pMagInitialize)(VOID);
 
 typedef BOOL(__stdcall *type_pGetPointerType)(
     _In_   UINT32 pointerId,

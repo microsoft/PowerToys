@@ -150,7 +150,7 @@ namespace LightSwitch.UITests
             var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
             Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
 
-            var neededTabs = 5;
+            var neededTabs = 6;
 
             if (modeCombobox.Text != "Manual")
             {
@@ -167,7 +167,7 @@ namespace LightSwitch.UITests
             Assert.IsNotNull(timeline, "Timeline not found.");
 
             var helpText = timeline.GetAttribute("HelpText");
-            string originalStartValue = GetHelpTextValue(helpText, "Start");
+            string originalEndValue = GetHelpTextValue(helpText, "End");
 
             for (int i = 0; i < neededTabs; i++)
             {
@@ -179,12 +179,12 @@ namespace LightSwitch.UITests
             testBase.Session.SendKeys(Key.Enter);
 
             helpText = timeline.GetAttribute("HelpText");
-            string updatedStartValue = GetHelpTextValue(helpText, "Start");
+            string updatedEndValue = GetHelpTextValue(helpText, "End");
 
-            Assert.AreNotEqual(originalStartValue, updatedStartValue, "Timeline start time should have been updated.");
+            Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
 
             helpText = timeline.GetAttribute("HelpText");
-            string originalEndValue = GetHelpTextValue(helpText, "End");
+            string originalStartValue = GetHelpTextValue(helpText, "Start");
 
             testBase.Session.SendKeys(Key.Tab);
             testBase.Session.SendKeys(Key.Enter);
@@ -192,9 +192,9 @@ namespace LightSwitch.UITests
             testBase.Session.SendKeys(Key.Enter);
 
             helpText = timeline.GetAttribute("HelpText");
-            string updatedEndValue = GetHelpTextValue(helpText, "End");
+            string updatedStartValue = GetHelpTextValue(helpText, "Start");
 
-            Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
+            Assert.AreNotEqual(originalStartValue, updatedStartValue, "Timeline start time should have been updated.");
         }
 
         /// <summary>
@@ -259,11 +259,7 @@ namespace LightSwitch.UITests
             // Click the select city button
             var setLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SetLocationButton_LightSwitch"), 5000);
             Assert.IsNotNull(setLocationButton, "Set location button not found.");
-            setLocationButton.Click();
-
-            var syncLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SyncLocationButton_LightSwitch"), 5000);
-            Assert.IsNotNull(syncLocationButton, "Sync location button not found.");
-            syncLocationButton.Click(msPostAction: 8000);
+            setLocationButton.Click(msPostAction: 8000);
 
             var latLong = testBase.Session.Find<Element>(By.AccessibilityId("LocationResultText_LightSwitch"), 5000);
             Assert.IsFalse(string.IsNullOrWhiteSpace(latLong.Text));
@@ -305,6 +301,7 @@ namespace LightSwitch.UITests
             string originalStartValue = GetHelpTextValue(helpText, "Start");
 
             sunriseOffset.Click();
+            testBase.Session.SendKeys(Key.Up);
 
             helpText = timeline.GetAttribute("HelpText");
             string updatedStartValue = GetHelpTextValue(helpText, "Start");
@@ -319,6 +316,7 @@ namespace LightSwitch.UITests
             string originalEndValue = GetHelpTextValue(helpText, "End");
 
             sunsetOffset.Click();
+            testBase.Session.SendKeys(Key.Up);
 
             helpText = timeline.GetAttribute("HelpText");
             string updatedEndValue = GetHelpTextValue(helpText, "End");
@@ -338,9 +336,15 @@ namespace LightSwitch.UITests
             var scrollViewer = testBase.Session.Find<Element>(By.AccessibilityId("PageScrollViewer"));
             systemCheckbox.EnsureVisible(scrollViewer);
 
-            // How do I handle when something is off screen?
+            int neededTabs = 10;
+
             if (!systemCheckbox.Selected)
             {
+                for (int i = 0; i < neededTabs; i++)
+                {
+                    testBase.Session.SendKeys(Key.Tab);
+                }
+
                 systemCheckbox.Click();
             }
 
