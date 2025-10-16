@@ -5629,25 +5629,4 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_EnableVolume_ToggleSwitch.OffContent" xml:space="preserve">
     <value>Off</value>
   </data>
-  <data name="PowerDisplay_MCP_GroupSettings.Header" xml:space="preserve">
-    <value>Model Context Protocol (MCP)</value>
-  </data>
-  <data name="PowerDisplay_EnableMcpServer.Header" xml:space="preserve">
-    <value>Enable MCP Server</value>
-  </data>
-  <data name="PowerDisplay_EnableMcpServer.Description" xml:space="preserve">
-    <value>Allow MCP clients like Claude Desktop to control monitor settings through standardized protocol</value>
-  </data>
-  <data name="PowerDisplay_McpServerPort.Header" xml:space="preserve">
-    <value>MCP Server Port</value>
-  </data>
-  <data name="PowerDisplay_McpServerPort.Description" xml:space="preserve">
-    <value>Port number for the MCP server to listen on (default: 5000)</value>
-  </data>
-  <data name="PowerDisplay_McpAutoStart.Header" xml:space="preserve">
-    <value>MCP Auto Start</value>
-  </data>
-  <data name="PowerDisplay_McpAutoStart.Description" xml:space="preserve">
-    <value>Automatically start MCP server when PowerDisplay launches</value>
-  </data>
 </root>

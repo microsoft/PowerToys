@@ -62,33 +62,6 @@
 
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_MCP_GroupSettings" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_EnableMcpServer"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE968;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnableMcpServer, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_McpServerPort"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
-                        IsEnabled="{x:Bind ViewModel.EnableMcpServer, Mode=OneWay}">
-                        <NumberBox
-                            Value="{x:Bind ViewModel.McpServerPort, Mode=TwoWay}"
-                            Minimum="1000"
-                            Maximum="65535"
-                            MinWidth="120" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_McpAutoStart"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B5;}"
-                        IsEnabled="{x:Bind ViewModel.EnableMcpServer, Mode=OneWay}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.McpAutoStart, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                </controls:SettingsGroup>
-
                 <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
                     <!-- 空状态提示 -->
                     <InfoBar

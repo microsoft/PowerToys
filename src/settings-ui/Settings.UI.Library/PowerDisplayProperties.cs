@@ -17,9 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = true;
             SavedMonitorSettings = new Dictionary<string, MonitorSavedSettings>();
-            EnableMcpServer = false;
-            McpServerPort = 5000;
-            McpAutoStart = false;
         }
 
         [JsonPropertyName("launch_at_startup")]
@@ -39,14 +36,5 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("saved_monitor_settings")]
         public Dictionary<string, MonitorSavedSettings> SavedMonitorSettings { get; set; }
-
-        [JsonPropertyName("enable_mcp_server")]
-        public bool EnableMcpServer { get; set; }
-
-        [JsonPropertyName("mcp_server_port")]
-        public int McpServerPort { get; set; }
-
-        [JsonPropertyName("mcp_auto_start")]
-        public bool McpAutoStart { get; set; }
     }
 }

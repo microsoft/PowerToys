@@ -144,51 +144,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool EnableMcpServer
-        {
-            get => _settings.Properties.EnableMcpServer;
-            set
-            {
-                if (_settings.Properties.EnableMcpServer != value)
-                {
-                    _settings.Properties.EnableMcpServer = value;
-                    OnPropertyChanged(nameof(EnableMcpServer));
-
-                    NotifySettingsChanged();
-                }
-            }
-        }
-
-        public int McpServerPort
-        {
-            get => _settings.Properties.McpServerPort;
-            set
-            {
-                if (_settings.Properties.McpServerPort != value)
-                {
-                    _settings.Properties.McpServerPort = value;
-                    OnPropertyChanged(nameof(McpServerPort));
-
-                    NotifySettingsChanged();
-                }
-            }
-        }
-
-        public bool McpAutoStart
-        {
-            get => _settings.Properties.McpAutoStart;
-            set
-            {
-                if (_settings.Properties.McpAutoStart != value)
-                {
-                    _settings.Properties.McpAutoStart = value;
-                    OnPropertyChanged(nameof(McpAutoStart));
-
-                    NotifySettingsChanged();
-                }
-            }
-        }
-
         private readonly List<string> _brightnessUpdateRateOptions = new List<string>
         {
             "never",
