@@ -280,7 +280,7 @@ jobs:
   # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
   - task: VSBuild@1
     displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
-    condition: ne(variables['BuildPlatform'], 'x64')
+    condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
     inputs:
       solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
       msbuildArgs: /t:Build /m /restore
