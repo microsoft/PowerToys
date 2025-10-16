@@ -10,7 +10,6 @@ Following tools are currently available:
 
 * [BugReportTool](bug-report-tool.md) - A tool to collect logs and system information for bug reports.
 * [Build tools](build-tools.md) - A set of scripts that help building PowerToys.
-* [Sparse package identity](sparse-package.md) - Documentation for the shared sparse MSIX packaging helper.
 * [Clean up tool](clean-up-tool.md) - A tool to clean up the PowerToys installation.
 * [Monitor info report](monitor-info-report.md) - A small diagnostic tool which helps identifying WinAPI bugs related to the physical monitor detection.
 * [project template](/tools/project_template/README.md) - A Visual Studio project template for a new PowerToys project.

@@ -28,7 +28,6 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 
 - [Tools Overview](tools/readme.md) - Overview of tools in PowerToys
 - [Build Tools](tools/build-tools.md) - Tools that help building PowerToys
-- [Sparse Package Identity](tools/sparse-package.md) - How to build and register the shared sparse MSIX
 - [Bug Report Tool](tools/bug-report-tool.md) - Tool for collecting logs and system information
 - [Debugging Tools](tools/debugging-tools.md) - Specialized tools for debugging
 - [Fuzzing Testing](tools/fuzzingtesting.md) - How to implement and run fuzz testing for PowerToys modules
