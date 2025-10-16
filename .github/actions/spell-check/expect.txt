@@ -1454,6 +1454,7 @@ rstringalpha
 rstringdigit
 rtb
 RTLREADING
+rtm
 runas
 rundll
 rungameid
@@ -1699,6 +1700,7 @@ SYSTEMMODAL
 SYSTEMTIME
 TARG
 TARGETAPPHEADER
+TARGETDIR
 targetentrypoint
 TARGETHEADER
 targetver
@@ -2053,3 +2055,4 @@ Zoomin
 zoomit
 ZOOMITX
 Zorder
+fffffffffffffffffffffffffffffffffffffffff
