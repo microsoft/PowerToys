@@ -380,10 +380,8 @@ namespace Awake.Core
                     {
                         TimeRemaining = (uint)remainingTimeSpan.TotalSeconds;
 
-                        UpdateTrayIconText(
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]",
-                            TrayHelper.TimedIcon,
-                            TrayIconAction.Update);
+                        string iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]";
+                        UpdateTrayIconText(iconText, TrayHelper.TimedIcon, TrayIconAction.Update);
                     },
                     _ => HandleTimerCompletion("timed"),
                     _tokenSource.Token);
