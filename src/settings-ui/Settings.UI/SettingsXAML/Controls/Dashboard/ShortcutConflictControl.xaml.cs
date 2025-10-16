@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
@@ -154,7 +151,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ConflictCount = this.ConflictCount,
             });
 
-            // Check if window already exists and activate it, otherwise create new one
             if (App.GetShortcutConflictWindow() == null)
             {
                 var conflictWindow = new ShortcutConflictWindow();

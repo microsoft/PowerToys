@@ -7,7 +7,6 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -280,7 +279,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 return;
             }
 
-            // Check if window already exists and activate it, otherwise create new one
             if (App.GetShortcutConflictWindow() == null)
             {
                 var conflictWindow = new ShortcutConflictWindow();

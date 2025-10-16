@@ -9,7 +9,6 @@ using System.Linq;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
@@ -300,7 +299,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Close the current shortcut dialog
             shortcutDialog.Hide();
 
-            // Check if window already exists and activate it, otherwise create new one
             if (App.GetShortcutConflictWindow() == null)
             {
                 var conflictWindow = new ShortcutConflictWindow();
