@@ -370,10 +370,11 @@ namespace Awake.Core
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
                 settings.Properties.CustomTrayTimes,
-                startedFromPowerToys);
+                startedFromPowerToys,
+                settings.Properties.ShowTrayIcon);
         }
 
-        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, uint> trayTimeShortcuts, bool startedFromPowerToys)
+        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, uint> trayTimeShortcuts, bool startedFromPowerToys, bool showTrayIcon = true)
         {
             ClearExistingTrayMenu();
             CreateNewTrayMenu(startedFromPowerToys, keepDisplayOn, mode);

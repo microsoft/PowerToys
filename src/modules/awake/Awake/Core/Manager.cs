@@ -49,6 +49,8 @@ namespace Awake.Core
 
         private static DateTimeOffset ExpireAt { get; set; }
 
+        private static bool ShowTrayIcon { get; set; } = true;
+
         private static readonly CompositeFormat AwakeMinute = CompositeFormat.Parse(Resources.AWAKE_MINUTE);
         private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
         private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
@@ -145,8 +147,32 @@ namespace Awake.Core
             Logger.LogInfo("New token source and thread token instantiated.");
         }
 
+        internal static void SetShowTrayIcon(bool showTrayIcon)
+        {
+            ShowTrayIcon = showTrayIcon;
+            SetModeShellIcon();
+        }
+
         internal static void SetModeShellIcon(bool forceAdd = false)
         {
+            if (!ShowTrayIcon && !forceAdd)
+            {
+                // If the tray icon should be hidden and this is not a forced add (e.g., taskbar recreated),
+                // delete the icon if it exists
+                TrayHelper.SetShellIcon(
+                    TrayHelper.WindowHandle,
+                    string.Empty,
+                    null,
+                    TrayIconAction.Delete);
+                return;
+            }
+
+            if (!ShowTrayIcon && forceAdd)
+            {
+                // If the tray icon should be hidden but taskbar was recreated, still hide it
+                return;
+            }
+
             string iconText = string.Empty;
             Icon? icon = null;
 

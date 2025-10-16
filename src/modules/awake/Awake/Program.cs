@@ -506,6 +506,8 @@ namespace Awake
 
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
 
+                Manager.SetShowTrayIcon(settings.Properties.ShowTrayIcon);
+
                 switch (settings.Properties.Mode)
                 {
                     case AwakeMode.PASSIVE:

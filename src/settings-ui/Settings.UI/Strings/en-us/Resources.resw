@@ -2356,6 +2356,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="Awake_ShowTrayIconSettingsCard.Header" xml:space="preserve">
+    <value>Show tray icon</value>
+  </data>
   <data name="Awake_IntervalHoursInput.Header" xml:space="preserve">
     <value>Hours</value>
   </data>
