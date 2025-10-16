@@ -161,11 +161,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(ScheduleMode));
                 }
 
-                if (ModuleSettings.Properties.ScheduleMode.Value == "Off")
-                {
-                    // Disable schedule area
-                }
-
                 if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours" && oldMode != "FixedHours")
                 {
                     LightTime = 360;

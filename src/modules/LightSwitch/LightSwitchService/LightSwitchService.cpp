@@ -300,12 +300,12 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
         if (wait == WAIT_OBJECT_0)
         {
-            Logger::info(L"[LightSwitchService] Stop event triggered — exiting worker loop.");
+            Logger::info(L"[LightSwitchService] Stop event triggered - exiting worker loop.");
             break;
         }
         if (hParent && wait == WAIT_OBJECT_0 + 1)
         {
-            Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
+            Logger::info(L"[LightSwitchService] Parent process exited - stopping service.");
             break;
         }
     }
