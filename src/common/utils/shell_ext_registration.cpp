@@ -221,4 +221,50 @@ namespace runtime_shell_ext
         }
         return true;
     }
+
+    bool Unregister(const Spec& spec)
+    {
+        using namespace std::string_literals;
+
+        for (const auto& path : spec.contextMenuHandlerKeyPaths)
+        {
+            RegDeleteTreeW(HKEY_CURRENT_USER, path.c_str());
+        }
+
+        for (const auto& path : spec.extraAssociationPaths)
+        {
+            RegDeleteTreeW(HKEY_CURRENT_USER, path.c_str());
+        }
+
+        if (!spec.systemFileAssocExtensions.empty() && !spec.systemFileAssocHandlerName.empty())
+        {
+            for (const auto& ext : spec.systemFileAssocExtensions)
+            {
+                std::wstring keyPath = L"Software\\Classes\\SystemFileAssociations\\";
+                keyPath += ext;
+                keyPath += L"\\ShellEx\\ContextMenuHandlers\\";
+                keyPath += spec.systemFileAssocHandlerName;
+                RegDeleteTreeW(HKEY_CURRENT_USER, keyPath.c_str());
+            }
+        }
+
+        if (!spec.clsid.empty())
+        {
+            std::wstring clsidRoot = L"Software\\Classes\\CLSID\\"s + spec.clsid;
+            RegDeleteTreeW(HKEY_CURRENT_USER, clsidRoot.c_str());
+        }
+
+        if (!spec.sentinelKey.empty() && !spec.sentinelValue.empty())
+        {
+            HKEY key{};
+            if (RegOpenKeyExW(HKEY_CURRENT_USER, spec.sentinelKey.c_str(), 0, KEY_SET_VALUE, &key) == ERROR_SUCCESS)
+            {
+                RegDeleteValueW(key, spec.sentinelValue.c_str());
+                RegCloseKey(key);
+            }
+        }
+
+        Logger::info(L"Runtime shell extension unregistered for {}", spec.clsid);
+        return true;
+    }
 }

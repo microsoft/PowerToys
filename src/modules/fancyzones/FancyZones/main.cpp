@@ -11,6 +11,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/resources.h>
+#include <common/utils/winapi_error.h>
 
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 

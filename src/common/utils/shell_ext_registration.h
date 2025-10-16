@@ -28,4 +28,5 @@ namespace runtime_shell_ext
     };
 
     bool EnsureRegistered(const Spec& spec, HMODULE moduleInstance);
+    bool Unregister(const Spec& spec);
 }
