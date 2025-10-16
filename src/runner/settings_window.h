@@ -25,6 +25,7 @@ enum class ESettingsWindowNames
     PowerRename,
     FileExplorer,
     ShortcutGuide,
+    VideoConference,
     Hosts,
     MeasureTool,
     PowerOCR,

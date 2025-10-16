@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-  <Import Project="..\..\src\CmdPalVersion.props" Condition="Exists('..\..\src\CmdPalVersion.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
@@ -16,18 +14,16 @@ SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion);</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
@@ -36,7 +32,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
       call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
       call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
-      call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
       call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
       call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
@@ -56,6 +51,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
       call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
       call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
+      call move /Y ..\..\..\VideoConference.wxs.bk ..\..\..\VideoConference.wxs
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
@@ -69,12 +65,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
-    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
-    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
@@ -115,7 +105,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
-    <Compile Include="CmdPal.wxs" />
     <Compile Include="ColorPicker.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />
@@ -123,7 +112,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Hosts.wxs" />
     <Compile Include="ImageResizer.wxs" />
     <Compile Include="KeyboardManager.wxs" />
-    <Compile Include="DscResources.wxs" />
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
     <Compile Include="RegistryPreview.wxs" />
@@ -131,6 +119,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Settings.wxs" />
     <Compile Include="ShortcutGuide.wxs" />
     <Compile Include="Tools.wxs" />
+    <Compile Include="VideoConference.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
     <Compile Include="WinUI3Applications.wxs" />
     <Compile Include="MonacoSRC.wxs" />

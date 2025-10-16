@@ -69,18 +69,17 @@
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
+      <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
       <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
       <ComponentGroupRef Id="NewPlusComponentGroup" />
       <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
-      <ComponentGroupRef Id="DscResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
-      <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
@@ -137,7 +136,6 @@
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
-      <Custom Action="SetInstallCmdPalPackageParam" Before="InstallCmdPalPackage" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
@@ -151,9 +149,6 @@
         NOT Installed
       </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="InstallCmdPalPackage" After="InstallFiles">
         NOT Installed
       </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
@@ -176,21 +171,6 @@
       </Custom>
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="CleanImageResizerRuntimeRegistry" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="CleanFileLocksmithRuntimeRegistry" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="CleanPowerRenameRuntimeRegistry" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="CleanNewPlusRuntimeRegistry" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles">
-        Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
       <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
@@ -216,17 +196,10 @@
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
       <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
 
-      <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
-      <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize">NOT Installed</Custom>
-
     </InstallExecuteSequence>
 
     <CustomAction Id="SetLaunchPowerToysParam"
                     Property="LaunchPowerToys"
-                    Value="[INSTALLFOLDER]" />
-
-    <CustomAction Id="SetInstallCmdPalPackageParam"
-                    Property="InstallCmdPalPackage"
                     Value="[INSTALLFOLDER]" />
 
     <CustomAction
@@ -325,6 +298,7 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="UninstallDSCModuleCA"
                    />
+
       <CustomAction Id="UninstallServicesTask"
                     Return="ignore"
                     Impersonate="yes"
@@ -419,14 +393,6 @@
                   DllEntry="DetectPrevInstallPathCA"
                   />
 
-    <CustomAction Id="CleanVideoConferenceRegistry"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CleanVideoConferenceRegistryCA"
-                  />
-
     <CustomAction Id="ApplyModulesRegistryChangeSets"
                   Return="check"
                   Impersonate="yes"
@@ -449,43 +415,6 @@
                 Execute="deferred"
                 BinaryKey="PTCustomActions"
                 DllEntry="UnRegisterContextMenuPackagesCA"
-                />
-
-    <CustomAction Id="CleanImageResizerRuntimeRegistry"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CleanImageResizerRuntimeRegistryCA"
-                  />
-    <CustomAction Id="CleanFileLocksmithRuntimeRegistry"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CleanFileLocksmithRuntimeRegistryCA"
-                  />
-    <CustomAction Id="CleanPowerRenameRuntimeRegistry"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CleanPowerRenameRuntimeRegistryCA"
-                  />
-    <CustomAction Id="CleanNewPlusRuntimeRegistry"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CleanNewPlusRuntimeRegistryCA"
-                  />
-
-    <CustomAction Id="UnRegisterCmdPalPackage"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="UnRegisterCmdPalPackageCA"
                   />
 
     <CustomAction Id="CheckGPO"
@@ -493,14 +422,6 @@
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
                   DllEntry="CheckGPOCA"
-                  />
-
-    <CustomAction Id="InstallCmdPalPackage"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="InstallCmdPalPackageCA"
                   />
 
     <!-- Close 'PowerToys.exe' before uninstall-->

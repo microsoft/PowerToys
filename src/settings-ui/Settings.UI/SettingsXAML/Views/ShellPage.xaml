@@ -317,6 +317,12 @@
                             helpers:NavHelper.NavigateTo="views:PowerAccentPage"
                             AutomationProperties.AutomationId="QuickAccentNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
+                        <!--  Video Conference Mute  -->
+                        <NavigationViewItem
+                            x:Uid="Shell_VideoConference"
+                            helpers:NavHelper.NavigateTo="views:VideoConferencePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
+                            IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.17" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.14" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -13,7 +13,6 @@
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
       <string id="NewPlus">New+</string>
-      <string id="DeprecatedPolicies">Deprecated policies</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -30,10 +29,6 @@
       <string id="SUPPORTED_POWERTOYS_0_84_0">PowerToys version 0.84.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_85_0">PowerToys version 0.85.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_86_0">PowerToys version 0.86.0 or later</string>
-      <string id="SUPPORTED_POWERTOYS_0_88_0">PowerToys version 0.88.0 or later</string>
-      <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
-      <string id="SUPPORTED_POWERTOYS_0_90_0">PowerToys version 0.90.0 or later</string>
-      <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -114,16 +109,6 @@ If this setting is enabled or not configured, the user can control diagnostic da
 
 If this setting is disabled, diagnostic data sending is not allowed.
 </string>
-      <string id="ConfigureRunAtStartupDescription">This policy configures the "run at startup" setting of PowerToys.
-
-If you enable this setting, the "run at startup" setting will be always enabled and the user won't be able to disable it.
-
-If you disable this setting, the "run at startup" setting will be always disabled and the user won't be able to enable it.
-
-If you don't configure this setting, users are able to enable or disable "run at startup" at will.
-
-Note: This only controls the PowerToys method that creates a scheduled task to start PowerToys at login. It doesn't control other custom auto-start methods that the user might try to use outside of PowerToys or manually creating/deleting a scheduled task.
-</string>
       <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
 If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
@@ -181,14 +166,7 @@ If you enable this policy, the user won't be able to enable the "block screensav
 
 If you disable or don't configure this policy, the user takes control over the setting and can block the screensaver.
 </string>
-      <string id="MwbAllowServiceModeDescription">This policy configures if the user is allowed to use Mouse Without Borders in Service Mode.
 
-If this setting is enabled or not configured, the user can enable and use Mouse Without Borders in Service Mode.
-
-If this setting is disabled, the user won't be able to enable or use Mouse Without Borders in Service Mode.
-
-Note: As most other PowerToys policies, a restart of PowerToys is required for a change in this policy to take full effect.
-</string>
       <string id="MwbSameSubnetOnlyDescription">This policy configures if connections are only allowed in the same subnet.
 
 If you enable this policy, the setting is enabled and only connections in the same subnet are allowed.
@@ -228,14 +206,6 @@ If you disable this policy, the setting is disabled and the extension is shown.
 
 If you don't configure this policy, the user takes control over the setting and can enable or disable it.
 </string>
-      <string id="NewPlusReplaceVariablesInTemplateFilenamesDescription">This policy configures if supported variables will get replaced in template filenames.
-
-If you enable this policy, the setting is enabled and supported variables in filenames will get replaced.
-
-If you disable this policy, the setting is disabled and variables in filenames will not get replaced.
-
-If you don't configure this policy, the user will be able to control the setting and can enable or disable it.
-</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
@@ -243,9 +213,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityCmdPal">CmdPal: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCropAndLock">Crop And Lock: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityLightSwitch">Light Switch: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityEnvironmentVariables">Environment Variables: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
@@ -254,11 +222,9 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerBgcodePreview">BGcode file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGThumbnails">SVG file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFThumbnails">PDF file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerBgcodeThumbnails">BGcode file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
@@ -279,7 +245,6 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityZoomIt">Zoom It: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
@@ -295,15 +260,12 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="MwbFileTransferEnabled">File transfer enabled</string>
       <string id="MwbUseOriginalUserInterface">Original user interface is available</string>
       <string id="MwbDisallowBlockingScreensaver">Disallow blocking screensaver on other machines</string>
-      <string id="MwbAllowServiceMode">Allow Service Mode</string>
       <string id="MwbSameSubnetOnly">Connect only in same subnet</string>
       <string id="MwbValidateRemoteIp">Validate remote machine IP Address</string>
       <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
-      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
-      <string id="NewPlusReplaceVariablesInTemplateFilenames">Replace variables in template filenames</string>
     </stringTable>
 
     <presentationTable>

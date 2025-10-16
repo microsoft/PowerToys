@@ -45,22 +45,18 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredAdvancedPasteEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAdvancedPasteEnabledValue()) << std::endl;
     report << "getConfiguredAlwaysOnTopEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue()) << std::endl;
     report << "getConfiguredAwakeEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAwakeEnabledValue()) << std::endl;
-    report << "getConfiguredCmdPalEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCmdPalEnabledValue()) << std::endl;
     report << "getConfiguredColorPickerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredColorPickerEnabledValue()) << std::endl;
     report << "getConfiguredCropAndLockEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCropAndLockEnabledValue()) << std::endl;
     report << "getConfiguredFancyZonesEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFancyZonesEnabledValue()) << std::endl;
     report << "getConfiguredFileLocksmithEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFileLocksmithEnabledValue()) << std::endl;
-    report << "getConfiguredLightSwitchEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredLightSwitchEnabledValue()) << std::endl;
     report << "getConfiguredSvgPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMarkdownPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMarkdownPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMonacoPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMonacoPreviewEnabledValue()) << std::endl;
     report << "getConfiguredPdfPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfPreviewEnabledValue()) << std::endl;
     report << "getConfiguredGcodePreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodePreviewEnabledValue()) << std::endl;
-    report << "getConfiguredBgcodePreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredBgcodePreviewEnabledValue()) << std::endl;
     report << "getConfiguredSvgThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredPdfThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredGcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue()) << std::endl;
-    report << "getConfiguredBgcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredStlThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredStlThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredHostsFileEditorEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredHostsFileEditorEnabledValue()) << std::endl;
     report << "getConfiguredImageResizerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredImageResizerEnabledValue()) << std::endl;
@@ -78,7 +74,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredShortcutGuideEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredShortcutGuideEnabledValue()) << std::endl;
     report << "getConfiguredTextExtractorEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredTextExtractorEnabledValue()) << std::endl;
     report << "getConfiguredPeekEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPeekEnabledValue()) << std::endl;
-    report << "getConfiguredZoomItEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredZoomItEnabledValue()) << std::endl;
+    report << "getConfiguredVideoConferenceMuteEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue()) << std::endl;
     report << "getDisableAutomaticUpdateDownloadValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisableAutomaticUpdateDownloadValue()) << std::endl;
     report << "getSuspendNewUpdateToastValue: " << gpo_rule_configured_to_string(powertoys_gpo::getSuspendNewUpdateToastValue()) << std::endl;
     report << "getDisableNewUpdateToastValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisableNewUpdateToastValue()) << std::endl;
@@ -91,7 +87,6 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredMwbFileTransferEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbFileTransferEnabledValue()) << std::endl;
     report << "getConfiguredMwbUseOriginalUserInterfaceValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbUseOriginalUserInterfaceValue()) << std::endl;
     report << "getConfiguredMwbDisallowBlockingScreensaverValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisallowBlockingScreensaverValue()) << std::endl;
-    report << "getConfiguredMwbAllowServiceModeValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbAllowServiceModeValue()) << std::endl;
     report << "getConfiguredMwbSameSubnetOnlyValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbSameSubnetOnlyValue()) << std::endl;
     report << "getConfiguredMwbValidateRemoteIpValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbValidateRemoteIpValue()) << std::endl;
     report << "getConfiguredMwbDisableUserDefinedIpMappingRulesValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisableUserDefinedIpMappingRulesValue()) << std::endl;
@@ -99,5 +94,4 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredNewPlusEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusEnabledValue()) << std::endl;
     report << "getConfiguredNewPlusHideTemplateFilenameExtensionValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue()) << std::endl;
     report << "getAllowDataDiagnosticsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowDataDiagnosticsValue()) << std::endl;
-    report << "getConfiguredRunAtStartupValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredRunAtStartupValue()) << std::endl;
 }

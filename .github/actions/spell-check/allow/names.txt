@@ -23,6 +23,7 @@ registrypreview
 rooler
 scoobe
 shortcutguide
+videoconference
 
 
 # USERS
@@ -33,7 +34,6 @@ Adoumie
 Advaith
 alekhyareddy
 Aleks
-amihaiuc
 angularsen
 Anirudha
 arjunbalgovind
@@ -46,8 +46,8 @@ betsegaw
 bricelam
 bsky
 CCcat
-chemwolf
 chenmy
+chemwolf
 Chinh
 chrdavis
 Chrzan
@@ -55,7 +55,6 @@ clayton
 Coplen
 craigloewen
 crutkas
-Chubercik
 damienleroy
 daverayment
 davidegiacometti
@@ -66,10 +65,9 @@ Deondre
 DHowett
 ductdo
 Essey
-ethanfangg
 Feng
+ethanfangg
 ferraridavide
-foxmsft
 frankychen
 Gaarden
 gaardmark
@@ -78,10 +76,8 @@ Galaxi
 Garside
 Gershaft
 Giordani
-Gleb
 Gokce
 gordon
-Griese
 grzhan
 Guo
 hanselman
@@ -92,15 +88,12 @@ Hemmerlein
 hlaueriksson
 Horvalds
 Howett
-hotkidfamily
 htcfreek
 Huynh
 Ionut
 jamrobot
 Jaswal
-Jaylyn
 jefflord
-Jeremic
 Jordi
 jyuwono
 kai
@@ -110,13 +103,11 @@ Kantarci
 Karthick
 kaylacinnamon
 kevinguo
-Khmyznikov
 Krigun
 Lambson
 Laute
 laviusmotileng
 Leilei
-Loewen
 Luecking
 Mahalingam
 Markovic
@@ -124,7 +115,6 @@ martinchrzan
 martinmoene
 Melman
 Mengyuan
-Mihaiuc
 Mikhayelyan
 msft
 Mykhailo
@@ -133,8 +123,6 @@ Naro
 nathancartlidge
 Nemeth
 nielslaute
-Noraa
-noraajunker
 oldnewthing
 onegreatworld
 palenshus
@@ -154,18 +142,14 @@ ricardosantos
 riri
 ritchielawrence
 robmikh
-ruslanlap
-Russinovich
 Rutkas
 ryanbodrug
 saahmedm
 sachaple
-Sameerjs
 Santossio
 Schoen
 Sekan
 Seraphima
-Shmuelie
 skttl
 somil
 Soref
@@ -176,11 +160,9 @@ Tadele
 talynone
 Taras
 TBM
-Teutsch
 tilovell
 Triet
 urnotdfs
-vednig
 waaverecords
 wang
 Whuihuan
@@ -204,15 +186,11 @@ Zykova
 
 Bilibili
 BVID
-capturevideosample
 cmdow
 Controlz
 cortana
-devhints
-dlnilsson
 fancymouse
 firefox
-fudan
 gpt
 Inkscape
 Markdig
@@ -226,11 +204,8 @@ openai
 Quickime
 regedit
 roslyn
-Skia
 Spotify
-tldr
 Vanara
-wangyi
 WEX
 windowwalker
 winui
@@ -238,9 +213,7 @@ winuiex
 wix
 wordpad
 WWL
-wyhash
 xamlstyler
 Xavalon
 Xbox
 Youdao
-zadjii

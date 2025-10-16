@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Toolbar.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="VideoConferenceModule.cpp" />
+    <ClCompile Include="trace.cpp" />
+    <ClCompile Include="AudioDeviceNotificationClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="Toolbar.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="VideoConferenceModule.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="AudioDeviceNotificationClient.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{efd98846-4568-41d4-a425-451c246802cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\VCM">
+      <UniqueIdentifier>{e79f8c1a-b78b-4ba5-b923-f7db79eba776}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VideoConferenceModule.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\VCM\Off-NotInUse Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-NotInUse Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-Off Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-Off Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-On Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\Off-On Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-NotInUse Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-NotInUse Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-Off Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-Off Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-On Dark.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\On-On Light.png">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+    <Content Include="Assets\VCM\black.bmp">
+      <Filter>Assets\VCM</Filter>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

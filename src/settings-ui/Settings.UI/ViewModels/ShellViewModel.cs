@@ -39,6 +39,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private NavigationViewItem[] _moduleNavViewItems;
         private GeneralSettings _generalSettingsConfig;
 
+        public bool IsVideoConferenceBuild
+        {
+            get
+            {
+                var mfHandle = NativeMethods.LoadLibrary("mf.dll");
+                bool mfAvailable = mfHandle != IntPtr.Zero;
+                if (mfAvailable)
+                {
+                    NativeMethods.FreeLibrary(mfHandle);
+                }
+
+                return this != null && File.Exists("PowerToys.VideoConferenceModule.dll") && mfAvailable;
+            }
+        }
+
         public bool IsBackEnabled
         {
             get => isBackEnabled;

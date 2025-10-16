@@ -166,6 +166,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     Tag="TextExtractor" />
                 <NavigationViewItem
+                    x:Uid="Shell_VideoConference"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
+                    Tag="VideoConference" />
+                <NavigationViewItem
                     x:Uid="Shell_Workspaces"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
                     Tag="Workspaces" />

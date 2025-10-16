@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_VideoConference" Guid="CCE30DCC-AC6B-4A2D-9BD8-2E9598E5B785" Win64="yes">
+        <Condition>WINDOWSBUILDNUMBER >= 19041</Condition>
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_VideoConference" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.BinX32Dir)PowerToys.VideoConferenceProxyFilter_x86.dll" />
+      </Component>
+    </DirectoryRef>
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+      <Directory Id="VideoConferenceAssetsFolder" Name="VCM"/>
+    </DirectoryRef>
+    <DirectoryRef Id="VideoConferenceAssetsFolder" FileSource="$(var.BinDir)\Assets\VCM">
+      <!-- !Warning! Make sure to change Component Guid if you update the file list -->
+      <Component Id="Module_VideoConferenceIcons" Guid="E78339BF-58D8-48F2-A1C3-E1C3DC72DCAE" Win64="yes">
+        <Condition>WINDOWSBUILDNUMBER >= 19041</Condition>
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_VideoConferenceIcons" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.BinDir)Assets\VCM\Off-NotInUse Dark.png" />
+        <File Source="$(var.BinDir)Assets\VCM\Off-NotInUse Light.png" />
+        <File Source="$(var.BinDir)Assets\VCM\Off-Off Dark.png" />
+        <File Source="$(var.BinDir)Assets\VCM\Off-Off Light.png" />
+        <File Source="$(var.BinDir)Assets\VCM\Off-On Dark.png" />
+        <File Source="$(var.BinDir)Assets\VCM\Off-On Light.png" />
+        <File Source="$(var.BinDir)Assets\VCM\On-NotInUse Dark.png" />
+        <File Source="$(var.BinDir)Assets\VCM\On-NotInUse Light.png" />
+        <File Source="$(var.BinDir)Assets\VCM\On-Off Light.png" />
+        <File Source="$(var.BinDir)Assets\VCM\On-Off Dark.png" />
+        <File Source="$(var.BinDir)Assets\VCM\On-On Dark.png" />
+        <File Source="$(var.BinDir)Assets\VCM\On-On Light.png" />
+        <File Source="$(var.BinDir)Assets\VCM\black.bmp" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="VideoConferenceComponentGroup">
+      <Component Id="RemoveVideoConferenceFolder" Guid="C6F2BE3D-FDE3-4CDB-BB51-A43E1B7B1606" Directory="INSTALLFOLDER" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveVideoConferenceFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderVideoConferenceAssetsFolder" Directory="VideoConferenceAssetsFolder" On="uninstall"/>
+      </Component>
+      <ComponentRef Id="Module_VideoConference" />
+      <ComponentRef Id="Module_VideoConferenceIcons" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>
