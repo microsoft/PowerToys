@@ -116,6 +116,20 @@ else {
     Write-Warning "[SIGN] No .msix files found in $msixSearchRoot"
 }
 
+# Generate DSC manifest files
+Write-Host '[DSC] Generating DSC manifest files...'
+$dscScriptPath = Join-Path $repoRoot '.\tools\build\generate-dsc-manifests.ps1'
+if (Test-Path $dscScriptPath) {
+    & $dscScriptPath -BuildPlatform $Platform -BuildConfiguration $Configuration -RepoRoot $repoRoot
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "DSC manifest generation failed with exit code $LASTEXITCODE"
+        exit 1
+    }
+    Write-Host '[DSC] DSC manifest files generated successfully'
+} else {
+    Write-Warning "[DSC] DSC manifest generator script not found at: $dscScriptPath"
+}
+
 RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
 RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
 

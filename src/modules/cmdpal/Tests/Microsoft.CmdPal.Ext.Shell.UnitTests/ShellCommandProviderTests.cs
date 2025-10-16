@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -16,7 +16,7 @@ public class ShellCommandProviderTests
     {
         // Setup
         var mockHistoryService = new Mock<IRunHistoryService>();
-        var provider = new ShellCommandsProvider(mockHistoryService.Object);
+        var provider = new ShellCommandsProvider(mockHistoryService.Object, telemetryService: null);
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
@@ -28,7 +28,7 @@ public class ShellCommandProviderTests
     {
         // Setup
         var mockHistoryService = new Mock<IRunHistoryService>();
-        var provider = new ShellCommandsProvider(mockHistoryService.Object);
+        var provider = new ShellCommandsProvider(mockHistoryService.Object, telemetryService: null);
 
         // Assert
         Assert.IsNotNull(provider.Icon);
@@ -39,7 +39,7 @@ public class ShellCommandProviderTests
     {
         // Setup
         var mockHistoryService = new Mock<IRunHistoryService>();
-        var provider = new ShellCommandsProvider(mockHistoryService.Object);
+        var provider = new ShellCommandsProvider(mockHistoryService.Object, telemetryService: null);
 
         // Act
         var commands = provider.TopLevelCommands();

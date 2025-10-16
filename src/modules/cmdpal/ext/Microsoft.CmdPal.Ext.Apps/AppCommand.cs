@@ -16,24 +16,19 @@ using WyHash;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed partial class AppCommand : InvokableCommand
+internal sealed partial class AppCommand : InvokableCommand
 {
     private readonly AppItem _app;
 
     public AppCommand(AppItem app)
     {
         _app = app;
-
-        Name = Resources.run_command_action;
+        Name = Resources.run_command_action!;
         Id = GenerateId();
-
-        if (!string.IsNullOrEmpty(app.IcoPath))
-        {
-            Icon = new(app.IcoPath);
-        }
+        Icon = Icons.GenericAppIcon;
     }
 
-    internal static async Task StartApp(string aumid)
+    private static async Task StartApp(string aumid)
     {
         await Task.Run(() =>
         {
@@ -58,7 +53,7 @@ public sealed partial class AppCommand : InvokableCommand
         }).ConfigureAwait(false);
     }
 
-    internal static async Task StartExe(string path)
+    private static async Task StartExe(string path)
     {
         await Task.Run(() =>
         {
@@ -73,7 +68,7 @@ public sealed partial class AppCommand : InvokableCommand
         });
     }
 
-    internal async Task Launch()
+    private async Task Launch()
     {
         if (_app.IsPackaged)
         {
