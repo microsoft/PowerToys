@@ -123,8 +123,6 @@ jobs:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
-    # In case we failed, we want to publish only some of the outputs, and we want to use a unique name so we can re-run a single build step.
-    JobOutputArtifactNameOnFailure: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}-failure-$[counter(format('{0:yyyyMMdd}', pipeline.startTime), 1)]
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
@@ -648,6 +646,6 @@ jobs:
       condition: succeeded()
 
     - publish: $(JobOutputDirectory)
-      artifact: $(JobOutputArtifactNameOnFailure)
+      artifact: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
       displayName: Publish failure logs
       condition: or(failed(), canceled())
