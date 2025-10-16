@@ -10,8 +10,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
-    <AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
-    <AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,6 +22,13 @@
   
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SparsePackagePublisherDefault>CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US</SparsePackagePublisherDefault>
+    <SparsePackageName>Microsoft.PowerToys.SparseApp</SparsePackageName>
+    <SparseApplicationId>PowerToys.ImageResizerUI</SparseApplicationId>
+    <GeneratedSparseManifest>$(IntermediateOutputPath)ImageResizerUI.exe.manifest</GeneratedSparseManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +45,6 @@
     <Resource Include="Resources\ImageResizer.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="WPF-UI" />
@@ -66,5 +70,29 @@
     </ItemGroup>
     <MakeDir Directories="$(OutputPath)Resources" Condition="!Exists('$(OutputPath)Resources')" />
     <Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(OutputPath)Resources" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="GenerateSparseIdentityManifest" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <SparsePackagePublisher>$(SparsePackagePublisherDefault)</SparsePackagePublisher>
+    </PropertyGroup>
+    <ReadLinesFromFile File="$(MSBuildThisFileDirectory)..\..\..\PackageIdentity\.user\PowerToysSparse.publisher.txt" Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\PackageIdentity\.user\PowerToysSparse.publisher.txt')">
+      <Output TaskParameter="Lines" PropertyName="SparsePackagePublisherFromFile" />
+    </ReadLinesFromFile>
+    <PropertyGroup Condition="'$(SparsePackagePublisherFromFile)' != ''">
+      <SparsePackagePublisher>$(SparsePackagePublisherFromFile)</SparsePackagePublisher>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <ItemGroup>
+      <SparseManifestLines Include="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" />
+      <SparseManifestLines Include="&lt;assembly manifestVersion=&quot;1.0&quot; xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot;&gt;" />
+      <SparseManifestLines Include="  &lt;assemblyIdentity version=&quot;1.0.0.0&quot; name=&quot;PowerToys.ImageResizer.app&quot;/&gt;" />
+      <SparseManifestLines Include="  &lt;msix xmlns=&quot;urn:schemas-microsoft-com:msix.v1&quot; publisher=&quot;$(SparsePackagePublisher)&quot; packageName=&quot;$(SparsePackageName)&quot; applicationId=&quot;$(SparseApplicationId)&quot;/&gt;" />
+      <SparseManifestLines Include="&lt;/assembly&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(GeneratedSparseManifest)" Lines="@(SparseManifestLines)" Overwrite="true" Encoding="UTF-8" />
+    <PropertyGroup>
+      <ApplicationManifest>$(GeneratedSparseManifest)</ApplicationManifest>
+    </PropertyGroup>
   </Target>
 </Project>

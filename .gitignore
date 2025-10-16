@@ -362,3 +362,5 @@ src/common/Telemetry/*.etl
 
 # PowerToysInstaller Build Temp Files
 installer/*/*.wxs.bk
+# Generated sparse manifest embedded into ImageResizer UI executable
+src/modules/imageresizer/ui/ImageResizerUI.exe.manifest

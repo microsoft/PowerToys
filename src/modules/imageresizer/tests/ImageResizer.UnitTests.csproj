@@ -48,7 +48,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK.Runtime" />
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions" />

@@ -29,6 +29,8 @@ if ($CIBuild.IsPresent) {
     $isCIBuild = $env:CIBuild -ieq 'true'
 }
 
+$currentPublisherHint = $script:Config.CertSubject
+
 # Configuration constants - centralized management
 $script:Config = @{
     IdentityName   = "Microsoft.PowerToys.SparseApp"
@@ -319,6 +321,9 @@ try {
             [xml]$manifestXml = Get-Content -Path $manifestStagingPath -Raw
             $identityNode = $manifestXml.Package.Identity
             $manifestChanged = $false
+            if ($identityNode) {
+                $currentPublisherHint = $identityNode.Publisher
+            }
 
             if ($identityNode) {
                 if ($targetManifestVersion -and $identityNode.Version -ne $targetManifestVersion) {
@@ -332,6 +337,7 @@ try {
                     $identityNode.SetAttribute('Publisher', $script:Config.CertSubject)
                     $manifestChanged = $true
                 }
+                $currentPublisherHint = $identityNode.Publisher
             }
 
             if ($manifestChanged) {
@@ -385,6 +391,13 @@ if ($NoSign) {
         Write-Warning "SignTool failed (exit $LASTEXITCODE). Ensure the certificate is in CurrentUser\\My and try -ForceCert if needed."
         exit $LASTEXITCODE
     }
+}
+
+$publisherHintFile = Join-Path $UserFolder "$($script:Config.CertPrefix).publisher.txt"
+try {
+    Set-Content -Path $publisherHintFile -Value $currentPublisherHint -Force -NoNewline
+} catch {
+    Write-BuildLog ("Unable to write publisher hint: {0}" -f $_) -Level Warning
 }
 
 Write-BuildLog "`nPackage created: $msixPath" -Level Success
