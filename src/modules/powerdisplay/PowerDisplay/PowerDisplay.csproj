@@ -21,10 +21,6 @@
     <ProjectPriFileName>PowerToys.PowerDisplay.pri</ProjectPriFileName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <!-- Disable StyleCop for this project -->
-    <DisableStyleCop>true</DisableStyleCop>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemGroup>
     <Page Remove="PowerDisplayXAML\App.xaml" />

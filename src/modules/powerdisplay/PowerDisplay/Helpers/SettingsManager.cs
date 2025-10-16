@@ -252,11 +252,6 @@ namespace PowerDisplay.Helpers
                 // Release save permission even on error
                 Interlocked.Exchange(ref _isSaving, 0);
             }
-            catch
-            {
-                // Ensure we never crash on save
-                Interlocked.Exchange(ref _isSaving, 0);
-            }
 
             await Task.CompletedTask;  // Suppress async warning
         }

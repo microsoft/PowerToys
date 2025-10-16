@@ -692,10 +692,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             try
             {
                 // Use Task.Run to avoid deadlock and wait with timeout
-                var flushTask = Task.Run(async () => await _settingsManager?.FlushAsync());
-                if (!flushTask.Wait(TimeSpan.FromSeconds(2)))
+                if (_settingsManager != null)
                 {
-                    Logger.LogWarning("Settings flush timed out during dispose");
+                    var flushTask = Task.Run(async () => await _settingsManager.FlushAsync());
+                    if (!flushTask.Wait(TimeSpan.FromSeconds(2)))
+                    {
+                        Logger.LogWarning("Settings flush timed out during dispose");
+                    }
                 }
             }
             catch (Exception ex)
