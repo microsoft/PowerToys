@@ -369,9 +369,8 @@ devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
-diffs
 digicert
 DINORMAL
 DISABLEASACTIONKEY
@@ -508,6 +507,7 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdx
 fesf
 FFFF
 FILEEXPLORER
@@ -1149,6 +1149,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 numberbox
 nwc
@@ -1453,7 +1454,6 @@ rstringalpha
 rstringdigit
 rtb
 RTLREADING
-rtm
 runas
 rundll
 rungameid
@@ -1699,7 +1699,6 @@ SYSTEMMODAL
 SYSTEMTIME
 TARG
 TARGETAPPHEADER
-TARGETDIR
 targetentrypoint
 TARGETHEADER
 targetver
@@ -1980,7 +1979,7 @@ WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
-Worktree
+worktree
 wox
 wparam
 wpf
