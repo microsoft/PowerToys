@@ -178,8 +178,18 @@ private:
         {
             try
             {
-                auto hotkey_enabled = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedBoolean(JSON_KEY_HOTKEY_ENABLED);
-                m_hotkey_enabled = hotkey_enabled;
+                // Check if properties object exists before accessing it
+                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
+                {
+                    auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                    // Use the overload with default value to avoid exception
+                    m_hotkey_enabled = properties.GetNamedBoolean(JSON_KEY_HOTKEY_ENABLED, false);
+                }
+                else
+                {
+                    Logger::info("Properties object not found in settings, using defaults");
+                    m_hotkey_enabled = false;
+                }
             }
             catch (...)
             {
