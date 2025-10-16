@@ -285,6 +285,7 @@ bool run_non_elevated(const std::wstring& file, const std::wstring& params, DWOR
     {
         siex.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
         siex.StartupInfo.wShowWindow = SW_HIDE;
+        dwCreationFlags = CREATE_NO_WINDOW;
     }
 
     std::wstring cmdLine = executable_args;
