@@ -365,6 +365,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
         private static FlyoutWindow flyoutWindow;
+        private static SettingsXAML.Controls.Dashboard.ShortcutConflictWindow shortcutConflictWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -404,6 +405,21 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearFlyoutWindow()
         {
             flyoutWindow = null;
+        }
+
+        public static SettingsXAML.Controls.Dashboard.ShortcutConflictWindow GetShortcutConflictWindow()
+        {
+            return shortcutConflictWindow;
+        }
+
+        public static void SetShortcutConflictWindow(SettingsXAML.Controls.Dashboard.ShortcutConflictWindow window)
+        {
+            shortcutConflictWindow = window;
+        }
+
+        public static void ClearShortcutConflictWindow()
+        {
+            shortcutConflictWindow = null;
         }
 
         public static Type GetPage(string settingWindow)

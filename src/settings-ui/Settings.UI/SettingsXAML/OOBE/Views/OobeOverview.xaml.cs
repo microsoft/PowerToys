@@ -280,9 +280,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 return;
             }
 
-            // Create and show the shortcut conflict window
-            var conflictWindow = new ShortcutConflictWindow();
-            conflictWindow.Activate();
+            // Check if window already exists and activate it, otherwise create new one
+            if (App.GetShortcutConflictWindow() == null)
+            {
+                var conflictWindow = new ShortcutConflictWindow();
+                App.SetShortcutConflictWindow(conflictWindow);
+                conflictWindow.Activate();
+            }
+            else
+            {
+                App.GetShortcutConflictWindow().Activate();
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

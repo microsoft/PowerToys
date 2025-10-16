@@ -154,11 +154,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ConflictCount = this.ConflictCount,
             });
 
-            // Create and show the new window instead of dialog
-            var conflictWindow = new ShortcutConflictWindow();
-
-            // Show the window
-            conflictWindow.Activate();
+            // Check if window already exists and activate it, otherwise create new one
+            if (App.GetShortcutConflictWindow() == null)
+            {
+                var conflictWindow = new ShortcutConflictWindow();
+                App.SetShortcutConflictWindow(conflictWindow);
+                conflictWindow.Activate();
+            }
+            else
+            {
+                App.GetShortcutConflictWindow().Activate();
+            }
         }
     }
 }

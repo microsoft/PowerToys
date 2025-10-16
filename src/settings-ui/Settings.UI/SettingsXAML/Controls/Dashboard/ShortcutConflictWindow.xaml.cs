@@ -126,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
         private void WindowEx_Closed(object sender, WindowEventArgs args)
         {
+            App.ClearShortcutConflictWindow();
             ViewModel?.Dispose();
         }
 
