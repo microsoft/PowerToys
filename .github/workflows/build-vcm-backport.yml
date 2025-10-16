@@ -1,0 +1,83 @@
+name: Build VCM Backport
+
+on:
+  push:
+    branches:
+      - backport-vcm
+  pull_request:
+    branches:
+      - backport-vcm
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [x64, ARM64]
+        configuration: [Release]
+    
+    runs-on: windows-2022
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '17.8'
+      
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+        with:
+          nuget-version: 'latest'
+      
+      - name: Setup WiX Toolset
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe" -OutFile "$env:TEMP\wix314.exe"
+          Start-Process -FilePath "$env:TEMP\wix314.exe" -ArgumentList "/install /quiet /norestart" -Wait
+          
+      - name: Add WiX to PATH
+        shell: pwsh
+        run: |
+          echo "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          cd "${{ github.workspace }}"
+          .\tools\build\build-essentials.ps1
+      
+      - name: Build PowerToys
+        shell: pwsh
+        run: |
+          cd "${{ github.workspace }}"
+          .\tools\build\build.ps1 -Configuration ${{ matrix.configuration }} -Platform ${{ matrix.platform }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowerToys-${{ matrix.platform }}-${{ matrix.configuration }}
+          path: |
+            ${{ github.workspace }}\build\${{ matrix.platform }}\${{ matrix.configuration }}\**\*
+            !${{ github.workspace }}\build\${{ matrix.platform }}\${{ matrix.configuration }}\**\*.obj
+            !${{ github.workspace }}\build\${{ matrix.platform }}\${{ matrix.configuration }}\**\*.pdb
+          retention-days: 7
+      
+      - name: Upload installer (if exists)
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: PowerToys-Installer-${{ matrix.platform }}-${{ matrix.configuration }}
+          path: |
+            ${{ github.workspace }}\installer\**\*.msi
+            ${{ github.workspace }}\installer\**\*.exe
+          retention-days: 7
