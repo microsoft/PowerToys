@@ -150,6 +150,21 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    # Running the tests may result in future jobs consuming artifacts out of this build
+    # Instead of running an expensive file copy step later, set up the build so the outputs go directly into the artifacts folder.
+    - pwsh: |-
+        # It seems weird, but this is for compatibility. Our artifacts historically contained the folder x64/Release/x64/Release (for example).
+        $FinalOutputDirectory = "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)\$(BuildConfiguration)"
+        $ProjectBuildRoot = "$(Build.SourcesDirectory)\$(BuildPlatform)"
+        $ProjectBuildDirectory = "$ProjectBuildRoot\$(BuildConfiguration)"
+
+        New-Item -Type Directory $FinalOutputDirectory -EA:Ignore
+        New-Item -Type Directory $ProjectBuildRoot -EA:Ignore
+        Write-Host "Redirecting $ProjectBuildDirectory to $FinalOutputDirectory"
+        New-Item -Type SymbolicLink -Target $FinalOutputDirectory $ProjectBuildDirectory
+      displayName: Prepare output directories for full publication
+
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
@@ -564,15 +579,15 @@ jobs:
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
-  - task: CopyFiles@2
-    displayName: Stage Symbols
-    inputs:
-      contents: |-
-        **\*.pdb
-        !**\vc143.pdb
-        !**\*test*.pdb
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
+  - pwsh: |-
+      $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb"
+      $OutDir = "$(JobOutputDirectory)/symbols-$(BuildPlatform)"
+      New-Item -Type Directory $OutDir -EA:Ignore
+      Write-Host "Linking $($Symbols.Length) symbols into place at $OutDir"
+      ForEach($s in $Symbols) {
+        New-Item -Type HardLink -Target $s.FullName (Join-Path $OutDir $s.Name)
+      }
+    displayName: Stage Symbols (as hard links)
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
@@ -621,18 +636,9 @@ jobs:
 
   # Publishing the GPO files
   - pwsh: |-
-      New-Item "$(JobOutputDirectory)/gpo" -Type Directory
-      Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
+      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
+      tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
-
-  # Running the tests may result in future jobs consuming artifacts out of this build
-  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
-    - task: CopyFiles@2
-      displayName: Stage entire build output
-      inputs:
-        sourceFolder: '$(Build.SourcesDirectory)'
-        contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
