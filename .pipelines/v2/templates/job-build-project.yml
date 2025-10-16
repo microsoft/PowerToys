@@ -123,6 +123,8 @@ jobs:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    # In case we failed, we want to publish only some of the outputs, and we want to use a unique name so we can re-run a single build step.
+    JobOutputArtifactNameOnFailure: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}-failure-$[counter(format('{0:yyyyMMdd}', pipeline.startTime), 1)]
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
@@ -565,14 +567,15 @@ jobs:
       targetFolder: $(JobOutputDirectory)
 
   - pwsh: |-
-      $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb"
+      $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb" |
+          Group-Object Name | ForEach-Object { $_.Group[0] }
       $OutDir = "$(JobOutputDirectory)/symbols-$(BuildPlatform)"
       New-Item -Type Directory $OutDir -EA:Ignore
       Write-Host "Linking $($Symbols.Length) symbols into place at $OutDir"
       ForEach($s in $Symbols) {
         New-Item -Type HardLink -Target $s.FullName (Join-Path $OutDir $s.Name)
       }
-    displayName: Stage Symbols (as hard links)
+    displayName: Stage Unique Symbols (as hard links)
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
@@ -642,4 +645,9 @@ jobs:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
       displayName: Publish all outputs
-      condition: always()
+      condition: succeeded()
+
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactNameOnFailure)
+      displayName: Publish failure logs
+      condition: or(failed(), canceled())
