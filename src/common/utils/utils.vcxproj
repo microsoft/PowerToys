@@ -62,11 +62,37 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="EventLocker.cpp" />
+    <ClCompile Include="EventWaiter.cpp" />
+    <ClCompile Include="HDropIterator.cpp" />
+    <ClCompile Include="HttpClient.cpp" />
+    <ClCompile Include="MsWindowsSettings.cpp" />
+    <ClCompile Include="MsiUtils.cpp" />
+    <ClCompile Include="OnThreadExecutor.cpp" />
+    <ClCompile Include="ProcessWaiter.cpp" />
+    <ClCompile Include="UnhandledExceptionHandler.cpp" />
+    <ClCompile Include="appMutex.cpp" />
+    <ClCompile Include="clean_video_conference.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="excluded_apps.cpp" />
+    <ClCompile Include="exec.cpp" />
+    <ClCompile Include="game_mode.cpp" />
     <ClCompile Include="package.cpp" />
     <ClCompile Include="elevation.cpp" />
     <ClCompile Include="resources.cpp" />
     <ClCompile Include="gpo.cpp" />
+    <ClCompile Include="json.cpp" />
+    <ClCompile Include="language_helper.cpp" />
+    <ClCompile Include="logger_helper.cpp" />
+    <ClCompile Include="modulesRegistry.cpp" />
+    <ClCompile Include="processApi.cpp" />
+    <ClCompile Include="process_path.cpp" />
     <ClCompile Include="registry.cpp" />
+    <ClCompile Include="shell_ext_registration.cpp" />
+    <ClCompile Include="string_utils.cpp" />
+    <ClCompile Include="timeutil.cpp" />
+    <ClCompile Include="winapi_error.cpp" />
+    <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\logging\logging.vcxproj">

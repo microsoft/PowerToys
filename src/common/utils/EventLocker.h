@@ -1,61 +1,26 @@
-#include <windows.h>
+#pragma once
+
+#include <optional>
 #include <string>
+#include <windows.h>
 
 class EventLocker
 {
 public:
-    EventLocker(HANDLE h)
-    {
-        eventHandle = h;
-        SetEvent(eventHandle);
-    }
+    explicit EventLocker(HANDLE handle);
 
-    static std::optional<EventLocker> Get(std::wstring eventName)
-    {
-        EventLocker locker(eventName);
-        if (!locker.eventHandle)
-        {
-            return {};
-        }
+    static std::optional<EventLocker> Get(std::wstring eventName);
 
-        return locker;
-    }
+    EventLocker(EventLocker&) = delete;
+    EventLocker& operator=(EventLocker&) = delete;
 
-    EventLocker(EventLocker& e) = delete;
-    EventLocker& operator=(EventLocker& e) = delete;
+    EventLocker(EventLocker&& other) noexcept;
+    EventLocker& operator=(EventLocker&& other) noexcept;
 
-    EventLocker(EventLocker&& e) noexcept
-    {
-        this->eventHandle = e.eventHandle;
-        e.eventHandle = nullptr;
-    }
-    
-    EventLocker& operator=(EventLocker&& e) noexcept
-    {
-        this->eventHandle = e.eventHandle;
-        e.eventHandle = nullptr;
-    }
+    ~EventLocker();
 
-    ~EventLocker()
-    {
-        if (eventHandle)
-        {
-            ResetEvent(eventHandle);
-            CloseHandle(eventHandle);
-            eventHandle = nullptr;
-        }
-    }
 private:
-    EventLocker(std::wstring eventName)
-    {
-        eventHandle = CreateEvent(nullptr, true, false, eventName.c_str());
-        if (!eventHandle)
-        {
-            return;
-        }
+    explicit EventLocker(std::wstring eventName);
 
-        SetEvent(eventHandle);
-    }
-
-    HANDLE eventHandle;
+    HANDLE eventHandle = nullptr;
 };
