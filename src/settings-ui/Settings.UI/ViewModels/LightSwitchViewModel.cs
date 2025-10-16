@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -20,8 +21,10 @@ using Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class LightSwitchViewModel : Observable
+    public partial class LightSwitchViewModel : PageViewModelBase
     {
+        protected override string ModuleName => LightSwitchSettings.ModuleName;
+
         private Func<string, int> SendConfigMSG { get; }
 
         public ObservableCollection<SearchLocation> SearchLocations { get; } = new();
@@ -35,12 +38,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
 
             AvailableScheduleModes = new ObservableCollection<string>
-        {
-            "FixedHours",
-            "SunsetToSunrise",
-        };
+            {
+                "FixedHours",
+                "SunsetToSunrise",
+            };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ToggleThemeActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         private void ForceLightNow()
@@ -395,22 +408,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public HotkeySettings ToggleThemeActivationShortcut
         {
-            get => _toggleThemeHotkey;
+            get => ModuleSettings.Properties.ToggleThemeHotkey.Value;
 
             set
             {
-                if (value != _toggleThemeHotkey)
+                if (value != ModuleSettings.Properties.ToggleThemeHotkey.Value)
                 {
                     if (value == null)
                     {
-                        _toggleThemeHotkey = LightSwitchProperties.DefaultToggleThemeHotkey;
+                        ModuleSettings.Properties.ToggleThemeHotkey.Value = LightSwitchProperties.DefaultToggleThemeHotkey;
                     }
                     else
                     {
-                        _toggleThemeHotkey = value;
+                        ModuleSettings.Properties.ToggleThemeHotkey.Value = value;
                     }
 
-                    _moduleSettings.Properties.ToggleThemeHotkey.Value = _toggleThemeHotkey;
                     NotifyPropertyChanged();
 
                     SendConfigMSG(
@@ -418,7 +430,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             CultureInfo.InvariantCulture,
                             "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                             LightSwitchSettings.ModuleName,
-                            JsonSerializer.Serialize(_moduleSettings, (System.Text.Json.Serialization.Metadata.JsonTypeInfo<LightSwitchSettings>)SourceGenerationContextContext.Default.LightSwitchSettings)));
+                            JsonSerializer.Serialize(_moduleSettings, SourceGenerationContextContext.Default.LightSwitchSettings)));
                 }
             }
         }
