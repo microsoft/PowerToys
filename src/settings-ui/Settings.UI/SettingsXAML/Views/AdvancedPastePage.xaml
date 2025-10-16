@@ -483,7 +483,7 @@
                             <TextBlock Text="Azure OpenAI" />
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewHeaderItem
+                    <!--<ListViewHeaderItem
                         Margin="0,12,0,0"
                         Content="Local models"
                         IsEnabled="False"
@@ -500,7 +500,7 @@
                             <Image Width="16" Source="/Assets/Settings/Icons/Models/WindowsML.svg" />
                             <TextBlock Text="Windows ML" />
                         </StackPanel>
-                    </ListViewItem>
+                    </ListViewItem>-->
                 </ListView>
                 <ScrollViewer Grid.Row="1" Grid.Column="1">
                     <StackPanel
@@ -620,12 +620,12 @@
                             <TextBlock Text="Google" />
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="HuggingFace">
+                    <!--<ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="HuggingFace">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Image Width="16" Source="/Assets/Settings/Icons/Models/HuggingFace.svg" />
                             <TextBlock Text="Hugging Face" />
                         </StackPanel>
-                    </ListViewItem>
+                    </ListViewItem>-->
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureAIInference">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Image Width="16" Source="/Assets/Settings/Icons/Models/AzureAI.svg" />
