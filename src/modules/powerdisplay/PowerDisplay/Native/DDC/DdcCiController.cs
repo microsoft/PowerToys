@@ -625,7 +625,6 @@ namespace PowerDisplay.Native.DDC
             // Cool: 6500K-10000K → VCP high values
             // Neutral: 5000K-6500K → VCP middle values  
             // Warm: 2000K-5000K → VCP low values
-            
             const int minKelvin = 2000;
             const int maxKelvin = 10000;
             
@@ -637,7 +636,6 @@ namespace PowerDisplay.Native.DDC
             
             // Map to VCP range (note: some monitors might have inverted ranges)
             uint vcpValue = (uint)(normalizedKelvin * vcpRange.Maximum);
-            
             Logger.LogDebug($"Converting {kelvin}K to VCP value {vcpValue} (range 0-{vcpRange.Maximum})");
             return vcpValue;
         }

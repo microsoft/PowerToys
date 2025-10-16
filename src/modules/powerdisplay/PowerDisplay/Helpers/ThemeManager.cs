@@ -4,9 +4,9 @@
 
 using System;
 using System.IO;
-using Microsoft.UI.Xaml;
-using Microsoft.PowerToys.Settings.UI.Library;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Xaml;
 
 namespace PowerDisplay.Helpers
 {

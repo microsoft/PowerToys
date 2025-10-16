@@ -21,8 +21,8 @@ namespace PowerDisplay.Helpers
     {
         private readonly ISettingsUtils _settingsUtils;
         private readonly Timer _saveTimer;
-        private const string MODULE_NAME = "PowerDisplay";
-        private const int SAVE_INTERVAL_MS = 2000; // Check every 2 seconds
+        private const string ModuleName = "PowerDisplay";
+        private const int SaveIntervalMs = 2000; // Check every 2 seconds
         private bool _disposed;
 
         // Core: Single memory snapshot (volatile for thread-safe reference updates)
@@ -35,7 +35,7 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Immutable snapshot containing all settings to be saved
         /// </summary>
-        private class SettingsSnapshot
+        private sealed class SettingsSnapshot
         {
             // Monitor list info (changes infrequently)
             public ImmutableList<MonitorInfo> MonitorList { get; init; } = ImmutableList<MonitorInfo>.Empty;
@@ -47,7 +47,7 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Monitor parameters with thread-safe volatile properties
         /// </summary>
-        private class MonitorParameters
+        private sealed class MonitorParameters
         {
             private int _brightness;
             private int _colorTemperature;
@@ -87,8 +87,8 @@ namespace PowerDisplay.Helpers
             _saveTimer = new Timer(
                 _ => SaveSnapshotIfDirty(),
                 null,
-                TimeSpan.FromSeconds(SAVE_INTERVAL_MS / 1000.0),
-                TimeSpan.FromSeconds(SAVE_INTERVAL_MS / 1000.0)
+                TimeSpan.FromSeconds(SaveIntervalMs / 1000.0),
+                TimeSpan.FromSeconds(SaveIntervalMs / 1000.0)
             );
         }
 
@@ -205,7 +205,7 @@ namespace PowerDisplay.Helpers
                 var snapshot = _currentSnapshot;
                 
                 // Read current settings from file
-                var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(MODULE_NAME);
+                var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(ModuleName);
                 
                 // Update monitor list
                 settings.Properties.Monitors = snapshot.MonitorList.ToList();
@@ -236,7 +236,7 @@ namespace PowerDisplay.Helpers
                 }
                 
                 // Single file write
-                _settingsUtils.SaveSettings(settings.ToJsonString(), MODULE_NAME);
+                _settingsUtils.SaveSettings(settings.ToJsonString(), ModuleName);
                 
                 // Clear dirty flag
                 _isDirty = false;
@@ -309,7 +309,7 @@ namespace PowerDisplay.Helpers
         private MonitorInfo CreateMonitorInfo(PowerDisplay.Core.Models.Monitor monitor)
         {
             // Read current settings to preserve existing configuration
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(MODULE_NAME);
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(ModuleName);
             
             var existingMonitor = settings.Properties.Monitors.FirstOrDefault(m =>
                 m.HardwareId == monitor.HardwareId || m.InternalName == GetInternalName(monitor));

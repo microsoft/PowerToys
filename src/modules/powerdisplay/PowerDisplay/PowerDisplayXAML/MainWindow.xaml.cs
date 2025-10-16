@@ -4,18 +4,18 @@
 
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Management;
+using System.Threading.Tasks;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Common.UI;
 using Microsoft.UI;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Composition;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
@@ -33,11 +33,11 @@ namespace PowerDisplay
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private MainViewModel _viewModel = null!;
         private TrayIconHelper _trayIcon = null!;
         private AppWindow _appWindow = null!;
         private bool _isExiting = false;
-        private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
 
         public MainWindow()
         {
@@ -521,7 +521,6 @@ namespace PowerDisplay
         /// <summary>
         /// Get internal monitor name, consistent with SettingsManager logic
         /// </summary>
-
         private async void OnTestClick(object sender, RoutedEventArgs e)
         {
             ContentDialog? dlg = null;

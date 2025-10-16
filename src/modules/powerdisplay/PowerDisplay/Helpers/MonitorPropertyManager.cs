@@ -16,12 +16,12 @@ namespace PowerDisplay.Helpers
     public class MonitorPropertyManager : IDisposable
     {
         private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
-        private int _pendingValue = -1; // Value waiting to be executed
-        private int _hasPendingValue = 0; // 0 = no pending, 1 = has pending (for Interlocked)
-        private Task? _currentTask;
         private readonly string _monitorId;
         private readonly string _propertyName;
         private readonly object _taskLock = new object(); // Lock only for task creation
+        private int _pendingValue = -1; // Value waiting to be executed
+        private int _hasPendingValue = 0; // 0 = no pending, 1 = has pending (for Interlocked)
+        private Task? _currentTask;
         
         public MonitorPropertyManager(string monitorId, string propertyName)
         {

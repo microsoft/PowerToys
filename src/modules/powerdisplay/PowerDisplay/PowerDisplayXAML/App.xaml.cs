@@ -6,12 +6,12 @@ using System;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.AppLifecycle;
 using PowerDisplay.Helpers;
-using Microsoft.UI.Dispatching;
 using PowerToys.Interop;
 
 namespace PowerDisplay

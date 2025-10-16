@@ -7,21 +7,21 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
-using Microsoft.UI.Dispatching;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
 using PowerDisplay.Helpers;
 using Monitor = PowerDisplay.Core.Models.Monitor;
-using Microsoft.UI.Xaml;
 
 namespace PowerDisplay.ViewModels;
 
@@ -649,7 +649,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // For external monitors, remove technical prefix to match SettingsManager logic
         var id = monitor.Id;
-        if (!string.IsNullOrEmpty(id) && id.StartsWith("DDC_"))
+        if (!string.IsNullOrEmpty(id) && id.StartsWith("DDC_", StringComparison.Ordinal))
         {
             return id.Substring(4); // Remove "DDC_" prefix to match SettingsManager.GetInternalName
         }
@@ -715,28 +715,40 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 }
                 Monitors.Clear();
             }
-            catch { /* 忽略清理错误 */ }
+            catch
+            {
+                /* 忽略清理错误 */
+            }
 
             // 释放监控器管理器
             try
             {
                 _monitorManager?.Dispose();
             }
-            catch { /* 忽略清理错误 */ }
+            catch
+            {
+                /* 忽略清理错误 */
+            }
 
             // 释放设置管理器
             try
             {
                 _settingsManager?.Dispose();
             }
-            catch { /* 忽略清理错误 */ }
+            catch
+            {
+                /* 忽略清理错误 */
+            }
 
             // 最后释放取消令牌
             try
             {
                 _cancellationTokenSource?.Dispose();
             }
-            catch { /* 忽略清理错误 */ }
+            catch
+            {
+                /* 忽略清理错误 */
+            }
         }
         catch
         {
@@ -752,18 +764,17 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         private readonly Monitor _monitor;
         private readonly MonitorManager _monitorManager;
         private readonly MainViewModel _mainViewModel;
+        // Property managers for preventing race conditions
+        private readonly MonitorPropertyManager _brightnessManager;
+        private readonly MonitorPropertyManager _colorTemperatureManager;
+        private readonly MonitorPropertyManager _contrastManager;
+        private readonly MonitorPropertyManager _volumeManager;
         private int _brightness;
         private int _colorTemperature;
         private int _contrast;
         private int _volume;
         private bool _isAvailable;
         private bool _isUpdating;
-
-        // Property managers for preventing race conditions
-        private readonly MonitorPropertyManager _brightnessManager;
-        private readonly MonitorPropertyManager _colorTemperatureManager;
-        private readonly MonitorPropertyManager _contrastManager;
-        private readonly MonitorPropertyManager _volumeManager;
 
         // Visibility settings (controlled by Settings UI)
         private bool _showColorTemperature;
@@ -784,10 +795,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _mainViewModel = mainViewModel;
 
             // Initialize property managers
-            _brightnessManager = new MonitorPropertyManager(monitor.Id, "Brightness");
-            _colorTemperatureManager = new MonitorPropertyManager(monitor.Id, "ColorTemperature");
-            _contrastManager = new MonitorPropertyManager(monitor.Id, "Contrast");
-            _volumeManager = new MonitorPropertyManager(monitor.Id, "Volume");
+            _brightnessManager = new MonitorPropertyManager(monitor.Id, nameof(Brightness));
+            _colorTemperatureManager = new MonitorPropertyManager(monitor.Id, nameof(ColorTemperature));
+            _contrastManager = new MonitorPropertyManager(monitor.Id, nameof(Contrast));
+            _volumeManager = new MonitorPropertyManager(monitor.Id, nameof(Volume));
 
             // Initialize Show properties based on hardware capabilities
             _showColorTemperature = monitor.SupportsColorTemperature; // Only show for DDC/CI monitors that support it
