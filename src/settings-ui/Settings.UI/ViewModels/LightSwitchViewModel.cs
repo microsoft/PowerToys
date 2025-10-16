@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             AvailableScheduleModes = new ObservableCollection<string>
             {
+                "Off",
                 "FixedHours",
                 "SunsetToSunrise",
             };
@@ -158,6 +159,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.ScheduleMode.Value = value;
                     OnPropertyChanged(nameof(ScheduleMode));
+                }
+
+                if (ModuleSettings.Properties.ScheduleMode.Value == "Off")
+                {
+                    // Disable schedule area
                 }
 
                 if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours" && oldMode != "FixedHours")

@@ -47,6 +47,7 @@ const static wchar_t* MODULE_DESC = L"This is a module that allows you to contro
 
 enum class ScheduleMode
 {
+    Off,
     FixedHours,
     SunsetToSunrise,
     // add more later
@@ -59,8 +60,9 @@ inline std::wstring ToString(ScheduleMode mode)
     case ScheduleMode::SunsetToSunrise:
         return L"SunsetToSunrise";
     case ScheduleMode::FixedHours:
-    default:
         return L"FixedHours";
+    default:
+        return L"Off";
     }
 }
 
@@ -68,7 +70,9 @@ inline ScheduleMode FromString(const std::wstring& str)
 {
     if (str == L"SunsetToSunrise")
         return ScheduleMode::SunsetToSunrise;
-    return ScheduleMode::FixedHours;
+    if (str == L"FixedHours")
+        return ScheduleMode::FixedHours;
+    return ScheduleMode::Off;
 }
 
 // These are the properties shown in the Settings page.
@@ -76,7 +80,7 @@ struct ModuleSettings
 {
     bool m_changeSystem = true;
     bool m_changeApps = true;
-    ScheduleMode m_scheduleMode = ScheduleMode::FixedHours;
+    ScheduleMode m_scheduleMode = ScheduleMode::Off;
     int m_lightTime = 480;
     int m_darkTime = 1200;
     int m_sunrise_offset = 0;
@@ -161,7 +165,8 @@ public:
             L"scheduleMode",
             L"Theme schedule mode",
             ToString(g_settings.m_scheduleMode),
-            { { L"FixedHours", L"Set hours manually" },
+            { { L"Off", L"Disabled the schedule" },
+              { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
 
         // Integer spinners

@@ -198,49 +198,73 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         }
     };
 
-    // --- At service start: immediately honor the schedule ---
+    // --- Initial settings load ---
+    LightSwitchSettings::instance().LoadSettings();
+    auto& settings = LightSwitchSettings::instance().settings();
+
+    // --- Initial theme application (if schedule enabled) ---
+    if (settings.scheduleMode != ScheduleMode::Off)
     {
         SYSTEMTIME st;
         GetLocalTime(&st);
         int nowMinutes = st.wHour * 60 + st.wMinute;
-
-        LightSwitchSettings::instance().LoadSettings();
-        const auto& settings = LightSwitchSettings::instance().settings();
-
         applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
     }
+    else
+    {
+        Logger::info(L"[LightSwitchService] Schedule mode is OFF — ticker suspended, waiting for manual action or mode change.");
+    }
 
-    // --- Main loop: wakes once per minute or stop/parent death ---
+    // --- Main loop ---
     for (;;)
     {
         HANDLE waits[2] = { g_ServiceStopEvent, hParent };
         DWORD count = hParent ? 2 : 1;
 
+        LightSwitchSettings::instance().LoadSettings();
+        const auto& settings = LightSwitchSettings::instance().settings();
+
+        // If schedule is off, idle but keep watching settings and manual override
+        if (settings.scheduleMode == ScheduleMode::Off)
+        {
+            // Check for stop, parent exit, or settings file change
+            DWORD wait = WaitForMultipleObjects(count, waits, FALSE, 2000); // short sleep to check again soon
+            if (wait == WAIT_OBJECT_0)
+            {
+                Logger::info(L"[LightSwitchService] Stop event triggered — exiting worker loop.");
+                break;
+            }
+            if (hParent && wait == WAIT_OBJECT_0 + 1)
+            {
+                Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
+                break;
+            }
+            continue; // Skip schedule logic until mode is re-enabled
+        }
+
+        // --- When schedule is active, run once per minute ---
         SYSTEMTIME st;
         GetLocalTime(&st);
         int nowMinutes = st.wHour * 60 + st.wMinute;
-
-        LightSwitchSettings::instance().LoadSettings();
-        const auto& settings = LightSwitchSettings::instance().settings();
 
         // Refresh suntimes at day boundary
         if (g_lastUpdatedDay != st.wDay)
         {
             update_sun_times(settings);
             g_lastUpdatedDay = st.wDay;
-
             Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
         }
 
         wchar_t msg[160];
         swprintf_s(msg,
-                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d",
+                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d | mode=%d",
                    st.wHour,
                    st.wMinute,
                    settings.lightTime / 60,
                    settings.lightTime % 60,
                    settings.darkTime / 60,
-                   settings.darkTime % 60);
+                   settings.darkTime % 60,
+                   static_cast<int>(settings.scheduleMode));
         Logger::info(msg);
 
         // --- Manual override check ---
@@ -252,21 +276,19 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         if (manualOverrideActive)
         {
-            // Did we hit a scheduled boundary? (reset override at boundary)
             if (nowMinutes == (settings.lightTime + settings.sunrise_offset) % 1440 ||
                 nowMinutes == (settings.darkTime + settings.sunset_offset) % 1440)
             {
                 ResetEvent(hManualOverride);
-                Logger::info(L"[LightSwitchService] Manual override cleared at boundary\n");
+                Logger::info(L"[LightSwitchService] Manual override cleared at boundary");
             }
             else
             {
-                Logger::info(L"[LightSwitchService] Skipping schedule due to manual override\n");
+                Logger::info(L"[LightSwitchService] Skipping schedule due to manual override");
                 goto sleep_until_next_minute;
             }
         }
 
-        // Apply theme logic (only runs if no manual override or override just cleared)
         applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
 
     sleep_until_next_minute:
@@ -281,12 +303,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             Logger::info(L"[LightSwitchService] Stop event triggered — exiting worker loop.");
             break;
         }
-        if (hParent && wait == WAIT_OBJECT_0 + 1) // parent process exited
+        if (hParent && wait == WAIT_OBJECT_0 + 1)
         {
             Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
             break;
         }
-
     }
 
     if (hManualOverride)
@@ -296,6 +317,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     return 0;
 }
+
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
