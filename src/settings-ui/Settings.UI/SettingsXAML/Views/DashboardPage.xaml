@@ -86,7 +86,7 @@
             MaxWidth="{StaticResource PageMaxWidth}"
             Margin="1,0,0,0"
             VerticalAlignment="Center"
-            AutomationProperties.HeadingLevel="Level1"
+            AutomationProperties.HeadingLevel="1"
             Style="{StaticResource TitleTextBlockStyle}" />
         <Grid
             Grid.Row="1"
