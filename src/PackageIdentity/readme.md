@@ -35,7 +35,7 @@ The script determines the proper `makeappx.exe` for the host build machine (x64 
 
 When `-NoSign` is not used the script generates (or reuses) a development certificate and signs the package via `signtool.exe`:
 
-1. Artifacts are stored in `src/PackageIdentity/.user/PowerToysSparse.certificate.sample.*`.
+1. Artifacts are stored in `src/PackageIdentity/.user/PowerToysSparse.certificate.sample.*` (`.cer` and `.thumbprint`).
 2. Install the `.cer` into `CurrentUser` → `TrustedPeople` (and `TrustedRoot`, if necessary) so Windows trusts the signature:
 
    ```powershell
@@ -43,7 +43,7 @@ When `-NoSign` is not used the script generates (or reuses) a development certif
    Import-Certificate -FilePath "$repoRoot/src/PackageIdentity/.user/PowerToysSparse.certificate.sample.cer" -CertStoreLocation Cert:\CurrentUser\TrustedPeople
    ```
 
-3. Keep the `.pfx` private; it should only be used for local development.
+3. The private key stays in the current user's personal certificate store.
 
 ## Registering or unregistering the package
 

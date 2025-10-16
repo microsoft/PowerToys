@@ -73,16 +73,15 @@ function Find-WindowsSDKTool {
 }
 
 function Test-CertificateValidity {
-    param([string]$PfxPath, [string]$SecretFilePath)
+    param([string]$ThumbprintFile)
     
-    if (-not (Test-Path $PfxPath) -or -not (Test-Path $SecretFilePath)) { return $false }
+    if (-not (Test-Path $ThumbprintFile)) { return $false }
     
     try {
-        $password = (Get-Content $SecretFilePath -Raw).Trim()
-        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($PfxPath, $password)
-        $isValid = $cert.HasPrivateKey -and $cert.NotAfter -gt (Get-Date)
-        $cert.Dispose()
-        return $isValid
+        $thumb = (Get-Content $ThumbprintFile -Raw).Trim()
+        if (-not $thumb) { return $false }
+        $cert = Get-Item "cert:\CurrentUser\My\$thumb" -ErrorAction Stop
+        return $cert.HasPrivateKey -and $cert.NotAfter -gt (Get-Date)
     } catch {
         return $false
     }
@@ -152,7 +151,7 @@ if (-not (Test-Path $UserFolder)) { New-Item -ItemType Directory -Path $UserFold
 
 # Certificate file paths using configuration
 $prefix = $script:Config.CertPrefix
-$CertPwdFile, $CertThumbFile, $CertCerFile, $CertPfxFile = @('.pwd', '.thumbprint', '.cer', '.pfx') | 
+$CertThumbFile, $CertCerFile = @('.thumbprint', '.cer') | 
     ForEach-Object { Join-Path $UserFolder "$prefix.certificate.sample$_" }
 
 # Clean option: remove bin/obj and uninstall existing sparse package if present
@@ -174,38 +173,47 @@ if ($ForceCert -and (Test-Path $UserFolder)) {
 }
 
 # Ensure dev cert (development only; not for production use) - skip if NoSign specified
-$needNewCert = -not $NoSign -and (-not (Test-Path $CertPfxFile) -or $ForceCert -or -not (Test-CertificateValidity -PfxPath $CertPfxFile -SecretFilePath $CertPwdFile))
+$needNewCert = -not $NoSign -and (-not (Test-Path $CertThumbFile) -or $ForceCert -or -not (Test-CertificateValidity -ThumbprintFile $CertThumbFile))
 
 if ($needNewCert) {
     Write-BuildLog "Generating development certificate (prefix=$($script:Config.CertPrefix))..." -Level Info
 
-    # Clear stale files and generate password
-    if (Test-Path $UserFolder) { Remove-Item $UserFolder -Recurse -Force }
-    New-Item -ItemType Directory -Path $UserFolder | Out-Null
-
-    # Generate random password
-    $plainPwd = -join ((1..20) | ForEach-Object { 
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@'[(Get-Random -Max 64)]
-    })
-    # Save password and create certificate
-    Set-Content -Path $CertPwdFile -Value $plainPwd -Force -NoNewline
+    # Clear stale files in the certificate cache
+    if (Test-Path $UserFolder) {
+        Get-ChildItem -Path $UserFolder | ForEach-Object {
+            if ($_.PSIsContainer) {
+                Remove-Item $_.FullName -Recurse -Force
+            } else {
+                Remove-Item $_.FullName -Force
+            }
+        }
+    }
+    if (-not (Test-Path $UserFolder)) {
+        New-Item -ItemType Directory -Path $UserFolder | Out-Null
+    }
 
     $now = Get-Date
-    $friendlyName = "PowerToys Dev Sparse Cert Create=$($now.ToString('yyyy-MM-dd HH:mm'))"
-    
-    $cert = New-SelfSignedCertificate -CertStoreLocation 'cert:\CurrentUser\My' `
-        -NotAfter $now.AddMonths($script:Config.CertValidMonths) `
+    $expiration = $now.AddMonths($script:Config.CertValidMonths)
+    # Subject MUST match <Identity Publisher="..."> inside AppxManifest.xml
+    $friendlyName = "PowerToys Dev Sparse Cert Create=$now"
+    $keyFriendly = "PowerToys Dev Sparse Key Create=$now"
+
+    $certStore = 'cert:\CurrentUser\My'
+    $ekuOid = '2.5.29.37'
+    $ekuValue = '1.3.6.1.5.5.7.3.3,1.3.6.1.4.1.311.10.3.13'
+    $eku = "$ekuOid={text}$ekuValue"
+
+    $cert = New-SelfSignedCertificate -CertStoreLocation $certStore `
+        -NotAfter $expiration `
         -Subject $script:Config.CertSubject `
         -FriendlyName $friendlyName `
-        -KeyFriendlyName $friendlyName `
-        -KeyDescription $friendlyName `
-        -TextExtension '2.5.29.37={text}1.3.6.1.5.5.7.3.3,1.3.6.1.4.1.311.10.3.13'
+        -KeyFriendlyName $keyFriendly `
+        -KeyDescription $keyFriendly `
+        -TextExtension $eku
 
     # Export certificate files
     Set-Content -Path $CertThumbFile -Value $cert.Thumbprint -Force
     Export-Certificate -Cert $cert -FilePath $CertCerFile -Force | Out-Null
-    Export-PfxCertificate -Cert "cert:\CurrentUser\My\$($cert.Thumbprint)" -FilePath $CertPfxFile `
-        -Password (ConvertTo-SecureString -String $plainPwd -AsPlainText -Force) | Out-Null
 }
 
 # Determine output directory - using PowerToys standard structure
