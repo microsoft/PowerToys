@@ -372,7 +372,7 @@ devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
 digicert
 DINORMAL
@@ -1158,6 +1158,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 numberbox
 nwc
@@ -1992,7 +1993,6 @@ WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
 worktree
-Worktree
 wox
 wparam
 wpf
