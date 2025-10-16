@@ -25,10 +25,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SparsePackagePublisherDefault>CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US</SparsePackagePublisherDefault>
-    <SparsePackageName>Microsoft.PowerToys.SparseApp</SparsePackageName>
-    <SparseApplicationId>PowerToys.ImageResizerUI</SparseApplicationId>
-    <GeneratedSparseManifest>$(IntermediateOutputPath)ImageResizerUI.exe.manifest</GeneratedSparseManifest>
+    <ApplicationManifest>ImageResizerUI.dev.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <ApplicationManifest>ImageResizerUI.prod.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -72,27 +73,4 @@
     <Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(OutputPath)Resources" SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="GenerateSparseIdentityManifest" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <SparsePackagePublisher>$(SparsePackagePublisherDefault)</SparsePackagePublisher>
-    </PropertyGroup>
-    <ReadLinesFromFile File="$(MSBuildThisFileDirectory)..\..\..\PackageIdentity\.user\PowerToysSparse.publisher.txt" Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\PackageIdentity\.user\PowerToysSparse.publisher.txt')">
-      <Output TaskParameter="Lines" PropertyName="SparsePackagePublisherFromFile" />
-    </ReadLinesFromFile>
-    <PropertyGroup Condition="'$(SparsePackagePublisherFromFile)' != ''">
-      <SparsePackagePublisher>$(SparsePackagePublisherFromFile)</SparsePackagePublisher>
-    </PropertyGroup>
-    <MakeDir Directories="$(IntermediateOutputPath)" />
-    <ItemGroup>
-      <SparseManifestLines Include="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" />
-      <SparseManifestLines Include="&lt;assembly manifestVersion=&quot;1.0&quot; xmlns=&quot;urn:schemas-microsoft-com:asm.v1&quot;&gt;" />
-      <SparseManifestLines Include="  &lt;assemblyIdentity version=&quot;1.0.0.0&quot; name=&quot;PowerToys.ImageResizer.app&quot;/&gt;" />
-      <SparseManifestLines Include="  &lt;msix xmlns=&quot;urn:schemas-microsoft-com:msix.v1&quot; publisher=&quot;$(SparsePackagePublisher)&quot; packageName=&quot;$(SparsePackageName)&quot; applicationId=&quot;$(SparseApplicationId)&quot;/&gt;" />
-      <SparseManifestLines Include="&lt;/assembly&gt;" />
-    </ItemGroup>
-    <WriteLinesToFile File="$(GeneratedSparseManifest)" Lines="@(SparseManifestLines)" Overwrite="true" Encoding="UTF-8" />
-    <PropertyGroup>
-      <ApplicationManifest>$(GeneratedSparseManifest)</ApplicationManifest>
-    </PropertyGroup>
-  </Target>
 </Project>

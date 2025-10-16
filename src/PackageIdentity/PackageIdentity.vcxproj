@@ -9,10 +9,10 @@
 
   <!-- Target to generate sparse MSIX package -->
   <Target Name="GenerateSparsePackage" BeforeTargets="PrepareForBuild">
-    <!-- Use NoSign for Debug builds or CI builds to avoid certificate issues -->
+    <!-- Use NoSign only for CI builds to avoid certificate issues on hosted agents -->
     <PropertyGroup>
-      <NoSignParam Condition="'$(Configuration)' == 'Debug' OR '$(NoSignCI)' == 'true'">-NoSign</NoSignParam>
-      <NoSignParam Condition="'$(Configuration)' != 'Debug' AND '$(NoSignCI)' != 'true'"></NoSignParam>
+      <NoSignParam Condition="'$(NoSignCI)' == 'true'">-NoSign</NoSignParam>
+      <NoSignParam Condition="'$(NoSignCI)' != 'true'"></NoSignParam>
       <CIBuildParam Condition="'$(CIBuild)' == 'true'">-CIBuild</CIBuildParam>
       <CIBuildParam Condition="'$(CIBuild)' != 'true'"></CIBuildParam>
     </PropertyGroup>
@@ -47,6 +47,7 @@
     <ProjectGuid>{E2A5A82E-1E5B-4C8D-9A4F-2B1A8F9E5C3D}</ProjectGuid>
     <RootNamespace>PackageIdentity</RootNamespace>
     <ProjectName>PackageIdentity</ProjectName>
+    <UseFastUpToDateCheck>false</UseFastUpToDateCheck>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -67,14 +67,14 @@ Get-AppxPackage -Name Microsoft.PowerToys.SparseApp | Remove-AppxPackage
 ## CI-specific guidance
 
 - Pass `-CIBuild` to `BuildSparsePackage.ps1` (or build with `msbuild PackageIdentity.vcxproj /p:CIBuild=true`). This prevents the script from rewriting the manifest publisher to the local dev certificate subject.
-- The project automatically adds `-NoSign` when you build Debug or when `$(CIBuild)` is `true`. Provide your own signing step in CI if the package must be signed.
+- The project automatically adds `-NoSign` only when `$(CIBuild)` is `true`. Local Debug and Release builds are signed with the development certificate.
 - Make sure the agent trusts whichever certificate signs the package. If the package remains unsigned (`-NoSign`) it cannot be installed on test machines until it is signed.
 
 ## Consuming the identity from other components
 
 1. Add a new `<Application>` entry inside `src/PackageIdentity/AppxManifest.xml`. Use a unique `Id` (for example `PowerToys.MyModuleUI`) and set `Executable` to the Win32 binary relative to the `-ExternalLocation` root.
 2. Ensure the binary is copied into the platform/configuration output folder (`x64\Release`, `ARM64\Debug`, etc.) so the sparse package can locate it.
-3. Embed a sparse identity manifest in the Win32 binary so it binds to the MSIX identity at runtime. The manifest must declare an `<msix>` element with `packageName="Microsoft.PowerToys.SparseApp"`, `applicationId` matching the `<Application Id>`, and a `publisher` that matches the sparse package. Local builds can read the publisher from `src/PackageIdentity/.user/PowerToysSparse.publisher.txt` (emitted by `BuildSparsePackage.ps1`). See `src/modules/imageresizer/ui/ImageResizerUI.csproj` for an example MSBuild target (`GenerateSparseIdentityManifest`) that writes `ImageResizerUI.exe.manifest` and sets `ApplicationManifest` automatically.
+3. Embed a sparse identity manifest in the Win32 binary so it binds to the MSIX identity at runtime. The manifest must declare an `<msix>` element with `packageName="Microsoft.PowerToys.SparseApp"`, `applicationId` matching the `<Application Id>`, and a `publisher` that matches the sparse package. Keep the manifest’s publisher in sync with `src/PackageIdentity/.user/PowerToysSparse.publisher.txt` (emitted by `BuildSparsePackage.ps1`). See `src/modules/imageresizer/ui/ImageResizerUI.csproj` for an example that points `ApplicationManifest` to `ImageResizerUI.dev.manifest` for local builds and switches to `ImageResizerUI.prod.manifest` when `$(CIBuild)` is `true`.
 4. Register or re-register the sparse package so Windows learns about the new application Id.
 5. To launch the Win32 surface with identity, use the `shell:AppsFolder` activation form (for example: `shell:AppsFolder\Microsoft.PowerToys.SparseApp_<PackageFamilyName>!PowerToys.MyModuleUI`) or activate it via `IApplicationActivationManager::ActivateApplication` using the same AppUserModelID.
 
