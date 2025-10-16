@@ -137,8 +137,7 @@ steps:
       msbuildArgs: >-
         /t:SilentFilesInUseBAFunction
         /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
-        /p:InstallerSuffix=${{ parameters.installerSuffix }}
-        -restore -graph
+        -restore -graphs
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-SilentFilesInUseBAFunction.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
