@@ -3,6 +3,7 @@
 #include "RcResource.h"
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
+#include <filesystem>
 
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/gpo.h"
@@ -232,7 +233,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         auto action = [&commandLine](HANDLE userToken)
         {
-            STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+            STARTUPINFO startupInfo = { 0 };
+            startupInfo.cb = sizeof(STARTUPINFO);
+            startupInfo.wShowWindow = SW_SHOWNORMAL;
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
@@ -271,7 +274,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+        STARTUPINFO startupInfo = { 0 };
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
 
         PROCESS_INFORMATION processInformation;
 
@@ -424,7 +429,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
         const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
-        fs::create_directories(modulesPath, errorCode);
+        std::filesystem::create_directories(modulesPath, errorCode);
         if (errorCode)
         {
             hr = E_FAIL;
@@ -433,7 +438,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
+            std::filesystem::copy_file(std::filesystem::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, std::filesystem::copy_options::overwrite_existing, errorCode);
 
             if (errorCode)
             {
@@ -481,7 +486,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::remove(versionedModulePath / filename, errorCode);
+            std::filesystem::remove(versionedModulePath / filename, errorCode);
 
             if (errorCode)
             {
@@ -492,7 +497,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *modulePath : {&versionedModulePath, &powerToysModulePath})
         {
-            fs::remove(*modulePath, errorCode);
+            std::filesystem::remove(*modulePath, errorCode);
 
             if (errorCode)
             {
@@ -1278,7 +1283,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 41> processesToTerminate = {
+    std::array<std::wstring_view, 42> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
@@ -1293,6 +1298,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.Hosts.exe",
         L"PowerToys.PowerRename.exe",
         L"PowerToys.ImageResizer.exe",
+        L"PowerToys.LightSwitchService.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",
@@ -1371,6 +1377,120 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         CloseHandle(hProcess);
     }
 
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall SetBundleInstallLocationCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    
+    // Declare all variables at the beginning to avoid goto issues
+    std::wstring customActionData;
+    std::wstring installationFolder;
+    std::wstring bundleUpgradeCode;
+    std::wstring installScope;
+    bool isPerUser = false;
+    size_t pos1 = std::wstring::npos;
+    size_t pos2 = std::wstring::npos;
+    std::vector<HKEY> keysToTry;
+
+    hr = WcaInitialize(hInstall, "SetBundleInstallLocationCA");
+    ExitOnFailure(hr, "Failed to initialize");
+    
+    // Parse CustomActionData: "installFolder;upgradeCode;installScope"
+    hr = getInstallFolder(hInstall, customActionData);
+    ExitOnFailure(hr, "Failed to get CustomActionData.");
+    
+    pos1 = customActionData.find(L';');
+    if (pos1 == std::wstring::npos) 
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Invalid CustomActionData format - missing first semicolon");
+    }
+    
+    pos2 = customActionData.find(L';', pos1 + 1);
+    if (pos2 == std::wstring::npos) 
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Invalid CustomActionData format - missing second semicolon");
+    }
+    
+    installationFolder = customActionData.substr(0, pos1);
+    bundleUpgradeCode = customActionData.substr(pos1 + 1, pos2 - pos1 - 1);
+    installScope = customActionData.substr(pos2 + 1);
+    
+    isPerUser = (installScope == L"perUser");
+    
+    // Use the appropriate registry based on install scope
+    HKEY targetKey = isPerUser ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+    const wchar_t* keyName = isPerUser ? L"HKCU" : L"HKLM";
+    
+    WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Searching for Bundle in %ls registry", keyName);
+    
+    HKEY uninstallKey;
+    LONG openResult = RegOpenKeyExW(targetKey, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall", 0, KEY_READ | KEY_ENUMERATE_SUB_KEYS, &uninstallKey);
+    if (openResult != ERROR_SUCCESS)
+    {
+        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Failed to open uninstall key, error: %ld", openResult);
+        goto LExit;
+    }
+    
+    DWORD index = 0;
+    wchar_t subKeyName[256];
+    DWORD subKeyNameSize = sizeof(subKeyName) / sizeof(wchar_t);
+    
+    while (RegEnumKeyExW(uninstallKey, index, subKeyName, &subKeyNameSize, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+    {
+        HKEY productKey;
+        if (RegOpenKeyExW(uninstallKey, subKeyName, 0, KEY_READ | KEY_WRITE, &productKey) == ERROR_SUCCESS)
+        {
+            wchar_t upgradeCode[256];
+            DWORD upgradeCodeSize = sizeof(upgradeCode);
+            DWORD valueType;
+            
+            if (RegQueryValueExW(productKey, L"BundleUpgradeCode", nullptr, &valueType, 
+                               reinterpret_cast<LPBYTE>(upgradeCode), &upgradeCodeSize) == ERROR_SUCCESS)
+            {
+                // Remove brackets from registry upgradeCode for comparison (bundleUpgradeCode doesn't have brackets)
+                std::wstring regUpgradeCode = upgradeCode;
+                if (!regUpgradeCode.empty() && regUpgradeCode.front() == L'{' && regUpgradeCode.back() == L'}')
+                {
+                    regUpgradeCode = regUpgradeCode.substr(1, regUpgradeCode.length() - 2);
+                }
+                
+                if (_wcsicmp(regUpgradeCode.c_str(), bundleUpgradeCode.c_str()) == 0)
+                {
+                    // Found matching Bundle, set InstallLocation
+                    LONG setResult = RegSetValueExW(productKey, L"InstallLocation", 0, REG_SZ,
+                                 reinterpret_cast<const BYTE*>(installationFolder.c_str()),
+                                 static_cast<DWORD>((installationFolder.length() + 1) * sizeof(wchar_t)));
+                    
+                    if (setResult == ERROR_SUCCESS)
+                    {
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: InstallLocation set successfully");
+                    }
+                    else
+                    {
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Failed to set InstallLocation, error: %ld", setResult);
+                    }
+                    
+                    RegCloseKey(productKey);
+                    RegCloseKey(uninstallKey);
+                    goto LExit;
+                }
+            }
+            RegCloseKey(productKey);
+        }
+        
+        index++;
+        subKeyNameSize = sizeof(subKeyName) / sizeof(wchar_t);
+    }
+    
+    RegCloseKey(uninstallKey);
+    
+LExit:
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }

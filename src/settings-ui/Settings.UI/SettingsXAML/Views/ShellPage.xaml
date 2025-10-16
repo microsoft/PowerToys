@@ -177,6 +177,9 @@
                     AutomationProperties.AutomationId="SystemToolsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="AdvancedPasteNavigationItem"
@@ -202,6 +205,16 @@
                             helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                             AutomationProperties.AutomationId="ColorPickerNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />
+                        <NavigationViewItem
+                            x:Name="LightSwitchNavigationItem"
+                            x:Uid="Shell_LightSwitch"
+                            helpers:NavHelper.NavigateTo="views:LightSwitchPage"
+                            AutomationProperties.AutomationId="LightSwitchNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="PowerDisplayNavigationItem"
                             x:Uid="Shell_PowerDisplay"

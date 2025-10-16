@@ -76,6 +76,7 @@
       <ComponentGroupRef Id="NewPlusComponentGroup" />
       <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
+      <ComponentGroupRef Id="DscResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
@@ -325,7 +326,6 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="UninstallDSCModuleCA"
                    />
-
       <CustomAction Id="UninstallServicesTask"
                     Return="ignore"
                     Impersonate="yes"

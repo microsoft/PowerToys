@@ -14,7 +14,6 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
@@ -28,6 +27,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private bool _enableDataDiagnostics;
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+        private int _conflictCount;
 
         public bool EnableDataDiagnostics
         {
@@ -60,6 +61,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 if (_allHotkeyConflictsData != value)
                 {
                     _allHotkeyConflictsData = value;
+
+                    UpdateConflictCount();
+
                     OnPropertyChanged(nameof(AllHotkeyConflictsData));
                     OnPropertyChanged(nameof(ConflictCount));
                     OnPropertyChanged(nameof(ConflictText));
@@ -71,28 +75,43 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        public int ConflictCount
+        public int ConflictCount => _conflictCount;
+
+        private void UpdateConflictCount()
         {
-            get
+            int count = 0;
+            if (AllHotkeyConflictsData == null)
             {
-                if (AllHotkeyConflictsData == null)
-                {
-                    return 0;
-                }
-
-                int count = 0;
-                if (AllHotkeyConflictsData.InAppConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.InAppConflicts.Count;
-                }
-
-                if (AllHotkeyConflictsData.SystemConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.SystemConflicts.Count;
-                }
-
-                return count;
+                _conflictCount = count;
             }
+
+            if (AllHotkeyConflictsData.InAppConflicts != null)
+            {
+                foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    if (!HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySettings))
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            if (AllHotkeyConflictsData.SystemConflicts != null)
+            {
+                foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    if (!HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySettings))
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            _conflictCount = count;
         }
 
         public string ConflictText

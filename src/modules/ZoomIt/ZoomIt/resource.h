@@ -95,6 +95,7 @@
 #define IDC_COPYRIGHT                   1075
 #define IDC_PEN_WIDTH                   1105
 #define IDC_TIMER                       1106
+#define IDC_SMOOTH_IMAGE				1107
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
@@ -109,7 +110,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        118
 #define _APS_NEXT_COMMAND_VALUE         40013
-#define _APS_NEXT_CONTROL_VALUE         1076
+#define _APS_NEXT_CONTROL_VALUE         1078
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
