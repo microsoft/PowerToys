@@ -13,6 +13,7 @@ using AdvancedPaste.Models;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Windows.Security.Credentials;
 
 namespace AdvancedPaste.Settings
 {
@@ -103,6 +104,8 @@ namespace AdvancedPaste.Settings
                         var settings = _settingsUtils.GetSettingsOrDefault<AdvancedPasteSettings>(AdvancedPasteModuleName);
                         if (settings != null)
                         {
+                            bool migratedLegacyEnablement = TryMigrateLegacyAIEnablement(settings);
+
                             void UpdateSettings()
                             {
                                 var properties = settings.Properties;
@@ -138,6 +141,11 @@ namespace AdvancedPaste.Settings
                             Task.Factory
                                 .StartNew(UpdateSettings, CancellationToken.None, TaskCreationOptions.None, _taskScheduler)
                                 .Wait();
+
+                            if (migratedLegacyEnablement)
+                            {
+                                settings.Save(_settingsUtils);
+                            }
                         }
 
                         retry = false;
@@ -153,6 +161,35 @@ namespace AdvancedPaste.Settings
                         Thread.Sleep(500);
                     }
                 }
+            }
+        }
+
+        private static bool TryMigrateLegacyAIEnablement(AdvancedPasteSettings settings)
+        {
+            if (settings?.Properties is null)
+            {
+                return false;
+            }
+
+            if (settings.Properties.IsAIEnabled || !LegacyOpenAIKeyExists())
+            {
+                return false;
+            }
+
+            settings.Properties.IsAIEnabled = true;
+            return true;
+        }
+
+        private static bool LegacyOpenAIKeyExists()
+        {
+            try
+            {
+                PasswordVault vault = new();
+                return vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey") is not null;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 
