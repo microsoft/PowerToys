@@ -308,6 +308,7 @@ void start_enabled_powertoys()
 
         if (!powertoy->is_enabled_by_default())
             powertoys_to_disable.emplace(name);
+            Logger::warn(L"start_enabled_powertoys: Powertoy {} is disabled by default", name);
     }
 
     json::JsonObject general_settings;

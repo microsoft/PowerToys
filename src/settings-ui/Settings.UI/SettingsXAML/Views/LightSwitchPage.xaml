@@ -18,6 +18,7 @@
     mc:Ignorable="d">
   <Page.Resources>
     <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+    <converters:HideIfEnumValueConverter x:Key="HideIfEnumValueConverter" />
     <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
   </Page.Resources>
   <controls:SettingsPageControl
@@ -70,51 +71,52 @@
                                 Tag="SunsetToSunrise" />
             </ComboBox>
             <tkcontrols:SettingsExpander.Items>
+              <StackPanel Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource HideIfEnumValueConverter}, ConverterParameter=Off}">
               <tkcontrols:SettingsCard x:Uid="LightSwitch_TurnOnDarkMode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                <TimePicker AutomationProperties.AutomationId="DarkTimePicker" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
-              </tkcontrols:SettingsCard>
-              <tkcontrols:SettingsCard x:Uid="LightSwitch_TurnOffDarkMode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                <TimePicker AutomationProperties.AutomationId="LightTimePicker" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
-              </tkcontrols:SettingsCard>
+                  <TimePicker AutomationProperties.AutomationId="DarkTimePicker" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+                <tkcontrols:SettingsCard x:Uid="LightSwitch_TurnOffDarkMode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
+                  <TimePicker AutomationProperties.AutomationId="LightTimePicker" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
 
-              <tkcontrols:SettingsCard x:Uid="LightSwitch_LocationSettingsCard" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <TextBlock
+                <tkcontrols:SettingsCard x:Uid="LightSwitch_LocationSettingsCard" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind ViewModel.SyncButtonInformation, Mode=OneWay}" />
-                  <Button
+                    <Button
                                         Padding="8"
                                         AutomationProperties.AutomationId="SetLocationButton_LightSwitch"
                                         Click="SyncLocationButton_Click"
                                         Content="{ui:FontIcon Glyph=&#xECAF;,
                                                               FontSize=16}" />
-                </StackPanel>
-              </tkcontrols:SettingsCard>
+                  </StackPanel>
+                </tkcontrols:SettingsCard>
 
-              <tkcontrols:SettingsCard x:Uid="LightSwitch_OffsetSettingsCard" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
-                <StackPanel Orientation="Horizontal" Spacing="20">
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <!--<FontIcon Glyph="&#xED39;" FontSize="16" />-->
-                    <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
-                    <NumberBox
+                <tkcontrols:SettingsCard x:Uid="LightSwitch_OffsetSettingsCard" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
+                  <StackPanel Orientation="Horizontal" Spacing="20">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <!--<FontIcon Glyph="&#xED39;" FontSize="16" />-->
+                      <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
+                      <NumberBox
                                             AutomationProperties.AutomationId="SunriseOffset_LightSwitch"
                                             Maximum="60"
                                             Minimum="-60"
                                             SpinButtonPlacementMode="Compact"
                                             Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
-                    <NumberBox
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
+                      <NumberBox
                                             AutomationProperties.AutomationId="SunsetOffset_LightSwitch"
                                             Maximum="60"
                                             Minimum="-60"
                                             SpinButtonPlacementMode="Compact"
                                             Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" />
+                    </StackPanel>
                   </StackPanel>
-                </StackPanel>
-              </tkcontrols:SettingsCard>
+                </tkcontrols:SettingsCard>
               <tkcontrols:SettingsCard
                                 x:Name="TimelineCard"
                                 HorizontalContentAlignment="Stretch"
@@ -127,6 +129,15 @@
                                     Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
                                     Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}" />
               </tkcontrols:SettingsCard>
+              </StackPanel>
+              <InfoBar x:Uid="LightSwitch_ScheduleOffMessage"
+                              IsOpen="True"
+                       IsClosable="False"
+                              Severity="Informational"
+      Visibility="{x:Bind ViewModel.ScheduleMode,
+                           Mode=OneWay,
+                           Converter={StaticResource EnumToVisibilityConverter},
+                           ConverterParameter=Off}" /> 
             </tkcontrols:SettingsExpander.Items>
           </tkcontrols:SettingsExpander>
           <InfoBar

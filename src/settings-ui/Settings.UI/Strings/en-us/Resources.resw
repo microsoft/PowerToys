@@ -5278,6 +5278,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_ModeSunsetToSunrise.Content" xml:space="preserve">
     <value>Sunset to sunrise</value>
   </data>
+  <data name="LightSwitch_ScheduleOffMessage.Title" xml:space="preserve">
+    <value>Scheduling is turned off.</value>
+  </data>
   <data name="LightSwitch_TurnOnDarkMode.Header" xml:space="preserve">
     <value>Turn on dark mode</value>
   </data>

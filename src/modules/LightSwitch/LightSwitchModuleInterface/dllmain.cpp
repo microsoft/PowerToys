@@ -418,6 +418,12 @@ public:
         return m_enabled;
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
