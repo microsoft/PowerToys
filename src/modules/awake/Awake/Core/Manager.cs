@@ -153,6 +153,16 @@ namespace Awake.Core
             SetModeShellIcon();
         }
 
+        private static void UpdateTrayIconText(string iconText, Icon? icon, TrayIconAction action = TrayIconAction.Update)
+        {
+            if (!ShowTrayIcon && action != TrayIconAction.Delete)
+            {
+                return;
+            }
+
+            TrayHelper.SetShellIcon(TrayHelper.WindowHandle, iconText, icon, action);
+        }
+
         internal static void SetModeShellIcon(bool forceAdd = false)
         {
             if (!ShowTrayIcon && !forceAdd)
@@ -370,8 +380,7 @@ namespace Awake.Core
                     {
                         TimeRemaining = (uint)remainingTimeSpan.TotalSeconds;
 
-                        TrayHelper.SetShellIcon(
-                            TrayHelper.WindowHandle,
+                        UpdateTrayIconText(
                             $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]",
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
