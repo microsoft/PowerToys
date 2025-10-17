@@ -549,6 +549,12 @@ public:
                         m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
                     }
                 }
+
+                if (m_manual_override_event_handle)
+                {
+                    SetEvent(m_manual_override_event_handle);
+                    Logger::debug(L"[Light Switch] Manual override event set");
+                }
             }
 
             return true;
