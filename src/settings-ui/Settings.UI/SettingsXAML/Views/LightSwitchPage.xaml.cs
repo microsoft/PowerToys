@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.SelectedCity = null;
 
                 // CityAutoSuggestBox.Text = string.Empty;
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}ï¿½, {ViewModel.Longitude}ï¿½";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
             {
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}ï¿½, {ViewModel.Longitude}ï¿½";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
             }
 
             SunriseModeChartState();
