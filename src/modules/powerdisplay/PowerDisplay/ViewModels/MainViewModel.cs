@@ -758,59 +758,6 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _contrastManager = new MonitorPropertyManager(monitor.Id, nameof(Contrast));
             _volumeManager = new MonitorPropertyManager(monitor.Id, nameof(Volume));
 
-            // Subscribe to rollback events for smart error handling
-            _brightnessManager.RollbackRequested += (s, rollbackValue) =>
-            {
-                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                {
-                    if (_brightness != rollbackValue)
-                    {
-                        Logger.LogInfo($"[{Id}] Rolling back brightness to {rollbackValue}");
-                        _brightness = rollbackValue;
-                        OnPropertyChanged(nameof(Brightness));
-                    }
-                });
-            };
-
-            _colorTemperatureManager.RollbackRequested += (s, rollbackValue) =>
-            {
-                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                {
-                    if (_colorTemperature != rollbackValue)
-                    {
-                        Logger.LogInfo($"[{Id}] Rolling back color temperature to {rollbackValue}K");
-                        _colorTemperature = rollbackValue;
-                        OnPropertyChanged(nameof(ColorTemperature));
-                    }
-                });
-            };
-
-            _contrastManager.RollbackRequested += (s, rollbackValue) =>
-            {
-                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                {
-                    if (_contrast != rollbackValue)
-                    {
-                        Logger.LogInfo($"[{Id}] Rolling back contrast to {rollbackValue}");
-                        _contrast = rollbackValue;
-                        OnPropertyChanged(nameof(Contrast));
-                    }
-                });
-            };
-
-            _volumeManager.RollbackRequested += (s, rollbackValue) =>
-            {
-                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                {
-                    if (_volume != rollbackValue)
-                    {
-                        Logger.LogInfo($"[{Id}] Rolling back volume to {rollbackValue}");
-                        _volume = rollbackValue;
-                        OnPropertyChanged(nameof(Volume));
-                    }
-                });
-            };
-
             // Initialize Show properties based on hardware capabilities
             _showColorTemperature = monitor.SupportsColorTemperature; // Only show for DDC/CI monitors that support it
             _showContrast = monitor.SupportsContrast;

@@ -10,22 +10,20 @@ using ManagedCommon;
 namespace PowerDisplay.Helpers
 {
     /// <summary>
-    /// Serializes monitor property updates to prevent race conditions.
-    /// Smart error handling: only rollback if the last operation in queue fails.
+    /// Simple async property updater - UI updates immediately, hardware updates use latest value.
+    /// When hardware operation completes, immediately applies the latest queued value if changed.
+    /// No debounce delay - just serial execution with latest value.
     /// </summary>
     public class MonitorPropertyManager : IDisposable
     {
         private readonly SemaphoreSlim _operationSemaphore = new(1, 1);
         private readonly string _monitorId;
         private readonly string _propertyName;
-        private readonly object _taskLock = new object(); // Lock only for task creation
-        private int _pendingValue = -1; // Value waiting to be executed
-        private int _hasPendingValue = 0; // 0 = no pending, 1 = has pending (for Interlocked)
-        private Task? _currentTask;
+        private readonly object _stateLock = new object();
         
-        // Track last successful value for smart rollback
-        private int _lastSuccessfulValue = -1;
-        private bool _hasLastSuccessfulValue = false;
+        private int _currentValue = -1;  // Value currently applied to hardware  
+        private int _targetValue = -1;   // Latest value user wants
+        private bool _isRunning = false; // Is update task running
         
         public MonitorPropertyManager(string monitorId, string propertyName)
         {
@@ -34,116 +32,108 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Queue a property update - replaces any pending update
+        /// Queue a property update - UI thread friendly (non-blocking)
         /// </summary>
         public void QueueUpdate(int newValue, Func<int, CancellationToken, Task<bool>> updateAction)
         {
-            // Atomically update the pending value (lock-free for UI thread)
-            Interlocked.Exchange(ref _pendingValue, newValue);
-            Interlocked.Exchange(ref _hasPendingValue, 1);
+            bool shouldStartTask = false;
             
-            // If no operation is currently running, start one (lock only task creation)
-            if (_currentTask == null || _currentTask.IsCompleted)
+            lock (_stateLock)
             {
-                lock (_taskLock)
+                _targetValue = newValue;
+                
+                // Only start new task if no task is currently running
+                if (!_isRunning)
                 {
-                    // Double-check inside lock
-                    if (_currentTask == null || _currentTask.IsCompleted)
-                    {
-                        _currentTask = ExecuteUpdatesAsync(updateAction);
-                    }
+                    _isRunning = true;
+                    shouldStartTask = true;
                 }
+            }
+            
+            // Start update task if needed (outside lock)
+            if (shouldStartTask)
+            {
+                _ = Task.Run(async () =>
+                {
+                    await _operationSemaphore.WaitAsync();
+                    try
+                    {
+                        await ExecuteUpdatesAsync(updateAction);
+                    }
+                    finally
+                    {
+                        lock (_stateLock)
+                        {
+                            _isRunning = false;
+                        }
+                        _operationSemaphore.Release();
+                    }
+                });
             }
         }
         
         /// <summary>
-        /// Execute queued updates with smart error handling:
-        /// - Continue executing even if intermediate operations fail
-        /// - Only rollback if the LAST operation fails
-        /// - Rollback to the last successful value
+        /// Execute updates until target value matches current value
+        /// No debounce delay - immediately applies the latest target value after current operation completes
         /// </summary>
         private async Task ExecuteUpdatesAsync(Func<int, CancellationToken, Task<bool>> updateAction)
         {
-            int? lastAttemptedValue = null;
-            bool lastAttemptSuccess = false;
-            
             while (true)
             {
-                // Atomically check and retrieve the next value to update (lock-free)
-                if (Interlocked.Exchange(ref _hasPendingValue, 0) == 0)
+                int valueToApply;
+                
+                // Check if there's a new value to apply
+                lock (_stateLock)
                 {
-                    // No more updates pending - check if we need to rollback
-                    if (lastAttemptedValue.HasValue && !lastAttemptSuccess)
+                    if (_targetValue == _currentValue)
                     {
-                        // Last operation failed - trigger rollback
-                        if (_hasLastSuccessfulValue)
-                        {
-                            Logger.LogWarning($"[{_monitorId}] {_propertyName} last operation failed, should rollback to {_lastSuccessfulValue}");
-                            // Return the rollback value so caller can update UI
-                            RollbackRequested?.Invoke(this, _lastSuccessfulValue);
-                        }
+                        // Target matches current, no update needed
+                        return;
                     }
-                    break;
+                    
+                    valueToApply = _targetValue;
                 }
                 
-                int valueToUpdate = Volatile.Read(ref _pendingValue);
-                lastAttemptedValue = valueToUpdate;
-                
-                // Execute the hardware update
+                // Execute hardware update (outside lock)
                 try
                 {
-                    await _operationSemaphore.WaitAsync();
+                    ManagedCommon.Logger.LogDebug($"[{_monitorId}] {_propertyName} applying value {valueToApply}");
                     
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                    bool success = await updateAction(valueToUpdate, cts.Token);
+                    bool success = await updateAction(valueToApply, cts.Token);
                     
                     if (success)
                     {
-                        lastAttemptSuccess = true;
-                        _lastSuccessfulValue = valueToUpdate;
-                        _hasLastSuccessfulValue = true;
-                        Logger.LogDebug($"[{_monitorId}] {_propertyName} successfully updated to {valueToUpdate}");
+                        lock (_stateLock)
+                        {
+                            _currentValue = valueToApply;
+                        }
+                        ManagedCommon.Logger.LogDebug($"[{_monitorId}] {_propertyName} successfully updated to {valueToApply}");
                     }
                     else
                     {
-                        lastAttemptSuccess = false;
-                        Logger.LogWarning($"[{_monitorId}] {_propertyName} failed to update to {valueToUpdate}, continuing with queue...");
+                        ManagedCommon.Logger.LogWarning($"[{_monitorId}] {_propertyName} failed to update to {valueToApply}");
+                        // Continue to check if there's a newer target value
                     }
                 }
                 catch (Exception ex)
                 {
-                    lastAttemptSuccess = false;
-                    Logger.LogError($"[{_monitorId}] Exception updating {_propertyName} to {valueToUpdate}: {ex.Message}");
+                    ManagedCommon.Logger.LogError($"[{_monitorId}] {_propertyName} update exception: {ex.Message}");
+                    // Continue to check if there's a newer target value
                 }
-                finally
-                {
-                    _operationSemaphore.Release();
-                }
+                
+                // Loop back to check if target changed during the update
             }
         }
-        
-        /// <summary>
-        /// Event triggered when rollback is needed (only when last operation fails)
-        /// </summary>
-        public event EventHandler<int>? RollbackRequested;
         
         /// <summary>
         /// Wait for all pending updates to complete
         /// </summary>
         public async Task FlushAsync()
         {
-            var currentTask = _currentTask;
-            if (currentTask != null && !currentTask.IsCompleted)
-            {
-                try
-                {
-                    await currentTask;
-                }
-                catch
-                {
-                    // Ignore errors during flush
-                }
-            }
+            // Wait for operation semaphore to ensure all updates completed
+            await _operationSemaphore.WaitAsync();
+            _operationSemaphore.Release();
         }
         
         public void Dispose()
