@@ -253,6 +253,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
+        /p:BuildInParallel=true
         /bl:$(LogOutputDirectory)\build-0-main.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
@@ -272,7 +273,7 @@ jobs:
     condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
     inputs:
       solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
-      msbuildArgs: /t:Build /m /restore
+      msbuildArgs: /t:Build /m /restore /p:BuildInParallel=true
       platform: x64
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -318,6 +319,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
+        /p:BuildInParallel=true
         /bl:$(LogOutputDirectory)\build-bug-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
@@ -339,6 +341,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
+        /p:BuildInParallel=true
         /bl:$(LogOutputDirectory)\build-styles-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
@@ -360,7 +363,7 @@ jobs:
         msbuildArgs: >-
           /target:Publish
           /graph
-          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never;BuildInParallel=true
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml

@@ -63,6 +63,7 @@ if ($ForceRebuildExecutable -or -not (Test-Path $exePath)) {
         '/m',
         "/p:Configuration=$BuildConfiguration",
         "/p:Platform=x64",
+        "/p:BuildInParallel=true",
         '/restore'
     )
 
