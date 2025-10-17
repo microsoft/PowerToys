@@ -177,6 +177,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.WorkspacesModuleInterface.dll",
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
+            L"PowerToys.LightSwitchModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)
@@ -335,6 +336,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     GdiplusStartup(&gpToken, &gpStartupInput, NULL);
 
     winrt::init_apartment();
+
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
         L"G:BA" // Group: Builtin (local) administrator
@@ -526,5 +528,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         }
     }
     stop_tray_icon();
+
     return result;
 }

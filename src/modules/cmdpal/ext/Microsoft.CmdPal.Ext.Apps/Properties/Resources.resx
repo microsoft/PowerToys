@@ -161,7 +161,7 @@
     <value>File</value>
   </data>
   <data name="open_location" xml:space="preserve">
-    <value>Open location</value>
+    <value>Open file location</value>
   </data>
   <data name="copy_path" xml:space="preserve">
     <value>Copy path</value>

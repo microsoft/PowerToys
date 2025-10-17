@@ -25,7 +25,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
     // This is the content that's actually bound in XAML. We needed a
     // collection, even if the collection is just a single item.
-    public ObservableCollection<ContentViewModel> Root => [RootContent];
+    public ObservableCollection<ContentViewModel> Root => RootContent is not null ? [RootContent] : [];
 
     public override void InitializeProperties()
     {
@@ -122,7 +122,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
                 if (viewModel is not null)
                 {
                     viewModel.InitializeProperties();
-                    newContent.Add(viewModel);
+                    newContent.Add((ContentViewModel)viewModel);
                 }
             }
         }

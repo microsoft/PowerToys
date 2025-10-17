@@ -46,10 +46,17 @@ public sealed partial class ContentPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ContentPageViewModel vm)
+        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
         {
-            ViewModel = vm;
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
+
+        if (navigationRequest.TargetViewModel is not ContentPageViewModel contentPageViewModel)
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ContentPageViewModel)}");
+        }
+
+        ViewModel = contentPageViewModel;
 
         if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
         {
@@ -71,6 +78,12 @@ public sealed partial class ContentPage : Page,
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
         // Clean-up event listeners
+        if (e.NavigationMode != NavigationMode.New)
+        {
+            ViewModel?.SafeCleanup();
+            CleanupHelper.Cleanup(this);
+        }
+
         ViewModel = null;
     }
 

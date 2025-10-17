@@ -50,6 +50,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Hotkeys](https://github.com/ruslanlap/PowerToysRun-Hotkeys) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and trigger custom keyboard shortcuts directly from PowerToys Run. |
 | [RandomGen](https://github.com/ruslanlap/PowerToysRun-RandomGen) | [ruslanlap](https://github.com/ruslanlap) | 🎲 Generate random data instantly with a single keystroke. Perfect for developers, testers, designers, and anyone who needs quick access to random data. Features include secure passwords, PINs, names, business data, dates, numbers, GUIDs, color codes, and more. Especially useful for designers who need random color codes and placeholder content. |
 | [Open With Cursor](https://github.com/VictorNoxx/PowerToys-Run-Cursor/) | [VictorNoxx](https://github.com/VictorNoxx) | Open Visual Studio, VS Code recents with Cursor AI |
+| [CheatSheets](https://github.com/ruslanlap/PowerToysRun-CheatSheets) | [ruslanlap](https://github.com/ruslanlap) | 📚 Find cheat sheets and command examples instantly from tldr pages, cheat.sh, and devhints.io. Features include favorites system, categories, offline mode, and smart caching. |
 
 ## Extending software plugins
 

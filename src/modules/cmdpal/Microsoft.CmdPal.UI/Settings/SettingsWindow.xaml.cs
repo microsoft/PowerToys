@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
+using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -34,7 +35,7 @@ public sealed partial class SettingsWindow : WindowEx,
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-        this.TitleBar.Title = title;
+        this.AppTitleBar.Title = title;
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
@@ -142,11 +143,13 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
         {
-            NavView.IsPaneToggleButtonVisible = false;
+            AppTitleBar.IsPaneToggleButtonVisible = true;
+            WorkAroundIcon.Margin = new Thickness(8, 0, 16, 0); // Required for workaround, see XAML comment
         }
         else
         {
-            NavView.IsPaneToggleButtonVisible = true;
+            AppTitleBar.IsPaneToggleButtonVisible = false;
+            WorkAroundIcon.Margin = new Thickness(16, 0, 0, 0); // Required for workaround, see XAML comment
         }
     }
 
@@ -154,6 +157,11 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
+    }
+
+    private void AppTitleBar_PaneToggleRequested(TitleBar sender, object args)
+    {
+        NavView.IsPaneOpen = !NavView.IsPaneOpen;
     }
 }
 

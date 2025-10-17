@@ -12,6 +12,7 @@
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
@@ -24,7 +25,11 @@
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
                 H3FontWeight="Normal" />
-            <tkcontrols:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+            <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
+            <tkcontrols:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
+                ImageProvider="{StaticResource ImageProvider}"
+                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
 
             <StackLayout
                 x:Name="VerticalStackLayout"
@@ -50,7 +55,11 @@
 
             <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
-                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DefaultMarkdownConfig}" Text="{x:Bind Body, Mode=OneWay}" />
+                    <tkcontrols:MarkdownTextBlock
+                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Text="{x:Bind Body, Mode=OneWay}"
+                        UseEmphasisExtras="True"
+                        UsePipeTables="True" />
                 </Grid>
             </DataTemplate>
 
