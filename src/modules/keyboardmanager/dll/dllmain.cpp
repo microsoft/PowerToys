@@ -28,6 +28,17 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     return TRUE;
 }
 
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ToggleShortcut";
+}
+
 // Implement the PowerToy Module Interface and all the required methods.
 class KeyboardManager : public PowertoyModuleIface
 {
@@ -41,9 +52,62 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key = KeyboardManagerConstants::ModuleName;
 
+    // Hotkey for toggling the module
+    Hotkey m_hotkey = { .key = 0 };
+
     HANDLE m_hProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
+
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                //Logger::info("Parsing settings:", settingsObject);
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
+                                            .GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Keyboard Manager toggle shortcut");
+            }
+        }
+
+        if (!m_hotkey.key)
+        {
+            // Set default: Win+Shift+K
+            m_hotkey.win = true;
+            m_hotkey.shift = true;
+            m_hotkey.ctrl = false;
+            m_hotkey.alt = false;
+            m_hotkey.key = 'K';
+        }
+    }
+
+    // Load the settings file.
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
+            parse_hotkey(settings);
+        }
+        catch (std::exception&)
+        {
+            Logger::warn(L"An exception occurred while loading the settings file");
+            // Error while loading from the settings file. Let default values stay as they are.
+        }
+    }
 
 public:
     // Constructor
@@ -65,6 +129,8 @@ public:
                 Logger::error(message.value());
             }
         }
+
+        init_settings();
     };
 
     // Destroy the powertoy and free memory
@@ -112,11 +178,13 @@ public:
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
+        //Logger::info("setting config:", config);
         try
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+            parse_hotkey(values);
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
@@ -192,6 +260,37 @@ public:
         return false;
     }
 
+    // Return the invocation hotkey for toggling
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_hotkey;
+            }
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    // Process the hotkey event
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    {
+        Logger::trace(L"Keyboard Manager toggle hotkey pressed");
+        if (m_enabled)
+        {
+            disable();
+        }
+        else
+        {
+            enable();
+        }
+        return true;
+    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

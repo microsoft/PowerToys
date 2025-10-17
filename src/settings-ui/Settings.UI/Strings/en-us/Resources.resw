@@ -1933,6 +1933,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
+  <data name="Toggle_Shortcut.Header" xml:space="preserve">
+    <value>Toggle shortcut</value>
+  </data>
+  <data name="Toggle_Shortcut.Description" xml:space="preserve">
+    <value>Use a shortcut to toggle this module on or off</value>
+  </data>
   <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
