@@ -165,7 +165,7 @@ public:
             L"scheduleMode",
             L"Theme schedule mode",
             ToString(g_settings.m_scheduleMode),
-            { { L"Off", L"Disabled the schedule" },
+            { { L"Off", L"Disable the schedule" },
               { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
 
@@ -289,9 +289,27 @@ public:
                 g_settings.m_changeApps = *v;
             }
 
+            auto previousMode = g_settings.m_scheduleMode;
+
             if (auto v = values.get_string_value(L"scheduleMode"))
             {
-                g_settings.m_scheduleMode = FromString(*v);
+                auto newMode = FromString(*v);
+                if (newMode != g_settings.m_scheduleMode)
+                {
+                    Logger::info(L"[LightSwitchInterface] Schedule mode changed from {} to {}",
+                                 ToString(g_settings.m_scheduleMode),
+                                 ToString(newMode));
+                    g_settings.m_scheduleMode = newMode;
+
+                    if (newMode == ScheduleMode::Off)
+                    {
+                        stop_service_if_running();
+                    }
+                    else
+                    {
+                        start_service_if_needed();
+                    }
+                }
             }
 
             if (auto v = values.get_int_value(L"lightTime"))
@@ -330,6 +348,29 @@ public:
             Logger::error("[Light Switch] set_config: Failed to parse or apply config.");
         }
     }
+
+    virtual void start_service_if_needed()
+    {
+        if (!m_process || WaitForSingleObject(m_process, 0) != WAIT_TIMEOUT)
+        {
+            Logger::info(L"[LightSwitchInterface] Starting LightSwitchService due to active schedule mode.");
+            enable();
+        }
+        else
+        {
+            Logger::debug(L"[LightSwitchInterface] Service already running, skipping start.");
+        }
+    }
+
+    virtual void stop_service_if_running()
+    {
+        if (m_process)
+        {
+            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService due to schedule OFF.");
+            disable();
+        }
+    }
+
 
     virtual void enable()
     {

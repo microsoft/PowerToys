@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public partial class HideIfEnumValueConverter : IValueConverter
+    public partial class ShowIfEnumValueConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -21,11 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             string enumString = value.ToString();
             string targetString = parameter.ToString();
 
-            Logger.LogInfo($"[HideIfEnumValueConverter] Value={enumString}, Parameter={targetString}");
-
             return enumString.Equals(targetString, StringComparison.OrdinalIgnoreCase)
-                ? Visibility.Collapsed
-                : Visibility.Visible;
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

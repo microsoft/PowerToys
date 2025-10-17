@@ -16,22 +16,32 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value == null || parameter == null)
+            if (value == null)
             {
                 return Visibility.Collapsed;
             }
 
-            string enumString = value.ToString();
-            string targetString = parameter.ToString();
+            var mode = value.ToString();
 
-            return enumString.Equals(targetString, StringComparison.OrdinalIgnoreCase)
+            if (mode.Equals("Off", StringComparison.OrdinalIgnoreCase))
+            {
+                return Visibility.Collapsed;
+            }
+
+            // Allow multiple targets separated by commas (e.g. "FixedHours,SunsetToSunrise")
+            var targetString = parameter?.ToString() ?? string.Empty;
+            var targets = targetString
+                .Split(',')
+                .Select(t => t.Trim())
+                .ToList();
+
+            // Otherwise, show only if the current mode is in the list of targets
+            return targets.Contains(mode)
                 ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
     }
 }

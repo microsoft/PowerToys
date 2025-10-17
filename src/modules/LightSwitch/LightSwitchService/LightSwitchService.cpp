@@ -212,7 +212,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     }
     else
     {
-        Logger::info(L"[LightSwitchService] Schedule mode is OFF — ticker suspended, waiting for manual action or mode change.");
+        Logger::info(L"[LightSwitchService] Schedule mode is OFF - ticker suspended, waiting for manual action or mode change.");
     }
 
     // --- Main loop ---
@@ -227,19 +227,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         // If schedule is off, idle but keep watching settings and manual override
         if (settings.scheduleMode == ScheduleMode::Off)
         {
-            // Check for stop, parent exit, or settings file change
-            DWORD wait = WaitForMultipleObjects(count, waits, FALSE, 2000); // short sleep to check again soon
-            if (wait == WAIT_OBJECT_0)
-            {
-                Logger::info(L"[LightSwitchService] Stop event triggered — exiting worker loop.");
-                break;
-            }
-            if (hParent && wait == WAIT_OBJECT_0 + 1)
-            {
-                Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
-                break;
-            }
-            continue; // Skip schedule logic until mode is re-enabled
+            Logger::info(L"[LightSwitchService] Schedule mode OFF detected — exiting to save resources.");
+            break;
         }
 
         // --- When schedule is active, run once per minute ---
