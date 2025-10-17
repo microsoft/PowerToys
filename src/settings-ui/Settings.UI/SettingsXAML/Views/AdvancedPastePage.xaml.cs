@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -18,6 +19,58 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class AdvancedPastePage : NavigablePage, IRefreshablePage
     {
+        private static readonly Dictionary<string, ServiceLegalInfo> ServiceLegalInformation = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["OpenAI"] = new ServiceLegalInfo(
+                "Your API key connects directly to OpenAI services. By configuring this provider you agree to follow OpenAI usage policies and data handling rules.",
+                "Terms of Use",
+                "https://openai.com/terms",
+                "Privacy Policy",
+                "https://openai.com/privacy"),
+            ["AzureOpenAI"] = new ServiceLegalInfo(
+                "This connector routes requests to OpenAI models hosted on Microsoft Azure. Saving this configuration means you accept Microsoft terms and data protections.",
+                "Microsoft Azure Terms of Service",
+                "https://azure.microsoft.com/support/legal/",
+                "Microsoft Privacy Statement",
+                "https://privacy.microsoft.com/privacystatement"),
+            ["AzureAIInference"] = new ServiceLegalInfo(
+                "Azure AI Inference is governed by Microsoft service and privacy commitments. Continuing indicates you accept Microsoft terms for this offering.",
+                "Microsoft Azure Terms of Service",
+                "https://azure.microsoft.com/support/legal/",
+                "Microsoft Privacy Statement",
+                "https://privacy.microsoft.com/privacystatement"),
+            ["Google"] = new ServiceLegalInfo(
+                "Connecting to Gemini requires a Google API key. Using this integration means you agree to Google's general terms and privacy policies.",
+                "Google Terms of Service",
+                "https://policies.google.com/terms",
+                "Google Privacy Policy",
+                "https://policies.google.com/privacy"),
+            ["Anthropic"] = new ServiceLegalInfo(
+                "This integration accesses Anthropic Claude models. You are responsible for complying with Anthropic policies whenever you use this provider.",
+                "Anthropic Terms of Service",
+                "https://www.anthropic.com/legal/terms-of-service",
+                "Anthropic Privacy Policy",
+                "https://www.anthropic.com/legal/privacy"),
+            ["Mistral"] = new ServiceLegalInfo(
+                "You can connect with a personal Mistral API key. Configuring this provider indicates you accept Mistral's published legal terms.",
+                "Mistral Terms of Use",
+                "https://mistral.ai/terms-of-service/",
+                "Mistral Privacy Policy",
+                "https://mistral.ai/privacy-policy/"),
+            ["AmazonBedrock"] = new ServiceLegalInfo(
+                "AWS credentials let you invoke Amazon Bedrock models. Saving this setup confirms you will follow AWS service terms and privacy commitments.",
+                "AWS Service Terms",
+                "https://aws.amazon.com/service-terms/",
+                "AWS Privacy Notice",
+                "https://aws.amazon.com/privacy/"),
+            ["Ollama"] = new ServiceLegalInfo(
+                "Ollama usage, local or remote, is bound by its license and usage policies. Continuing means you accept Ollama's terms and privacy commitments.",
+                "Ollama Terms of Service",
+                "https://ollama.com/terms",
+                "Ollama Privacy Policy",
+                "https://ollama.com/privacy"),
+        };
+
         private AdvancedPasteViewModel ViewModel { get; set; }
 
         public ICommand EnableAdvancedPasteAICommand => new RelayCommand(EnableAdvancedPasteAI);
@@ -362,6 +415,70 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     && !serviceType.Equals("WindowsML", StringComparison.OrdinalIgnoreCase)
                     && !serviceType.Equals("Anthropic", StringComparison.OrdinalIgnoreCase)
                     && !serviceType.Equals("AmazonBedrock", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool HasServiceLegalInfo(string serviceType) => TryGetServiceLegalInfo(serviceType, out _);
+
+        private string GetServiceLegalDescription(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.Description : string.Empty;
+
+        private string GetServiceTermsLabel(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsLabel : string.Empty;
+
+        private Uri GetServiceTermsUri(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsUri : null;
+
+        private string GetServicePrivacyLabel(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyLabel : string.Empty;
+
+        private Uri GetServicePrivacyUri(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyUri : null;
+
+        private bool HasServiceTermsLink(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) && info.TermsUri is not null && !string.IsNullOrEmpty(info.TermsLabel);
+
+        private bool HasServicePrivacyLink(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) && info.PrivacyUri is not null && !string.IsNullOrEmpty(info.PrivacyLabel);
+
+        private Visibility GetServiceLegalVisibility(string serviceType) => HasServiceLegalInfo(serviceType) ? Visibility.Visible : Visibility.Collapsed;
+
+        private Visibility GetServiceTermsVisibility(string serviceType) => HasServiceTermsLink(serviceType) ? Visibility.Visible : Visibility.Collapsed;
+
+        private Visibility GetServicePrivacyVisibility(string serviceType) => HasServicePrivacyLink(serviceType) ? Visibility.Visible : Visibility.Collapsed;
+
+        private static bool TryGetServiceLegalInfo(string serviceType, out ServiceLegalInfo info)
+        {
+            if (string.IsNullOrWhiteSpace(serviceType))
+            {
+                return ServiceLegalInformation.TryGetValue("OpenAI", out info);
+            }
+
+            return ServiceLegalInformation.TryGetValue(serviceType, out info);
+        }
+
+        private sealed class ServiceLegalInfo
+        {
+            public ServiceLegalInfo(string description, string termsLabel, string termsUri, string privacyLabel, string privacyUri)
+            {
+                Description = description ?? string.Empty;
+                TermsLabel = termsLabel ?? string.Empty;
+                TermsUri = CreateUriOrNull(termsUri);
+                PrivacyLabel = privacyLabel ?? string.Empty;
+                PrivacyUri = CreateUriOrNull(privacyUri);
+            }
+
+            public string Description { get; }
+
+            public string TermsLabel { get; }
+
+            public Uri TermsUri { get; }
+
+            public string PrivacyLabel { get; }
+
+            public Uri PrivacyUri { get; }
+
+            private static Uri CreateUriOrNull(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return null;
+                }
+
+                return Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : null;
+            }
         }
     }
 }

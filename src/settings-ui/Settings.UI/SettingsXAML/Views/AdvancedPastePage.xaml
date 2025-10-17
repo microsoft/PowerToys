@@ -551,6 +551,25 @@
                             x:Uid="AdvancedPaste_EnableAdvancedAIModerationToggle"
                             IsChecked="{x:Bind ViewModel.AdvancedAIConfiguration.ModerationEnabled, Mode=TwoWay}"
                             Visibility="Collapsed" />
+
+                        <StackPanel
+                            Orientation="Vertical"
+                            Spacing="8"
+                            Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}">
+                            <TextBlock
+                                Text="{x:Bind GetServiceLegalDescription(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <HyperlinkButton
+                                    Content="{x:Bind GetServiceTermsLabel(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
+                                    NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
+                                    Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}" />
+                                <HyperlinkButton
+                                    Content="{x:Bind GetServicePrivacyLabel(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
+                                    NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
+                                    Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
@@ -741,6 +760,25 @@
                             x:Uid="AdvancedPaste_EnablePasteAIModerationToggle"
                             IsChecked="{x:Bind ViewModel.PasteAIConfiguration.ModerationEnabled, Mode=TwoWay}"
                             Visibility="Collapsed" />
+
+                        <StackPanel
+                            Orientation="Vertical"
+                            Spacing="8"
+                            Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}">
+                            <TextBlock
+                                Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <HyperlinkButton
+                                    Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
+                                    NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
+                                    Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}" />
+                                <HyperlinkButton
+                                    Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
+                                    NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
+                                    Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
