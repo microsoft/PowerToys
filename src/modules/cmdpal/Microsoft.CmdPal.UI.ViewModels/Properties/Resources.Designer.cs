@@ -410,5 +410,23 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("builtin_reload_subtitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} extensions found.
+        /// </summary>
+        public static string builtin_settings_extension_n_extensions_found {
+            get {
+                return ResourceManager.GetString("builtin_settings_extension_n_extensions_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} extensions installed.
+        /// </summary>
+        public static string builtin_settings_extension_n_extensions_installed {
+            get {
+                return ResourceManager.GetString("builtin_settings_extension_n_extensions_installed", resourceCulture);
+            }
+        }
     }
 }
