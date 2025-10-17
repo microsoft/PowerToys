@@ -328,6 +328,22 @@ IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameRegEx::PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    m_metadataPatterns = patterns;
+    m_useMetadata = true;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetMetadata()
+{
+    m_metadataPatterns.clear();
+    m_useMetadata = false;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
 HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx)
 {
     *renameRegEx = nullptr;
@@ -387,10 +403,39 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         // TODO: creating the regex could be costly.  May want to cache this.
         wchar_t newReplaceTerm[MAX_PATH] = { 0 };
         bool fileTimeErrorOccurred = false;
+        bool metadataErrorOccurred = false;
+        bool appliedTemplateTransform = false;
+
+        std::wstring replaceTemplate;
+        if (m_replaceTerm)
+        {
+            replaceTemplate = m_replaceTerm;
+        }
+
         if (m_useFileTime)
         {
-            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
+            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_fileTime)))
+            {
                 fileTimeErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
+        }
+
+        if (m_useMetadata)
+        {
+            if (FAILED(GetMetadataFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_metadataPatterns)))
+            {
+                metadataErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
         }
 
         std::wstring sourceToUse;
@@ -399,9 +444,9 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
-        if (m_useFileTime && !fileTimeErrorOccurred)
+        if (appliedTemplateTransform)
         {
-            replaceTerm = newReplaceTerm;
+            replaceTerm = replaceTemplate;
         }
         else if (m_replaceTerm)
         {
@@ -606,3 +651,43 @@ void CPowerRenameRegEx::_OnFileTimeChanged()
         }
     }
 }
+
+void CPowerRenameRegEx::_OnMetadataChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnMetadataChanged();
+        }
+    }
+}
+
+PowerRenameLib::MetadataType CPowerRenameRegEx::_GetMetadataTypeFromFlags() const
+{
+    if (m_flags & MetadataSourceXMP)
+        return PowerRenameLib::MetadataType::XMP;
+    
+    // Default to EXIF
+    return PowerRenameLib::MetadataType::EXIF;
+}
+
+// Interface method implementation  
+IFACEMETHODIMP CPowerRenameRegEx::GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType)
+{
+    if (metadataType == nullptr)
+        return E_POINTER;
+        
+    *metadataType = _GetMetadataTypeFromFlags();
+    return S_OK;
+}
+
+// Convenience method for internal use
+PowerRenameLib::MetadataType CPowerRenameRegEx::GetMetadataType() const
+{
+    return _GetMetadataTypeFromFlags();
+}
+
+

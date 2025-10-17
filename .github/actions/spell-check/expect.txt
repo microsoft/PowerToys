@@ -167,7 +167,9 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
 Canvascustomlayout
@@ -335,6 +337,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+dfx
 Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -506,6 +509,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
 fdx
 fesf
@@ -709,6 +713,7 @@ IDD
 idk
 idl
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -725,6 +730,7 @@ Ijwhost
 ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
+IPTC
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
@@ -863,6 +869,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+lon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
@@ -953,6 +960,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 Metadatas
+metadatamatters
 metafile
 mfc
 Mgmt
@@ -1111,6 +1119,7 @@ NONCLIENTMETRICSW
 NONELEVATED
 nonspace
 nonstd
+nullrefs
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
@@ -1266,6 +1275,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1468,6 +1478,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samsung
 sancov
 SAVEFAILED
 scanled
@@ -2012,7 +2023,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 xdf
 XDocument
 XElement
@@ -2030,6 +2043,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2037,6 +2051,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels
