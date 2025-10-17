@@ -361,17 +361,20 @@
                                                     <MenuFlyout>
                                                         <MenuFlyoutItem
                                                             x:Uid="MoveUp"
+                                                            Tag="{x:Bind}"
                                                             Click="ReorderButtonUp_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74A;}"
                                                             IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                         <MenuFlyoutItem
                                                             x:Uid="MoveDown"
+                                                            Tag="{x:Bind}"
                                                             Click="ReorderButtonDown_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74B;}"
                                                             IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                         <MenuFlyoutSeparator />
                                                         <MenuFlyoutItem
                                                             x:Uid="RemoveItem"
+                                                            Tag="{x:Bind}"
                                                             Click="DeleteCustomActionButton_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74D;}"
                                                             IsEnabled="true" />
@@ -691,6 +694,13 @@
                             PlaceholderText="You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content."
                             Text="{x:Bind ViewModel.PasteAIConfiguration.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
+                        <Grid
+                            x:Name="FoundryLocalPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <controls:FoundryLocalModelPicker
+                                x:Name="FoundryLocalPicker" />
+                        </Grid>
                         <TextBox
                             x:Name="PasteAIEndpointUrlTextBox"
                             MinWidth="200"

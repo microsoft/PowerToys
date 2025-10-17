@@ -16,15 +16,11 @@ public interface ILanguageModelProvider
 
     HardwareAccelerator ModelHardwareAccelerator { get; }
 
-    List<string> NugetPackageReferences { get; }
-
     string ProviderDescription { get; }
 
     Task<IEnumerable<ModelDetails>> GetModelsAsync(bool ignoreCached = false, CancellationToken cancelationToken = default);
 
     IChatClient? GetIChatClient(string url);
-
-    string IChatClientImplementationNamespace { get; }
 
     string GetIChatClientString(string url);
 

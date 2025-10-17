@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace LanguageModelProvider.FoundryLocal;
 
@@ -33,19 +33,31 @@ internal sealed class FoundryClient
             return null;
         }
 
-        return new FoundryClient(serviceUrl, serviceManager, new HttpClient());
+        var serviceUri = new Uri(serviceUrl, UriKind.Absolute);
+        var baseAddress = serviceUri.AbsoluteUri.EndsWith('/')
+            ? serviceUri
+            : new Uri(serviceUri, "/");
+
+        var httpClient = new HttpClient
+        {
+            BaseAddress = baseAddress,
+            Timeout = TimeSpan.FromHours(2),
+        };
+
+        var assemblyVersion = typeof(FoundryClient).Assembly.GetName().Version?.ToString() ?? "unknown";
+        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"foundry-local-cs-sdk/{assemblyVersion}");
+
+        return new FoundryClient(serviceManager, httpClient);
     }
 
     public FoundryServiceManager ServiceManager { get; }
 
     private readonly HttpClient _httpClient;
-    private readonly string _baseUrl;
     private readonly List<FoundryCatalogModel> _catalogModels = [];
 
-    private FoundryClient(string baseUrl, FoundryServiceManager serviceManager, HttpClient httpClient)
+    private FoundryClient(FoundryServiceManager serviceManager, HttpClient httpClient)
     {
         ServiceManager = serviceManager;
-        _baseUrl = baseUrl;
         _httpClient = httpClient;
     }
 
@@ -58,7 +70,7 @@ internal sealed class FoundryClient
 
         try
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/foundry/list").ConfigureAwait(false);
+            var response = await _httpClient.GetAsync("/foundry/list").ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var models = await JsonSerializer.DeserializeAsync(
@@ -80,7 +92,7 @@ internal sealed class FoundryClient
 
     public async Task<List<FoundryCachedModel>> ListCachedModels()
     {
-        var response = await _httpClient.GetAsync($"{_baseUrl}/openai/models").ConfigureAwait(false);
+        var response = await _httpClient.GetAsync("/openai/models").ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var catalogModels = await ListCatalogModels().ConfigureAwait(false);
@@ -116,19 +128,28 @@ internal sealed class FoundryClient
             {
                 try
                 {
-                    var modelDownload = new FoundryModelDownload(
-                        Name: model.Name,
-                        Uri: model.Uri,
-                        Path: await GetModelPath(model.Uri).ConfigureAwait(false), // temporary
-                        ProviderType: model.ProviderType,
-                        PromptTemplate: model.PromptTemplate);
+                    var providerType = model.ProviderType.EndsWith("Local", StringComparison.OrdinalIgnoreCase)
+                        ? model.ProviderType
+                        : $"{model.ProviderType}Local";
 
-                    var uploadBody = new FoundryDownloadBody(modelDownload, IgnorePipeReport: true);
+                    var downloadRequest = new FoundryDownloadBody
+                    {
+                        Model = new FoundryModelDownload
+                        {
+                            Name = model.Name,
+                            Uri = model.Uri,
+                            Publisher = model.Publisher,
+                            ProviderType = providerType,
+                            PromptTemplate = model.PromptTemplate,
+                        },
+                        Token = string.Empty,
+                        IgnorePipeReport = true,
+                    };
 
                     var downloadBodyContext = FoundryJsonContext.Default.FoundryDownloadBody;
-                    string body = JsonSerializer.Serialize(uploadBody, downloadBodyContext);
+                    string body = JsonSerializer.Serialize(downloadRequest, downloadBodyContext);
 
-                    using var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/openai/download")
+                    using var request = new HttpRequestMessage(HttpMethod.Post, "/openai/download")
                     {
                         Content = new StringContent(body, Encoding.UTF8, "application/json"),
                     };
@@ -140,42 +161,63 @@ internal sealed class FoundryClient
                     using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     using var reader = new StreamReader(stream);
 
-                    string? finalJson = null;
+                    StringBuilder jsonBuilder = new();
+                    var collectingJson = false;
+                    var completed = false;
 
-                    while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
+                    while (!completed && (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is string line)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
                         if (string.IsNullOrWhiteSpace(line))
                         {
                             continue;
                         }
 
-                        line = line.Trim();
-
-                        if (finalJson != null || line.StartsWith('{'))
+                        if (line.StartsWith("Total", StringComparison.CurrentCultureIgnoreCase) &&
+                            line.Contains("Downloading", StringComparison.OrdinalIgnoreCase) &&
+                            line.Contains('%'))
                         {
-                            finalJson += line;
-                            continue;
-                        }
-
-                        var match = Regex.Match(line, @"\d+(\.\d+)?%");
-                        if (match.Success)
-                        {
-                            var percentage = match.Value;
-                            if (float.TryParse(percentage.TrimEnd('%'), out float progressValue))
+                            var percentStr = line.Split('%')[0].Split(' ').Last();
+                            if (double.TryParse(percentStr, NumberStyles.Float, CultureInfo.CurrentCulture, out var percentage))
                             {
-                                progress?.Report(progressValue / 100);
+                                progress?.Report((float)(percentage / 100));
+                            }
+                        }
+                        else if (line.Contains("[DONE]", StringComparison.OrdinalIgnoreCase) ||
+                                 line.Contains("All Completed", StringComparison.OrdinalIgnoreCase))
+                        {
+                            collectingJson = true;
+                        }
+                        else if (collectingJson && line.TrimStart().StartsWith('{'))
+                        {
+                            jsonBuilder.AppendLine(line);
+                        }
+                        else if (collectingJson && jsonBuilder.Length > 0)
+                        {
+                            jsonBuilder.AppendLine(line);
+                            if (line.Trim() == "}")
+                            {
+                                completed = true;
                             }
                         }
                     }
 
                     var downloadResultContext = FoundryJsonContext.Default.FoundryDownloadResult;
-                    var result = finalJson is not null
-                        ? JsonSerializer.Deserialize(finalJson, downloadResultContext)!
-                        : new FoundryDownloadResult(false, "Missing final result from server.");
+                    var jsonPayload = jsonBuilder.Length > 0 ? jsonBuilder.ToString() : null;
 
-                    return result;
+                    if (jsonPayload is null)
+                    {
+                        return new FoundryDownloadResult(false, "No completion response received from server.");
+                    }
+
+                    try
+                    {
+                        return JsonSerializer.Deserialize(jsonPayload, downloadResultContext)
+                               ?? new FoundryDownloadResult(false, "Failed to parse completion response.");
+                    }
+                    catch (JsonException ex)
+                    {
+                        return new FoundryDownloadResult(false, $"Failed to parse completion response: {ex.Message}");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -183,32 +225,5 @@ internal sealed class FoundryClient
                 }
             },
             cancellationToken).ConfigureAwait(false);
-    }
-
-    // this is a temporary function to get the model path from the blob storage
-    //  it will be removed once the tag is available in the list response
-    private async Task<string> GetModelPath(string assetId)
-    {
-        var registryUri =
-           $"https://eastus.api.azureml.ms/modelregistry/v1.0/registry/models/nonazureaccount?assetId={Uri.EscapeDataString(assetId)}";
-
-        using var resp = await _httpClient.GetAsync(registryUri).ConfigureAwait(false);
-        resp.EnsureSuccessStatusCode();
-
-        await using var jsonStream = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        var jsonRoot = await JsonDocument.ParseAsync(jsonStream).ConfigureAwait(false);
-        var blobSasUri = jsonRoot.RootElement.GetProperty("blobSasUri").GetString()!;
-
-        var uriBuilder = new UriBuilder(blobSasUri);
-        var existingQuery = string.IsNullOrWhiteSpace(uriBuilder.Query)
-            ? string.Empty
-            : uriBuilder.Query.TrimStart('?') + "&";
-
-        uriBuilder.Query = existingQuery + "restype=container&comp=list&delimiter=/";
-
-        var listXml = await _httpClient.GetStringAsync(uriBuilder.Uri).ConfigureAwait(false);
-
-        var match = Regex.Match(listXml, @"<Name>(.*?)\/<\/Name>");
-        return match.Success ? match.Groups[1].Value : string.Empty;
     }
 }
