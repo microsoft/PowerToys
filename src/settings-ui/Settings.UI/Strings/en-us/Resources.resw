@@ -5269,11 +5269,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_ModeSettingsExpander.Description" xml:space="preserve">
     <value>Determine when dark mode should be turned on</value>
   </data>
+  <data name="LightSwitch_ModeOff.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
   <data name="LightSwitch_ModeManual.Content" xml:space="preserve">
-    <value>Manual</value>
+    <value>Fixed hours</value>
   </data>
   <data name="LightSwitch_ModeSunsetToSunrise.Content" xml:space="preserve">
     <value>Sunset to sunrise</value>
+  </data>
+  <data name="LightSwitch_ScheduleOffMessage.Title" xml:space="preserve">
+    <value>Scheduling is turned off.</value>
   </data>
   <data name="LightSwitch_TurnOnDarkMode.Header" xml:space="preserve">
     <value>Turn on dark mode</value>

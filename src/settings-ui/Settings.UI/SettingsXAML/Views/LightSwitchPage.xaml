@@ -18,6 +18,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+        <converters:ShowIfEnumValueConverter x:Key="ShowIfEnumValueConverter" />
         <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
     </Page.Resources>
     <controls:SettingsPageControl
@@ -56,6 +57,10 @@
                             SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
                             SelectedValuePath="Tag"
                             SelectionChanged="ModeSelector_SelectionChanged">
+                            <ComboBoxItem
+                                x:Uid="LightSwitch_ModeOff"
+                                AutomationProperties.AutomationId="OffCBItem_LightSwitch"
+                                Tag="Off" />
                             <ComboBoxItem
                                 x:Uid="LightSwitch_ModeManual"
                                 AutomationProperties.AutomationId="ManualCBItem_LightSwitch"
@@ -114,7 +119,8 @@
                             <tkcontrols:SettingsCard
                                 x:Name="TimelineCard"
                                 HorizontalContentAlignment="Stretch"
-                                ContentAlignment="Vertical">
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter='FixedHours,SunsetToSunrise'}">
                                 <controls:Timeline
                                     Margin="0,24,0,24"
                                     AutomationProperties.AutomationId="Timeline_LightSwitch"
@@ -122,6 +128,16 @@
                                     StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
                                     Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
                                     Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource ShowIfEnumValueConverter}, ConverterParameter=Off}">
+                                <InfoBar
+                                    x:Uid="LightSwitch_ScheduleOffMessage"
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    Severity="Informational" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
