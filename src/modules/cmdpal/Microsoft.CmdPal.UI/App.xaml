@@ -3,6 +3,7 @@
     x:Class="Microsoft.CmdPal.UI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:local="using:Microsoft.CmdPal.UI">
     <Application.Resources>
         <ResourceDictionary>
@@ -15,11 +16,12 @@
                 <ResourceDictionary Source="Styles/Settings.xaml" />
                 <ResourceDictionary Source="Controls/Tag.xaml" />
                 <ResourceDictionary Source="Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="Controls/IsEnabledTextBlock.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
 
             <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
-
+            <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
