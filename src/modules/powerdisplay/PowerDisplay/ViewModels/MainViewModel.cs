@@ -518,15 +518,28 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                             Logger.LogWarning($"[Startup] Invalid color temperature value {savedState.Value.ColorTemperature} for '{internalName}', skipping");
                         }
                         
-                        // 对比度和音量值验证
-                        if (savedState.Value.Contrast >= monitorVm.MinContrast && savedState.Value.Contrast <= monitorVm.MaxContrast)
+                        // 对比度值验证 - 只在硬件支持的情况下才应用
+                        if (monitorVm.ShowContrast && 
+                            savedState.Value.Contrast >= monitorVm.MinContrast && 
+                            savedState.Value.Contrast <= monitorVm.MaxContrast)
                         {
                             monitorVm.Contrast = savedState.Value.Contrast;
                         }
+                        else if (!monitorVm.ShowContrast)
+                        {
+                            Logger.LogInfo($"[Startup] Contrast not supported on '{internalName}', skipping");
+                        }
                         
-                        if (savedState.Value.Volume >= monitorVm.MinVolume && savedState.Value.Volume <= monitorVm.MaxVolume)
+                        // 音量值验证 - 只在硬件支持的情况下才应用
+                        if (monitorVm.ShowVolume &&
+                            savedState.Value.Volume >= monitorVm.MinVolume && 
+                            savedState.Value.Volume <= monitorVm.MaxVolume)
                         {
                             monitorVm.Volume = savedState.Value.Volume;
+                        }
+                        else if (!monitorVm.ShowVolume)
+                        {
+                            Logger.LogInfo($"[Startup] Volume not supported on '{internalName}', skipping");
                         }
                     }
                     else
