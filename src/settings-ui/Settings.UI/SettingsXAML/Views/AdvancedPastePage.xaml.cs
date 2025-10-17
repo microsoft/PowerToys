@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private CancellationTokenSource _foundryModelLoadCts;
         private bool _suppressFoundrySelectionChanged;
         private bool _isFoundryLocalAvailable;
+        private bool _disposed;
 
         private static readonly Dictionary<string, ServiceLegalInfo> ServiceLegalInformation = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -909,16 +910,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void AdvancedAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateAdvancedAIUIVisibility();
+            RefreshDialogBindings();
         }
 
-        private async void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            await UpdatePasteAIUIVisibilityAsync();
-        }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
+            UpdatePasteAIUIVisibility();
+            RefreshDialogBindings();
         }
 
         private static bool RequiresApiKeyForService(string serviceType)
@@ -967,6 +965,43 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             return ServiceLegalInformation.TryGetValue(serviceType, out info);
+        }
+
+        private void RefreshDialogBindings()
+        {
+            try
+            {
+                Bindings?.Update();
+            }
+            catch (Exception)
+            {
+                // Best-effort refresh only; ignore refresh failures.
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            try
+            {
+                _foundryModelLoadCts?.Cancel();
+            }
+            catch (Exception)
+            {
+                // Ignore cancellation failures during disposal.
+            }
+
+            _foundryModelLoadCts?.Dispose();
+            _foundryModelLoadCts = null;
+
+            ViewModel?.Dispose();
+
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
 
         private sealed class ServiceLegalInfo
