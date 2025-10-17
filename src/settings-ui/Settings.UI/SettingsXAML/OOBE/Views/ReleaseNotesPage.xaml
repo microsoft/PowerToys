@@ -14,21 +14,22 @@
     </Page.Resources>
     <Grid Loaded="Grid_Loaded">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="286" />
+            <ColumnDefinition Width="208" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <ListView
             x:Name="ReleasesList"
             IsItemClickEnabled="False"
+            ItemContainerStyle="{StaticResource DefaultListViewItemStyle}"
             ItemsSource="{x:Bind ReleaseItems, Mode=OneWay}"
             SelectionChanged="ReleasesList_SelectionChanged"
             SelectionMode="Single">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="helpers:ReleaseNotesItem">
-                    <StackPanel Padding="12" Spacing="4">
-                        <TextBlock FontWeight="SemiBold">
+                    <StackPanel Padding="12" Spacing="0">
+                        <TextBlock>
                             <Run Text="Version" />
-                            <Run Text="{x:Bind Title}" />
+                            <Run FontWeight="SemiBold" Text="{x:Bind Title}" />
                         </TextBlock>
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
