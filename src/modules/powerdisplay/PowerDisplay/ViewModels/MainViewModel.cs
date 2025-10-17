@@ -34,7 +34,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly ISettingsUtils _settingsUtils;
-    private readonly SettingsManager _settingsManager;
+    private readonly MonitorStateManager _stateManager;
     private FileSystemWatcher? _settingsWatcher;
 
     private ObservableCollection<MonitorViewModel> _monitors;
@@ -62,7 +62,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Initialize settings utils
         _settingsUtils = new SettingsUtils();
-        _settingsManager = new SettingsManager(_settingsUtils);
+        _stateManager = new MonitorStateManager();
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
@@ -154,16 +154,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 if (monitors.Count > 0)
                 {
                     StatusText = $"Found {monitors.Count} monitors";
-
-                    // Update monitor list snapshot (timer will auto-save)
-                    _settingsManager.UpdateMonitorList(monitors);
                 }
                 else
                 {
                     StatusText = "No controllable monitors found";
-
-                    // Update with empty monitor list
-                    _settingsManager.UpdateMonitorList(new List<Monitor>());
                 }
             });
         }
@@ -196,9 +190,6 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 UpdateMonitorList(monitors);
                 IsScanning = false;
                 StatusText = $"Found {monitors.Count} monitors";
-
-                // Update monitor list snapshot
-                _settingsManager.UpdateMonitorList(monitors);
             });
         }
         catch (Exception ex)
@@ -280,9 +271,6 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             }
 
             StatusText = $"Monitor list updated ({Monitors.Count} total)";
-
-            // Update monitor list snapshot
-            _settingsManager.UpdateMonitorList(e.AllMonitors);
         });
     }
 
@@ -346,13 +334,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Handle settings file changes - only monitors UI configuration changes (not monitor parameter values)
+    /// Handle settings file changes - only monitors UI configuration changes from Settings UI
+    /// (monitor_state.json is managed separately and doesn't trigger this)
     /// </summary>
     private void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
     {
         try
         {
-            Logger.LogInfo($"Settings file changed: {e.FullPath}");
+            Logger.LogInfo($"Settings file changed by Settings UI: {e.FullPath}");
 
             // Add small delay to ensure file write completion
             Task.Delay(500).ContinueWith(_ =>
@@ -470,21 +459,21 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     var internalName = GetInternalName(monitorVm);
                     Logger.LogInfo($"[Startup] Processing monitor: '{monitorVm.Name}', InternalName: '{internalName}'");
 
-                    // Find and apply corresponding saved settings
-                    if (settings.Properties.SavedMonitorSettings != null &&
-                        settings.Properties.SavedMonitorSettings.TryGetValue(internalName, out var savedSettings))
+                    // Find and apply corresponding saved settings from state file
+                    var savedState = _stateManager.GetMonitorParameters(internalName);
+                    if (savedState.HasValue)
                     {
-                        Logger.LogInfo($"[Startup] Restoring settings for '{internalName}': Brightness={savedSettings.Brightness}, ColorTemp={savedSettings.ColorTemperature}");
+                        Logger.LogInfo($"[Startup] Restoring state for '{internalName}': Brightness={savedState.Value.Brightness}, ColorTemp={savedState.Value.ColorTemperature}");
                         
                         // Apply saved parameter values to UI and hardware
-                        monitorVm.Brightness = savedSettings.Brightness;
-                        monitorVm.ColorTemperature = savedSettings.ColorTemperature;
-                        monitorVm.Contrast = savedSettings.Contrast;
-                        monitorVm.Volume = savedSettings.Volume;
+                        monitorVm.Brightness = savedState.Value.Brightness;
+                        monitorVm.ColorTemperature = savedState.Value.ColorTemperature;
+                        monitorVm.Contrast = savedState.Value.Contrast;
+                        monitorVm.Volume = savedState.Value.Volume;
                     }
                     else
                     {
-                        Logger.LogInfo($"[Startup] No saved settings for '{internalName}' - keeping current hardware values");
+                        Logger.LogInfo($"[Startup] No saved state for '{internalName}' - keeping current hardware values");
                     }
 
                     // Apply feature visibility settings
@@ -515,9 +504,9 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 }
 
                 // Flush pending changes immediately
-                _ = _settingsManager.FlushAsync();
+                _ = _stateManager.FlushAsync();
                 
-                StatusText = "Current monitor values saved to configuration";
+                StatusText = "Current monitor values saved to state file";
             }
         }
         catch (Exception ex)
@@ -567,10 +556,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             // Use converted internal name for consistency with Settings UI
             var internalName = GetInternalName(monitorVm);
 
-            // Update parameter in snapshot (lock-free, non-blocking)
-            _settingsManager.UpdateMonitorParameter(internalName, property, value);
+            // Update parameter in state file (lock-free, non-blocking)
+            _stateManager.UpdateMonitorParameter(internalName, property, value);
             
-            Logger.LogTrace($"[Save] Queued setting change for '{internalName}': {property}={value}");
+            Logger.LogTrace($"[State] Queued setting change for '{internalName}': {property}={value}");
         }
         catch (Exception ex)
         {
@@ -657,22 +646,22 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _settingsWatcher?.Dispose();
             _settingsWatcher = null;
 
-            // Flush any unsaved settings immediately (synchronously wait)
+            // Flush any unsaved state immediately (synchronously wait)
             try
             {
                 // Use Task.Run to avoid deadlock and wait with timeout
-                if (_settingsManager != null)
+                if (_stateManager != null)
                 {
-                    var flushTask = Task.Run(async () => await _settingsManager.FlushAsync());
+                    var flushTask = _stateManager.FlushAsync();
                     if (!flushTask.Wait(TimeSpan.FromSeconds(2)))
                     {
-                        Logger.LogWarning("Settings flush timed out during dispose");
+                        Logger.LogWarning("State flush timed out during dispose");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to flush settings during dispose: {ex.Message}");
+                Logger.LogError($"Failed to flush state during dispose: {ex.Message}");
             }
 
             // 快速清理监控器视图模型
@@ -699,10 +688,10 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 /* 忽略清理错误 */
             }
 
-            // 释放设置管理器
+            // 释放状态管理器
             try
             {
-                _settingsManager?.Dispose();
+                _stateManager?.Dispose();
             }
             catch
             {
