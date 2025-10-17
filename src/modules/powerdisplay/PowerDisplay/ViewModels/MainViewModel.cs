@@ -42,6 +42,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private bool _isScanning;
     private bool _isInitialized;
     private bool _isLoading;
+    private bool _isReloadingSettings; // 防止重复加载
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -461,8 +462,17 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public async Task ReloadMonitorSettingsAsync()
     {
+        // 防止重复调用
+        if (_isReloadingSettings)
+        {
+            Logger.LogInfo("[Startup] ReloadMonitorSettingsAsync already in progress, skipping");
+            return;
+        }
+
         try
         {
+            _isReloadingSettings = true;
+            
             // Set loading state to block UI interactions
             IsLoading = true;
             StatusText = "Loading settings...";
@@ -486,11 +496,38 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     {
                         Logger.LogInfo($"[Startup] Restoring state for '{internalName}': Brightness={savedState.Value.Brightness}, ColorTemp={savedState.Value.ColorTemperature}");
                         
-                        // Apply saved parameter values to UI and hardware
-                        monitorVm.Brightness = savedState.Value.Brightness;
-                        monitorVm.ColorTemperature = savedState.Value.ColorTemperature;
-                        monitorVm.Contrast = savedState.Value.Contrast;
-                        monitorVm.Volume = savedState.Value.Volume;
+                        // 验证并应用保存的值（跳过无效值）
+                        if (savedState.Value.Brightness >= monitorVm.MinBrightness && savedState.Value.Brightness <= monitorVm.MaxBrightness)
+                        {
+                            monitorVm.Brightness = savedState.Value.Brightness;
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for '{internalName}', skipping");
+                        }
+                        
+                        // 色温值必须有效且在范围内
+                        if (savedState.Value.ColorTemperature > 0 && 
+                            savedState.Value.ColorTemperature >= monitorVm.MinColorTemperature && 
+                            savedState.Value.ColorTemperature <= monitorVm.MaxColorTemperature)
+                        {
+                            monitorVm.ColorTemperature = savedState.Value.ColorTemperature;
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"[Startup] Invalid color temperature value {savedState.Value.ColorTemperature} for '{internalName}', skipping");
+                        }
+                        
+                        // 对比度和音量值验证
+                        if (savedState.Value.Contrast >= monitorVm.MinContrast && savedState.Value.Contrast <= monitorVm.MaxContrast)
+                        {
+                            monitorVm.Contrast = savedState.Value.Contrast;
+                        }
+                        
+                        if (savedState.Value.Volume >= monitorVm.MinVolume && savedState.Value.Volume <= monitorVm.MaxVolume)
+                        {
+                            monitorVm.Volume = savedState.Value.Volume;
+                        }
                     }
                     else
                     {
@@ -504,9 +541,16 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 StatusText = "Applying settings...";
                 
                 // Wait for all hardware updates to complete
-                await Task.WhenAll(Monitors.Select(m => m.FlushAllUpdatesAsync()));
-                
-                StatusText = "Saved settings restored successfully";
+                try
+                {
+                    await Task.WhenAll(Monitors.Select(m => m.FlushAllUpdatesAsync()));
+                    StatusText = "Saved settings restored successfully";
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"[Startup] Error waiting for updates: {ex.Message}");
+                    StatusText = "Settings applied with errors";
+                }
             }
             else
             {
@@ -544,6 +588,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Clear loading state to enable UI interactions
             IsLoading = false;
+            _isReloadingSettings = false;
         }
     }
 
