@@ -327,7 +327,7 @@ public:
                 g_settings.m_sunrise_offset = *v;
             }
 
-            if (auto v = values.get_int_value(L"m_sunset_offset"))
+            if (auto v = values.get_int_value(L"sunset_offset"))
             {
                 g_settings.m_sunset_offset = *v;
             }
@@ -362,15 +362,33 @@ public:
         }
     }
 
+    virtual void stop_worker_only()
+    {
+        if (m_process)
+        {
+            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService (worker only).");
+            constexpr DWORD timeout_ms = 1500;
+            DWORD result = WaitForSingleObject(m_process, timeout_ms);
+
+            if (result == WAIT_TIMEOUT)
+            {
+                Logger::warn("Light Switch: Process didn't exit in time. Forcing termination.");
+                TerminateProcess(m_process, 0);
+            }
+
+            CloseHandle(m_process);
+            m_process = nullptr;
+        }
+    }
+
     virtual void stop_service_if_running()
     {
         if (m_process)
         {
             Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService due to schedule OFF.");
-            disable();
+            stop_worker_only();
         }
     }
-
 
     virtual void enable()
     {
@@ -523,10 +541,13 @@ public:
                     SetAppsTheme(!GetCurrentAppsTheme());
                 }
 
-                if (m_manual_override_event_handle)
+                if (!m_manual_override_event_handle)
                 {
-                    SetEvent(m_manual_override_event_handle);
-                    Logger::debug(L"[Light Switch] Manual override event set");
+                    m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+                    if (!m_manual_override_event_handle)
+                    {
+                        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+                    }
                 }
             }
 
