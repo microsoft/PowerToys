@@ -14,6 +14,7 @@ namespace AdvancedPaste.Services.CustomActions
         {
             SemanticKernelPasteProvider.Registration,
             LocalModelPasteProvider.Registration,
+            FoundryLocalPasteProvider.Registration,
         };
 
         private static readonly IReadOnlyDictionary<AIServiceType, Func<PasteAIConfig, IPasteAIProvider>> ProviderFactories = CreateProviderFactories();

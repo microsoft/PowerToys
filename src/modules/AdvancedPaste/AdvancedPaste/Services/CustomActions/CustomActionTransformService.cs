@@ -7,12 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
-using AdvancedPaste.Services;
 using AdvancedPaste.Settings;
-using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Telemetry;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services.CustomActions
 {

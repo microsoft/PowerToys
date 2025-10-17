@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         AzureOpenAI,
         Onnx,
         ML,
+        FoundryLocal,
         Mistral,
         Google,
         HuggingFace,

@@ -27,8 +27,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public HardwareAccelerator ModelHardwareAccelerator => HardwareAccelerator.FOUNDRYLOCAL;
 
-    public List<string> NugetPackageReferences { get; } = ["Microsoft.Extensions.AI.OpenAI"];
-
     public string ProviderDescription => "The model will run locally via Foundry Local";
 
     public string UrlPrefix => "fl://";
@@ -36,8 +34,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     public string Icon => $"fl{AppUtils.GetThemeAssetSuffix()}.svg";
 
     public string Url => _serviceUrl ?? string.Empty;
-
-    public string IChatClientImplementationNamespace { get; } = "OpenAI";
 
     public string GetDetailsUrl(ModelDetails details)
     {

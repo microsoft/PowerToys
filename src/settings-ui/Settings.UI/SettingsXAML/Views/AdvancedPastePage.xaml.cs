@@ -4,11 +4,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using LanguageModelProvider;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -17,8 +22,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AdvancedPastePage : NavigablePage, IRefreshablePage
+    public sealed partial class AdvancedPastePage : NavigablePage, IRefreshablePage, IDisposable
     {
+        private readonly ObservableCollection<ModelDetails> _foundryCachedModels = new();
+        private readonly ObservableCollection<FoundryDownloadableModel> _foundryDownloadableModels = new();
+        private CancellationTokenSource _foundryModelLoadCts;
+        private bool _suppressFoundrySelectionChanged;
+        private bool _isFoundryLocalAvailable;
+
         private static readonly Dictionary<string, ServiceLegalInfo> ServiceLegalInformation = new(StringComparer.OrdinalIgnoreCase)
         {
             ["OpenAI"] = new ServiceLegalInfo(
@@ -86,11 +97,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            Loaded += (s, e) =>
+            if (FoundryLocalPicker is not null)
+            {
+                FoundryLocalPicker.CachedModels = _foundryCachedModels;
+                FoundryLocalPicker.DownloadableModels = _foundryDownloadableModels;
+                FoundryLocalPicker.SelectionChanged += FoundryLocalPicker_SelectionChanged;
+                FoundryLocalPicker.DownloadRequested += FoundryLocalPicker_DownloadRequested;
+            }
+
+            Loaded += async (s, e) =>
             {
                 ViewModel.OnPageLoaded();
                 UpdateAdvancedAIUIVisibility();
-                UpdatePasteAIUIVisibility();
+                await UpdatePasteAIUIVisibilityAsync();
+            };
+
+            Unloaded += (_, _) =>
+            {
+                if (_foundryModelLoadCts is not null)
+                {
+                    _foundryModelLoadCts.Cancel();
+                    _foundryModelLoadCts.Dispose();
+                    _foundryModelLoadCts = null;
+                }
             };
         }
 
@@ -184,12 +213,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (existingCustomAction == null)
             {
-                /* TO DO: Re-enable with SettingsExpander, not a P0 though
                 ViewModel.AddCustomAction(dialogCustomAction);
-
-                var element = (ContentPresenter)AdvancedPasteUIActions.ContainerFromIndex(CustomActions.Items.Count - 1);
-                element.StartBringIntoView(new BringIntoViewOptions { VerticalOffset = -60, AnimationDesired = true });
-                element.Focus(FocusState.Programmatic); */
             }
             else
             {
@@ -197,7 +221,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private static AdvancedPasteCustomAction GetBoundCustomAction(object sender) => (AdvancedPasteCustomAction)((FrameworkElement)sender).DataContext;
+        private static AdvancedPasteCustomAction GetBoundCustomAction(object sender)
+        {
+            if (sender is FrameworkElement element)
+            {
+                if (element.DataContext is AdvancedPasteCustomAction action)
+                {
+                    return action;
+                }
+
+                if (element.Tag is AdvancedPasteCustomAction taggedAction)
+                {
+                    return taggedAction;
+                }
+            }
+
+            throw new InvalidOperationException("Unable to determine Advanced Paste custom action from sender.");
+        }
 
         private void BrowsePasteAIModelPath_Click(object sender, RoutedEventArgs e)
         {
@@ -252,9 +292,49 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             System.Diagnostics.Debug.WriteLine($"{configType} API key saved successfully");
         }
 
-        private void PasteAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void PasteAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdatePasteAIUIVisibility();
+            await UpdatePasteAIUIVisibilityAsync();
+        }
+
+        private void UpdatePasteAIUIVisibility()
+        {
+            if (PasteAIServiceTypeListView?.SelectedValue == null)
+            {
+                return;
+            }
+
+            string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
+
+            bool isOnnx = string.Equals(selectedType, "Onnx", StringComparison.OrdinalIgnoreCase);
+            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
+            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
+            bool requiresApiKey = RequiresApiKeyForService(selectedType);
+            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
+
+            if (ViewModel.PasteAIConfiguration is not null)
+            {
+                ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(selectedType);
+            }
+
+            PasteAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
+
+            if (requiresApiKey)
+            {
+                PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(selectedType);
+            }
+            else
+            {
+                PasteAIApiKeyPasswordBox.Password = string.Empty;
+            }
         }
 
         private void UpdateAdvancedAIUIVisibility()
@@ -295,7 +375,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void UpdatePasteAIUIVisibility()
+        private async Task UpdatePasteAIUIVisibilityAsync(bool refreshFoundry = false)
         {
             if (PasteAIServiceTypeListView?.SelectedValue == null)
             {
@@ -303,35 +383,470 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
+            bool isAzureOpenAI = string.Equals(selectedType, "AzureOpenAI", StringComparison.Ordinal);
+            bool isOnnx = string.Equals(selectedType, "Onnx", StringComparison.Ordinal);
+            bool isFoundryLocal = string.Equals(selectedType, "FoundryLocal", StringComparison.Ordinal);
 
-            bool isOnnx = string.Equals(selectedType, "Onnx", StringComparison.OrdinalIgnoreCase);
-            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
-            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
-            bool requiresApiKey = RequiresApiKeyForService(selectedType);
-            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
+            PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
+            PasteAIEndpointUrlTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIDeploymentNameTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyPasswordBox.Visibility = (!isOnnx && !isFoundryLocal) ? Visibility.Visible : Visibility.Collapsed;
 
-            if (ViewModel.PasteAIConfiguration is not null)
+            if (FoundryLocalPanel is not null)
             {
-                ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(selectedType);
+                FoundryLocalPanel.Visibility = isFoundryLocal ? Visibility.Visible : Visibility.Collapsed;
             }
 
-            PasteAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
-
-            if (requiresApiKey)
+            if (!isFoundryLocal)
             {
-                PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(selectedType);
+                _foundryModelLoadCts?.Cancel();
+                _isFoundryLocalAvailable = false;
+                if (FoundryLocalPicker is not null)
+                {
+                    FoundryLocalPicker.IsLoading = false;
+                    FoundryLocalPicker.IsAvailable = false;
+                    FoundryLocalPicker.StatusText = string.Empty;
+                    FoundryLocalPicker.SelectedModel = null;
+                }
+
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
+                return;
+            }
+
+            PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+
+            await LoadFoundryLocalModelsAsync(refreshFoundry);
+        }
+
+        private async Task LoadFoundryLocalModelsAsync(bool refresh = false)
+        {
+            if (FoundryLocalPanel is null)
+            {
+                return;
+            }
+
+            _foundryModelLoadCts?.Cancel();
+            _foundryModelLoadCts?.Dispose();
+            _foundryModelLoadCts = new CancellationTokenSource();
+            var cancellationToken = _foundryModelLoadCts.Token;
+
+            ShowFoundryLoadingState();
+
+            try
+            {
+                var provider = FoundryLocalModelProvider.Instance;
+
+                var isAvailable = await provider.IsAvailable();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                _isFoundryLocalAvailable = isAvailable;
+
+                if (!isAvailable)
+                {
+                    ShowFoundryUnavailableState();
+                    return;
+                }
+
+                IEnumerable<ModelDetails> cachedModelsEnumerable = refresh
+                    ? await provider.GetModelsAsync(ignoreCached: true, cancelationToken: cancellationToken)
+                    : await provider.GetModelsAsync(cancelationToken: cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var cachedModels = cachedModelsEnumerable?.ToList() ?? new List<ModelDetails>();
+                var catalogModels = provider.GetAllModelsInCatalog()?.ToList() ?? new List<ModelDetails>();
+
+                UpdateFoundryCollections(cachedModels, catalogModels);
+                ShowFoundryAvailableState();
+                RestoreFoundrySelection(cachedModels);
+            }
+            catch (OperationCanceledException)
+            {
+                // Loading cancelled; no action required.
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Unable to load Foundry Local models. {ex.Message}";
+                ShowFoundryUnavailableState(errorMessage);
+                System.Diagnostics.Debug.WriteLine($"[AdvancedPastePage] Failed to load Foundry Local models: {ex}");
+            }
+            finally
+            {
+                UpdateFoundrySaveButtonState();
+            }
+        }
+
+        private void ShowFoundryLoadingState()
+        {
+            _isFoundryLocalAvailable = false;
+
+            if (FoundryLocalPicker is not null)
+            {
+                FoundryLocalPicker.IsLoading = true;
+                FoundryLocalPicker.IsAvailable = false;
+                FoundryLocalPicker.StatusText = string.Empty;
+                FoundryLocalPicker.SelectedModel = null;
+            }
+        }
+
+        private void ShowFoundryUnavailableState(string message = null)
+        {
+            _isFoundryLocalAvailable = false;
+
+            if (FoundryLocalPicker is not null)
+            {
+                FoundryLocalPicker.IsLoading = false;
+                FoundryLocalPicker.IsAvailable = false;
+                FoundryLocalPicker.SelectedModel = null;
+                FoundryLocalPicker.StatusText = message ?? "Foundry Local was not detected. Install it to use local models.";
+            }
+
+            _foundryCachedModels.Clear();
+            _foundryDownloadableModels.Clear();
+        }
+
+        private void ShowFoundryAvailableState()
+        {
+            _isFoundryLocalAvailable = true;
+
+            if (FoundryLocalPicker is not null)
+            {
+                FoundryLocalPicker.IsLoading = false;
+                FoundryLocalPicker.IsAvailable = true;
+                if (_foundryCachedModels.Count == 0)
+                {
+                    FoundryLocalPicker.StatusText = "Download a model to enable Advanced Paste.";
+                }
+                else if (string.IsNullOrWhiteSpace(FoundryLocalPicker.StatusText))
+                {
+                    FoundryLocalPicker.StatusText = "Select a downloaded model to enable Advanced Paste.";
+                }
+            }
+
+            UpdateFoundrySaveButtonState();
+        }
+
+        private void UpdateFoundryCollections(IReadOnlyCollection<ModelDetails> cachedModels, IReadOnlyCollection<ModelDetails> catalogModels)
+        {
+            _foundryCachedModels.Clear();
+
+            foreach (var model in cachedModels.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                _foundryCachedModels.Add(model);
+            }
+
+            var cachedReferences = new HashSet<string>(_foundryCachedModels.Select(m => NormalizeFoundryModelReference(m.Url ?? m.Name)), StringComparer.OrdinalIgnoreCase);
+
+            _foundryDownloadableModels.Clear();
+
+            foreach (var model in catalogModels.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                var reference = NormalizeFoundryModelReference(model.Url ?? model.Name);
+                if (cachedReferences.Contains(reference))
+                {
+                    continue;
+                }
+
+                _foundryDownloadableModels.Add(new FoundryDownloadableModel(model));
+            }
+        }
+
+        private void RestoreFoundrySelection(IReadOnlyCollection<ModelDetails> cachedModels)
+        {
+            if (FoundryLocalPicker is null)
+            {
+                return;
+            }
+
+            var currentModelReference = ViewModel?.PasteAIConfiguration?.ModelName;
+
+            ModelDetails matchingModel = null;
+
+            if (!string.IsNullOrWhiteSpace(currentModelReference))
+            {
+                var normalizedReference = NormalizeFoundryModelReference(currentModelReference);
+                matchingModel = cachedModels.FirstOrDefault(model =>
+                    string.Equals(NormalizeFoundryModelReference(model.Url ?? model.Name), normalizedReference, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (FoundryLocalPicker is null)
+            {
+                return;
+            }
+
+            _suppressFoundrySelectionChanged = true;
+            FoundryLocalPicker.SelectedModel = matchingModel;
+            _suppressFoundrySelectionChanged = false;
+
+            if (matchingModel is null)
+            {
+                if (ViewModel?.PasteAIConfiguration is not null)
+                {
+                    ViewModel.PasteAIConfiguration.ModelName = string.Empty;
+                }
+
+                if (FoundryLocalPicker is not null)
+                {
+                    FoundryLocalPicker.StatusText = _foundryCachedModels.Count == 0
+                        ? "Download a model to enable Advanced Paste."
+                        : "Select a downloaded model to enable Advanced Paste.";
+                }
             }
             else
             {
-                PasteAIApiKeyPasswordBox.Password = string.Empty;
+                if (ViewModel?.PasteAIConfiguration is not null)
+                {
+                    ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(matchingModel.Url ?? matchingModel.Name);
+                }
+
+                if (FoundryLocalPicker is not null)
+                {
+                    FoundryLocalPicker.StatusText = $"{matchingModel.Name} selected.";
+                }
+            }
+
+            UpdateFoundrySaveButtonState();
+        }
+
+        private static string NormalizeFoundryModelReference(string modelReference)
+        {
+            if (string.IsNullOrWhiteSpace(modelReference))
+            {
+                return string.Empty;
+            }
+
+            var prefix = FoundryLocalModelProvider.Instance.UrlPrefix;
+            return modelReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                ? modelReference
+                : $"{prefix}{modelReference}";
+        }
+
+        private async Task DownloadFoundryModelAsync(FoundryDownloadableModel downloadableModel)
+        {
+            if (downloadableModel is null)
+            {
+                return;
+            }
+
+            downloadableModel.StartDownload();
+            if (FoundryLocalPicker is not null)
+            {
+                FoundryLocalPicker.StatusText = $"Downloading {downloadableModel.Name}...";
+            }
+
+            UpdateFoundrySaveButtonState();
+
+            try
+            {
+                var provider = FoundryLocalModelProvider.Instance;
+                var progress = new Progress<float>(value => downloadableModel.ReportProgress(value));
+
+                bool success = await provider.DownloadModel(downloadableModel.ModelDetails, progress);
+
+                if (success)
+                {
+                    downloadableModel.MarkDownloaded();
+
+                    if (FoundryLocalPicker is not null)
+                    {
+                        FoundryLocalPicker.StatusText = $"Downloaded {downloadableModel.Name}.";
+                    }
+
+                    if (ViewModel?.PasteAIConfiguration is not null)
+                    {
+                        ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(downloadableModel.ModelDetails.Url ?? downloadableModel.ModelDetails.Name);
+                    }
+
+                    await LoadFoundryLocalModelsAsync(refresh: true);
+                }
+                else
+                {
+                    downloadableModel.Reset();
+                    if (FoundryLocalPicker is not null)
+                    {
+                        FoundryLocalPicker.StatusText = $"Failed to download {downloadableModel.Name}.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                downloadableModel.Reset();
+                if (FoundryLocalPicker is not null)
+                {
+                    FoundryLocalPicker.StatusText = $"Failed to download {downloadableModel.Name}.";
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[AdvancedPastePage] Failed to download Foundry Local model: {ex}");
+            }
+            finally
+            {
+                UpdateFoundrySaveButtonState();
+            }
+        }
+
+        private void UpdateFoundrySaveButtonState()
+        {
+            if (PasteAIProviderConfigurationDialog is null)
+            {
+                return;
+            }
+
+            bool isFoundrySelected = string.Equals(PasteAIServiceTypeListView?.SelectedValue?.ToString(), "FoundryLocal", StringComparison.Ordinal);
+
+            if (!isFoundrySelected)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
+                return;
+            }
+
+            if (!_isFoundryLocalAvailable || _foundryDownloadableModels.Any(model => model.IsDownloading))
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            bool hasSelection = FoundryLocalPicker?.SelectedModel is ModelDetails;
+            PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = hasSelection;
+        }
+
+        private void FoundryLocalPicker_SelectionChanged(object sender, ModelDetails selectedModel)
+        {
+            if (_suppressFoundrySelectionChanged)
+            {
+                return;
+            }
+
+            if (selectedModel is not null)
+            {
+                if (ViewModel?.PasteAIConfiguration is not null)
+                {
+                    ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(selectedModel.Url ?? selectedModel.Name);
+                }
+
+                if (FoundryLocalPicker is not null)
+                {
+                    FoundryLocalPicker.StatusText = $"{selectedModel.Name} selected.";
+                }
+            }
+            else
+            {
+                if (ViewModel?.PasteAIConfiguration is not null)
+                {
+                    ViewModel.PasteAIConfiguration.ModelName = string.Empty;
+                }
+
+                if (FoundryLocalPicker is not null)
+                {
+                    FoundryLocalPicker.StatusText = "Select a downloaded model to enable Advanced Paste.";
+                }
+            }
+
+            UpdateFoundrySaveButtonState();
+        }
+
+        private async void FoundryLocalPicker_DownloadRequested(object sender, object args)
+        {
+            if (args is FoundryDownloadableModel downloadableModel)
+            {
+                await DownloadFoundryModelAsync(downloadableModel);
+            }
+        }
+
+        private sealed class FoundryDownloadableModel : INotifyPropertyChanged
+        {
+            private readonly List<string> _deviceTags;
+            private double _progress;
+            private bool _isDownloading;
+            private bool _isDownloaded;
+
+            public FoundryDownloadableModel(ModelDetails modelDetails)
+            {
+                ModelDetails = modelDetails ?? throw new ArgumentNullException(nameof(modelDetails));
+                SizeTag = FoundryLocalModelPicker.GetModelSizeText(ModelDetails.Size);
+                LicenseTag = FoundryLocalModelPicker.GetLicenseShortText(ModelDetails.License);
+                _deviceTags = FoundryLocalModelPicker
+                    .GetDeviceTags(ModelDetails.HardwareAccelerators)
+                    .ToList();
+            }
+
+            public ModelDetails ModelDetails { get; }
+
+            public string Name => string.IsNullOrWhiteSpace(ModelDetails.Name) ? "Model" : ModelDetails.Name;
+
+            public string Description => string.IsNullOrWhiteSpace(ModelDetails.Description) ? "No description provided." : ModelDetails.Description;
+
+            public string SizeTag { get; }
+
+            public bool HasSizeTag => !string.IsNullOrWhiteSpace(SizeTag);
+
+            public string LicenseTag { get; }
+
+            public bool HasLicenseTag => !string.IsNullOrWhiteSpace(LicenseTag);
+
+            public IReadOnlyList<string> DeviceTags => _deviceTags;
+
+            public bool HasDeviceTags => _deviceTags.Count > 0;
+
+            public double ProgressPercent => Math.Round(_progress * 100, 2);
+
+            public Visibility ProgressVisibility => _isDownloading ? Visibility.Visible : Visibility.Collapsed;
+
+            public string ActionLabel => _isDownloaded ? "Downloaded" : _isDownloading ? "Downloading..." : "Download";
+
+            public bool CanDownload => !_isDownloading && !_isDownloaded;
+
+            internal bool IsDownloading => _isDownloading;
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public void StartDownload()
+            {
+                _isDownloading = true;
+                _isDownloaded = false;
+                _progress = 0;
+                NotifyStateChanged();
+            }
+
+            public void ReportProgress(float value)
+            {
+                _progress = Math.Clamp(value, 0f, 1f);
+                RaisePropertyChanged(nameof(ProgressPercent));
+            }
+
+            public void MarkDownloaded()
+            {
+                _isDownloading = false;
+                _isDownloaded = true;
+                _progress = 1;
+                NotifyStateChanged();
+            }
+
+            public void Reset()
+            {
+                _isDownloading = false;
+                _isDownloaded = false;
+                _progress = 0;
+                NotifyStateChanged();
+            }
+
+            private void NotifyStateChanged()
+            {
+                RaisePropertyChanged(nameof(ProgressPercent));
+                RaisePropertyChanged(nameof(ProgressVisibility));
+                RaisePropertyChanged(nameof(ActionLabel));
+                RaisePropertyChanged(nameof(CanDownload));
+            }
+
+            private void RaisePropertyChanged(string propertyName)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 
@@ -396,9 +911,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateAdvancedAIUIVisibility();
         }
 
-        private void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdatePasteAIUIVisibility();
+            await UpdatePasteAIUIVisibilityAsync();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
 
         private static bool RequiresApiKeyForService(string serviceType)
