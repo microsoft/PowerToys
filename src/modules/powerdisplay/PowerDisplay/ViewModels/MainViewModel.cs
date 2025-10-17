@@ -487,14 +487,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 
                 foreach (var monitorVm in Monitors)
                 {
-                    var internalName = GetInternalName(monitorVm);
-                    Logger.LogInfo($"[Startup] Processing monitor: '{monitorVm.Name}', InternalName: '{internalName}'");
+                    var hardwareId = monitorVm.HardwareId;
+                    Logger.LogInfo($"[Startup] Processing monitor: '{monitorVm.Name}', HardwareId: '{hardwareId}'");
 
-                    // Find and apply corresponding saved settings from state file
-                    var savedState = _stateManager.GetMonitorParameters(internalName);
+                    // Find and apply corresponding saved settings from state file using stable HardwareId
+                    var savedState = _stateManager.GetMonitorParameters(hardwareId);
                     if (savedState.HasValue)
                     {
-                        Logger.LogInfo($"[Startup] Restoring state for '{internalName}': Brightness={savedState.Value.Brightness}, ColorTemp={savedState.Value.ColorTemperature}");
+                        Logger.LogInfo($"[Startup] Restoring state for HardwareId '{hardwareId}': Brightness={savedState.Value.Brightness}, ColorTemp={savedState.Value.ColorTemperature}");
                         
                         // 验证并应用保存的值（跳过无效值）
                         if (savedState.Value.Brightness >= monitorVm.MinBrightness && savedState.Value.Brightness <= monitorVm.MaxBrightness)
@@ -503,7 +503,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                         }
                         else
                         {
-                            Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for '{internalName}', skipping");
+                            Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for HardwareId '{hardwareId}', skipping");
                         }
                         
                         // 色温值必须有效且在范围内
@@ -515,7 +515,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                         }
                         else
                         {
-                            Logger.LogWarning($"[Startup] Invalid color temperature value {savedState.Value.ColorTemperature} for '{internalName}', skipping");
+                            Logger.LogWarning($"[Startup] Invalid color temperature value {savedState.Value.ColorTemperature} for HardwareId '{hardwareId}', skipping");
                         }
                         
                         // 对比度值验证 - 只在硬件支持的情况下才应用
@@ -527,7 +527,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                         }
                         else if (!monitorVm.ShowContrast)
                         {
-                            Logger.LogInfo($"[Startup] Contrast not supported on '{internalName}', skipping");
+                            Logger.LogInfo($"[Startup] Contrast not supported on HardwareId '{hardwareId}', skipping");
                         }
                         
                         // 音量值验证 - 只在硬件支持的情况下才应用
@@ -539,15 +539,16 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                         }
                         else if (!monitorVm.ShowVolume)
                         {
-                            Logger.LogInfo($"[Startup] Volume not supported on '{internalName}', skipping");
+                            Logger.LogInfo($"[Startup] Volume not supported on HardwareId '{hardwareId}', skipping");
                         }
                     }
                     else
                     {
-                        Logger.LogInfo($"[Startup] No saved state for '{internalName}' - keeping current hardware values");
+                        Logger.LogInfo($"[Startup] No saved state for HardwareId '{hardwareId}' - keeping current hardware values");
                     }
 
-                    // Apply feature visibility settings
+                    // Apply feature visibility settings (still need InternalName for Settings UI matching)
+                    var internalName = GetInternalName(monitorVm);
                     ApplyFeatureVisibility(monitorVm, settings, internalName);
                 }
 
@@ -634,7 +635,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            // Find the monitor VM to get the converted internal name
+            // Find the monitor VM to get the stable HardwareId
             var monitorVm = GetMonitorViewModel(monitorId);
             if (monitorVm == null)
             {
@@ -642,13 +643,13 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 return;
             }
 
-            // Use converted internal name for consistency with Settings UI
-            var internalName = GetInternalName(monitorVm);
+            // Use stable HardwareId as the key for state persistence
+            var hardwareId = monitorVm.HardwareId;
 
             // Update parameter in state file (lock-free, non-blocking)
-            _stateManager.UpdateMonitorParameter(internalName, property, value);
+            _stateManager.UpdateMonitorParameter(hardwareId, property, value);
             
-            Logger.LogTrace($"[State] Queued setting change for '{internalName}': {property}={value}");
+            Logger.LogTrace($"[State] Queued setting change for HardwareId '{hardwareId}': {property}={value}");
         }
         catch (Exception ex)
         {

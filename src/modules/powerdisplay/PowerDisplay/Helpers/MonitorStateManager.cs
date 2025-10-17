@@ -71,6 +71,8 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Serializable state for JSON persistence
+        /// Dictionary key should be HardwareId (e.g., "GSM5C6D") for stable identification
+        /// Legacy files may have used InternalName (e.g., "DISPLAY1_0_3") which will still load but won't match after reconnection
         /// </summary>
         private sealed class MonitorStateFile
         {
@@ -116,13 +118,20 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Update monitor parameter in memory (lock-free, non-blocking)
+        /// Uses HardwareId as the stable key
         /// </summary>
-        public void UpdateMonitorParameter(string monitorId, string property, int value)
+        public void UpdateMonitorParameter(string hardwareId, string property, int value)
         {
             try
             {
-                // Get or create parameter entry
-                var parameters = _parameters.GetOrAdd(monitorId, _ => new MonitorParameters());
+                if (string.IsNullOrEmpty(hardwareId))
+                {
+                    Logger.LogWarning($"Cannot update monitor parameter: HardwareId is empty");
+                    return;
+                }
+
+                // Get or create parameter entry using HardwareId
+                var parameters = _parameters.GetOrAdd(hardwareId, _ => new MonitorParameters());
                 
                 // Update the specific property (volatile write)
                 switch (property)
@@ -147,7 +156,7 @@ namespace PowerDisplay.Helpers
                 // Mark as dirty (will be saved in next timer cycle)
                 _isDirty = true;
                 
-                Logger.LogTrace($"[State] Updated {property}={value} for monitor '{monitorId}'");
+                Logger.LogTrace($"[State] Updated {property}={value} for monitor HardwareId='{hardwareId}'");
             }
             catch (Exception ex)
             {
@@ -156,11 +165,16 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Get saved parameters for a monitor
+        /// Get saved parameters for a monitor using HardwareId
         /// </summary>
-        public (int Brightness, int ColorTemperature, int Contrast, int Volume)? GetMonitorParameters(string monitorId)
+        public (int Brightness, int ColorTemperature, int Contrast, int Volume)? GetMonitorParameters(string hardwareId)
         {
-            if (_parameters.TryGetValue(monitorId, out var parameters))
+            if (string.IsNullOrEmpty(hardwareId))
+            {
+                return null;
+            }
+
+            if (_parameters.TryGetValue(hardwareId, out var parameters))
             {
                 return (parameters.Brightness, parameters.ColorTemperature, parameters.Contrast, parameters.Volume);
             }
@@ -168,11 +182,11 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Check if state exists for a monitor
+        /// Check if state exists for a monitor (by HardwareId)
         /// </summary>
-        public bool HasMonitorState(string monitorId)
+        public bool HasMonitorState(string hardwareId)
         {
-            return _parameters.ContainsKey(monitorId);
+            return !string.IsNullOrEmpty(hardwareId) && _parameters.ContainsKey(hardwareId);
         }
 
         /// <summary>
@@ -195,10 +209,10 @@ namespace PowerDisplay.Helpers
                 {
                     foreach (var kvp in state.Monitors)
                     {
-                        var monitorId = kvp.Key;
+                        var monitorKey = kvp.Key; // Should be HardwareId (e.g., "GSM5C6D")
                         var entry = kvp.Value;
                         
-                        var parameters = _parameters.GetOrAdd(monitorId, _ => new MonitorParameters());
+                        var parameters = _parameters.GetOrAdd(monitorKey, _ => new MonitorParameters());
                         parameters.Brightness = entry.Brightness;
                         parameters.ColorTemperature = entry.ColorTemperature;
                         parameters.Contrast = entry.Contrast;
@@ -206,6 +220,7 @@ namespace PowerDisplay.Helpers
                     }
 
                     Logger.LogInfo($"[State] Loaded state for {state.Monitors.Count} monitors from {_stateFilePath}");
+                    Logger.LogInfo($"[State] Monitor keys in state file: {string.Join(", ", state.Monitors.Keys)}");
                 }
             }
             catch (Exception ex)
