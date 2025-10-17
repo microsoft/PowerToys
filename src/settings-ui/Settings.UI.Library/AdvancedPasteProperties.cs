@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,12 +24,40 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsJsonShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
+            IsAIEnabled = false;
             IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
             AdvancedAIConfiguration = new();
             PasteAIConfiguration = new();
         }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool IsAIEnabled { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtensionData
+        {
+            get => _extensionData;
+            set
+            {
+                _extensionData = value;
+
+                if (_extensionData != null && _extensionData.TryGetValue("IsOpenAIEnabled", out var legacyElement) && legacyElement.ValueKind == JsonValueKind.Object && legacyElement.TryGetProperty("value", out var valueElement))
+                {
+                    IsAIEnabled = valueElement.ValueKind switch
+                    {
+                        JsonValueKind.True => true,
+                        JsonValueKind.False => false,
+                        _ => IsAIEnabled,
+                    };
+
+                    _extensionData.Remove("IsOpenAIEnabled");
+                }
+            }
+        }
+
+        private Dictionary<string, JsonElement> _extensionData;
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool IsAdvancedAIEnabled { get; set; }

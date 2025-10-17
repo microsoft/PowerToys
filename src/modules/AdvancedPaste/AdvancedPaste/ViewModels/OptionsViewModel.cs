@@ -83,7 +83,7 @@ namespace AdvancedPaste.ViewModels
         {
             get
             {
-                if (!IsAllowedByGPO)
+                if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
                 {
                     return false;
                 }
@@ -97,7 +97,7 @@ namespace AdvancedPaste.ViewModels
 
         public bool IsCustomAIAvailable => IsCustomAIServiceEnabled && ClipboardHasDataForCustomAI;
 
-        public bool IsAdvancedAIEnabled => IsAllowedByGPO && _userSettings.IsAdvancedAIEnabled && _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI);
+        public bool IsAdvancedAIEnabled => IsAllowedByGPO && _userSettings.IsAIEnabled && _userSettings.IsAdvancedAIEnabled && _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI);
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
@@ -105,7 +105,7 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
-        private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
+        private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled && _userSettings.IsAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
 
         private bool Visible
         {
@@ -178,6 +178,7 @@ namespace AdvancedPaste.ViewModels
 
         private void UserSettings_Changed(object sender, EventArgs e)
         {
+            OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
             OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));

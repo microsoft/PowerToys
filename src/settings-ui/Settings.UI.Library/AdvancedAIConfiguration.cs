@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -23,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _modelPath = string.Empty;
         private bool _useSharedCredentials = true;
         private string _systemPrompt = string.Empty;
+        private bool _moderationEnabled = true;
+        private Dictionary<string, AIProviderConfigurationSnapshot> _providerConfigurations = new(StringComparer.OrdinalIgnoreCase);
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -89,6 +92,44 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _systemPrompt, value?.Trim() ?? string.Empty);
         }
 
+        [JsonPropertyName("moderation-enabled")]
+        public bool ModerationEnabled
+        {
+            get => _moderationEnabled;
+            set => SetProperty(ref _moderationEnabled, value);
+        }
+
+        [JsonPropertyName("provider-configurations")]
+        public Dictionary<string, AIProviderConfigurationSnapshot> ProviderConfigurations
+        {
+            get => _providerConfigurations;
+            set => SetProperty(ref _providerConfigurations, value ?? new Dictionary<string, AIProviderConfigurationSnapshot>(StringComparer.OrdinalIgnoreCase));
+        }
+
+        public bool HasProviderConfiguration(string serviceType)
+        {
+            return _providerConfigurations.ContainsKey(NormalizeServiceType(serviceType));
+        }
+
+        public AIProviderConfigurationSnapshot GetOrCreateProviderConfiguration(string serviceType)
+        {
+            var key = NormalizeServiceType(serviceType);
+            if (!_providerConfigurations.TryGetValue(key, out var snapshot))
+            {
+                snapshot = new AIProviderConfigurationSnapshot();
+                _providerConfigurations[key] = snapshot;
+                OnPropertyChanged(nameof(ProviderConfigurations));
+            }
+
+            return snapshot;
+        }
+
+        public void SetProviderConfiguration(string serviceType, AIProviderConfigurationSnapshot snapshot)
+        {
+            _providerConfigurations[NormalizeServiceType(serviceType)] = snapshot ?? new AIProviderConfigurationSnapshot();
+            OnPropertyChanged(nameof(ProviderConfigurations));
+        }
+
         public override string ToString()
             => JsonSerializer.Serialize(this);
 
@@ -107,6 +148,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private static string NormalizeServiceType(string serviceType)
+        {
+            return string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
         }
     }
 }

@@ -24,7 +24,23 @@ public sealed class PromptModerationService(IAICredentialsProvider aiCredentials
     {
         try
         {
+            _aiCredentialsProvider.Refresh(AICredentialScope.AdvancedAI);
             var apiKey = _aiCredentialsProvider.GetKey(AICredentialScope.AdvancedAI);
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                _aiCredentialsProvider.Refresh(AICredentialScope.PasteAI);
+                apiKey = _aiCredentialsProvider.GetKey(AICredentialScope.PasteAI);
+            }
+
+            apiKey = apiKey?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Logger.LogWarning("Skipping OpenAI moderation because no credential is configured.");
+                return;
+            }
+
             ModerationClient moderationClient = new(ModelName, apiKey);
             var moderationClientResult = await moderationClient.ClassifyTextAsync(fullPrompt, cancellationToken);
             var moderationResult = moderationClientResult.Value;

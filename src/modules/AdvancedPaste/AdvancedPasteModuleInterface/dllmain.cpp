@@ -16,7 +16,6 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
 
-#include <winrt/Windows.Security.Credentials.h>
 #include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -55,11 +54,10 @@ namespace
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
     const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
+    const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
+    const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
-
-    const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
-    const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
 }
 
 class AdvancedPaste : public PowertoyModuleIface
@@ -94,6 +92,7 @@ private:
     using CustomAction = ActionData<int>;
     std::vector<CustomAction> m_custom_actions;
 
+    bool m_is_ai_enabled = false;
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
 
@@ -145,32 +144,11 @@ private:
         return jsonObject;
     }
 
-    static bool open_ai_key_exists()
-    {
-        try
-        {
-            winrt::Windows::Security::Credentials::PasswordVault().Retrieve(OPENAI_VAULT_RESOURCE, OPENAI_VAULT_USERNAME);
-            return true;
-        }
-        catch (const winrt::hresult_error& ex)
-        {
-            // Looks like the only way to access the PasswordVault is through an API that throws an exception in case the resource doesn't exist.
-            // If the debugger breaks here, just continue.
-            // If you want to disable breaking here in a more permanent way, just add a condition in Visual Studio's Exception Settings to not break on win::hresult_error, but that might make you not hit other exceptions you might want to catch.
-            if (ex.code() == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
-            {
-                return false; // Credential doesn't exist.
-            }
-            Logger::error("Unexpected error while retrieving OpenAI key from vault: {}", winrt::to_string(ex.message()));
-            return false;
-        }
-    }
-
-    bool is_open_ai_enabled()
+    bool is_ai_enabled()
     {
         return gpo_policy_enabled_configuration() != powertoys_gpo::gpo_rule_configured_disabled &&
                powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue() != powertoys_gpo::gpo_rule_configured_disabled &&
-               open_ai_key_exists();
+               m_is_ai_enabled;
     }
 
     static std::wstring kebab_to_pascal_case(const std::wstring& kebab_str)
@@ -341,7 +319,7 @@ private:
                     if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
                     {
                         const auto customActions = propertiesObject.GetNamedObject(JSON_KEY_CUSTOM_ACTIONS).GetNamedArray(JSON_KEY_VALUE);
-                        if (customActions.Size() > 0 && is_open_ai_enabled())
+                        if (customActions.Size() > 0 && is_ai_enabled())
                         {
                             for (const auto& customAction : customActions)
                             {
@@ -368,6 +346,23 @@ private:
             if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
             {
                 m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            else
+            {
+                m_is_advanced_ai_enabled = false;
+            }
+
+            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else
+            {
+                m_is_ai_enabled = false;
             }
 
             if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))

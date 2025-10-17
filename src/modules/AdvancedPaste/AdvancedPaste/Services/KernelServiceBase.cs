@@ -150,7 +150,11 @@ public abstract class KernelServiceBase(
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
 
-        // await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
+        if (ShouldModerateAdvancedAI())
+        {
+            await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
+        }
+
         var chatResult = await kernel.GetRequiredService<IChatCompletionService>(AdvancedAIModelName)
                                      .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel, cancellationToken);
         chatHistory.Add(chatResult);
@@ -363,5 +367,17 @@ public abstract class KernelServiceBase(
         var usage = GetAIServiceUsage(chatMessage);
         var usageString = usage.HasUsage ? $" [{usage}]" : string.Empty;
         return $"-> {role}: {redactedContent}{usageString}";
+    }
+
+    private bool ShouldModerateAdvancedAI()
+    {
+        var config = _userSettings?.AdvancedAIConfiguration ?? new AdvancedAIConfiguration();
+        var serviceType = NormalizeServiceType(config.ServiceTypeKind);
+        return serviceType == AIServiceType.OpenAI && config.ModerationEnabled;
+    }
+
+    private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
+    {
+        return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
     }
 }

@@ -10,6 +10,12 @@ using AdvancedPaste.Settings;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Amazon;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference;
+using Microsoft.SemanticKernel.Connectors.Google;
+using Microsoft.SemanticKernel.Connectors.HuggingFace;
+using Microsoft.SemanticKernel.Connectors.MistralAI;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services;
@@ -33,12 +39,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     protected override string AdvancedAIModelName => GetModelName();
 
-    protected override PromptExecutionSettings PromptExecutionSettings =>
-        new OpenAIPromptExecutionSettings()
-        {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            Temperature = 0.01,
-        };
+    protected override PromptExecutionSettings PromptExecutionSettings => CreatePromptExecutionSettings();
 
     protected override void AddChatCompletionService(IKernelBuilder kernelBuilder)
     {
@@ -47,7 +48,19 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         var config = this.GetConfiguration();
         var serviceType = config.ServiceTypeKind;
         var modelName = GetModelName(config);
-        var apiKey = this.credentialsProvider.GetKey(AICredentialScope.AdvancedAI);
+        var requiresApiKey = RequiresApiKey(serviceType);
+        var apiKey = string.Empty;
+        if (requiresApiKey)
+        {
+            this.credentialsProvider.Refresh(AICredentialScope.AdvancedAI);
+            apiKey = (this.credentialsProvider.GetKey(AICredentialScope.AdvancedAI) ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
+            }
+        }
+
+        var endpoint = string.IsNullOrWhiteSpace(config.EndpointUrl) ? null : config.EndpointUrl.Trim();
 
         switch (serviceType)
         {
@@ -55,9 +68,29 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
                 kernelBuilder.AddOpenAIChatCompletion(modelName, apiKey, serviceId: modelName);
                 break;
             case AIServiceType.AzureOpenAI:
-                var endpoint = config.EndpointUrl;
                 var deploymentName = string.IsNullOrWhiteSpace(config.DeploymentName) ? modelName : config.DeploymentName;
-                kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey, serviceId: modelName);
+                kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
+                break;
+            case AIServiceType.Mistral:
+                kernelBuilder.AddMistralChatCompletion(modelName, apiKey: apiKey);
+                break;
+            case AIServiceType.Google:
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelName, apiKey: apiKey);
+                break;
+            case AIServiceType.HuggingFace:
+                kernelBuilder.AddHuggingFaceChatCompletion(modelName, apiKey: apiKey);
+                break;
+            case AIServiceType.AzureAIInference:
+                kernelBuilder.AddAzureAIInferenceChatCompletion(modelName, apiKey: apiKey);
+                break;
+            case AIServiceType.Ollama:
+                kernelBuilder.AddOllamaChatCompletion(modelName, endpoint: new Uri(endpoint));
+                break;
+            case AIServiceType.Anthropic:
+                kernelBuilder.AddBedrockChatCompletionService(modelName);
+                break;
+            case AIServiceType.AmazonBedrock:
+                kernelBuilder.AddBedrockChatCompletionService(modelName);
                 break;
             default:
                 throw new NotSupportedException($"Service type '{config.ServiceType}' is not supported");
@@ -93,5 +126,40 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         }
 
         return "gpt-4o";
+    }
+
+    private static bool RequiresApiKey(AIServiceType serviceType)
+    {
+        return serviceType switch
+        {
+            AIServiceType.Ollama => false,
+            AIServiceType.Anthropic => false,
+            AIServiceType.AmazonBedrock => false,
+            _ => true,
+        };
+    }
+
+    private static string RequireEndpoint(string endpoint, AIServiceType serviceType)
+    {
+        if (!string.IsNullOrWhiteSpace(endpoint))
+        {
+            return endpoint;
+        }
+
+        throw new InvalidOperationException($"Endpoint is required for {serviceType} configuration but was not provided.");
+    }
+
+    private PromptExecutionSettings CreatePromptExecutionSettings()
+    {
+        var serviceType = GetConfiguration().ServiceTypeKind;
+        return serviceType switch
+        {
+            AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                Temperature = 0.01,
+            },
+            _ => new PromptExecutionSettings(),
+        };
     }
 }

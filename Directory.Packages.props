@@ -48,6 +48,12 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.8" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.66.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.66.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Amazon" Version="1.66.0-alpha" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" Version="1.66.0-beta" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.66.0-alpha" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.66.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.MistralAI" Version="1.66.0-alpha" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->

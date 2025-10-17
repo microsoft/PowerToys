@@ -62,7 +62,11 @@ namespace AdvancedPaste.Services.CustomActions
 
             var fullPrompt = (systemPrompt ?? string.Empty) + "\n\n" + (inputText ?? string.Empty);
 
-            // await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
+            if (ShouldModerate(providerConfig))
+            {
+                await promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
+            }
+
             try
             {
                 var provider = providerFactory.CreateProvider(providerConfig);
@@ -121,6 +125,7 @@ namespace AdvancedPaste.Services.CustomActions
                 DeploymentName = config.DeploymentName,
                 ModelPath = config.ModelPath,
                 SystemPrompt = systemPrompt,
+                ModerationEnabled = config.ModerationEnabled,
             };
 
             return providerConfig;
@@ -139,74 +144,24 @@ namespace AdvancedPaste.Services.CustomActions
 
         private static bool RequiresApiKey(AIServiceType serviceType)
         {
-            return serviceType is not (AIServiceType.Onnx or AIServiceType.FoundryLocal);
-        }
-
-        private static OpenAIPromptExecutionSettings CreateExecutionSettings(PasteAIConfiguration config)
-        {
-            return new OpenAIPromptExecutionSettings
-            {
-                Temperature = 0.01,
-                MaxTokens = 2000,
-                FunctionChoiceBehavior = null,
-            };
-        }
-
-        private static string ResolveModelName(PasteAIConfiguration config, AIServiceType serviceType)
-        {
-            if (!string.IsNullOrWhiteSpace(config.ModelName))
-            {
-                return config.ModelName;
-            }
-
-            if (serviceType == AIServiceType.AzureOpenAI && !string.IsNullOrWhiteSpace(config.DeploymentName))
-            {
-                return config.DeploymentName;
-            }
-
-            return "gpt-3.5-turbo";
-        }
-
-        private static string ResolveModelIdentifier(PasteAIConfiguration config, AIServiceType serviceType, string resolvedModelName)
-        {
-            if (serviceType == AIServiceType.AzureOpenAI)
-            {
-                return string.IsNullOrWhiteSpace(config.DeploymentName) ? resolvedModelName : config.DeploymentName;
-            }
-
-            if (serviceType == AIServiceType.FoundryLocal && !string.IsNullOrWhiteSpace(resolvedModelName))
-            {
-                const string FoundryUrlPrefix = "fl://";
-                return resolvedModelName.StartsWith(FoundryUrlPrefix, StringComparison.OrdinalIgnoreCase)
-                    ? resolvedModelName
-                    : $"{FoundryUrlPrefix}{resolvedModelName}";
-            }
-
-            return resolvedModelName;
-        }
-
-        private static Func<ChatMessageContent, AIServiceUsage> GetUsageExtractor(AIServiceType serviceType)
-        {
             return serviceType switch
             {
-                AIServiceType.OpenAI or AIServiceType.AzureOpenAI or AIServiceType.FoundryLocal => AIServiceUsageHelper.GetOpenAIServiceUsage,
-                _ => null,
+                AIServiceType.Onnx => false,
+                AIServiceType.Ollama => false,
+                AIServiceType.Anthropic => false,
+                AIServiceType.AmazonBedrock => false,
+                _ => true,
             };
         }
 
-        private static string ExtractSystemPrompt(PasteAIConfiguration config)
+        private static bool ShouldModerate(PasteAIConfig providerConfig)
         {
-            if (config is null)
+            if (providerConfig is null)
             {
-                return null;
+                return false;
             }
 
-            return string.IsNullOrWhiteSpace(config.SystemPrompt) ? null : config.SystemPrompt;
-        }
-
-        private static bool IsLocalProvider(AIServiceType serviceType)
-        {
-            return serviceType is AIServiceType.Onnx or AIServiceType.FoundryLocal;
+            return providerConfig.ProviderType == AIServiceType.OpenAI && providerConfig.ModerationEnabled;
         }
     }
 }

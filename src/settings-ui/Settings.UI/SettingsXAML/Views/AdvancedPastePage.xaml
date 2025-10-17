@@ -107,21 +107,15 @@
                             Name="AdvancedPasteEnableAISettingsCard"
                             x:Uid="AdvancedPaste_EnableAISettingsCard"
                             IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                            IsExpanded="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                            IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.HeaderIcon>
                                 <PathIcon Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z" />
                             </tkcontrols:SettingsExpander.HeaderIcon>
-                            <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
-                                <tkcontrols:Case Value="True">
-                                    <Button x:Uid="AdvancedPaste_DisableAIButton" Click="AdvancedPaste_DisableAIButton_Click" />
-                                </tkcontrols:Case>
-                                <tkcontrols:Case Value="False">
-                                    <Button
-                                        x:Uid="AdvancedPaste_EnableAIButton"
-                                        Click="AdvancedPaste_EnableAIButton_Click"
-                                        Style="{StaticResource AccentButtonStyle}" />
-                                </tkcontrols:Case>
-                            </tkcontrols:SwitchPresenter>
+                            <ToggleSwitch
+                                x:Name="AdvancedPaste_EnableAIToggle"
+                                x:Uid="AdvancedPaste_EnableAIToggle"
+                                IsOn="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                                Toggled="AdvancedPaste_EnableAIToggle_Toggled" />
                             <tkcontrols:SettingsExpander.Description>
                                 <StackPanel Orientation="Vertical">
                                     <TextBlock x:Uid="AdvancedPaste_EnableAISettingsCardDescription" />
@@ -146,8 +140,8 @@
                             Name="AdvancedPasteEnableAdvancedAI"
                             x:Uid="AdvancedPaste_EnableAdvancedAI"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SemanticKernel.png}"
-                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}"
-                            IsExpanded="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
+                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
@@ -323,7 +317,7 @@
                             Name="AdvancedPasteUIActions"
                             x:Uid="AdvancedPasteUI_Actions"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE792;}"
-                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}"
+                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
                             IsExpanded="True"
                             ItemsSource="{x:Bind ViewModel.CustomActions, Mode=OneWay}">
                             <Button
@@ -409,67 +403,6 @@
             </controls:SettingsPageControl.PrimaryLinks>
         </controls:SettingsPageControl>
         <ContentDialog
-            x:Name="EnableAIDialog"
-            x:Uid="EnableAIDialog"
-            IsPrimaryButtonEnabled="False"
-            IsSecondaryButtonEnabled="True"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <Grid RowSpacing="24">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Image Margin="-24,-24,-24,0" Source="{ThemeResource DialogHeaderImage}" />
-                    <TextBlock
-                        Grid.Row="1"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextWrapping="Wrap">
-                        <Run x:Uid="AdvancedPaste_EnableAIDialog_Description" />
-                        <Hyperlink NavigateUri="https://openai.com/policies/terms-of-use" TabIndex="3">
-                            <Run x:Uid="TermsLink" />
-                        </Hyperlink>
-                        <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
-                        <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
-                            <Run x:Uid="PrivacyLink" />
-                        </Hyperlink>
-                    </TextBlock>
-                    <StackPanel Grid.Row="2" Orientation="Vertical">
-                        <TextBlock x:Uid="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey" FontWeight="SemiBold" />
-                        <TextBlock Grid.Row="2" TextWrapping="Wrap">
-                            <Run x:Uid="AdvancedPaste_EnableAIDialog_LoginIntoText" />
-                            <Hyperlink NavigateUri="https://platform.openai.com/api-keys">
-                                <Run x:Uid="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText" />
-                            </Hyperlink>
-                            <LineBreak />
-                            <Run x:Uid="AdvancedPaste_EnableAIDialog_CreateNewKeyText" />
-                            <LineBreak />
-                            <Run x:Uid="AdvancedPaste_EnableAIDialog_NoteAICreditsText" />
-                        </TextBlock>
-                    </StackPanel>
-                    <Grid Grid.Row="3" ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            x:Uid="AdvancedPaste_EnableAIDialogOpenAIApiKey"
-                            VerticalAlignment="Center"
-                            TextWrapping="Wrap" />
-                        <TextBox
-                            x:Name="AdvancedPaste_EnableAIDialogOpenAIApiKey"
-                            Grid.Column="1"
-                            MinWidth="248"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Stretch"
-                            TextChanged="AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged" />
-                    </Grid>
-                </Grid>
-            </ScrollViewer>
-        </ContentDialog>
-        <ContentDialog
             x:Name="CustomActionDialog"
             x:Uid="CustomActionDialog"
             Closed="CustomActionDialog_Closed"
@@ -553,7 +486,7 @@
                             <TextBlock Text="Azure OpenAI" />
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewHeaderItem
+                    <!--<ListViewHeaderItem
                         Margin="0,12,0,0"
                         Content="Local models"
                         IsEnabled="False"
@@ -570,7 +503,7 @@
                             <Image Width="16" Source="/Assets/Settings/Icons/Models/WindowsML.svg" />
                             <TextBlock Text="Windows ML" />
                         </StackPanel>
-                    </ListViewItem>
+                    </ListViewItem>-->
                 </ListView>
                 <ScrollViewer Grid.Row="1" Grid.Column="1">
                     <StackPanel
@@ -615,6 +548,12 @@
                             MinWidth="200"
                             Header="API key"
                             PlaceholderText="Enter API Key" />
+
+                        <CheckBox
+                            x:Name="AdvancedAIModerationToggle"
+                            x:Uid="AdvancedPaste_EnableAdvancedAIModerationToggle"
+                            IsChecked="{x:Bind ViewModel.AdvancedAIConfiguration.ModerationEnabled, Mode=TwoWay}"
+                            Visibility="Collapsed" />
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
@@ -662,14 +601,56 @@
                         Style="{StaticResource ModelHeaderStyle}" />
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="OpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="{ThemeResource OpenAIIconImage}" />
+                            <Image Width="16" Source="{ThemeResource OpenAIIconImage}" />
                             <TextBlock Text="OpenAI" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureOpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="/Assets/Settings/Icons/Models/Azure.svg" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Azure.svg" />
                             <TextBlock Text="Azure OpenAI" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Mistral">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Mistral.svg" />
+                            <TextBlock Text="Mistral" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Google">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Gemini.svg" />
+                            <TextBlock Text="Google" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <!--<ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="HuggingFace">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/HuggingFace.svg" />
+                            <TextBlock Text="Hugging Face" />
+                        </StackPanel>
+                    </ListViewItem>-->
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureAIInference">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/AzureAI.svg" />
+                            <TextBlock Text="Azure AI Inference" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Ollama">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Ollama.svg" />
+                            <TextBlock Text="Ollama" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Anthropic">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Anthropic.svg" />
+                            <TextBlock Text="Anthropic" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AmazonBedrock">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Bedrock.svg" />
+                            <TextBlock Text="Amazon Bedrock" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewHeaderItem
@@ -678,12 +659,6 @@
                         IsEnabled="False"
                         IsHitTestVisible="False"
                         Style="{StaticResource ModelHeaderStyle}" />
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Onnx">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="/Assets/Settings/Icons/Models/Onnx.svg" />
-                            <TextBlock Text="Onnx" />
-                        </StackPanel>
-                    </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="FoundryLocal">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Image Width="16" Source="/Assets/Settings/Icons/Models/FoundryLocal.svg" />
@@ -734,6 +709,14 @@
                             PlaceholderText="https://your-resource.openai.azure.com/"
                             Text="{x:Bind ViewModel.PasteAIConfiguration.EndpointUrl, Mode=TwoWay}" />
                         <TextBox
+                            x:Name="PasteAIApiVersionTextBox"
+                            MinWidth="200"
+                            HorizontalAlignment="Stretch"
+                            Header="API version"
+                            PlaceholderText="2024-10-01"
+                            Visibility="Collapsed"
+                            Text="{x:Bind ViewModel.PasteAIConfiguration.ApiVersion, Mode=TwoWay}" />
+                        <TextBox
                             x:Name="PasteAIDeploymentNameTextBox"
                             MinWidth="200"
                             Header="Deployment name"
@@ -763,6 +746,11 @@
                             MinWidth="200"
                             Header="API key"
                             PlaceholderText="Enter API Key" />
+                        <CheckBox
+                            x:Name="PasteAIModerationToggle"
+                            x:Uid="AdvancedPaste_EnablePasteAIModerationToggle"
+                            IsChecked="{x:Bind ViewModel.PasteAIConfiguration.ModerationEnabled, Mode=TwoWay}"
+                            Visibility="Collapsed" />
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

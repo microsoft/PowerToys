@@ -26,5 +26,7 @@ namespace AdvancedPaste.Services.CustomActions
         public string ModelPath { get; set; }
 
         public string SystemPrompt { get; set; }
+
+        public bool ModerationEnabled { get; set; }
     }
 }
