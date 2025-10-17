@@ -88,10 +88,9 @@ namespace AdvancedPaste.ViewModels
                     return false;
                 }
 
-                return _userSettings.IsAdvancedAIEnabled
-                     ? _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI) : true;
-
-                // : _credentialsProvider.IsConfigured(AICredentialScope.PasteAI);
+                // We should handle the IsAIEnabled logic in settings, don't check again here.
+                // If setting says yes, and here should pass check, and if error happens, it happens.
+                return true;
             }
         }
 

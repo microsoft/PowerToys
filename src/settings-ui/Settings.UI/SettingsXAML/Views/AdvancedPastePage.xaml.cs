@@ -245,6 +245,46 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await UpdatePasteAIUIVisibilityAsync();
         }
 
+        private void UpdatePasteAIUIVisibility()
+        {
+            if (PasteAIServiceTypeListView?.SelectedValue == null)
+            {
+                return;
+            }
+
+            string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
+
+            bool isOnnx = string.Equals(selectedType, "Onnx", StringComparison.OrdinalIgnoreCase);
+            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
+            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
+            bool requiresApiKey = RequiresApiKeyForService(selectedType);
+            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
+
+            if (ViewModel.PasteAIConfiguration is not null)
+            {
+                ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(selectedType);
+            }
+
+            PasteAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
+
+            if (requiresApiKey)
+            {
+                PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(selectedType);
+            }
+            else
+            {
+                PasteAIApiKeyPasswordBox.Password = string.Empty;
+            }
+        }
+
         private void UpdateAdvancedAIUIVisibility()
         {
             if (AdvancedAIServiceTypeListView?.SelectedValue == null)
@@ -624,7 +664,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = hasSelection;
         }
 
-        private void FoundryLocalPicker_SelectionChanged(object sender, ModelDetails? selectedModel)
+        private void FoundryLocalPicker_SelectionChanged(object sender, ModelDetails selectedModel)
         {
             if (_suppressFoundrySelectionChanged)
             {
@@ -659,7 +699,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateFoundrySaveButtonState();
         }
 
-        private async void FoundryLocalPicker_DownloadRequested(object sender, object? args)
+        private async void FoundryLocalPicker_DownloadRequested(object sender, object args)
         {
             if (args is FoundryDownloadableModel downloadableModel)
             {
@@ -669,10 +709,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private sealed class FoundryDownloadableModel : INotifyPropertyChanged
         {
+            private readonly List<string> _deviceTags;
             private double _progress;
             private bool _isDownloading;
             private bool _isDownloaded;
-            private readonly List<string> _deviceTags;
 
             public FoundryDownloadableModel(ModelDetails modelDetails)
             {

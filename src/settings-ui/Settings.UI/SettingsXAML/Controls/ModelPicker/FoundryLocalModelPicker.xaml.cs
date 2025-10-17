@@ -16,8 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls;
 
 public sealed partial class FoundryLocalModelPicker : UserControl
 {
-    private INotifyCollectionChanged? _cachedModelsSubscription;
-    private INotifyCollectionChanged? _downloadableModelsSubscription;
+    private INotifyCollectionChanged _cachedModelsSubscription;
+    private INotifyCollectionChanged _downloadableModelsSubscription;
     private bool _suppressSelection;
 
     public FoundryLocalModelPicker()
@@ -26,17 +26,17 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         Loaded += (_, _) => UpdateVisualStates();
     }
 
-    public delegate void ModelSelectionChangedEventHandler(object sender, ModelDetails? model);
+    public delegate void ModelSelectionChangedEventHandler(object sender, ModelDetails model);
 
-    public delegate void DownloadRequestedEventHandler(object sender, object? payload);
+    public delegate void DownloadRequestedEventHandler(object sender, object payload);
 
-    public event ModelSelectionChangedEventHandler? SelectionChanged;
+    public event ModelSelectionChangedEventHandler SelectionChanged;
 
-    public event DownloadRequestedEventHandler? DownloadRequested;
+    public event DownloadRequestedEventHandler DownloadRequested;
 
-    public IEnumerable<ModelDetails>? CachedModels
+    public IEnumerable<ModelDetails> CachedModels
     {
-        get => (IEnumerable<ModelDetails>?)GetValue(CachedModelsProperty);
+        get => (IEnumerable<ModelDetails>)GetValue(CachedModelsProperty);
         set => SetValue(CachedModelsProperty, value);
     }
 
@@ -131,7 +131,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         control.UpdateVisualStates();
     }
 
-    private void SubscribeToCachedModels(IEnumerable<ModelDetails>? oldValue, IEnumerable<ModelDetails>? newValue)
+    private void SubscribeToCachedModels(IEnumerable<ModelDetails> oldValue, IEnumerable<ModelDetails> newValue)
     {
         if (_cachedModelsSubscription is not null)
         {
@@ -146,7 +146,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         }
     }
 
-    private void SubscribeToDownloadableModels(IEnumerable? oldValue, IEnumerable? newValue)
+    private void SubscribeToDownloadableModels(IEnumerable oldValue, IEnumerable newValue)
     {
         if (_downloadableModelsSubscription is not null)
         {
@@ -258,7 +258,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         return size > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    public static IEnumerable<string> GetDeviceTags(IReadOnlyCollection<HardwareAccelerator>? accelerators)
+    public static IEnumerable<string> GetDeviceTags(IReadOnlyCollection<HardwareAccelerator> accelerators)
     {
         if (accelerators is null || accelerators.Count == 0)
         {
@@ -288,7 +288,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         return tags.Count > 0 ? tags.ToArray() : Array.Empty<string>();
     }
 
-    public static Visibility GetDeviceVisibility(IReadOnlyCollection<HardwareAccelerator>? accelerators)
+    public static Visibility GetDeviceVisibility(IReadOnlyCollection<HardwareAccelerator> accelerators)
     {
         return GetDeviceTags(accelerators).Any() ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -301,7 +301,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         }
 
         var trimmed = license.Trim();
-        int separatorIndex = trimmed.IndexOfAny(new[] { '(', '[', ':' });
+        int separatorIndex = trimmed.IndexOfAny(['(', '[', ':']);
         if (separatorIndex > 0)
         {
             trimmed = trimmed[..separatorIndex].Trim();
