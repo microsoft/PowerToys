@@ -244,6 +244,11 @@ namespace Peek.UI
             WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
+        private async void FilePreviewer_DeleteRequested(object sender, EventArgs e)
+        {
+            await DeleteItem();
+        }
+
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
         {
             var titleBarHeight = TitleBarControl.ActualHeight;

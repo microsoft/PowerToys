@@ -67,10 +67,23 @@ namespace Peek.UI
             WindowTitle = value != null
                 ? ReadableStringHelper.FormatResourceString("WindowTitle", value.Name)
                 : _defaultWindowTitle;
+
+            // Update DefaultAppName when current item changes
+            if (value is FileItem)
+            {
+                DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(value.Extension);
+            }
+            else
+            {
+                DefaultAppName = string.Empty;
+            }
         }
 
         [ObservableProperty]
         private string _windowTitle;
+
+        [ObservableProperty]
+        private string _defaultAppName = string.Empty;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayItemCount))]

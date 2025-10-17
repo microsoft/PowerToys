@@ -72,7 +72,7 @@
             ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
             Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
             <Button.Content>
-                <StackPanel Orientation="Horizontal" Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
                         x:Name="LaunchAppButton_Icon"
                         FontSize="16"
