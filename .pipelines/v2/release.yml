@@ -20,11 +20,6 @@ parameters:
     type: string
     default: '0.0.1'
 
-  - name: installerSuffix
-    type: string
-    displayName: "WiX5 installer suffix (e.g., 'wix5', 'vnext', etc.)"
-    default: "wix5"
-
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -104,8 +99,7 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              installerSuffix: ${{ parameters.installerSuffix }}
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:InstallerSuffix=${{ parameters.installerSuffix }}  /p:EnableCmdPalAOT=true
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=true
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
