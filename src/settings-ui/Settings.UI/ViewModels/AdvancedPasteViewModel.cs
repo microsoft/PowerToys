@@ -223,12 +223,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsAIEnabled => _advancedPasteSettings.Properties.IsAIEnabled && !IsOnlineAIModelsDisallowedByGPO;
 
-        private static bool LegacyOpenAIKeyExists()
+        private bool LegacyOpenAIKeyExists()
         {
             try
             {
                 PasswordVault vault = new();
-                return vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey") is not null;
+
+                // return vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey") is not null;
+                var legacyOpenAIKey = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                if (legacyOpenAIKey != null)
+                {
+                    string credentialResource = GetAICredentialResource("OpenAI");
+                    string credentialUserName = GetPasteAICredentialUserName("OpenAI");
+                    PasswordCredential cred = new(credentialResource, credentialUserName, legacyOpenAIKey.Password);
+                    vault.Add(cred);
+
+                    // delete old key
+                    TryRemoveCredential(vault, "https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                    return true;
+                }
+
+                return false;
             }
             catch (Exception)
             {
@@ -563,12 +578,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     stateChanged = true;
                 }
 
-                if (!_advancedPasteSettings.Properties.IsAdvancedAIEnabled)
-                {
-                    _advancedPasteSettings.Properties.IsAdvancedAIEnabled = true; // new users should get Semantic Kernel benefits immediately
-                    stateChanged = true;
-                }
-
                 if (stateChanged)
                 {
                     SaveAndNotifySettings();
@@ -592,7 +601,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 endpoint = endpoint?.Trim() ?? string.Empty;
                 apiKey = apiKey?.Trim() ?? string.Empty;
-                string credentialResource = GetAdvancedAICredentialResource(serviceType);
+                string credentialResource = GetAICredentialResource(serviceType);
                 string credentialUserName = GetAdvancedAICredentialUserName(serviceType);
                 string endpointCredentialUserName = GetAdvancedAIEndpointCredentialUserName(serviceType);
 
@@ -627,7 +636,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 endpoint = endpoint?.Trim() ?? string.Empty;
                 apiKey = apiKey?.Trim() ?? string.Empty;
-                string credentialResource = GetPasteAICredentialResource(serviceType);
+                string credentialResource = GetAICredentialResource(serviceType);
                 string credentialUserName = GetPasteAICredentialUserName(serviceType);
                 string endpointCredentialUserName = GetPasteAIEndpointCredentialUserName(serviceType);
                 PasswordVault vault = new();
@@ -659,7 +668,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return RetrieveCredentialValue(
-                GetAdvancedAICredentialResource(serviceType),
+                GetAICredentialResource(serviceType),
                 GetAdvancedAICredentialUserName(serviceType));
         }
 
@@ -667,7 +676,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return RetrieveCredentialValue(
-                GetPasteAICredentialResource(serviceType),
+                GetAICredentialResource(serviceType),
                 GetPasteAICredentialUserName(serviceType));
         }
 
@@ -675,7 +684,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return RetrieveCredentialValue(
-                GetAdvancedAICredentialResource(serviceType),
+                GetAICredentialResource(serviceType),
                 GetAdvancedAIEndpointCredentialUserName(serviceType));
         }
 
@@ -683,29 +692,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return RetrieveCredentialValue(
-                GetPasteAICredentialResource(serviceType),
+                GetAICredentialResource(serviceType),
                 GetPasteAIEndpointCredentialUserName(serviceType));
         }
 
-        private string GetAdvancedAICredentialResource(string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            return serviceType.ToLowerInvariant() switch
-            {
-                "openai" => "https://platform.openai.com/api-keys",
-                "azureopenai" => "https://azure.microsoft.com/products/ai-services/openai-service",
-                "azureaiinference" => "https://azure.microsoft.com/products/ai-services/ai-inference",
-                "mistral" => "https://console.mistral.ai/account/api-keys",
-                "google" => "https://ai.google.dev/",
-                "huggingface" => "https://huggingface.co/settings/tokens",
-                "anthropic" => "https://console.anthropic.com/account/keys",
-                "amazonbedrock" => "https://aws.amazon.com/bedrock/",
-                "ollama" => "https://ollama.com/",
-                _ => "https://platform.openai.com/api-keys",
-            };
-        }
-
-        private string GetAdvancedAICredentialUserName(string serviceType)
+        private static string GetAdvancedAICredentialUserName(string serviceType)
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return serviceType.ToLowerInvariant() switch
@@ -728,7 +719,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return GetAdvancedAICredentialUserName(serviceType) + "_Endpoint";
         }
 
-        private string GetPasteAICredentialResource(string serviceType)
+        private string GetAICredentialResource(string serviceType)
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             return serviceType.ToLowerInvariant() switch

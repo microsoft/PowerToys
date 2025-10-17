@@ -522,7 +522,7 @@
                             HorizontalAlignment="Stretch"
                             AcceptsReturn="True"
                             Header="System prompt"
-                            PlaceholderText="Describe the role of the assistant"
+                            PlaceholderText="You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. You will not directly see the output clipboard content, and do not need to provide it in the chat. You just need to do the transform operations as needed. If you are unable to fulfill the request, end with an error message in the language of the user's request."
                             Text="{x:Bind ViewModel.AdvancedAIConfiguration.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
 
@@ -688,7 +688,7 @@
                             HorizontalAlignment="Stretch"
                             AcceptsReturn="True"
                             Header="System prompt"
-                            PlaceholderText="Describe how the AI should reformat clipboard content"
+                            PlaceholderText="You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content."
                             Text="{x:Bind ViewModel.PasteAIConfiguration.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
                         <TextBox
@@ -704,8 +704,8 @@
                             HorizontalAlignment="Stretch"
                             Header="API version"
                             PlaceholderText="2024-10-01"
-                            Visibility="Collapsed"
-                            Text="{x:Bind ViewModel.PasteAIConfiguration.ApiVersion, Mode=TwoWay}" />
+                            Text="{x:Bind ViewModel.PasteAIConfiguration.ApiVersion, Mode=TwoWay}"
+                            Visibility="Collapsed" />
                         <TextBox
                             x:Name="PasteAIDeploymentNameTextBox"
                             MinWidth="200"
