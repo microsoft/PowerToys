@@ -169,7 +169,7 @@
                                                                Minimum="{Binding MinBrightness}"
                                                                Maximum="{Binding MaxBrightness}"
                                                                Value="{Binding Brightness, Mode=TwoWay}"
-                                                               IsEnabled="{Binding IsAvailable}" />
+                                                               IsEnabled="{Binding IsInteractionEnabled}" />
 
                                                         <TextBlock Grid.Column="2"
                                                                   Style="{StaticResource CompactValueTextStyle}"
@@ -202,7 +202,7 @@
                                                                Minimum="0"
                                                                Maximum="100"
                                                                Value="{Binding ColorTemperaturePercent, Mode=TwoWay}"
-                                                               IsEnabled="{Binding IsAvailable}" />
+                                                               IsEnabled="{Binding IsInteractionEnabled}" />
 
                                                         <TextBlock Grid.Column="2"
                                                                   Style="{StaticResource CompactValueTextStyle}">
@@ -237,7 +237,7 @@
                                                                Minimum="0"
                                                                Maximum="100"
                                                                Value="{Binding ContrastPercent, Mode=TwoWay}"
-                                                               IsEnabled="{Binding IsAvailable}" />
+                                                               IsEnabled="{Binding IsInteractionEnabled}" />
 
                                                         <TextBlock Grid.Column="2"
                                                                   Style="{StaticResource CompactValueTextStyle}">
@@ -272,7 +272,7 @@
                                                                Minimum="{Binding MinVolume}"
                                                                Maximum="{Binding MaxVolume}"
                                                                Value="{Binding Volume, Mode=TwoWay}"
-                                                               IsEnabled="{Binding IsAvailable}" />
+                                                               IsEnabled="{Binding IsInteractionEnabled}" />
 
                                                         <TextBlock Grid.Column="2"
                                                                   Style="{StaticResource CompactValueTextStyle}">

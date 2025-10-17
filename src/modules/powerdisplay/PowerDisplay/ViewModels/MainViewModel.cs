@@ -41,6 +41,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private string _statusText;
     private bool _isScanning;
     private bool _isInitialized;
+    private bool _isLoading;
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -121,6 +122,22 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             _isInitialized = value;
             OnPropertyChanged();
+        }
+    }
+
+    public bool IsLoading
+    {
+        get => _isLoading;
+        private set
+        {
+            _isLoading = value;
+            OnPropertyChanged();
+            
+            // Update all monitors' interaction state
+            foreach (var monitor in Monitors)
+            {
+                monitor.IsInteractionEnabled = !value;
+            }
         }
     }
 
@@ -221,8 +238,8 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasMonitors));
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
 
-        // Restore saved settings if enabled
-        ReloadMonitorSettings();
+        // Restore saved settings if enabled (async, don't block)
+        _ = ReloadMonitorSettingsAsync();
     }
 
     public async Task SetAllBrightnessAsync(int brightness)
@@ -442,10 +459,14 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Reload monitor settings from configuration
     /// </summary>
-    public void ReloadMonitorSettings()
+    public async Task ReloadMonitorSettingsAsync()
     {
         try
         {
+            // Set loading state to block UI interactions
+            IsLoading = true;
+            StatusText = "Loading settings...";
+            
             // Read current settings
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
 
@@ -480,6 +501,11 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     ApplyFeatureVisibility(monitorVm, settings, internalName);
                 }
 
+                StatusText = "Applying settings...";
+                
+                // Wait for all hardware updates to complete
+                await Task.WhenAll(Monitors.Select(m => m.FlushAllUpdatesAsync()));
+                
                 StatusText = "Saved settings restored successfully";
             }
             else
@@ -504,7 +530,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                 }
 
                 // Flush pending changes immediately
-                _ = _stateManager.FlushAsync();
+                await _stateManager.FlushAsync();
                 
                 StatusText = "Current monitor values saved to state file";
             }
@@ -513,6 +539,11 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             Logger.LogError($"Failed to reload/save settings: {ex.Message}");
             StatusText = $"Failed to process settings: {ex.Message}";
+        }
+        finally
+        {
+            // Clear loading state to enable UI interactions
+            IsLoading = false;
         }
     }
 
@@ -733,6 +764,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
         private int _volume;
         private bool _isAvailable;
         private bool _isUpdating;
+        private bool _isInteractionEnabled = true;
 
         // Visibility settings (controlled by Settings UI)
         private bool _showColorTemperature;
@@ -1060,6 +1092,22 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether user interaction is enabled (not loading)
+        /// </summary>
+        public bool IsInteractionEnabled
+        {
+            get => _isInteractionEnabled;
+            set
+            {
+                if (_isInteractionEnabled != value)
+                {
+                    _isInteractionEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public ICommand SetBrightnessCommand => new RelayCommand<int?>((brightness) =>
         {
             if (brightness.HasValue)
@@ -1333,6 +1381,18 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContrastPercent)));
             }
+        }
+
+        /// <summary>
+        /// Wait for all pending property updates to complete
+        /// </summary>
+        public async Task FlushAllUpdatesAsync()
+        {
+            await Task.WhenAll(
+                _brightnessManager.FlushAsync(),
+                _colorTemperatureManager.FlushAsync(),
+                _contrastManager.FlushAsync(),
+                _volumeManager.FlushAsync());
         }
 
         public void Dispose()

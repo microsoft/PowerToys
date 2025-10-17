@@ -99,7 +99,7 @@ namespace PowerDisplay
                 await Task.Delay(500);
 
                 await _viewModel.RefreshMonitorsAsync();
-                _viewModel.ReloadMonitorSettings();
+                await _viewModel.ReloadMonitorSettingsAsync();
 
                 // Delay to allow UI to render, then adjust window size
                 await Task.Delay(100);
@@ -259,7 +259,7 @@ namespace PowerDisplay
         private void OnUIRefreshRequested(object? sender, EventArgs e)
         {
             Logger.LogInfo("UI refresh requested due to settings change");
-            _viewModel.ReloadMonitorSettings();
+            _ = _viewModel.ReloadMonitorSettingsAsync();
 
             // Adjust window size after settings change to accommodate visibility changes
             _ = Task.Run(async () =>
