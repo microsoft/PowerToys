@@ -7,12 +7,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:LanguageModelProvider"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     x:Name="Root"
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <Style x:Key="TagBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
             <Setter Property="BorderBrush" Value="{ThemeResource ControlStrongStrokeColorDefaultBrush}" />
