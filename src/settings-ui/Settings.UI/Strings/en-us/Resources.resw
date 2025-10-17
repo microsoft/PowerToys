@@ -5584,15 +5584,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_ColorTemperature.Header" xml:space="preserve">
     <value>Color Temperature</value>
   </data>
-  <data name="PowerDisplay_Monitor_Reset.Header" xml:space="preserve">
-    <value>Reset Settings</value>
-  </data>
-  <data name="PowerDisplay_Monitor_Reset.Description" xml:space="preserve">
-    <value>Reset brightness and color temperature to default values</value>
-  </data>
-  <data name="PowerDisplay_Monitor_ResetButton.Content" xml:space="preserve">
-    <value>Reset</value>
-  </data>
   <data name="PowerDisplay_Monitor_EnableColorTemperature.Header" xml:space="preserve">
     <value>Enable color temperature</value>
   </data>

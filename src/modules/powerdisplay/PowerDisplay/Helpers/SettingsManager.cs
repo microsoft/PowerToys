@@ -138,6 +138,8 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Update monitor list in memory snapshot (lock-free, non-blocking)
+        /// Note: Monitor list is managed by Settings UI, so we only keep it in memory for reference
+        /// and do NOT save it to file to avoid overwriting Settings UI changes.
         /// </summary>
         public void UpdateMonitorList(IReadOnlyList<PowerDisplay.Core.Models.Monitor> monitors)
         {
@@ -164,9 +166,9 @@ namespace PowerDisplay.Helpers
                 
                 // Atomically replace entire snapshot
                 _currentSnapshot = newSnapshot;
-                _isDirty = true;
                 
-                Logger.LogInfo($"[Update] Monitor list updated ({newList.Count} monitors)");
+                // ✅ KEY CHANGE: Do NOT mark as dirty - Monitor list is managed exclusively by Settings UI
+                Logger.LogInfo($"[Update] Monitor list updated in memory only ({newList.Count} monitors)");
             }
             catch (Exception ex)
             {
@@ -174,92 +176,94 @@ namespace PowerDisplay.Helpers
             }
         }
 
-        /// <summary>
-        /// Periodic save check - saves snapshot if dirty (single save point)
-        /// </summary>
-        private async void SaveSnapshotIfDirty()
+    /// <summary>
+    /// Periodic save check - saves snapshot if dirty (single save point)
+    /// Only saves monitor parameter values (saved_monitor_settings).
+    /// Monitor list (monitors[]) is managed exclusively by Settings UI.
+    /// </summary>
+    private async void SaveSnapshotIfDirty()
+    {
+        try
         {
-            try
+            // Quick check without lock
+            if (!_isDirty || _disposed)
             {
-                // Quick check without lock
-                if (!_isDirty || _disposed)
-                {
-                    return;
-                }
-
-                // Try to acquire save permission (non-blocking)
-                if (Interlocked.CompareExchange(ref _isSaving, 1, 0) != 0)
-                {
-                    // Already saving, skip this cycle
-                    return;
-                }
-
-                // Double check
-                if (!_isDirty)
-                {
-                    Interlocked.Exchange(ref _isSaving, 0);
-                    return;
-                }
-
-                // Atomically read snapshot reference (stable view, won't change during read)
-                var snapshot = _currentSnapshot;
-                
-                // Read current settings from file
-                var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(ModuleName);
-                
-                // Update monitor list
-                settings.Properties.Monitors = snapshot.MonitorList.ToList();
-                
-                // Update monitor parameters
-                if (settings.Properties.SavedMonitorSettings == null)
-                {
-                    settings.Properties.SavedMonitorSettings = new Dictionary<string, MonitorSavedSettings>();
-                }
-
-                var now = DateTime.Now;
-                foreach (var kvp in snapshot.Parameters)
-                {
-                    var monitorId = kvp.Key;
-                    var parameters = kvp.Value;
-                    
-                    if (!settings.Properties.SavedMonitorSettings.TryGetValue(monitorId, out var saved))
-                    {
-                        saved = new MonitorSavedSettings();
-                        settings.Properties.SavedMonitorSettings[monitorId] = saved;
-                    }
-                    
-                    saved.Brightness = parameters.Brightness;  // Volatile read
-                    saved.ColorTemperature = parameters.ColorTemperature;
-                    saved.Contrast = parameters.Contrast;
-                    saved.Volume = parameters.Volume;
-                    saved.LastUpdated = now;
-                }
-                
-                // Single file write
-                _settingsUtils.SaveSettings(settings.ToJsonString(), ModuleName);
-                
-                // Clear dirty flag
-                _isDirty = false;
-                
-                Logger.LogInfo($"[Save] Saved snapshot (monitors: {snapshot.MonitorList.Count}, parameters: {snapshot.Parameters.Count})");
-                
-                // Release save permission
-                Interlocked.Exchange(ref _isSaving, 0);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to save snapshot: {ex.Message}");
-                // Release save permission even on error
-                Interlocked.Exchange(ref _isSaving, 0);
+                return;
             }
 
-            await Task.CompletedTask;  // Suppress async warning
+            // Try to acquire save permission (non-blocking)
+            if (Interlocked.CompareExchange(ref _isSaving, 1, 0) != 0)
+            {
+                // Already saving, skip this cycle
+                return;
+            }
+
+            // Double check
+            if (!_isDirty)
+            {
+                Interlocked.Exchange(ref _isSaving, 0);
+                return;
+            }
+
+            // Atomically read snapshot reference (stable view, won't change during read)
+            var snapshot = _currentSnapshot;
+            
+            // Read current settings from file
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(ModuleName);
+            
+            // ✅ KEY CHANGE: Do NOT update monitor list - it's managed by Settings UI
+            // settings.Properties.Monitors = snapshot.MonitorList.ToList();  // ← REMOVED
+            
+            // ✅ Only update monitor parameter values (saved_monitor_settings)
+            if (settings.Properties.SavedMonitorSettings == null)
+            {
+                settings.Properties.SavedMonitorSettings = new Dictionary<string, MonitorSavedSettings>();
+            }
+
+            var now = DateTime.Now;
+            foreach (var kvp in snapshot.Parameters)
+            {
+                var monitorId = kvp.Key;
+                var parameters = kvp.Value;
+                
+                if (!settings.Properties.SavedMonitorSettings.TryGetValue(monitorId, out var saved))
+                {
+                    saved = new MonitorSavedSettings();
+                    settings.Properties.SavedMonitorSettings[monitorId] = saved;
+                }
+                
+                saved.Brightness = parameters.Brightness;  // Volatile read
+                saved.ColorTemperature = parameters.ColorTemperature;
+                saved.Contrast = parameters.Contrast;
+                saved.Volume = parameters.Volume;
+                saved.LastUpdated = now;
+            }
+            
+            // Single file write
+            _settingsUtils.SaveSettings(settings.ToJsonString(), ModuleName);
+            
+            // Clear dirty flag
+            _isDirty = false;
+            
+            Logger.LogInfo($"[Save] Saved monitor parameters ({snapshot.Parameters.Count} monitors)");
+            
+            // Release save permission
+            Interlocked.Exchange(ref _isSaving, 0);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to save snapshot: {ex.Message}");
+            // Release save permission even on error
+            Interlocked.Exchange(ref _isSaving, 0);
         }
 
-        /// <summary>
-        /// Flush pending changes immediately (for program exit)
-        /// </summary>
-        public async Task FlushAsync()
+        await Task.CompletedTask;  // Suppress async warning
+    }
+
+    /// <summary>
+    /// Flush pending changes immediately (for program exit)
+    /// </summary>
+    public async Task FlushAsync()
         {
             if (_isDirty && !_disposed)
             {

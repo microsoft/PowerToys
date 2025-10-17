@@ -107,9 +107,6 @@
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_ColorTemperature">
                                             <TextBlock Text="{x:Bind ColorTemperature, Mode=OneWay}" />
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Reset">
-                                            <Button x:Uid="PowerDisplay_Monitor_ResetButton" Click="ResetButton_Click" Tag="{x:Bind}" />
-                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableColorTemperature">
                                             <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch" IsOn="{x:Bind EnableColorTemperature, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>

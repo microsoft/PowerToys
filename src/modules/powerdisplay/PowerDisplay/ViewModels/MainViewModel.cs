@@ -581,37 +581,6 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Notify Settings UI that monitor data has been updated
-    /// </summary>
-    public void NotifySettingsUIOfMonitorUpdate()
-    {
-        try
-        {
-            // Convert MonitorViewModels to Monitor objects for IPC by accessing the underlying model
-            var monitors = Monitors.Select(vm => new Monitor 
-            {
-                Id = vm.Id,
-                Name = vm.Name,
-                HardwareId = vm.HardwareId,
-                Manufacturer = vm.Manufacturer,
-                Type = vm.Type,
-                CurrentBrightness = vm.Brightness,
-                CurrentColorTemperature = vm.ColorTemperature,
-                CurrentContrast = vm.Contrast,
-                CurrentVolume = vm.Volume,
-                IsAvailable = vm.IsAvailable
-            }).ToList();
-            
-            // Don't trigger file writes here - let the batched SettingsManager handle it
-            Logger.LogInfo($"Monitor data updated for {monitors.Count} monitors (batched save will handle persistence)");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to notify Settings UI of monitor update: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// Reset a monitor to default values
     /// </summary>
     public void ResetMonitor(string monitorId)
@@ -800,6 +769,59 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
             _contrastManager = new MonitorPropertyManager(monitor.Id, nameof(Contrast));
             _volumeManager = new MonitorPropertyManager(monitor.Id, nameof(Volume));
 
+            // Subscribe to rollback events for smart error handling
+            _brightnessManager.RollbackRequested += (s, rollbackValue) =>
+            {
+                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_brightness != rollbackValue)
+                    {
+                        Logger.LogInfo($"[{Id}] Rolling back brightness to {rollbackValue}");
+                        _brightness = rollbackValue;
+                        OnPropertyChanged(nameof(Brightness));
+                    }
+                });
+            };
+
+            _colorTemperatureManager.RollbackRequested += (s, rollbackValue) =>
+            {
+                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_colorTemperature != rollbackValue)
+                    {
+                        Logger.LogInfo($"[{Id}] Rolling back color temperature to {rollbackValue}K");
+                        _colorTemperature = rollbackValue;
+                        OnPropertyChanged(nameof(ColorTemperature));
+                    }
+                });
+            };
+
+            _contrastManager.RollbackRequested += (s, rollbackValue) =>
+            {
+                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_contrast != rollbackValue)
+                    {
+                        Logger.LogInfo($"[{Id}] Rolling back contrast to {rollbackValue}");
+                        _contrast = rollbackValue;
+                        OnPropertyChanged(nameof(Contrast));
+                    }
+                });
+            };
+
+            _volumeManager.RollbackRequested += (s, rollbackValue) =>
+            {
+                _mainViewModel._dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_volume != rollbackValue)
+                    {
+                        Logger.LogInfo($"[{Id}] Rolling back volume to {rollbackValue}");
+                        _volume = rollbackValue;
+                        OnPropertyChanged(nameof(Volume));
+                    }
+                });
+            };
+
             // Initialize Show properties based on hardware capabilities
             _showColorTemperature = monitor.SupportsColorTemperature; // Only show for DDC/CI monitors that support it
             _showContrast = monitor.SupportsContrast;
@@ -912,38 +934,32 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     _lastUserInteraction = DateTime.Now;
                     OnPropertyChanged(); // UI立即响应
                     
-                    // 队列硬件更新 - 简单串行执行，新任务覆盖等待中的任务
+                    // 队列硬件更新 - 智能错误处理：只在队列最后失败时回滚
                     _brightnessManager.QueueUpdate(value, async (brightness, cancellationToken) =>
                     {
                         try
                         {
                             IsUpdating = true;
                             await _monitorManager.SetBrightnessAsync(Id, brightness, cancellationToken);
+                            
+                            // 硬件更新成功后保存配置（异步，不阻塞UI）
+                            _mainViewModel?._dispatcherQueue.TryEnqueue(() =>
+                            {
+                                _mainViewModel.SaveMonitorSetting(Id, "Brightness", brightness);
+                            });
+                            
+                            return true; // 成功
                         }
                         catch (Exception ex)
                         {
-                            // 硬件操作失败时，在UI线程中回滚UI状态
-                            _ = _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_brightness != _monitor.CurrentBrightness)
-                                {
-                                    _brightness = _monitor.CurrentBrightness;
-                                    OnPropertyChanged(nameof(Brightness));
-                                }
-                            });
                             Logger.LogError($"Failed to set brightness for {Id}: {ex.Message}");
+                            return false; // 失败
                         }
                         finally
                         {
                             IsUpdating = false;
                         }
                     });
-
-                    // 保存配置（立即）
-                    _mainViewModel?.SaveMonitorSetting(Id, "Brightness", value);
-                    
-                    // 通知设置UI（立即）
-                    _mainViewModel?.NotifySettingsUIOfMonitorUpdate();
                 }
             }
         }
@@ -960,7 +976,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     _lastUserInteraction = DateTime.Now;
                     OnPropertyChanged();
                     
-                    // 队列硬件更新 - 使用DDC/CI控制
+                    // 队列硬件更新 - 智能错误处理：只在队列最后失败时回滚
                     _colorTemperatureManager.QueueUpdate(value, async (temperature, cancellationToken) =>
                     {
                         try
@@ -975,46 +991,31 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                             {
                                 _monitor.CurrentColorTemperature = temperature;
                                 Logger.LogInfo($"[{Id}] Successfully set color temperature to {temperature}K via DDC/CI");
+                                
+                                // 硬件更新成功后保存配置（异步，不阻塞UI）
+                                _mainViewModel?._dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    _mainViewModel.SaveMonitorSetting(Id, "ColorTemperature", temperature);
+                                });
+                                
+                                return true; // 成功
                             }
                             else
                             {
                                 Logger.LogError($"[{Id}] Failed to set color temperature via DDC/CI: {result.ErrorMessage}");
-                                
-                                // 硬件操作失败时，在UI线程中回滚UI状态
-                                _ = _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                                {
-                                    if (_colorTemperature != _monitor.CurrentColorTemperature)
-                                    {
-                                        _colorTemperature = _monitor.CurrentColorTemperature;
-                                        OnPropertyChanged(nameof(ColorTemperature));
-                                    }
-                                });
+                                return false; // 失败
                             }
                         }
                         catch (Exception ex)
                         {
-                            // 硬件操作失败时，在UI线程中回滚UI状态
-                            _ = _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_colorTemperature != _monitor.CurrentColorTemperature)
-                                {
-                                    _colorTemperature = _monitor.CurrentColorTemperature;
-                                    OnPropertyChanged(nameof(ColorTemperature));
-                                }
-                            });
                             Logger.LogError($"Failed to set color temperature for {Id}: {ex.Message}");
+                            return false; // 失败
                         }
                         finally
                         {
                             IsUpdating = false;
                         }
                     });
-
-                    // Save to configuration
-                    _mainViewModel?.SaveMonitorSetting(Id, "ColorTemperature", value);
-                    
-                    // Notify Settings UI of the change
-                    _mainViewModel?.NotifySettingsUIOfMonitorUpdate();
                 }
             }
         }
@@ -1031,38 +1032,32 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     _lastUserInteraction = DateTime.Now;
                     OnPropertyChanged();
                     
-                    // 队列硬件更新
+                    // 队列硬件更新 - 智能错误处理：只在队列最后失败时回滚
                     _contrastManager.QueueUpdate(value, async (contrast, cancellationToken) =>
                     {
                         try
                         {
                             IsUpdating = true;
                             await _monitorManager.SetContrastAsync(Id, contrast, cancellationToken);
+                            
+                            // 硬件更新成功后保存配置（异步，不阻塞UI）
+                            _mainViewModel?._dispatcherQueue.TryEnqueue(() =>
+                            {
+                                _mainViewModel.SaveMonitorSetting(Id, "Contrast", contrast);
+                            });
+                            
+                            return true; // 成功
                         }
                         catch (Exception ex)
                         {
-                            // 硬件操作失败时，在UI线程中回滚UI状态
-                            _ = _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_contrast != _monitor.CurrentContrast)
-                                {
-                                    _contrast = _monitor.CurrentContrast;
-                                    OnPropertyChanged(nameof(Contrast));
-                                }
-                            });
                             Logger.LogError($"Failed to set contrast for {Id}: {ex.Message}");
+                            return false; // 失败
                         }
                         finally
                         {
                             IsUpdating = false;
                         }
                     });
-
-                    // Save to configuration
-                    _mainViewModel?.SaveMonitorSetting(Id, "Contrast", value);
-                    
-                    // Notify Settings UI of the change
-                    _mainViewModel?.NotifySettingsUIOfMonitorUpdate();
                 }
             }
         }
@@ -1079,38 +1074,32 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
                     _lastUserInteraction = DateTime.Now;
                     OnPropertyChanged();
                     
-                    // 队列硬件更新
+                    // 队列硬件更新 - 智能错误处理：只在队列最后失败时回滚
                     _volumeManager.QueueUpdate(value, async (volume, cancellationToken) =>
                     {
                         try
                         {
                             IsUpdating = true;
                             await _monitorManager.SetVolumeAsync(Id, volume, cancellationToken);
+                            
+                            // 硬件更新成功后保存配置（异步，不阻塞UI）
+                            _mainViewModel?._dispatcherQueue.TryEnqueue(() =>
+                            {
+                                _mainViewModel.SaveMonitorSetting(Id, "Volume", volume);
+                            });
+                            
+                            return true; // 成功
                         }
                         catch (Exception ex)
                         {
-                            // 硬件操作失败时，在UI线程中回滚UI状态
-                            _ = _mainViewModel._dispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_volume != _monitor.CurrentVolume)
-                                {
-                                    _volume = _monitor.CurrentVolume;
-                                    OnPropertyChanged(nameof(Volume));
-                                }
-                            });
                             Logger.LogError($"Failed to set volume for {Id}: {ex.Message}");
+                            return false; // 失败
                         }
                         finally
                         {
                             IsUpdating = false;
                         }
                     });
-
-                    // Save to configuration
-                    _mainViewModel?.SaveMonitorSetting(Id, "Volume", value);
-                    
-                    // Notify Settings UI of the change
-                    _mainViewModel?.NotifySettingsUIOfMonitorUpdate();
                 }
             }
         }

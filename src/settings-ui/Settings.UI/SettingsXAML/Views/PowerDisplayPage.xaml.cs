@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows.Controls;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,14 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
-        }
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is MonitorInfo monitor)
-            {
-                ViewModel.ResetMonitorSettings(monitor);
-            }
         }
     }
 }

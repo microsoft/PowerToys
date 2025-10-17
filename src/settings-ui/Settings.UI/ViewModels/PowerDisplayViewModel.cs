@@ -30,8 +30,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
 
-        public ButtonClickCommand GetResetMonitorCommand(MonitorInfo monitor) => new ButtonClickCommand(() => ResetMonitorSettings(monitor));
-
         public PowerDisplayViewModel(ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
@@ -360,41 +358,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var actionName = "Launch";
 
             SendConfigMSG("{\"action\":{\"PowerDisplay\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
-        }
-
-        public void ResetMonitorSettings(MonitorInfo monitor)
-        {
-            if (monitor == null) return;
-
-            try
-            {
-                // Reset monitor values to defaults
-                monitor.CurrentBrightness = 30;
-                monitor.ColorTemperature = 6500;
-
-                // Update the saved settings with default values
-                if (_settings.Properties.SavedMonitorSettings == null)
-                {
-                    _settings.Properties.SavedMonitorSettings = new Dictionary<string, MonitorSavedSettings>();
-                }
-
-                _settings.Properties.SavedMonitorSettings[monitor.InternalName] = new MonitorSavedSettings
-                {
-                    Brightness = 30,
-                    ColorTemperature = 6500,
-                    Contrast = 50,
-                    Volume = 50,
-                    LastUpdated = DateTime.Now
-                };
-
-                // Save settings - this will trigger PowerDisplay's file watcher to apply the reset values
-                NotifySettingsChanged();
-            }
-            catch (Exception ex)
-            {
-                // Handle error gracefully
-                System.Diagnostics.Debug.WriteLine($"Failed to reset monitor settings: {ex.Message}");
-            }
         }
 
         private Func<string, int> SendConfigMSG { get; }

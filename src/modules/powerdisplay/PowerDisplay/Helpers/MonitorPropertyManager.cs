@@ -10,8 +10,8 @@ using ManagedCommon;
 namespace PowerDisplay.Helpers
 {
     /// <summary>
-    /// Serializes monitor property updates to prevent race conditions
-    /// Simple approach: one operation at a time, newest replaces pending
+    /// Serializes monitor property updates to prevent race conditions.
+    /// Smart error handling: only rollback if the last operation in queue fails.
     /// </summary>
     public class MonitorPropertyManager : IDisposable
     {
@@ -23,6 +23,10 @@ namespace PowerDisplay.Helpers
         private int _hasPendingValue = 0; // 0 = no pending, 1 = has pending (for Interlocked)
         private Task? _currentTask;
         
+        // Track last successful value for smart rollback
+        private int _lastSuccessfulValue = -1;
+        private bool _hasLastSuccessfulValue = false;
+        
         public MonitorPropertyManager(string monitorId, string propertyName)
         {
             _monitorId = monitorId;
@@ -32,7 +36,7 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Queue a property update - replaces any pending update
         /// </summary>
-        public void QueueUpdate(int newValue, Func<int, CancellationToken, Task> updateAction)
+        public void QueueUpdate(int newValue, Func<int, CancellationToken, Task<bool>> updateAction)
         {
             // Atomically update the pending value (lock-free for UI thread)
             Interlocked.Exchange(ref _pendingValue, newValue);
@@ -52,18 +56,38 @@ namespace PowerDisplay.Helpers
             }
         }
         
-        private async Task ExecuteUpdatesAsync(Func<int, CancellationToken, Task> updateAction)
+        /// <summary>
+        /// Execute queued updates with smart error handling:
+        /// - Continue executing even if intermediate operations fail
+        /// - Only rollback if the LAST operation fails
+        /// - Rollback to the last successful value
+        /// </summary>
+        private async Task ExecuteUpdatesAsync(Func<int, CancellationToken, Task<bool>> updateAction)
         {
+            int? lastAttemptedValue = null;
+            bool lastAttemptSuccess = false;
+            
             while (true)
             {
                 // Atomically check and retrieve the next value to update (lock-free)
                 if (Interlocked.Exchange(ref _hasPendingValue, 0) == 0)
                 {
-                    // No more updates pending
+                    // No more updates pending - check if we need to rollback
+                    if (lastAttemptedValue.HasValue && !lastAttemptSuccess)
+                    {
+                        // Last operation failed - trigger rollback
+                        if (_hasLastSuccessfulValue)
+                        {
+                            Logger.LogWarning($"[{_monitorId}] {_propertyName} last operation failed, should rollback to {_lastSuccessfulValue}");
+                            // Return the rollback value so caller can update UI
+                            RollbackRequested?.Invoke(this, _lastSuccessfulValue);
+                        }
+                    }
                     break;
                 }
                 
                 int valueToUpdate = Volatile.Read(ref _pendingValue);
+                lastAttemptedValue = valueToUpdate;
                 
                 // Execute the hardware update
                 try
@@ -71,13 +95,25 @@ namespace PowerDisplay.Helpers
                     await _operationSemaphore.WaitAsync();
                     
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-                    await updateAction(valueToUpdate, cts.Token);
+                    bool success = await updateAction(valueToUpdate, cts.Token);
                     
-                    Logger.LogDebug($"[{_monitorId}] {_propertyName} updated to {valueToUpdate}");
+                    if (success)
+                    {
+                        lastAttemptSuccess = true;
+                        _lastSuccessfulValue = valueToUpdate;
+                        _hasLastSuccessfulValue = true;
+                        Logger.LogDebug($"[{_monitorId}] {_propertyName} successfully updated to {valueToUpdate}");
+                    }
+                    else
+                    {
+                        lastAttemptSuccess = false;
+                        Logger.LogWarning($"[{_monitorId}] {_propertyName} failed to update to {valueToUpdate}, continuing with queue...");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"[{_monitorId}] Failed to update {_propertyName} to {valueToUpdate}: {ex.Message}");
+                    lastAttemptSuccess = false;
+                    Logger.LogError($"[{_monitorId}] Exception updating {_propertyName} to {valueToUpdate}: {ex.Message}");
                 }
                 finally
                 {
@@ -85,6 +121,11 @@ namespace PowerDisplay.Helpers
                 }
             }
         }
+        
+        /// <summary>
+        /// Event triggered when rollback is needed (only when last operation fails)
+        /// </summary>
+        public event EventHandler<int>? RollbackRequested;
         
         /// <summary>
         /// Wait for all pending updates to complete
