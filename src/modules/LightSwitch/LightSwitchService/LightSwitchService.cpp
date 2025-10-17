@@ -227,7 +227,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         // If schedule is off, idle but keep watching settings and manual override
         if (settings.scheduleMode == ScheduleMode::Off)
         {
-            Logger::info(L"[LightSwitchService] Schedule mode OFF detected — exiting to save resources.");
+            Logger::info(L"[LightSwitchService] Schedule mode OFF detected - exiting to save resources.");
             break;
         }
 
@@ -237,23 +237,27 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         int nowMinutes = st.wHour * 60 + st.wMinute;
 
         // Refresh suntimes at day boundary
-        if (g_lastUpdatedDay != st.wDay)
+        if ((g_lastUpdatedDay != st.wDay) && (settings.scheduleMode == ScheduleMode::SunsetToSunrise))
         {
             update_sun_times(settings);
             g_lastUpdatedDay = st.wDay;
             Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
         }
 
+        // Have to do this again in case settings got updated in the refresh suntimes chunk
+        LightSwitchSettings::instance().LoadSettings();
+        const auto& currentSettings = LightSwitchSettings::instance().settings();
+
         wchar_t msg[160];
         swprintf_s(msg,
                    L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d | mode=%d",
                    st.wHour,
                    st.wMinute,
-                   settings.lightTime / 60,
-                   settings.lightTime % 60,
-                   settings.darkTime / 60,
-                   settings.darkTime % 60,
-                   static_cast<int>(settings.scheduleMode));
+                   currentSettings.lightTime / 60,
+                   currentSettings.lightTime % 60,
+                   currentSettings.darkTime / 60,
+                   currentSettings.darkTime % 60,
+                   static_cast<int>(currentSettings.scheduleMode));
         Logger::info(msg);
 
         // --- Manual override check ---
@@ -265,8 +269,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         if (manualOverrideActive)
         {
-            if (nowMinutes == (settings.lightTime + settings.sunrise_offset) % 1440 ||
-                nowMinutes == (settings.darkTime + settings.sunset_offset) % 1440)
+            if (nowMinutes == (currentSettings.lightTime + currentSettings.sunrise_offset) % 1440 ||
+                nowMinutes == (currentSettings.darkTime + currentSettings.sunset_offset) % 1440)
             {
                 ResetEvent(hManualOverride);
                 Logger::info(L"[LightSwitchService] Manual override cleared at boundary");
@@ -278,7 +282,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             }
         }
 
-        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
+        applyTheme(nowMinutes, currentSettings.lightTime + currentSettings.sunrise_offset, currentSettings.darkTime + currentSettings.sunset_offset, currentSettings);
 
     sleep_until_next_minute:
         GetLocalTime(&st);
