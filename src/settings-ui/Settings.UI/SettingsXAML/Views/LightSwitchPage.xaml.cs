@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var darkSettings = _moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            ViewModel = new LightSwitchViewModel(darkSettings, ShellPage.SendDefaultIPCMessage);
+            ViewModel = new LightSwitchViewModel(_generalSettingsRepository, darkSettings, ShellPage.SendDefaultIPCMessage);
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
@@ -128,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.SelectedCity = null;
 
                 // CityAutoSuggestBox.Text = string.Empty;
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}ï¿½, {ViewModel.Longitude}ï¿½";
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
             {
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}ï¿½, {ViewModel.Longitude}ï¿½";
             }
 
             SunriseModeChartState();
@@ -248,18 +248,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateEnabledState(bool recommendedState)
         {
-            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLightSwitchEnabledValue();
-
-            if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                ViewModel.IsEnabledGpoConfigured = true;
-                ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                ViewModel.IsEnabled = recommendedState;
-            }
+            // The ViewModel now handles GPO configuration internally via InitializeEnabledValue
+            ViewModel.RefreshEnabledState();
         }
 
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
