@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using WinRT.Interop;
 using TasklistButton = ShortcutGuide.NativeMethods.TasklistButton;
 
 namespace ShortcutGuide.Helpers
@@ -18,7 +19,7 @@ namespace ShortcutGuide.Helpers
         /// <returns>An array of the taskbar buttons.</returns>
         public static TasklistButton[] GetButtons()
         {
-            var monitor = NativeMethods.MonitorFromWindow(MainWindow.WindowHwnd, 0);
+            var monitor = NativeMethods.MonitorFromWindow(WindowNative.GetWindowHandle(App.MainWindow), 0);
             nint ptr = NativeMethods.GetTasklistButtons(monitor, out int size);
             if (ptr == nint.Zero)
             {

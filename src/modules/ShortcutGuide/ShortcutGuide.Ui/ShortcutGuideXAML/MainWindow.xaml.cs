@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Common.UI;
 using ManagedCommon;
@@ -15,25 +19,20 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
+using ShortcutGuide.Pages;
 using Windows.Foundation;
-using Windows.Graphics;
 using Windows.System;
+using WinRT.Interop;
 using WinUIEx;
-using static ShortcutGuide.NativeMethods;
 
 namespace ShortcutGuide
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainWindow
+    public sealed partial class MainWindow : WindowEx
     {
         private readonly string[] _currentApplicationIds;
-        private readonly bool _firstRun;
+        private ShortcutFile? _shortcutFile;
+        private string _selectedAppName = null!;
 
-        public static nint WindowHwnd { get; set; }
-
-        private AppWindow _appWindow;
         private bool _setPosition;
 
         public MainWindow()
@@ -43,34 +42,14 @@ namespace ShortcutGuide
             InitializeComponent();
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
+            ExtendsContentIntoTitleBar = true;
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowHwnd = hwnd;
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-            _appWindow = AppWindow.GetFromWindowId(windowId);
 #if !DEBUG
             this.SetIsAlwaysOnTop(true);
             this.SetIsShownInSwitchers(false);
 #endif
-            this.SetIsResizable(false);
-            this.SetIsMinimizable(false);
-            this.SetIsMaximizable(false);
-            IsTitleBarVisible = false;
-
-            // Remove the caption style from the window style. Windows App SDK 1.6 added it, which made the title bar and borders appear. This code removes it.
-            var windowStyle = GetWindowLongW(hwnd, GWL_STYLE);
-            windowStyle &= ~WS_CAPTION;
-            _ = SetWindowLongW(hwnd, GWL_STYLE, windowStyle);
 
             Activated += Window_Activated;
-
-            SettingsUtils settingsUtils = new();
-
-            if (settingsUtils.SettingsExists(ShortcutGuideSettings.ModuleName, "Pinned.json"))
-            {
-                string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
-                ShortcutPageParameters.PinnedShortcuts = JsonSerializer.Deserialize<Dictionary<string, List<ShortcutEntry>>>(File.ReadAllText(pinnedPath))!;
-            }
 
             Content.KeyUp += (_, e) =>
             {
@@ -80,34 +59,23 @@ namespace ShortcutGuide
                 }
             };
 
-            ShortcutGuideSettings shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig;
-            ShortcutGuideProperties shortcutGuideProperties = shortcutGuideSettings.Properties;
-
-            switch (shortcutGuideProperties.Theme.Value)
+            switch (App.ShortcutGuideProperties.Theme.Value)
             {
                 case "dark":
                     ((FrameworkElement)Content).RequestedTheme = ElementTheme.Dark;
                     MainPage.RequestedTheme = ElementTheme.Dark;
-                    MainPage.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 0, 0));
                     break;
                 case "light":
                     ((FrameworkElement)Content).RequestedTheme = ElementTheme.Light;
                     MainPage.RequestedTheme = ElementTheme.Light;
-                    MainPage.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255));
                     break;
                 case "system":
                     // Ignore, as the theme will be set by the system.
                     break;
                 default:
-                    Logger.LogError("Invalid theme value in settings: " + shortcutGuideProperties.Theme.Value);
+                    Logger.LogError("Invalid theme value in settings: " + App.ShortcutGuideProperties.Theme.Value);
                     break;
             }
-
-            _firstRun = shortcutGuideProperties.FirstRun.Value;
-            shortcutGuideProperties.FirstRun = new BoolProperty(false);
-#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(shortcutGuideSettings, new JsonSerializerOptions { WriteIndented = true }), "Shortcut Guide");
-#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs e)
@@ -122,22 +90,9 @@ namespace ShortcutGuide
             // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
             if (!_setPosition)
             {
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-
-                _appWindow = AppWindow.GetFromWindowId(windowId);
-
-                GetCursorPos(out POINT lpPoint);
-                _appWindow.Move(new POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
-
-                float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
-
-                Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-                this.SetWindowSize(monitorRect.Width / dpiScale, monitorRect.Height / dpiScale / 2);
-
-                // Move top of the window to the center of the monitor
-                _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
+                SetWindowPosition();
                 _setPosition = true;
+
                 AppWindow.Changed += (_, a) =>
                 {
                     if (!a.DidPresenterChange)
@@ -145,27 +100,30 @@ namespace ShortcutGuide
                         return;
                     }
 
-                    Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-                    float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
-                    this.SetWindowSize(monitorRect.Width / dpiScale, monitorRect.Height / dpiScale / 2);
-                    _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
+                    SetWindowPosition();
                 };
             }
 
+            SetNavItems();
+        }
+
+        private void SetNavItems()
+        {
             // Populate the window selector with the current application IDs if it is empty.
-            if (WindowSelector.Items.Count == 0)
+            // TO DO: Check if Settings button is considered an item too.
+            if (WindowSelector.MenuItems.Count == 0)
             {
                 foreach (var item in _currentApplicationIds)
                 {
                     if (item == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
                     {
-                        WindowSelector.Items.Add(new SelectorBarItem { Name = item, Text = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
+                        WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
                     }
                     else
                     {
                         try
                         {
-                            WindowSelector.Items.Add(new SelectorBarItem { Name = item, Text = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = new FontIcon { Glyph = "\uEB91" } });
+                            WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = new FontIcon { Glyph = "\uEB91" } });
                         }
                         catch (IOException)
                         {
@@ -173,44 +131,36 @@ namespace ShortcutGuide
                     }
                 }
 
-                if (_firstRun)
-                {
-                    CreateAndOpenWelcomePage();
-                }
-
-                WindowSelector.SelectedItem = WindowSelector.Items[0];
+                WindowSelector.SelectedItem = WindowSelector.MenuItems[0];
             }
         }
 
-        public void WindowSelectionChanged(object sender, SelectorBarSelectionChangedEventArgs e)
+        private void SetWindowPosition()
         {
-            string newPageName = ((SelectorBar)sender).SelectedItem.Name;
+            var hwnd = WindowNative.GetWindowHandle(this);
+            Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, monitorRect.Height);
+        }
 
-            if (newPageName == "<WELCOME>")
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // TO DO: should the results of this be shown on a separate results page? Or as part of the suggested items of the search box?
+            // The current UX is a bit weird as search is about the content that is selected on the page, vs. global search (which a search box in the title bar communicates).
+            // Also, the results indicate that they can be clicked - but they cannot, so this needs more UX thinking on having the right model.
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput && !string.IsNullOrWhiteSpace(SearchBox.Text))
             {
-                ContentFrame.Navigate(typeof(OOBEView));
-                return;
+                ObservableCollection<ShortcutEntry> searchResults = new ObservableCollection<ShortcutEntry>();
+
+                if (_shortcutFile is ShortcutFile file)
+                {
+                    foreach (var shortcut in file.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Name.Contains(SearchBox.Text, StringComparison.InvariantCultureIgnoreCase))))
+                    {
+                        searchResults.Add(shortcut);
+                    }
+
+                    SearchBox.ItemsSource = searchResults;
+                }
             }
-
-            ShortcutPageParameters.CurrentPageName = newPageName;
-
-            ContentFrame.Loaded += (_, _) => ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
-
-            ContentFrame.Navigate(typeof(ShortcutView));
-
-            // I don't know why this has to be called again, but it does.
-            ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
-        }
-
-        public void CloseButton_Clicked(object sender, RoutedEventArgs e)
-        {
-            ShortcutView.AnimationCancellationTokenSource.Cancel();
-            Close();
-        }
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ShortcutPageParameters.SearchFilter.OnFilterChanged(SearchBox.Text);
         }
 
         private void SearchBox_KeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -218,36 +168,76 @@ namespace ShortcutGuide
             SearchBox.Focus(FocusState.Programmatic);
         }
 
-        private void SettingsButton_Clicked(object sender, RoutedEventArgs e)
+        private void WindowSelector_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.SelectedItem is NavigationViewItem selectedItem)
+            {
+                _selectedAppName = selectedItem.Name;
+                _shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(_selectedAppName);
+                PopulateCategorySelector();
+            }
+        }
+
+        private void PopulateCategorySelector()
+        {
+            SubNav.MenuItems.Clear();
+            SubNav.MenuItems.Add(new NavigationViewItem()
+            {
+                Content = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
+                Tag = -1,
+            });
+
+            int i = 0;
+
+            if (_shortcutFile is ShortcutFile file)
+            {
+                foreach (var category in file.Shortcuts)
+                {
+                    switch (category.SectionName)
+                    {
+                        case { } name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
+                            break;
+                        case { } name when name.StartsWith('<') && name.EndsWith('>'):
+                            break;
+                        default:
+                            SubNav.MenuItems.Add(new NavigationViewItem() { Content = category.SectionName, Tag = i });
+                            break;
+                    }
+
+                    i++;
+                }
+
+                if (SubNav.MenuItems.Count > 0)
+                {
+                    SubNav.SelectedItem = SubNav.MenuItems[0];
+                }
+            }
+        }
+
+        private void SubNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && _shortcutFile is ShortcutFile file)
+            {
+                Type selectedPage = typeof(ShortcutsPage);
+                App.TaskBarWindow.Hide();
+                if (param == -1)
+                {
+                    selectedPage = typeof(OverviewPage);
+
+                    // We only show the taskbar button window when the overview page of Windows is selected.
+                    if (_selectedAppName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                    {
+                        App.TaskBarWindow.Activate();
+                    }
+                }
+
+                ContentFrame.Navigate(selectedPage, new ShortcutPageNavParam() { ShortcutFile = file, PageIndex = param, AppName = _selectedAppName });
+            }
+        }
+
+        private void Settings_Tapped(object sender, TappedRoutedEventArgs e)
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide, true);
-        }
-
-        private void InformationButton_Click(object sender, RoutedEventArgs e)
-        {
-            InformationTip.IsOpen = !InformationTip.IsOpen;
-        }
-
-        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
-        {
-            InformationTip.IsOpen = false;
-            if (WindowSelector.Items[0].Name == "<WELCOME>")
-            {
-                WindowSelector.SelectedItem = WindowSelector.Items[0];
-            }
-            else
-            {
-                CreateAndOpenWelcomePage();
-            }
-        }
-
-        /// <summary>
-        /// Adds the welcome page to the window selector and opens it.
-        /// </summary>
-        private void CreateAndOpenWelcomePage()
-        {
-            WindowSelector.Items.Insert(0, new SelectorBarItem { Name = "<WELCOME>", Text = ResourceLoaderInstance.ResourceLoader.GetString("Welcome"), Icon = new FontIcon { Glyph = "\uE789" } });
-            WindowSelector.SelectedItem = WindowSelector.Items[0];
         }
     }
 }
