@@ -78,6 +78,9 @@ namespace PowerDisplay.Helpers
         /// </summary>
         private async Task ExecuteUpdatesAsync(Func<int, CancellationToken, Task<bool>> updateAction)
         {
+            int consecutiveFailures = 0;
+            const int MaxConsecutiveFailures = 3; // 最多连续失败3次就放弃
+            
             while (true)
             {
                 int valueToApply;
@@ -109,17 +112,40 @@ namespace PowerDisplay.Helpers
                             _currentValue = valueToApply;
                         }
                         ManagedCommon.Logger.LogDebug($"[{_monitorId}] {_propertyName} successfully updated to {valueToApply}");
+                        consecutiveFailures = 0; // 成功后重置失败计数
                     }
                     else
                     {
-                        ManagedCommon.Logger.LogWarning($"[{_monitorId}] {_propertyName} failed to update to {valueToApply}");
-                        // Continue to check if there's a newer target value
+                        consecutiveFailures++;
+                        ManagedCommon.Logger.LogWarning($"[{_monitorId}] {_propertyName} failed to update to {valueToApply} (attempt {consecutiveFailures}/{MaxConsecutiveFailures})");
+                        
+                        if (consecutiveFailures >= MaxConsecutiveFailures)
+                        {
+                            ManagedCommon.Logger.LogError($"[{_monitorId}] {_propertyName} failed {MaxConsecutiveFailures} times, giving up. Hardware may not support this feature.");
+                            // 放弃：假装成功，避免无限循环
+                            lock (_stateLock)
+                            {
+                                _currentValue = valueToApply;
+                            }
+                            return;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    ManagedCommon.Logger.LogError($"[{_monitorId}] {_propertyName} update exception: {ex.Message}");
-                    // Continue to check if there's a newer target value
+                    consecutiveFailures++;
+                    ManagedCommon.Logger.LogError($"[{_monitorId}] {_propertyName} update exception: {ex.Message} (attempt {consecutiveFailures}/{MaxConsecutiveFailures})");
+                    
+                    if (consecutiveFailures >= MaxConsecutiveFailures)
+                    {
+                        ManagedCommon.Logger.LogError($"[{_monitorId}] {_propertyName} exception {MaxConsecutiveFailures} times, giving up. Hardware may not support this feature.");
+                        // 放弃：假装成功，避免无限循环
+                        lock (_stateLock)
+                        {
+                            _currentValue = valueToApply;
+                        }
+                        return;
+                    }
                 }
                 
                 // Loop back to check if target changed during the update
