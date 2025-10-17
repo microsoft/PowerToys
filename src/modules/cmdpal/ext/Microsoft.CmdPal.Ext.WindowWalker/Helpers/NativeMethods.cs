@@ -84,6 +84,12 @@ public static partial class NativeMethods
     [DllImport("user32.dll")]
     public static extern int SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, IntPtr lParam, int fuFlags, int uTimeout, out int lpdwResult);
 
+    [DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
+    public static extern IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern bool DestroyIcon(IntPtr hIcon);
+
     [DllImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool CloseHandle(IntPtr hObject);
@@ -142,6 +148,41 @@ public static class Win32Constants
     /// Closes the window
     /// </summary>
     public const int SC_CLOSE = 0xF060;
+
+    /// <summary>
+    /// Sent to a window to retrieve a handle to the large or small icon associated with a window.
+    /// </summary>
+    public const uint WM_GETICON = 0x007F;
+
+    /// <summary>
+    /// Retrieve the large icon for the window.
+    /// </summary>
+    public const int ICON_BIG = 1;
+
+    /// <summary>
+    /// Retrieve the small icon for the window.
+    /// </summary>
+    public const int ICON_SMALL = 0;
+
+    /// <summary>
+    /// Retrieve the small icon provided by the application.
+    /// </summary>
+    public const int ICON_SMALL2 = 2;
+
+    /// <summary>
+    /// The function returns if the receiving thread does not respond within the timeout period.
+    /// </summary>
+    public const int SMTO_ABORTIFHUNG = 0x0002;
+
+    /// <summary>
+    /// Retrieves a handle to the icon associated with the class.
+    /// </summary>
+    public const int GCLP_HICON = -14;
+
+    /// <summary>
+    /// Retrieves a handle to the small icon associated with the class.
+    /// </summary>
+    public const int GCLP_HICONSM = -34;
 
     /// <summary>
     /// RPC call succeeded

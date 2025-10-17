@@ -23,4 +23,6 @@ public interface ISettingsInterface
     public bool HideExplorerSettingInfo { get; }
 
     public bool InMruOrder { get; }
+
+    public bool UseWindowIcon { get; }
 }
