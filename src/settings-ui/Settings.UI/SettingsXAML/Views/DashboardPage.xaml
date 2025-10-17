@@ -19,6 +19,7 @@
             x:Key="ModuleItemTemplateSelector"
             ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
             ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
             <Grid MinHeight="36" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -276,9 +277,36 @@
                         Padding="0"
                         VerticalAlignment="Top"
                         DividerVisibility="Collapsed">
+                        <controls:Card.TitleContent>
+                            <Button
+                                x:Uid="Dashboard_SortBy"
+                                Margin="0,0,4,0"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="Dashboard_SortBy_ToolTip" />
+                                </ToolTipService.ToolTip>
+                                <Button.Content>
+                                    <FontIcon FontSize="16" Glyph="&#xE8CB;" />
+                                </Button.Content>
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <ToggleMenuFlyoutItem
+                                            x:Uid="Dashboard_SortAlphabetical"
+                                            Click="SortAlphabetical_Click"
+                                            IsChecked="{x:Bind ViewModel.DashboardSortOrder, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Alphabetical}" />
+                                        <ToggleMenuFlyoutItem
+                                            x:Uid="Dashboard_SortByStatus"
+                                            Click="SortByStatus_Click"
+                                            IsChecked="{x:Bind ViewModel.DashboardSortOrder, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=ByStatus}" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </controls:Card.TitleContent>
+
                         <ItemsRepeater
                             x:Name="DashboardView"
-                            Grid.Row="2"
+                            Grid.Row="1"
                             ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
                             <ItemsRepeater.Layout>
                                 <StackLayout Orientation="Vertical" Spacing="0" />
