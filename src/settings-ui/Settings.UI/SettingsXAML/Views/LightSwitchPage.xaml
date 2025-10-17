@@ -129,16 +129,15 @@
                                     Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
                                     Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard 
-                              HorizontalContentAlignment="Stretch"
-ContentAlignment="Vertical"
-                              Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource ShowIfEnumValueConverter}, ConverterParameter=Off}">
+                            <tkcontrols:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource ShowIfEnumValueConverter}, ConverterParameter=Off}">
                                 <InfoBar
                                     x:Uid="LightSwitch_ScheduleOffMessage"
                                     IsClosable="False"
                                     IsOpen="True"
-                                    Severity="Informational"
-                                     />
+                                    Severity="Informational" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
