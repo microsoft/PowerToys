@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
+    xmlns:text="using:Windows.UI.Text"
     Title="SettingsWindow"
     Width="1280"
     Height="720"
@@ -80,7 +81,7 @@
                             <ResourceDictionary>
                                 <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
                                 <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
-                                <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
+                                <text:FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</text:FontWeight>
                                 <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
                             </ResourceDictionary>
                         </BreadcrumbBar.Resources>
