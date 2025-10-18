@@ -1,6 +1,6 @@
 # PowerToys Installer
 
-## Installer Architecture (WiX 3)
+## Installer Architecture (WiX 5)
 
 - Uses a bootstrapper to check dependencies and close PowerToys
 - MSI defined in product.wxs
@@ -22,7 +22,7 @@
 
 ### MSI Installer Build Process
 
-- First builds `PowerToysSetupCustomActions` DLL and signs it
+- First builds `PowerToysSetupCustomActionsVNext` DLL and signs it
 - Then builds the installer without cleaning, to reuse the signed DLL
 - Uses PowerShell scripts to modify .wxs files before build
 - Restores original .wxs files after build completes
@@ -96,9 +96,14 @@ The following manual steps will not install the MSIX apps (such as Command Palet
 
 #### Prerequisites for building the MSI installer
 
-1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe))
-1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+PowerToys uses WiX v5 for creating installers. The WiX v5 tools are automatically installed during the build process via dotnet tool.
+
+For manual installation of WiX v5 tools:
+```powershell
+dotnet tool install --global wix --version 5.0.2
+```
+
+> **Note:** As of release 0.94, PowerToys has migrated from WiX v3 to WiX v5. The WiX v3 toolset is no longer required.
 
 #### Building prerequisite projects
 
@@ -133,7 +138,16 @@ If you prefer, you can alternatively build prerequisite projects for the install
 1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 1. From the `Build` menu choose `Build Solution`.
 
-The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+The resulting installer will be available in the `installer\PowerToysSetupVNext\x64\Release\` folder.
+
+To build the installer from the command line, run `Developer Command Prompt for VS 2022` in admin mode and execute the following commands. The generated installer package will be located at `\installer\PowerToysSetupVNext\{platform}\Release\MachineSetup`.
+
+```
+git clean -xfd  -e *exe -- .\installer\
+MSBuild -t:restore  .\installer\PowerToysSetup.sln -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
+MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysInstallerVNext /p:Configuration=Release /p:Platform="x64"
+MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysBootstrapperVNext /p:Configuration=Release /p:Platform="x64" 
+```
 
 ### Supported arguments for the .EXE Bootstrapper installer
 

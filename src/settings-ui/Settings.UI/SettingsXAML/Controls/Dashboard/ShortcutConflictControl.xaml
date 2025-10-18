@@ -16,18 +16,29 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <FontIcon
+                    x:Name="Icon"
                     AutomationProperties.AccessibilityView="Raw"
                     FontSize="20"
-                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                    Glyph="&#xE814;" />
+                    Glyph="&#xEDA7;" />
                 <StackPanel Grid.Column="1" Orientation="Vertical">
-                    <TextBlock FontWeight="SemiBold" Text="Shortcut conflicts" />
+                    <TextBlock x:Uid="ShortcutConflictControl_Title" FontWeight="SemiBold" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="2 conflicts found" />
+                        Text="{x:Bind ConflictText, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
         </Button>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ConflictsStateGroup">
+                <VisualState x:Name="NoConflictState" />
+                <VisualState x:Name="ConflictState">
+                    <VisualState.Setters>
+                        <Setter Target="Icon.Glyph" Value="&#xE814;" />
+                        <Setter Target="Icon.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

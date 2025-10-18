@@ -208,6 +208,7 @@ capturevideosample
 cmdow
 Controlz
 cortana
+devhints
 dlnilsson
 fancymouse
 firefox
@@ -227,6 +228,7 @@ regedit
 roslyn
 Skia
 Spotify
+tldr
 Vanara
 wangyi
 WEX

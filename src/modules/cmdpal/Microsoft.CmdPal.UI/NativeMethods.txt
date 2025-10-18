@@ -44,7 +44,18 @@ MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+DWM_WINDOW_CORNER_PREFERENCE
 
 CoWaitForMultipleObjects
 INFINITE
-CWMO_FLAGS 
+CWMO_FLAGS
+
+GetCurrentThreadId
+SetWindowsHookEx
+UnhookWindowsHookEx
+CallNextHookEx
+GetModuleHandle
+
+GetWindowLong
+SetWindowLong
+WINDOW_EX_STYLE

@@ -42,6 +42,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool IgnoreShortcutWhenFullscreen { get; set; }
 
+    public bool AllowExternalReload { get; set; }
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
@@ -49,6 +51,8 @@ public partial class SettingsModel : ObservableObject
     public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+
+    public bool DisableAnimations { get; set; } = true;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////

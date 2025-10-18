@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Messages;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -27,6 +27,7 @@ using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.Win32;
@@ -44,7 +45,8 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
-    IRecipient<QuitMessage>
+    IRecipient<QuitMessage>,
+    IDisposable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
@@ -54,6 +56,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
+    private readonly LocalKeyboardListener _localKeyboardListener;
     private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
@@ -116,6 +119,31 @@ public sealed partial class MainWindow : WindowEx,
         {
             Summon(string.Empty);
         });
+
+        _localKeyboardListener = new LocalKeyboardListener();
+        _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
+        _localKeyboardListener.Start();
+
+        // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
+        HideWindow();
+
+        ApplyWindowStyle();
+    }
+
+    private void ApplyWindowStyle()
+    {
+        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
+        // Since tool windows have smaller corner radii, we need to force the normal ones
+        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, !Debugger.IsAttached);
+        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
+    }
+
+    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    {
+        if (e.Key == VirtualKey.GoBack)
+        {
+            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+        }
     }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
@@ -155,8 +183,6 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
-
-        this.SetVisibilityInSwitchers(Debugger.IsAttached);
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -218,9 +244,6 @@ public sealed partial class MainWindow : WindowEx,
     {
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
-        // Make sure our HWND is cloaked before any possible window manipulations
-        Cloak();
-
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
         // If we're currently minimized, restore us first, before we reveal
@@ -228,11 +251,21 @@ public sealed partial class MainWindow : WindowEx,
         // which would remain not visible to the user.
         if (PInvoke.IsIconic(hwnd))
         {
+            // Make sure our HWND is cloaked before any possible window manipulations
+            Cloak();
+
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
         var display = GetScreen(hwnd, target);
         PositionCentered(display);
+
+        // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
+        // because that would make it hard to debug the app
+        if (Debugger.IsAttached)
+        {
+            ApplyWindowStyle();
+        }
 
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
@@ -327,33 +360,51 @@ public sealed partial class MainWindow : WindowEx,
     private void HideWindow()
     {
         // Cloak our HWND to avoid all animations.
-        Cloak();
+        var cloaked = Cloak();
 
         // Then hide our HWND, to make sure that the OS gives the FG / focus back to another app
         // (there's no way for us to guess what the right hwnd might be, only the OS can do it right)
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-        // TRICKY: show our HWND again. This will trick XAML into painting our
-        // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
-        // window being first shown
-        // SW_SHOWNA will prevent us for trying to fight the focus back
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
+        if (cloaked)
+        {
+            // TRICKY: show our HWND again. This will trick XAML into painting our
+            // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
+            // window being first shown
+            // SW_SHOWNA will prevent us for trying to fight the focus back
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
 
-        // Intentionally leave the window cloaked. So our window is "visible",
-        // but also cloaked, so you can't see it.
+            // Intentionally leave the window cloaked. So our window is "visible",
+            // but also cloaked, so you can't see it.
+
+            // If the window was not cloaked, then leave it hidden.
+            // Sure, it's not ideal, but at least it's not visible.
+        }
     }
 
-    private void Cloak()
+    private bool Cloak()
     {
+        bool wasCloaked;
         unsafe
         {
             BOOL value = true;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            if (hr.Failed)
+            {
+                Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
+            }
+
+            wasCloaked = hr.Succeeded;
         }
 
-        // Because we're only cloaking the window, bury it at the bottom in case something can
-        // see it - e.g. some accessibility helper (note: this also removes the top-most status).
-        PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        if (wasCloaked)
+        {
+            // Because we're only cloaking the window, bury it at the bottom in case something can
+            // see it - e.g. some accessibility helper (note: this also removes the top-most status).
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        }
+
+        return wasCloaked;
     }
 
     private void Uncloak()
@@ -376,6 +427,7 @@ public sealed partial class MainWindow : WindowEx,
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
+        _localKeyboardListener.Dispose();
         DisposeAcrylic();
 
         _keyboardListener.Stop();
@@ -465,8 +517,13 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    public void HandleLaunch(AppActivationArguments? activatedEventArgs)
+    public void HandleLaunchNonUI(AppActivationArguments? activatedEventArgs)
     {
+        // LOAD BEARING
+        // Any reading and processing of the activation arguments must be done
+        // synchronously in this method, before it returns. The sending instance
+        // remains blocked until this returns; afterward it may quit, causing
+        // the activation arguments to be lost.
         if (activatedEventArgs is null)
         {
             Summon(string.Empty);
@@ -497,15 +554,47 @@ public sealed partial class MainWindow : WindowEx,
                             WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
                             return;
                         }
+                        else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            if (settings?.AllowExternalReload == true)
+                            {
+                                Logger.LogInfo("External Reload triggered");
+                                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                            }
+                            else
+                            {
+                                Logger.LogInfo("External Reload is disabled");
+                            }
+
+                            return;
+                        }
                     }
                 }
             }
         }
         catch (COMException ex)
         {
+            // https://learn.microsoft.com/en-us/windows/win32/rpc/rpc-return-values
+            const int RPC_S_SERVER_UNAVAILABLE = -2147023174;
+            const int RPC_S_CALL_FAILED = 2147023170;
+
             // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
             // if the args are not valid or not passed correctly.
-            Logger.LogError("COM exception when activating the application", ex);
+            if (ex.HResult is RPC_S_SERVER_UNAVAILABLE or RPC_S_CALL_FAILED)
+            {
+                Logger.LogWarning(
+                    $"COM exception (HRESULT {ex.HResult}) when accessing activation arguments. " +
+                    $"This might be due to the calling application not passing them correctly or exiting before we could read them. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.");
+            }
+            else
+            {
+                Logger.LogError(
+                    $"COM exception (HRESULT {ex.HResult}) when activating the application. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.",
+                    ex);
+            }
         }
 
         Summon(string.Empty);
@@ -595,6 +684,20 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
+        if (_ignoreHotKeyWhenFullScreen)
+        {
+            // If we're in full screen mode, ignore the hotkey
+            if (WindowHelper.IsWindowFullscreen())
+            {
+                return;
+            }
+        }
+
+        HandleSummonCore(commandId);
+    }
+
+    private void HandleSummonCore(string commandId)
+    {
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
@@ -618,8 +721,6 @@ public sealed partial class MainWindow : WindowEx,
         // so that we can bind hotkeys to individual commands
         if (!isVisible || !isRootHotkey)
         {
-            Activate();
-
             Summon(commandId);
         }
         else if (isRootHotkey)
@@ -655,15 +756,6 @@ public sealed partial class MainWindow : WindowEx,
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
                     {
-                        if (_ignoreHotKeyWhenFullScreen)
-                        {
-                            // If we're in full screen mode, ignore the hotkey
-                            if (WindowHelper.IsWindowFullscreen())
-                            {
-                                return (LRESULT)IntPtr.Zero;
-                            }
-                        }
-
                         var hotkey = _hotkeys[hotkeyIndex];
                         HandleSummon(hotkey.CommandId);
                     }
@@ -681,5 +773,11 @@ public sealed partial class MainWindow : WindowEx,
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    public void Dispose()
+    {
+        _localKeyboardListener.Dispose();
+        DisposeAcrylic();
     }
 }

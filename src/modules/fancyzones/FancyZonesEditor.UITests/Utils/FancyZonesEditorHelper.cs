@@ -41,9 +41,13 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string MainWindow = "MainWindow1";
             public const string Monitors = "Monitors";
             public const string NewLayoutButton = "NewLayoutButton";
+            public const string LaunchLayoutEditorButton = "LaunchLayoutEditorButton";
 
             // layout card
             public const string EditLayoutButton = "EditLayoutButton";
+            public const string GridCustomLayoutCard = "GridcustomlayoutCard";
+            public const string Grid9LayoutCard = "Grid-9Card";
+            public const string CanvasCustomLayoutCard = "CanvascustomlayoutCard";
 
             // edit layout window: common for template and custom layouts
             public const string DialogTitle = "EditLayoutDialogTitle";

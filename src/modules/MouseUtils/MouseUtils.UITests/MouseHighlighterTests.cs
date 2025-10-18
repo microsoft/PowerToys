@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,10 +24,10 @@ namespace MouseUtils.UITests
         public void TestEnableMouseHighlighter()
         {
             LaunchFromSetting();
-            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            var foundCustom0 = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             if (foundCustom0 != null)
             {
-                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom0.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             }
             else
             {
@@ -42,11 +42,11 @@ namespace MouseUtils.UITests
             settings.FadeDelay = "0";
             settings.FadeDuration = "90";
 
-            var foundCustom = this.Find<Custom>("Mouse Highlighter");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighter));
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(false);
 
                 var xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
@@ -54,7 +54,7 @@ namespace MouseUtils.UITests
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(true);
 
                 // Change the shortcut key for MouseHighlighter
                 // [TestCase]Change activation shortcut and test it
@@ -107,7 +107,7 @@ namespace MouseUtils.UITests
                 VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
 
                 // [Test Case] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(false);
                 xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
 
@@ -119,7 +119,7 @@ namespace MouseUtils.UITests
 
                 // [Test Case] With left mouse button pressed, drag the mouse and verify the highlight is dragged with the pointer.
                 // [Test Case] With right mouse button pressed, drag the mouse and verify the highlight is dragged with the pointer.
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(true);
                 xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
 
@@ -143,10 +143,10 @@ namespace MouseUtils.UITests
         public void TestMouseHighlighterDifferentSettings()
         {
             LaunchFromSetting();
-            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            var foundCustom0 = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             if (foundCustom0 != null)
             {
-                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom0.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             }
             else
             {
@@ -161,11 +161,11 @@ namespace MouseUtils.UITests
             settings.FadeDelay = "0";
             settings.FadeDuration = "90";
 
-            var foundCustom = this.Find<Custom>("Mouse Highlighter");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighter));
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(false);
 
                 var xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
@@ -173,7 +173,7 @@ namespace MouseUtils.UITests
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterToggle)).Toggle(true);
 
                 // Change the shortcut key for MouseHighlighter
                 // [TestCase] Test the different settings and verify they apply - Change activation shortcut and test it
@@ -387,7 +387,7 @@ namespace MouseUtils.UITests
         private void SetColor(ref Custom foundCustom, string colorName = "Primary button highlight color", string colorValue = "000000", string opacity = "0")
         {
             Assert.IsNotNull(foundCustom);
-            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            var groupAppearanceBehavior = foundCustom.Find<Group>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterAppearanceBehavior));
             if (groupAppearanceBehavior != null)
             {
                 if (foundCustom.FindAll<TextBox>("Fade duration (ms) Minimum0").Count == 0)
@@ -439,7 +439,7 @@ namespace MouseUtils.UITests
         private void SetMouseHighlighterAppearanceBehavior(ref Custom foundCustom, ref MouseHighlighterSettings settings)
         {
             Assert.IsNotNull(foundCustom);
-            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            var groupAppearanceBehavior = foundCustom.Find<Group>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseHighlighterAppearanceBehavior));
             if (groupAppearanceBehavior != null)
             {
                 // groupAppearanceBehavior.Click();
@@ -477,7 +477,7 @@ namespace MouseUtils.UITests
             }
             else
             {
-                Assert.Fail("Appearance & behavior group not found.");
+                Assert.Fail("MouseHighlighter Appearance & behavior group not found.");
             }
         }
 
@@ -485,14 +485,14 @@ namespace MouseUtils.UITests
         {
             this.Session.SetMainWindowSize(WindowSize.Large);
 
-            // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            // Goto Mouse utilities setting page
+            if (this.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Count == 0)
             {
-                // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Input / Output").Click();
+                // Expand Input / Output list-group if needed
+                this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.InputOutputNavItem)).Click();
             }
 
-            this.Find<NavigationViewItem>("Mouse utilities").Click();
+            this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Click();
         }
     }
 }

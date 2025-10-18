@@ -1,0 +1,234 @@
+parameters:
+  - name: versionNumber
+    type: string
+    default: "0.0.1"
+  - name: buildUserInstaller
+    type: boolean
+    default: false
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: signingIdentity
+    type: object
+    default: {}
+  - name: additionalBuildOptions
+    type: string
+    default: ''
+
+steps:
+  # Install WiX 5.0.2 tools needed for VNext installer (matching project SDK)
+  - task: DotNetCoreCLI@2
+    displayName: Install WiX 5.0.2 tools
+    inputs:
+      command: 'custom'
+      custom: 'tool'
+      arguments: 'install --global wix --version 5.0.2'
+
+  - pwsh: |-
+      & git clean -xfd -e *exe -- .\installer\
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Clean installer to reduce cross-contamination
+
+  - pwsh: |-
+      # Determine whether this is a per-user build
+      $IsPerUser = $${{ parameters.buildUserInstaller }}
+
+      # Build slug used to locate the artifacts
+      $InstallerBuildSlug = if ($IsPerUser) { 'UserSetup' } else { 'MachineSetup' }
+
+      # VNext bundle folder; base name intentionally omits the VNext suffix
+      $InstallerFolder = 'PowerToysSetupVNext'
+      if ($IsPerUser) {
+        $InstallerBasename = "PowerToysUserSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
+      }
+      else {
+        $InstallerBasename = "PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
+      }
+
+      # Export variables for downstream steps
+      Write-Host "##vso[task.setvariable variable=InstallerBuildSlug]$InstallerBuildSlug"
+      Write-Host "##vso[task.setvariable variable=InstallerRelativePath]$(BuildPlatform)\$(BuildConfiguration)\$InstallerBuildSlug"
+      Write-Host "##vso[task.setvariable variable=InstallerBasename]$InstallerBasename"
+      Write-Host "##vso[task.setvariable variable=InstallerFolder]$InstallerFolder"
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Prepare Installer variables
+
+  # This dll needs to be built and signed before building the MSI.
+  - task: VSBuild@1
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build PowerToysSetupCustomActionsVNext
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: >-
+        /t:PowerToysSetupCustomActionsVNext
+        /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
+        -restore -graph
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-actions.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign PowerToysSetupCustomActionsVNext
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'installer/PowerToysSetupCustomActionsVNext/$(InstallerRelativePath)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  ## INSTALLER START
+  #### MSI BUILDING AND SIGNING
+  - task: VSBuild@1
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build VNext MSI
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore
+        /t:PowerToysInstallerVNext
+        /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-msi.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the CustomActions dll
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - script: |-
+      wix msi decompile installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).msi -x $(build.sourcesdirectory)\extractedMsi
+      dir $(build.sourcesdirectory)\extractedMsi
+    displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract and verify MSI"
+
+  # Check if deps.json files don't reference different dll versions.
+  - pwsh: |-
+      & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Audit deps.json in MSI extracted files
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - pwsh: |-
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedMsi\File'
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedMsi\Binary'
+        git clean -xfd ./extractedMsi
+      displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Verify all binaries are signed and versioned
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign VNext MSI
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'installer/$(InstallerFolder)/$(InstallerRelativePath)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  #### END MSI
+  
+  #### BUILDING AND SIGNING SilentFilesInUseBAFunction DLL
+  - task: VSBuild@1
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build SilentFilesInUseBAFunction
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: >-
+        /t:SilentFilesInUseBAFunction
+        /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
+        -restore -graph
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-SilentFilesInUseBAFunction.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the msi
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign SilentFilesInUseBAFunction
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'installer/$(BuildPlatform)/$(BuildConfiguration)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  #### END BUILDING AND SIGNING SilentFilesInUseBAFunction DLL
+  
+  #### BOOTSTRAP BUILDING AND SIGNING
+  - task: VSBuild@1
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build VNext Bootstrapper
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore
+        /t:PowerToysBootstrapperVNext
+        /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bootstrapper.binlog
+        -restore -graph
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the MSI nor SilentFilesInUseBAFunction
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - script: |-
+        wix burn detach installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe
+      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract Engine from Bundle"
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign WiX Engine
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: "installer"
+          Pattern: engine.exe
+          signConfigType: inlineSignParams
+          inlineOperation: |
+            [
+                {
+                    "KeyCode": "CP-230012",
+                    "OperationCode": "SigntoolSign",
+                    "Parameters": {
+                        "OpusName": "Microsoft",
+                        "OpusInfo": "http://www.microsoft.com",
+                        "FileDigest": "/fd \"SHA256\"",
+                        "PageHash": "/NPH",
+                        "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                    },
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                },
+                {
+                    "KeyCode": "CP-230012",
+                    "OperationCode": "SigntoolVerify",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                }
+            ]
+
+    - script: |-
+        wix burn reattach installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).exe
+      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Reattach Engine to Bundle"
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign Final Bootstrapper
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'installer/$(InstallerFolder)/$(InstallerRelativePath)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  #### END BOOTSTRAP
+  ## END INSTALLER

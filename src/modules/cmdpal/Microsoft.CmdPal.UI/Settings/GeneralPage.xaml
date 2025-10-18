@@ -34,23 +34,23 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
 
-                    <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <!--  'Activation' section  -->
 
+                    <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
-
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard">
-                                <ToggleSwitch IsOn="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptControls:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard" IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptControls:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
-                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -65,6 +65,8 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
                         </ComboBox>
                     </controls:SettingsCard>
+
+                    <!--  'Behavior' section  -->
 
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
@@ -84,7 +86,20 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <!--  Example 'About' section  -->
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.DisableAnimations, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  'For Developers' section  -->
+
+                    <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  'About' section  -->
+
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsExpander x:Uid="Settings_GeneralPage_About_SettingsExpander" HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">

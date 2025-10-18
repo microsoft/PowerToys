@@ -66,15 +66,19 @@ internal static class Event
         try
         {
             Common.PaintCount = 0;
-            bool switchByMouseEnabled = IsSwitchingByMouseEnabled();
 
-            if (switchByMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
+            // Check if easy mouse setting is enabled.
+            bool isEasyMouseEnabled = IsSwitchingByMouseEnabled();
+
+            if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
             {
                 Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
 
-                if (!p.IsEmpty)
+                // Check if easy mouse switches are disabled when an application is running in fullscreen mode,
+                // if they are, check that there is no application running in fullscreen mode before switching.
+                if (!p.IsEmpty && Common.IsEasyMouseSwitchAllowed())
                 {
-                    Common.HasSwitchedMachineSinceLastCopy = true;
+                    Clipboard.HasSwitchedMachineSinceLastCopy = true;
 
                     Logger.LogDebug(string.Format(
                         CultureInfo.CurrentCulture,
@@ -165,7 +169,8 @@ internal static class Event
         string newDesMachineName = MachineStuff.NameFromID(newDesMachineID);
 
         if (!Common.IsConnectedTo(newDesMachineID))
-        {// Connection lost, cancel switching
+        {
+            // Connection lost, cancel switching
             Logger.LogDebug("No active connection found for " + newDesMachineName);
 
             // ShowToolTip("No active connection found for [" + newDesMachineName + "]!", 500);
@@ -213,10 +218,10 @@ internal static class Event
 
                 if (MachineStuff.desMachineID == Common.MachineID)
                 {
-                    if (Common.GetTick() - Common.clipboardCopiedTime < Common.BIG_CLIPBOARD_DATA_TIMEOUT)
+                    if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
                     {
-                        Common.clipboardCopiedTime = 0;
-                        Common.GetRemoteClipboard("PrepareToSwitchToMachine");
+                        Clipboard.clipboardCopiedTime = 0;
+                        Clipboard.GetRemoteClipboard("PrepareToSwitchToMachine");
                     }
                 }
                 else

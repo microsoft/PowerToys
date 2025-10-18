@@ -1,0 +1,35 @@
+LIBRARY "PowerToysSetupCustomActionsVNext"
+
+EXPORTS
+	LaunchPowerToysCA
+	CheckGPOCA
+	CleanVideoConferenceRegistryCA
+	ApplyModulesRegistryChangeSetsCA
+	DetectPrevInstallPathCA
+	RemoveScheduledTasksCA
+	TelemetryLogInstallSuccessCA
+	TelemetryLogInstallCancelCA
+	TelemetryLogInstallFailCA
+	TelemetryLogUninstallSuccessCA
+	TelemetryLogUninstallCancelCA
+	TelemetryLogUninstallFailCA
+	TelemetryLogRepairCancelCA
+	TelemetryLogRepairFailCA
+	TerminateProcessesCA
+	InstallEmbeddedMSIXCA
+	InstallDSCModuleCA
+	InstallCmdPalPackageCA
+	UnApplyModulesRegistryChangeSetsCA
+	UnRegisterCmdPalPackageCA
+	UnRegisterContextMenuPackagesCA
+	UninstallEmbeddedMSIXCA
+	UninstallDSCModuleCA
+	UninstallServicesCA
+	UninstallCommandNotFoundModuleCA
+	UpgradeCommandNotFoundModuleCA
+	UnsetAdvancedPasteAPIKeyCA
+	CleanImageResizerRuntimeRegistryCA
+	CleanFileLocksmithRuntimeRegistryCA
+	CleanPowerRenameRuntimeRegistryCA
+	CleanNewPlusRuntimeRegistryCA
+	SetBundleInstallLocationCA
