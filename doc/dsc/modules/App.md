@@ -2,21 +2,7 @@
 description: DSC configuration reference for PowerToys App module (general settings)
 ms.date:     10/18/2025
 ms.topic:    reference
-titl        name: App
-        version: 1.0
-```
-
-### Example 3 - Install and enable utilities with WinGet
-
-This example installs PowerToys and enables specific utilities.
-
-```bash
-winget configure winget-enable-all.yaml
-```
-
-```yaml
-# winget-enable-all.yaml
-$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.jsonp Module
+title:       App module
 ---
 
 # App Module
