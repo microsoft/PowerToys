@@ -42,19 +42,17 @@ namespace ShortcutGuide.Pages
 
         private void PinFlyout_Opening(object sender, object e)
         {
-            if (sender is not MenuFlyout menu || menu.Target is not Grid parentGrid || parentGrid.DataContext is not ShortcutEntry dataObject || menu.Items[0] is not MenuFlyoutItem pinItem)
+            if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
             {
-                return;
+                bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
+                pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
+                pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
             }
-
-            bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
-            pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
-            pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
         }
 
         private void Pin_Click(object sender, RoutedEventArgs e)
         {
-            if (((MenuFlyoutItem)sender).DataContext is ShortcutEntry shortcutEntry)
+            if (sender is MenuFlyoutItem { CommandParameter: ShortcutEntry shortcutEntry })
             {
                 PinnedShortcutsHelper.UpdatePinnedShortcuts(_appName, shortcutEntry);
             }

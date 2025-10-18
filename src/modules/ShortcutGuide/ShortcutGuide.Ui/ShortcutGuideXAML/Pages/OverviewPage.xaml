@@ -15,14 +15,15 @@
             <Grid
                 Padding="16,8,16,8"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1">
+                BorderThickness="0,0,0,1"
+                Tag="{x:Bind}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="160" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.ContextFlyout>
                     <MenuFlyout Opening="PinFlyout_Opening">
-                        <MenuFlyoutItem Click="Pin_Click" Text="Pin" />
+                        <MenuFlyoutItem Click="Pin_Click" Text="Pin" CommandParameter="{x:Bind}" />
                     </MenuFlyout>
                 </Grid.ContextFlyout>
                 <StackPanel
@@ -109,14 +110,14 @@
                     x:Name="PinnedShortcutsListView"
                     ItemTemplate="{StaticResource ShortcutItemTemplate}"
                     ItemsSource="{x:Bind _pinnedShortcuts, Mode=OneWay}"
-                    Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
+                    Visibility="{x:Bind PinnedShortcutsCount, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
 
                 <TextBlock
+                    x:Uid="PinnedEmptyText"
                     Margin="16,0,16,8"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="No pinnned shortcuts."
-                    Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+                    Visibility="{x:Bind PinnedShortcutsCount, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
 
                 <StackPanel
                     x:Name="TaskbarShortcutsPanel"

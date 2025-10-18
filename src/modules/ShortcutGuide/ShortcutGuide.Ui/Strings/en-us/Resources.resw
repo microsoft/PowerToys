@@ -221,4 +221,7 @@ Click on a section in the header to see this apps shortcuts.</value>
   <data name="Welcome" xml:space="preserve">
     <value>Welcome</value>
   </data>
+  <data name="PinnedEmptyText.Text" xml:space="preserve">
+    <value>No pinned shortcuts</value>
+  </data>
 </root>

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,11 +14,14 @@ using ShortcutGuide.Models;
 
 namespace ShortcutGuide.Pages
 {
-    public sealed partial class OverviewPage : Page
+    public sealed partial class OverviewPage : Page, INotifyPropertyChanged
     {
         private ObservableCollection<ShortcutEntry>? _recommendedShortcuts;
         private ObservableCollection<ShortcutEntry>? _pinnedShortcuts;
         private ObservableCollection<ShortcutEntry>? _taskbarShortcuts;
+
+        private int PinnedShortcutsCount => _pinnedShortcuts?.Count ?? 0;
+
         private string _appName = string.Empty;
         private ShortcutFile _shortcutFile;
 
@@ -25,6 +29,13 @@ namespace ShortcutGuide.Pages
         {
             InitializeComponent();
         }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -51,25 +62,24 @@ namespace ShortcutGuide.Pages
 
         private void PinFlyout_Opening(object sender, object e)
         {
-            if (sender is not MenuFlyout menu || menu.Target is not Grid parentGrid || parentGrid.DataContext is not ShortcutEntry dataObject || menu.Items[0] is not MenuFlyoutItem pinItem)
+            if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
             {
-                return;
+                bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
+                pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
+                pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
             }
-
-            bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
-            pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
-            pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
         }
 
         private void Pin_Click(object sender, RoutedEventArgs e)
         {
-            if (((MenuFlyoutItem)sender).DataContext is ShortcutEntry shortcutEntry)
+            if (sender is MenuFlyoutItem { CommandParameter: ShortcutEntry shortcutEntry })
             {
                 PinnedShortcutsHelper.UpdatePinnedShortcuts(_appName, shortcutEntry);
 
                 // Update ListView to reflect changes
                 _pinnedShortcuts = [.. App.PinnedShortcuts[_appName]];
                 PinnedShortcutsListView.ItemsSource = _pinnedShortcuts;
+                OnPropertyChanged(nameof(PinnedShortcutsCount));
             }
         }
     }
