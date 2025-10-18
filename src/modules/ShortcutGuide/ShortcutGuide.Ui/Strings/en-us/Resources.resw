@@ -139,21 +139,11 @@
   <data name="InformationTip2.Text" xml:space="preserve">
     <value>The content related to Windows is always based on the latest release build of Windows.</value>
   </data>
-  <data name="NoShortcutsInOverview" xml:space="preserve">
-    <value>No shortcuts pinned or recommended</value>
-    <comment>Shortcuts refers to keyboard shortcuts</comment>
-  </data>
-  <data name="OOBELeaveFeedback.Content" xml:space="preserve">
-    <value>Send your feedback of the new experience</value>
-  </data>
-  <data name="OOBETitle.Text" xml:space="preserve">
-    <value>Welcome to the new Shortcut Guide V2</value>
-  </data>
   <data name="Overview" xml:space="preserve">
     <value>Overview</value>
     <comment>Category title</comment>
   </data>
-  <data name="PinnedListTitle.Text" xml:space="preserve">
+  <data name="PinnedHeaderTxt.Text" xml:space="preserve">
     <value>Pinned Shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
@@ -161,7 +151,7 @@
     <value>Pin</value>
     <comment>Refers to the action of pinning something on a pin board</comment>
   </data>
-  <data name="RecommendedListTitle.Text" xml:space="preserve">
+  <data name="RecommendedHeaderText.Text" xml:space="preserve">
     <value>Recommended Shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
@@ -175,15 +165,12 @@
   <data name="SettingsButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Open settings</value>
   </data>
-  <data name="ShowOOBE.Content" xml:space="preserve">
-    <value>Show welcome screen</value>
-  </data>
   <data name="TaskbarLaunchShortcutsDescription.Text" xml:space="preserve">
     <value>Use these keys together with a number displayed below</value>
     <comment>keys refers to keyboard keys</comment>
   </data>
-  <data name="TaskbarLaunchShortcutsTitle.Text" xml:space="preserve">
-    <value>Taskbar Launch Shortcuts</value>
+  <data name="TaskbarHeaderTxt.Text" xml:space="preserve">
+    <value>Taskbar Shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
   <data name="Title" xml:space="preserve">
@@ -194,34 +181,20 @@
     <value>Unpin</value>
     <comment>Refers to the action of unpinning something from a pin board</comment>
   </data>
-  <data name="OOBEDescription1.Text" xml:space="preserve">
-    <value>The new Shortcut Guide V2 now includes shortcuts from other applications (when they are running), the ability to pin your favorite shortcuts (by right-clicking on them) and a search function.
-Currently the following apps are available built in:</value>
-  </data>
-  <data name="OOBEDescription2.Text" xml:space="preserve">
-    <value>More apps are to be added soon!
-
-Click on a section in the header to see this apps shortcuts.</value>
-  </data>
-  <data name="OOBEDescription1_1.Text" xml:space="preserve">
-    <value>Microsoft Windows</value>
-  </data>
-  <data name="OOBEDescription1_2.Text" xml:space="preserve">
-    <value>Microsoft PowerToys</value>
-  </data>
-  <data name="OOBEDescription1_3.Text" xml:space="preserve">
-    <value>Windows Explorer</value>
-  </data>
-  <data name="OOBEDescription1_4.Text" xml:space="preserve">
-    <value>Windows Notepad</value>
-  </data>
-  <data name="OOBEDescription3.Text" xml:space="preserve">
-    <value>This page will only be displayed at the first run. To access it again click the "i" icon in the header and then on "Show welcome screen".</value>
-  </data>
   <data name="Welcome" xml:space="preserve">
     <value>Welcome</value>
   </data>
   <data name="PinnedEmptyText.Text" xml:space="preserve">
     <value>No pinned shortcuts</value>
+  </data>
+  <data name="NoShortcuts.Text" xml:space="preserve">
+    <value>No shortcuts available</value>
+  </data>
+  <data name="NoRecommendedShortcuts.Text" xml:space="preserve">
+    <value>No recommended shortcuts available</value>
+  </data>
+  <data name="Titlebar.Title" xml:space="preserve">
+    <value>Shortcut Guide</value>
+    <comment>Shortcut refers to a keyboard shortcut</comment>
   </data>
 </root>

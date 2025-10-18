@@ -22,7 +22,7 @@
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TitleBar Title="Shortcut Guide">
+            <TitleBar x:Uid="TitleBar">
                 <TitleBar.Content>
                     <AutoSuggestBox
                         x:Name="SearchBox"
@@ -86,26 +86,6 @@
                     <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
                 </NavigationView.Resources>
             </NavigationView>
-
-            <!--<TeachingTip
-                x:Name="InformationTip"
-                x:Uid="InformationTip"
-                Target="{x:Bind InformationButton}">
-                <StackPanel>
-                    <TextBlock
-                        x:Uid="InformationTip1"
-                        Margin="0,16,0,0"
-                        TextWrapping="WrapWholeWords" />
-                    <TextBlock
-                        x:Uid="InformationTip2"
-                        Margin="0,16,0,0"
-                        TextWrapping="WrapWholeWords" />
-                    <HyperlinkButton
-                        x:Uid="ShowOOBE"
-                        Margin="-8,0,0,0"
-                        Click="HyperlinkButton_Click" />
-                </StackPanel>
-            </TeachingTip>-->
         </Grid>
     </Page>
 </winuiex:WindowEx>

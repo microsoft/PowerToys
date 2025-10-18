@@ -22,7 +22,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid.ContextFlyout>
                     <MenuFlyout Opening="PinFlyout_Opening">
-                        <MenuFlyoutItem Click="Pin_Click" Text="Pin" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem Click="Pin_Click" x:Uid="PinShortcut" CommandParameter="{x:Bind}" />
                     </MenuFlyout>
                 </Grid.ContextFlyout>
                 <StackPanel
@@ -87,10 +87,10 @@
                     ItemsSource="{x:Bind _shortcuts, Mode=OneWay}"
                     Visibility="{x:Bind _shortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
                 <TextBlock
+                    x:Uid="NoShortcuts"
                     Margin="16,0,16,8"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="No shortcuts."
                     Visibility="{x:Bind _shortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
             </StackPanel>
         </ScrollViewer>

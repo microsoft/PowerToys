@@ -85,26 +85,26 @@
                 Spacing="8">
                 <TextBlock
                     x:Name="RecommendedHeaderTxt"
+                    x:Uid="RecommendedHeaderTxt"
                     Margin="16,0,16,8"
-                    FontWeight="SemiBold"
-                    Text="Recommended shortcuts" />
+                    FontWeight="SemiBold" />
                 <ItemsRepeater
                     ItemTemplate="{StaticResource ShortcutItemTemplate}"
                     ItemsSource="{x:Bind _recommendedShortcuts, Mode=OneWay}"
                     Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
 
                 <TextBlock
+                    x:Uid="NoRecommendedShortcuts"
                     Margin="16,0,16,0"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="No recommended shortcuts."
                     Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
 
                 <TextBlock
                     x:Name="PinnedHeaderTxt"
+                    x:Uid="PinnedHeaderTxt"
                     Margin="16,24,16,0"
-                    FontWeight="SemiBold"
-                    Text="Pinned shortcuts" />
+                    FontWeight="SemiBold" />
 
                 <ItemsRepeater
                     x:Name="PinnedShortcutsListView"
@@ -125,6 +125,7 @@
                     Visibility="Collapsed">
                     <TextBlock
                         x:Name="TaskbarHeaderTxt"
+                        x:Uid="TaskbarHeaderTxt"
                         Margin="16,24,16,8"
                         FontWeight="SemiBold"
                         Text="Taskbar shortcuts" />
