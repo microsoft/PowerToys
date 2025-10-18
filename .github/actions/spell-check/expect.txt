@@ -242,6 +242,7 @@ cominterop
 commandnotfound
 commandpalette
 compmgmt
+COMPOSITIONDISABLED
 COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
