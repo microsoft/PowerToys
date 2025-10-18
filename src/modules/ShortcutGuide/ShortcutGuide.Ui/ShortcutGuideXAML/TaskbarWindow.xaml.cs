@@ -42,7 +42,7 @@ namespace ShortcutGuide.ShortcutGuideXAML
             {
                 TaskbarIndicator indicator = new()
                 {
-                    Label = b.Keynum.ToString(CultureInfo.InvariantCulture),
+                    Label = b.Keynum >= 10 ? "0" : b.Keynum.ToString(CultureInfo.InvariantCulture),
                     Height = b.Height / DPI,
                     Width = b.Width / DPI,
                 };
