@@ -50,6 +50,8 @@ namespace ImageResizer.Properties
         private bool _keepDateModified;
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
+        private bool _useAiSuperResolution;
+        private int _aiSuperResolutionScale;
 
         public Settings()
         {
@@ -73,6 +75,8 @@ namespace ImageResizer.Properties
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
             AllSizes = new AllSizesCollection(this);
+            UseAiSuperResolution = false;
+            AiSuperResolutionScale = 2;
         }
 
         [JsonIgnore]
@@ -399,6 +403,35 @@ namespace ImageResizer.Properties
         }
 
         [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_useAiSuperResolution")]
+        public bool UseAiSuperResolution
+        {
+            get => _useAiSuperResolution;
+            set
+            {
+                _useAiSuperResolution = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_aiSuperResolutionScale")]
+        public int AiSuperResolutionScale
+        {
+            get => _aiSuperResolutionScale;
+            set
+            {
+                if (value < 1 || value > 8)
+                {
+                    value = 2;
+                }
+
+                _aiSuperResolutionScale = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_customSize")]
         public CustomSize CustomSize
         {
@@ -476,6 +509,10 @@ namespace ImageResizer.Properties
                 FallbackEncoder = jsonSettings.FallbackEncoder;
                 CustomSize = jsonSettings.CustomSize;
                 SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+                UseAiSuperResolution = jsonSettings.UseAiSuperResolution;
+                AiSuperResolutionScale = jsonSettings.AiSuperResolutionScale is >= 1 and <= 8
+                    ? jsonSettings.AiSuperResolutionScale
+                    : 2;
 
                 if (jsonSettings.Sizes.Count > 0)
                 {

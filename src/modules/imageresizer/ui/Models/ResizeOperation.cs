@@ -15,7 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Extensions;
+using ImageResizer.Helpers;
 using ImageResizer.Properties;
+using ImageResizer.Services;
 using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
 
@@ -30,6 +32,7 @@ namespace ImageResizer.Models
         private readonly string _file;
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
+        private readonly IAiSuperResolutionService _aiSuperResolutionService;
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
@@ -39,11 +42,12 @@ namespace ImageResizer.Models
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
             };
 
-        public ResizeOperation(string file, string destinationDirectory, Settings settings)
+        public ResizeOperation(string file, string destinationDirectory, Settings settings, IAiSuperResolutionService aiSuperResolutionService = null)
         {
             _file = file;
             _destinationDirectory = destinationDirectory;
             _settings = settings;
+            _aiSuperResolutionService = aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
         }
 
         public void Execute()
@@ -167,6 +171,11 @@ namespace ImageResizer.Models
 
         private BitmapSource Transform(BitmapSource source)
         {
+            if (_settings.UseAiSuperResolution)
+            {
+                return TransformWithAi(source);
+            }
+
             var originalWidth = source.PixelWidth;
             var originalHeight = source.PixelHeight;
             var width = _settings.SelectedSize.GetPixelWidth(originalWidth, source.DpiX);
@@ -215,6 +224,27 @@ namespace ImageResizer.Models
             }
 
             return scaledBitmap;
+        }
+
+        private BitmapSource TransformWithAi(BitmapSource source)
+        {
+            var scaleFactor = Math.Max(2, _settings.AiSuperResolutionScale);
+
+            var context = new AiSuperResolutionContext(_file);
+            var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, context) ?? source;
+
+            // If the AI implementation already returned the desired scale, use it as-is.
+            var expectedWidth = source.PixelWidth * (double)scaleFactor;
+            var expectedHeight = source.PixelHeight * (double)scaleFactor;
+            if (aiResult.PixelWidth >= expectedWidth && aiResult.PixelHeight >= expectedHeight)
+            {
+                return aiResult;
+            }
+
+            var scaleX = expectedWidth / aiResult.PixelWidth;
+            var scaleY = expectedHeight / aiResult.PixelHeight;
+
+            return new TransformedBitmap(aiResult, new ScaleTransform(scaleX, scaleY));
         }
 
         /// <summary>
@@ -323,19 +353,23 @@ namespace ImageResizer.Models
             }
 
             // Remove directory characters from the size's name.
-            string sizeNameSanitized = _settings.SelectedSize.Name;
+            string sizeNameSanitized = _settings.UseAiSuperResolution
+                ? AiSuperResolutionFormatter.FormatScaleName(_settings.AiSuperResolutionScale)
+                : _settings.SelectedSize.Name;
             sizeNameSanitized = sizeNameSanitized
                 .Replace('\\', '_')
                 .Replace('/', '_');
 
             // Using CurrentCulture since this is user facing
+            var selectedWidth = _settings.UseAiSuperResolution ? encoder.Frames[0].PixelWidth : _settings.SelectedSize.Width;
+            var selectedHeight = _settings.UseAiSuperResolution ? encoder.Frames[0].PixelHeight : _settings.SelectedSize.Height;
             var fileName = string.Format(
                 CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,
                 originalFileName,
                 sizeNameSanitized,
-                _settings.SelectedSize.Width,
-                _settings.SelectedSize.Height,
+                selectedWidth,
+                selectedHeight,
                 encoder.Frames[0].PixelWidth,
                 encoder.Frames[0].PixelHeight);
 

@@ -8,7 +8,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Windows;
-
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
@@ -20,8 +19,20 @@ namespace ImageResizer
 {
     public partial class App : Application, IDisposable
     {
+        private const string LogSubFolder = "\\ImageResizer\\Logs";
+
         static App()
         {
+            try
+            {
+                // Initialize logger early (mirroring PowerOCR pattern)
+                Logger.InitializeLogger(LogSubFolder);
+            }
+            catch
+            {
+                /* swallow logger init issues silently */
+            }
+
             try
             {
                 string appLanguage = LanguageHelper.LoadLanguage();
@@ -32,7 +43,7 @@ namespace ImageResizer
             }
             catch (CultureNotFoundException)
             {
-                // error
+                Logger.LogWarning("CultureNotFoundException while setting UI culture.");
             }
 
             Console.InputEncoding = Encoding.Unicode;
@@ -48,6 +59,7 @@ namespace ImageResizer
                 /* TODO: Add logs to ImageResizer.
                  * Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                  */
+                Logger.LogWarning("GPO policy disables ImageResizer. Exiting.");
                 Environment.Exit(0); // Current.Exit won't work until there's a window opened.
                 return;
             }
@@ -57,6 +69,7 @@ namespace ImageResizer
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)
             var mainWindow = new MainWindow(new MainViewModel(batch, Settings.Default));
             mainWindow.Show();
+            Logger.LogInfo("MainWindow shown (unpackaged or activation fallback path).");
 
             // Temporary workaround for issue #1273
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
