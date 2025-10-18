@@ -13,7 +13,9 @@ Manages configuration for the Shortcut Guide utility, which displays available k
 
 ## Description
 
-The `ShortcutGuide` module configures PowerToys Shortcut Guide, a utility that displays an overlay showing available Windows keyboard shortcuts when you hold the Windows key. It helps users discover and learn keyboard shortcuts.
+The `ShortcutGuide` module configures PowerToys Shortcut Guide, a utility that
+displays an overlay showing available Windows keyboard shortcuts when you hold
+the Windows key. It helps users discover and learn keyboard shortcuts.
 
 ## Properties
 
@@ -25,6 +27,7 @@ Sets the keyboard shortcut or method to open the shortcut guide.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -81,12 +84,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module ShortcutGuide --input $config
+PowerToys.DSC.exe set --resource 'settings' --module ShortcutGuide `
+    --input $config
 ```
 
 ### Example 2 - Configure appearance with DSC
 
 This example customizes the overlay appearance.
+
+```bash
+dsc config set --file shortcutguide-appearance.dsc.yaml
+```
 
 ```yaml
 # shortcutguide-appearance.dsc.yaml
@@ -107,9 +115,13 @@ resources:
 
 This example installs PowerToys and configures Shortcut Guide.
 
+```bash
+winget configure winget-shortcutguide.yaml
+```
+
 ```yaml
 # winget-shortcutguide.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -135,6 +147,10 @@ resources:
 ### Example 4 - Quick activation
 
 This example configures for quick activation with a short press time.
+
+```bash
+dsc config set --file shortcutguide-quick.dsc.yaml
+```
 
 ```yaml
 # shortcutguide-quick.dsc.yaml
@@ -172,6 +188,10 @@ PowerToys.DSC.exe set --resource 'settings' --module ShortcutGuide --input $conf
 ### Example 6 - Exclude applications
 
 This example excludes Shortcut Guide from specific applications.
+
+```bash
+dsc config set --file shortcutguide-exclusions.dsc.yaml
+```
 
 ```yaml
 # shortcutguide-exclusions.dsc.yaml
@@ -229,11 +249,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Shortcut Guide utility
+- [Peek][03]
 - [PowerToys Keyboard Shortcut Guide Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./Peek.md
 [04]: https://learn.microsoft.com/windows/powertoys/shortcut-guide

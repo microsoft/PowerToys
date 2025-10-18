@@ -9,11 +9,15 @@ title:       MeasureTool Module
 
 ## Synopsis
 
-Manages configuration for the Measure Tool (Screen Ruler) utility, which measures pixels on your screen.
+Manages configuration for the Measure Tool (Screen Ruler) utility, which
+measures pixels on your screen.
 
 ## Description
 
-The `MeasureTool` module configures PowerToys Measure Tool (also known as Screen Ruler), a utility that allows you to measure the distance between two points on your screen in pixels. It's useful for designers, developers, and anyone who needs to measure UI elements or screen distances.
+The `MeasureTool` module configures PowerToys Measure Tool (also known as
+Screen Ruler), a utility that allows you to measure the distance between two
+points on your screen in pixels. It's useful for designers, developers, and
+anyone who needs to measure UI elements or screen distances.
 
 ## Properties
 
@@ -25,6 +29,7 @@ Sets the keyboard shortcut to activate the measure tool.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -95,12 +100,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module MeasureTool --input $config
+PowerToys.DSC.exe set --resource 'settings' --module MeasureTool `
+    --input $config
 ```
 
 ### Example 2 - Configure measurement appearance with DSC
 
 This example customizes the crosshair color and measurement behavior.
+
+```bash
+dsc config set --file measuretool-appearance.dsc.yaml
+```
 
 ```yaml
 # measuretool-appearance.dsc.yaml
@@ -120,11 +130,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Measure Tool with edge detection.
+This example installs PowerToys and configures Measure Tool with edge
+detection.
+
+```bash
+winget configure winget-measuretool.yaml
+```
 
 ```yaml
 # winget-measuretool.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -150,6 +165,10 @@ resources:
 ### Example 4 - High contrast configuration
 
 This example configures for high visibility measurements.
+
+```bash
+dsc config set --file measuretool-highcontrast.dsc.yaml
+```
 
 ```yaml
 # measuretool-highcontrast.dsc.yaml
@@ -225,12 +244,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Measure Tool utility
+- [PowerAccent][03]
 - [PowerToys Screen Ruler Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./PowerAccent.md
 [04]: https://learn.microsoft.com/windows/powertoys/screen-ruler
-- [PowerToys Screen Ruler Documentation](https://learn.microsoft.com/windows/powertoys/screen-ruler)

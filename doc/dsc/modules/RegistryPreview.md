@@ -13,7 +13,10 @@ Manages configuration for the Registry Preview utility, which visualizes and edi
 
 ## Description
 
-The `RegistryPreview` module configures PowerToys Registry Preview, a utility that provides a visual preview and editing interface for Windows registry (.reg) files. It helps you understand and safely edit registry files before applying them to your system.
+The `RegistryPreview` module configures PowerToys Registry Preview, a utility
+that provides a visual preview and editing interface for Windows registry
+(.reg) files. It helps you understand and safely edit registry files before
+applying them to your system.
 
 ## Properties
 
@@ -50,6 +53,10 @@ PowerToys.DSC.exe set --resource 'settings' --module RegistryPreview --input $co
 
 This example configures Registry Preview as the default handler.
 
+```bash
+dsc config set --file registrypreview-default.dsc.yaml
+```
+
 ```yaml
 # registrypreview-default.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -66,11 +73,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and sets Registry Preview as the default .reg handler.
+This example installs PowerToys and sets Registry Preview as the default .reg
+handler.
+
+```bash
+winget configure winget-registrypreview.yaml
+```
 
 ```yaml
 # winget-registrypreview.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -94,6 +106,10 @@ resources:
 ### Example 4 - Disable as default handler
 
 This example ensures Registry Preview is not the default .reg handler.
+
+```bash
+dsc config set --file registrypreview-notdefault.dsc.yaml
+```
 
 ```yaml
 # registrypreview-notdefault.dsc.yaml
@@ -147,11 +163,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Registry Preview utility
+- [FileLocksmith][03]
 - [PowerToys Registry Preview Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./FileLocksmith.md
 [04]: https://learn.microsoft.com/windows/powertoys/registry-preview

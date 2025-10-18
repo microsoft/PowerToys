@@ -123,12 +123,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module AlwaysOnTop --input $config
+PowerToys.DSC.exe set --resource 'settings' --module AlwaysOnTop `
+  --input $config
 ```
 
 ### Example 2 - Customize frame appearance with DSC
 
 This example configures a custom border color and thickness.
+
+```bash
+dsc config set --file alwaysontop-appearance.dsc.yaml
+```
 
 ```yaml
 # alwaysontop-appearance.dsc.yaml
@@ -150,11 +155,16 @@ resources:
 
 ### Example 3 - Configure with accent color using WinGet
 
-This example installs PowerToys and configures Always On Top to use the Windows accent color.
+This example installs PowerToys and configures Always On Top to use the
+Windows accent color.
+
+```bash
+winget configure winget-alwaysontop.yaml
+```
 
 ```yaml
 # winget-alwaysontop.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -279,11 +289,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Always On Top utility
+- [FancyZones Module][03] - Window layout manager
 - [PowerToys Always On Top Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./FancyZones.md
 [04]: https://learn.microsoft.com/windows/powertoys/always-on-top

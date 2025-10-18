@@ -51,6 +51,10 @@ PowerToys.DSC.exe set --resource 'settings' --module EnvironmentVariables --inpu
 
 This example enables administrator launch through DSC configuration.
 
+```bash
+dsc config set --file environmentvariables-config.dsc.yaml
+```
+
 ```yaml
 # environmentvariables-config.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -67,11 +71,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Environment Variables for admin launch.
+This example installs PowerToys and configures Environment Variables for
+admin launch.
+
+```bash
+winget configure winget-envvars.yaml
+```
 
 ```yaml
 # winget-envvars.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -95,6 +104,10 @@ resources:
 ### Example 4 - Standard user mode
 
 This example configures for standard user access (no elevation).
+
+```bash
+dsc config set --file envvars-user.dsc.yaml
+```
 
 ```yaml
 # envvars-user.dsc.yaml
@@ -170,11 +183,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Environment Variables utility
+- [Hosts][03]
 - [PowerToys Environment Variables Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./Hosts.md
 [04]: https://learn.microsoft.com/windows/powertoys/environment-variables

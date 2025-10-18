@@ -108,6 +108,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Awake --input $config
 
 This example configures a timed keep-awake period.
 
+```bash
+dsc config set --file awake-timed.dsc.yaml
+```
+
 ```yaml
 # awake-timed.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -129,9 +133,13 @@ resources:
 
 This example configures Awake to stay active until a specific date and time.
 
+```bash
+winget configure winget-awake-scheduled.yaml
+```
+
 ```yaml
 # winget-awake-scheduled.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -176,6 +184,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Awake --input $config
 
 This example keeps the system awake while allowing the display to turn off.
 
+```bash
+dsc config set --file awake-system-only.dsc.yaml
+```
+
 ```yaml
 # awake-system-only.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -195,9 +207,13 @@ resources:
 
 This example configures Awake for a presentation scenario using WinGet.
 
+```bash
+winget configure presentation-mode.yaml
+```
+
 ```yaml
 # presentation-mode.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -316,11 +332,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Awake utility
+- [PowerRename][03]
 - [PowerToys Awake Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./PowerRename.md
 [04]: https://learn.microsoft.com/windows/powertoys/awake

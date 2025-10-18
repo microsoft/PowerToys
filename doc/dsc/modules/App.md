@@ -2,7 +2,21 @@
 description: DSC configuration reference for PowerToys App module (general settings)
 ms.date:     10/18/2025
 ms.topic:    reference
-title:       App Module
+titl        name: App
+        version: 1.0
+```
+
+### Example 3 - Install and enable utilities with WinGet
+
+This example installs PowerToys and enables specific utilities.
+
+```bash
+winget configure winget-enable-all.yaml
+```
+
+```yaml
+# winget-enable-all.yaml
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.jsonp Module
 ---
 
 # App Module
@@ -128,7 +142,12 @@ PowerToys.DSC.exe set --resource 'settings' --module App --input $config
 
 ### Example 2 - Configure startup and theme with DSC
 
-This example configures PowerToys to run at startup with elevated privileges and use dark theme.
+This example configures PowerToys to run at startup with elevated privileges
+and use dark theme.
+
+```bash
+dsc config set --file app-config.dsc.yaml
+```
 
 ```yaml
 # app-config.dsc.yaml
@@ -150,9 +169,13 @@ resources:
 
 This example installs PowerToys and enables all available utilities.
 
+```bash
+winget configure winget-enable-all.yaml
+```
+
 ```yaml
 # winget-enable-all.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -215,7 +238,8 @@ $desired = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-$result = PowerToys.DSC.exe test --resource 'settings' --module App --input $desired | ConvertFrom-Json
+$result = PowerToys.DSC.exe test --resource 'settings' --module App `
+    --input $desired | ConvertFrom-Json
 
 if ($result._inDesiredState) {
     Write-Host "FancyZones and PowerRename are enabled"
@@ -253,16 +277,17 @@ PowerToys.DSC.exe set --resource 'settings' --module App --input $config
 This example retrieves the complete JSON schema for the App module.
 
 ```powershell
-PowerToys.DSC.exe schema --resource 'settings' --module App | ConvertFrom-Json | ConvertTo-Json -Depth 10
+PowerToys.DSC.exe schema --resource 'settings' --module App | `
+    ConvertFrom-Json | ConvertTo-Json -Depth 10
 ```
 
 ## See also
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [Individual Module Documentation][03]
+- [Awake][03]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ../
+[03]: ./Awake.md

@@ -13,7 +13,9 @@ Manages configuration for the Peek utility, a quick file preview tool.
 
 ## Description
 
-The `Peek` module configures PowerToys Peek, a utility that provides quick file previews without opening files. Activate it with a keyboard shortcut to preview documents, images, videos, and more in a popup window.
+The `Peek` module configures PowerToys Peek, a utility that provides quick
+file previews without opening files. Activate it with a keyboard shortcut to
+preview documents, images, videos, and more in a popup window.
 
 ## Properties
 
@@ -25,6 +27,7 @@ Sets the keyboard shortcut to activate Peek for the selected file.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -72,6 +75,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Peek --input $config
 
 This example configures Peek to remain open after losing focus.
 
+```bash
+dsc config set --file peek-focus.dsc.yaml
+```
+
 ```yaml
 # peek-focus.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -90,9 +97,13 @@ resources:
 
 This example installs PowerToys and configures Peek.
 
+```bash
+winget configure winget-peek.yaml
+```
+
 ```yaml
 # winget-peek.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -116,6 +127,10 @@ resources:
 ### Example 4 - Alternative activation shortcut
 
 This example uses Ctrl+Shift+Space as the activation shortcut.
+
+```bash
+dsc config set --file peek-altkey.dsc.yaml
+```
 
 ```yaml
 # peek-altkey.dsc.yaml
@@ -175,12 +190,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Peek utility
+- [ShortcutGuide][03]
 - [PowerToys Peek Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./ShortcutGuide.md
 [04]: https://learn.microsoft.com/windows/powertoys/peek
-- [PowerToys Peek Documentation](https://learn.microsoft.com/windows/powertoys/peek)

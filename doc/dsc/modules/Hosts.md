@@ -9,11 +9,15 @@ title:       Hosts Module
 
 ## Synopsis
 
-Manages configuration for the Hosts File Editor utility, a quick editor for the Windows hosts file.
+Manages configuration for the Hosts File Editor utility, a quick editor for
+the Windows hosts file.
 
 ## Description
 
-The `Hosts` module configures PowerToys Hosts File Editor, a utility that provides a user-friendly interface for viewing and editing the Windows hosts file. It simplifies the process of adding, modifying, and managing DNS entries in the hosts file.
+The `Hosts` module configures PowerToys Hosts File Editor, a utility that
+provides a user-friendly interface for viewing and editing the Windows hosts
+file. It simplifies the process of adding, modifying, and managing DNS
+entries in the hosts file.
 
 ## Properties
 
@@ -21,11 +25,13 @@ The Hosts module supports the following configurable properties:
 
 ### LaunchAdministrator
 
-Controls whether the Hosts File Editor launches with administrator privileges by default.
+Controls whether the Hosts File Editor launches with administrator privileges
+by default.
 
 **Type:** boolean  
 **Default:** `false`  
-**Description:** When enabled, the editor will always attempt to launch with elevated permissions, which is required to edit the hosts file.
+**Description:** When enabled, the editor will always attempt to launch with
+elevated permissions, which is required to edit the hosts file.
 
 ### LoopbackDuplicates
 
@@ -40,6 +46,7 @@ Controls where additional lines are positioned when editing entries.
 
 **Type:** integer  
 **Allowed values:**
+
 - `0` - Top
 - `1` - Bottom
 
@@ -69,6 +76,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Hosts --input $config
 
 This example enables administrator launch and configures line positioning.
 
+```bash
+dsc config set --file hosts-config.dsc.yaml
+```
+
 ```yaml
 # hosts-config.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -86,11 +97,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures the Hosts editor for admin launch.
+This example installs PowerToys and configures the Hosts editor for admin
+launch.
+
+```bash
+winget configure winget-hosts.yaml
+```
 
 ```yaml
 # winget-hosts.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -115,6 +131,10 @@ resources:
 ### Example 4 - Development configuration
 
 This example configures for development use with new entries at the bottom.
+
+```bash
+dsc config set --file hosts-development.dsc.yaml
+```
 
 ```yaml
 # hosts-development.dsc.yaml
@@ -170,11 +190,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Hosts File Editor utility
+- [KeyboardManager][03]
 - [PowerToys Hosts File Editor Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./KeyboardManager.md
 [04]: https://learn.microsoft.com/windows/powertoys/hosts-file-editor

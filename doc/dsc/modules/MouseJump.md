@@ -9,11 +9,15 @@ title:       MouseJump Module
 
 ## Synopsis
 
-Manages configuration for the Mouse Jump utility, which enables quick navigation across large or multiple displays.
+Manages configuration for the Mouse Jump utility, which enables quick
+navigation across large or multiple displays.
 
 ## Description
 
-The `MouseJump` module configures PowerToys Mouse Jump, a utility that provides a miniature preview of all your displays, allowing you to quickly jump your mouse cursor to any location. This is particularly useful with large monitors or multi-monitor setups.
+The `MouseJump` module configures PowerToys Mouse Jump, a utility that
+provides a miniature preview of all your displays, allowing you to quickly
+jump your mouse cursor to any location. This is particularly useful with
+large monitors or multi-monitor setups.
 
 ## Properties
 
@@ -25,6 +29,7 @@ Sets the keyboard shortcut to activate Mouse Jump.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -40,6 +45,7 @@ Sets the size of the screen thumbnail preview.
 
 **Type:** string  
 **Allowed values:**
+
 - `"small"` - Smaller thumbnail for faster performance
 - `"medium"` - Balanced size and performance
 - `"large"` - Larger thumbnail for better visibility
@@ -70,12 +76,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module MouseJump --input $config
+PowerToys.DSC.exe set --resource 'settings' --module MouseJump `
+    --input $config
 ```
 
 ### Example 2 - Configure thumbnail size with DSC
 
 This example sets a larger thumbnail for better visibility.
+
+```bash
+dsc config set --file mousejump-size.dsc.yaml
+```
 
 ```yaml
 # mousejump-size.dsc.yaml
@@ -93,11 +104,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Mouse Jump for multi-monitor setups.
+This example installs PowerToys and configures Mouse Jump for multi-monitor
+setups.
+
+```bash
+winget configure winget-mousejump.yaml
+```
 
 ```yaml
 # winget-mousejump.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -121,6 +137,10 @@ resources:
 ### Example 4 - Performance-optimized configuration
 
 This example uses a smaller thumbnail for better performance.
+
+```bash
+dsc config set --file mousejump-performance.dsc.yaml
+```
 
 ```yaml
 # mousejump-performance.dsc.yaml
@@ -192,12 +212,9 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Mouse Jump utility
-- [PowerToys Mouse Jump Documentation][04]
+- [FindMyMouse][03]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
-[04]: https://learn.microsoft.com/windows/powertoys/mouse-jump
-- [PowerToys Mouse Utilities Documentation](https://learn.microsoft.com/windows/powertoys/mouse-utilities)
+[03]: ./FindMyMouse.md

@@ -13,7 +13,9 @@ Manages configuration for the Power Accent utility, a quick accent character sel
 
 ## Description
 
-The `PowerAccent` module configures PowerToys Power Accent (Quick Accent), a utility that provides quick access to accented characters. Hold down a key and use arrow keys or numbers to select from available accent variations.
+The `PowerAccent` module configures PowerToys Power Accent (Quick Accent), a
+utility that provides quick access to accented characters. Hold down a key
+and use arrow keys or numbers to select from available accent variations.
 
 ## Properties
 
@@ -25,6 +27,7 @@ Sets which key triggers the accent selection.
 
 **Type:** string  
 **Allowed values:**
+
 - `"LeftRightArrow"` - Hold left or right arrow keys
 - `"Space"` - Hold spacebar  
 - `"Both"` - Hold either left/right arrows or spacebar
@@ -51,6 +54,7 @@ Sets the position of the accent selection toolbar.
 
 **Type:** string  
 **Allowed values:**
+
 - `"Top"` - Above the cursor
 - `"Bottom"` - Below the cursor
 - `"Left"` - To the left of cursor
@@ -98,12 +102,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module PowerAccent --input $config
+PowerToys.DSC.exe set --resource 'settings' --module PowerAccent `
+    --input $config
 ```
 
 ### Example 2 - Configure toolbar appearance with DSC
 
 This example customizes the toolbar position and display options.
+
+```bash
+dsc config set --file poweraccent-toolbar.dsc.yaml
+```
 
 ```yaml
 # poweraccent-toolbar.dsc.yaml
@@ -123,11 +132,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Power Accent for multilingual typing.
+This example installs PowerToys and configures Power Accent for multilingual
+typing.
+
+```bash
+winget configure winget-poweraccent.yaml
+```
 
 ```yaml
 # winget-poweraccent.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -154,6 +168,10 @@ resources:
 ### Example 4 - Fast activation configuration
 
 This example configures for quick accent selection.
+
+```bash
+dsc config set --file poweraccent-fast.dsc.yaml
+```
 
 ```yaml
 # poweraccent-fast.dsc.yaml
@@ -229,12 +247,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Power Accent utility
+- [Workspaces][03]
 - [PowerToys Quick Accent Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./Workspaces.md
 [04]: https://learn.microsoft.com/windows/powertoys/quick-accent
-- [PowerToys Quick Accent Documentation](https://learn.microsoft.com/windows/powertoys/quick-accent)

@@ -9,11 +9,15 @@ title:       MouseHighlighter Module
 
 ## Synopsis
 
-Manages configuration for the Mouse Highlighter utility, which highlights your mouse cursor and clicks.
+Manages configuration for the Mouse Highlighter utility, which highlights
+your mouse cursor and clicks.
 
 ## Description
 
-The `MouseHighlighter` module configures PowerToys Mouse Highlighter, a utility that adds visual highlights to your mouse cursor and click locations. This is useful for presentations, tutorials, screen recordings, or accessibility purposes.
+The `MouseHighlighter` module configures PowerToys Mouse Highlighter, a
+utility that adds visual highlights to your mouse cursor and click locations.
+This is useful for presentations, tutorials, screen recordings, or
+accessibility purposes.
 
 ## Properties
 
@@ -25,6 +29,7 @@ Sets the keyboard shortcut to toggle mouse highlighting.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -108,12 +113,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module MouseHighlighter --input $config
+PowerToys.DSC.exe set --resource 'settings' --module MouseHighlighter `
+    --input $config
 ```
 
 ### Example 2 - Configure highlight animation with DSC
 
 This example customizes the animation timing and appearance.
+
+```bash
+dsc config set --file mousehighlighter-animation.dsc.yaml
+```
 
 ```yaml
 # mousehighlighter-animation.dsc.yaml
@@ -133,11 +143,16 @@ resources:
 
 ### Example 3 - Install and configure for presentations with WinGet
 
-This example installs PowerToys and configures Mouse Highlighter for presentations.
+This example installs PowerToys and configures Mouse Highlighter for
+presentations.
+
+```bash
+winget configure winget-mousehighlighter.yaml
+```
 
 ```yaml
 # winget-mousehighlighter.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -165,6 +180,10 @@ resources:
 ### Example 4 - Subtle highlighting
 
 This example configures subtle, less distracting highlights.
+
+```bash
+dsc config set --file mousehighlighter-subtle.dsc.yaml
+```
 
 ```yaml
 # mousehighlighter-subtle.dsc.yaml
@@ -247,12 +266,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Mouse Highlighter utility
+- [MousePointerCrosshairs][03]
 - [PowerToys Mouse Utilities Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./MousePointerCrosshairs.md
 [04]: https://learn.microsoft.com/windows/powertoys/mouse-utilities
-- [PowerToys Mouse Utilities Documentation](https://learn.microsoft.com/windows/powertoys/mouse-utilities)

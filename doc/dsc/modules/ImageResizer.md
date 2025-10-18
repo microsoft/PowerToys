@@ -9,11 +9,15 @@ title:       ImageResizer Module
 
 ## Synopsis
 
-Manages configuration for the Image Resizer utility, which provides quick image resizing from the Windows Explorer context menu.
+Manages configuration for the Image Resizer utility, which provides quick
+image resizing from the Windows Explorer context menu.
 
 ## Description
 
-The `ImageResizer` module configures PowerToys Image Resizer, a Windows shell extension that allows you to resize one or multiple images directly from the File Explorer context menu. It supports custom size presets and various resize options.
+The `ImageResizer` module configures PowerToys Image Resizer, a Windows shell
+extension that allows you to resize one or multiple images directly from the
+File Explorer context menu. It supports custom size presets and various
+resize options.
 
 ## Properties
 
@@ -25,6 +29,7 @@ Defines the preset sizes available in the Image Resizer interface.
 
 **Type:** array of objects  
 **Object properties:**
+
 - `Name` (string) - Display name for the preset
 - `Width` (integer) - Width value
 - `Height` (integer) - Height value
@@ -73,6 +78,7 @@ Sets the PNG interlace option.
 
 **Type:** integer  
 **Allowed values:**
+
 - `0` - No interlacing
 - `1` - Interlaced
 
@@ -84,6 +90,7 @@ Sets the TIFF compression option.
 
 **Type:** integer  
 **Allowed values:**
+
 - `0` - No compression
 - `1` - LZW compression
 - `2` - ZIP compression
@@ -97,6 +104,7 @@ Sets the naming pattern for resized images.
 **Type:** string  
 **Default:** `"%1 (%2)"`  
 **Placeholders:**
+
 - `%1` - Original filename
 - `%2` - Size name
 - `%3` - Selected width
@@ -158,12 +166,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module ImageResizer --input $config
+PowerToys.DSC.exe set --resource 'settings' --module ImageResizer `
+    --input $config
 ```
 
 ### Example 2 - Configure quality settings with DSC
 
 This example configures image quality and format options.
+
+```bash
+dsc config set --file imageresizer-quality.dsc.yaml
+```
 
 ```yaml
 # imageresizer-quality.dsc.yaml
@@ -183,11 +196,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Image Resizer with web-optimized presets.
+This example installs PowerToys and configures Image Resizer with
+web-optimized presets.
+
+```bash
+winget configure winget-imageresizer.yaml
+```
 
 ```yaml
 # winget-imageresizer.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -227,7 +245,12 @@ resources:
 
 ### Example 4 - Photography workflow
 
-This example configures for photography with high quality and metadata preservation.
+This example configures for photography with high quality and metadata
+preservation.
+
+```bash
+dsc config set --file imageresizer-photo.dsc.yaml
+```
 
 ```yaml
 # imageresizer-photography.dsc.yaml
@@ -267,7 +290,8 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module ImageResizer --input $config
+PowerToys.DSC.exe set --resource 'settings' --module ImageResizer `
+    --input $config
 ```
 
 ## Use cases
@@ -315,12 +339,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Image Resizer utility
+- [MeasureTool][03]
 - [PowerToys Image Resizer Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./MeasureTool.md
 [04]: https://learn.microsoft.com/windows/powertoys/image-resizer
-- [PowerToys Image Resizer Documentation](https://learn.microsoft.com/windows/powertoys/image-resizer)

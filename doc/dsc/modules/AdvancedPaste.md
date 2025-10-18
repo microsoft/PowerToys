@@ -13,7 +13,11 @@ Manages configuration for the Advanced Paste utility, which provides advanced cl
 
 ## Description
 
-The `AdvancedPaste` module configures PowerToys Advanced Paste, a utility that extends clipboard functionality with AI-powered transformations, custom formats, and advanced paste options. It allows you to paste clipboard content with transformations like plain text conversion, markdown formatting, JSON formatting, and AI-based text processing.
+The `AdvancedPaste` module configures PowerToys Advanced Paste, a utility
+that extends clipboard functionality with AI-powered transformations, custom
+formats, and advanced paste options. It allows you to paste clipboard content
+with transformations like plain text conversion, markdown formatting, JSON
+formatting, and AI-based text processing.
 
 ## Properties
 
@@ -25,7 +29,8 @@ Controls whether AI-powered paste transformations are enabled.
 
 **Type:** boolean  
 **Default:** `false`  
-**Description:** Enables AI-based clipboard transformations such as summarization, translation, and content reformatting.
+**Description:** Enables AI-based clipboard transformations such as
+summarization, translation, and content reformatting.
 
 ### PasteAsPlainTextHotkey
 
@@ -87,12 +92,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module AdvancedPaste --input $config
+PowerToys.DSC.exe set --resource 'settings' --module AdvancedPaste `
+  --input $config
 ```
 
 ### Example 2 - Configure paste hotkeys with DSC
 
 This example customizes keyboard shortcuts for different paste formats.
+
+```bash
+dsc config set --file advancedpaste-hotkeys.dsc.yaml
+```
 
 ```yaml
 # advancedpaste-hotkeys.dsc.yaml
@@ -123,11 +133,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Advanced Paste with AI enabled.
+This example installs PowerToys and configures Advanced Paste with AI
+enabled.
+
+```bash
+winget configure winget-advancedpaste.yaml
+```
 
 ```yaml
 # winget-advancedpaste.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -153,6 +168,10 @@ resources:
 ### Example 4 - Enable with custom preview settings
 
 This example configures preview behavior for custom paste formats.
+
+```bash
+dsc config set --file advancedpaste-preview.dsc.yaml
+```
 
 ```yaml
 # advancedpaste-preview.dsc.yaml
@@ -184,7 +203,8 @@ $desired = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-$result = PowerToys.DSC.exe test --resource 'settings' --module AdvancedPaste --input $desired | ConvertFrom-Json
+$result = PowerToys.DSC.exe test --resource 'settings' `
+  --module AdvancedPaste --input $desired | ConvertFrom-Json
 
 if ($result._inDesiredState) {
     Write-Host "AI features are enabled"
@@ -233,11 +253,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Advanced Paste utility
+- [ColorPicker Module][03] - System-wide color picker utility
 - [PowerToys Advanced Paste Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./ColorPicker.md
 [04]: https://learn.microsoft.com/windows/powertoys/advanced-paste

@@ -57,6 +57,7 @@ Controls the action when the color picker activation shortcut is pressed.
 
 **Type:** integer  
 **Allowed values:**
+
 - `0` - Open color picker and show editor
 - `1` - Open color picker only
 - `2` - Open editor only
@@ -75,6 +76,7 @@ Controls whether color names are displayed in the color picker.
 Defines which color formats are visible in the picker interface.
 
 **Type:** object with boolean properties for each format:
+
 - `HEX` (boolean)
 - `RGB` (boolean)
 - `HSL` (boolean)
@@ -108,7 +110,12 @@ PowerToys.DSC.exe set --resource 'settings' --module ColorPicker --input $config
 
 ### Example 2 - Configure activation behavior with DSC
 
-This example configures the color picker to open directly without the editor.
+This example configures the color picker to open directly without the
+editor.
+
+```bash
+dsc config set --file colorpicker-activation.dsc.yaml
+```
 
 ```yaml
 # colorpicker-activation.dsc.yaml
@@ -128,11 +135,16 @@ resources:
 
 ### Example 3 - Install and configure for web development with WinGet
 
-This example installs PowerToys and configures Color Picker for web developers.
+This example installs PowerToys and configures Color Picker for web
+developers.
+
+```bash
+winget configure winget-colorpicker-webdev.yaml
+```
 
 ```yaml
 # winget-colorpicker-webdev.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -164,6 +176,10 @@ resources:
 ### Example 4 - Configure visible formats
 
 This example enables only HEX, RGB, and HSL formats.
+
+```bash
+dsc config set --file colorpicker-formats.dsc.yaml
+```
 
 ```yaml
 # colorpicker-formats.dsc.yaml
@@ -230,7 +246,8 @@ $desired = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-$result = PowerToys.DSC.exe test --resource 'settings' --module ColorPicker --input $desired | ConvertFrom-Json
+$result = PowerToys.DSC.exe test --resource 'settings' --module ColorPicker `
+    --input $desired | ConvertFrom-Json
 
 if ($result._inDesiredState) {
     Write-Host "HEX is the default format"
@@ -280,12 +297,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Color Picker utility
+- [ImageResizer][03]
 - [PowerToys Color Picker Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./ImageResizer.md
 [04]: https://learn.microsoft.com/windows/powertoys/color-picker
-- [PowerToys Color Picker Documentation](https://learn.microsoft.com/windows/powertoys/color-picker)

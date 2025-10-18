@@ -13,18 +13,11 @@ Manages configuration for the FancyZones utility, a window layout manager that a
 
 ## Description
 
-The `FancyZones` module configures PowerToys FancyZones, a window manager utility that helps organize windows into custom layouts called zones. Fan## See also
-
-- [Settings Resource][01]
-- [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling FancyZones utility
-- [PowerToys FancyZones Documentation][04]
-
-<!-- Link reference definitions -->
-[01]: ../settings-resource.md
-[02]: ../overview.md
-[03]: ./App.md
-[04]: https://learn.microsoft.com/windows/powertoys/fancyzoness allows you to create multiple zone layouts for different displays and quickly snap windows into position using keyboard shortcuts or mouse actions.
+The `FancyZones` module configures PowerToys FancyZones, a window manager
+utility that helps organize windows into custom layouts called zones.
+FancyZones allows you to create multiple zone layouts for different displays
+and quickly snap windows into position using keyboard shortcuts or mouse
+actions.
 
 This module controls activation methods, window behavior, zone appearance, editor settings, and other FancyZones preferences.
 
@@ -73,6 +66,7 @@ Determines the algorithm used when multiple zones overlap.
 
 **Type:** integer  
 **Allowed values:**
+
 - `0` - Smallest zone
 - `1` - Largest zone
 - `2` - Positional (based on cursor/window position)
@@ -169,6 +163,7 @@ Sets the keyboard shortcut to open the FancyZones editor.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -229,6 +224,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FancyZones --input $config
 
 This example configures how windows behave when displays or zones change.
 
+```bash
+dsc config set --file fancyzones-window-behavior.dsc.yaml
+```
+
 ```yaml
 # fancyzones-window-behavior.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -248,11 +247,16 @@ resources:
 
 ### Example 3 - Customize zone appearance with WinGet
 
-This example installs PowerToys and configures custom zone colors and opacity.
+This example installs PowerToys and configures custom zone colors and
+opacity.
+
+```bash
+winget configure winget-fancyzones-appearance.yaml
+```
 
 ```yaml
 # winget-fancyzones-appearance.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -279,7 +283,12 @@ resources:
 
 ### Example 4 - Override Windows Snap hotkeys
 
-This example configures FancyZones to replace Windows default snap functionality.
+This example configures FancyZones to replace Windows default snap
+functionality.
+
+```bash
+dsc config set --file fancyzones-snap-override.dsc.yaml
+```
 
 ```yaml
 # fancyzones-snap-override.dsc.yaml
@@ -346,6 +355,10 @@ resources:
 
 This example configures FancyZones for optimal multi-monitor workflow.
 
+```bash
+dsc config set --file fancyzones-multimonitor.dsc.yaml
+```
+
 ```yaml
 # fancyzones-multimonitor.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -369,9 +382,13 @@ resources:
 
 This example shows a comprehensive FancyZones setup with installation.
 
+```bash
+winget configure winget-fancyzones-complete.yaml
+```
+
 ```yaml
 # winget-fancyzones-complete.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -439,7 +456,8 @@ $desired = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-$result = PowerToys.DSC.exe test --resource 'settings' --module FancyZones --input $desired | ConvertFrom-Json
+$result = PowerToys.DSC.exe test --resource 'settings' --module FancyZones `
+    --input $desired | ConvertFrom-Json
 
 if ($result._inDesiredState) {
     Write-Host "FancyZones is configured for multi-monitor"
@@ -453,7 +471,8 @@ if ($result._inDesiredState) {
 This example retrieves the complete JSON schema for FancyZones properties.
 
 ```powershell
-PowerToys.DSC.exe schema --resource 'settings' --module FancyZones | ConvertFrom-Json | ConvertTo-Json -Depth 10
+PowerToys.DSC.exe schema --resource 'settings' --module FancyZones | `
+    ConvertFrom-Json | ConvertTo-Json -Depth 10
 ```
 
 ## Use cases
@@ -514,7 +533,13 @@ resources:
 
 ## See also
 
-- [Settings Resource](../settings-resource.md)
-- [PowerToys DSC Overview](../overview.md)
-- [App Module](./App.md) - For enabling/disabling FancyZones
-- [PowerToys FancyZones Documentation](https://learn.microsoft.com/windows/powertoys/fancyzones)
+- [Settings Resource][01]
+- [PowerToys DSC Overview][02]
+- [Peek][03]
+- [PowerToys FancyZones Documentation][04]
+
+<!-- Link reference definitions -->
+[01]: ../settings-resource.md
+[02]: ../overview.md
+[03]: ./Peek.md
+[04]: https://learn.microsoft.com/windows/powertoys/fancyzones

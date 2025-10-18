@@ -13,7 +13,10 @@ Manages configuration for the Power Rename utility, a bulk file and folder renam
 
 ## Description
 
-The `PowerRename` module configures PowerToys Power Rename, a Windows shell extension that enables bulk renaming of files and folders with advanced features like regular expressions, preview, and undo functionality. It integrates with the Windows Explorer context menu.
+The `PowerRename` module configures PowerToys Power Rename, a Windows shell
+extension that enables bulk renaming of files and folders with advanced
+features like regular expressions, preview, and undo functionality. It
+integrates with the Windows Explorer context menu.
 
 ## Properties
 
@@ -78,7 +81,12 @@ PowerToys.DSC.exe set --resource 'settings' --module PowerRename --input $config
 
 ### Example 2 - Configure context menu with DSC
 
-This example configures Power Rename to appear in the extended context menu only.
+This example configures Power Rename to appear in the extended context menu
+only.
+
+```bash
+dsc config set --file powerrename-context.dsc.yaml
+```
 
 ```yaml
 # powerrename-context.dsc.yaml
@@ -99,9 +107,13 @@ resources:
 
 This example installs PowerToys and configures Power Rename.
 
+```bash
+winget configure winget-powerrename.yaml
+```
+
 ```yaml
 # winget-powerrename.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -128,6 +140,10 @@ resources:
 ### Example 4 - Clean context menu configuration
 
 This example minimizes context menu clutter.
+
+```bash
+dsc config set --file powerrename-minimal.dsc.yaml
+```
 
 ```yaml
 # powerrename-minimal.dsc.yaml
@@ -204,11 +220,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Power Rename utility
+- [AdvancedPaste][03]
 - [PowerToys PowerRename Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./AdvancedPaste.md
 [04]: https://learn.microsoft.com/windows/powertoys/powerrename

@@ -9,11 +9,15 @@ title:       FindMyMouse Module
 
 ## Synopsis
 
-Manages configuration for the Find My Mouse utility, which helps locate your mouse cursor on the screen.
+Manages configuration for the Find My Mouse utility, which helps locate your
+mouse cursor on the screen.
 
 ## Description
 
-The `FindMyMouse` module configures PowerToys Find My Mouse, a utility that highlights your mouse cursor location when you press the Ctrl key. This is particularly useful on large or multiple displays where the cursor can be difficult to locate.
+The `FindMyMouse` module configures PowerToys Find My Mouse, a utility that
+highlights your mouse cursor location when you press the Ctrl key. This is
+particularly useful on large or multiple displays where the cursor can be
+difficult to locate.
 
 ## Properties
 
@@ -25,7 +29,8 @@ Controls whether Find My Mouse is disabled during game mode.
 
 **Type:** boolean  
 **Default:** `true`  
-**Description:** When enabled, Find My Mouse will not activate when Windows game mode is active.
+**Description:** When enabled, Find My Mouse will not activate when Windows
+game mode is active.
 
 ### BackgroundColor
 
@@ -108,6 +113,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FindMyMouse --input $config
 
 This example customizes the spotlight animation behavior.
 
+```bash
+dsc config set --file findmymouse-animation.dsc.yaml
+```
+
 ```yaml
 # findmymouse-animation.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -126,11 +135,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures Find My Mouse with custom colors.
+This example installs PowerToys and configures Find My Mouse with custom
+colors.
+
+```bash
+winget configure winget-findmymouse.yaml
+```
 
 ```yaml
 # winget-findmymouse.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -158,6 +172,10 @@ resources:
 ### Example 4 - Subtle configuration
 
 This example creates a subtle, less intrusive spotlight effect.
+
+```bash
+dsc config set --file findmymouse-subtle.dsc.yaml
+```
 
 ```yaml
 # findmymouse-subtle.dsc.yaml
@@ -200,6 +218,10 @@ PowerToys.DSC.exe set --resource 'settings' --module FindMyMouse --input $config
 ### Example 6 - Disable during gaming
 
 This example ensures Find My Mouse doesn't interfere with games.
+
+```bash
+dsc config set --file findmymouse-gaming.dsc.yaml
+```
 
 ```yaml
 # findmymouse-gaming.dsc.yaml
@@ -258,12 +280,9 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Find My Mouse utility
-- [PowerToys Find My Mouse Documentation][04]
+- [MouseHighlighter][03]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
-[04]: https://learn.microsoft.com/windows/powertoys/find-my-mouse
-- [PowerToys Mouse Utilities Documentation](https://learn.microsoft.com/windows/powertoys/mouse-utilities)
+[03]: ./MouseHighlighter.md

@@ -455,4 +455,4 @@ $configurations | ConvertTo-Json -Depth 10 `
 <!-- Link reference definitions -->
 [01]: ./modules/
 [02]: ./overview.md
-[03]: ./winget-configuration.md
+[03]: https://learn.microsoft.com/windows/package-manager/configuration/

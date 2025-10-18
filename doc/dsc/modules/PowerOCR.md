@@ -9,11 +9,15 @@ title:       PowerOCR Module
 
 ## Synopsis
 
-Manages configuration for the Power OCR (Text Extractor) utility, which extracts text from images and screen regions.
+Manages configuration for the Power OCR (Text Extractor) utility, which
+extracts text from images and screen regions.
 
 ## Description
 
-The `PowerOCR` module configures PowerToys Power OCR (Text Extractor), a utility that uses optical character recognition (OCR) to extract text from any screen region and copy it to the clipboard. It's useful for capturing text from images, videos, PDFs, or any on-screen content.
+The `PowerOCR` module configures PowerToys Power OCR (Text Extractor), a
+utility that uses optical character recognition (OCR) to extract text from
+any screen region and copy it to the clipboard. It's useful for capturing
+text from images, videos, PDFs, or any on-screen content.
 
 ## Properties
 
@@ -25,6 +29,7 @@ Sets the keyboard shortcut to activate text extraction.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -65,12 +70,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module PowerOCR --input $config
+PowerToys.DSC.exe set --resource 'settings' --module PowerOCR `
+    --input $config
 ```
 
 ### Example 2 - Configure language with DSC
 
 This example sets the preferred OCR language.
+
+```bash
+dsc config set --file powerocr-language.dsc.yaml
+```
 
 ```yaml
 # powerocr-language.dsc.yaml
@@ -90,9 +100,13 @@ resources:
 
 This example installs PowerToys and configures Power OCR.
 
+```bash
+winget configure winget-powerocr.yaml
+```
+
 ```yaml
 # winget-powerocr.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -116,6 +130,10 @@ resources:
 ### Example 4 - Multilingual configuration
 
 This example configures for multilingual text extraction.
+
+```bash
+dsc config set --file powerocr-multilingual.dsc.yaml
+```
 
 ```yaml
 # powerocr-multilingual.dsc.yaml
@@ -169,12 +187,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Power OCR utility
+- [ZoomIt][03]
 - [PowerToys Text Extractor Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./ZoomIt.md
 [04]: https://learn.microsoft.com/windows/powertoys/text-extractor
-- [PowerToys Text Extractor Documentation](https://learn.microsoft.com/windows/powertoys/text-extractor)

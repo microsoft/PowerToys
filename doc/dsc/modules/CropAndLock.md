@@ -73,6 +73,10 @@ PowerToys.DSC.exe set --resource 'settings' --module CropAndLock --input $config
 
 This example configures custom hotkeys for cropping and reparenting.
 
+```bash
+dsc config set --file cropandlock-hotkeys.dsc.yaml
+```
+
 ```yaml
 # cropandlock-hotkeys.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -98,9 +102,13 @@ resources:
 
 This example installs PowerToys and configures Crop And Lock.
 
+```bash
+winget configure winget-cropandlock.yaml
+```
+
 ```yaml
 # winget-cropandlock.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -177,11 +185,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Crop And Lock utility
+- [MouseJump][03]
 - [PowerToys Crop And Lock Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./MouseJump.md
 [04]: https://learn.microsoft.com/windows/powertoys/crop-and-lock

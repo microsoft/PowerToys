@@ -13,7 +13,10 @@ Manages configuration for the Workspaces utility, which launches application set
 
 ## Description
 
-The `Workspaces` module configures PowerToys Workspaces, a utility that allows you to save and restore sets of applications with their window positions. It enables you to quickly switch between different work contexts by launching and arranging multiple applications at once.
+The `Workspaces` module configures PowerToys Workspaces, a utility that allows
+you to save and restore sets of applications with their window positions. It
+enables you to quickly switch between different work contexts by launching and
+arranging multiple applications at once.
 
 ## Properties
 
@@ -25,6 +28,7 @@ Sets the keyboard shortcut to launch the Workspaces editor.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -79,6 +83,10 @@ PowerToys.DSC.exe set --resource 'settings' --module Workspaces --input $config
 
 This example enables moving existing windows when launching workspaces.
 
+```bash
+dsc config set --file workspaces-behavior.dsc.yaml
+```
+
 ```yaml
 # workspaces-behavior.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -98,9 +106,13 @@ resources:
 
 This example installs PowerToys and configures Workspaces.
 
+```bash
+winget configure winget-workspaces.yaml
+```
+
 ```yaml
 # winget-workspaces.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -131,6 +143,10 @@ resources:
 ### Example 4 - Multi-monitor setup
 
 This example configures for multi-monitor workspace management.
+
+```bash
+dsc config set --file workspaces-multimonitor.dsc.yaml
+```
 
 ```yaml
 # workspaces-multimonitor.dsc.yaml
@@ -212,11 +228,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Workspaces utility
+- [ColorPicker Module][03] - For additional PowerToys configuration
 - [PowerToys Workspaces Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./ColorPicker.md
 [04]: https://learn.microsoft.com/windows/powertoys/workspaces

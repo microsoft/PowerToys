@@ -9,11 +9,15 @@ title:       KeyboardManager Module
 
 ## Synopsis
 
-Manages configuration for the Keyboard Manager utility, which allows key remapping and custom keyboard shortcuts.
+Manages configuration for the Keyboard Manager utility, which allows key
+remapping and custom keyboard shortcuts.
 
 ## Description
 
-The `KeyboardManager` module configures PowerToys Keyboard Manager, a utility that enables you to remap keys and create custom keyboard shortcuts. It allows reassigning keys, creating application-specific remappings, and defining shortcuts that run programs or commands.
+The `KeyboardManager` module configures PowerToys Keyboard Manager, a utility
+that enables you to remap keys and create custom keyboard shortcuts. It
+allows reassigning keys, creating application-specific remappings, and
+defining shortcuts that run programs or commands.
 
 ## Properties
 
@@ -50,6 +54,10 @@ PowerToys.DSC.exe set --resource 'settings' --module KeyboardManager --input $co
 
 This example enables Keyboard Manager through DSC configuration.
 
+```bash
+dsc config set --file keyboardmanager-config.dsc.yaml
+```
+
 ```yaml
 # keyboardmanager-config.dsc.yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
@@ -68,9 +76,13 @@ resources:
 
 This example installs PowerToys and enables Keyboard Manager.
 
+```bash
+winget configure winget-keyboardmanager.yaml
+```
+
 ```yaml
 # winget-keyboardmanager.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -123,12 +135,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Keyboard Manager utility
+- [PowerOCR][03]
 - [PowerToys Keyboard Manager Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./PowerOCR.md
 [04]: https://learn.microsoft.com/windows/powertoys/keyboard-manager
-- [PowerToys Keyboard Manager Documentation](https://learn.microsoft.com/windows/powertoys/keyboard-manager)

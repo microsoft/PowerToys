@@ -9,11 +9,15 @@ title:       FileLocksmith Module
 
 ## Synopsis
 
-Manages configuration for the File Locksmith utility, which identifies processes that are locking files or folders.
+Manages configuration for the File Locksmith utility, which identifies
+processes that are locking files or folders.
 
 ## Description
 
-The `FileLocksmith` module configures PowerToys File Locksmith, a Windows shell extension that helps identify which processes are using (locking) specific files or folders. It integrates with the Windows Explorer context menu for easy access.
+The `FileLocksmith` module configures PowerToys File Locksmith, a Windows
+shell extension that helps identify which processes are using (locking)
+specific files or folders. It integrates with the Windows Explorer context
+menu for easy access.
 
 ## Properties
 
@@ -25,7 +29,9 @@ Controls whether File Locksmith appears only in the extended context menu.
 
 **Type:** boolean  
 **Default:** `false`  
-**Description:** When `true`, File Locksmith only appears in the context menu when you hold Shift while right-clicking. When `false`, it appears in the standard context menu.
+**Description:** When `true`, File Locksmith only appears in the context menu
+when you hold Shift while right-clicking. When `false`, it appears in the
+standard context menu.
 
 ## Examples
 
@@ -44,12 +50,18 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module FileLocksmith --input $config
+PowerToys.DSC.exe set --resource 'settings' --module FileLocksmith `
+    --input $config
 ```
 
 ### Example 2 - Extended menu only with DSC
 
-This example configures File Locksmith to appear only in the extended context menu.
+This example configures File Locksmith to appear only in the extended
+context menu.
+
+```bash
+dsc config set --file filelocksmith-extended.dsc.yaml
+```
 
 ```yaml
 # filelocksmith-extended.dsc.yaml
@@ -67,11 +79,16 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures File Locksmith for standard menu access.
+This example installs PowerToys and configures File Locksmith for standard
+menu access.
+
+```bash
+winget configure winget-filelocksmith.yaml
+```
 
 ```yaml
 # winget-filelocksmith.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -95,6 +112,10 @@ resources:
 ### Example 4 - Minimize context menu clutter
 
 This example configures for extended menu to reduce clutter.
+
+```bash
+dsc config set --file filelocksmith-minimal.dsc.yaml
+```
 
 ```yaml
 # filelocksmith-minimal.dsc.yaml
@@ -148,12 +169,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling File Locksmith utility
+- [RegistryPreview][03]
 - [PowerToys File Locksmith Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./RegistryPreview.md
 [04]: https://learn.microsoft.com/windows/powertoys/file-locksmith
-- [PowerToys File Locksmith Documentation](https://learn.microsoft.com/windows/powertoys/file-locksmith)

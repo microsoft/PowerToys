@@ -9,11 +9,15 @@ title:       MousePointerCrosshairs Module
 
 ## Synopsis
 
-Manages configuration for the Mouse Pointer Crosshairs utility, which displays crosshairs centered on your mouse pointer.
+Manages configuration for the Mouse Pointer Crosshairs utility, which
+displays crosshairs centered on your mouse pointer.
 
 ## Description
 
-The `MousePointerCrosshairs` module configures PowerToys Mouse Pointer Crosshairs, a utility that displays customizable crosshairs overlaid on your screen, centered on the mouse cursor. This is useful for presentations, design work, or improving cursor visibility.
+The `MousePointerCrosshairs` module configures PowerToys Mouse Pointer
+Crosshairs, a utility that displays customizable crosshairs overlaid on your
+screen, centered on the mouse cursor. This is useful for presentations,
+design work, or improving cursor visibility.
 
 ## Properties
 
@@ -25,6 +29,7 @@ Sets the keyboard shortcut to toggle crosshairs display.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -124,12 +129,17 @@ $config = @{
     }
 } | ConvertTo-Json -Depth 10 -Compress
 
-PowerToys.DSC.exe set --resource 'settings' --module MousePointerCrosshairs --input $config
+PowerToys.DSC.exe set --resource 'settings' --module MousePointerCrosshairs `
+    --input $config
 ```
 
 ### Example 2 - Configure with border with DSC
 
 This example adds a border to the crosshairs for better visibility.
+
+```bash
+dsc config set --file mousecrosshairs-border.dsc.yaml
+```
 
 ```yaml
 # mousecrosshairs-border.dsc.yaml
@@ -152,9 +162,13 @@ resources:
 
 This example installs PowerToys and configures crosshairs for presentations.
 
+```bash
+winget configure winget-mousecrosshairs.yaml
+```
+
 ```yaml
 # winget-mousecrosshairs.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -182,6 +196,10 @@ resources:
 ### Example 4 - Full-screen crosshairs
 
 This example configures crosshairs that extend to screen edges.
+
+```bash
+dsc config set --file mousecrosshairs-fullscreen.dsc.yaml
+```
 
 ```yaml
 # mousecrosshairs-fullscreen.dsc.yaml
@@ -262,12 +280,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling Mouse Pointer Crosshairs utility
+- [MouseHighlighter][03]
 - [PowerToys Mouse Utilities Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./MouseHighlighter.md
 [04]: https://learn.microsoft.com/windows/powertoys/mouse-utilities
-- [PowerToys Mouse Utilities Documentation](https://learn.microsoft.com/windows/powertoys/mouse-utilities)

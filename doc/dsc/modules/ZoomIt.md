@@ -25,6 +25,7 @@ Sets the keyboard shortcut to activate the zoom mode.
 
 **Type:** object  
 **Properties:**
+
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
 - `alt` (boolean) - Alt key modifier
@@ -61,9 +62,13 @@ $config = @{
 PowerToys.DSC.exe set --resource 'settings' --module ZoomIt --input $config
 ```
 
-### Example 2 - Configure with DSC
+### Example 2 - Configure with Microsoft DSC
 
-This example configures the ZoomIt activation shortcut using DSC.
+This example configures the ZoomIt activation shortcut using Microsoft DSC.
+
+```bash
+dsc config set --file zoomit-config.dsc.yaml
+```
 
 ```yaml
 # zoomit-config.dsc.yaml
@@ -87,11 +92,15 @@ resources:
 
 ### Example 3 - Install and configure with WinGet
 
-This example installs PowerToys and configures ZoomIt.
+This example installs PowerToys and configures ZoomIt using WinGet.
+
+```bash
+winget configure winget-zoomit.yaml
+```
 
 ```yaml
 # winget-zoomit.yaml
-$schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
   winget:
     processor: dscv3
@@ -121,6 +130,10 @@ resources:
 ### Example 4 - Presentation mode hotkey
 
 This example configures an easy-to-remember presentation hotkey.
+
+```bash
+dsc config set --file zoomit-presentation.dsc.yaml
+```
 
 ```yaml
 # zoomit-presentation.dsc.yaml
@@ -192,11 +205,11 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [App Module][03] - For enabling/disabling ZoomIt utility
+- [CropAndLock Module][03] - For additional PowerToys configuration
 - [PowerToys ZoomIt Documentation][04]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./App.md
+[03]: ./CropAndLock.md
 [04]: https://learn.microsoft.com/windows/powertoys/zoomit
