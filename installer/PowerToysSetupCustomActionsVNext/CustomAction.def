@@ -33,3 +33,5 @@ EXPORTS
 	CleanPowerRenameRuntimeRegistryCA
 	CleanNewPlusRuntimeRegistryCA
 	SetBundleInstallLocationCA
+	InstallPackageIdentityMSIXCA
+	UninstallPackageIdentityMSIXCA

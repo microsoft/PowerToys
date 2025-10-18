@@ -235,7 +235,9 @@
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",
-            "PowerToys.DSC.exe"
+            "PowerToys.DSC.exe",
+
+            "PowerToysSparse.msix"
           ],
             "SigningInfo": {
                 "Operations": [
