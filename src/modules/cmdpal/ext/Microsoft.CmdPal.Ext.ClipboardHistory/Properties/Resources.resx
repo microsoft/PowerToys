@@ -151,16 +151,16 @@
     <value>Deleted from clipboard history</value>
   </data>
   <data name="settings_keep_after_paste_description" xml:space="preserve">
-    <value />
-  </data>
-  <data name="settings_keep_after_paste_title" xml:space="preserve">
     <value>Keep items in clipboard history after pasting</value>
   </data>
+  <data name="settings_keep_after_paste_title" xml:space="preserve">
+    <value>Keep items after pasting</value>
+  </data>
   <data name="settings_confirm_delete_title" xml:space="preserve">
-    <value>Show a confirmation dialog when manually deleting an item</value>
+    <value>Ask for confirmation before deleting items</value>
   </data>
   <data name="settings_confirm_delete_description" xml:space="preserve">
-    <value />
+    <value>Show a confirmation dialog when manually deleting an item</value>
   </data>
   <data name="delete_confirmation_title" xml:space="preserve">
     <value>Delete item?</value>
