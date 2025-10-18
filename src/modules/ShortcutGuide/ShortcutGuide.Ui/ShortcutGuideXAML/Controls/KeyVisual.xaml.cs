@@ -92,6 +92,7 @@ namespace ShortcutGuide.Controls
         {
             if (Content == null)
             {
+                Visibility = Visibility.Collapsed;
                 return;
             }
 
@@ -159,7 +160,11 @@ namespace ShortcutGuide.Controls
                         _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
                         break;
                 }
+
+                return;
             }
+
+            Visibility = Visibility.Collapsed;
         }
 
         private void SetGlyphOrText(string glyph, VirtualKey key)

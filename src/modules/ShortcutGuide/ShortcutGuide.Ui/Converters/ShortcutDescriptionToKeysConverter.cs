@@ -23,7 +23,7 @@ namespace ShortcutGuide.Converters
             }
             else
             {
-                List<object> keysList = new List<object>() { string.Empty };
+                List<object> keysList = [string.Empty];
                 return keysList;
             }
         }
@@ -35,7 +35,7 @@ namespace ShortcutGuide.Converters
 
         public List<object> GetKeysList(ShortcutDescription description)
         {
-            List<object> shortcutList = new List<object>();
+            List<object> shortcutList = [];
 
             if (description.Win)
             {
