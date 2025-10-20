@@ -19,4 +19,4 @@ description: 'Generate a PowerToys-ready pull request description from the local
 4. From the diff, capture impacted areas, key file changes, behavioral risks, migrations, and noteworthy edge cases.
 5. Confirm validation: list tests executed with results or state why tests were skipped in line with repo guidance.
 6. Load `.github/pull_request_template.md`, mirror its section order, and populate it with the gathered facts. Include only relevant checklist entries, marking them `[x]/[ ]` and noting any intentional omissions as "N/A".
-7. Present the filled template to the user as markdown format so that it is ready to be pasted into a PR, clearly flagging any placeholders that still need their input.
+7. Present the filled template inside a fenced ```markdown code block with no extra commentary so it is ready to paste into a PR, clearly flagging any placeholders that still need user input.
