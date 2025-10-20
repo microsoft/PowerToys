@@ -7,7 +7,7 @@
     <RootNamespace>PowerToys.McpServer</RootNamespace>
     <AssemblyName>PowerToys.McpServer</AssemblyName>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>

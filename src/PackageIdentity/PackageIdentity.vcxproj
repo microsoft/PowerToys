@@ -110,6 +110,12 @@
     </Image>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Assets\mcpServerConfig.json">
+      <Filter>Assets</Filter>
+    </None>
+  </ItemGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
   <ImportGroup Label="ExtensionTargets">

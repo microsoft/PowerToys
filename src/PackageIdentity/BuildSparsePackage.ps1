@@ -310,7 +310,11 @@ try {
             $sourceDir = $sourcePath.TrimEnd('\*')
             $targetDir = Join-Path $stagingDir (Split-Path $relativePath.TrimEnd('\*') -Parent)
             if (Test-Path $sourceDir) {
-                Copy-Item -Path "$sourceDir\*" -Destination $targetDir -Force -ErrorAction SilentlyContinue
+                $targetSubDir = Join-Path $stagingDir ($relativePath.TrimEnd('\*'))
+                if (-not (Test-Path $targetSubDir)) {
+                    New-Item -ItemType Directory -Path $targetSubDir -Force | Out-Null
+                }
+                Copy-Item -Path "$sourceDir\*" -Destination $targetSubDir -Force -ErrorAction SilentlyContinue
             }
         } else {
             # Copy single file
