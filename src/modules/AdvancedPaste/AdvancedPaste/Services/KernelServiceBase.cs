@@ -288,7 +288,7 @@ public abstract class KernelServiceBase(
             new ActionChainItem(PasteFormats.CustomTextTransformation, Arguments: new() { { PromptParameterName, fixedPrompt } }),
             async dataPackageView =>
             {
-                var input = await dataPackageView.GetTextAsync();
+                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 var result = await _customActionTransformService.TransformTextAsync(fixedPrompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
@@ -299,7 +299,7 @@ public abstract class KernelServiceBase(
             new ActionChainItem(format, Arguments: new() { { PromptParameterName, prompt } }),
             async dataPackageView =>
             {
-                var input = await dataPackageView.GetTextAsync();
+                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
                 string output = await GetPromptBasedOutput(format, prompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
             });

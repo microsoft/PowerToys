@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-
 using AdvancedPaste.Models;
 using ManagedCommon;
 using Microsoft.Win32;
@@ -178,6 +179,46 @@ internal static class DataPackageHelpers
         {
             return string.Empty;
         }
+    }
+
+    internal static async Task<string> GetClipboardTextOrThrowAsync(this DataPackageView dataPackageView, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(dataPackageView);
+
+        try
+        {
+            if (dataPackageView.Contains(StandardDataFormats.Text))
+            {
+                return await dataPackageView.GetTextAsync();
+            }
+
+            if (dataPackageView.Contains(StandardDataFormats.Html))
+            {
+                var html = await dataPackageView.GetHtmlFormatAsync();
+                return HtmlUtilities.ConvertToText(html);
+            }
+
+            if (dataPackageView.Contains(StandardDataFormats.Bitmap))
+            {
+                var bitmap = await dataPackageView.GetImageContentAsync();
+                if (bitmap != null)
+                {
+                    return await OcrHelpers.ExtractTextAsync(bitmap, cancellationToken);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is COMException or InvalidOperationException)
+        {
+            throw CreateClipboardTextMissingException(ex);
+        }
+
+        throw CreateClipboardTextMissingException();
+    }
+
+    private static PasteActionException CreateClipboardTextMissingException(Exception innerException = null)
+    {
+        var message = ResourceLoaderInstance.ResourceLoader.GetString("ClipboardEmptyWarning");
+        return new PasteActionException(message, innerException ?? new InvalidOperationException("Clipboard does not contain text content."));
     }
 
     internal static async Task<string> GetHtmlContentAsync(this DataPackageView dataPackageView) =>
