@@ -17,9 +17,9 @@ using Monitor = PowerDisplay.Core.Models.Monitor;
 
 // Type aliases matching Windows API naming conventions for better readability when working with native structures.
 // These uppercase aliases are used consistently throughout this file to match Win32 API documentation.
+using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
 using RECT = PowerDisplay.Native.Rect;
-using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
 
 namespace PowerDisplay.Native.DDC
 {
@@ -506,7 +506,6 @@ namespace PowerDisplay.Native.DDC
                 cancellationToken);
         }
 
-
         /// <summary>
         /// Generic method to get VCP feature value
         /// </summary>
@@ -576,7 +575,6 @@ namespace PowerDisplay.Native.DDC
                 }
             }, cancellationToken);
         }
-
 
         /// <summary>
         /// Get brightness information (with explicit handle)

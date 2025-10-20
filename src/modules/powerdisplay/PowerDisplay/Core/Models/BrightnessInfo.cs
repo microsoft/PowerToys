@@ -64,6 +64,7 @@ namespace PowerDisplay.Core.Models
             {
                 return 0;
             }
+
             return (int)Math.Round((double)(Current - Minimum) * 100 / (Maximum - Minimum));
         }
 
@@ -76,6 +77,7 @@ namespace PowerDisplay.Core.Models
             {
                 return -1;
             }
+
             percentage = Math.Clamp(percentage, 0, 100);
             return Minimum + (int)Math.Round((double)(Maximum - Minimum) * percentage / 100);
         }

@@ -268,9 +268,11 @@ namespace PowerDisplay.Native
     public struct DISPLAYCONFIG_MODE_INFO_UNION
     {
         [FieldOffset(0)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Native API structure field")]
         public DISPLAYCONFIG_TARGET_MODE targetMode;
 
         [FieldOffset(0)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Native API structure field")]
         public DISPLAYCONFIG_SOURCE_MODE sourceMode;
     }
 

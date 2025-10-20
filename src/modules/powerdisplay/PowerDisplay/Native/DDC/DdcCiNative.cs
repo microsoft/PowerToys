@@ -41,7 +41,9 @@ namespace PowerDisplay.Native.DDC
     {
         // Display Configuration 常量
         public const uint QdcAllPaths = 0x00000001;
+
         public const uint QdcOnlyActivePaths = 0x00000002;
+
         public const uint DisplayconfigDeviceInfoGetTargetName = 2;
 
         // Helper Methods
@@ -480,9 +482,13 @@ namespace PowerDisplay.Native.DDC
     public struct MonitorDisplayInfo
     {
         public string FriendlyName { get; set; }
+
         public string HardwareId { get; set; }
+
         public LUID AdapterId { get; set; }
+
         public uint TargetId { get; set; }
     }
 }
+
 

@@ -17,7 +17,6 @@ namespace PowerDisplay.Helpers
     /// </summary>
     public partial class TrayIconHelper : IDisposable
     {
-
         private const uint NifMessage = 0x00000001;
         private const uint NifIcon = 0x00000002;
         private const uint NifTip = 0x00000004;
@@ -108,11 +107,11 @@ namespace PowerDisplay.Helpers
                     "Message",              // lpClassName - system predefined message window class
                     string.Empty,           // lpWindowName
                     0,                      // dwStyle
-                    0, 0, 0, 0,            // x, y, width, height
-                    new IntPtr(-3),         // hWndParent = HWND_MESSAGE (pure message window)
-                    IntPtr.Zero,            // hMenu
-                    IntPtr.Zero,            // hInstance - not needed
-                    IntPtr.Zero             // lpParam
+                    0, 0, 0, 0, // x, y, width, height
+                    new IntPtr(-3), // hWndParent = HWND_MESSAGE (pure message window)
+                    IntPtr.Zero, // hMenu
+                    IntPtr.Zero, // hInstance - not needed
+                    IntPtr.Zero // lpParam
                 );
 
                 if (_messageWindowHandle == IntPtr.Zero)
@@ -354,6 +353,7 @@ namespace PowerDisplay.Helpers
             {
                 AppendMenu(hMenu, MfString, IdRefresh, "Refresh Monitors");
             }
+
             if (_onSettings != null)
             {
                 AppendMenu(hMenu, MfString, IdSettings, "Settings");

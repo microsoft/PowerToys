@@ -27,6 +27,7 @@ namespace PowerDisplay.ViewModels
         /// <summary>
         /// Error state - ViewModel encountered an error
         /// </summary>
-        Error
+        Error,
     }
 }
+

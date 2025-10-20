@@ -344,7 +344,7 @@ namespace PowerDisplay.Core
                         // This is a rough mapping - actual values depend on monitor implementation
                         var kelvin = ConvertVcpValueToKelvin(tempInfo.Current, tempInfo.Maximum);
                         monitor.CurrentColorTemperature = kelvin;
-                        
+
                         Logger.LogInfo($"Initialized color temperature for {monitorId}: {kelvin}K (VCP: {tempInfo.Current}/{tempInfo.Maximum})");
                     }
                 }

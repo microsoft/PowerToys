@@ -33,7 +33,7 @@ namespace PowerDisplay.Core.Interfaces
             Volume,
             ColorTemperature,
             Availability,
-            General
+            General,
         }
 
         public MonitorStatusChangedEventArgs(
@@ -60,7 +60,7 @@ namespace PowerDisplay.Core.Interfaces
             Monitor = monitor;
             Message = message;
             Type = changeType;
-            
+
             // Set defaults for compatibility
             OldBrightness = null;
             NewBrightness = monitor.CurrentBrightness;

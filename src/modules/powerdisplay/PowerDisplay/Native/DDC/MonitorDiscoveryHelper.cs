@@ -11,9 +11,9 @@ using PowerDisplay.Core.Models;
 using static PowerDisplay.Native.NativeConstants;
 using static PowerDisplay.Native.PInvoke;
 
+using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
 using RECT = PowerDisplay.Native.Rect;
-using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
 
 namespace PowerDisplay.Native.DDC
 {
