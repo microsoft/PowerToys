@@ -25,8 +25,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
 
     private Func<string, bool> _suppressCallback;
 
+    private const string _id = "com.microsoft.cmdpal.builtin.indexer.fallback";
+
     public FallbackOpenFileItem()
-        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title, _id)
     {
         Title = string.Empty;
         Subtitle = string.Empty;

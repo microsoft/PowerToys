@@ -17,9 +17,10 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
     private static readonly CompositeFormat SubtitleText = System.Text.CompositeFormat.Parse(Properties.Resources.web_search_fallback_subtitle);
     private string _title;
+    private const string _id = "com.microsoft.cmdpal.builtin.websearch.execute.fallback";
 
     public FallbackExecuteSearchItem(SettingsManager settings)
-        : base(new SearchWebCommand(string.Empty, settings) { Id = "com.microsoft.websearch.fallback" }, Resources.command_item_title)
+        : base(new SearchWebCommand(string.Empty, settings) { Id = "com.microsoft.websearch.fallback" }, Resources.command_item_title, _id)
     {
         _executeItem = (SearchWebCommand)this.Command!;
         Title = string.Empty;

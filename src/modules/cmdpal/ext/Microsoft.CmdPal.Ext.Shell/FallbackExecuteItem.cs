@@ -17,10 +17,13 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     private readonly ITelemetryService _telemetryService;
     private CancellationTokenSource? _cancellationTokenSource;
 
+    private const string _id = "com.microsoft.cmdpal.builtin.indexer.fallback";
+
     public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
         : base(
             new NoOpCommand() { Id = "com.microsoft.run.fallback" },
-            ResourceLoaderInstance.GetString("shell_command_display_title"))
+            ResourceLoaderInstance.GetString("shell_command_display_title"),
+            _id)
     {
         Title = string.Empty;
         Subtitle = ResourceLoaderInstance.GetString("generic_run_command");
