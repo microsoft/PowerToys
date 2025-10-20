@@ -142,11 +142,15 @@
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Name="NoScheduleCard"
+                                    Padding="0"
                                     HorizontalContentAlignment="Stretch"
+                                    Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
                                     ContentAlignment="Vertical"
                                     Visibility="Visible">
                                     <InfoBar
                                         x:Uid="LightSwitch_ScheduleOffMessage"
+                                        Background="Transparent"
+                                        BorderThickness="0"
                                         IsClosable="False"
                                         IsOpen="True"
                                         Severity="Informational" />
