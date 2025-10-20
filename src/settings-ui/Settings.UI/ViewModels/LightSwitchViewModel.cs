@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             AvailableScheduleModes = new ObservableCollection<string>
             {
+                "Off",
                 "FixedHours",
                 "SunsetToSunrise",
             };
