@@ -32,6 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty EnableSpaceToActivate { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PeekProperties);
     }
 }

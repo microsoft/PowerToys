@@ -58,6 +58,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public AdvancedPasteAdditionalActions AdditionalActions { get; init; }
 
         public override string ToString()
-            => JsonSerializer.Serialize(this);
+            => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.AdvancedPasteProperties);
     }
 }
