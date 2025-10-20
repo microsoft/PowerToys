@@ -1795,6 +1795,7 @@ UHash
 UIA
 UIEx
 uild
+UISDK
 uitests
 UITo
 ULONGLONG
