@@ -216,6 +216,12 @@
                             </NavigationViewItem.InfoBadge>
                         </NavigationViewItem>
                         <NavigationViewItem
+                            x:Name="PowerDisplayNavigationItem"
+                            x:Uid="Shell_PowerDisplay"
+                            helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
+                            AutomationProperties.AutomationId="PowerDisplayNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}" />
+                        <NavigationViewItem
                             x:Name="PowerLauncherNavigationItem"
                             x:Uid="Shell_PowerLauncher"
                             helpers:NavHelper.NavigateTo="views:PowerLauncherPage"

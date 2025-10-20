@@ -85,6 +85,7 @@
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.CodeDom" Version="9.0.8" />
+    <PackageVersion Include="System.Collections.Immutable" Version="9.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="9.0.8" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.8" />
@@ -111,6 +112,7 @@
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
     <PackageVersion Include="WinUIEx" Version="2.8.0" />
+    <PackageVersion Include="WmiLight" Version="6.14.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
     <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />

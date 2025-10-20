@@ -1,0 +1,124 @@
+﻿<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerDisplayPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl x:Uid="PowerDisplay" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <tkcontrols:SettingsCard
+                    x:Uid="PowerDisplay_Enable_PowerDisplay"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </tkcontrols:SettingsCard>
+
+                <controls:SettingsGroup x:Uid="PowerDisplay_Configuration_GroupSettings" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_LaunchButtonControl"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
+                        IsClickEnabled="True" />
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_LaunchAtStartup"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B5;}">
+                        <ToggleSwitch x:Uid="PowerDisplay_LaunchAtStartup_ToggleSwitch" IsOn="{x:Bind ViewModel.IsLaunchAtStartupEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_RestoreSettingsOnStartup"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7B8;}">
+                        <ToggleSwitch x:Uid="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_BrightnessUpdateRate"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                        <ComboBox
+                            ItemsSource="{x:Bind ViewModel.BrightnessUpdateRateOptions}"
+                            SelectedItem="{x:Bind ViewModel.BrightnessUpdateRate, Mode=TwoWay}"
+                            MinWidth="120" />
+                    </tkcontrols:SettingsCard>
+
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
+                    <!-- Empty state hint -->
+                    <InfoBar
+                        x:Uid="PowerDisplay_NoMonitorsDetected"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7F4;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+
+                    <!-- Monitor list -->
+                    <ItemsControl
+                        x:Name="MonitorsList"
+                        HorizontalAlignment="Stretch"
+                        Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                        ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="library:MonitorInfo">
+                                <tkcontrols:SettingsExpander
+                                    Margin="0,0,0,2"
+                                    Header="{x:Bind Name}"
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                                    IsExpanded="False">
+                                    <tkcontrols:SettingsExpander.Items>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Name">
+                                            <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_InternalName">
+                                            <TextBlock Text="{x:Bind InternalName, Mode=OneWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Type">
+                                            <TextBlock Text="{x:Bind MonitorType, Mode=OneWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_CommunicationMethod">
+                                            <TextBlock Text="{x:Bind CommunicationMethod, Mode=OneWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Brightness">
+                                            <TextBlock Text="{x:Bind CurrentBrightness, Mode=OneWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_ColorTemperature">
+                                            <TextBlock Text="{x:Bind ColorTemperature, Mode=OneWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableColorTemperature">
+                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch" IsOn="{x:Bind EnableColorTemperature, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableContrast">
+                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableContrast_ToggleSwitch" IsOn="{x:Bind EnableContrast, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableVolume">
+                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableVolume_ToggleSwitch" IsOn="{x:Bind EnableVolume, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_HideMonitor">
+                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_HideMonitor_ToggleSwitch" IsOn="{x:Bind IsHidden, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
+                                    </tkcontrols:SettingsExpander.Items>
+                                </tkcontrols:SettingsExpander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_PowerDisplay" Link="https://aka.ms/PowerToysOverview_PowerDisplay" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

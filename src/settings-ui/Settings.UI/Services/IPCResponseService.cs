@@ -4,8 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Windows.Data.Json;
@@ -19,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public static IPCResponseService Instance => _instance ??= new IPCResponseService();
 
         public static event EventHandler<AllHotkeyConflictsEventArgs> AllHotkeyConflictsReceived;
+        public static event EventHandler<MonitorInfo[]> PowerDisplayMonitorsReceived;
 
         public void RegisterForIPC()
         {
@@ -47,10 +51,15 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     {
                         ProcessAllHotkeyConflicts(json);
                     }
+                    else if (responseType.Equals("powerdisplay_monitors", StringComparison.Ordinal))
+                    {
+                        ProcessPowerDisplayMonitors(json);
+                    }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[IPCResponseService] Failed to process IPC message: {ex.Message}");
             }
         }
 
@@ -194,6 +203,39 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             return conflictGroup;
+        }
+
+        private void ProcessPowerDisplayMonitors(JsonObject json)
+        {
+            try
+            {
+                var jsonString = json.Stringify();
+                var response = System.Text.Json.JsonSerializer.Deserialize<PowerDisplayMonitorsIPCResponse>(jsonString);
+
+                if (response?.Monitors == null)
+                {
+                    PowerDisplayMonitorsReceived?.Invoke(this, Array.Empty<MonitorInfo>());
+                    return;
+                }
+
+                var monitors = response.Monitors.Select(m =>
+                    new MonitorInfo(
+                        m.Name,
+                        m.InternalName,
+                        m.HardwareId,
+                        m.CommunicationMethod,
+                        m.MonitorType,
+                        m.CurrentBrightness,
+                        m.ColorTemperature
+                    )
+                ).ToArray();
+
+                PowerDisplayMonitorsReceived?.Invoke(this, monitors);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[IPCResponseService] Failed to parse PowerDisplay monitors response: {ex.Message}");
+            }
         }
     }
 }
