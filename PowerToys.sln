@@ -334,7 +334,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mcp", "mcp", "{7A0ECF79-2E6
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "McpModuleInterface", "src\modules\mcp\McpModuleInterface\McpModuleInterface.vcxproj", "{8E87A3A7-9B8C-4F7D-A3E1-5C4B8D9F6E2A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.McpServer", "src\mcp\McpServer\PowerToys.McpServer.csproj", "{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.McpServer", "src\modules\mcp\McpServer\PowerToys.McpServer.csproj", "{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.csproj", "{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}"
 EndProject
