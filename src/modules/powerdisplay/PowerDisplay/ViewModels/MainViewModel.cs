@@ -781,6 +781,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 /* Ignore cleanup errors */
             }
+
+            GC.SuppressFinalize(this);
         }
         catch
         {

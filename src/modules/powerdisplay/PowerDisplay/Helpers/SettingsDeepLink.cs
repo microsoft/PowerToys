@@ -28,7 +28,7 @@ namespace PowerDisplay.Helpers
                 var startInfo = new ProcessStartInfo(directoryPath)
                 {
                     Arguments = "--open-settings=PowerDisplay",
-                    UseShellExecute = true
+                    UseShellExecute = true,
                 };
 
                 Process.Start(startInfo);

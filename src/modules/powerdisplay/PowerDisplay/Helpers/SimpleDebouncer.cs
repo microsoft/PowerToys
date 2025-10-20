@@ -99,6 +99,8 @@ namespace PowerDisplay.Helpers
                 _cts?.Dispose();
                 _cts = null;
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -26,9 +26,10 @@ namespace PowerDisplay.Native.WMI
         private const string BrightnessMethodClass = "WmiMonitorBrightnessMethods";
         private const string MonitorIdClass = "WmiMonitorID";
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         public string Name => "WMI Monitor Controller (WmiLight)";
+
         public MonitorType SupportedType => MonitorType.Internal;
 
         /// <summary>
@@ -37,23 +38,27 @@ namespace PowerDisplay.Native.WMI
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             if (monitor.Type != MonitorType.Internal)
-                return false;
-
-            return await Task.Run(() =>
             {
-                try
+                return false;
+            }
+
+            return await Task.Run(
+                () =>
                 {
-                    using var connection = new WmiConnection(WmiNamespace);
-                    var query = $"SELECT * FROM {BrightnessQueryClass}";
-                    var results = connection.CreateQuery(query).ToList();
-                    return results.Count > 0;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"WMI CanControlMonitor check failed: {ex.Message}");
-                    return false;
-                }
-            }, cancellationToken);
+                    try
+                    {
+                        using var connection = new WmiConnection(WmiNamespace);
+                        var query = $"SELECT * FROM {BrightnessQueryClass}";
+                        var results = connection.CreateQuery(query).ToList();
+                        return results.Count > 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"WMI CanControlMonitor check failed: {ex.Message}");
+                        return false;
+                    }
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -61,31 +66,33 @@ namespace PowerDisplay.Native.WMI
         /// </summary>
         public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() =>
-            {
-                try
+            return await Task.Run(
+                () =>
                 {
-                    using var connection = new WmiConnection(WmiNamespace);
-                    var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass}";
-                    var results = connection.CreateQuery(query);
-
-                    foreach (var obj in results)
+                    try
                     {
-                        var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
-                        return new BrightnessInfo(currentBrightness, 0, 100);
-                    }
-                }
-                catch (WmiException ex)
-                {
-                    Logger.LogWarning($"WMI GetBrightness failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"WMI GetBrightness failed: {ex.Message}");
-                }
+                        using var connection = new WmiConnection(WmiNamespace);
+                        var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass}";
+                        var results = connection.CreateQuery(query);
 
-                return BrightnessInfo.Invalid;
-            }, cancellationToken);
+                        foreach (var obj in results)
+                        {
+                            var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
+                            return new BrightnessInfo(currentBrightness, 0, 100);
+                        }
+                    }
+                    catch (WmiException ex)
+                    {
+                        Logger.LogWarning($"WMI GetBrightness failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"WMI GetBrightness failed: {ex.Message}");
+                    }
+
+                    return BrightnessInfo.Invalid;
+                },
+                cancellationToken);
         }
 
         /// <summary>

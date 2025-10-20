@@ -11,15 +11,15 @@ using static PowerDisplay.Native.NativeDelegates;
 using static PowerDisplay.Native.PInvoke;
 
 // 类型别名，兼容 Windows API 命名约定
+using DISPLAY_DEVICE = PowerDisplay.Native.DisplayDevice;
+using DISPLAYCONFIG_DEVICE_INFO_HEADER = PowerDisplay.Native.DISPLAYCONFIG_DEVICE_INFO_HEADER;
+using DISPLAYCONFIG_MODE_INFO = PowerDisplay.Native.DISPLAYCONFIG_MODE_INFO;
+using DISPLAYCONFIG_PATH_INFO = PowerDisplay.Native.DISPLAYCONFIG_PATH_INFO;
+using DISPLAYCONFIG_TARGET_DEVICE_NAME = PowerDisplay.Native.DISPLAYCONFIG_TARGET_DEVICE_NAME;
+using LUID = PowerDisplay.Native.Luid;
+using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
 using RECT = PowerDisplay.Native.Rect;
-using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
-using DISPLAY_DEVICE = PowerDisplay.Native.DisplayDevice;
-using LUID = PowerDisplay.Native.Luid;
-using DISPLAYCONFIG_TARGET_DEVICE_NAME = PowerDisplay.Native.DISPLAYCONFIG_TARGET_DEVICE_NAME;
-using DISPLAYCONFIG_DEVICE_INFO_HEADER = PowerDisplay.Native.DISPLAYCONFIG_DEVICE_INFO_HEADER;
-using DISPLAYCONFIG_PATH_INFO = PowerDisplay.Native.DISPLAYCONFIG_PATH_INFO;
-using DISPLAYCONFIG_MODE_INFO = PowerDisplay.Native.DISPLAYCONFIG_MODE_INFO;
 
 namespace PowerDisplay.Native.DDC
 {
@@ -29,8 +29,11 @@ namespace PowerDisplay.Native.DDC
     public class DisplayDeviceInfo
     {
         public string DeviceName { get; set; } = string.Empty;
+
         public string AdapterName { get; set; } = string.Empty;
+
         public string DeviceID { get; set; } = string.Empty;
+
         public string DeviceKey { get; set; } = string.Empty;
     }
 
@@ -200,7 +203,7 @@ namespace PowerDisplay.Native.DDC
                 };
 
                 var result = DisplayConfigGetDeviceInfo(ref deviceName);
-                if (result == 0) // ERROR_SUCCESS
+                if (result == 0)
                 {
                     return deviceName.GetMonitorFriendlyDeviceName();
                 }
@@ -225,7 +228,7 @@ namespace PowerDisplay.Native.DDC
             {
                 // 获取缓冲区大小
                 var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
-                if (result != 0) // ERROR_SUCCESS
+                if (result != 0)
                 {
                     return friendlyNames;
                 }
@@ -285,14 +288,14 @@ namespace PowerDisplay.Native.DDC
                 };
 
                 var result = DisplayConfigGetDeviceInfo(ref deviceName);
-                if (result == 0) // ERROR_SUCCESS
+                if (result == 0)
                 {
                     // 将制造商ID转换为3字符字符串
                     var manufacturerId = deviceName.EdidManufactureId;
                     var manufactureCode = ConvertManufactureIdToString(manufacturerId);
 
                     // 将产品ID转换为4位十六进制字符串
-                    var productCode = deviceName.EdidProductCodeId.ToString("X4");
+                    var productCode = deviceName.EdidProductCodeId.ToString("X4", System.Globalization.CultureInfo.InvariantCulture);
 
                     var hardwareId = $"{manufactureCode}{productCode}";
                     Logger.LogDebug($"GetMonitorHardwareId - ManufacturerId: 0x{manufacturerId:X4}, Code: '{manufactureCode}', ProductCode: '{productCode}', Result: '{hardwareId}'");
@@ -343,7 +346,7 @@ namespace PowerDisplay.Native.DDC
             {
                 // 获取缓冲区大小
                 var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
-                if (result != 0) // ERROR_SUCCESS
+                if (result != 0)
                 {
                     return monitorInfo;
                 }
@@ -400,7 +403,7 @@ namespace PowerDisplay.Native.DDC
             {
                 // 枚举所有适配器
                 uint adapterIndex = 0;
-                var adapter = new DISPLAY_DEVICE();
+                var adapter = default(DISPLAY_DEVICE);
                 adapter.Cb = (uint)sizeof(DisplayDevice);
 
                 while (EnumDisplayDevices(null, adapterIndex, ref adapter, EddGetDeviceInterfaceName))
@@ -409,7 +412,7 @@ namespace PowerDisplay.Native.DDC
                     if ((adapter.StateFlags & DisplayDeviceMirroringDriver) != 0)
                     {
                         adapterIndex++;
-                        adapter = new DISPLAY_DEVICE();
+                        adapter = default(DISPLAY_DEVICE);
                         adapter.Cb = (uint)sizeof(DisplayDevice);
                         continue;
                     }
@@ -419,13 +422,14 @@ namespace PowerDisplay.Native.DDC
                     {
                         // 枚举该适配器上的所有显示器
                         uint displayIndex = 0;
-                        var display = new DISPLAY_DEVICE();
+                        var display = default(DISPLAY_DEVICE);
                         display.Cb = (uint)sizeof(DisplayDevice);
 
                         string adapterDeviceName = adapter.GetDeviceName();
                         while (EnumDisplayDevices(adapterDeviceName, displayIndex, ref display, EddGetDeviceInterfaceName))
                         {
                             string displayDeviceID = display.GetDeviceID();
+
                             // 只处理活动的显示器
                             if ((display.StateFlags & DisplayDeviceAttachedToDesktop) != 0 &&
                                 !string.IsNullOrEmpty(displayDeviceID))
@@ -455,13 +459,13 @@ namespace PowerDisplay.Native.DDC
                             }
 
                             displayIndex++;
-                            display = new DISPLAY_DEVICE();
+                            display = default(DISPLAY_DEVICE);
                             display.Cb = (uint)sizeof(DisplayDevice);
                         }
                     }
 
                     adapterIndex++;
-                    adapter = new DISPLAY_DEVICE();
+                    adapter = default(DISPLAY_DEVICE);
                     adapter.Cb = (uint)sizeof(DisplayDevice);
                 }
 
@@ -490,5 +494,3 @@ namespace PowerDisplay.Native.DDC
         public uint TargetId { get; set; }
     }
 }
-
-

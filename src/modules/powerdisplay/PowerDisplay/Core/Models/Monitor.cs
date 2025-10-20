@@ -131,7 +131,7 @@ namespace PowerDisplay.Core.Models
         /// <summary>
         /// Minimum contrast value
         /// </summary>
-        public int MinContrast { get; set; } = 0;
+        public int MinContrast { get; set; }
 
         /// <summary>
         /// Maximum contrast value
@@ -158,7 +158,7 @@ namespace PowerDisplay.Core.Models
         /// <summary>
         /// Minimum volume value
         /// </summary>
-        public int MinVolume { get; set; } = 0;
+        public int MinVolume { get; set; }
 
         /// <summary>
         /// Maximum volume value

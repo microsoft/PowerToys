@@ -139,6 +139,7 @@ namespace PowerDisplay.Native.DDC
                         {
                             name = kvp.FriendlyName;
                         }
+
                         break;
                     }
                 }
@@ -156,7 +157,7 @@ namespace PowerDisplay.Native.DDC
                 else
                 {
                     // Fallback: create device ID without handle in the key
-                    var baseDevice = adapterName.Replace(@"\\.\", "");
+                    var baseDevice = adapterName.Replace(@"\\.\", string.Empty);
                     deviceKey = $"{baseDevice}_{index}";
                     monitorId = $"DDC_{deviceKey}";
                 }

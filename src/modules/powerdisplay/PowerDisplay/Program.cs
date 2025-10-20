@@ -34,6 +34,7 @@ namespace PowerDisplay
             }
             else
             {
+                Logger.LogWarning("PowerDisplay started without command line arguments");
                 Logger.LogWarning($"PowerDisplay started with insufficient arguments (expected 2, got {args.Length}). Running in standalone mode.");
             }
 

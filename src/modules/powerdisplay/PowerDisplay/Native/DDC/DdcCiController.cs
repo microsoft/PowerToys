@@ -76,18 +76,18 @@ namespace PowerDisplay.Native.DDC
                         return BrightnessInfo.Invalid;
                     }
 
-                // First try high-level API
-                if (DdcCiNative.TryGetMonitorBrightness(physicalHandle, out uint minBrightness, out uint currentBrightness, out uint maxBrightness))
-                {
-                    return new BrightnessInfo((int)currentBrightness, (int)minBrightness, (int)maxBrightness);
-                }
+                    // First try high-level API
+                    if (DdcCiNative.TryGetMonitorBrightness(physicalHandle, out uint minBrightness, out uint currentBrightness, out uint maxBrightness))
+                    {
+                        return new BrightnessInfo((int)currentBrightness, (int)minBrightness, (int)maxBrightness);
+                    }
 
-                // Try different VCP codes
-                var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
-                if (vcpCode.HasValue && DdcCiNative.TryGetVCPFeature(physicalHandle, vcpCode.Value, out uint current, out uint max))
-                {
-                    return new BrightnessInfo((int)current, 0, (int)max);
-                }
+                    // Try different VCP codes
+                    var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
+                    if (vcpCode.HasValue && DdcCiNative.TryGetVCPFeature(physicalHandle, vcpCode.Value, out uint current, out uint max))
+                    {
+                        return new BrightnessInfo((int)current, 0, (int)max);
+                    }
 
                     return BrightnessInfo.Invalid;
                 },
@@ -101,44 +101,45 @@ namespace PowerDisplay.Native.DDC
         {
             brightness = Math.Clamp(brightness, 0, 100);
 
-            return await Task.Run(() =>
-            {
-                var physicalHandle = GetPhysicalHandle(monitor);
-                if (physicalHandle == IntPtr.Zero)
+            return await Task.Run(
+                () =>
                 {
-                    return MonitorOperationResult.Failure("No physical handle found");
-                }
-
-                try
-                {
-                    var currentInfo = GetBrightnessInfo(monitor, physicalHandle);
-                    if (!currentInfo.IsValid)
+                    var physicalHandle = GetPhysicalHandle(monitor);
+                    if (physicalHandle == IntPtr.Zero)
                     {
-                        return MonitorOperationResult.Failure("Cannot read current brightness");
+                        return MonitorOperationResult.Failure("No physical handle found");
                     }
 
-                    uint targetValue = (uint)currentInfo.FromPercentage(brightness);
-
-                    // First try high-level API
-                    if (DdcCiNative.TrySetMonitorBrightness(physicalHandle, targetValue))
+                    try
                     {
-                        return MonitorOperationResult.Success();
-                    }
+                        var currentInfo = GetBrightnessInfo(monitor, physicalHandle);
+                        if (!currentInfo.IsValid)
+                        {
+                            return MonitorOperationResult.Failure("Cannot read current brightness");
+                        }
 
-                    // Try VCP codes
-                    var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
-                    if (vcpCode.HasValue && DdcCiNative.TrySetVCPFeature(physicalHandle, vcpCode.Value, targetValue))
+                        uint targetValue = (uint)currentInfo.FromPercentage(brightness);
+
+                        // First try high-level API
+                        if (DdcCiNative.TrySetMonitorBrightness(physicalHandle, targetValue))
+                        {
+                            return MonitorOperationResult.Success();
+                        }
+
+                        // Try VCP codes
+                        var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
+                        if (vcpCode.HasValue && DdcCiNative.TrySetVCPFeature(physicalHandle, vcpCode.Value, targetValue))
+                        {
+                            return MonitorOperationResult.Success();
+                        }
+
+                        var lastError = GetLastError();
+                        return MonitorOperationResult.Failure($"Failed to set brightness via DDC/CI", (int)lastError);
+                    }
+                    catch (Exception ex)
                     {
-                        return MonitorOperationResult.Success();
+                        return MonitorOperationResult.Failure($"Exception setting brightness: {ex.Message}");
                     }
-
-                    var lastError = GetLastError();
-                    return MonitorOperationResult.Failure($"Failed to set brightness via DDC/CI", (int)lastError);
-                }
-                catch (Exception ex)
-                {
-                    return MonitorOperationResult.Failure($"Exception setting brightness: {ex.Message}");
-                }
                 },
                 cancellationToken);
         }
@@ -382,6 +383,7 @@ namespace PowerDisplay.Native.DDC
                                 {
                                     Logger.LogWarning($"DDC: GetPhysicalMonitors returned null/empty on attempt {attempt + 1}, will retry");
                                 }
+
                                 continue;
                             }
 
@@ -404,6 +406,7 @@ namespace PowerDisplay.Native.DDC
                                 {
                                     Logger.LogInfo($"DDC: Successfully obtained valid handles on attempt {attempt + 1}");
                                 }
+
                                 break;
                             }
                             else if (attempt < maxRetries - 1)
@@ -446,6 +449,7 @@ namespace PowerDisplay.Native.DDC
                                         matchedDevice = displayDevice;
                                         break;
                                     }
+
                                     foundCount++;
                                 }
                             }
@@ -514,20 +518,22 @@ namespace PowerDisplay.Native.DDC
             byte vcpCode,
             CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() =>
-            {
-                if (monitor.Handle == IntPtr.Zero)
+            return await Task.Run(
+                () =>
                 {
+                    if (monitor.Handle == IntPtr.Zero)
+                    {
+                        return BrightnessInfo.Invalid;
+                    }
+
+                    if (DdcCiNative.TryGetVCPFeature(monitor.Handle, vcpCode, out uint current, out uint max))
+                    {
+                        return new BrightnessInfo((int)current, 0, (int)max);
+                    }
+
                     return BrightnessInfo.Invalid;
-                }
-
-                if (DdcCiNative.TryGetVCPFeature(monitor.Handle, vcpCode, out uint current, out uint max))
-                {
-                    return new BrightnessInfo((int)current, 0, (int)max);
-                }
-
-                return BrightnessInfo.Invalid;
-            }, cancellationToken);
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -543,37 +549,39 @@ namespace PowerDisplay.Native.DDC
         {
             value = Math.Clamp(value, min, max);
 
-            return await Task.Run(() =>
-            {
-                if (monitor.Handle == IntPtr.Zero)
+            return await Task.Run(
+                () =>
                 {
-                    return MonitorOperationResult.Failure("Invalid monitor handle");
-                }
-
-                try
-                {
-                    // Get current value to determine range
-                    var currentInfo = GetVcpFeatureAsync(monitor, vcpCode).Result;
-                    if (!currentInfo.IsValid)
+                    if (monitor.Handle == IntPtr.Zero)
                     {
-                        return MonitorOperationResult.Failure($"Cannot read current value for VCP 0x{vcpCode:X2}");
+                        return MonitorOperationResult.Failure("Invalid monitor handle");
                     }
 
-                    uint targetValue = (uint)currentInfo.FromPercentage(value);
-
-                    if (DdcCiNative.TrySetVCPFeature(monitor.Handle, vcpCode, targetValue))
+                    try
                     {
-                        return MonitorOperationResult.Success();
-                    }
+                        // Get current value to determine range
+                        var currentInfo = GetVcpFeatureAsync(monitor, vcpCode).Result;
+                        if (!currentInfo.IsValid)
+                        {
+                            return MonitorOperationResult.Failure($"Cannot read current value for VCP 0x{vcpCode:X2}");
+                        }
 
-                    var lastError = GetLastError();
-                    return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", (int)lastError);
-                }
-                catch (Exception ex)
-                {
-                    return MonitorOperationResult.Failure($"Exception setting VCP 0x{vcpCode:X2}: {ex.Message}");
-                }
-            }, cancellationToken);
+                        uint targetValue = (uint)currentInfo.FromPercentage(value);
+
+                        if (DdcCiNative.TrySetVCPFeature(monitor.Handle, vcpCode, targetValue))
+                        {
+                            return MonitorOperationResult.Success();
+                        }
+
+                        var lastError = GetLastError();
+                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", (int)lastError);
+                    }
+                    catch (Exception ex)
+                    {
+                        return MonitorOperationResult.Failure($"Exception setting VCP 0x{vcpCode:X2}: {ex.Message}");
+                    }
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -601,7 +609,6 @@ namespace PowerDisplay.Native.DDC
 
             return BrightnessInfo.Invalid;
         }
-
 
         /// <summary>
         /// Get physical handle for monitor using stable deviceKey

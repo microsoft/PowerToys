@@ -32,13 +32,13 @@ namespace PowerDisplay
     /// PowerDisplay main window
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : Window, IDisposable
     {
         private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private MainViewModel _viewModel = null!;
         private TrayIconHelper _trayIcon = null!;
         private AppWindow _appWindow = null!;
-        private bool _isExiting = false;
+        private bool _isExiting;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel;
@@ -67,7 +67,6 @@ namespace PowerDisplay
 
                 // Delay ViewModel creation until first activation (async)
                 this.Activated += OnFirstActivated;
-
             }
             catch (Exception ex)
             {
@@ -75,7 +74,8 @@ namespace PowerDisplay
                 ShowError($"Unable to start main window: {ex.Message}");
             }
         }
-        private bool _hasInitialized = false;
+
+        private bool _hasInitialized;
 
         private async void OnFirstActivated(object sender, WindowActivatedEventArgs args)
         {
@@ -136,12 +136,6 @@ namespace PowerDisplay
             }
         }
 
-
-
-
-
-
-
         private void InitializeUIText()
         {
             try
@@ -196,6 +190,7 @@ namespace PowerDisplay
                     _viewModel.Monitors.CollectionChanged -= OnMonitorsCollectionChanged;
                     _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
                 }
+
                 args.Handled = false;
                 return;
             }
@@ -489,7 +484,7 @@ namespace PowerDisplay
                 _ = dlg.ShowAsync();
 
                 manager = new Core.MonitorManager();
-                var monitors = await manager.DiscoverMonitorsAsync(new System.Threading.CancellationToken());
+                var monitors = await manager.DiscoverMonitorsAsync(default(System.Threading.CancellationToken));
 
                 string message = $"Found {monitors.Count} monitors:\n\n";
                 foreach (var monitor in monitors)
@@ -584,8 +579,9 @@ namespace PowerDisplay
                         titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
                         titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
                         titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+
                         // Disable title bar interaction area
-                        titleBar.SetDragRectangles(new Windows.Graphics.RectInt32[0]);
+                        titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
                     }
 
                     // Set modern Mica Alt backdrop for Windows 11
@@ -622,13 +618,15 @@ namespace PowerDisplay
                 Logger.LogWarning($"Window setup error: {ex.Message}");
             }
         }
-        
+
         private void AdjustWindowSizeToContent()
         {
             try
             {
                 if (_appWindow == null || RootGrid == null)
+                {
                     return;
+                }
 
                 // Force layout update to ensure proper measurement
                 RootGrid.UpdateLayout();
@@ -741,12 +739,18 @@ namespace PowerDisplay
         private void Slider_PointerCaptureLost(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var slider = sender as Slider;
-            if (slider == null) return;
+            if (slider == null)
+            {
+                return;
+            }
 
             var propertyName = slider.Tag as string;
             var monitorVm = slider.DataContext as MonitorViewModel;
 
-            if (monitorVm == null || propertyName == null) return;
+            if (monitorVm == null || propertyName == null)
+            {
+                return;
+            }
 
             // Get final value after drag completes
             int finalValue = (int)slider.Value;
@@ -773,5 +777,11 @@ namespace PowerDisplay
             }
         }
 
+        public void Dispose()
+        {
+            _viewModel?.Dispose();
+            _trayIcon?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

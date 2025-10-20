@@ -264,6 +264,7 @@ namespace PowerDisplay.Helpers
 
             // State is already saved with each update, no need for final flush!
             Logger.LogInfo("MonitorStateManager disposed");
+            GC.SuppressFinalize(this);
         }
     }
 }

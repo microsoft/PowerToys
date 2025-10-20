@@ -90,7 +90,7 @@ namespace PowerDisplay
             // Handle unhandled exceptions
             this.UnhandledException += OnUnhandledException;
         }
-        
+
         /// <summary>
         /// Handle unhandled exceptions
         /// </summary>
@@ -144,7 +144,7 @@ namespace PowerDisplay
                     // If not --pid format, try parsing last argument (compatible with old format)
                     if (pidValue == -1 && cmdArgs.Length > 1)
                     {
-                        int.TryParse(cmdArgs[cmdArgs.Length - 1], out pidValue);
+                        _ = int.TryParse(cmdArgs[cmdArgs.Length - 1], out pidValue);
                     }
 
                     if (pidValue > 0)
@@ -432,11 +432,15 @@ namespace PowerDisplay
             try
             {
                 // Start timeout mechanism, ensure exit within 1 second
-                var timeoutTimer = new System.Threading.Timer(_ =>
-                {
-                    Logger.LogWarning("Shutdown timeout reached, forcing exit");
-                    Environment.Exit(0);
-                }, null, 1000, System.Threading.Timeout.Infinite);
+                var timeoutTimer = new System.Threading.Timer(
+                    _ =>
+                    {
+                        Logger.LogWarning("Shutdown timeout reached, forcing exit");
+                        Environment.Exit(0);
+                    },
+                    null,
+                    1000,
+                    System.Threading.Timeout.Infinite);
 
                 // Immediately notify MainWindow that program is exiting, enable fast shutdown mode
                 if (_mainWindow is MainWindow mainWindow)
@@ -489,11 +493,15 @@ namespace PowerDisplay
             try
             {
                 // Immediately start timeout mechanism, must exit within 500ms
-                var emergencyTimer = new System.Threading.Timer(_ =>
-                {
-                    Logger.LogWarning("Emergency exit timeout reached, terminating process");
-                    Environment.Exit(0);
-                }, null, 500, System.Threading.Timeout.Infinite);
+                var emergencyTimer = new System.Threading.Timer(
+                    _ =>
+                    {
+                        Logger.LogWarning("Emergency exit timeout reached, terminating process");
+                        Environment.Exit(0);
+                    },
+                    null,
+                    500,
+                    System.Threading.Timeout.Infinite);
 
                 PerformForceExit();
             }

@@ -55,7 +55,7 @@ namespace PowerDisplay.Native.DDC
             // Try to reuse existing handle if it's still valid
             if (_deviceKeyToHandleMap.TryGetValue(deviceKey, out var existingHandle) &&
                 existingHandle != IntPtr.Zero &&
-                DdcCiNative.ValidateDdcCiConnection(existingHandle))  // Keep DdcCiNative for custom wrapper methods
+                DdcCiNative.ValidateDdcCiConnection(existingHandle))
             {
                 // Destroy the newly created handle since we're using the old one
                 if (newHandle != existingHandle && newHandle != IntPtr.Zero)
@@ -158,6 +158,7 @@ namespace PowerDisplay.Native.DDC
 
             _deviceKeyToHandleMap.Clear();
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }

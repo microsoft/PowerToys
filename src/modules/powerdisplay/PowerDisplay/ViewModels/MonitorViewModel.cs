@@ -454,5 +454,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _colorTempDebouncer?.Dispose();
         _contrastDebouncer?.Dispose();
         _volumeDebouncer?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
