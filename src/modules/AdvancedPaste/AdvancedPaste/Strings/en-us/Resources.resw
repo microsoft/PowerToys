@@ -229,7 +229,7 @@
   <data name="TranscodeToMp3" xml:space="preserve">
     <value>Transcode to .mp3</value>
     <comment>Option to transcode audio files to MP3 format</comment>
-  </data>  
+  </data>
   <data name="TranscodeToMp4" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
     <comment>Option to transcode video files to MP4 format with H.264 video codec and AAC audio codec</comment>
@@ -319,5 +319,28 @@
   </data>
   <data name="PasteAsFile_FilePrefix" xml:space="preserve">
     <value>PowerToys_Paste_</value>
+  </data>
+  <data name="Relative_JustNow" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="Relative_MinuteAgo" xml:space="preserve">
+    <value>1 minute ago</value>
+  </data>
+  <data name="Relative_MinutesAgo_Format" xml:space="preserve">
+    <value>{0} minutes ago</value>
+  </data>
+  <data name="Relative_Today_TimeFormat" xml:space="preserve">
+    <value>Today, {0}</value>
+  </data>
+  <data name="Relative_Yesterday_TimeFormat" xml:space="preserve">
+    <value>Yesterday, {0}</value>
+  </data>
+  <data name="Relative_Weekday_TimeFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>(e.g., “Wednesday, 17:05”)</comment>
+  </data>
+  <data name="Relative_Date_TimeFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>(e.g., “10/20/2025, 17:05” in the user’s locale)</comment>
   </data>
 </root>

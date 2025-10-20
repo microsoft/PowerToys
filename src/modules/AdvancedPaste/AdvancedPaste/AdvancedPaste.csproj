@@ -33,6 +33,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />
     <None Remove="Assets\AdvancedPaste\AIIcon.png" />
     <None Remove="Assets\AdvancedPaste\Gradient.png" />
@@ -120,6 +121,11 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  <ItemGroup>
+    <Page Update="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
   <ItemGroup>
     <Page Update="AdvancedPasteXAML\Controls\PromptBox.xaml">
       <Generator>MSBuild:Compile</Generator>

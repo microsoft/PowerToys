@@ -16,7 +16,11 @@
     <Page.Resources>
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
+
         <converters:PasteFormatsToHeightConverter x:Name="standardPasteFormatsToHeightConverter" />
+
+
+
         <converters:CountToDoubleConverter
             x:Name="customActionsToMinHeightConverter"
             ValueIfNonZero="40"
@@ -364,10 +368,16 @@
                                             <ColumnDefinition Width="*" MaxWidth="240" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
+
+
+
+
+
                                         <Image
                                             Grid.Column="0"
                                             HorizontalAlignment="Left"
                                             x:Phase="2"
+                                            Opacity="0"
                                             Source="{x:Bind Image}"
                                             Visibility="Visible" />
                                         <TextBlock
@@ -375,9 +385,16 @@
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center"
                                             x:Phase="1"
+                                            Opacity="0"
                                             Text="{x:Bind Content}"
                                             TextTrimming="CharacterEllipsis"
                                             Visibility="Visible" />
+
+                                        <controls:ClipboardHistoryItemPreviewControl
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                            x:Phase="0"
+                                            ClipboardItem="{x:Bind}" />
                                         <Button
                                             x:Name="ClipboardHistoryItemMoreOptionsButton"
                                             x:Uid="ClipboardHistoryItemMoreOptionsButton"
