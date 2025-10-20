@@ -54,6 +54,7 @@
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
+            "PowerToys.McpServer.exe",
 
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",

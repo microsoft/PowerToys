@@ -513,7 +513,15 @@ namespace Awake
                         break;
 
                     case AwakeMode.INDEFINITE:
-                        Manager.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
+                        if (settings.Properties.ProcessId > 0)
+                        {
+                            Manager.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn, settings.Properties.ProcessId);
+                        }
+                        else
+                        {
+                            Manager.SetIndefiniteKeepAwake(settings.Properties.KeepDisplayOn);
+                        }
+
                         break;
 
                     case AwakeMode.TIMED:

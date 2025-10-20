@@ -4094,6 +4094,47 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="RegistryPreview.ModuleTitle" xml:space="preserve">
     <value>Registry Preview</value>
   </data>
+  <data name="Mcp.ModuleTitle" xml:space="preserve">
+    <value>Model Context Protocol</value>
+  </data>
+  <data name="Mcp.ModuleDescription" xml:space="preserve">
+    <value>Expose PowerToys modules as MCP tools for AI assistants.</value>
+  </data>
+  <data name="Shell_Mcp.Content" xml:space="preserve">
+    <value>MCP</value>
+    <comment>Product name: Navigation view item name for Model Context Protocol (MCP)</comment>
+  </data>
+  <data name="Mcp_EnableSettingsCard.Header" xml:space="preserve">
+    <value>Enable MCP</value>
+    <comment>MCP is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_MCP.Text" xml:space="preserve">
+    <value>Learn more about Model Context Protocol</value>
+  </data>
+  <data name="Mcp_RegistrationSettingsGroup.Header" xml:space="preserve">
+    <value>Registration</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationSettingsCard.Header" xml:space="preserve">
+    <value>Register to VS Code</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationSettingsCard.Description" xml:space="preserve">
+    <value>Automatically register MCP server to VS Code settings.json</value>
+  </data>
+  <data name="Mcp_WindowsCopilotRegistrationSettingsCard.Header" xml:space="preserve">
+    <value>Register to Windows Copilot</value>
+  </data>
+  <data name="Mcp_WindowsCopilotRegistrationSettingsCard.Description" xml:space="preserve">
+    <value>Automatically register MCP server to Windows Copilot</value>
+  </data>
+  <data name="Mcp_ModuleTogglesSettingsGroup.Header" xml:space="preserve">
+    <value>Module Toggles</value>
+  </data>
+  <data name="Mcp_AwakeModuleToggleSettingsCard.Header" xml:space="preserve">
+    <value>Awake</value>
+  </data>
+  <data name="Mcp_AwakeModuleToggleSettingsCard.Description" xml:space="preserve">
+    <value>Allow MCP tools to access Awake module</value>
+  </data>
   <data name="Shell_RegistryPreview.Content" xml:space="preserve">
     <value>Registry Preview</value>
     <comment>Product name: Navigation view item name for Registry Preview</comment>

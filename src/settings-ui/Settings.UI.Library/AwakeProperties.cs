@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = [];
+            ProcessId = 0;
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -27,6 +28,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("mode")]
         public AwakeMode Mode { get; set; }
+
+        [JsonPropertyName("processId")]
+        public int ProcessId { get; set; }
 
         [JsonPropertyName("intervalHours")]
         public uint IntervalHours { get; set; }
