@@ -65,12 +65,26 @@
     </Application>
     <Application Id="PowerToys.McpServer" Executable="PowerToys.McpServer.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
       <uap:VisualElements
+        AppListEntry="none"
         DisplayName="PowerToys.McpServer"
         Description="PowerToys MCP Server"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
       </uap:VisualElements>
+      <Extensions>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension
+            Name="com.microsoft.windows.ai.modelcontextprotocolserver"
+            Id="PowerToys.McpServer"
+            DisplayName="PowerToys MCP Server"
+            PublicFolder="Assets">
+            <uap3:Properties>
+              <Registration>mcpServerConfig.json</Registration>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
     </Application>
   </Applications>
 </Package>

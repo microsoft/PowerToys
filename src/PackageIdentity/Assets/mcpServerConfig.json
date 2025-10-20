@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "mcpServers": [
+    {
+      "name": "PowerToysMcpServer",
+      "type": "stdio",
+      "command": "PowerToys.McpServer.exe"
+    }
+  ]
+}

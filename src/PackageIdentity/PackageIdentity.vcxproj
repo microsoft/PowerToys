@@ -2,22 +2,20 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
   <!-- CI Build Configuration -->
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+  <PropertyGroup Condition="'$(CIBuild)'=='true' and '$(ForceSign)' != 'true'">
     <ForceCIPackaging>true</ForceCIPackaging>
-    <NoSignCI>true</NoSignCI>
+    <EffectiveCIBuild>true</EffectiveCIBuild>
   </PropertyGroup>
 
   <!-- Target to generate sparse MSIX package -->
   <Target Name="GenerateSparsePackage" BeforeTargets="PrepareForBuild">
     <!-- Use NoSign only for CI builds to avoid certificate issues on hosted agents -->
     <PropertyGroup>
-      <NoSignParam Condition="'$(NoSignCI)' == 'true'">-NoSign</NoSignParam>
-      <NoSignParam Condition="'$(NoSignCI)' != 'true'"></NoSignParam>
-      <CIBuildParam Condition="'$(CIBuild)' == 'true'">-CIBuild</CIBuildParam>
-      <CIBuildParam Condition="'$(CIBuild)' != 'true'"></CIBuildParam>
+  <NoSignParam Condition="'$(EffectiveCIBuild)' == 'true'">-NoSign</NoSignParam>
+      <NoSignParam Condition="'$(EffectiveCIBuild)' != 'true'"></NoSignParam>
     </PropertyGroup>
     
-  <Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam) $(CIBuildParam)" 
+    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam)" 
           ContinueOnError="false"
           WorkingDirectory="$(MSBuildThisFileDirectory)" />
   </Target>

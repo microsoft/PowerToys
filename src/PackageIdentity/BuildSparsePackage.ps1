@@ -12,8 +12,7 @@ Param(
 
     [switch]$Clean,
     [switch]$ForceCert,
-    [switch]$NoSign,
-    [switch]$CIBuild
+    [switch]$NoSign
 )
 
 # PowerToys sparse packaging helper.
@@ -23,7 +22,7 @@ Param(
 $ErrorActionPreference = 'Stop'
 
 $isCIBuild = $false
-if ($CIBuild.IsPresent) {
+if ($NoSign.IsPresent) {
     $isCIBuild = $true
 } elseif ($env:CIBuild) {
     $isCIBuild = $env:CIBuild -ieq 'true'
@@ -292,6 +291,7 @@ try {
     $essentialFiles = @(
         "AppxManifest.xml"
         "Images\*"
+        "Assets\*"
     )
     
     foreach ($filePattern in $essentialFiles) {
