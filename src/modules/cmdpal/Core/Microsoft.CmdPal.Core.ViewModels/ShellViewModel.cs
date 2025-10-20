@@ -265,6 +265,9 @@ public partial class ShellViewModel : ObservableObject,
                     throw new NotSupportedException();
                 }
 
+                // Clear command bar, ViewModel initialization can already set new commands if it wants to
+                OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
+
                 // Kick off async loading of our ViewModel
                 LoadPageViewModelAsync(pageViewModel, navigationToken)
                     .ContinueWith(
@@ -275,9 +278,6 @@ public partial class ShellViewModel : ObservableObject,
                             {
                                 newCts.Dispose();
                             }
-
-                            // When we're done loading the page, then update the command bar to match
-                            WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
                         },
                         navigationToken,
                         TaskContinuationOptions.None,
