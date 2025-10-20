@@ -79,6 +79,8 @@ public:
 
     void LoadSettings();
 
+    HANDLE GetSettingsChangedEvent() const { return m_settingsChangedEvent; }
+
 private:
     LightSwitchSettings();
     ~LightSwitchSettings() = default;
@@ -88,4 +90,6 @@ private:
     std::unordered_set<SettingsObserver*> m_observers;
 
     void NotifyObservers(SettingId id) const;
+
+    HANDLE m_settingsChangedEvent = nullptr;
 };

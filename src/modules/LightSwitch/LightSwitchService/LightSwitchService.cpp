@@ -227,9 +227,65 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         // If schedule is off, idle but keep watching settings and manual override
         if (settings.scheduleMode == ScheduleMode::Off)
         {
-            Logger::info(L"[LightSwitchService] Schedule mode OFF detected - exiting to save resources.");
-            break;
+            Logger::info(L"[LightSwitchService] Schedule mode OFF - suspending scheduler but keeping service alive.");
+
+            if (!hManualOverride)
+            {
+                hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+            }
+
+            HANDLE waits[4];
+            DWORD count = 0;
+            waits[count++] = g_ServiceStopEvent;
+            if (hParent)
+                waits[count++] = hParent;
+            if (hManualOverride)
+                waits[count++] = hManualOverride;
+            waits[count++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
+
+            for (;;)
+            {
+                DWORD wait = WaitForMultipleObjects(count, waits, FALSE, INFINITE);
+
+                // --- Handle exit signals ---
+                if (wait == WAIT_OBJECT_0) // stop event
+                {
+                    Logger::info(L"[LightSwitchService] Stop event triggered - exiting worker loop.");
+                    break;
+                }
+                if (hParent && wait == WAIT_OBJECT_0 + 1)
+                {
+                    Logger::info(L"[LightSwitchService] Parent exited - stopping service.");
+                    break;
+                }
+
+                // --- Manual override triggered ---
+                if (wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
+                {
+                    Logger::info(L"[LightSwitchService] Manual override received while schedule OFF.");
+                    ResetEvent(hManualOverride);
+                    continue;
+                }
+
+                // --- Settings file changed ---
+                if (wait == WAIT_OBJECT_0 + (hParent ? 3 : 2))
+                {
+                    Logger::trace(L"[LightSwitchService] Settings change event triggered, reloading settings...");
+
+                    ResetEvent(LightSwitchSettings::instance().GetSettingsChangedEvent());
+
+                    LightSwitchSettings::instance().LoadSettings();
+                    const auto& newSettings = LightSwitchSettings::instance().settings();
+
+                    if (newSettings.scheduleMode != ScheduleMode::Off)
+                    {
+                        Logger::info(L"[LightSwitchService] Schedule re-enabled, resuming normal loop.");
+                        break;
+                    }
+                }
+            }
         }
+
 
         // --- When schedule is active, run once per minute ---
         SYSTEMTIME st;

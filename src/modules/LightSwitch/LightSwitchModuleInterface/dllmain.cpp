@@ -301,14 +301,7 @@ public:
                                  ToString(newMode));
                     g_settings.m_scheduleMode = newMode;
 
-                    if (newMode == ScheduleMode::Off)
-                    {
-                        stop_service_if_running();
-                    }
-                    else
-                    {
-                        start_service_if_needed();
-                    }
+                    start_service_if_needed();
                 }
             }
 
@@ -362,7 +355,7 @@ public:
         }
     }
 
-    virtual void stop_worker_only()
+    /*virtual void stop_worker_only()
     {
         if (m_process)
         {
@@ -379,16 +372,16 @@ public:
             CloseHandle(m_process);
             m_process = nullptr;
         }
-    }
+    }*/
 
-    virtual void stop_service_if_running()
+    /*virtual void stop_service_if_running()
     {
         if (m_process)
         {
             Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService due to schedule OFF.");
             stop_worker_only();
         }
-    }
+    }*/
 
     virtual void enable()
     {
