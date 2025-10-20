@@ -6,8 +6,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
-
 using LanguageModelProvider;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -30,9 +30,11 @@ public sealed partial class FoundryLocalModelPicker : UserControl
 
     public delegate void DownloadRequestedEventHandler(object sender, object payload);
 
+    public delegate void LoadRequestedEventHandler(object sender, FoundryLoadRequestedEventArgs args);
+
     public event ModelSelectionChangedEventHandler SelectionChanged;
 
-    public event DownloadRequestedEventHandler DownloadRequested;
+    public event LoadRequestedEventHandler LoadRequested;
 
     public IEnumerable<ModelDetails> CachedModels
     {
@@ -92,6 +94,22 @@ public sealed partial class FoundryLocalModelPicker : UserControl
 
     public bool HasDownloadableModels => DownloadableModels?.Cast<object>().Any() ?? false;
 
+    public void RequestLoad(bool refresh)
+    {
+        if (IsLoading)
+        {
+            // Allow refresh requests to continue even if already loading by cancelling via host.
+        }
+        else
+        {
+            IsLoading = true;
+        }
+
+        IsAvailable = false;
+        StatusText = "Loading Foundry Local status...";
+        LoadRequested?.Invoke(this, new FoundryLoadRequestedEventArgs(refresh));
+    }
+
     private static void OnCachedModelsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var control = (FoundryLocalModelPicker)d;
@@ -117,12 +135,17 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         try
         {
             control._suppressSelection = true;
-            control.CachedModelsListView.SelectedItem = e.NewValue;
+            if (control.CachedModelsComboBox is not null)
+            {
+                control.CachedModelsComboBox.SelectedItem = e.NewValue;
+            }
         }
         finally
         {
             control._suppressSelection = false;
         }
+
+        control.UpdateSelectedModelDetails();
     }
 
     private static void OnStatePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -171,7 +194,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         UpdateVisualStates();
     }
 
-    private void CachedModelsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void CachedModelsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_suppressSelection)
         {
@@ -181,7 +204,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         try
         {
             _suppressSelection = true;
-            var selected = CachedModelsListView.SelectedItem as ModelDetails;
+            var selected = CachedModelsComboBox.SelectedItem as ModelDetails;
             SetValue(SelectedModelProperty, selected);
             SelectionChanged?.Invoke(this, selected);
         }
@@ -189,14 +212,99 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         {
             _suppressSelection = false;
         }
+
+        UpdateSelectedModelDetails();
     }
 
-    private void DownloadItemButton_Click(object sender, RoutedEventArgs e)
+    private void UpdateSelectedModelDetails()
     {
-        if (sender is Button button)
+        if (SelectedModelDetailsPanel is null || SelectedModelDescriptionText is null || SelectedModelTagsPanel is null)
         {
-            DownloadRequested?.Invoke(this, button.Tag);
-            DownloadModelsFlyout?.Hide();
+            return;
+        }
+
+        if (!HasCachedModels || SelectedModel is not ModelDetails model)
+        {
+            SelectedModelDetailsPanel.Visibility = Visibility.Collapsed;
+            SelectedModelDescriptionText.Text = string.Empty;
+            SelectedModelTagsPanel.Children.Clear();
+            SelectedModelTagsPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        SelectedModelDetailsPanel.Visibility = Visibility.Visible;
+        SelectedModelDescriptionText.Text = string.IsNullOrWhiteSpace(model.Description)
+            ? "No description provided."
+            : model.Description;
+
+        SelectedModelTagsPanel.Children.Clear();
+
+        AddTag(GetModelSizeText(model.Size));
+        AddTag(GetLicenseShortText(model.License), model.License);
+
+        foreach (var deviceTag in GetDeviceTags(model.HardwareAccelerators))
+        {
+            AddTag(deviceTag);
+        }
+
+        SelectedModelTagsPanel.Visibility = SelectedModelTagsPanel.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        void AddTag(string text, string tooltip = null)
+        {
+            if (string.IsNullOrWhiteSpace(text) || SelectedModelTagsPanel is null)
+            {
+                return;
+            }
+
+            Border tag = new();
+            if (Resources.TryGetValue("TagBorderStyle", out var borderStyleObj) && borderStyleObj is Style borderStyle)
+            {
+                tag.Style = borderStyle;
+            }
+
+            TextBlock label = new()
+            {
+                Text = text,
+            };
+
+            if (Resources.TryGetValue("TagTextStyle", out var textStyleObj) && textStyleObj is Style textStyle)
+            {
+                label.Style = textStyle;
+            }
+
+            tag.Child = label;
+
+            if (!string.IsNullOrWhiteSpace(tooltip))
+            {
+                ToolTipService.SetToolTip(tag, new TextBlock
+                {
+                    Text = tooltip,
+                    TextWrapping = TextWrapping.Wrap,
+                });
+            }
+
+            SelectedModelTagsPanel.Children.Add(tag);
+        }
+    }
+
+    private void LaunchFoundryModelListButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            ProcessStartInfo processInfo = new()
+            {
+                FileName = "powershell.exe",
+                Arguments = "-NoExit -Command \"foundry model list\"",
+                UseShellExecute = true,
+            };
+
+            Process.Start(processInfo);
+            StatusText = "Opening PowerShell and running 'foundry model list'...";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Unable to start PowerShell. {ex.Message}";
+            Debug.WriteLine($"[FoundryLocalModelPicker] Failed to run 'foundry model list': {ex}");
         }
     }
 
@@ -217,9 +325,21 @@ public sealed partial class FoundryLocalModelPicker : UserControl
             VisualStateManager.GoToState(this, "ShowModels", true);
         }
 
+        if (LoadingStatusTextBlock is not null)
+        {
+            LoadingStatusTextBlock.Text = string.IsNullOrWhiteSpace(StatusText)
+                ? "Loading Foundry Local status..."
+                : StatusText;
+        }
+
         NoModelsPanel.Visibility = HasCachedModels ? Visibility.Collapsed : Visibility.Visible;
-        DownloadSection.Visibility = HasDownloadableModels ? Visibility.Visible : Visibility.Collapsed;
-        StatusTextBlock.Text = string.IsNullOrWhiteSpace(StatusText) ? string.Empty : StatusText;
+        if (CachedModelsComboBox is not null)
+        {
+            CachedModelsComboBox.Visibility = HasCachedModels ? Visibility.Visible : Visibility.Collapsed;
+            CachedModelsComboBox.IsEnabled = HasCachedModels;
+        }
+
+        UpdateSelectedModelDetails();
 
         Bindings.Update();
     }
@@ -318,5 +438,15 @@ public sealed partial class FoundryLocalModelPicker : UserControl
     public static Visibility GetLicenseVisibility(string license)
     {
         return string.IsNullOrWhiteSpace(license) ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    public sealed class FoundryLoadRequestedEventArgs : EventArgs
+    {
+        public FoundryLoadRequestedEventArgs(bool refresh)
+        {
+            Refresh = refresh;
+        }
+
+        public bool Refresh { get; }
     }
 }

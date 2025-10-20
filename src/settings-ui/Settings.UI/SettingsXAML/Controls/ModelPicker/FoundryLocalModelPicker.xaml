@@ -30,12 +30,23 @@
     </UserControl.Resources>
 
     <Grid>
-        <ProgressRing
-            x:Name="LoadingIndicator"
-            Width="36"
-            Height="36"
+        <StackPanel
+            x:Name="LoadingPanel"
             HorizontalAlignment="Center"
-            VerticalAlignment="Center" />
+            VerticalAlignment="Center"
+            Spacing="12">
+            <ProgressRing
+                x:Name="LoadingIndicator"
+                Width="36"
+                Height="36"
+                HorizontalAlignment="Center" />
+            <TextBlock
+                x:Name="LoadingStatusTextBlock"
+                Text="Loading Foundry Local status..."
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
 
         <ScrollViewer
             x:Name="ModelsView"
@@ -67,207 +78,41 @@
                         HorizontalAlignment="Center"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Download or add a local model below."
+                        Text="Run Foundry Local to download or add a local model below."
                         TextAlignment="Center"
                         TextWrapping="Wrap" />
+                    <Button
+                        x:Name="LaunchFoundryModelListButton"
+                        Content="Open Foundry model list"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Click="LaunchFoundryModelListButton_Click" />
                 </StackPanel>
 
-                <ListView
-                    x:Name="CachedModelsListView"
-                    Grid.Row="1"
-                    MaxHeight="260"
-                    SelectionMode="Single"
-                    ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
-                    SelectionChanged="CachedModelsListView_SelectionChanged">
-                    <ListView.Resources>
-                        <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
-                            <Setter Property="Margin" Value="0,0,0,8" />
-                        </Style>
-                    </ListView.Resources>
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ModelDetails">
-                            <toolkit:SettingsCard
-                                MinHeight="64"
-                                Padding="18,12,18,12"
-                                Background="{ThemeResource LayerFillColorAltBrush}">
-                                <toolkit:SettingsCard.Resources>
-                                    <Thickness x:Key="SettingsCardHeaderIconMargin">0,0,12,0</Thickness>
-                                    <x:Double x:Key="SettingsCardWrapThreshold">320</x:Double>
-                                </toolkit:SettingsCard.Resources>
-                                <toolkit:SettingsCard.Header>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Text="{x:Bind Name}"
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTipService.ToolTip="{x:Bind Name}" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            Margin="12,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind local:FoundryLocalModelPicker.GetModelSizeText(Size), Mode=OneWay}"
-                                            Visibility="{x:Bind local:FoundryLocalModelPicker.GetModelSizeVisibility(Size), Mode=OneWay}" />
-                                    </Grid>
-                                </toolkit:SettingsCard.Header>
-                                <toolkit:SettingsCard.Description>
-                                    <StackPanel Spacing="6">
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind Description}"
-                                            TextWrapping="Wrap"
-                                            ToolTipService.ToolTip="{x:Bind Description}" />
-                                        <toolkit:WrapPanel HorizontalSpacing="4" VerticalSpacing="4">
-                                            <Border
-                                                Style="{StaticResource TagBorderStyle}"
-                                                Visibility="{x:Bind local:FoundryLocalModelPicker.GetModelSizeVisibility(Size), Mode=OneWay}">
-                                                <TextBlock
-                                                    Style="{StaticResource TagTextStyle}"
-                                                    Text="{x:Bind local:FoundryLocalModelPicker.GetModelSizeText(Size), Mode=OneWay}" />
-                                            </Border>
-                                            <ItemsRepeater
-                                                ItemsSource="{x:Bind local:FoundryLocalModelPicker.GetDeviceTags(HardwareAccelerators), Mode=OneWay}"
-                                                Visibility="{x:Bind local:FoundryLocalModelPicker.GetDeviceVisibility(HardwareAccelerators), Mode=OneWay}">
-                                                <ItemsRepeater.Layout>
-                                                    <StackLayout Orientation="Horizontal" Spacing="4" />
-                                                </ItemsRepeater.Layout>
-                                                <ItemsRepeater.ItemTemplate>
-                                                    <DataTemplate x:DataType="x:String">
-                                                        <Border Style="{StaticResource TagBorderStyle}">
-                                                            <TextBlock Style="{StaticResource TagTextStyle}" Text="{x:Bind}" />
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsRepeater.ItemTemplate>
-                                            </ItemsRepeater>
-                                            <Border
-                                                Style="{StaticResource TagBorderStyle}"
-                                                Visibility="{x:Bind local:FoundryLocalModelPicker.GetLicenseVisibility(License), Mode=OneWay}">
-                                                <TextBlock
-                                                    Style="{StaticResource TagTextStyle}"
-                                                    Text="{x:Bind local:FoundryLocalModelPicker.GetLicenseShortText(License), Mode=OneWay}" />
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="{x:Bind License, Mode=OneWay}" TextWrapping="Wrap" />
-                                                </ToolTipService.ToolTip>
-                                            </Border>
-                                        </toolkit:WrapPanel>
-                                    </StackPanel>
-                                </toolkit:SettingsCard.Description>
-                            </toolkit:SettingsCard>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-
-                <StackPanel
-                    x:Name="DownloadSection"
-                    Grid.Row="2"
-                    Margin="0,16,0,0"
-                    Orientation="Horizontal"
-                    Spacing="12">
-                    <DropDownButton Content="Download model" IsEnabled="{x:Bind HasDownloadableModels, Mode=OneWay}">
-                        <DropDownButton.Flyout>
-                            <Flyout x:Name="DownloadModelsFlyout" Placement="BottomEdgeAlignedLeft">
-                                <StackPanel Width="420" Spacing="8">
-                                    <TextBlock
-                                        FontWeight="SemiBold"
-                                        Text="Available models" />
-                                    <ScrollViewer MaxHeight="320">
-                                        <ItemsRepeater ItemsSource="{x:Bind DownloadableModels, Mode=OneWay}">
-                                            <ItemsRepeater.Layout>
-                                                <StackLayout Spacing="6" />
-                                            </ItemsRepeater.Layout>
-                                            <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Button
-                                                        Padding="12,10"
-                                                        HorizontalAlignment="Stretch"
-                                                        IsEnabled="{Binding CanDownload}"
-                                                        Style="{StaticResource SubtleButtonStyle}"
-                                                        Tag="{Binding}"
-                                                        Click="DownloadItemButton_Click">
-                                                        <Grid ColumnSpacing="12">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <StackPanel Spacing="6">
-                                                                <TextBlock
-                                                                    FontWeight="SemiBold"
-                                                                    Text="{Binding Name}"
-                                                                    TextWrapping="Wrap" />
-                                                                <TextBlock
-                                                                    FontSize="12"
-                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                    Text="{Binding Description}"
-                                                                    TextWrapping="Wrap" />
-                                                                <toolkit:WrapPanel HorizontalSpacing="4" VerticalSpacing="4">
-                                                                    <Border
-                                                                        Style="{StaticResource TagBorderStyle}"
-                                                                        Visibility="{Binding HasSizeTag, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                        <TextBlock
-                                                                            Style="{StaticResource TagTextStyle}"
-                                                                            Text="{Binding SizeTag}" />
-                                                                    </Border>
-                                                                    <ItemsRepeater
-                                                                        ItemsSource="{Binding DeviceTags}"
-                                                                        Visibility="{Binding HasDeviceTags, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                        <ItemsRepeater.Layout>
-                                                                            <StackLayout Orientation="Horizontal" Spacing="4" />
-                                                                        </ItemsRepeater.Layout>
-                                                                        <ItemsRepeater.ItemTemplate>
-                                                                            <DataTemplate>
-                                                                                <Border Style="{StaticResource TagBorderStyle}">
-                                                                                    <TextBlock Style="{StaticResource TagTextStyle}" Text="{Binding}" />
-                                                                                </Border>
-                                                                            </DataTemplate>
-                                                                        </ItemsRepeater.ItemTemplate>
-                                                                    </ItemsRepeater>
-                                                                    <Border
-                                                                        Style="{StaticResource TagBorderStyle}"
-                                                                        Visibility="{Binding HasLicenseTag, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                                        <TextBlock
-                                                                            Style="{StaticResource TagTextStyle}"
-                                                                            Text="{Binding LicenseTag}" />
-                                                                        <ToolTipService.ToolTip>
-                                                                            <TextBlock Text="{Binding ModelDetails.License}" TextWrapping="Wrap" />
-                                                                        </ToolTipService.ToolTip>
-                                                                    </Border>
-                                                                </toolkit:WrapPanel>
-                                                                <ProgressBar
-                                                                    Height="4"
-                                                                    Maximum="100"
-                                                                    Minimum="0"
-                                                                    Value="{Binding ProgressPercent}"
-                                                                    Visibility="{Binding ProgressVisibility}" />
-                                                            </StackPanel>
-                                                            <TextBlock
-                                                                Grid.Column="1"
-                                                                VerticalAlignment="Center"
-                                                                FontWeight="SemiBold"
-                                                                Text="{Binding ActionLabel}" />
-                                                        </Grid>
-                                                    </Button>
-                                                </DataTemplate>
-                                            </ItemsRepeater.ItemTemplate>
-                                        </ItemsRepeater>
-                                    </ScrollViewer>
-                                </StackPanel>
-                            </Flyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
+                <StackPanel Grid.Row="1" Spacing="12">
+                    <ComboBox
+                        x:Name="CachedModelsComboBox"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
+                        PlaceholderText="Select a downloaded model"
+                        SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
+                        SelectionChanged="CachedModelsComboBox_SelectionChanged"
+                        DisplayMemberPath="Name" />
+                    <StackPanel
+                        x:Name="SelectedModelDetailsPanel"
+                        Spacing="8"
+                        Visibility="Collapsed">
+                        <TextBlock
+                            x:Name="SelectedModelDescriptionText"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                        <toolkit:WrapPanel
+                            x:Name="SelectedModelTagsPanel"
+                            HorizontalSpacing="4"
+                            VerticalSpacing="4"
+                            Visibility="Collapsed" />
+                    </StackPanel>
                 </StackPanel>
-
-                <TextBlock
-                    x:Name="StatusTextBlock"
-                    Grid.Row="3"
-                    Margin="0,16,0,0"
-                    FontSize="12"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="Wrap" />
             </Grid>
         </ScrollViewer>
 
@@ -285,7 +130,7 @@
                     Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
                 <TextBlock
                     FontWeight="SemiBold"
-                    Text="Foundry Local is not installed on this device."
+                    Text="Foundry Local is not available on this device yet."
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
                 <TextBlock
@@ -294,11 +139,11 @@
                     IsTextSelectionEnabled="True"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run Text="Install Foundry Local to download and use local models." />
+                    <Run Text="Start the Foundry Local service before returning to PowerToys." />
                 </TextBlock>
                 <HyperlinkButton
-                    Content="Learn how to install Foundry Local"
-                    NavigateUri="https://aka.ms/fl-install-from-gallery" />
+                    Content="Follow the Foundry Local CLI guide"
+                    NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/reference/reference-cli" />
             </StackPanel>
         </Grid>
 
@@ -307,14 +152,14 @@
                 <VisualState x:Name="ShowLoading" />
                 <VisualState x:Name="ShowModels">
                     <VisualState.Setters>
-                        <Setter Target="LoadingIndicator.Visibility" Value="Collapsed" />
+                        <Setter Target="LoadingPanel.Visibility" Value="Collapsed" />
                         <Setter Target="NotAvailableGrid.Visibility" Value="Collapsed" />
                         <Setter Target="ModelsView.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="ShowNotAvailable">
                     <VisualState.Setters>
-                        <Setter Target="LoadingIndicator.Visibility" Value="Collapsed" />
+                        <Setter Target="LoadingPanel.Visibility" Value="Collapsed" />
                         <Setter Target="NotAvailableGrid.Visibility" Value="Visible" />
                         <Setter Target="ModelsView.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
