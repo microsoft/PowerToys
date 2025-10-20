@@ -184,7 +184,7 @@ namespace PowerDisplay.Helpers
                                 Brightness = entry.Brightness,
                                 ColorTemperature = entry.ColorTemperature,
                                 Contrast = entry.Contrast,
-                                Volume = entry.Volume
+                                Volume = entry.Volume,
                             };
                         }
                     }
@@ -215,7 +215,7 @@ namespace PowerDisplay.Helpers
                 // Build state file
                 var stateFile = new MonitorStateFile
                 {
-                    LastUpdated = DateTime.Now
+                    LastUpdated = DateTime.Now,
                 };
 
                 var now = DateTime.Now;
@@ -233,7 +233,7 @@ namespace PowerDisplay.Helpers
                             ColorTemperature = state.ColorTemperature,
                             Contrast = state.Contrast,
                             Volume = state.Volume,
-                            LastUpdated = now
+                            LastUpdated = now,
                         };
                     }
                 }

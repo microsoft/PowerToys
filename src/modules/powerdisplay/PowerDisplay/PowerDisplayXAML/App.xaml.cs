@@ -225,7 +225,7 @@ namespace PowerDisplay
                 _messageReceiverThread = new Thread(MessageReceiverThreadProc)
                 {
                     IsBackground = true,
-                    Name = "PowerDisplay IPC Receiver"
+                    Name = "PowerDisplay IPC Receiver",
                 };
                 _messageReceiverThread.Start();
             }
@@ -367,14 +367,14 @@ namespace PowerDisplay
                 {
                     Text = "PowerDisplay Startup Failed",
                     FontSize = 20,
-                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 });
 
                 panel.Children.Add(new TextBlock
                 {
                     Text = $"Error: {ex.Message}",
                     FontSize = 14,
-                    TextWrapping = TextWrapping.Wrap
+                    TextWrapping = TextWrapping.Wrap,
                 });
 
                 panel.Children.Add(new TextBlock
@@ -383,14 +383,14 @@ namespace PowerDisplay
                     FontSize = 12,
                     TextWrapping = TextWrapping.Wrap,
                     Foreground = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                    Margin = new Thickness(0, 10, 0, 0)
+                    Margin = new Thickness(0, 10, 0, 0),
                 });
 
                 var closeButton = new Button
                 {
                     Content = "Close",
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    Margin = new Thickness(0, 10, 0, 0)
+                    Margin = new Thickness(0, 10, 0, 0),
                 };
                 closeButton.Click += (_, _) => errorWindow.Close();
                 panel.Children.Add(closeButton);
@@ -400,7 +400,7 @@ namespace PowerDisplay
                     Content = panel,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                     MaxHeight = 600,
-                    MaxWidth = 800
+                    MaxWidth = 800,
                 };
 
                 errorWindow.Activate();

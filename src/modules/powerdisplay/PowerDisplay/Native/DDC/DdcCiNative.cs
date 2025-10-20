@@ -374,7 +374,7 @@ namespace PowerDisplay.Native.DDC
                             FriendlyName = friendlyName ?? string.Empty,
                             HardwareId = hardwareId ?? string.Empty,
                             AdapterId = path.TargetInfo.AdapterId,
-                            TargetId = path.TargetInfo.Id
+                            TargetId = path.TargetInfo.Id,
                         };
                     }
                 }

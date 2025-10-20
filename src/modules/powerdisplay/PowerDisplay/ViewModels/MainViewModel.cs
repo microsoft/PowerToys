@@ -333,7 +333,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 _settingsWatcher = new FileSystemWatcher(directory, fileName)
                 {
                     NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-                    EnableRaisingEvents = true
+                    EnableRaisingEvents = true,
                 };
 
                 _settingsWatcher.Changed += OnSettingsFileChanged;
@@ -688,7 +688,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     CommunicationMethod = GetCommunicationMethodString(vm.Type),
                     MonitorType = vm.Type.ToString(),
                     CurrentBrightness = vm.Brightness,
-                    ColorTemperature = vm.ColorTemperature
+                    ColorTemperature = vm.ColorTemperature,
                 };
 
                 monitorsData.Add(monitorData);
@@ -718,7 +718,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             MonitorType.External => "DDC/CI",
             MonitorType.Internal => "WMI",
-            _ => "Unknown"
+            _ => "Unknown",
         };
     }
 

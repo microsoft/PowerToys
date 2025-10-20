@@ -185,7 +185,7 @@ namespace PowerDisplay.Native.DDC
                     Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.DdcCi,
                     ConnectionType = "External",
                     CommunicationMethod = "DDC/CI",
-                    Manufacturer = ExtractManufacturer(name)
+                    Manufacturer = ExtractManufacturer(name),
                 };
 
                 // Check contrast support

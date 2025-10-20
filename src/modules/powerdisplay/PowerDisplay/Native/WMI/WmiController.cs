@@ -218,7 +218,7 @@ namespace PowerDisplay.Native.WMI
                                 ConnectionType = "Internal",
                                 CommunicationMethod = "WMI",
                                 Manufacturer = "Internal",
-                                SupportsColorTemperature = false // Internal monitors don't support DDC/CI color temperature
+                                SupportsColorTemperature = false, // Internal monitors don't support DDC/CI color temperature
                             };
 
                             monitors.Add(monitor);

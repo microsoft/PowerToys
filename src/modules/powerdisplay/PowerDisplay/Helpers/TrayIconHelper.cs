@@ -151,7 +151,7 @@ namespace PowerDisplay.Helpers
             {
                 CbSize = (uint)sizeof(NOTIFYICONDATA),
                 HWnd = _messageWindowHandle,
-                UID = 1
+                UID = 1,
             };
             Shell_NotifyIcon(NimDelete, ref tempData);
 

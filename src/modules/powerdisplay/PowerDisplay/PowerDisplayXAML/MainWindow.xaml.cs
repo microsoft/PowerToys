@@ -483,7 +483,7 @@ namespace PowerDisplay
                     Title = "Monitor Detection Test",
                     Content = "Starting monitor detection...",
                     CloseButtonText = "Close",
-                    XamlRoot = this.Content.XamlRoot
+                    XamlRoot = this.Content.XamlRoot,
                 };
 
                 _ = dlg.ShowAsync();

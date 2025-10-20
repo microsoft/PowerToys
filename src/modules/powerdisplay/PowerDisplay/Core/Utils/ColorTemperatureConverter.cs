@@ -82,7 +82,7 @@ namespace PowerDisplay.Core.Utils
                 < 3500 => "Warm",
                 < 5500 => "Neutral",
                 < 7500 => "Cool",
-                _ => "Very Cool"
+                _ => "Very Cool",
             };
         }
     }
