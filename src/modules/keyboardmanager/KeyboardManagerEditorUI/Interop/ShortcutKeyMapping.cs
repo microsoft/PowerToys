@@ -26,6 +26,39 @@ namespace KeyboardManagerEditorUI.Interop
 
         public string ProgramArgs { get; set; } = string.Empty;
 
+        public string StartInDirectory { get; set; } = string.Empty;
+
+        public ElevationLevel Elevation { get; set; } = ElevationLevel.NonElevated;
+
+        public ProgramAlreadyRunningAction IfRunningAction { get; set; } = ProgramAlreadyRunningAction.ShowWindow;
+
+        public StartWindowType Visibility { get; set; } = StartWindowType.Normal;
+
         public string UriToOpen { get; set; } = string.Empty;
+
+        public enum ElevationLevel
+        {
+            NonElevated = 0,
+            Elevated = 1,
+            DifferentUser = 2,
+        }
+
+        public enum StartWindowType
+        {
+            Normal = 0,
+            Hidden = 1,
+            Minimized = 2,
+            Maximized = 3,
+        }
+
+        public enum ProgramAlreadyRunningAction
+        {
+            ShowWindow = 0,
+            StartAnother = 1,
+            DoNothing = 2,
+            Close = 3,
+            EndTask = 4,
+            CloseAndEndTask = 5,
+        }
     }
 }

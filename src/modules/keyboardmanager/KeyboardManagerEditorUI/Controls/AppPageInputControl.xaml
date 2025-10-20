@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.AppPageInputControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="UserControl_Loaded"
+    mc:Ignorable="d">
+
+    <StackPanel
+        Width="360"
+        Height="360"
+        Orientation="Vertical"
+        Spacing="8">
+        <!--  Shortcut section  -->
+        <TextBlock
+            Margin="0,12,0,8"
+            FontWeight="SemiBold"
+            Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Shortcut')}" />
+
+        <ToggleButton
+            x:Name="ShortcutToggleBtn"
+            Padding="0,24,0,24"
+            HorizontalAlignment="Stretch"
+            Checked="ShortcutToggleBtn_Checked"
+            Style="{StaticResource CustomShortcutToggleButtonStyle}">
+            <ToggleButton.Content>
+                <ItemsControl x:Name="ShortcutKeys">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <controls:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:KeyVisual Content="{Binding}" Style="{StaticResource DefaultKeyVisualStyle}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ToggleButton.Content>
+        </ToggleButton>
+
+        <StackPanel Orientation="Horizontal" 
+                    Spacing="8">
+            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleHeader')}"/>
+            <TextBox 
+                x:Name="ProgramPathInput"/>
+            <Button
+                x:Name="ProgramPathSelectButton"
+                Content="Select Program"
+                Click="ProgramPathSelectButton_Click"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" 
+            Spacing="8">
+            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Arguments')}"/>
+            <TextBox
+                x:Name="ProgramArgsInput"/>
+        </StackPanel>
+        
+        <StackPanel 
+            Orientation="Horizontal" 
+            Spacing="8">
+            <TextBlock>
+                Start in
+            </TextBlock>
+            <TextBox
+                x:Name="StartInPathInput"/>
+            <Button
+                x:Name="StartInSelectButton"
+                Content="Select Starting Directory"
+                Click="StartInSelectButton_Click"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" 
+            Spacing="8">
+            <ComboBox 
+                x:Name="ElevationComboBox"
+                Header="Elevation"
+                SelectedValue="Normal">
+                <x:String>Normal</x:String>
+                <x:String>Elevated</x:String>
+                <x:String>Different user</x:String>
+            </ComboBox>
+            <ComboBox
+                x:Name="IfRunningComboBox"
+                Header="If running action"
+                SelectedValue="Show window">
+                <x:String>Show window</x:String>
+                <x:String>Start another</x:String>
+                <x:String>Do nothing</x:String>
+                <x:String>Close</x:String>
+                <x:String>End task</x:String>
+            </ComboBox>
+            <ComboBox
+                x:Name="VisibilityComboBox"
+                Header="Visibility"
+                SelectedValue="Normal">
+                <x:String>Normal</x:String>
+                <x:String>Hidden</x:String>
+                <x:String>Minimized</x:String>
+                <x:String>Maximized</x:String>
+            </ComboBox>
+        </StackPanel>
+        
+
+
+
+    </StackPanel>
+</UserControl>

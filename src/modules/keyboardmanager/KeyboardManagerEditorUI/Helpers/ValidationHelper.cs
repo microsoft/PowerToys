@@ -132,6 +132,25 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidationErrorType.NoError;
         }
 
+        // Temporary program shorctut validation
+        public static ValidationErrorType ValidateProgramMapping(
+            List<string> originalKeys,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
+        {
+            ValidationErrorType error = ValidateKeyMapping(originalKeys, originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
+
+            if (error == ValidationErrorType.SelfMapping)
+            {
+                return ValidationErrorType.NoError;
+            }
+
+            return error;
+        }
+
         public static bool IsDuplicateMapping(
             List<string> originalKeys,
             bool isAppSpecific,

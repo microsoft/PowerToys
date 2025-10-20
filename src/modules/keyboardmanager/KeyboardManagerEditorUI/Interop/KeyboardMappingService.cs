@@ -185,6 +185,57 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp, (int)operationType);
         }
 
+        public bool AddShorcutMapping(ShortcutKeyMapping shortcutKeyMapping)
+        {
+            if (string.IsNullOrEmpty(shortcutKeyMapping.OriginalKeys) || string.IsNullOrEmpty(shortcutKeyMapping.TargetKeys))
+            {
+                return false;
+            }
+
+            if (shortcutKeyMapping.OperationType == ShortcutOperationType.RunProgram && string.IsNullOrEmpty(shortcutKeyMapping.ProgramPath))
+            {
+                return false;
+            }
+
+            if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri && !string.IsNullOrEmpty(shortcutKeyMapping.UriToOpen))
+            {
+                return false;
+            }
+
+            if (shortcutKeyMapping.OperationType == ShortcutOperationType.RunProgram)
+            {
+                return KeyboardManagerInterop.AddShortcutRemap(
+                    _configHandle,
+                    shortcutKeyMapping.OriginalKeys,
+                    shortcutKeyMapping.TargetKeys,
+                    shortcutKeyMapping.TargetApp,
+                    (int)shortcutKeyMapping.OperationType,
+                    shortcutKeyMapping.ProgramPath,
+                    string.IsNullOrEmpty(shortcutKeyMapping.ProgramArgs) ? null : shortcutKeyMapping.ProgramArgs,
+                    string.IsNullOrEmpty(shortcutKeyMapping.StartInDirectory) ? null : shortcutKeyMapping.StartInDirectory,
+                    (int)shortcutKeyMapping.Elevation,
+                    (int)shortcutKeyMapping.IfRunningAction,
+                    (int)shortcutKeyMapping.Visibility);
+            }
+            else if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri)
+            {
+                return KeyboardManagerInterop.AddShortcutRemap(
+                    _configHandle,
+                    shortcutKeyMapping.OriginalKeys,
+                    shortcutKeyMapping.TargetKeys,
+                    shortcutKeyMapping.TargetApp,
+                    (int)shortcutKeyMapping.OperationType,
+                    shortcutKeyMapping.UriToOpen);
+            }
+
+            return KeyboardManagerInterop.AddShortcutRemap(
+                _configHandle,
+                shortcutKeyMapping.OriginalKeys,
+                shortcutKeyMapping.TargetKeys,
+                shortcutKeyMapping.TargetApp,
+                (int)shortcutKeyMapping.OperationType);
+        }
+
         public bool SaveSettings()
         {
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
