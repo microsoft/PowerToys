@@ -11,6 +11,10 @@ description: 'Resolve Code scanning / check-spelling comments on the active PR.'
 - Resolve findings solely by editing `.github/actions/spell-check/expect.txt`; reuse existing entries.
 - Leave all other files and topics untouched.
 
+**Prerequisites:**
+- Install GitHub CLI if it is not present: `winget install GitHub.cli`.
+- Run `gh auth login` once before the first CLI use.
+
 **Workflow:**
 1. Determine the active pull request with a single `gh pr view --json number` call (default to the current branch).
 2. Fetch all PR discussion data once via `gh pr view --json comments,reviews` and filter to check-spelling comments authored by `github-actions` or `github-actions[bot]` that are not minimized; when several remain, process only the most recent comment body.
