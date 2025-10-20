@@ -30,4 +30,3 @@ namespace PowerDisplay.ViewModels
         Error,
     }
 }
-

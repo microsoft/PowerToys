@@ -29,6 +29,7 @@ namespace PowerDisplay
                 {
                     runnerPid = parsedPid;
                 }
+
                 pipeUuid = args[1];
                 Logger.LogInfo($"PowerDisplay started with runner_pid={runnerPid}, pipe_uuid={pipeUuid}");
             }

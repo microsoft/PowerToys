@@ -5,6 +5,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+#pragma warning disable SA1649 // File name should match first type name - Multiple related P/Invoke structures
+
 namespace PowerDisplay.Native
 {
     /// <summary>
@@ -488,6 +490,7 @@ namespace PowerDisplay.Native
                 {
                     ptr[i] = tip[i];
                 }
+
                 ptr[length] = 0; // Null terminator
             }
         }
@@ -504,6 +507,7 @@ namespace PowerDisplay.Native
                 {
                     ptr[i] = info[i];
                 }
+
                 ptr[length] = 0; // Null terminator
             }
         }
@@ -520,6 +524,7 @@ namespace PowerDisplay.Native
                 {
                     ptr[i] = title[i];
                 }
+
                 ptr[length] = 0; // Null terminator
             }
         }

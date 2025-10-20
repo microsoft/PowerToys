@@ -207,8 +207,7 @@ namespace PowerDisplay
                 onShow: ShowWindow,
                 onExit: ExitApplication,
                 onRefresh: () => _viewModel?.RefreshCommand?.Execute(null),
-                onSettings: OpenSettings
-            );
+                onSettings: OpenSettings);
         }
 
         private void OpenSettings()
@@ -394,6 +393,7 @@ namespace PowerDisplay
                 if (_viewModel?.RefreshCommand?.CanExecute(null) == true)
                 {
                     _viewModel.RefreshCommand.Execute(null);
+
                     // Window size will be adjusted automatically by OnMonitorsCollectionChanged event!
                     // No delay needed - event-driven design
                 }
@@ -449,6 +449,7 @@ namespace PowerDisplay
                     {
                         monitor.IsAvailable = !monitor.IsAvailable;
                     }
+
                     _viewModel.StatusText = _viewModel.Monitors.Any(m => m.IsAvailable)
                         ? "Display control enabled"
                         : "Display control disabled";
@@ -460,8 +461,6 @@ namespace PowerDisplay
             }
         }
 
-
-
         /// <summary>
         /// Get internal monitor name, consistent with SettingsManager logic
         /// </summary>
@@ -469,7 +468,7 @@ namespace PowerDisplay
         {
             ContentDialog? dlg = null;
             Core.MonitorManager? manager = null;
-            
+
             try
             {
                 // Test monitor discovery functionality
@@ -527,7 +526,7 @@ namespace PowerDisplay
                 manager?.Dispose();
             }
         }
-        
+
         private void SetupWindow()
         {
             try
@@ -554,10 +553,13 @@ namespace PowerDisplay
                     {
                         // Disable resizing
                         presenter.IsResizable = false;
+
                         // Disable maximize button
                         presenter.IsMaximizable = false;
+
                         // Disable minimize button
                         presenter.IsMinimizable = false;
+
                         // Set borderless mode
                         presenter.SetBorderAndTitleBar(false, false);
                     }
@@ -568,8 +570,10 @@ namespace PowerDisplay
                     {
                         // Extend content into title bar area
                         titleBar.ExtendsContentIntoTitleBar = true;
+
                         // Completely remove title bar height
                         titleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Collapsed;
+
                         // Set all button colors to transparent
                         titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
                         titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
@@ -606,8 +610,10 @@ namespace PowerDisplay
 
                     // Use Win32 API to further disable window moving
                     WindowHelper.DisableWindowMovingAndResizing(hWnd);
+
                     // Hide window from taskbar
                     WindowHelper.HideFromTaskbar(hWnd);
+
                     // Optional: set window topmost
                     // WindowHelper.SetWindowTopmost(hWnd, true);
                 }

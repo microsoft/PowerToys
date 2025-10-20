@@ -152,12 +152,12 @@ namespace PowerDisplay.Native.DDC
                 {
                     // Use stable device key from EnumDisplayDevices
                     deviceKey = displayDevice.DeviceKey;
-                    monitorId = $"DDC_{deviceKey.Replace(@"\\?\", "").Replace("#", "_").Replace("&", "_")}";
+                    monitorId = $"DDC_{deviceKey.Replace(@"\\?\", string.Empty, StringComparison.Ordinal).Replace("#", "_", StringComparison.Ordinal).Replace("&", "_", StringComparison.Ordinal)}";
                 }
                 else
                 {
                     // Fallback: create device ID without handle in the key
-                    var baseDevice = adapterName.Replace(@"\\.\", string.Empty);
+                    var baseDevice = adapterName.Replace(@"\\.\", string.Empty, StringComparison.Ordinal);
                     deviceKey = $"{baseDevice}_{index}";
                     monitorId = $"DDC_{deviceKey}";
                 }

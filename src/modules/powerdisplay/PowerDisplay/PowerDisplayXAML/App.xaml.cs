@@ -316,26 +316,31 @@ namespace PowerDisplay
                     {
                         case "show_window":
                             Logger.LogInfo("Received show_window command");
+
                             // TODO: Implement window show logic
                             break;
 
                         case "toggle_window":
                             Logger.LogInfo("Received toggle_window command");
+
                             // TODO: Implement window toggle logic
                             break;
 
                         case "refresh_monitors":
                             Logger.LogInfo("Received refresh_monitors command");
+
                             // TODO: Implement monitor refresh logic
                             break;
 
                         case "settings_updated":
                             Logger.LogInfo("Received settings_updated command");
+
                             // TODO: Implement settings update logic
                             break;
 
                         case "terminate":
                             Logger.LogInfo("Received terminate command");
+
                             // TODO: Implement graceful shutdown
                             break;
 

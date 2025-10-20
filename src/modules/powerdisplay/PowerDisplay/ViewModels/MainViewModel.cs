@@ -475,7 +475,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 // Restore saved settings from configuration file
                 Logger.LogInfo("[Startup] RestoreSettingsOnStartup enabled - applying saved settings");
-                
+
                 foreach (var monitorVm in Monitors)
                 {
                     var hardwareId = monitorVm.HardwareId;

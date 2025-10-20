@@ -103,10 +103,11 @@ namespace PowerDisplay.Native.WMI
             // Validate brightness range
             brightness = Math.Clamp(brightness, 0, 100);
 
-            return await Task.Run(() =>
-            {
-                try
+            return await Task.Run(
+                () =>
                 {
+                    try
+                    {
                     using var connection = new WmiConnection(WmiNamespace);
                     var query = $"SELECT * FROM {BrightnessMethodClass}";
                     var results = connection.CreateQuery(query);
@@ -121,7 +122,10 @@ namespace PowerDisplay.Native.WMI
                             inParams.SetPropertyValue("Timeout", 0u);
                             inParams.SetPropertyValue("Brightness", (byte)brightness);
 
-                            uint result = obj.ExecuteMethod<uint>(method, inParams, out WmiMethodParameters outParams);
+                            uint result = obj.ExecuteMethod<uint>(
+                                method,
+                                inParams,
+                                out WmiMethodParameters outParams);
 
                             // Check return value (0 indicates success)
                             if (result == 0)
@@ -149,7 +153,8 @@ namespace PowerDisplay.Native.WMI
                 {
                     return MonitorOperationResult.Failure($"Unexpected error: {ex.Message}");
                 }
-            }, cancellationToken);
+            },
+                cancellationToken);
         }
 
         /// <summary>
@@ -157,8 +162,9 @@ namespace PowerDisplay.Native.WMI
         /// </summary>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() =>
-            {
+            return await Task.Run(
+                () =>
+                {
                 var monitors = new List<Monitor>();
 
                 try
@@ -170,7 +176,9 @@ namespace PowerDisplay.Native.WMI
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
 
                     if (brightnessResults.Count == 0)
+                    {
                         return monitors;
+                    }
 
                     // Get monitor information
                     var idQuery = $"SELECT * FROM {MonitorIdClass}";
@@ -225,7 +233,7 @@ namespace PowerDisplay.Native.WMI
                                 ConnectionType = "Internal",
                                 CommunicationMethod = "WMI",
                                 Manufacturer = "Internal",
-                                SupportsColorTemperature = false, // Internal monitors don't support DDC/CI color temperature
+                                SupportsColorTemperature = false,
                             };
 
                             monitors.Add(monitor);
@@ -248,7 +256,8 @@ namespace PowerDisplay.Native.WMI
                 }
 
                 return monitors;
-            }, cancellationToken);
+            },
+                cancellationToken);
         }
 
         /// <summary>
@@ -256,22 +265,24 @@ namespace PowerDisplay.Native.WMI
         /// </summary>
         public async Task<bool> ValidateConnectionAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
-            return await Task.Run(() =>
-            {
-                try
+            return await Task.Run(
+                () =>
                 {
-                    // Try to read current brightness to validate connection
-                    using var connection = new WmiConnection(WmiNamespace);
-                    var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass} WHERE InstanceName='{monitor.InstanceName}'";
-                    var results = connection.CreateQuery(query).ToList();
-                    return results.Count > 0;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning($"WMI ValidateConnection failed for {monitor.InstanceName}: {ex.Message}");
-                    return false;
-                }
-            }, cancellationToken);
+                    try
+                    {
+                        // Try to read current brightness to validate connection
+                        using var connection = new WmiConnection(WmiNamespace);
+                        var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass} WHERE InstanceName='{monitor.InstanceName}'";
+                        var results = connection.CreateQuery(query).ToList();
+                        return results.Count > 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning($"WMI ValidateConnection failed for {monitor.InstanceName}: {ex.Message}");
+                        return false;
+                    }
+                },
+                cancellationToken);
         }
 
         /// <summary>
@@ -319,7 +330,7 @@ namespace PowerDisplay.Native.WMI
                 var results = connection.CreateQuery(query).ToList();
                 return results.Count > 0;
             }
-            catch (WmiException ex) when (ex.HResult == 0x1068) // WBEM_E_INVALID_OPERATION (4200)
+            catch (WmiException ex) when (ex.HResult == 0x1068)
             {
                 // Expected on systems without WMI brightness support (desktops, some laptops)
                 Logger.LogInfo("WMI brightness control not supported on this system (expected for desktops)");

@@ -107,12 +107,14 @@ namespace PowerDisplay.Helpers
                     "Message",              // lpClassName - system predefined message window class
                     string.Empty,           // lpWindowName
                     0,                      // dwStyle
-                    0, 0, 0, 0, // x, y, width, height
+                    0,
+                    0,
+                    0,
+                    0, // x, y, width, height
                     new IntPtr(-3), // hWndParent = HWND_MESSAGE (pure message window)
                     IntPtr.Zero, // hMenu
                     IntPtr.Zero, // hInstance - not needed
-                    IntPtr.Zero // lpParam
-                );
+                    IntPtr.Zero); // lpParam
 
                 if (_messageWindowHandle == IntPtr.Zero)
                 {

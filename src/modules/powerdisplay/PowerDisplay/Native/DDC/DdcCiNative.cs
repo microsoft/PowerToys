@@ -21,6 +21,9 @@ using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
 using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
 using RECT = PowerDisplay.Native.Rect;
 
+#pragma warning disable SA1649 // File name should match first type name - Multiple related types for DDC/CI
+#pragma warning disable SA1402 // File may only contain a single type - Related DDC/CI types grouped together
+
 namespace PowerDisplay.Native.DDC
 {
     /// <summary>
