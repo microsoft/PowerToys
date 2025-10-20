@@ -186,15 +186,19 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         {
             if (settings.changeSystem && !isSystemCurrentlyLight)
                 SetSystemTheme(true);
+                Logger::info(L"[LightSwitchService] Changing system theme to light mode.");
             if (settings.changeApps && !isAppsCurrentlyLight)
                 SetAppsTheme(true);
+                Logger::info(L"[LightSwitchService] Changing apps theme to light mode.");
         }
         else
         {
             if (settings.changeSystem && isSystemCurrentlyLight)
                 SetSystemTheme(false);
+                Logger::info(L"[LightSwitchService] Changing system theme to dark mode.");
             if (settings.changeApps && isAppsCurrentlyLight)
                 SetAppsTheme(false);
+                Logger::info(L"[LightSwitchService] Changing apps theme to light mode.");
         }
     };
 
