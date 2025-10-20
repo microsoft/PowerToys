@@ -24,31 +24,4 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Monitors = monitors;
         }
     }
-
-    /// <summary>
-    /// Monitor information data for IPC
-    /// </summary>
-    public class MonitorInfoData
-    {
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
-
-        [JsonPropertyName("internalName")]
-        public string InternalName { get; set; } = string.Empty;
-
-        [JsonPropertyName("hardwareId")]
-        public string HardwareId { get; set; } = string.Empty;
-
-        [JsonPropertyName("communicationMethod")]
-        public string CommunicationMethod { get; set; } = string.Empty;
-
-        [JsonPropertyName("monitorType")]
-        public string MonitorType { get; set; } = string.Empty;
-
-        [JsonPropertyName("currentBrightness")]
-        public int CurrentBrightness { get; set; }
-
-        [JsonPropertyName("colorTemperature")]
-        public int ColorTemperature { get; set; }
-    }
 }

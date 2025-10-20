@@ -4,6 +4,7 @@
 
 using System.Text.Json.Serialization;
 using SettingsUILibrary = Settings.UI.Library;
+using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -130,6 +131,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ImageResizerSizes))]
     [JsonSerializable(typeof(ImageResizerCustomSizeProperty))]
     [JsonSerializable(typeof(KeyboardKeysProperty))]
+    [JsonSerializable(typeof(MonitorInfo))]
+    [JsonSerializable(typeof(MonitorInfoData))]
+    [JsonSerializable(typeof(PowerDisplayMonitorsIPCResponse))]
+    [JsonSerializable(typeof(PowerDisplayActionMessage))]
+    [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
+    [JsonSerializable(typeof(SndLightSwitchSettings))]
 
     public partial class SettingsSerializationContext : JsonSerializerContext
     {

@@ -14,12 +14,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _hardwareId = string.Empty;
         private string _communicationMethod = string.Empty;
         private string _monitorType = string.Empty;
-        private int _currentBrightness = 0;
+        private int _currentBrightness;
         private int _colorTemperature = 6500;
-        private bool _isHidden = false;
-        private bool _enableColorTemperature = false;
-        private bool _enableContrast = false;
-        private bool _enableVolume = false;
+        private bool _isHidden;
+        private bool _enableColorTemperature;
+        private bool _enableContrast;
+        private bool _enableVolume;
 
         public MonitorInfo()
         {

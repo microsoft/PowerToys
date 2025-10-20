@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public static IPCResponseService Instance => _instance ??= new IPCResponseService();
 
         public static event EventHandler<AllHotkeyConflictsEventArgs> AllHotkeyConflictsReceived;
+
         public static event EventHandler<MonitorInfo[]> PowerDisplayMonitorsReceived;
 
         public void RegisterForIPC()
@@ -226,9 +227,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                         m.CommunicationMethod,
                         m.MonitorType,
                         m.CurrentBrightness,
-                        m.ColorTemperature
-                    )
-                ).ToArray();
+                        m.ColorTemperature)).ToArray();
 
                 PowerDisplayMonitorsReceived?.Invoke(this, monitors);
             }

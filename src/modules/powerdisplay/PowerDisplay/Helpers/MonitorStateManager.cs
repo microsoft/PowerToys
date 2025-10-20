@@ -34,8 +34,11 @@ namespace PowerDisplay.Helpers
         private sealed class MonitorState
         {
             public int Brightness { get; set; }
+
             public int ColorTemperature { get; set; }
+
             public int Contrast { get; set; }
+
             public int Volume { get; set; }
         }
 

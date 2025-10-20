@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             BrightnessUpdateRate = "1s";
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = true;
+
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
         }

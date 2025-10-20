@@ -99,7 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "250ms",
             "500ms",
             "1s",
-            "2s"
+            "2s",
         };
 
         public List<string> BrightnessUpdateRateOptions => _brightnessUpdateRateOptions;
@@ -273,9 +273,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
                     {
                         ActionName = "Launch",
-                        Value = string.Empty
-                    }
-                }
+                        Value = string.Empty,
+                    },
+                },
             };
 
             SendConfigMSG(JsonSerializer.Serialize(actionMessage));
