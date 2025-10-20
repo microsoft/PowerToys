@@ -976,5 +976,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : null;
             }
         }
+
+        private void ProviderMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem menuItem && menuItem.Tag is string tag)
+            {
+                // TODO: Open dialog and set the right fields
+            }
+        }
     }
 }
