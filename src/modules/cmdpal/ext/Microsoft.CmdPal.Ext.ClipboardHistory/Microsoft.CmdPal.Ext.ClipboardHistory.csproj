@@ -10,6 +10,7 @@
 	  <Nullable>enable</Nullable> 
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
   </ItemGroup>
   <ItemGroup>

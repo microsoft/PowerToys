@@ -51,7 +51,12 @@ internal static class WindowExtensions
             currentStyle &= ~(int)style;
         }
 
-        return PInvoke.SetWindowLong(hWnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, currentStyle) != 0;
+        var wasSet = PInvoke.SetWindowLong(hWnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, currentStyle) != 0;
+
+        // SWP_FRAMECHANGED - invalidate cached window style
+        PInvoke.SetWindowPos(hWnd, new HWND(IntPtr.Zero), 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED | SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOOWNERZORDER);
+
+        return wasSet;
     }
 
     /// <summary>
