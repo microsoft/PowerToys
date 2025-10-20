@@ -361,23 +361,23 @@
                                                     <MenuFlyout>
                                                         <MenuFlyoutItem
                                                             x:Uid="MoveUp"
-                                                            Tag="{x:Bind}"
                                                             Click="ReorderButtonUp_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74A;}"
-                                                            IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                            IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                            Tag="{x:Bind}" />
                                                         <MenuFlyoutItem
                                                             x:Uid="MoveDown"
-                                                            Tag="{x:Bind}"
                                                             Click="ReorderButtonDown_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74B;}"
-                                                            IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                            IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                            Tag="{x:Bind}" />
                                                         <MenuFlyoutSeparator />
                                                         <MenuFlyoutItem
                                                             x:Uid="RemoveItem"
-                                                            Tag="{x:Bind}"
                                                             Click="DeleteCustomActionButton_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74D;}"
-                                                            IsEnabled="true" />
+                                                            IsEnabled="true"
+                                                            Tag="{x:Bind}" />
                                                     </MenuFlyout>
                                                 </Button.Flyout>
                                                 <ToolTipService.ToolTip>
@@ -559,9 +559,7 @@
                             Orientation="Vertical"
                             Spacing="8"
                             Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}">
-                            <TextBlock
-                                Text="{x:Bind GetServiceLegalDescription(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
-                                TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind GetServiceLegalDescription(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}" TextWrapping="Wrap" />
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <HyperlinkButton
                                     Content="{x:Bind GetServiceTermsLabel(ViewModel.AdvancedAIConfiguration.ServiceType), Mode=OneWay}"
@@ -717,8 +715,7 @@
                             x:Name="FoundryLocalPanel"
                             Margin="0,8,0,0"
                             Visibility="Collapsed">
-                            <controls:FoundryLocalModelPicker
-                                x:Name="FoundryLocalPicker" />
+                            <controls:FoundryLocalModelPicker x:Name="FoundryLocalPicker" />
                         </Grid>
                         <TextBox
                             x:Name="PasteAIEndpointUrlTextBox"
@@ -773,12 +770,13 @@
 
                         <StackPanel
                             Orientation="Vertical"
-                            Spacing="8"
+                            Spacing="8" Margin="0,12,0,0"
                             Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}">
                             <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
                                 TextWrapping="Wrap" />
-                            <StackPanel Orientation="Horizontal" Spacing="12">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="-12,0,0,0">
                                 <HyperlinkButton
                                     Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
                                     NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
