@@ -1025,7 +1025,7 @@ void send_powerdisplay_message_to_settings_ui(const wchar_t* message)
             Logger::warn(L"current_settings_ipc is null, cannot send to Settings UI");
         }
     }
-    catch (const std::exception& ex)
+    catch (const std::exception&)
     {
         Logger::error(L"Exception while sending PowerDisplay message to Settings UI");
     }
