@@ -269,7 +269,7 @@ jobs:
   # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
   - task: VSBuild@1
     displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
-    condition: ne(variables['BuildPlatform'], 'x64')
+    condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
     inputs:
       solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
       msbuildArgs: /t:Build /m /restore
@@ -544,15 +544,16 @@ jobs:
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
-  - task: CopyFiles@2
-    displayName: Stage Symbols
-    inputs:
-      contents: |-
-        **\*.pdb
-        !**\vc143.pdb
-        !**\*test*.pdb
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
+  - pwsh: |-
+      $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb" |
+          Group-Object Name | ForEach-Object { $_.Group[0] }
+      $OutDir = "$(JobOutputDirectory)/symbols-$(BuildPlatform)"
+      New-Item -Type Directory $OutDir -EA:Ignore
+      Write-Host "Linking $($Symbols.Length) symbols into place at $OutDir"
+      ForEach($s in $Symbols) {
+        New-Item -Type HardLink -Target $s.FullName (Join-Path $OutDir $s.Name)
+      }
+    displayName: Stage Unique Symbols (as hard links)
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
@@ -580,21 +581,30 @@ jobs:
 
   # Publishing the GPO files
   - pwsh: |-
-      New-Item "$(JobOutputDirectory)/gpo" -Type Directory
-      Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
+      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
+      tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
 
-  # Running the tests may result in future jobs consuming artifacts out of this build
   - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
-    - task: CopyFiles@2
-      displayName: Stage entire build output
-      inputs:
-        sourceFolder: '$(Build.SourcesDirectory)'
-        contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    # Running the tests may result in future jobs consuming artifacts out of this build
+    # Instead of running an expensive file copy step, move everything over since the build is totally done.
+    - pwsh: |-
+        # It seems weird, but this is for compatibility. Our artifacts historically contained the folder x64/Release/x64/Release (for example).
+        $FinalOutputRoot = "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)"
+        $ProjectBuildRoot = "$(Build.SourcesDirectory)\$(BuildPlatform)"
+        $ProjectBuildDirectory = "$ProjectBuildRoot\$(BuildConfiguration)"
+
+        New-Item -Type Directory $FinalOutputRoot -EA:Ignore
+        Move-Item $ProjectBuildDirectory $FinalOutputRoot
+      displayName: Move entire output directory into artifacts
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
       displayName: Publish all outputs
-      condition: always()
+      condition: succeeded()
+
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
+      displayName: Publish failure logs
+      condition: or(failed(), canceled())

@@ -47,6 +47,7 @@ const static wchar_t* MODULE_DESC = L"This is a module that allows you to contro
 
 enum class ScheduleMode
 {
+    Off,
     FixedHours,
     SunsetToSunrise,
     // add more later
@@ -59,8 +60,9 @@ inline std::wstring ToString(ScheduleMode mode)
     case ScheduleMode::SunsetToSunrise:
         return L"SunsetToSunrise";
     case ScheduleMode::FixedHours:
-    default:
         return L"FixedHours";
+    default:
+        return L"Off";
     }
 }
 
@@ -68,7 +70,9 @@ inline ScheduleMode FromString(const std::wstring& str)
 {
     if (str == L"SunsetToSunrise")
         return ScheduleMode::SunsetToSunrise;
-    return ScheduleMode::FixedHours;
+    if (str == L"FixedHours")
+        return ScheduleMode::FixedHours;
+    return ScheduleMode::Off;
 }
 
 // These are the properties shown in the Settings page.
@@ -76,7 +80,7 @@ struct ModuleSettings
 {
     bool m_changeSystem = true;
     bool m_changeApps = true;
-    ScheduleMode m_scheduleMode = ScheduleMode::FixedHours;
+    ScheduleMode m_scheduleMode = ScheduleMode::Off;
     int m_lightTime = 480;
     int m_darkTime = 1200;
     int m_sunrise_offset = 0;
@@ -161,7 +165,8 @@ public:
             L"scheduleMode",
             L"Theme schedule mode",
             ToString(g_settings.m_scheduleMode),
-            { { L"FixedHours", L"Set hours manually" },
+            { { L"Off", L"Disable the schedule" },
+              { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
 
         // Integer spinners
@@ -284,9 +289,20 @@ public:
                 g_settings.m_changeApps = *v;
             }
 
+            auto previousMode = g_settings.m_scheduleMode;
+
             if (auto v = values.get_string_value(L"scheduleMode"))
             {
-                g_settings.m_scheduleMode = FromString(*v);
+                auto newMode = FromString(*v);
+                if (newMode != g_settings.m_scheduleMode)
+                {
+                    Logger::info(L"[LightSwitchInterface] Schedule mode changed from {} to {}",
+                                 ToString(g_settings.m_scheduleMode),
+                                 ToString(newMode));
+                    g_settings.m_scheduleMode = newMode;
+
+                    start_service_if_needed();
+                }
             }
 
             if (auto v = values.get_int_value(L"lightTime"))
@@ -304,7 +320,7 @@ public:
                 g_settings.m_sunrise_offset = *v;
             }
 
-            if (auto v = values.get_int_value(L"m_sunset_offset"))
+            if (auto v = values.get_int_value(L"sunset_offset"))
             {
                 g_settings.m_sunset_offset = *v;
             }
@@ -325,6 +341,47 @@ public:
             Logger::error("[Light Switch] set_config: Failed to parse or apply config.");
         }
     }
+
+    virtual void start_service_if_needed()
+    {
+        if (!m_process || WaitForSingleObject(m_process, 0) != WAIT_TIMEOUT)
+        {
+            Logger::info(L"[LightSwitchInterface] Starting LightSwitchService due to active schedule mode.");
+            enable();
+        }
+        else
+        {
+            Logger::debug(L"[LightSwitchInterface] Service already running, skipping start.");
+        }
+    }
+
+    /*virtual void stop_worker_only()
+    {
+        if (m_process)
+        {
+            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService (worker only).");
+            constexpr DWORD timeout_ms = 1500;
+            DWORD result = WaitForSingleObject(m_process, timeout_ms);
+
+            if (result == WAIT_TIMEOUT)
+            {
+                Logger::warn("Light Switch: Process didn't exit in time. Forcing termination.");
+                TerminateProcess(m_process, 0);
+            }
+
+            CloseHandle(m_process);
+            m_process = nullptr;
+        }
+    }*/
+
+    /*virtual void stop_service_if_running()
+    {
+        if (m_process)
+        {
+            Logger::info(L"[LightSwitchInterface] Stopping LightSwitchService due to schedule OFF.");
+            stop_worker_only();
+        }
+    }*/
 
     virtual void enable()
     {
@@ -413,6 +470,12 @@ public:
         return m_enabled;
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
@@ -469,6 +532,15 @@ public:
                 if (g_settings.m_changeApps)
                 {
                     SetAppsTheme(!GetCurrentAppsTheme());
+                }
+
+                if (!m_manual_override_event_handle)
+                {
+                    m_manual_override_event_handle = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+                    if (!m_manual_override_event_handle)
+                    {
+                        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+                    }
                 }
 
                 if (m_manual_override_event_handle)
