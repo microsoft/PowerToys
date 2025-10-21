@@ -10,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
@@ -113,7 +112,7 @@ namespace AdvancedPaste
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected async override void OnLaunched(LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
@@ -135,8 +134,6 @@ namespace AdvancedPaste
             {
                 ProcessNamedPipe(cmdArgs[2]);
             }
-
-            await ShowWindow();
         }
 
         private void ProcessNamedPipe(string pipeName)
