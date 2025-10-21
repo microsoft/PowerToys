@@ -143,10 +143,59 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <Border
+            Grid.Row="0"
+            Margin="8,8,8,4"
+            Padding="8"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Visibility="{x:Bind ViewModel.ClipboardHasData, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    CornerRadius="6">
+                    <Grid>
+                        <Image
+                            Stretch="UniformToFill"
+                            Source="{x:Bind ViewModel.ClipboardPreviewImage, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.ClipboardPreviewHasImage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="24"
+                            Glyph="{x:Bind ViewModel.ClipboardPreviewGlyph, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.ClipboardPreviewHasGlyph, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Grid>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock
+                        Text="{x:Bind ViewModel.ClipboardPreviewHeader, Mode=OneWay}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        TextWrapping="NoWrap" />
+                    <TextBlock
+                        Text="{x:Bind ViewModel.ClipboardPreviewDescription, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <controls:PromptBox
+            Grid.Row="1"
             x:Name="CustomFormatTextBox"
             x:Uid="CustomFormatTextBox"
             Margin="8,4,8,0"

@@ -154,6 +154,39 @@
     <value>Image data</value>
     <comment>Label used to represent an image in the clipboard history</comment>
   </data>
+  <data name="ClipboardPreviewCategoryText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ClipboardPreviewCategoryImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="ClipboardPreviewCategoryAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="ClipboardPreviewCategoryVideo" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="ClipboardPreviewCategoryFile" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="ClipboardPreviewCategoryUnknown" xml:space="preserve">
+    <value>Clipboard</value>
+  </data>
+  <data name="ClipboardPreviewCopiedJustNow" xml:space="preserve">
+    <value>Copied just now</value>
+  </data>
+  <data name="ClipboardPreviewCopiedSeconds" xml:space="preserve">
+    <value>Copied {0} sec ago</value>
+  </data>
+  <data name="ClipboardPreviewCopiedMinutes" xml:space="preserve">
+    <value>Copied {0} min ago</value>
+  </data>
+  <data name="ClipboardPreviewCopiedHours" xml:space="preserve">
+    <value>Copied {0} hr ago</value>
+  </data>
+  <data name="ClipboardPreviewCopiedDays" xml:space="preserve">
+    <value>Copied {0} day ago</value>
+  </data>
   <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
   </data>
