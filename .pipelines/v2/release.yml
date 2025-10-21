@@ -82,7 +82,13 @@ extends:
                   demands: ImageOverride -equals SHINE-VS17-Preview
                 ${{ else }}:
                   image: SHINE-VS17-Latest
-                  demands: HoldMachine -equals true
+                  demands:
+                    - HoldMachine -equals onFailure
+                    - DiskSizeGiB -equals 512
+                    - StorageAccountType -equals StandardSSD_LRS
+                    - Caching -equals ReadWrite
+                    - DriveLetter -equals P
+                    - WorkFolder -equals P:\_work
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
