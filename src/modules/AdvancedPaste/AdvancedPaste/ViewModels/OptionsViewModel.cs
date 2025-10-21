@@ -48,27 +48,11 @@ namespace AdvancedPaste.ViewModels
         private DateTimeOffset? _currentClipboardTimestamp;
         private ClipboardFormat _lastClipboardFormats = ClipboardFormat.None;
         private bool _clipboardHistoryUnavailableLogged;
-        private bool _clipboardPreviewImageErrorLogged;
 
         public DataPackageView ClipboardData { get; set; }
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ClipboardPreviewHasImage))]
-        private ImageSource _clipboardPreviewImage;
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ClipboardPreviewHasGlyph))]
-        private string _clipboardPreviewGlyph = string.Empty;
-
-        [ObservableProperty]
-        private string _clipboardPreviewHeader = string.Empty;
-
-        [ObservableProperty]
-        private string _clipboardPreviewDescription = string.Empty;
-
-        public bool ClipboardPreviewHasImage => ClipboardPreviewImage is not null;
-
-        public bool ClipboardPreviewHasGlyph => !string.IsNullOrEmpty(ClipboardPreviewGlyph) && !ClipboardPreviewHasImage;
+        private ClipboardItem _currentClipboardItem;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
@@ -323,51 +307,14 @@ namespace AdvancedPaste.ViewModels
             var formatsChanged = AvailableClipboardFormats != _lastClipboardFormats;
             _lastClipboardFormats = AvailableClipboardFormats;
 
-            ClipboardPreviewHeader = GetClipboardCategoryName(AvailableClipboardFormats);
-            ClipboardPreviewGlyph = GetClipboardGlyph(AvailableClipboardFormats);
-
             var clipboardChanged = await UpdateClipboardTimestampAsync(formatsChanged);
 
-            if (AvailableClipboardFormats.HasFlag(ClipboardFormat.Image))
-            {
-                if (clipboardChanged || ClipboardPreviewImage is null)
-                {
-                    ClipboardPreviewImage = await TryCreateClipboardPreviewImageAsync();
-                }
-            }
-            else
-            {
-                ClipboardPreviewImage = null;
-            }
-
-            ClipboardPreviewDescription = _currentClipboardTimestamp.HasValue
-                ? FormatClipboardTimestamp(_currentClipboardTimestamp.Value)
-                : string.Empty;
-        }
-
-        private async Task<ImageSource> TryCreateClipboardPreviewImageAsync()
-        {
-            if (ClipboardData is null)
-            {
-                return null;
-            }
-
-            try
-            {
-                var bitmap = await ClipboardData.GetPreviewBitmapAsync();
-                _clipboardPreviewImageErrorLogged = false;
-                return bitmap;
-            }
-            catch (Exception ex)
-            {
-                if (!_clipboardPreviewImageErrorLogged)
-                {
-                    Logger.LogDebug("Failed to create clipboard preview image", ex.Message);
-                    _clipboardPreviewImageErrorLogged = true;
-                }
-
-                return null;
-            }
+            // Create ClipboardItem directly from current clipboard data using helper
+            CurrentClipboardItem = await ClipboardItemHelper.CreateFromCurrentClipboardAsync(
+                ClipboardData,
+                AvailableClipboardFormats,
+                _currentClipboardTimestamp,
+                clipboardChanged ? null : CurrentClipboardItem?.Image);
         }
 
         private async Task<bool> UpdateClipboardTimestampAsync(bool formatsChanged)
@@ -412,123 +359,15 @@ namespace AdvancedPaste.ViewModels
             return clipboardChanged;
         }
 
-        private static string GetClipboardCategoryName(ClipboardFormat formats)
-        {
-            if (formats.HasFlag(ClipboardFormat.Image))
-            {
-                return GetStringOrFallback("ClipboardPreviewCategoryImage", "Image");
-            }
-
-            if (formats.HasFlag(ClipboardFormat.Video))
-            {
-                return GetStringOrFallback("ClipboardPreviewCategoryVideo", "Video");
-            }
-
-            if (formats.HasFlag(ClipboardFormat.Audio))
-            {
-                return GetStringOrFallback("ClipboardPreviewCategoryAudio", "Audio");
-            }
-
-            if (formats.HasFlag(ClipboardFormat.Text) || formats.HasFlag(ClipboardFormat.Html))
-            {
-                return GetStringOrFallback("ClipboardPreviewCategoryText", "Text");
-            }
-
-            if (formats.HasFlag(ClipboardFormat.File))
-            {
-                return GetStringOrFallback("ClipboardPreviewCategoryFile", "File");
-            }
-
-            return GetStringOrFallback("ClipboardPreviewCategoryUnknown", "Clipboard");
-        }
-
-        private static string GetClipboardGlyph(ClipboardFormat formats)
-        {
-            if (formats.HasFlag(ClipboardFormat.Image))
-            {
-                return "\uEB9F";
-            }
-
-            if (formats.HasFlag(ClipboardFormat.Video))
-            {
-                return "\uE714";
-            }
-
-            if (formats.HasFlag(ClipboardFormat.Audio))
-            {
-                return "\uE189";
-            }
-
-            if (formats.HasFlag(ClipboardFormat.Text) || formats.HasFlag(ClipboardFormat.Html))
-            {
-                return "\uE8D2";
-            }
-
-            if (formats.HasFlag(ClipboardFormat.File))
-            {
-                return "\uE8A5";
-            }
-
-            return "\uE77B";
-        }
-
-        private static string FormatClipboardTimestamp(DateTimeOffset timestamp)
-        {
-            var now = DateTimeOffset.Now;
-            var delta = now - timestamp;
-
-            if (delta < TimeSpan.Zero)
-            {
-                delta = TimeSpan.Zero;
-            }
-
-            if (delta < TimeSpan.FromSeconds(5))
-            {
-                return GetStringOrFallback("ClipboardPreviewCopiedJustNow", "Copied just now");
-            }
-
-            if (delta < TimeSpan.FromMinutes(1))
-            {
-                var seconds = Math.Max(1, (int)Math.Round(delta.TotalSeconds));
-                return FormatWithValue("ClipboardPreviewCopiedSeconds", "Copied {0} sec ago", seconds);
-            }
-
-            if (delta < TimeSpan.FromHours(1))
-            {
-                var minutes = Math.Max(1, (int)Math.Round(delta.TotalMinutes));
-                return FormatWithValue("ClipboardPreviewCopiedMinutes", "Copied {0} min ago", minutes);
-            }
-
-            if (delta < TimeSpan.FromDays(1))
-            {
-                var hours = Math.Max(1, (int)Math.Round(delta.TotalHours));
-                return FormatWithValue("ClipboardPreviewCopiedHours", "Copied {0} hr ago", hours);
-            }
-
-            var days = Math.Max(1, (int)Math.Round(delta.TotalDays));
-            return FormatWithValue("ClipboardPreviewCopiedDays", "Copied {0} day ago", days);
-        }
-
-        private static string GetStringOrFallback(string resourceKey, string fallback)
-        {
-            var value = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
-            return string.IsNullOrEmpty(value) ? fallback : value;
-        }
-
-        private static string FormatWithValue(string resourceKey, string fallback, int value)
-        {
-            var template = GetStringOrFallback(resourceKey, fallback);
-            var formattedValue = value.ToString(CultureInfo.CurrentCulture);
-            return template.Replace("{0}", formattedValue, StringComparison.CurrentCulture);
-        }
-
         private void ResetClipboardPreview()
         {
-            ClipboardPreviewHeader = string.Empty;
-            ClipboardPreviewDescription = string.Empty;
-            ClipboardPreviewGlyph = string.Empty;
-            ClipboardPreviewImage = null;
-            _clipboardPreviewImageErrorLogged = false;
+            // Clear to avoid leaks due to Garbage Collection not clearing the bitmap from memory
+            if (CurrentClipboardItem?.Image is not null)
+            {
+                CurrentClipboardItem.Image.ClearValue(BitmapImage.UriSourceProperty);
+            }
+
+            CurrentClipboardItem = null;
         }
 
         public async Task OnShowAsync()

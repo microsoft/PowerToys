@@ -7,35 +7,54 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AdvancedPaste.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:DateTimeToFriendlyStringConverter x:Key="DateTimeToFriendlyStringConverter" />
+        <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
     </UserControl.Resources>
-    <Grid Height="100" ColumnSpacing="8">
+    <Grid Height="64" ColumnSpacing="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120" />
+            <ColumnDefinition Width="80" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8,0,0,8">
-            <TextBlock
-                Margin="8,4,0,0"
-                VerticalAlignment="Center"
-                FontSize="10"
-                Text="{x:Bind ClipboardItem.Content, Mode=OneWay}"
-                TextWrapping="Wrap" />
-            <Image
-                Source="{x:Bind ClipboardItem.Image}"
-                Stretch="UniformToFill" />
-        </Grid>
+        <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="16,0,0,16">
+            <Grid>
+                <!--  Image preview  -->
+                <Image
+                    Source="{x:Bind ClipboardItem.Image, Mode=OneWay}"
+                    Stretch="UniformToFill"
+                    Visibility="{x:Bind HasImage, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <!--  Text preview  -->
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="10"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ClipboardItem.Content, Mode=OneWay}"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind HasText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <!--  Icon glyph fallback  -->
+                <FontIcon
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="48"
+                    Glyph="{x:Bind IconGlyph, Mode=OneWay}"
+                    Visibility="{x:Bind HasGlyph, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </Grid>
+        </Border>
         <StackPanel
             Grid.Column="1"
             VerticalAlignment="Center"
-            Orientation="Vertical">
-            <TextBlock Text="{x:Bind ClipboardItem.Content, Mode=OneWay}" />
+            Spacing="2">
+            <TextBlock
+                Style="{StaticResource BodyTextBlockStyle}"
+                Text="{x:Bind Header, Mode=OneWay}"
+                TextWrapping="NoWrap" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind ClipboardItem.Item.Timestamp, Converter={StaticResource DateTimeToFriendlyStringConverter}, Mode=OneWay}" />
+                Text="{x:Bind Timestamp, Converter={StaticResource DateTimeToFriendlyStringConverter}, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </UserControl>
