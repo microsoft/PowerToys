@@ -78,6 +78,12 @@ public sealed partial class ContentPage : Page,
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
         // Clean-up event listeners
+        if (e.NavigationMode != NavigationMode.New)
+        {
+            ViewModel?.SafeCleanup();
+            CleanupHelper.Cleanup(this);
+        }
+
         ViewModel = null;
     }
 

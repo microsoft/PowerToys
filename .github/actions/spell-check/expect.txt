@@ -94,6 +94,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+ATX
 ATRIOX
 aumid
 Authenticode
@@ -113,6 +114,7 @@ azman
 bbwe
 BCIE
 bck
+backticks
 BESTEFFORT
 bezelled
 bhid
@@ -193,6 +195,7 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
@@ -267,6 +270,7 @@ countof
 covrun
 cpcontrols
 cph
+cppcoreguidelines
 cplusplus
 CPower
 cpptools
@@ -369,7 +373,7 @@ devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
 digicert
 DINORMAL
@@ -383,6 +387,7 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
+djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -443,6 +448,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+eku
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -507,6 +513,7 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdx
 fesf
 FFFF
 FILEEXPLORER
@@ -635,6 +642,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
@@ -815,6 +823,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+ksa
 kvp
 Kybd
 LARGEICON
@@ -921,6 +930,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -1148,6 +1158,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 numberbox
 nwc
@@ -1252,6 +1263,7 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 pkgfamily
+PKI
 plib
 ploc
 ploca
@@ -1693,6 +1705,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
@@ -1979,7 +1992,7 @@ WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
-Worktree
+worktree
 wox
 wparam
 wpf

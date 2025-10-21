@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
