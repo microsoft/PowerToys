@@ -108,6 +108,9 @@
                             x:Uid="AdvancedPaste_EnableAISettingsCard"
                             IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
+
+                            <!--  TO DO: Bind the list of Endpoints to the "ItemsSource" of this control  -->
+
                             <tkcontrols:SettingsExpander.HeaderIcon>
                                 <PathIcon Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z" />
                             </tkcontrols:SettingsExpander.HeaderIcon>
@@ -122,17 +125,116 @@
                                     <HyperlinkButton x:Uid="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore" NavigateUri="https://learn.microsoft.com/windows/powertoys/advanced-paste" />
                                 </StackPanel>
                             </tkcontrols:SettingsExpander.Description>
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard Description="Choose which cloud or local model to use" Header="Model provider">
+                            <tkcontrols:SettingsExpander.ItemsHeader>
+                                <tkcontrols:SettingsCard Description="Add online or local models (you can toggle these in the Advanced Paste UI)" Header="Model providers">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind ViewModel.PasteAIConfiguration.ServiceType, Mode=OneWay}" />
-                                        <Button Click="PasteAIProviderConfigureButton_Click" Content="Configure" />
+                                        <!--  Click="PasteAIProviderConfigureButton_Click"  -->
+                                        <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        IsEnabled="False"
+                                                        IsHitTestVisible="False"
+                                                        Text="Online models" />
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/OpenAI.light.png}"
+                                                        Tag="OpenAI"
+                                                        Text="OpenAI" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/AzureAI.png}"
+                                                        Tag="AzureOpenAI"
+                                                        Text="Azure OpenAI" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Mistral.png}"
+                                                        Tag="Mistral"
+                                                        Text="Mistral" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Gemini.png}"
+                                                        Tag="Google"
+                                                        Text="Google" />
+
+                                                    <!--<MenuFlyoutItem Text="Hugging Face"
+                    Tag="HuggingFace"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/HuggingFace.png}"
+                    Click="ProviderMenuFlyoutItem_Click" />-->
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/AzureAI.png}"
+                                                        Tag="AzureAIInference"
+                                                        Text="Azure AI Inference" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Ollama.png}"
+                                                        Tag="Ollama"
+                                                        Text="Ollama" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Anthropic.png}"
+                                                        Tag="Anthropic"
+                                                        Text="Anthropic" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Bedrock.png}"
+                                                        Tag="AmazonBedrock"
+                                                        Text="Amazon Bedrock" />
+
+                                                    <!--  Local models header  -->
+                                                    <MenuFlyoutItem
+                                                        Margin="0,16,0,0"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        IsEnabled="False"
+                                                        IsHitTestVisible="False"
+                                                        Text="Local models" />
+
+                                                    <!--  Local providers  -->
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/FoundryLocal.png}"
+                                                        Tag="FoundryLocal"
+                                                        Text="Foundry Local" />
+
+                                                    <MenuFlyoutItem
+                                                        Click="ProviderMenuFlyoutItem_Click"
+                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/WindowsML.png}"
+                                                        Tag="WindowsML"
+                                                        Text="Windows ML" />
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
-                            </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander.ItemsHeader>
+                            <tkcontrols:SettingsExpander.Items />
+                            <!--<tkcontrols:SettingsExpander.ItemTemplate>
+                                <DataTemplate x:DataType="...">
+                                    <controls:SettingsCard Description="{x:Bind ModelProvider}" Header="{x:Bind ModelName}">
+                                        <controls:SettingsCard.HeaderIcon>
+                                            <ImageIcon Source="{x:Bind ModelIcon}" />
+                                        </controls:SettingsCard.HeaderIcon>
+                                        <Button Content="{ui:FontIcon Glyph=&#xE712;, FontSize=16}">
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem Icon="{ui:FontIcon Glyph=&#xE70F;}" Text="Edit" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem Icon="{ui:FontIcon Glyph=&#xE74D;}" Text="Remove" />
+                                            </MenuFlyout>
+                                        </Button>
+                                    </controls:SettingsCard>
+                                </DataTemplate>
+                            </tkcontrols:SettingsExpander.ItemTemplate>-->
                         </tkcontrols:SettingsExpander>
 
                         <!--  Advanced AI  -->
@@ -769,14 +871,18 @@
                             Visibility="Collapsed" />
 
                         <StackPanel
+                            Margin="0,12,0,0"
                             Orientation="Vertical"
-                            Spacing="8" Margin="0,12,0,0"
+                            Spacing="8"
                             Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}">
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
                                 TextWrapping="Wrap" />
-                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="-12,0,0,0">
+                            <StackPanel
+                                Margin="-12,0,0,0"
+                                Orientation="Horizontal"
+                                Spacing="8">
                                 <HyperlinkButton
                                     Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
                                     NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
