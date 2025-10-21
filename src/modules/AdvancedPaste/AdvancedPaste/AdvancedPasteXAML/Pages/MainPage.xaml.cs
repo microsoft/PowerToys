@@ -187,10 +187,9 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ClipboardHistory_ItemClick(object sender, ItemClickEventArgs e)
+        private async void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
         {
-            var item = e.ClickedItem as ClipboardItem;
-            if (item is not null)
+            if (args.InvokedItem is ClipboardItem item)
             {
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))

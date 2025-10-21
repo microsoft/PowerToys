@@ -16,11 +16,7 @@
     <Page.Resources>
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
         <converters:CountToVisibilityConverter x:Name="countToVisibilityConverter" />
-
         <converters:PasteFormatsToHeightConverter x:Name="standardPasteFormatsToHeightConverter" />
-
-
-
         <converters:CountToDoubleConverter
             x:Name="customActionsToMinHeightConverter"
             ValueIfNonZero="40"
@@ -349,76 +345,59 @@
                         Placement="Right"
                         ShouldConstrainToRootBounds="False">
 
-                        <ListView
+                        <ItemsView
                             Width="320"
-                            IsItemClickEnabled="True"
-                            ItemClick="ClipboardHistory_ItemClick"
+                            IsItemInvokedEnabled="True"
+                            ItemInvoked="ClipboardHistory_ItemInvoked"
                             ItemsSource="{x:Bind clipboardHistory, Mode=OneWay}"
                             SelectionMode="None">
-                            <ListView.Transitions />
-                            <ListView.ItemTemplate>
+                            <ItemsView.Layout>
+                                <StackLayout Orientation="Vertical" Spacing="4" />
+                            </ItemsView.Layout>
+                            <ItemsView.Transitions />
+                            <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="local:ClipboardItem">
-                                    <Grid
-                                        Height="40"
-                                        HorizontalAlignment="Stretch"
+                                    <ItemContainer
                                         AutomationProperties.Name="{x:Bind Description, Mode=OneWay}"
-                                        ColumnSpacing="8"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource OverlayCornerRadius}"
                                         ToolTipService.ToolTip="{x:Bind Content}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" MaxWidth="240" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-
-
-
-
-                                        <Image
-                                            Grid.Column="0"
-                                            HorizontalAlignment="Left"
-                                            x:Phase="2"
-                                            Opacity="0"
-                                            Source="{x:Bind Image}"
-                                            Visibility="Visible" />
-                                        <TextBlock
-                                            Grid.Column="0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center"
-                                            x:Phase="1"
-                                            Opacity="0"
-                                            Text="{x:Bind Content}"
-                                            TextTrimming="CharacterEllipsis"
-                                            Visibility="Visible" />
-
-                                        <controls:ClipboardHistoryItemPreviewControl
-                                            Grid.Column="0"
-                                            Grid.ColumnSpan="2"
-                                            x:Phase="0"
-                                            ClipboardItem="{x:Bind}" />
-                                        <Button
-                                            x:Name="ClipboardHistoryItemMoreOptionsButton"
-                                            x:Uid="ClipboardHistoryItemMoreOptionsButton"
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Style="{StaticResource SubtleButtonStyle}">
-                                            <Button.Content>
-                                                <FontIcon FontSize="16" Glyph="&#xe712;" />
-                                            </Button.Content>
-                                            <Button.Flyout>
-                                                <MenuFlyout>
-                                                    <MenuFlyoutItem
-                                                        x:Uid="ClipboardHistoryItemDeleteButton"
-                                                        Click="ClipboardHistoryItemDeleteButton_Click"
-                                                        CommandParameter="{x:Bind (local:ClipboardItem)}"
-                                                        Icon="Delete" />
-                                                </MenuFlyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </Grid>
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" MaxWidth="240" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <controls:ClipboardHistoryItemPreviewControl
+                                                x:Phase="0"
+                                                ClipboardItem="{x:Bind}"
+                                                CornerRadius="8,0,0,8" />
+                                            <Button
+                                                x:Name="ClipboardHistoryItemMoreOptionsButton"
+                                                x:Uid="ClipboardHistoryItemMoreOptionsButton"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+                                                <Button.Content>
+                                                    <FontIcon FontSize="16" Glyph="&#xe712;" />
+                                                </Button.Content>
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                            x:Uid="ClipboardHistoryItemDeleteButton"
+                                                            Click="ClipboardHistoryItemDeleteButton_Click"
+                                                            CommandParameter="{x:Bind (local:ClipboardItem)}"
+                                                            Icon="Delete" />
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </Grid>
+                                    </ItemContainer>
                                 </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                            </ItemsView.ItemTemplate>
+                        </ItemsView>
                     </Flyout>
                 </Button.Flyout>
             </Button>

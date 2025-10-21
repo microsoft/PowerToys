@@ -11,13 +11,26 @@
     <UserControl.Resources>
         <converters:DateTimeToFriendlyStringConverter x:Key="DateTimeToFriendlyStringConverter" />
     </UserControl.Resources>
-    <Grid>
+    <Grid Height="100" ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="120" />
             <ColumnDefinition Width="*" />
-
         </Grid.ColumnDefinitions>
-        <StackPanel Orientation="Vertical">
+        <Grid Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="8,0,0,8">
+            <TextBlock
+                Margin="8,4,0,0"
+                VerticalAlignment="Center"
+                FontSize="10"
+                Text="{x:Bind ClipboardItem.Content, Mode=OneWay}"
+                TextWrapping="Wrap" />
+            <Image
+                Source="{x:Bind ClipboardItem.Image}"
+                Stretch="UniformToFill" />
+        </Grid>
+        <StackPanel
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Orientation="Vertical">
             <TextBlock Text="{x:Bind ClipboardItem.Content, Mode=OneWay}" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
