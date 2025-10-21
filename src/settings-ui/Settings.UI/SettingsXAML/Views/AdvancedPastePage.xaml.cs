@@ -19,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -30,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private bool _suppressFoundrySelectionChanged;
         private bool _isFoundryLocalAvailable;
         private bool _disposed;
+        private const string PasteAiDialogDefaultTitle = "Paste with AI provider configuration";
 
         private static readonly Dictionary<string, ServiceLegalInfo> ServiceLegalInformation = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -253,7 +255,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (!string.IsNullOrEmpty(selectedFile))
             {
                 PasteAIModelPathTextBox.Text = selectedFile;
-                ViewModel.PasteAIConfiguration.ModelPath = selectedFile;
+                if (ViewModel?.PasteAIProviderDraft is not null)
+                {
+                    ViewModel.PasteAIProviderDraft.ModelPath = selectedFile;
+                }
             }
         }
 
@@ -296,47 +301,54 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             System.Diagnostics.Debug.WriteLine($"{configType} API key saved successfully");
         }
 
-        private async void PasteAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdatePasteAIUIVisibility();
-            await UpdateFoundryLocalUIAsync();
-        }
-
         private void UpdatePasteAIUIVisibility()
         {
-            if (PasteAIServiceTypeListView?.SelectedValue == null)
+            var draft = ViewModel?.PasteAIProviderDraft;
+            if (draft is null)
             {
                 return;
             }
 
-            string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
+            string selectedType = draft.ServiceType ?? string.Empty;
+            AIServiceType serviceKind = draft.ServiceTypeKind;
 
-            bool isOnnx = string.Equals(selectedType, "Onnx", StringComparison.OrdinalIgnoreCase);
-            bool isFoundryLocal = string.Equals(selectedType, "FoundryLocal", StringComparison.OrdinalIgnoreCase);
-            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
-            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
+            bool requiresEndpoint = serviceKind is AIServiceType.AzureOpenAI
+                or AIServiceType.AzureAIInference
+                or AIServiceType.Mistral
+                or AIServiceType.HuggingFace
+                or AIServiceType.Ollama;
+            bool requiresDeployment = serviceKind == AIServiceType.AzureOpenAI;
+            bool requiresApiVersion = serviceKind == AIServiceType.AzureOpenAI;
+            bool requiresModelPath = serviceKind == AIServiceType.Onnx;
+            bool isFoundryLocal = serviceKind == AIServiceType.FoundryLocal;
             bool requiresApiKey = RequiresApiKeyForService(selectedType);
-            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
+            bool showModerationToggle = serviceKind == AIServiceType.OpenAI;
 
-            if (ViewModel.PasteAIConfiguration is not null)
+            if (string.IsNullOrWhiteSpace(draft.EndpointUrl))
             {
-                ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(selectedType);
+                string storedEndpoint = ViewModel.GetPasteAIEndpoint(draft.Id, selectedType);
+                if (!string.IsNullOrWhiteSpace(storedEndpoint))
+                {
+                    draft.EndpointUrl = storedEndpoint;
+                }
             }
 
-            PasteAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIEndpointUrlTextBox.Visibility = requiresEndpoint ? Visibility.Visible : Visibility.Collapsed;
+            if (requiresEndpoint)
+            {
+                PasteAIEndpointUrlTextBox.PlaceholderText = GetEndpointPlaceholder(serviceKind);
+            }
+
+            PasteAIDeploymentNameTextBox.Visibility = requiresDeployment ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiVersionTextBox.Visibility = requiresApiVersion ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModelPanel.Visibility = requiresModelPath ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
 
             if (requiresApiKey)
             {
-                PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(selectedType);
+                PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(draft.Id, selectedType);
             }
             else
             {
@@ -384,13 +396,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private Task UpdateFoundryLocalUIAsync(bool refreshFoundry = false)
         {
-            if (PasteAIServiceTypeListView?.SelectedValue == null)
-            {
-                return Task.CompletedTask;
-            }
-
-            string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
-            bool isFoundryLocal = string.Equals(selectedType, "FoundryLocal", StringComparison.Ordinal);
+            string selectedType = ViewModel?.PasteAIProviderDraft?.ServiceType ?? string.Empty;
+            bool isFoundryLocal = string.Equals(selectedType, "FoundryLocal", StringComparison.OrdinalIgnoreCase);
 
             if (FoundryLocalPanel is not null)
             {
@@ -409,11 +416,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     FoundryLocalPicker.SelectedModel = null;
                 }
 
-                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
+                if (PasteAIProviderConfigurationDialog is not null)
+                {
+                    PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
+                }
+
                 return Task.CompletedTask;
             }
 
-            PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+            if (PasteAIProviderConfigurationDialog is not null)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+            }
 
             FoundryLocalPicker?.RequestLoad(refreshFoundry);
 
@@ -565,7 +579,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            var currentModelReference = ViewModel?.PasteAIConfiguration?.ModelName;
+            var currentModelReference = ViewModel?.PasteAIProviderDraft?.ModelName;
 
             ModelDetails matchingModel = null;
 
@@ -587,9 +601,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (matchingModel is null)
             {
-                if (ViewModel?.PasteAIConfiguration is not null)
+                if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIConfiguration.ModelName = string.Empty;
+                    ViewModel.PasteAIProviderDraft.ModelName = string.Empty;
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -601,9 +615,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else
             {
-                if (ViewModel?.PasteAIConfiguration is not null)
+                if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(matchingModel.Url ?? matchingModel.Name);
+                    ViewModel.PasteAIProviderDraft.ModelName = NormalizeFoundryModelReference(matchingModel.Url ?? matchingModel.Name);
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -635,9 +649,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            bool isFoundrySelected = string.Equals(PasteAIServiceTypeListView?.SelectedValue?.ToString(), "FoundryLocal", StringComparison.Ordinal);
+            bool isFoundrySelected = string.Equals(ViewModel?.PasteAIProviderDraft?.ServiceType, "FoundryLocal", StringComparison.OrdinalIgnoreCase);
 
-            if (!isFoundrySelected)
+            if (!isFoundrySelected || ViewModel?.PasteAIProviderDraft is null)
             {
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
                 return;
@@ -662,9 +676,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (selectedModel is not null)
             {
-                if (ViewModel?.PasteAIConfiguration is not null)
+                if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIConfiguration.ModelName = NormalizeFoundryModelReference(selectedModel.Url ?? selectedModel.Name);
+                    ViewModel.PasteAIProviderDraft.ModelName = NormalizeFoundryModelReference(selectedModel.Url ?? selectedModel.Name);
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -674,9 +688,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else
             {
-                if (ViewModel?.PasteAIConfiguration is not null)
+                if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIConfiguration.ModelName = string.Empty;
+                    ViewModel.PasteAIProviderDraft.ModelName = string.Empty;
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -814,10 +828,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void PasteAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            string serviceType = PasteAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
+            var draft = ViewModel?.PasteAIProviderDraft;
+            if (draft is null)
+            {
+                args.Cancel = true;
+                return;
+            }
+
+            string serviceType = draft.ServiceType ?? "OpenAI";
             string apiKey = PasteAIApiKeyPasswordBox.Password;
             string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
-            string endpoint = (ViewModel.PasteAIConfiguration.EndpointUrl ?? string.Empty).Trim();
+            string endpoint = (draft.EndpointUrl ?? string.Empty).Trim();
 
             if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
             {
@@ -825,10 +846,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            ViewModel.PasteAIConfiguration.EndpointUrl = endpoint;
-            ViewModel.SavePasteAICredential(serviceType, endpoint, trimmedApiKey);
-            ViewModel.PasteAIConfiguration.EndpointUrl = ViewModel.GetPasteAIEndpoint(serviceType);
-            PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(serviceType);
+            ViewModel.CommitPasteAIProviderDraft(trimmedApiKey, endpoint);
+            PasteAIApiKeyPasswordBox.Password = string.Empty;
 
             // Show success message
             ShowApiKeySavedMessage("Paste AI");
@@ -847,27 +866,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             RefreshDialogBindings();
         }
 
-        private async void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdatePasteAIUIVisibility();
-            await UpdateFoundryLocalUIAsync(refreshFoundry: true);
-            RefreshDialogBindings();
-        }
-
         private static bool RequiresApiKeyForService(string serviceType)
         {
-            if (string.IsNullOrWhiteSpace(serviceType))
-            {
-                return true;
-            }
+            var serviceKind = serviceType.ToAIServiceType();
 
-            return serviceType.Equals("Onnx", StringComparison.OrdinalIgnoreCase)
-                ? false
-                : !serviceType.Equals("Ollama", StringComparison.OrdinalIgnoreCase)
-                    && !serviceType.Equals("FoundryLocal", StringComparison.OrdinalIgnoreCase)
-                    && !serviceType.Equals("WindowsML", StringComparison.OrdinalIgnoreCase)
-                    && !serviceType.Equals("Anthropic", StringComparison.OrdinalIgnoreCase)
-                    && !serviceType.Equals("AmazonBedrock", StringComparison.OrdinalIgnoreCase);
+            return serviceKind switch
+            {
+                AIServiceType.Onnx => false,
+                AIServiceType.Ollama => false,
+                AIServiceType.FoundryLocal => false,
+                AIServiceType.ML => false,
+                _ => true,
+            };
+        }
+
+        private static string GetEndpointPlaceholder(AIServiceType serviceKind)
+        {
+            return serviceKind switch
+            {
+                AIServiceType.AzureOpenAI => "https://your-resource.openai.azure.com/",
+                AIServiceType.AzureAIInference => "https://{resource-name}.cognitiveservices.azure.com/",
+                AIServiceType.Mistral => "https://api.mistral.ai/v1/",
+                AIServiceType.HuggingFace => "https://api-inference.huggingface.co/models/",
+                AIServiceType.Ollama => "http://localhost:11434/",
+                _ => "https://your-resource.openai.azure.com/",
+            };
         }
 
         private bool HasServiceLegalInfo(string serviceType) => TryGetServiceLegalInfo(serviceType, out _);
@@ -977,12 +1000,155 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ProviderMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        private void AddProviderMenuFlyout_Opening(object sender, object e)
         {
-            if (sender is MenuFlyoutItem menuItem && menuItem.Tag is string tag)
+            if (sender is not MenuFlyout menuFlyout)
             {
-                // TODO: Open dialog and set the right fields
+                return;
             }
+
+            // Clear existing items
+            menuFlyout.Items.Clear();
+
+            // Add online models header
+            var onlineHeader = new MenuFlyoutItem
+            {
+                Text = "Online models",
+                FontSize = 12,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                IsEnabled = false,
+                IsHitTestVisible = false,
+            };
+            menuFlyout.Items.Add(onlineHeader);
+
+            // Add online providers
+            foreach (var metadata in AIServiceTypeRegistry.GetOnlineServiceTypes())
+            {
+                var menuItem = new MenuFlyoutItem
+                {
+                    Text = metadata.DisplayName,
+                    Tag = metadata.ServiceType.ToConfigurationString(),
+                    Icon = new ImageIcon { Source = new SvgImageSource(new Uri(metadata.IconPath)) },
+                };
+                menuItem.Click += ProviderMenuFlyoutItem_Click;
+                menuFlyout.Items.Add(menuItem);
+            }
+
+            // Add local models header
+            var localHeader = new MenuFlyoutItem
+            {
+                Text = "Local models",
+                FontSize = 12,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                IsEnabled = false,
+                IsHitTestVisible = false,
+                Margin = new Thickness(0, 16, 0, 0),
+            };
+            menuFlyout.Items.Add(localHeader);
+
+            // Add local providers
+            foreach (var metadata in AIServiceTypeRegistry.GetLocalServiceTypes())
+            {
+                var menuItem = new MenuFlyoutItem
+                {
+                    Text = metadata.DisplayName,
+                    Tag = metadata.ServiceType.ToConfigurationString(),
+                    Icon = new ImageIcon { Source = new SvgImageSource(new Uri(metadata.IconPath)) },
+                };
+                menuItem.Click += ProviderMenuFlyoutItem_Click;
+                menuFlyout.Items.Add(menuItem);
+            }
+        }
+
+        private async void ProviderMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuFlyoutItem menuItem || menuItem.Tag is not string tag || string.IsNullOrWhiteSpace(tag))
+            {
+                return;
+            }
+
+            if (ViewModel is null || PasteAIProviderConfigurationDialog is null)
+            {
+                return;
+            }
+
+            string serviceType = tag.Trim();
+            string displayName = string.IsNullOrWhiteSpace(menuItem.Text) ? serviceType : menuItem.Text.Trim();
+
+            ViewModel.BeginAddPasteAIProvider(serviceType);
+            if (ViewModel.PasteAIProviderDraft is null)
+            {
+                return;
+            }
+
+            PasteAIProviderConfigurationDialog.Title = PasteAiDialogDefaultTitle;
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                PasteAIProviderConfigurationDialog.Title = $"{displayName} provider configuration";
+            }
+
+            UpdatePasteAIUIVisibility();
+            await UpdateFoundryLocalUIAsync(refreshFoundry: true);
+            RefreshDialogBindings();
+
+            PasteAIApiKeyPasswordBox.Password = string.Empty;
+            await PasteAIProviderConfigurationDialog.ShowAsync();
+        }
+
+        private async void EditPasteAIProviderButton_Click(object sender, RoutedEventArgs e)
+        {
+            // sender is MenuFlyoutItem with PasteAIProviderDefinition Tag
+            if (sender is not MenuFlyoutItem menuItem || menuItem.Tag is not PasteAIProviderDefinition provider)
+            {
+                return;
+            }
+
+            if (ViewModel is null || PasteAIProviderConfigurationDialog is null)
+            {
+                return;
+            }
+
+            ViewModel.BeginEditPasteAIProvider(provider);
+
+            string titlePrefix = string.IsNullOrWhiteSpace(provider.ModelName) ? provider.ServiceType : provider.ModelName;
+            PasteAIProviderConfigurationDialog.Title = string.IsNullOrWhiteSpace(titlePrefix)
+                ? PasteAiDialogDefaultTitle
+                : $"{titlePrefix} provider configuration";
+
+            UpdatePasteAIUIVisibility();
+            await UpdateFoundryLocalUIAsync(refreshFoundry: false);
+            RefreshDialogBindings();
+            PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(provider.Id, provider.ServiceType);
+            await PasteAIProviderConfigurationDialog.ShowAsync();
+        }
+
+        private void RemovePasteAIProviderButton_Click(object sender, RoutedEventArgs e)
+        {
+            // sender is MenuFlyoutItem with PasteAIProviderDefinition Tag
+            if (sender is not MenuFlyoutItem menuItem || menuItem.Tag is not PasteAIProviderDefinition provider)
+            {
+                return;
+            }
+
+            ViewModel?.RemovePasteAIProvider(provider);
+        }
+
+        private void SetActivePasteAIProvider_Click(object sender, RoutedEventArgs e)
+        {
+            // sender is MenuFlyoutItem with PasteAIProviderDefinition Tag
+            if (sender is not MenuFlyoutItem menuItem || menuItem.Tag is not PasteAIProviderDefinition provider)
+            {
+                return;
+            }
+
+            ViewModel?.SetActivePasteAIProvider(provider);
+        }
+
+        private void PasteAIProviderConfigurationDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        {
+            ViewModel?.CancelPasteAIProviderDraft();
+            PasteAIProviderConfigurationDialog.Title = PasteAiDialogDefaultTitle;
+            PasteAIApiKeyPasswordBox.Password = string.Empty;
         }
     }
 }

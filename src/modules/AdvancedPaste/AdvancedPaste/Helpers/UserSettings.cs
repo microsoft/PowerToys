@@ -116,6 +116,7 @@ namespace AdvancedPaste.Settings
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 AdvancedAIConfiguration = properties.AdvancedAIConfiguration ?? new AdvancedAIConfiguration();
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
+                                PasteAIConfiguration.EnsureActiveProvider();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =

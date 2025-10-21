@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,66 +18,33 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     /// </summary>
     public class PasteAIConfiguration : INotifyPropertyChanged
     {
-        private string _serviceType = "OpenAI";
-        private string _modelName = "gpt-3.5-turbo";
-        private string _endpointUrl = string.Empty;
-        private string _apiVersion = string.Empty;
-        private string _deploymentName = string.Empty;
-        private string _modelPath = string.Empty;
+        private string _activeProviderId = string.Empty;
+        private ObservableCollection<PasteAIProviderDefinition> _providers = new();
         private bool _useSharedCredentials = true;
-        private string _systemPrompt = string.Empty;
-        private bool _moderationEnabled = true;
-        private Dictionary<string, AIProviderConfigurationSnapshot> _providerConfigurations = new(StringComparer.OrdinalIgnoreCase);
+        private string _legacyServiceType = "OpenAI";
+        private string _legacyModelName = "gpt-3.5-turbo";
+        private string _legacyEndpointUrl = string.Empty;
+        private string _legacyApiVersion = string.Empty;
+        private string _legacyDeploymentName = string.Empty;
+        private string _legacyModelPath = string.Empty;
+        private string _legacySystemPrompt = string.Empty;
+        private bool _legacyModerationEnabled = true;
+        private Dictionary<string, AIProviderConfigurationSnapshot> _legacyProviderConfigurations;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [JsonPropertyName("service-type")]
-        public string ServiceType
+        [JsonPropertyName("active-provider-id")]
+        public string ActiveProviderId
         {
-            get => _serviceType;
-            set => SetProperty(ref _serviceType, value);
+            get => _activeProviderId;
+            set => SetProperty(ref _activeProviderId, value ?? string.Empty);
         }
 
-        [JsonIgnore]
-        public AIServiceType ServiceTypeKind
+        [JsonPropertyName("providers")]
+        public ObservableCollection<PasteAIProviderDefinition> Providers
         {
-            get => _serviceType.ToAIServiceType();
-            set => ServiceType = value.ToConfigurationString();
-        }
-
-        [JsonPropertyName("model-name")]
-        public string ModelName
-        {
-            get => _modelName;
-            set => SetProperty(ref _modelName, value);
-        }
-
-        [JsonPropertyName("endpoint-url")]
-        public string EndpointUrl
-        {
-            get => _endpointUrl;
-            set => SetProperty(ref _endpointUrl, value);
-        }
-
-        [JsonPropertyName("api-version")]
-        public string ApiVersion
-        {
-            get => _apiVersion;
-            set => SetProperty(ref _apiVersion, value);
-        }
-
-        [JsonPropertyName("deployment-name")]
-        public string DeploymentName
-        {
-            get => _deploymentName;
-            set => SetProperty(ref _deploymentName, value);
-        }
-
-        [JsonPropertyName("model-path")]
-        public string ModelPath
-        {
-            get => _modelPath;
-            set => SetProperty(ref _modelPath, value);
+            get => _providers;
+            set => SetProperty(ref _providers, value ?? new ObservableCollection<PasteAIProviderDefinition>());
         }
 
         [JsonPropertyName("use-shared-credentials")]
@@ -85,49 +54,192 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _useSharedCredentials, value);
         }
 
-        [JsonPropertyName("system-prompt")]
-        public string SystemPrompt
+        // Legacy properties retained for migration. They will be cleared once converted to the new format.
+        [JsonPropertyName("service-type")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacyServiceType
         {
-            get => _systemPrompt;
-            set => SetProperty(ref _systemPrompt, value?.Trim() ?? string.Empty);
+            get => _legacyServiceType;
+            set => _legacyServiceType = value;
+        }
+
+        [JsonPropertyName("model-name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacyModelName
+        {
+            get => _legacyModelName;
+            set => _legacyModelName = value;
+        }
+
+        [JsonPropertyName("endpoint-url")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacyEndpointUrl
+        {
+            get => _legacyEndpointUrl;
+            set => _legacyEndpointUrl = value;
+        }
+
+        [JsonPropertyName("api-version")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacyApiVersion
+        {
+            get => _legacyApiVersion;
+            set => _legacyApiVersion = value;
+        }
+
+        [JsonPropertyName("deployment-name")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacyDeploymentName
+        {
+            get => _legacyDeploymentName;
+            set => _legacyDeploymentName = value;
+        }
+
+        [JsonPropertyName("model-path")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacyModelPath
+        {
+            get => _legacyModelPath;
+            set => _legacyModelPath = value;
+        }
+
+        [JsonPropertyName("system-prompt")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string LegacySystemPrompt
+        {
+            get => _legacySystemPrompt;
+            set => _legacySystemPrompt = value;
         }
 
         [JsonPropertyName("moderation-enabled")]
-        public bool ModerationEnabled
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public bool LegacyModerationEnabled
         {
-            get => _moderationEnabled;
-            set => SetProperty(ref _moderationEnabled, value);
+            get => _legacyModerationEnabled;
+            set => _legacyModerationEnabled = value;
         }
 
         [JsonPropertyName("provider-configurations")]
-        public Dictionary<string, AIProviderConfigurationSnapshot> ProviderConfigurations
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Dictionary<string, AIProviderConfigurationSnapshot> LegacyProviderConfigurations
         {
-            get => _providerConfigurations;
-            set => SetProperty(ref _providerConfigurations, value ?? new Dictionary<string, AIProviderConfigurationSnapshot>(StringComparer.OrdinalIgnoreCase));
+            get => _legacyProviderConfigurations;
+            set => _legacyProviderConfigurations = value;
         }
 
-        public bool HasProviderConfiguration(string serviceType)
+        [JsonIgnore]
+        public PasteAIProviderDefinition ActiveProvider
         {
-            return _providerConfigurations.ContainsKey(NormalizeServiceType(serviceType));
-        }
-
-        public AIProviderConfigurationSnapshot GetOrCreateProviderConfiguration(string serviceType)
-        {
-            var key = NormalizeServiceType(serviceType);
-            if (!_providerConfigurations.TryGetValue(key, out var snapshot))
+            get
             {
-                snapshot = new AIProviderConfigurationSnapshot();
-                _providerConfigurations[key] = snapshot;
-                OnPropertyChanged(nameof(ProviderConfigurations));
+                if (_providers is null || _providers.Count == 0)
+                {
+                    return null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(_activeProviderId))
+                {
+                    var match = _providers.FirstOrDefault(provider => string.Equals(provider.Id, _activeProviderId, StringComparison.OrdinalIgnoreCase));
+                    if (match is not null)
+                    {
+                        return match;
+                    }
+                }
+
+                return _providers[0];
+            }
+        }
+
+        [JsonIgnore]
+        public AIServiceType ActiveServiceTypeKind => ActiveProvider?.ServiceTypeKind ?? AIServiceType.OpenAI;
+
+        public void EnsureActiveProvider()
+        {
+            EnsureProvidersFromLegacyData();
+
+            if (_providers is null || _providers.Count == 0)
+            {
+                _activeProviderId = string.Empty;
+                return;
             }
 
-            return snapshot;
+            if (string.IsNullOrWhiteSpace(_activeProviderId) || !_providers.Any(provider => string.Equals(provider.Id, _activeProviderId, StringComparison.OrdinalIgnoreCase)))
+            {
+                _activeProviderId = _providers[0].Id;
+            }
         }
 
-        public void SetProviderConfiguration(string serviceType, AIProviderConfigurationSnapshot snapshot)
+        private void EnsureProvidersFromLegacyData()
         {
-            _providerConfigurations[NormalizeServiceType(serviceType)] = snapshot ?? new AIProviderConfigurationSnapshot();
-            OnPropertyChanged(nameof(ProviderConfigurations));
+            _providers ??= new ObservableCollection<PasteAIProviderDefinition>();
+
+            if (_providers.Count > 0)
+            {
+                return;
+            }
+
+            bool migrated = false;
+
+            if (_legacyProviderConfigurations is not null && _legacyProviderConfigurations.Count > 0)
+            {
+                foreach (var kvp in _legacyProviderConfigurations)
+                {
+                    var snapshot = kvp.Value ?? new AIProviderConfigurationSnapshot();
+                    string serviceType = string.IsNullOrWhiteSpace(kvp.Key) ? _legacyServiceType ?? "OpenAI" : kvp.Key;
+
+                    var provider = new PasteAIProviderDefinition
+                    {
+                        ServiceType = serviceType ?? "OpenAI",
+                        ModelName = snapshot.ModelName ?? string.Empty,
+                        EndpointUrl = snapshot.EndpointUrl ?? string.Empty,
+                        ApiVersion = snapshot.ApiVersion ?? string.Empty,
+                        DeploymentName = snapshot.DeploymentName ?? string.Empty,
+                        ModelPath = snapshot.ModelPath ?? string.Empty,
+                        SystemPrompt = snapshot.SystemPrompt ?? string.Empty,
+                        ModerationEnabled = snapshot.ModerationEnabled,
+                    };
+
+                    _providers.Add(provider);
+                }
+
+                migrated = true;
+            }
+            else if (!string.IsNullOrWhiteSpace(_legacyServiceType)
+                || !string.IsNullOrWhiteSpace(_legacyModelName)
+                || !string.IsNullOrWhiteSpace(_legacyEndpointUrl)
+                || !string.IsNullOrWhiteSpace(_legacyApiVersion)
+                || !string.IsNullOrWhiteSpace(_legacyDeploymentName)
+                || !string.IsNullOrWhiteSpace(_legacyModelPath)
+                || !string.IsNullOrWhiteSpace(_legacySystemPrompt))
+            {
+                var provider = new PasteAIProviderDefinition
+                {
+                    ServiceType = _legacyServiceType ?? "OpenAI",
+                    ModelName = _legacyModelName ?? "gpt-3.5-turbo",
+                    EndpointUrl = _legacyEndpointUrl ?? string.Empty,
+                    ApiVersion = _legacyApiVersion ?? string.Empty,
+                    DeploymentName = _legacyDeploymentName ?? string.Empty,
+                    ModelPath = _legacyModelPath ?? string.Empty,
+                    SystemPrompt = _legacySystemPrompt ?? string.Empty,
+                    ModerationEnabled = _legacyModerationEnabled,
+                };
+
+                _providers.Add(provider);
+                migrated = true;
+            }
+
+            if (migrated)
+            {
+                _legacyServiceType = null;
+                _legacyModelName = null;
+                _legacyEndpointUrl = null;
+                _legacyApiVersion = null;
+                _legacyDeploymentName = null;
+                _legacyModelPath = null;
+                _legacySystemPrompt = null;
+                _legacyModerationEnabled = false;
+                _legacyProviderConfigurations = null;
+            }
         }
 
         public override string ToString()
@@ -148,11 +260,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private static string NormalizeServiceType(string serviceType)
-        {
-            return string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
         }
     }
 }
