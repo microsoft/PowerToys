@@ -164,4 +164,25 @@
     <value>{0} is required</value>
     <comment>{0} will be replaced by a parameter name provided by the user</comment>
   </data>
+  <data name="bookmarks_item_refreshing" xml:space="preserve">
+    <value>(Refreshing bookmark...)</value>
+  </data>
+  <data name="bookmarks_delete_prompt_title" xml:space="preserve">
+    <value>Delete bookmark?</value>
+  </data>
+  <data name="bookmarks_delete_prompt_message" xml:space="preserve">
+    <value>Are you sure you want to delete this bookmark?</value>
+  </data>
+  <data name="bookmarks_copy_path_name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="bookmarks_copy_address_name" xml:space="preserve">
+    <value>Copy address</value>
+  </data>
+  <data name="bookmarks_unpin_name" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="bookmark_toast_failed_open_text" xml:space="preserve">
+    <value>Failed to open {0}</value>
+  </data>
 </root>

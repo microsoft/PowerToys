@@ -32,7 +32,7 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     displayName: "Enable MSBuild Caching"
-    default: false
+    default: true
   - name: runTests
     type: boolean
     displayName: "Run Tests"

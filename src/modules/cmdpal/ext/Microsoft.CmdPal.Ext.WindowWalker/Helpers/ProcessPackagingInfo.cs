@@ -11,4 +11,13 @@ internal sealed record ProcessPackagingInfo(
     bool IsAppContainer,
     string? PackageFullName,
     int? LastError
-);
+)
+{
+    public static ProcessPackagingInfo Empty { get; } = new(
+        Pid: 0,
+        Kind: ProcessPackagingKind.Unknown,
+        HasPackageIdentity: false,
+        IsAppContainer: false,
+        PackageFullName: null,
+        LastError: null);
+}

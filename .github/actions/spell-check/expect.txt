@@ -3,6 +3,7 @@ abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
 ABOUTBOX
+ABORTIFHUNG
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -25,8 +26,6 @@ ADMINS
 adml
 admx
 advancedpaste
-advancedpasteui
-advancedpasteuishortcut
 advapi
 advfirewall
 AFeature
@@ -44,7 +43,6 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
-allpc
 ALLVIEW
 ALPHATYPE
 AModifier
@@ -77,6 +75,7 @@ appwiz
 appxpackage
 APSTUDIO
 AQS
+Aquadrant
 ARandom
 ARCHITEW
 ARemapped
@@ -134,7 +133,6 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-blogs
 Blt
 BLURBEHIND
 BLURREGION
@@ -160,6 +158,7 @@ BUILDARCH
 BUILDNUMBER
 buildtransitive
 builttoroam
+BUNDLEINFO
 BVal
 BValue
 byapp
@@ -194,6 +193,7 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
@@ -365,11 +365,12 @@ desktopshorcutinstalled
 DESKTOPVERTRES
 devblogs
 devdocs
+devenv
 devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
 digicert
 DINORMAL
@@ -383,6 +384,7 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
+djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -393,6 +395,7 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downscale
 DPICHANGED
 DPIs
 DPSAPI
@@ -442,6 +445,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+eku
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -452,6 +456,7 @@ encryptor
 ENDSESSION
 ENSUREVISIBLE
 ENTERSIZEMOVE
+ENTRYW
 ENU
 environmentvariables
 EOAC
@@ -482,6 +487,7 @@ examplehandler
 examplepowertoy
 EXAND
 EXCLUDEFROMCAPTURE
+EXECUTEDEFAULT
 executionpolicy
 exename
 exf
@@ -504,8 +510,8 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdx
 fesf
-fff
 FFFF
 FILEEXPLORER
 fileexploreraddons
@@ -568,6 +574,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -577,6 +584,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gitmodules
 GHND
 GMEM
 GNumber
@@ -631,6 +639,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
@@ -664,11 +673,7 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
-hotkeylockmachine
-hotkeyreconnect
 hotkeys
-hotkeyswitch
-hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -727,8 +732,6 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
-imagetotext
-imagetotextshortcut
 imagingdevices
 ime
 imgflip
@@ -817,12 +820,15 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+ksa
 kvp
 Kybd
+LARGEICON
 lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 LCh
+lbl
 lcid
 LCIDTo
 lcl
@@ -841,10 +847,12 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+lightswitch
 linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -856,17 +864,19 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+LOGMSG
 LOGPIXELSX
 LOGPIXELSY
-LOn
+lng
+lon
 longdate
 LONGNAMES
 lowlevel
+lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -913,12 +923,11 @@ luid
 LUMA
 lusrmgr
 LVal
-lvm
 LWA
 lwin
 LZero
 MAGTRANSFORM
-MAJORMINOR
+makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -943,7 +952,6 @@ MDL
 mdtext
 mdtxt
 mdwn
-measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -993,7 +1001,6 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
-mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1148,6 +1155,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 numberbox
 nwc
@@ -1194,23 +1202,13 @@ PACL
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
+PARENTRELATIVE
 PARENTRELATIVEEDITING
 PARENTRELATIVEFORADDRESSBAR
+PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
-pasteashtmlfile
-pasteashtmlfileshortcut
-pasteasjson
-pasteasjsonshortcut
-pasteasmarkdown
-pasteasmarkdownshortcut
-pasteasplaintext
-pasteasplaintextshortcut
-pasteaspngfile
-pasteaspngfileshortcut
-pasteastxtfile
-pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1218,6 +1216,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
@@ -1251,6 +1250,7 @@ pgp
 pguid
 phbm
 phbmp
+phicon
 phwnd
 pici
 pidl
@@ -1259,6 +1259,8 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+pkgfamily
+PKI
 plib
 ploc
 ploca
@@ -1278,7 +1280,6 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
-powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1329,7 +1330,6 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
-projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1337,6 +1337,7 @@ PRTL
 prvpane
 psapi
 pscid
+pscustomobject
 PSECURITY
 psfgao
 psfi
@@ -1377,8 +1378,9 @@ quickaccent
 QUNS
 RAII
 RAlt
+RAquadrant
 randi
-Rasterization
+rasterization
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1421,7 +1423,6 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
-reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1447,7 +1448,6 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-Rns
 RNumber
 rop
 ROUNDSMALL
@@ -1671,10 +1671,10 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
-Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
+suntimes
 sut
 svchost
 SVGIn
@@ -1702,6 +1702,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
@@ -1740,9 +1741,9 @@ tgz
 themeresources
 THH
 THICKFRAME
+THEMECHANGED
 THISCOMPONENT
 throughs
-thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1756,10 +1757,9 @@ tkconverters
 tlb
 tlbimp
 tlc
+tmain
 TNP
-TOGGLEEASYMOUSE
 Toolhelp
-toolkitconverters
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF
@@ -1771,11 +1771,9 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
-transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
-Tru
 trl
 trx
 tsa
@@ -1811,7 +1809,6 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
-undefining
 UNDNAME
 UNICODETEXT
 unins
@@ -1978,6 +1975,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+wmsg
 WMSYSCOMMAND
 wnd
 WNDCLASS
@@ -1991,6 +1989,7 @@ WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
+worktree
 wox
 wparam
 wpf

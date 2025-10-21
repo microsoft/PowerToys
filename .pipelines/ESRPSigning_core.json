@@ -55,7 +55,6 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
@@ -133,6 +132,9 @@
             "PowerToys.ImageResizerExt.dll",
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
+
+            "PowerToys.LightSwitchModuleInterface.dll",
+            "LightSwitchService\\PowerToys.LightSwitchService.exe",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -230,7 +232,12 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
-            "*Microsoft.CmdPal.UI_*.msix"
+            "*Microsoft.CmdPal.UI_*.msix",
+
+            "PowerToys.DSC.dll",
+            "PowerToys.DSC.exe",
+
+            "PowerToysSparse.msix"
           ],
             "SigningInfo": {
                 "Operations": [
@@ -297,6 +304,9 @@
                 "msvcp140_1_app.dll",
                 "msvcp140_2_app.dll",
                 "msvcp140_app.dll",
+                "Namotion.Reflection.dll",
+                "NJsonSchema.Annotations.dll",
+                "NJsonSchema.dll",
                 "vcamp140_app.dll",
                 "vccorlib140_app.dll",
                 "vcomp140_app.dll",
@@ -322,6 +332,12 @@
                 "WinUI3Apps\\ReverseMarkdown.dll",
                 "WinUI3Apps\\SharpCompress.dll",
                 "WinUI3Apps\\ZstdSharp.dll",
+                "CommunityToolkit.WinUI.Controls.MarkdownTextBlock.dll",
+                "WinUI3Apps\\CommunityToolkit.WinUI.Controls.MarkdownTextBlock.dll",
+                "Markdig.dll",
+                "WinUI3Apps\\Markdig.dll",
+                "RomanNumerals.dll",
+                "WinUI3Apps\\RomanNumerals.dll",
                 "TestableIO.System.IO.Abstractions.dll",
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.dll",
                 "TestableIO.System.IO.Abstractions.Wrappers.dll",
