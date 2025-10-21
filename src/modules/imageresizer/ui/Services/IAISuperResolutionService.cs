@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 
 namespace ImageResizer.Services
 {
-    public interface IAiSuperResolutionService
+    public interface IAISuperResolutionService
     {
         BitmapSource ApplySuperResolution(BitmapSource source, int scale, AiSuperResolutionContext context);
     }

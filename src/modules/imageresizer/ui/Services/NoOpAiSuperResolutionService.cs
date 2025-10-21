@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 
 namespace ImageResizer.Services
 {
-    public sealed class NoOpAiSuperResolutionService : IAiSuperResolutionService
+    public sealed class NoOpAiSuperResolutionService : IAISuperResolutionService
     {
         public static NoOpAiSuperResolutionService Instance { get; } = new NoOpAiSuperResolutionService();
 

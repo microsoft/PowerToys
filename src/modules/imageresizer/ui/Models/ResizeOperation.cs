@@ -32,7 +32,7 @@ namespace ImageResizer.Models
         private readonly string _file;
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
-        private readonly IAiSuperResolutionService _aiSuperResolutionService;
+        private readonly IAISuperResolutionService _aiSuperResolutionService;
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
@@ -42,7 +42,7 @@ namespace ImageResizer.Models
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
             };
 
-        public ResizeOperation(string file, string destinationDirectory, Settings settings, IAiSuperResolutionService aiSuperResolutionService = null)
+        public ResizeOperation(string file, string destinationDirectory, Settings settings, IAISuperResolutionService aiSuperResolutionService = null)
         {
             _file = file;
             _destinationDirectory = destinationDirectory;

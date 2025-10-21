@@ -22,13 +22,13 @@ namespace ImageResizer.Models
     public class ResizeBatch
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
-        private static IAiSuperResolutionService _aiSuperResolutionService;
+        private static IAISuperResolutionService _aiSuperResolutionService;
 
         public string DestinationDirectory { get; set; }
 
         public ICollection<string> Files { get; } = new List<string>();
 
-        public static void SetAiSuperResolutionService(IAiSuperResolutionService service)
+        public static void SetAiSuperResolutionService(IAISuperResolutionService service)
         {
             _aiSuperResolutionService = service;
         }
