@@ -143,6 +143,9 @@ jobs:
       artifactName: $(JobOutputArtifactName)
       targetPath: $(Build.ArtifactStagingDirectory)
   steps:
+  - pwsh: |-
+       gdr | fl *
+       exit 1
   - checkout: self
     clean: true
     submodules: true
