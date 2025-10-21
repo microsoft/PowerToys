@@ -195,30 +195,6 @@
                                 </DataTemplate>
                             </tkcontrols:SettingsExpander.ItemTemplate>
                         </tkcontrols:SettingsExpander>
-
-                        <!--  Advanced AI  -->
-                        <tkcontrols:SettingsExpander
-                            Name="AdvancedPasteEnableAdvancedAI"
-                            x:Uid="AdvancedPaste_EnableAdvancedAI"
-                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SemanticKernel.png}"
-                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
-                            IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard
-                                    Description="Choose which cloud or local model to use"
-                                    Header="Model provider"
-                                    IsEnabled="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=OneWay}">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind ViewModel.AdvancedAIConfiguration.ServiceType, Mode=OneWay}" />
-                                        <Button Click="AdvancedAIProviderConfigureButton_Click" Content="Configure" />
-                                    </StackPanel>
-                                </tkcontrols:SettingsCard>
-                            </tkcontrols:SettingsExpander.Items>
-                        </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
 
                     <!--  Activation and behavior  -->
