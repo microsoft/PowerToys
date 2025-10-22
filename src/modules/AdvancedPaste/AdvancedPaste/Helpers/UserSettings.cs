@@ -34,8 +34,6 @@ namespace AdvancedPaste.Settings
 
         public event EventHandler Changed;
 
-        public bool IsAdvancedAIEnabled { get; private set; }
-
         public bool IsAIEnabled { get; private set; }
 
         public bool ShowCustomPreview { get; private set; }
@@ -52,7 +50,6 @@ namespace AdvancedPaste.Settings
         {
             _settingsUtils = new SettingsUtils(fileSystem);
 
-            IsAdvancedAIEnabled = false;
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;

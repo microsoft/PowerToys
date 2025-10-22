@@ -31,7 +31,8 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         string Endpoint,
         string DeploymentName,
         string ModelPath,
-        bool UsePasteScope);
+        bool UsePasteScope,
+        bool ModerationEnabled);
 
     public AdvancedAIKernelService(
         IAICredentialsProvider credentialsProvider,
@@ -81,27 +82,6 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
             case AIServiceType.AzureOpenAI:
                 kernelBuilder.AddAzureOpenAIChatCompletion(deployment, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
                 break;
-            case AIServiceType.Mistral:
-                kernelBuilder.AddMistralChatCompletion(modelName, apiKey: apiKey);
-                break;
-            case AIServiceType.Google:
-                kernelBuilder.AddGoogleAIGeminiChatCompletion(modelName, apiKey: apiKey);
-                break;
-            case AIServiceType.HuggingFace:
-                kernelBuilder.AddHuggingFaceChatCompletion(modelName, apiKey: apiKey);
-                break;
-            case AIServiceType.AzureAIInference:
-                kernelBuilder.AddAzureAIInferenceChatCompletion(modelName, apiKey: apiKey);
-                break;
-            case AIServiceType.Ollama:
-                kernelBuilder.AddOllamaChatCompletion(modelName, endpoint: new Uri(RequireEndpoint(endpoint, serviceType)));
-                break;
-            case AIServiceType.Anthropic:
-                kernelBuilder.AddBedrockChatCompletionService(modelName);
-                break;
-            case AIServiceType.AmazonBedrock:
-                kernelBuilder.AddBedrockChatCompletionService(modelName);
-                break;
             default:
                 throw new NotSupportedException($"Service type '{runtimeConfig.ServiceType}' is not supported");
         }
@@ -112,16 +92,14 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return AIServiceUsageHelper.GetOpenAIServiceUsage(chatMessage);
     }
 
-    private PasteAIProviderDefinition GetConfiguration()
+    protected override bool ShouldModerateAdvancedAI()
     {
-        var config = this.UserSettings?.PasteAIConfiguration.Providers.FirstOrDefault(
-            p => p.EnableAdvancedAI);
-        if (config is null)
+        if (!TryGetRuntimeConfig(out var runtimeConfig))
         {
-            return new PasteAIProviderDefinition();
+            return false;
         }
 
-        return config;
+        return runtimeConfig.ModerationEnabled && (runtimeConfig.ServiceType == AIServiceType.OpenAI || runtimeConfig.ServiceType == AIServiceType.AzureOpenAI);
     }
 
     private static string GetModelName(PasteAIProviderDefinition config)
@@ -136,27 +114,19 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private RuntimeConfig GetRuntimeConfig()
     {
-        if (TryGetActiveProviderConfig(out var providerConfig))
+        if (TryGetRuntimeConfig(out var runtimeConfig))
         {
-            return providerConfig;
+            return runtimeConfig;
         }
 
-        var fallback = GetConfiguration();
-        var serviceType = NormalizeServiceType(fallback.ServiceTypeKind);
-        return new RuntimeConfig(
-            serviceType,
-            GetModelName(fallback),
-            fallback.EndpointUrl,
-            fallback.DeploymentName,
-            fallback.ModelPath,
-            UsePasteScope: false);
+        throw new InvalidOperationException("No Advanced AI provider is configured.");
     }
 
-    private bool TryGetActiveProviderConfig(out RuntimeConfig runtimeConfig)
+    private bool TryGetRuntimeConfig(out RuntimeConfig runtimeConfig)
     {
         runtimeConfig = default;
-        var provider = this.UserSettings?.PasteAIConfiguration?.ActiveProvider;
-        if (provider is null)
+
+        if (!TryResolveAdvancedProvider(out var provider, out var usePasteScope))
         {
             return false;
         }
@@ -167,34 +137,61 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
             return false;
         }
 
-        var fallback = GetConfiguration();
-        var modelName = !string.IsNullOrWhiteSpace(provider.ModelName) ? provider.ModelName : GetModelName(fallback);
-
         runtimeConfig = new RuntimeConfig(
             serviceType,
-            modelName,
+            GetModelName(provider),
             provider.EndpointUrl,
             provider.DeploymentName,
             provider.ModelPath,
-            UsePasteScope: true);
+            usePasteScope,
+            provider.ModerationEnabled);
         return true;
+    }
+
+    private bool TryResolveAdvancedProvider(out PasteAIProviderDefinition provider, out bool usePasteScope)
+    {
+        provider = null;
+        usePasteScope = false;
+
+        var configuration = this.UserSettings?.PasteAIConfiguration;
+        if (configuration is null)
+        {
+            return false;
+        }
+
+        var activeProvider = configuration.ActiveProvider;
+        if (IsAdvancedProvider(activeProvider))
+        {
+            provider = activeProvider;
+            usePasteScope = true;
+            return true;
+        }
+
+        var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedProvider);
+        if (fallback is not null)
+        {
+            provider = fallback;
+            usePasteScope = configuration.UseSharedCredentials;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsAdvancedProvider(PasteAIProviderDefinition provider)
+    {
+        if (provider is null || !provider.EnableAdvancedAI)
+        {
+            return false;
+        }
+
+        var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
+        return IsServiceTypeSupported(serviceType);
     }
 
     private static bool IsServiceTypeSupported(AIServiceType serviceType)
     {
-        return serviceType switch
-        {
-            AIServiceType.OpenAI
-            or AIServiceType.AzureOpenAI
-            or AIServiceType.Mistral
-            or AIServiceType.Google
-            or AIServiceType.HuggingFace
-            or AIServiceType.AzureAIInference
-            or AIServiceType.Ollama
-            or AIServiceType.Anthropic
-            or AIServiceType.AmazonBedrock => true,
-            _ => false,
-        };
+        return serviceType is AIServiceType.OpenAI or AIServiceType.AzureOpenAI;
     }
 
     private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
@@ -204,13 +201,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private static bool RequiresApiKey(AIServiceType serviceType)
     {
-        return serviceType switch
-        {
-            AIServiceType.Ollama => false,
-            AIServiceType.Anthropic => false,
-            AIServiceType.AmazonBedrock => false,
-            _ => true,
-        };
+        return true;
     }
 
     private static string RequireEndpoint(string endpoint, AIServiceType serviceType)
@@ -226,14 +217,10 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
     private PromptExecutionSettings CreatePromptExecutionSettings()
     {
         var serviceType = GetRuntimeConfig().ServiceType;
-        return serviceType switch
+        return new OpenAIPromptExecutionSettings
         {
-            AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-                Temperature = 0.01,
-            },
-            _ => new PromptExecutionSettings(),
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            Temperature = 0.01,
         };
     }
 }

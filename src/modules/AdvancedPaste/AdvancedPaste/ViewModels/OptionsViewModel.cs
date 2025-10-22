@@ -107,7 +107,24 @@ namespace AdvancedPaste.ViewModels
 
         public bool IsCustomAIAvailable => IsCustomAIServiceEnabled && ClipboardHasDataForCustomAI;
 
-        public bool IsAdvancedAIEnabled => IsAllowedByGPO && _userSettings.IsAIEnabled && _userSettings.IsAdvancedAIEnabled && _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI);
+        public bool IsAdvancedAIEnabled
+        {
+            get
+            {
+                if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
+                {
+                    return false;
+                }
+
+                if (!TryResolveAdvancedAIProvider(out var provider, out var usesPasteScope))
+                {
+                    return false;
+                }
+
+                var scope = usesPasteScope ? AICredentialScope.PasteAI : AICredentialScope.AdvancedAI;
+                return _credentialsProvider.IsConfigured(scope);
+            }
+        }
 
         public ObservableCollection<PasteAIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
 
@@ -143,7 +160,7 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
-        private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled && _userSettings.IsAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
+        private PasteFormats CustomAIFormat => _userSettings.IsAIEnabled && TryResolveAdvancedAIProvider(out _, out _) ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
 
         private bool Visible
         {
@@ -676,6 +693,47 @@ namespace AdvancedPaste.ViewModels
         private void UpdateAllowedByGPO()
         {
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        }
+
+        private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider, out bool usesPasteScope)
+        {
+            provider = null;
+            usesPasteScope = false;
+
+            var configuration = _userSettings?.PasteAIConfiguration;
+            if (configuration is null)
+            {
+                return false;
+            }
+
+            var activeProvider = configuration.ActiveProvider;
+            if (IsAdvancedAIProvider(activeProvider))
+            {
+                provider = activeProvider;
+                usesPasteScope = true;
+                return true;
+            }
+
+            var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedAIProvider);
+            if (fallback is not null)
+            {
+                provider = fallback;
+                usesPasteScope = configuration.UseSharedCredentials;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsAdvancedAIProvider(PasteAIProviderDefinition provider)
+        {
+            return provider is not null && provider.EnableAdvancedAI && SupportsAdvancedAI(provider.ServiceTypeKind);
+        }
+
+        private static bool SupportsAdvancedAI(AIServiceType serviceType)
+        {
+            return serviceType is AIServiceType.OpenAI
+                or AIServiceType.AzureOpenAI;
         }
 
         private bool UpdateOpenAIKey()
