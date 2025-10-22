@@ -131,7 +131,8 @@ namespace PowerToys.McpServer.Tools
 
                 if (!powerToysRunning || !awakeModuleEnabled)
                 {
-                    return HandleCliScenario(AwakeMode.INDEFINITE, keepDisplayOn, 0, force);
+                    return AwakeStatusPayload.CreateError(
+                        "Indefinite mode requires PowerToys to be running with Awake module enabled. CLI mode does not support indefinite operation.").ToJsonObject();
                 }
 
                 AwakeSettings settings = SettingsUtils.GetSettingsOrDefault<AwakeSettings>(AwakeSettings.ModuleName);
@@ -474,11 +475,17 @@ namespace PowerToys.McpServer.Tools
             snapshot.Properties.Mode = mode;
             snapshot.Properties.KeepDisplayOn = keepDisplayOn;
 
-            if ((mode == AwakeMode.TIMED || mode == AwakeMode.EXPIRABLE) && durationSeconds > 0)
+            if (mode == AwakeMode.TIMED && durationSeconds > 0)
             {
                 TimeSpan timeSpan = TimeSpan.FromSeconds(durationSeconds);
                 snapshot.Properties.IntervalHours = (uint)timeSpan.TotalHours;
                 snapshot.Properties.IntervalMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+                snapshot.Properties.ExpirationDateTime = DateTimeOffset.Now.Add(timeSpan);
+            }
+            else if (mode == AwakeMode.EXPIRABLE && durationSeconds > 0)
+            {
+                snapshot.Properties.IntervalHours = 0;
+                snapshot.Properties.IntervalMinutes = 0;
                 snapshot.Properties.ExpirationDateTime = DateTimeOffset.Now.AddSeconds(durationSeconds);
             }
             else
