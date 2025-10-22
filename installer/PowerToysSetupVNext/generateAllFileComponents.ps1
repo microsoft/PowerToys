@@ -1,9 +1,7 @@
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
-    [string]$platform,
-    [Parameter(Mandatory = $False, Position = 2)]
-    [string]$installscopeperuser = "false"
+    [string]$platform
 )
 
 Function Generate-FileList() {
@@ -77,7 +75,7 @@ Function Generate-FileComponents() {
         [Parameter(Mandatory = $True, Position = 1)]
         [string]$fileListName,
         [Parameter(Mandatory = $True, Position = 2)]
-        [string]$wxsFilePath,
+        [string]$wxsFilePath
     )
 
     $wxsFile = Get-Content $wxsFilePath;
@@ -130,12 +128,6 @@ Function Generate-FileComponents() {
 
 if ($platform -ceq "arm64") {
     $platform = "ARM64"
-}
-
-if ($installscopeperuser -eq "true") {
-    $registryroot = "HKCU"
-} else {
-    $registryroot = "HKLM"
 }
 
 #BaseApplications
