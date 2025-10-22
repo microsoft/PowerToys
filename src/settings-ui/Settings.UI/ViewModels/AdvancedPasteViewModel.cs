@@ -69,7 +69,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
             SeedProviderConfigurationSnapshots();
-            _advancedPasteSettings?.Properties?.PasteAIConfiguration?.EnsureActiveProvider();
 
             AttachConfigurationHandlers();
 
@@ -391,8 +390,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     var newValue = value ?? new PasteAIConfiguration();
                     _advancedPasteSettings.Properties.PasteAIConfiguration = newValue;
                     SubscribeToPasteAIConfiguration(newValue);
-                    newValue?.EnsureActiveProvider();
-                    UpdateActivePasteAIProviderFlags();
 
                     OnPropertyChanged(nameof(PasteAIConfiguration));
                     SaveAndNotifySettings();
@@ -477,6 +474,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var normalizedServiceType = NormalizeServiceType(serviceType, out var persistedServiceType);
 
+            var metadata = AIServiceTypeRegistry.GetMetadata(normalizedServiceType);
             var provider = new PasteAIProviderDefinition
             {
                 ServiceType = persistedServiceType,
@@ -487,6 +485,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModelPath = string.Empty,
                 SystemPrompt = string.Empty,
                 ModerationEnabled = normalizedServiceType == AIServiceType.OpenAI,
+                IsLocalModel = metadata.IsLocalModel,
             };
 
             if (normalizedServiceType is AIServiceType.FoundryLocal or AIServiceType.Onnx or AIServiceType.ML)
@@ -585,8 +584,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _editingPasteAIProvider = null;
             }
 
-            config.EnsureActiveProvider();
-            UpdateActivePasteAIProviderFlags();
             PasteAIProviderDraft = null;
             SaveAndNotifySettings();
             OnPropertyChanged(nameof(PasteAIConfiguration));
@@ -608,8 +605,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (config.Providers.Remove(provider))
             {
                 RemovePasteAICredentials(provider.Id, provider.ServiceType);
-                config.EnsureActiveProvider();
-                UpdateActivePasteAIProviderFlags();
                 SaveAndNotifySettings();
                 OnPropertyChanged(nameof(PasteAIConfiguration));
             }
@@ -631,7 +626,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (!string.Equals(config.ActiveProviderId, provider.Id, StringComparison.OrdinalIgnoreCase))
             {
                 config.ActiveProviderId = provider.Id;
-                UpdateActivePasteAIProviderFlags();
                 SaveAndNotifySettings();
                 OnPropertyChanged(nameof(PasteAIConfiguration));
             }
@@ -839,6 +833,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             target.SystemPrompt = source.SystemPrompt;
             target.ModerationEnabled = source.ModerationEnabled;
             target.EnableAdvancedAI = source.EnableAdvancedAI;
+            target.IsLocalModel = source.IsLocalModel;
         }
 
         private void RemovePasteAICredentials(string providerId, string serviceType)
@@ -881,21 +876,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AIServiceType.ML => false,
                 _ => true,
             };
-        }
-
-        private void UpdateActivePasteAIProviderFlags()
-        {
-            var providers = PasteAIConfiguration?.Providers;
-            if (providers is null)
-            {
-                return;
-            }
-
-            string activeId = PasteAIConfiguration.ActiveProviderId ?? string.Empty;
-            foreach (var provider in providers)
-            {
-                provider.IsActive = string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
-            }
         }
 
         private static void TryRemoveCredential(PasswordVault vault, string credentialResource, string credentialUserName)
@@ -1094,8 +1074,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var pasteConfig = _advancedPasteSettings?.Properties?.PasteAIConfiguration;
-            pasteConfig?.EnsureActiveProvider();
-            UpdateActivePasteAIProviderFlags();
 
             OnPropertyChanged(nameof(PasteAIConfiguration));
             SaveAndNotifySettings();
@@ -1121,7 +1099,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.Providers), StringComparison.Ordinal))
             {
                 SubscribeToPasteAIProviders(PasteAIConfiguration);
-                UpdateActivePasteAIProviderFlags();
                 SaveAndNotifySettings();
                 return;
             }
@@ -1129,11 +1106,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal)
                 || string.Equals(e.PropertyName, nameof(PasteAIConfiguration.UseSharedCredentials), StringComparison.Ordinal))
             {
-                if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal))
-                {
-                    UpdateActivePasteAIProviderFlags();
-                }
-
                 SaveAndNotifySettings();
             }
         }
@@ -1153,8 +1125,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
-            pasteConfig.EnsureActiveProvider();
-            UpdateActivePasteAIProviderFlags();
             SubscribeToPasteAIProviders(pasteConfig);
         }
 

@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _moderationEnabled = true;
         private bool _isActive;
         private bool _enableAdvancedAI;
+        private bool _isLocalModel;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -118,6 +119,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _enableAdvancedAI, value);
         }
 
+        [JsonPropertyName("is-local-model")]
+        public bool IsLocalModel
+        {
+            get => _isLocalModel;
+            set => SetProperty(ref _isLocalModel, value);
+        }
+
         [JsonIgnore]
         public bool IsActive
         {
@@ -142,6 +150,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 SystemPrompt = SystemPrompt,
                 ModerationEnabled = ModerationEnabled,
                 EnableAdvancedAI = EnableAdvancedAI,
+                IsLocalModel = IsLocalModel,
                 IsActive = IsActive,
             };
         }
