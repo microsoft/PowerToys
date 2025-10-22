@@ -570,7 +570,6 @@
                                             <StackPanel Orientation="Vertical" Spacing="8" />
                                         </ItemsPanelTemplate>
                                     </ListView.ItemsPanel>
-
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="settings:PasteAIProviderDefinition">
                                             <Grid Padding="0,8,0,8" ColumnSpacing="12">
@@ -587,7 +586,7 @@
                                                     Grid.Column="1"
                                                     VerticalAlignment="Center"
                                                     Spacing="2">
-                                                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind DisplayName, Mode=OneWay}" />
+                                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" />
                                                     <TextBlock
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         Style="{StaticResource CaptionTextBlockStyle}"
