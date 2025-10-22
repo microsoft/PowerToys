@@ -16,6 +16,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
 
+#include <algorithm>
+#include <cwctype>
 #include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -53,10 +55,13 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
-    const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
     const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
     const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
+    const wchar_t JSON_KEY_PASTE_AI_CONFIGURATION[] = L"paste-ai-configuration";
+    const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
+    const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
+    const wchar_t JSON_KEY_ENABLE_ADVANCED_AI[] = L"enable-advanced-ai";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -179,6 +184,13 @@ private:
         return result;
     }
 
+    static std::wstring to_lower_case(const std::wstring& value)
+    {
+        std::wstring result = value;
+        std::transform(result.begin(), result.end(), result.begin(), [](wchar_t ch) { return std::towlower(ch); });
+        return result;
+    }
+
     bool migrate_data_and_remove_data_file(Hotkey& old_paste_as_plain_hotkey)
     {
         const wchar_t OLD_JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
@@ -243,6 +255,61 @@ private:
                 process_additional_action(subActionName, subAction, actionIsShown);
             }
         }
+    }
+
+    bool has_advanced_ai_provider(const winrt::Windows::Data::Json::JsonObject& propertiesObject)
+    {
+        if (!propertiesObject.HasKey(JSON_KEY_PASTE_AI_CONFIGURATION))
+        {
+            return false;
+        }
+
+        const auto configValue = propertiesObject.GetNamedValue(JSON_KEY_PASTE_AI_CONFIGURATION);
+        if (configValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+        {
+            return false;
+        }
+
+        const auto configObject = configValue.GetObjectW();
+        if (!configObject.HasKey(JSON_KEY_PROVIDERS))
+        {
+            return false;
+        }
+
+        const auto providersValue = configObject.GetNamedValue(JSON_KEY_PROVIDERS);
+        if (providersValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Array)
+        {
+            return false;
+        }
+
+        const auto providers = providersValue.GetArray();
+        for (const auto providerValue : providers)
+        {
+            if (providerValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+            {
+                continue;
+            }
+
+            const auto providerObject = providerValue.GetObjectW();
+            if (!providerObject.GetNamedBoolean(JSON_KEY_ENABLE_ADVANCED_AI, false))
+            {
+                continue;
+            }
+
+            if (!providerObject.HasKey(JSON_KEY_SERVICE_TYPE))
+            {
+                continue;
+            }
+
+            const auto serviceType = providerObject.GetNamedString(JSON_KEY_SERVICE_TYPE, L"");
+            const auto normalizedServiceType = to_lower_case(serviceType);
+            if (normalizedServiceType == L"openai" || normalizedServiceType == L"azureopenai")
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
         void read_settings(PowerToysSettings::PowerToyValues& settings)
@@ -343,14 +410,7 @@ private:
         {
             const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
-            if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
-            {
-                m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
-            }
-            else
-            {
-                m_is_advanced_ai_enabled = false;
-            }
+            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
 
             if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
             {

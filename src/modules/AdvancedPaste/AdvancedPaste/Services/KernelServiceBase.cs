@@ -369,14 +369,8 @@ public abstract class KernelServiceBase(
         return $"-> {role}: {redactedContent}{usageString}";
     }
 
-    private bool ShouldModerateAdvancedAI()
+    protected virtual bool ShouldModerateAdvancedAI()
     {
-        // TODO
         return false;
-    }
-
-    private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
-    {
-        return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
     }
 }

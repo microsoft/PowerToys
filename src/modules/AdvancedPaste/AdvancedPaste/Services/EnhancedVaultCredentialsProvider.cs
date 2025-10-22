@@ -118,8 +118,24 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
 
     private AIServiceType ResolveAdvancedAiServiceType()
     {
-        // return _userSettings.AdvancedAIConfiguration?.ServiceTypeKind ?? AIServiceType.OpenAI;
-        // todo: fix
+        var configuration = _userSettings.PasteAIConfiguration;
+        if (configuration is null)
+        {
+            return AIServiceType.OpenAI;
+        }
+
+        var activeProvider = configuration.ActiveProvider;
+        if (IsAdvancedProvider(activeProvider))
+        {
+            return NormalizeServiceType(activeProvider.ServiceTypeKind);
+        }
+
+        var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedProvider);
+        if (fallback is not null)
+        {
+            return NormalizeServiceType(fallback.ServiceTypeKind);
+        }
+
         return AIServiceType.OpenAI;
     }
 
@@ -132,6 +148,21 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         }
 
         return (provider.ServiceTypeKind, provider.Id ?? string.Empty);
+    }
+
+    private static bool IsAdvancedProvider(PasteAIProviderDefinition provider)
+    {
+        if (provider is null || !provider.EnableAdvancedAI)
+        {
+            return false;
+        }
+
+        return SupportsAdvancedAI(provider.ServiceTypeKind);
+    }
+
+    private static bool SupportsAdvancedAI(AIServiceType serviceType)
+    {
+        return NormalizeServiceType(serviceType) is AIServiceType.OpenAI or AIServiceType.AzureOpenAI;
     }
 
     private static string LoadKey((string Resource, string Username)? entry)
@@ -168,13 +199,6 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         {
             AIServiceType.OpenAI => ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_OpenAI"),
             AIServiceType.AzureOpenAI => ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI"),
-            AIServiceType.AzureAIInference => ("https://azure.microsoft.com/products/ai-services/ai-inference", "PowerToys_AdvancedPaste_AdvancedAI_AzureAIInference"),
-            AIServiceType.Mistral => ("https://console.mistral.ai/account/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_Mistral"),
-            AIServiceType.Google => ("https://ai.google.dev/", "PowerToys_AdvancedPaste_AdvancedAI_Google"),
-            AIServiceType.HuggingFace => ("https://huggingface.co/settings/tokens", "PowerToys_AdvancedPaste_AdvancedAI_HuggingFace"),
-            AIServiceType.Ollama => null,
-            AIServiceType.Anthropic => null,
-            AIServiceType.AmazonBedrock => null,
             _ => null,
         };
     }

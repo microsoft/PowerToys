@@ -159,12 +159,12 @@ namespace AdvancedPaste.Services.CustomActions
 
         private static bool ShouldModerate(PasteAIConfig providerConfig)
         {
-            if (providerConfig is null)
+            if (providerConfig is null || !providerConfig.ModerationEnabled)
             {
                 return false;
             }
 
-            return providerConfig.ProviderType == AIServiceType.OpenAI && providerConfig.ModerationEnabled;
+            return providerConfig.ProviderType == AIServiceType.OpenAI || providerConfig.ProviderType == AIServiceType.AzureOpenAI;
         }
     }
 }
