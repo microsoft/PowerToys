@@ -165,8 +165,8 @@
   <data name="AIProvidersEmptyText.Text" xml:space="preserve">
     <value>No AI providers configured</value>
   </data>
-  <data name="AIProvidersManageButtonLabel.Text" xml:space="preserve">
-    <value>Manage in Settings</value>
+  <data name="AIProvidersManageButtonContent.Content" xml:space="preserve">
+    <value>Configure models in Settings</value>
   </data>
   <data name="ClipboardHistoryImage" xml:space="preserve">
     <value>Image data</value>
