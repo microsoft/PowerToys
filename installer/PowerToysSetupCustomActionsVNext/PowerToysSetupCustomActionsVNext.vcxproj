@@ -109,7 +109,7 @@
       <PreprocessorDefinitions>WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)..\packages\WixToolset.WcaUtil.5.0.2\build\native\v14\$(Platform);$(MSBuildThisFileDirectory)..\packages\WixToolset.DUtil.5.0.2\build\native\v14\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(NUGET_PACKAGES)\wixtoolset.wcautil\5.0.2\build\native\v14\$(Platform);$(NUGET_PACKAGES)\wixtoolset.dutil\5.0.2\build\native\v14\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">

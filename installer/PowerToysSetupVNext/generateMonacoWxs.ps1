@@ -10,18 +10,17 @@ Param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-if ($platform -eq "x64") {
-    $HeatPath = Join-Path $nugetHeatPath "tools\net472\x64"
-} else {
-    $HeatPath = Join-Path $nugetHeatPath "tools\net472\x86"
-}
+# WiX 5.0 is installed as a global .NET tool in the pipeline via:
+# dotnet tool install --global wix --version 5.0.2
+# This makes heat.exe available in PATH, not in the NuGet packages directory.
+$heatExe = Get-Command -Name "heat.exe" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
 
-# Validate heat.exe exists at the resolved path; fail fast if not found.
-$heatExe = Join-Path $HeatPath "heat.exe"
-if (-not (Test-Path $heatExe)) {
-    Write-Error "heat.exe not found at '$heatExe'. Ensure the WixToolset.Heat package (5.0.2) is restored under '$nugetHeatPath'."
+if (-not $heatExe) {
+    Write-Error "heat.exe not found in PATH. Ensure WiX 5.0.2 is installed globally via 'dotnet tool install --global wix --version 5.0.2'"
     exit 1
 }
+
+Write-Host "Using heat.exe from: $heatExe"
 
 $SourceDir = Join-Path $scriptDir "..\..\src\Monaco\monacoSRC"  # Now relative to script location
 $OutputFile = Join-Path $scriptDir "MonacoSRC.wxs"
