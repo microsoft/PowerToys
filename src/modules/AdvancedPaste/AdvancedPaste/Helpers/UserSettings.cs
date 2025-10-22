@@ -46,8 +46,6 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
-        public AdvancedAIConfiguration AdvancedAIConfiguration { get; private set; }
-
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
         public UserSettings(IFileSystem fileSystem)
@@ -58,7 +56,6 @@ namespace AdvancedPaste.Settings
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
-            AdvancedAIConfiguration = new AdvancedAIConfiguration();
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
@@ -110,7 +107,6 @@ namespace AdvancedPaste.Settings
                             {
                                 var properties = settings.Properties;
 
-                                IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;

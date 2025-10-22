@@ -25,8 +25,6 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<PasteFormats> AdditionalActions { get; }
 
-        public AdvancedAIConfiguration AdvancedAIConfiguration { get; }
-
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
         public event EventHandler Changed;

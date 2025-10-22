@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _systemPrompt = string.Empty;
         private bool _moderationEnabled = true;
         private bool _isActive;
+        private bool _enableAdvancedAI;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -110,6 +111,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => SetProperty(ref _moderationEnabled, value);
         }
 
+        [JsonPropertyName("enable-advanced-ai")]
+        public bool EnableAdvancedAI
+        {
+            get => _enableAdvancedAI;
+            set => SetProperty(ref _enableAdvancedAI, value);
+        }
+
         [JsonIgnore]
         public bool IsActive
         {
@@ -133,6 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 ModelPath = ModelPath,
                 SystemPrompt = SystemPrompt,
                 ModerationEnabled = ModerationEnabled,
+                EnableAdvancedAI = EnableAdvancedAI,
                 IsActive = IsActive,
             };
         }
