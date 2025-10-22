@@ -24,6 +24,14 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 {
     private readonly IAICredentialsProvider credentialsProvider;
 
+    private readonly record struct RuntimeConfig(
+        AIServiceType ServiceType,
+        string ModelName,
+        string Endpoint,
+        string DeploymentName,
+        string ModelPath,
+        bool UsePasteScope);
+
     public AdvancedAIKernelService(
         IAICredentialsProvider credentialsProvider,
         IKernelQueryCacheService queryCacheService,
@@ -37,7 +45,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         this.credentialsProvider = credentialsProvider;
     }
 
-    protected override string AdvancedAIModelName => GetModelName();
+    protected override string AdvancedAIModelName => GetRuntimeConfig().ModelName;
 
     protected override PromptExecutionSettings PromptExecutionSettings => CreatePromptExecutionSettings();
 
@@ -45,22 +53,24 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
     {
         ArgumentNullException.ThrowIfNull(kernelBuilder);
 
-        var config = this.GetConfiguration();
-        var serviceType = config.ServiceTypeKind;
-        var modelName = GetModelName(config);
+        var runtimeConfig = GetRuntimeConfig();
+        var serviceType = runtimeConfig.ServiceType;
+        var modelName = runtimeConfig.ModelName;
         var requiresApiKey = RequiresApiKey(serviceType);
         var apiKey = string.Empty;
         if (requiresApiKey)
         {
-            this.credentialsProvider.Refresh(AICredentialScope.AdvancedAI);
-            apiKey = (this.credentialsProvider.GetKey(AICredentialScope.AdvancedAI) ?? string.Empty).Trim();
+            var scope = runtimeConfig.UsePasteScope ? AICredentialScope.PasteAI : AICredentialScope.AdvancedAI;
+            this.credentialsProvider.Refresh(scope);
+            apiKey = (this.credentialsProvider.GetKey(scope) ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
             }
         }
 
-        var endpoint = string.IsNullOrWhiteSpace(config.EndpointUrl) ? null : config.EndpointUrl.Trim();
+        var endpoint = string.IsNullOrWhiteSpace(runtimeConfig.Endpoint) ? null : runtimeConfig.Endpoint.Trim();
+        var deployment = string.IsNullOrWhiteSpace(runtimeConfig.DeploymentName) ? modelName : runtimeConfig.DeploymentName;
 
         switch (serviceType)
         {
@@ -68,8 +78,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
                 kernelBuilder.AddOpenAIChatCompletion(modelName, apiKey, serviceId: modelName);
                 break;
             case AIServiceType.AzureOpenAI:
-                var deploymentName = string.IsNullOrWhiteSpace(config.DeploymentName) ? modelName : config.DeploymentName;
-                kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
+                kernelBuilder.AddAzureOpenAIChatCompletion(deployment, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
                 break;
             case AIServiceType.Mistral:
                 kernelBuilder.AddMistralChatCompletion(modelName, apiKey: apiKey);
@@ -84,7 +93,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
                 kernelBuilder.AddAzureAIInferenceChatCompletion(modelName, apiKey: apiKey);
                 break;
             case AIServiceType.Ollama:
-                kernelBuilder.AddOllamaChatCompletion(modelName, endpoint: new Uri(endpoint));
+                kernelBuilder.AddOllamaChatCompletion(modelName, endpoint: new Uri(RequireEndpoint(endpoint, serviceType)));
                 break;
             case AIServiceType.Anthropic:
                 kernelBuilder.AddBedrockChatCompletionService(modelName);
@@ -93,7 +102,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
                 kernelBuilder.AddBedrockChatCompletionService(modelName);
                 break;
             default:
-                throw new NotSupportedException($"Service type '{config.ServiceType}' is not supported");
+                throw new NotSupportedException($"Service type '{runtimeConfig.ServiceType}' is not supported");
         }
     }
 
@@ -113,11 +122,6 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return config;
     }
 
-    private string GetModelName()
-    {
-        return GetModelName(this.GetConfiguration());
-    }
-
     private static string GetModelName(AdvancedAIConfiguration config)
     {
         if (!string.IsNullOrWhiteSpace(config?.ModelName))
@@ -126,6 +130,74 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         }
 
         return "gpt-4o";
+    }
+
+    private RuntimeConfig GetRuntimeConfig()
+    {
+        if (TryGetActiveProviderConfig(out var providerConfig))
+        {
+            return providerConfig;
+        }
+
+        var fallback = GetConfiguration();
+        var serviceType = NormalizeServiceType(fallback.ServiceTypeKind);
+        return new RuntimeConfig(
+            serviceType,
+            GetModelName(fallback),
+            fallback.EndpointUrl,
+            fallback.DeploymentName,
+            fallback.ModelPath,
+            UsePasteScope: false);
+    }
+
+    private bool TryGetActiveProviderConfig(out RuntimeConfig runtimeConfig)
+    {
+        runtimeConfig = default;
+        var provider = this.UserSettings?.PasteAIConfiguration?.ActiveProvider;
+        if (provider is null)
+        {
+            return false;
+        }
+
+        var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
+        if (!IsServiceTypeSupported(serviceType))
+        {
+            return false;
+        }
+
+        var fallback = GetConfiguration();
+        var modelName = !string.IsNullOrWhiteSpace(provider.ModelName) ? provider.ModelName : GetModelName(fallback);
+
+        runtimeConfig = new RuntimeConfig(
+            serviceType,
+            modelName,
+            provider.EndpointUrl,
+            provider.DeploymentName,
+            provider.ModelPath,
+            UsePasteScope: true);
+        return true;
+    }
+
+    private static bool IsServiceTypeSupported(AIServiceType serviceType)
+    {
+        return serviceType switch
+        {
+            AIServiceType.OpenAI
+            or AIServiceType.AzureOpenAI
+            or AIServiceType.Mistral
+            or AIServiceType.Google
+            or AIServiceType.HuggingFace
+            or AIServiceType.AzureAIInference
+            or AIServiceType.Ollama
+            or AIServiceType.Anthropic
+            or AIServiceType.AmazonBedrock => true,
+            _ => false,
+        };
+    }
+
+    private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
+    {
+        return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
     }
 
     private static bool RequiresApiKey(AIServiceType serviceType)
@@ -151,7 +223,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private PromptExecutionSettings CreatePromptExecutionSettings()
     {
-        var serviceType = GetConfiguration().ServiceTypeKind;
+        var serviceType = GetRuntimeConfig().ServiceType;
         return serviceType switch
         {
             AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings

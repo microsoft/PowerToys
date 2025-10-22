@@ -114,7 +114,6 @@ namespace AdvancedPaste.Settings
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
-                                AdvancedAIConfiguration = properties.AdvancedAIConfiguration ?? new AdvancedAIConfiguration();
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
                                 PasteAIConfiguration.EnsureActiveProvider();
 
@@ -192,6 +191,87 @@ namespace AdvancedPaste.Settings
             {
                 return false;
             }
+        }
+
+        public async Task SetActiveAIProviderAsync(string providerId)
+        {
+            if (string.IsNullOrWhiteSpace(providerId))
+            {
+                return;
+            }
+
+            await Task.Run(() =>
+            {
+                lock (_loadingSettingsLock)
+                {
+                    var settings = _settingsUtils.GetSettingsOrDefault<AdvancedPasteSettings>(AdvancedPasteModuleName);
+                    var configuration = settings?.Properties?.PasteAIConfiguration;
+                    var providers = configuration?.Providers;
+
+                    if (configuration == null || providers == null || providers.Count == 0)
+                    {
+                        return;
+                    }
+
+                    var target = providers.FirstOrDefault(provider => string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                    if (target == null)
+                    {
+                        return;
+                    }
+
+                    if (string.Equals(configuration.ActiveProvider?.Id, providerId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+
+                    configuration.ActiveProviderId = providerId;
+                    configuration.EnsureActiveProvider();
+
+                    foreach (var provider in providers)
+                    {
+                        provider.IsActive = string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    try
+                    {
+                        settings.Save(_settingsUtils);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to set active AI provider", ex);
+                        return;
+                    }
+
+                    try
+                    {
+                        Task.Factory
+                            .StartNew(
+                                () =>
+                                {
+                                    PasteAIConfiguration.ActiveProviderId = providerId;
+                                    PasteAIConfiguration.EnsureActiveProvider();
+
+                                    if (PasteAIConfiguration.Providers is not null)
+                                    {
+                                        foreach (var provider in PasteAIConfiguration.Providers)
+                                        {
+                                            provider.IsActive = string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase);
+                                        }
+                                    }
+
+                                    Changed?.Invoke(this, EventArgs.Empty);
+                                },
+                                CancellationToken.None,
+                                TaskCreationOptions.None,
+                                _taskScheduler)
+                            .Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to dispatch active AI provider change", ex);
+                    }
+                }
+            });
         }
 
         public void Dispose()

@@ -113,6 +113,30 @@ namespace AdvancedPaste.ViewModels
 
         public PasteAIProviderDefinition ActiveAIProvider => _userSettings?.PasteAIConfiguration?.ActiveProvider;
 
+        public string ActiveAIProviderTooltip
+        {
+            get
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                var provider = ActiveAIProvider;
+
+                if (provider is null)
+                {
+                    return resourceLoader.GetString("AIProviderButtonTooltipEmpty");
+                }
+
+                var format = resourceLoader.GetString("AIProviderButtonTooltipFormat");
+                var displayName = provider.DisplayName;
+
+                if (!string.IsNullOrEmpty(format))
+                {
+                    return string.Format(CultureInfo.CurrentCulture, format, displayName);
+                }
+
+                return displayName;
+            }
+        }
+
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
@@ -158,6 +182,7 @@ namespace AdvancedPaste.ViewModels
             _clipboardTimer.Start();
 
             RefreshPasteFormats();
+            UpdateAIProviderActiveFlags();
             _userSettings.Changed += UserSettings_Changed;
             PropertyChanged += (_, e) =>
             {
@@ -192,12 +217,14 @@ namespace AdvancedPaste.ViewModels
 
         private void UserSettings_Changed(object sender, EventArgs e)
         {
+            UpdateAIProviderActiveFlags();
             OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
             OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(ActiveAIProvider));
+            OnPropertyChanged(nameof(ActiveAIProviderTooltip));
 
             EnqueueRefreshPasteFormats();
         }
@@ -222,6 +249,23 @@ namespace AdvancedPaste.ViewModels
 
         private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
             PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
+
+        private void UpdateAIProviderActiveFlags()
+        {
+            var providers = _userSettings?.PasteAIConfiguration?.Providers;
+            if (providers is not null)
+            {
+                var activeId = ActiveAIProvider?.Id;
+
+                foreach (var provider in providers)
+                {
+                    provider.IsActive = !string.IsNullOrEmpty(activeId) && string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            OnPropertyChanged(nameof(ActiveAIProvider));
+            OnPropertyChanged(nameof(ActiveAIProviderTooltip));
+        }
 
         private void RefreshPasteFormats()
         {
@@ -642,6 +686,34 @@ namespace AdvancedPaste.ViewModels
             var advancedKeyChanged = _credentialsProvider.Refresh(AICredentialScope.AdvancedAI);
 
             return pasteKeyChanged || advancedKeyChanged;
+        }
+
+        [RelayCommand]
+        private async Task SetActiveProviderAsync(PasteAIProviderDefinition provider)
+        {
+            if (provider is null || string.IsNullOrEmpty(provider.Id))
+            {
+                return;
+            }
+
+            if (string.Equals(ActiveAIProvider?.Id, provider.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            try
+            {
+                await _userSettings.SetActiveAIProviderAsync(provider.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to activate AI provider", ex);
+                return;
+            }
+
+            UpdateAIProviderActiveFlags();
+            OnPropertyChanged(nameof(AIProviders));
+            EnqueueRefreshPasteFormats();
         }
 
         public async Task CancelPasteActionAsync()

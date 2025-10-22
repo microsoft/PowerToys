@@ -150,6 +150,24 @@
   <data name="ClipboardHistoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
+  <data name="AIProviderButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>AI provider selector</value>
+  </data>
+  <data name="AIProviderButtonTooltipEmpty" xml:space="preserve">
+    <value>Select an AI provider</value>
+  </data>
+  <data name="AIProviderButtonTooltipFormat" xml:space="preserve">
+    <value>Active provider: {0}</value>
+  </data>
+  <data name="AIProvidersFlyoutHeader.Text" xml:space="preserve">
+    <value>AI providers</value>
+  </data>
+  <data name="AIProvidersEmptyText.Text" xml:space="preserve">
+    <value>No AI providers configured</value>
+  </data>
+  <data name="AIProvidersManageButtonLabel.Text" xml:space="preserve">
+    <value>Manage in Settings</value>
+  </data>
   <data name="ClipboardHistoryImage" xml:space="preserve">
     <value>Image data</value>
     <comment>Label used to represent an image in the clipboard history</comment>
