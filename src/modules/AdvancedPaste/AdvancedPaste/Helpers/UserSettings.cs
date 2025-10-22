@@ -111,7 +111,6 @@ namespace AdvancedPaste.Settings
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
-                                PasteAIConfiguration.EnsureActiveProvider();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
@@ -221,7 +220,6 @@ namespace AdvancedPaste.Settings
                     }
 
                     configuration.ActiveProviderId = providerId;
-                    configuration.EnsureActiveProvider();
 
                     foreach (var provider in providers)
                     {
@@ -245,7 +243,6 @@ namespace AdvancedPaste.Settings
                                 () =>
                                 {
                                     PasteAIConfiguration.ActiveProviderId = providerId;
-                                    PasteAIConfiguration.EnsureActiveProvider();
 
                                     if (PasteAIConfiguration.Providers is not null)
                                     {
