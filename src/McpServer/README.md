@@ -1,29 +1,102 @@
 # PowerToys Model Context Protocol Server
 
-This module hosts a standalone Model Context Protocol (MCP) server that exposes PowerToys functionality to MCP-compliant AI agents. The first release focuses on Awake, enabling agents to query status and toggle keep-awake modes without going through the PowerToys Runner process. The server is designed to grow over time with additional modules.
+This module hosts a standalone Model Context Protocol (MCP) server that exposes PowerToys functionality to MCP-compliant AI agents. The server is built as a .NET 9 console application that implements the MCP specification using the official ModelContextProtocol SDK.
 
-## Capabilities
+## Project Structure
 
-| Tool name | Description | Module |
-|-----------|-------------|--------|
-| `awake_status` | Returns the current Awake configuration (mode, timers, display policy). | Awake |
-| `awake_set_mode` | Switches Awake between passive, indefinite, timed, or expirable modes using the PowerToys settings pipeline. | Awake |
+- **Program.cs**: Main entry point that configures the MCP server with stdio transport
+- **Tools/AwakeTools.cs**: Implementation of Awake-related MCP tools
+- **PowerToys.McpServer.csproj**: .NET 9 project configuration with MCP dependencies
 
-## Running the server
+## Dependencies
 
-The executable lives next to other module binaries (for example, `PowerToys.McpServer.exe` under the architecture-specific output folder). The server communicates over standard input/output using MCP framing (`Content-Length` header followed by JSON). A minimal session looks like:
+- **Microsoft.Extensions.Hosting**: For hosting infrastructure and dependency injection
+- **ModelContextProtocol**: Official MCP SDK for .NET
+- **PowerToys Settings Library**: Integration with PowerToys settings system
+- **ManagedCommon**: PowerToys logging and utilities
 
-1. Client sends `initialize` request.
-2. Client calls `tools/list` to discover available tools.
-3. Client invokes `tools/call` with the desired tool name and arguments.
+## Available Tools
+
+| Tool Name | Description | Parameters | Module |
+|-----------|-------------|------------|--------|
+| `GetAwakeStatus` | Returns the current Awake configuration (mode, timers, display policy) | None | Awake |
+| `SetAwakePassive` | Set Awake to passive mode (allow system to sleep normally) | None | Awake |
+| `SetAwakeIndefinite` | Set Awake to indefinite mode (keep system awake until manually changed) | `keepDisplayOn` (bool), `force` (bool) | Awake |
+| `SetAwakeTimed` | Set Awake to timed mode (keep system awake for a specific duration) | `durationSeconds` (int), `keepDisplayOn` (bool), `force` (bool) | Awake |
+
+## Building and Running
+
+### Prerequisites
+- .NET 9 SDK
+- Visual Studio 2022 (recommended) or VS Code with C# extension
+
+### Build
+```bash
+# From PowerToys root directory
+msbuild src/McpServer/PowerToys.McpServer.csproj /p:Platform=x64 /p:Configuration=Debug
+
+# Or using dotnet CLI
+cd src/McpServer
+dotnet build -c Debug
+```
+
+### Run the Server
+The executable is built to `x64\Debug\PowerToys.McpServer.exe`. The server communicates over standard input/output using MCP framing (`Content-Length` header followed by JSON).
+
+**Example MCP Client Session:**
+1. Client sends `initialize` request with MCP version and capabilities
+2. Client calls `tools/list` to discover available PowerToys tools
+3. Client invokes `tools/call` with the desired tool name and arguments
+4. Server responds with tool execution results or errors
 
 The server will remain active until the process is terminated or a `shutdown` request is received.
 
-## Adding new module tools
+### Logging
+- Application logs are written to `%LOCALAPPDATA%\Microsoft\PowerToys\McpServer\Logs\`
+- MCP protocol logs are sent to stderr (required by MCP specification)
 
-1. Implement an `IMcpModule` that exposes one or more `IMcpTool` instances.
-2. Register the module in `Program.cs` via `ModuleCatalog.RegisterModule`.
-3. Use `Awake` implementations as reference for schema design, telemetry, and settings integration.
-4. Update documentation and packaging (signing lists, installer termination lists, verification scripts) if new executables are introduced.
+## Architecture
+
+The server uses the official ModelContextProtocol .NET SDK and follows these patterns:
+
+- **Tool Discovery**: Tools are automatically discovered using `WithToolsFromAssembly()` 
+- **Tool Attributes**: Methods marked with `[McpServerTool]` and `[Description]` are exposed as MCP tools
+- **Parameter Binding**: Method parameters are automatically bound from MCP tool call arguments
+- **Error Handling**: Exceptions are caught and returned as MCP error responses
+- **Settings Integration**: Uses PowerToys settings system for configuration persistence
+
+## Adding New Module Tools
+
+1. Create a new static class in the `Tools/` directory (e.g., `FancyZonesTools.cs`)
+2. Mark the class with `[McpServerToolType]` attribute
+3. Implement static methods with `[McpServerTool]` and `[Description]` attributes:
+   ```csharp
+   [McpServerToolType]
+   public static class MyModuleTools
+   {
+       [McpServerTool]
+       [Description("Description of what this tool does")]
+       public static JsonObject MyTool(
+           [Description("Parameter description")] string parameter)
+       {
+           // Implementation here
+           return new JsonObject();
+       }
+   }
+   ```
+4. Follow existing patterns in `AwakeTools.cs` for:
+   - Settings integration using `SettingsUtils`
+   - Logging using `Logger.LogInfo/LogError`
+   - Error handling and response formatting
+   - PowerToys process detection and module status checks
+
+## Integration with PowerToys
+
+The MCP server integrates with PowerToys through:
+
+- **Settings System**: Uses the same settings files as the main PowerToys application
+- **Process Management**: Detects and interacts with running PowerToys processes
+- **Module Status**: Checks if specific PowerToys modules are enabled
+- **Logging**: Uses PowerToys logging infrastructure for troubleshooting
 
 Refer to the PowerToys developer documentation for build and packaging instructions.

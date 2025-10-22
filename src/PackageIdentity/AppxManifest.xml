@@ -75,7 +75,7 @@
       <Extensions>
         <uap3:Extension Category="windows.appExtension">
           <uap3:AppExtension
-            Name="com.microsoft.windows.ai.modelcontextprotocolserver"
+            Name="com.microsoft.windows.ai.mcpServer"
             Id="PowerToys.McpServer"
             DisplayName="PowerToys MCP Server"
             PublicFolder="Assets">

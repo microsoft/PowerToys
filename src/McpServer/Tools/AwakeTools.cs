@@ -46,12 +46,9 @@ namespace PowerToys.McpServer.Tools
                 {
                     if (IsAwakeProcessRunning())
                     {
-                        string errorMessage = "Awake is already running via CLI. Use force=true to override.";
-
-                        return AwakeStatusPayload.CreateError(
-                            errorMessage,
-                            powerToysRunning: powerToysRunning,
-                            launchedViaCli: true).ToJsonObject();
+                        // Awake is running via CLI, but we cannot determine its actual configuration
+                        Logger.LogInfo("[MCP] Detected Awake CLI process running while PowerToys is not active or Awake module is disabled.");
+                        return AwakeStatusPayload.CreateUnknownActive().ToJsonObject();
                     }
 
                     return AwakeStatusPayload.CreateInactive().ToJsonObject();
@@ -69,9 +66,6 @@ namespace PowerToys.McpServer.Tools
                 }
 
                 AwakeStatusPayload payload = AwakeStatusPayload.FromSettings(settings, summary);
-                payload.PowerToysRunning = true;
-                payload.LaunchedViaCli = !awakeModuleEnabled && awakeProcessRunning;
-                payload.AwakeProcessActive = awakeProcessRunning;
                 Logger.LogInfo("[MCP] Retrieved Awake status via SDK tool.");
                 return payload.ToJsonObject();
             }
@@ -103,7 +97,6 @@ namespace PowerToys.McpServer.Tools
 
                 AwakeSettings settings = SettingsUtils.GetSettingsOrDefault<AwakeSettings>(AwakeSettings.ModuleName);
                 settings.Properties.Mode = AwakeMode.PASSIVE;
-                settings.Properties.ProcessId = 0;
                 settings.Properties.KeepDisplayOn = false;
                 settings.Properties.IntervalHours = 0;
                 settings.Properties.IntervalMinutes = 0;
@@ -112,9 +105,6 @@ namespace PowerToys.McpServer.Tools
                 string confirmation = FormatAwakeDescription(settings);
                 Logger.LogInfo($"[MCP] {confirmation}");
                 AwakeStatusPayload payload = AwakeStatusPayload.FromSettings(settings, confirmation);
-                payload.PowerToysRunning = true;
-                payload.LaunchedViaCli = false;
-                payload.AwakeProcessActive = false;
                 return payload.ToJsonObject();
             }
             catch (Exception ex)
@@ -151,7 +141,6 @@ namespace PowerToys.McpServer.Tools
                 }
 
                 settings.Properties.Mode = AwakeMode.INDEFINITE;
-                settings.Properties.ProcessId = 0;
                 settings.Properties.KeepDisplayOn = keepDisplayOn;
                 settings.Properties.IntervalHours = 0;
                 settings.Properties.IntervalMinutes = 0;
@@ -160,14 +149,78 @@ namespace PowerToys.McpServer.Tools
                 string confirmation = FormatAwakeDescription(settings);
                 Logger.LogInfo($"[MCP] {confirmation}");
                 AwakeStatusPayload payload = AwakeStatusPayload.FromSettings(settings, confirmation);
-                payload.PowerToysRunning = true;
-                payload.LaunchedViaCli = false;
-                payload.AwakeProcessActive = true;
                 return payload.ToJsonObject();
             }
             catch (Exception ex)
             {
                 Logger.LogError("[MCP] Failed to set Awake to indefinite.", ex);
+                return AwakeStatusPayload.CreateError(ex.Message).ToJsonObject();
+            }
+        }
+
+        /// <summary>
+        /// Sets the Awake mode to expire at a specific date and time.
+        /// </summary>
+        /// <param name="expireAt">ISO 8601 date/time when Awake should expire (e.g., "2025-10-22T15:30:00").</param>
+        /// <param name="keepDisplayOn">Whether to keep the display on. Default is true.</param>
+        /// <returns>JSON object with updated Awake status.</returns>
+        [McpServerTool]
+        [Description("Set Awake to expire at a specific date and time (ISO 8601 format).")]
+        public static JsonObject SetAwakeExpireAt(
+            [Description("ISO 8601 date/time when Awake should expire (e.g., \"2025-10-22T15:30:00\")")] string expireAt,
+            [Description("Whether to keep the display on")] bool keepDisplayOn = true,
+            [Description("Force the change even if Awake is already running")] bool force = false)
+        {
+            try
+            {
+                if (!DateTimeOffset.TryParse(expireAt, out DateTimeOffset expirationDateTime))
+                {
+                    return AwakeStatusPayload.CreateError($"Invalid date format: '{expireAt}'. Please use ISO 8601 format (e.g., '2025-10-22T15:30:00').").ToJsonObject();
+                }
+
+                if (expirationDateTime <= DateTimeOffset.Now)
+                {
+                    return AwakeStatusPayload.CreateError("Expiration time must be in the future.").ToJsonObject();
+                }
+
+                (bool powerToysRunning, bool awakeModuleEnabled) = CheckPowerToysAndAwakeStatus();
+
+                if (!powerToysRunning || !awakeModuleEnabled)
+                {
+                    TimeSpan duration = expirationDateTime - DateTimeOffset.Now;
+                    uint durationSeconds = (uint)Math.Max(60, duration.TotalSeconds);
+                    return HandleCliScenario(AwakeMode.EXPIRABLE, keepDisplayOn, durationSeconds, force);
+                }
+
+                AwakeSettings settings = SettingsUtils.GetSettingsOrDefault<AwakeSettings>(AwakeSettings.ModuleName);
+                if (!force && IsAwakeActive(settings))
+                {
+                    return BuildActiveProcessResponse(settings, true, false);
+                }
+
+                TimeSpan timeSpan = expirationDateTime - DateTimeOffset.Now;
+                uint hours = (uint)timeSpan.TotalHours;
+                uint minutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+                if (hours == 0 && minutes == 0)
+                {
+                    minutes = 1;
+                }
+
+                settings.Properties.Mode = AwakeMode.EXPIRABLE;
+                settings.Properties.KeepDisplayOn = keepDisplayOn;
+                settings.Properties.IntervalHours = hours;
+                settings.Properties.IntervalMinutes = minutes;
+                settings.Properties.ExpirationDateTime = expirationDateTime;
+                SettingsUtils.SaveSettings(settings.ToJsonString(), AwakeSettings.ModuleName);
+
+                string confirmation = FormatAwakeDescription(settings);
+                Logger.LogInfo($"[MCP] {confirmation}");
+                AwakeStatusPayload payload = AwakeStatusPayload.FromSettings(settings, confirmation);
+                return payload.ToJsonObject();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("[MCP] Failed to set Awake expire-at mode.", ex);
                 return AwakeStatusPayload.CreateError(ex.Message).ToJsonObject();
             }
         }
@@ -214,7 +267,6 @@ namespace PowerToys.McpServer.Tools
                 }
 
                 settings.Properties.Mode = AwakeMode.TIMED;
-                settings.Properties.ProcessId = 0;
                 settings.Properties.KeepDisplayOn = keepDisplayOn;
                 settings.Properties.IntervalHours = hours;
                 settings.Properties.IntervalMinutes = minutes;
@@ -224,9 +276,6 @@ namespace PowerToys.McpServer.Tools
                 string confirmation = FormatAwakeDescription(settings);
                 Logger.LogInfo($"[MCP] {confirmation}");
                 AwakeStatusPayload payload = AwakeStatusPayload.FromSettings(settings, confirmation);
-                payload.PowerToysRunning = true;
-                payload.LaunchedViaCli = false;
-                payload.AwakeProcessActive = true;
                 return payload.ToJsonObject();
             }
             catch (Exception ex)
@@ -240,11 +289,6 @@ namespace PowerToys.McpServer.Tools
         {
             var mode = settings.Properties.Mode.ToString().ToLowerInvariant();
             var display = settings.Properties.KeepDisplayOn ? "display on" : "display off";
-
-            if (settings.Properties.ProcessId > 0)
-            {
-                return $"Awake mode: process-bound (PID={settings.Properties.ProcessId}), {display}";
-            }
 
             return settings.Properties.Mode switch
             {
@@ -260,9 +304,7 @@ namespace PowerToys.McpServer.Tools
         {
             return AwakeStatusPayload.CreateError(
                 "Awake is already running. Use force=true to override.",
-                settings,
-                powerToysRunning,
-                launchedViaCli).ToJsonObject();
+                settings).ToJsonObject();
         }
 
         private static bool IsPowerToysRunning()
@@ -321,9 +363,7 @@ namespace PowerToys.McpServer.Tools
             if (!force && IsAwakeProcessRunning())
             {
                 return AwakeStatusPayload.CreateError(
-                    "Awake is already running and PowerToys is not active. Use force=true to override.",
-                    powerToysRunning: false,
-                    launchedViaCli: false).ToJsonObject();
+                    "Awake is already running and PowerToys is not active. Use force=true to override.").ToJsonObject();
             }
 
             if (IsAwakeProcessRunning())
@@ -358,18 +398,12 @@ namespace PowerToys.McpServer.Tools
                 string confirmation = FormatAwakeDescription(snapshot);
                 Logger.LogInfo($"[MCP] Launched Awake CLI for mode {mode} (PowerToys not running).");
                 AwakeStatusPayload payload = AwakeStatusPayload.FromSettings(snapshot, confirmation);
-                payload.AwakeProcessActive = true;
-                payload.LaunchedViaCli = true;
-                payload.PowerToysRunning = false;
                 return payload.ToJsonObject();
             }
             catch (Exception ex)
             {
                 Logger.LogError("[MCP] Failed to start Awake CLI.", ex);
-                return AwakeStatusPayload.CreateError(
-                    ex.Message,
-                    powerToysRunning: false,
-                    launchedViaCli: false).ToJsonObject();
+                return AwakeStatusPayload.CreateError(ex.Message).ToJsonObject();
             }
         }
 
@@ -390,6 +424,13 @@ namespace PowerToys.McpServer.Tools
             {
                 startInfo.ArgumentList.Add("--time-limit");
                 startInfo.ArgumentList.Add(durationSeconds.ToString(CultureInfo.InvariantCulture));
+            }
+            else if (mode == AwakeMode.EXPIRABLE && durationSeconds > 0)
+            {
+                // For EXPIRABLE mode, convert duration to expiration datetime
+                DateTimeOffset expirationDateTime = DateTimeOffset.Now.AddSeconds(durationSeconds);
+                startInfo.ArgumentList.Add("--expire-at");
+                startInfo.ArgumentList.Add(expirationDateTime.ToString("O")); // ISO 8601 format
             }
 
             return startInfo;
@@ -432,9 +473,8 @@ namespace PowerToys.McpServer.Tools
             var snapshot = new AwakeSettings();
             snapshot.Properties.Mode = mode;
             snapshot.Properties.KeepDisplayOn = keepDisplayOn;
-            snapshot.Properties.ProcessId = 0;
 
-            if (mode == AwakeMode.TIMED && durationSeconds > 0)
+            if ((mode == AwakeMode.TIMED || mode == AwakeMode.EXPIRABLE) && durationSeconds > 0)
             {
                 TimeSpan timeSpan = TimeSpan.FromSeconds(durationSeconds);
                 snapshot.Properties.IntervalHours = (uint)timeSpan.TotalHours;
@@ -509,25 +549,15 @@ namespace PowerToys.McpServer.Tools
         {
             internal string Mode { get; set; } = "unknown";
 
-            internal bool KeepDisplayOn { get; set; }
+            internal bool? KeepDisplayOn { get; set; }
 
-            internal bool IsProcessBound { get; set; }
+            internal uint? IntervalHours { get; set; }
 
-            internal int ProcessId { get; set; }
+            internal uint? IntervalMinutes { get; set; }
 
-            internal uint IntervalHours { get; set; }
-
-            internal uint IntervalMinutes { get; set; }
-
-            internal string ExpirationDateTime { get; set; } = string.Empty;
+            internal string? ExpirationDateTime { get; set; }
 
             internal string Summary { get; set; } = string.Empty;
-
-            internal bool PowerToysRunning { get; set; }
-
-            internal bool AwakeProcessActive { get; set; }
-
-            internal bool LaunchedViaCli { get; set; }
 
             internal bool Success { get; set; } = true;
 
@@ -538,17 +568,29 @@ namespace PowerToys.McpServer.Tools
                 var result = new JsonObject
                 {
                     ["mode"] = Mode,
-                    ["keepDisplayOn"] = KeepDisplayOn,
-                    ["isProcessBound"] = IsProcessBound,
-                    ["processId"] = ProcessId,
-                    ["intervalHours"] = IntervalHours,
-                    ["intervalMinutes"] = IntervalMinutes,
-                    ["expirationDateTime"] = ExpirationDateTime,
                     ["summary"] = Summary,
-                    ["powerToysRunning"] = PowerToysRunning,
-                    ["awakeProcessActive"] = AwakeProcessActive,
-                    ["launchedViaCli"] = LaunchedViaCli,
                 };
+
+                // Add properties only if they have values
+                if (KeepDisplayOn.HasValue)
+                {
+                    result["keepDisplayOn"] = KeepDisplayOn.Value;
+                }
+
+                if (IntervalHours.HasValue)
+                {
+                    result["intervalHours"] = IntervalHours.Value;
+                }
+
+                if (IntervalMinutes.HasValue)
+                {
+                    result["intervalMinutes"] = IntervalMinutes.Value;
+                }
+
+                if (!string.IsNullOrEmpty(ExpirationDateTime))
+                {
+                    result["expirationDateTime"] = ExpirationDateTime;
+                }
 
                 // Add error handling properties
                 if (!Success)
@@ -565,17 +607,26 @@ namespace PowerToys.McpServer.Tools
 
             internal static AwakeStatusPayload FromSettings(AwakeSettings settings, string summary)
             {
-                return new AwakeStatusPayload
+                var payload = new AwakeStatusPayload
                 {
                     Mode = settings.Properties.Mode.ToString().ToLowerInvariant(),
-                    KeepDisplayOn = settings.Properties.KeepDisplayOn,
-                    IsProcessBound = settings.Properties.ProcessId > 0,
-                    ProcessId = (int)settings.Properties.ProcessId,
-                    IntervalHours = settings.Properties.IntervalHours,
-                    IntervalMinutes = settings.Properties.IntervalMinutes,
-                    ExpirationDateTime = settings.Properties.ExpirationDateTime.ToString("O"),
                     Summary = summary,
                 };
+
+                // Only include properties relevant to the current mode
+                if (settings.Properties.Mode != AwakeMode.PASSIVE)
+                {
+                    payload.KeepDisplayOn = settings.Properties.KeepDisplayOn;
+                }
+
+                if (settings.Properties.Mode == AwakeMode.TIMED || settings.Properties.Mode == AwakeMode.EXPIRABLE)
+                {
+                    payload.IntervalHours = settings.Properties.IntervalHours;
+                    payload.IntervalMinutes = settings.Properties.IntervalMinutes;
+                    payload.ExpirationDateTime = settings.Properties.ExpirationDateTime.ToString("O");
+                }
+
+                return payload;
             }
 
             internal static AwakeStatusPayload CreateInactive()
@@ -583,57 +634,44 @@ namespace PowerToys.McpServer.Tools
                 return new AwakeStatusPayload
                 {
                     Mode = "inactive",
-                    KeepDisplayOn = false,
-                    IsProcessBound = false,
-                    ProcessId = 0,
-                    IntervalHours = 0,
-                    IntervalMinutes = 0,
-                    ExpirationDateTime = string.Empty,
                     Summary = "PowerToys Awake is not running because PowerToys is not active.",
-                    PowerToysRunning = false,
-                    AwakeProcessActive = false,
-                    LaunchedViaCli = false,
                 };
             }
 
-            internal static AwakeStatusPayload CreateUnknownActive(bool powerToysRunning, bool launchedViaCli)
+            internal static AwakeStatusPayload CreateUnknownActive()
             {
                 return new AwakeStatusPayload
                 {
                     Mode = "unknown",
-                    KeepDisplayOn = false,
-                    IsProcessBound = false,
-                    ProcessId = 0,
-                    IntervalHours = 0,
-                    IntervalMinutes = 0,
-                    ExpirationDateTime = string.Empty,
                     Summary = "An Awake process is currently running, but its configuration cannot be determined. To terminate the existing process and start with new settings, use force=true.",
-                    PowerToysRunning = powerToysRunning,
-                    AwakeProcessActive = true,
-                    LaunchedViaCli = launchedViaCli,
                 };
             }
 
-            internal static AwakeStatusPayload CreateError(string errorMessage, AwakeSettings? settings = null, bool powerToysRunning = false, bool launchedViaCli = false)
+            internal static AwakeStatusPayload CreateError(string errorMessage, AwakeSettings? settings = null)
             {
                 var payload = new AwakeStatusPayload
                 {
                     Success = false,
                     ErrorMessage = errorMessage,
-                    PowerToysRunning = powerToysRunning,
-                    LaunchedViaCli = launchedViaCli,
-                    AwakeProcessActive = true,
                 };
 
                 if (settings != null)
                 {
                     payload.Mode = settings.Properties.Mode.ToString().ToLowerInvariant();
-                    payload.KeepDisplayOn = settings.Properties.KeepDisplayOn;
-                    payload.IsProcessBound = settings.Properties.ProcessId > 0;
-                    payload.ProcessId = (int)settings.Properties.ProcessId;
-                    payload.IntervalHours = settings.Properties.IntervalHours;
-                    payload.IntervalMinutes = settings.Properties.IntervalMinutes;
-                    payload.ExpirationDateTime = settings.Properties.ExpirationDateTime.ToString("O");
+
+                    // Only include properties relevant to the current mode
+                    if (settings.Properties.Mode != AwakeMode.PASSIVE)
+                    {
+                        payload.KeepDisplayOn = settings.Properties.KeepDisplayOn;
+                    }
+
+                    if (settings.Properties.Mode == AwakeMode.TIMED || settings.Properties.Mode == AwakeMode.EXPIRABLE)
+                    {
+                        payload.IntervalHours = settings.Properties.IntervalHours;
+                        payload.IntervalMinutes = settings.Properties.IntervalMinutes;
+                        payload.ExpirationDateTime = settings.Properties.ExpirationDateTime.ToString("O");
+                    }
+
                     payload.Summary = "An Awake session is already active with the current settings. To override and change the configuration, use force=true.";
                 }
                 else
