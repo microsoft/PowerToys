@@ -543,7 +543,7 @@
                     <DropDownButton.Flyout>
                         <Flyout Placement="Bottom" ShouldConstrainToRootBounds="False">
                             <Grid
-                                Width="360"
+                                Width="386"
                                 Margin="-4"
                                 RowSpacing="12">
                                 <Grid.RowDefinitions>
@@ -581,6 +581,7 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <Image
                                                     Width="20"
@@ -591,12 +592,40 @@
                                                     Grid.Column="1"
                                                     VerticalAlignment="Center"
                                                     Spacing="2">
-                                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" />
+                                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
                                                     <TextBlock
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         Style="{StaticResource CaptionTextBlockStyle}"
                                                         Text="{x:Bind ServiceType, Mode=OneWay}" />
                                                 </StackPanel>
+                                                <Border
+                                                    Grid.Column="2"
+                                                    Padding="2,0,2,0"
+                                                    VerticalAlignment="Center"
+                                                    BorderBrush="{ThemeResource ControlStrokeColorSecondary}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Visibility="{x:Bind IsLocalModel, Mode=OneWay}">
+                                                    <TextBlock
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="10"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="Local" />
+                                                </Border>
+                                                <!--<Border
+                                                    Grid.Column="2"
+                                                    Padding="2,0,2,0"
+                                                    VerticalAlignment="Center"
+                                                    BorderBrush="{ThemeResource TertiaryButtonBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Visibility="{x:Bind EnableAdvanceAI}">
+                                                    <TextBlock
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="10"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="ADVANCED" />
+                                                </Border>-->
                                             </Grid>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
@@ -634,7 +663,6 @@
                         Command="{x:Bind GenerateCustomAICommand}"
                         Content="{ui:FontIcon Glyph=&#xE724;,
                                               FontSize=16}"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         IsEnabled="{x:Bind ViewModel.IsCustomAIAvailable, Mode=OneWay}"
                         Style="{StaticResource SubtleButtonStyle}"
                         TabIndex="2"
