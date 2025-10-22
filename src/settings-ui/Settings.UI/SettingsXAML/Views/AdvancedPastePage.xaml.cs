@@ -346,7 +346,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIApiVersionTextBox.Visibility = requiresApiVersion ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelPanel.Visibility = requiresModelPath ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIEnableAdvancedAISettingsCard.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIEnableAdvancedAICheckBox.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
 

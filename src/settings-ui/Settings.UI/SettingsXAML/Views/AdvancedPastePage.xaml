@@ -482,15 +482,19 @@
             SecondaryButtonText="Cancel">
             <ContentDialog.Resources>
                 <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
+                <x:Double x:Key="ContentDialogMaxHeight">700</x:Double>
                 <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="NavigationViewContentBackground" />
             </ContentDialog.Resources>
             <StackPanel
                 MinWidth="720"
                 Spacing="16">
                 <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                <ScrollViewer>
+                <ScrollViewer 
+                    MaxHeight="550" 
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
                     <StackPanel
-                        Margin="0,8,0,0"
+                        Margin="0,8,0,48"
                         Orientation="Vertical"
                         Spacing="24">
                         <TextBox
@@ -561,17 +565,6 @@
                             MinWidth="200"
                             Header="API key"
                             PlaceholderText="Enter API Key" />
-                        
-                        <tkcontrols:SettingsCard
-                            x:Name="PasteAIEnableAdvancedAISettingsCard"
-                            x:Uid="AdvancedPaste_EnableAdvancedAI_SettingsCard"
-                            Visibility="Collapsed">
-                            <CheckBox 
-                                x:Name="PasteAIEnableAdvancedAICheckBox"
-                                Checked="PasteAIEnableAdvancedAICheckBox_Changed"
-                                Unchecked="PasteAIEnableAdvancedAICheckBox_Changed"
-                                IsChecked="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}" />
-                        </tkcontrols:SettingsCard>
 
                         <CheckBox
                             x:Name="PasteAIModerationToggle"
@@ -602,6 +595,18 @@
                                     Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
                             </StackPanel>
                         </StackPanel>
+
+                        <CheckBox 
+                            x:Name="PasteAIEnableAdvancedAICheckBox"
+                            Content="Enable Advanced AI"
+                            Checked="PasteAIEnableAdvancedAICheckBox_Changed"
+                            Unchecked="PasteAIEnableAdvancedAICheckBox_Changed"
+                            IsChecked="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
+                            Visibility="Collapsed">
+                            <ToolTipService.ToolTip>
+                                <TextBlock Text="Use built-in functions to handle complex tasks. Token consumption may increase." TextWrapping="Wrap" />
+                            </ToolTipService.ToolTip>
+                        </CheckBox>
                     </StackPanel>
                 </ScrollViewer>
             </StackPanel>
