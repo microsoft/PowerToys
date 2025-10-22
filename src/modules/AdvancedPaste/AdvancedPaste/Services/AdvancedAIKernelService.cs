@@ -124,7 +124,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return config;
     }
 
-    private static string GetModelName(AdvancedAIConfiguration config)
+    private static string GetModelName(PasteAIProviderDefinition config)
     {
         if (!string.IsNullOrWhiteSpace(config?.ModelName))
         {
