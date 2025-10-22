@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<Project>
-  <!-- Import the root Cpp.Build.props to apply Hybrid CRT configuration to all installer projects -->
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
-    <ForceImportBeforeCppProps>$(MSBuildThisFileDirectory)..\Cpp.Build.props</ForceImportBeforeCppProps>
-  </PropertyGroup>
-</Project>
