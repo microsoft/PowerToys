@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\Cpp.Build.props" />
-  
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F8B9F842-F5C3-4A2D-8C85-7F8B9E2B4F1D}</ProjectGuid>
     <TargetName>SilentFilesInUseBAFunction</TargetName>
