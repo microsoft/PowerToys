@@ -9,6 +9,7 @@
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
 #include <common/interop/shared_constants.h>
+#include <common/notifications/notifications.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -66,7 +67,6 @@ private:
         {
             try
             {
-                //Logger::info("Parsing settings:", settingsObject);
                 auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
                                             .GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
                 m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
@@ -178,7 +178,6 @@ public:
     // Called by the runner to pass the updated settings values as a serialized JSON.
     virtual void set_config(const wchar_t* config) override
     {
-        //Logger::info("setting config:", config);
         try
         {
             // Parse the input JSON string.
@@ -280,14 +279,15 @@ public:
     // Process the hotkey event
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
-        Logger::trace(L"Keyboard Manager toggle hotkey pressed");
         if (m_enabled)
         {
             disable();
+            notifications::show_toast(L"Keyboard Manager Disabled", L"");
         }
         else
         {
             enable();
+            notifications::show_toast(L"Keyboard Manager Enabled", L"");
         }
         return true;
     }
