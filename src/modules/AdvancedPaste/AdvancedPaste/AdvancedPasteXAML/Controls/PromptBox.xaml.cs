@@ -44,6 +44,18 @@ namespace AdvancedPaste.Controls
             set => SetValue(FooterProperty, value);
         }
 
+        public static readonly DependencyProperty ModelSelectorProperty = DependencyProperty.Register(
+            nameof(ModelSelector),
+            typeof(object),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: null));
+
+        public object ModelSelector
+        {
+            get => GetValue(ModelSelectorProperty);
+            set => SetValue(ModelSelectorProperty, value);
+        }
+
         public PromptBox()
         {
             InitializeComponent();

@@ -33,11 +33,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />
     <None Remove="Assets\AdvancedPaste\AIIcon.png" />
+    <None Remove="Assets\AdvancedPaste\Anthropic.svg" />
+    <None Remove="Assets\AdvancedPaste\Azure.svg" />
+    <None Remove="Assets\AdvancedPaste\AzureAI.svg" />
+    <None Remove="Assets\AdvancedPaste\Bedrock.svg" />
+    <None Remove="Assets\AdvancedPaste\FoundryLocal.svg" />
+    <None Remove="Assets\AdvancedPaste\Gemini.svg" />
     <None Remove="Assets\AdvancedPaste\Gradient.png" />
     <None Remove="AdvancedPasteXAML\Controls\AnimatedContentControl\AnimatedBorderBrush.xaml" />
     <None Remove="AdvancedPasteXAML\Views\MainPage.xaml" />
+    <None Remove="Assets\AdvancedPaste\HuggingFace.svg" />
+    <None Remove="Assets\AdvancedPaste\Mistral.svg" />
+    <None Remove="Assets\AdvancedPaste\Ollama.svg" />
+    <None Remove="Assets\AdvancedPaste\Onnx.svg" />
+    <None Remove="Assets\AdvancedPaste\OpenAI.dark.svg" />
+    <None Remove="Assets\AdvancedPaste\OpenAI.light.svg" />
+    <None Remove="Assets\AdvancedPaste\WindowsML.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,6 +134,11 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  <ItemGroup>
+    <Page Update="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
   <ItemGroup>
     <Page Update="AdvancedPasteXAML\Controls\PromptBox.xaml">
       <Generator>MSBuild:Compile</Generator>
