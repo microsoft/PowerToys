@@ -371,9 +371,6 @@ public abstract class KernelServiceBase(
 
     private bool ShouldModerateAdvancedAI()
     {
-        // var config = _userSettings?.Paste ?? new AdvancedAIConfiguration();
-        // var serviceType = NormalizeServiceType(config.ServiceTypeKind);
-        // return serviceType == AIServiceType.OpenAI && config.ModerationEnabled;
         // TODO
         return false;
     }
