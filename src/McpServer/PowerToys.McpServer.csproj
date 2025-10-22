@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>PowerToys.McpServer</RootNamespace>
     <AssemblyName>PowerToys.McpServer</AssemblyName>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>..\..\$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
 </Project>

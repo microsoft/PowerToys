@@ -395,12 +395,6 @@
                             AutomationProperties.AutomationId="HostsNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}" />
                         <NavigationViewItem
-                            x:Name="McpNavigationItem"
-                            x:Uid="Shell_Mcp"
-                            helpers:NavHelper.NavigateTo="views:McpPage"
-                            AutomationProperties.AutomationId="McpNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Mcp.png}" />
-                        <NavigationViewItem
                             x:Name="RegistryPreviewNavigationItem"
                             x:Uid="Shell_RegistryPreview"
                             helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"

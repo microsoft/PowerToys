@@ -54,7 +54,6 @@
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
-            "PowerToys.McpServer.exe",
 
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
@@ -238,7 +237,9 @@
             "PowerToys.DSC.dll",
             "PowerToys.DSC.exe",
 
-            "PowerToysSparse.msix"
+            "PowerToysSparse.msix",
+            "PowerToys.McpServer.dll",
+            "PowerToys.McpServer.exe"
           ],
             "SigningInfo": {
                 "Operations": [

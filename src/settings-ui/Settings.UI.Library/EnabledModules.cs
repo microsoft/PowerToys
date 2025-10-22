@@ -530,23 +530,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool mcp = true;
-
-        [JsonPropertyName("MCP")]
-        public bool MCP
-        {
-            get => mcp;
-            set
-            {
-                if (mcp != value)
-                {
-                    LogTelemetryEvent(value);
-                    mcp = value;
-                    NotifyChange();
-                }
-            }
-        }
-
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

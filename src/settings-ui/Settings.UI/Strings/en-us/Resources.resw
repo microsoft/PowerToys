@@ -4118,7 +4118,29 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Register to VS Code</value>
   </data>
   <data name="Mcp_VSCodeRegistrationSettingsCard.Description" xml:space="preserve">
-    <value>Automatically register MCP server to VS Code settings.json</value>
+    <value>Add the PowerToys MCP server to VS Code. Remove it manually from VS Code when you no longer need it.</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationFailedDialog_Title" xml:space="preserve">
+    <value>PowerToys couldn&apos;t update VS Code</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationFailedDialog_Content" xml:space="preserve">
+    <value>PowerToys couldn&apos;t register the MCP server with VS Code automatically. Run {0} in a PowerShell window or add the server manually from VS Code&apos;s Model Context Protocol settings.</value>
+    <comment>{0} is a command that can be pasted into a terminal.</comment>
+  </data>
+  <data name="Mcp_VSCodeRegistrationDialog_PrimaryButtonText" xml:space="preserve">
+    <value>Got it</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationSuccessDialog_Title" xml:space="preserve">
+    <value>Registration added</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationSuccessDialog_Content" xml:space="preserve">
+    <value>PowerToys added the MCP server to VS Code. To remove it later, open VS Code, run &quot;Copilot: Manage MCP Servers&quot;, and delete &quot;powertoys-mcp&quot;.</value>
+  </data>
+  <data name="Mcp_VSCodeRegistrationUnavailableDialog_Content" xml:space="preserve">
+    <value>VS Code&apos;s command-line interface isn&apos;t available. Install or update VS Code, enable the &quot;code&quot; command, and try again.</value>
+  </data>
+  <data name="Mcp_AddToVSCodeButton.Content" xml:space="preserve">
+    <value>Add to VS Code</value>
   </data>
   <data name="Mcp_WindowsCopilotRegistrationSettingsCard.Header" xml:space="preserve">
     <value>Register to Windows Copilot</value>

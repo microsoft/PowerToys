@@ -9,7 +9,6 @@ This section contains documentation for individual PowerToys modules, including 
 | [Advanced Paste](advancedpaste.md) | Tool for enhanced clipboard pasting with formatting options |
 | [Always on Top](alwaysontop.md) | Tool for pinning windows to stay on top of other windows |
 | [Awake](awake.md) | Tool to keep your computer awake without modifying power settings |
-| [MCP Server](mcp.md) | Model Context Protocol bridge exposing PowerToys tools to AI agents |
 | [Color Picker](colorpicker.md) | Tool for selecting and managing colors from the screen |
 | [Command Not Found](commandnotfound.md) | Tool suggesting package installations for missing commands |
 | [Crop and Lock](cropandlock.md) | Tool for cropping application windows into smaller windows or thumbnails |

@@ -415,7 +415,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "AdvancedPaste": return typeof(AdvancedPastePage);
                 case "AlwaysOnTop": return typeof(AlwaysOnTopPage);
                 case "Awake": return typeof(AwakePage);
-                case "MCP": return typeof(McpPage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
                 case "LightSwitch": return typeof(LightSwitchPage);
