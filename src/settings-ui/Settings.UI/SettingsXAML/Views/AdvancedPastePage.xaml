@@ -17,9 +17,7 @@
     <local:NavigablePage.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary>
-                    <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
-                </ResourceDictionary>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
@@ -35,6 +33,7 @@
                     <ImageSource x:Key="OpenAIIconImage">ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg</ImageSource>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+            <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
             <Style x:Name="ModelHeaderStyle" TargetType="ListViewHeaderItem">
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                 <Setter Property="FontSize" Value="12" />
@@ -113,10 +112,9 @@
                         <tkcontrols:SettingsExpander
                             Name="AdvancedPasteEnableAISettingsCard"
                             x:Uid="AdvancedPaste_EnableAISettingsCard"
-                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
                             IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                            IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
-
+                            IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.HeaderIcon>
                                 <PathIcon Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z" />
                             </tkcontrols:SettingsExpander.HeaderIcon>
@@ -131,14 +129,12 @@
                                     <HyperlinkButton x:Uid="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore" NavigateUri="https://learn.microsoft.com/windows/powertoys/advanced-paste" />
                                 </StackPanel>
                             </tkcontrols:SettingsExpander.Description>
-
                             <tkcontrols:SettingsExpander.ItemsHeader>
-                                <tkcontrols:SettingsCard 
-                                    Description="Add online or local models " 
-                                    Header="Model providers">
-                                    <tkcontrols:SettingsCard.HeaderIcon>
-                                        <FontIcon Glyph="" Opacity="0" />
-                                    </tkcontrols:SettingsCard.HeaderIcon>
+                                <tkcontrols:SettingsCard
+                                    Description="Add online or local models"
+                                    Header="Model providers"
+                                    Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+
                                     <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
@@ -146,7 +142,6 @@
                                     </Button>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.ItemsHeader>
-
                             <tkcontrols:SettingsExpander.ItemTemplate>
                                 <DataTemplate x:DataType="models:PasteAIProviderDefinition">
                                     <tkcontrols:SettingsCard
@@ -163,16 +158,16 @@
                                                 <Button.Flyout>
                                                     <MenuFlyout>
                                                         <MenuFlyoutItem
-                                                        Click="EditPasteAIProviderButton_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE70F;}"
-                                                        Tag="{x:Bind}"
-                                                        Text="Edit" />
+                                                            Click="EditPasteAIProviderButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                            Tag="{x:Bind}"
+                                                            Text="Edit" />
                                                         <MenuFlyoutSeparator />
                                                         <MenuFlyoutItem
-                                                        Click="RemovePasteAIProviderButton_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}"
-                                                        Tag="{x:Bind}"
-                                                        Text="Remove" />
+                                                            Click="RemovePasteAIProviderButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                            Tag="{x:Bind}"
+                                                            Text="Remove" />
                                                     </MenuFlyout>
                                                 </Button.Flyout>
                                             </Button>
@@ -471,14 +466,12 @@
                 <x:Double x:Key="ContentDialogMaxHeight">700</x:Double>
                 <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="NavigationViewContentBackground" />
             </ContentDialog.Resources>
-            <StackPanel
-                MinWidth="720"
-                Spacing="16">
+            <StackPanel MinWidth="720" Spacing="16">
                 <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                <ScrollViewer 
-                    MaxHeight="550" 
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer
+                    MaxHeight="550"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
                     <StackPanel
                         Margin="0,8,0,48"
                         Orientation="Vertical"
@@ -582,12 +575,12 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <CheckBox 
+                        <CheckBox
                             x:Name="PasteAIEnableAdvancedAICheckBox"
-                            Content="Enable Advanced AI"
                             Checked="PasteAIEnableAdvancedAICheckBox_Changed"
-                            Unchecked="PasteAIEnableAdvancedAICheckBox_Changed"
+                            Content="Enable Advanced AI"
                             IsChecked="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
+                            Unchecked="PasteAIEnableAdvancedAICheckBox_Changed"
                             Visibility="Collapsed">
                             <ToolTipService.ToolTip>
                                 <TextBlock Text="Use built-in functions to handle complex tasks. Token consumption may increase." TextWrapping="Wrap" />

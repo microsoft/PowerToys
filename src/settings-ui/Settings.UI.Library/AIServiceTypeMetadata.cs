@@ -22,5 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool IsOnlineService { get; init; }
 
         public bool IsAvailableInUI { get; init; } = true;
+
+        public bool IsLocalModel { get; init; }
     }
 }

@@ -121,9 +121,14 @@ namespace AdvancedPaste.Controls
             PreviewPasteBtn.Focus(FocusState.Programmatic);
         }
 
-        private async void AIProviderListView_ItemClick(object sender, ItemClickEventArgs e)
+        internal void IsLoading(bool loading)
         {
-            if (e.ClickedItem is PasteAIProviderDefinition provider)
+            Loader.IsLoading = loading;
+        }
+
+        private async void AIProviderListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (AIProviderListView.SelectedItem is PasteAIProviderDefinition provider)
             {
                 if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
                 {
@@ -133,11 +138,6 @@ namespace AdvancedPaste.Controls
                 var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
                 flyout?.Hide();
             }
-        }
-
-        internal void IsLoading(bool loading)
-        {
-            Loader.IsLoading = loading;
         }
     }
 }

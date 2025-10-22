@@ -90,14 +90,29 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Spacing="12">
-                    <ComboBox
-                        x:Name="CachedModelsComboBox"
-                        HorizontalAlignment="Stretch"
-                        ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
-                        PlaceholderText="Select a downloaded model"
-                        SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
-                        SelectionChanged="CachedModelsComboBox_SelectionChanged"
-                        DisplayMemberPath="Name" />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            x:Name="CachedModelsComboBox"
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
+                            PlaceholderText="Select a downloaded model"
+                            SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
+                            SelectionChanged="CachedModelsComboBox_SelectionChanged"
+                            DisplayMemberPath="Name" />
+                        <Button
+                            x:Name="RefreshModelsButton"
+                            Grid.Column="1"
+                            VerticalAlignment="Stretch"
+                            Click="RefreshModelsButton_Click"
+                            ToolTipService.ToolTip="Refresh model list">
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                        </Button>
+                    </Grid>
                     <StackPanel
                         x:Name="SelectedModelDetailsPanel"
                         Spacing="8"

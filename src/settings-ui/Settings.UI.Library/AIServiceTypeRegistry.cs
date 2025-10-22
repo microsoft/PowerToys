@@ -56,6 +56,7 @@ public static class AIServiceTypeRegistry
             DisplayName = "Ollama",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Ollama.svg",
             IsOnlineService = true,
+            IsLocalModel = true,
         },
         [AIServiceType.Anthropic] = new AIServiceTypeMetadata
         {
@@ -77,6 +78,7 @@ public static class AIServiceTypeRegistry
             DisplayName = "Foundry Local",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg",
             IsOnlineService = false,
+            IsLocalModel = true,
         },
         [AIServiceType.ML] = new AIServiceTypeMetadata
         {
