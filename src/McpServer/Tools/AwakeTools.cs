@@ -123,7 +123,7 @@ namespace PowerToys.McpServer.Tools
         [Description("Set Awake to indefinite mode (keep system awake until manually changed).")]
         public static JsonObject SetAwakeIndefinite(
             [Description("Whether to keep the display on")] bool keepDisplayOn = true,
-            [Description("Force the change even if Awake is already running")] bool force = false)
+            [Description("Force the change even if Awake is already running (default: false)")] bool force = false)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace PowerToys.McpServer.Tools
         public static JsonObject SetAwakeExpireAt(
             [Description("ISO 8601 date/time when Awake should expire (e.g., \"2025-10-22T15:30:00\")")] string expireAt,
             [Description("Whether to keep the display on")] bool keepDisplayOn = true,
-            [Description("Force the change even if Awake is already running")] bool force = false)
+            [Description("Force the change even if Awake is already running (default: false)")] bool force = false)
         {
             try
             {
@@ -236,7 +236,7 @@ namespace PowerToys.McpServer.Tools
         public static JsonObject SetAwakeTimed(
             [Description("Duration in seconds (minimum 60)")] int durationSeconds,
             [Description("Whether to keep the display on")] bool keepDisplayOn = true,
-            [Description("Force the change even if Awake is already running")] bool force = false)
+            [Description("Force the change even if Awake is already running (default: false)")] bool force = false)
         {
             try
             {
