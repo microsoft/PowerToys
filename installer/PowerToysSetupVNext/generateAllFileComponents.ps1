@@ -96,7 +96,7 @@ Function Generate-FileComponents() {
     $componentDefs +=
     @"
             <Component Id="$($componentId)" Guid="$((New-Guid).ToString().ToUpper())">
-              <RegistryKey Root="`$(var.RegistryRoot)" Key="Software\Classes\powertoys\components">
+              <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
                 <RegistryValue Type="string" Name="$($componentId)" Value="" KeyPath="yes"/>
               </RegistryKey>`r`n
 "@

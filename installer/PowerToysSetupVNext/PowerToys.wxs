@@ -22,10 +22,8 @@
 
         <?if $(var.PerUser) = "true" ?>
             <Variable Name="InstallFolder" Type="formatted" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes" />
-            <Variable Name="RegistryRoot" Type="string" Value="HKCU" />
         <?else?>
             <Variable Name="InstallFolder" Type="formatted" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes" />
-            <Variable Name="RegistryRoot" Type="string" Value="HKLM" />
         <?endif?>
 
         <Log Disable="no" Prefix="powertoys-bootstrapper-msi-$(var.Version)" Extension=".log" />
