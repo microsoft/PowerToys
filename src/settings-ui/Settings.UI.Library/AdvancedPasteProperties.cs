@@ -25,10 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CustomActions = new();
             AdditionalActions = new();
             IsAIEnabled = false;
-            IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
-            AdvancedAIConfiguration = new();
             PasteAIConfiguration = new();
         }
 
@@ -60,9 +58,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private Dictionary<string, JsonElement> _extensionData;
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool IsAdvancedAIEnabled { get; set; }
-
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -87,10 +82,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("additional-actions")]
         [CmdConfigureIgnoreAttribute]
         public AdvancedPasteAdditionalActions AdditionalActions { get; init; }
-
-        [JsonPropertyName("advanced-ai-configuration")]
-        [CmdConfigureIgnoreAttribute]
-        public AdvancedAIConfiguration AdvancedAIConfiguration { get; set; }
 
         [JsonPropertyName("paste-ai-configuration")]
         [CmdConfigureIgnoreAttribute]

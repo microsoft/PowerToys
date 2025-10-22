@@ -46,8 +46,6 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
-        public AdvancedAIConfiguration AdvancedAIConfiguration { get; private set; }
-
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
         public UserSettings(IFileSystem fileSystem)

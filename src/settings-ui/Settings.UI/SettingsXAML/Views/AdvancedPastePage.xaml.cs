@@ -33,6 +33,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private bool _disposed;
         private const string PasteAiDialogDefaultTitle = "Paste with AI provider configuration";
 
+        private const string AdvancedAISystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
+        private const string SimpleAISystemPrompt = "You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content.";
+
         private static readonly Dictionary<string, ServiceLegalInfo> ServiceLegalInformation = new(StringComparer.OrdinalIgnoreCase)
         {
             ["OpenAI"] = new ServiceLegalInfo(
@@ -111,7 +114,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Loaded += async (s, e) =>
             {
                 ViewModel.OnPageLoaded();
-                UpdateAdvancedAIUIVisibility();
                 UpdatePasteAIUIVisibility();
                 await UpdateFoundryLocalUIAsync();
             };
@@ -323,6 +325,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool isFoundryLocal = serviceKind == AIServiceType.FoundryLocal;
             bool requiresApiKey = RequiresApiKeyForService(selectedType);
             bool showModerationToggle = serviceKind == AIServiceType.OpenAI;
+            bool showAdvancedAI = serviceKind == AIServiceType.OpenAI || serviceKind == AIServiceType.AzureOpenAI;
 
             if (string.IsNullOrWhiteSpace(draft.EndpointUrl))
             {
@@ -343,6 +346,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIApiVersionTextBox.Visibility = requiresApiVersion ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelPanel.Visibility = requiresModelPath ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIEnableAdvancedAISettingsCard.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
 
@@ -354,44 +358,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 PasteAIApiKeyPasswordBox.Password = string.Empty;
             }
-        }
 
-        private void UpdateAdvancedAIUIVisibility()
-        {
-            if (AdvancedAIServiceTypeListView?.SelectedValue == null)
-            {
-                return;
-            }
-
-            string selectedType = AdvancedAIServiceTypeListView.SelectedValue.ToString();
-
-            bool showEndpoint = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "AzureAIInference", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "Mistral", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "HuggingFace", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(selectedType, "Ollama", StringComparison.OrdinalIgnoreCase);
-            bool showDeployment = string.Equals(selectedType, "AzureOpenAI", StringComparison.OrdinalIgnoreCase);
-            bool requiresApiKey = RequiresApiKeyForService(selectedType);
-            bool showModerationToggle = string.Equals(selectedType, "OpenAI", StringComparison.OrdinalIgnoreCase);
-
-            if (ViewModel.AdvancedAIConfiguration is not null)
-            {
-                ViewModel.AdvancedAIConfiguration.EndpointUrl = ViewModel.GetAdvancedAIEndpoint(selectedType);
-            }
-
-            AdvancedAIEndpointUrlTextBox.Visibility = showEndpoint ? Visibility.Visible : Visibility.Collapsed;
-            AdvancedAIDeploymentNameTextBox.Visibility = showDeployment ? Visibility.Visible : Visibility.Collapsed;
-            AdvancedAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
-            AdvancedAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
-
-            if (requiresApiKey)
-            {
-                AdvancedAIApiKeyPasswordBox.Password = ViewModel.GetAdvancedAIApiKey(selectedType);
-            }
-            else
-            {
-                AdvancedAIApiKeyPasswordBox.Password = string.Empty;
-            }
+            // Update system prompt placeholder based on EnableAdvancedAI state
+            UpdateSystemPromptPlaceholder();
         }
 
         private Task UpdateFoundryLocalUIAsync(bool refreshFoundry = false)
@@ -798,34 +767,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private async void AdvancedAIProviderConfigureButton_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateAdvancedAIUIVisibility();
-            await AdvancedAIProviderConfigurationDialog.ShowAsync();
-        }
-
-        private void AdvancedAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            string serviceType = AdvancedAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
-            string apiKey = AdvancedAIApiKeyPasswordBox.Password;
-            string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
-            string endpoint = (ViewModel.AdvancedAIConfiguration.EndpointUrl ?? string.Empty).Trim();
-
-            if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
-            {
-                args.Cancel = true;
-                return;
-            }
-
-            ViewModel.AdvancedAIConfiguration.EndpointUrl = endpoint;
-            ViewModel.SaveAdvancedAICredential(serviceType, endpoint, trimmedApiKey);
-            ViewModel.AdvancedAIConfiguration.EndpointUrl = ViewModel.GetAdvancedAIEndpoint(serviceType);
-            AdvancedAIApiKeyPasswordBox.Password = ViewModel.GetAdvancedAIApiKey(serviceType);
-
-            // Show success message
-            ShowApiKeySavedMessage("Advanced AI");
-        }
-
         private void PasteAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             var draft = ViewModel?.PasteAIProviderDraft;
@@ -853,17 +794,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ShowApiKeySavedMessage("Paste AI");
         }
 
-        private async void PasteAIProviderConfigureButton_Click(object sender, RoutedEventArgs e)
+        private void PasteAIEnableAdvancedAICheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            UpdatePasteAIUIVisibility();
-            await UpdateFoundryLocalUIAsync(refreshFoundry: true);
-            await PasteAIProviderConfigurationDialog.ShowAsync();
-        }
+            var draft = ViewModel?.PasteAIProviderDraft;
+            if (draft is null)
+            {
+                return;
+            }
 
-        private void AdvancedAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdateAdvancedAIUIVisibility();
-            RefreshDialogBindings();
+            bool isEmptyOrDefault = string.IsNullOrWhiteSpace(draft.SystemPrompt) ||
+                                     draft.SystemPrompt.Trim() == AdvancedAISystemPrompt.Trim() ||
+                                     draft.SystemPrompt.Trim() == SimpleAISystemPrompt.Trim();
+
+            if (isEmptyOrDefault)
+            {
+                if (!draft.EnableAdvancedAI)
+                {
+                    // Now we'll switch
+                    draft.SystemPrompt = AdvancedAISystemPrompt;
+                }
+                else
+                {
+                    draft.SystemPrompt = SimpleAISystemPrompt;
+                }
+            }
         }
 
         private static bool RequiresApiKeyForService(string serviceType)
@@ -923,6 +877,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             return ServiceLegalInformation.TryGetValue(serviceType, out info);
+        }
+
+        private void UpdateSystemPromptPlaceholder()
+        {
+            var draft = ViewModel?.PasteAIProviderDraft;
+            if (draft is null || PasteAISystemPromptTextBox is null)
+            {
+                return;
+            }
+
+            PasteAISystemPromptTextBox.PlaceholderText = draft.EnableAdvancedAI
+                ? AdvancedAISystemPrompt
+                : SimpleAISystemPrompt;
         }
 
         private void RefreshDialogBindings()

@@ -26,19 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class AdvancedPasteViewModel : PageViewModelBase
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
-        private static readonly HashSet<string> AdvancedAITrackedProperties = new(StringComparer.Ordinal)
-        {
-            nameof(AdvancedAIConfiguration.ModelName),
-            nameof(AdvancedAIConfiguration.EndpointUrl),
-            nameof(AdvancedAIConfiguration.ApiVersion),
-            nameof(AdvancedAIConfiguration.DeploymentName),
-            nameof(AdvancedAIConfiguration.ModelPath),
-            nameof(AdvancedAIConfiguration.SystemPrompt),
-            nameof(AdvancedAIConfiguration.ModerationEnabled),
-        };
 
         private bool _disposed;
-        private bool _isLoadingAdvancedAIProviderConfiguration;
         private PasteAIProviderDefinition _pasteAIProviderDraft;
         private PasteAIProviderDefinition _editingPasteAIProvider;
 
@@ -90,7 +79,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
 
-            LoadAdvancedAIProviderConfiguration();
             InitializePasteAIProviderState();
 
             InitializeEnabledValue();
@@ -391,39 +379,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsAdvancedAIEnabled
-        {
-            get => _advancedPasteSettings.Properties.IsAdvancedAIEnabled;
-            set
-            {
-                if (value != _advancedPasteSettings.Properties.IsAdvancedAIEnabled)
-                {
-                    _advancedPasteSettings.Properties.IsAdvancedAIEnabled = value;
-                    OnPropertyChanged(nameof(IsAdvancedAIEnabled));
-                    NotifySettingsChanged();
-                }
-            }
-        }
-
-        public AdvancedAIConfiguration AdvancedAIConfiguration
-        {
-            get => _advancedPasteSettings.Properties.AdvancedAIConfiguration;
-            set
-            {
-                if (!ReferenceEquals(value, _advancedPasteSettings.Properties.AdvancedAIConfiguration))
-                {
-                    UnsubscribeFromAdvancedAIConfiguration(_advancedPasteSettings.Properties.AdvancedAIConfiguration);
-
-                    var newValue = value ?? new AdvancedAIConfiguration();
-                    _advancedPasteSettings.Properties.AdvancedAIConfiguration = newValue;
-                    SubscribeToAdvancedAIConfiguration(newValue);
-
-                    OnPropertyChanged(nameof(AdvancedAIConfiguration));
-                    SaveAndNotifySettings();
-                }
-            }
-        }
-
         public PasteAIConfiguration PasteAIConfiguration
         {
             get => _advancedPasteSettings.Properties.PasteAIConfiguration;
@@ -697,7 +652,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (disposing)
                 {
-                    UnsubscribeFromAdvancedAIConfiguration(_advancedPasteSettings?.Properties.AdvancedAIConfiguration);
                     UnsubscribeFromPasteAIConfiguration(_advancedPasteSettings?.Properties.PasteAIConfiguration);
 
                     foreach (var action in _additionalActions.GetAllActions())
@@ -774,42 +728,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 OnPropertyChanged(nameof(IsAIEnabled));
-                OnPropertyChanged(nameof(IsAdvancedAIEnabled));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        internal void SaveAdvancedAICredential(string serviceType, string endpoint, string apiKey)
-        {
-            try
-            {
-                endpoint = endpoint?.Trim() ?? string.Empty;
-                apiKey = apiKey?.Trim() ?? string.Empty;
-                string credentialResource = GetAICredentialResource(serviceType);
-                string credentialUserName = GetAdvancedAICredentialUserName(serviceType);
-                string endpointCredentialUserName = GetAdvancedAIEndpointCredentialUserName(serviceType);
-
-                PasswordVault vault = new();
-                TryRemoveCredential(vault, credentialResource, credentialUserName);
-                TryRemoveCredential(vault, credentialResource, endpointCredentialUserName);
-
-                bool storeApiKey = RequiresCredentialStorage(serviceType) && !string.IsNullOrWhiteSpace(apiKey);
-                if (storeApiKey)
-                {
-                    PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
-                    vault.Add(cred);
-                }
-
-                if (!string.IsNullOrWhiteSpace(endpoint))
-                {
-                    PasswordCredential endpointCred = new(credentialResource, endpointCredentialUserName, endpoint);
-                    vault.Add(endpointCred);
-                }
-
-                OnPropertyChanged(nameof(IsAIEnabled));
-                NotifySettingsChanged();
             }
             catch (Exception)
             {
@@ -853,14 +771,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal string GetAdvancedAIApiKey(string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            return RetrieveCredentialValue(
-                GetAICredentialResource(serviceType),
-                GetAdvancedAICredentialUserName(serviceType));
-        }
-
         internal string GetPasteAIApiKey(string providerId, string serviceType)
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
@@ -870,14 +780,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 GetPasteAICredentialUserName(providerId, serviceType));
         }
 
-        internal string GetAdvancedAIEndpoint(string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            return RetrieveCredentialValue(
-                GetAICredentialResource(serviceType),
-                GetAdvancedAIEndpointCredentialUserName(serviceType));
-        }
-
         internal string GetPasteAIEndpoint(string providerId, string serviceType)
         {
             serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
@@ -885,29 +787,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return RetrieveCredentialValue(
                 GetAICredentialResource(serviceType),
                 GetPasteAIEndpointCredentialUserName(providerId, serviceType));
-        }
-
-        private static string GetAdvancedAICredentialUserName(string serviceType)
-        {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-            return serviceType.ToLowerInvariant() switch
-            {
-                "openai" => "PowerToys_AdvancedPaste_AdvancedAI_OpenAI",
-                "azureopenai" => "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI",
-                "azureaiinference" => "PowerToys_AdvancedPaste_AdvancedAI_AzureAIInference",
-                "mistral" => "PowerToys_AdvancedPaste_AdvancedAI_Mistral",
-                "google" => "PowerToys_AdvancedPaste_AdvancedAI_Google",
-                "huggingface" => "PowerToys_AdvancedPaste_AdvancedAI_HuggingFace",
-                "anthropic" => "PowerToys_AdvancedPaste_AdvancedAI_Anthropic",
-                "amazonbedrock" => "PowerToys_AdvancedPaste_AdvancedAI_AmazonBedrock",
-                "ollama" => "PowerToys_AdvancedPaste_AdvancedAI_Ollama",
-                _ => "PowerToys_AdvancedPaste_AdvancedAI_OpenAI",
-            };
-        }
-
-        private string GetAdvancedAIEndpointCredentialUserName(string serviceType)
-        {
-            return GetAdvancedAICredentialUserName(serviceType) + "_Endpoint";
         }
 
         private string GetAICredentialResource(string serviceType)
@@ -1142,24 +1021,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void AttachConfigurationHandlers()
         {
-            SubscribeToAdvancedAIConfiguration(_advancedPasteSettings.Properties.AdvancedAIConfiguration);
             SubscribeToPasteAIConfiguration(_advancedPasteSettings.Properties.PasteAIConfiguration);
-        }
-
-        private void SubscribeToAdvancedAIConfiguration(AdvancedAIConfiguration configuration)
-        {
-            if (configuration is not null)
-            {
-                configuration.PropertyChanged += OnAdvancedAIConfigurationPropertyChanged;
-            }
-        }
-
-        private void UnsubscribeFromAdvancedAIConfiguration(AdvancedAIConfiguration configuration)
-        {
-            if (configuration is not null)
-            {
-                configuration.PropertyChanged -= OnAdvancedAIConfigurationPropertyChanged;
-            }
         }
 
         private void SubscribeToPasteAIConfiguration(PasteAIConfiguration configuration)
@@ -1253,28 +1115,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void OnAdvancedAIConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (_isLoadingAdvancedAIProviderConfiguration)
-            {
-                return;
-            }
-
-            if (string.Equals(e.PropertyName, nameof(AdvancedAIConfiguration.ServiceType), StringComparison.Ordinal))
-            {
-                LoadAdvancedAIProviderConfiguration();
-                SaveAndNotifySettings();
-                return;
-            }
-
-            if (e.PropertyName is not null && AdvancedAITrackedProperties.Contains(e.PropertyName))
-            {
-                PersistAdvancedAIProviderConfiguration();
-            }
-
-            SaveAndNotifySettings();
-        }
-
         private void OnPasteAIConfigurationPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.Providers), StringComparison.Ordinal))
@@ -1299,23 +1139,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void SeedProviderConfigurationSnapshots()
         {
-            var advancedConfig = _advancedPasteSettings?.Properties?.AdvancedAIConfiguration;
-            if (advancedConfig is not null && !advancedConfig.HasProviderConfiguration(advancedConfig.ServiceType))
-            {
-                advancedConfig.SetProviderConfiguration(
-                    advancedConfig.ServiceType,
-                    new AIProviderConfigurationSnapshot
-                    {
-                        ModelName = advancedConfig.ModelName,
-                        EndpointUrl = advancedConfig.EndpointUrl,
-                        ApiVersion = advancedConfig.ApiVersion,
-                        DeploymentName = advancedConfig.DeploymentName,
-                        ModelPath = advancedConfig.ModelPath,
-                        SystemPrompt = advancedConfig.SystemPrompt,
-                        ModerationEnabled = advancedConfig.ModerationEnabled,
-                    });
-            }
-
             // Paste AI provider configurations are handled through the new provider list.
         }
 
@@ -1332,58 +1155,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             pasteConfig.EnsureActiveProvider();
             UpdateActivePasteAIProviderFlags();
             SubscribeToPasteAIProviders(pasteConfig);
-        }
-
-        private void LoadAdvancedAIProviderConfiguration()
-        {
-            var config = _advancedPasteSettings?.Properties?.AdvancedAIConfiguration;
-            if (config is null)
-            {
-                return;
-            }
-
-            var snapshot = config.GetOrCreateProviderConfiguration(config.ServiceType);
-            _isLoadingAdvancedAIProviderConfiguration = true;
-            try
-            {
-                config.ModelName = snapshot.ModelName ?? string.Empty;
-                config.EndpointUrl = snapshot.EndpointUrl ?? string.Empty;
-                config.ApiVersion = snapshot.ApiVersion ?? string.Empty;
-                config.DeploymentName = snapshot.DeploymentName ?? string.Empty;
-                config.ModelPath = snapshot.ModelPath ?? string.Empty;
-                config.SystemPrompt = snapshot.SystemPrompt ?? string.Empty;
-                config.ModerationEnabled = snapshot.ModerationEnabled;
-                string storedEndpoint = GetAdvancedAIEndpoint(config.ServiceType);
-                config.EndpointUrl = storedEndpoint;
-                snapshot.EndpointUrl = storedEndpoint;
-            }
-            finally
-            {
-                _isLoadingAdvancedAIProviderConfiguration = false;
-            }
-        }
-
-        private void PersistAdvancedAIProviderConfiguration()
-        {
-            if (_isLoadingAdvancedAIProviderConfiguration)
-            {
-                return;
-            }
-
-            var config = _advancedPasteSettings?.Properties?.AdvancedAIConfiguration;
-            if (config is null)
-            {
-                return;
-            }
-
-            var snapshot = config.GetOrCreateProviderConfiguration(config.ServiceType);
-            snapshot.ModelName = config.ModelName ?? string.Empty;
-            snapshot.EndpointUrl = config.EndpointUrl ?? string.Empty;
-            snapshot.ApiVersion = config.ApiVersion ?? string.Empty;
-            snapshot.DeploymentName = config.DeploymentName ?? string.Empty;
-            snapshot.ModelPath = config.ModelPath ?? string.Empty;
-            snapshot.SystemPrompt = config.SystemPrompt ?? string.Empty;
-            snapshot.ModerationEnabled = config.ModerationEnabled;
         }
 
         private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)
