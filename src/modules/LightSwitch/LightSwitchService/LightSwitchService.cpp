@@ -243,7 +243,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                                     settings.scheduleMode == ScheduleMode::SunsetToSunrise);
         bool coordsChanged = (prevLat != settings.latitude || prevLon != settings.longitude);
 
-        if (modeChangedToSunset || coordsChanged)
+        if ((modeChangedToSunset || coordsChanged) && settings.scheduleMode == ScheduleMode::SunsetToSunrise)
         {
             Logger::info(L"[LightSwitchService] Mode or coordinates changed, recalculating sun times.");
             update_sun_times(settings);
