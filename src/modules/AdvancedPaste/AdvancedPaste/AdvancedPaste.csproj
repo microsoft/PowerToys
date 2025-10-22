@@ -35,6 +35,7 @@
   <ItemGroup>
     <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />
+    <None Remove="AdvancedPasteXAML\Styles\Button.xaml" />
     <None Remove="Assets\AdvancedPaste\AIIcon.png" />
     <None Remove="Assets\AdvancedPaste\Anthropic.svg" />
     <None Remove="Assets\AdvancedPaste\Azure.svg" />
@@ -142,6 +143,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="AdvancedPasteXAML\Controls\PromptBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AdvancedPasteXAML\Styles\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

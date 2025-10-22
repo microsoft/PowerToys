@@ -344,7 +344,7 @@
         <local:AnimatedContentControl
             x:Name="Loader"
             MinHeight="48"
-            CornerRadius="8">
+            CornerRadius="16">
             <Grid>
                 <TextBox
                     x:Name="InputTxtBox"
@@ -521,10 +521,12 @@
                     x:Uid="AIProviderButton"
                     MinWidth="{StaticResource ModelSelectorButtonWidth}"
                     Margin="1,1,0,2"
-                    Padding="0"
+                    Padding="0,0,4,0"
                     VerticalAlignment="Stretch"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="0,0,1,0"
                     CornerRadius="16,0,0,16"
+                    Style="{StaticResource SubtleDropDownButtonStyle}"
                     TabIndex="0"
                     Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                     <ToolTipService.ToolTip>
@@ -538,9 +540,12 @@
                             AutomationProperties.AccessibilityView="Raw"
                             Source="{x:Bind ViewModel.ActiveAIProvider?.ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}" />
                     </DropDownButton.Content>
-                    <Button.Flyout>
+                    <DropDownButton.Flyout>
                         <Flyout Placement="Bottom" ShouldConstrainToRootBounds="False">
-                            <Grid Width="280" RowSpacing="12">
+                            <Grid
+                                Width="360"
+                                Margin="-4"
+                                RowSpacing="12">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -567,7 +572,7 @@
                                     Visibility="{x:Bind ViewModel.AIProviders.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                     <ListView.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Vertical" Spacing="8" />
+                                            <StackPanel Orientation="Vertical" Spacing="2" />
                                         </ItemsPanelTemplate>
                                     </ListView.ItemsPanel>
                                     <ListView.ItemTemplate>
@@ -578,8 +583,8 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <Image
-                                                    Width="24"
-                                                    Height="24"
+                                                    Width="20"
+                                                    Height="20"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     Source="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}" />
                                                 <StackPanel
@@ -610,7 +615,7 @@
                                     Command="{x:Bind ViewModel.OpenSettingsCommand, Mode=OneWay}" />
                             </Grid>
                         </Flyout>
-                    </Button.Flyout>
+                    </DropDownButton.Flyout>
                 </DropDownButton>
                 <Grid
                     Width="32"
