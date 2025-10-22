@@ -154,13 +154,6 @@
                                         Header="{x:Bind ModelName, Mode=OneWay}"
                                         HeaderIcon="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <!--  Default badge - subtle pill style  -->
-                                            <FontIcon
-                                                FontSize="16"
-                                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                                Glyph="&#xE73E;"
-                                                ToolTipService.ToolTip="Default provider"
-                                                Visibility="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <Button
                                                 Padding="8"
                                                 Background="Transparent"
@@ -169,13 +162,6 @@
                                                 <FontIcon FontSize="16" Glyph="&#xE712;" />
                                                 <Button.Flyout>
                                                     <MenuFlyout>
-                                                        <MenuFlyoutItem
-                                                        Click="SetActivePasteAIProvider_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE735;}"
-                                                        IsEnabled="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                                                        Tag="{x:Bind}"
-                                                        Text="Set as Default" />
-                                                        <MenuFlyoutSeparator />
                                                         <MenuFlyoutItem
                                                         Click="EditPasteAIProviderButton_Click"
                                                         Icon="{ui:FontIcon Glyph=&#xE70F;}"
