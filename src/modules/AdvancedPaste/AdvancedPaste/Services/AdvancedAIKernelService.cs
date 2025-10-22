@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services.CustomActions;
@@ -102,12 +103,13 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return AIServiceUsageHelper.GetOpenAIServiceUsage(chatMessage);
     }
 
-    private AdvancedAIConfiguration GetConfiguration()
+    private PasteAIProviderDefinition GetConfiguration()
     {
-        var config = this.UserSettings?.AdvancedAIConfiguration;
+        var config = this.UserSettings?.PasteAIConfiguration.Providers.FirstOrDefault(
+            p => p.EnableAdvancedAI);
         if (config is null)
         {
-            return new AdvancedAIConfiguration();
+            return new PasteAIProviderDefinition();
         }
 
         return config;
@@ -118,7 +120,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return GetModelName(this.GetConfiguration());
     }
 
-    private static string GetModelName(AdvancedAIConfiguration config)
+    private static string GetModelName(PasteAIProviderDefinition config)
     {
         if (!string.IsNullOrWhiteSpace(config?.ModelName))
         {

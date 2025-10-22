@@ -118,7 +118,9 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
 
     private AIServiceType ResolveAdvancedAiServiceType()
     {
-        return _userSettings.AdvancedAIConfiguration?.ServiceTypeKind ?? AIServiceType.OpenAI;
+        // return _userSettings.AdvancedAIConfiguration?.ServiceTypeKind ?? AIServiceType.OpenAI;
+        // todo: fix
+        return AIServiceType.OpenAI;
     }
 
     private (AIServiceType ServiceType, string ProviderId) ResolvePasteAiServiceTarget()

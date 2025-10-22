@@ -56,7 +56,6 @@ namespace AdvancedPaste.Settings
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
-            AdvancedAIConfiguration = new AdvancedAIConfiguration();
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
@@ -108,11 +107,9 @@ namespace AdvancedPaste.Settings
                             {
                                 var properties = settings.Properties;
 
-                                IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
-                                AdvancedAIConfiguration = properties.AdvancedAIConfiguration ?? new AdvancedAIConfiguration();
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
                                 PasteAIConfiguration.EnsureActiveProvider();
 
