@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -27,5 +28,7 @@ namespace AdvancedPaste.Settings
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
         public event EventHandler Changed;
+
+        Task SetActiveAIProviderAsync(string providerId);
     }
 }

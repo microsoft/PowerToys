@@ -4,17 +4,17 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace AdvancedPaste.Controls
 {
@@ -46,6 +46,18 @@ namespace AdvancedPaste.Controls
             set => SetValue(FooterProperty, value);
         }
 
+        public static readonly DependencyProperty ModelSelectorProperty = DependencyProperty.Register(
+            nameof(ModelSelector),
+            typeof(object),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: null));
+
+        public object ModelSelector
+        {
+            get => GetValue(ModelSelectorProperty);
+            set => SetValue(ModelSelectorProperty, value);
+        }
+
         public PromptBox()
         {
             InitializeComponent();
@@ -53,74 +65,6 @@ namespace AdvancedPaste.Controls
             ViewModel = App.GetService<OptionsViewModel>();
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             ViewModel.PreviewRequested += ViewModel_PreviewRequested;
-
-            // Hook up the AIProviderButton after the template is applied
-            InputTxtBox.Loaded += InputTxtBox_Loaded;
-        }
-
-        private void InputTxtBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Find the AIProviderButton in the template
-            var button = FindChildByName<Button>(InputTxtBox, "AIProviderButton");
-            if (button != null)
-            {
-                button.Click -= AIProviderButton_Click; // Remove in case already added
-                button.Click += AIProviderButton_Click;
-
-                // Set up the button content with actual provider info
-                UpdateAIProviderButtonContent(button);
-            }
-        }
-
-        private void UpdateAIProviderButtonContent(Button button)
-        {
-            var activeProvider = ViewModel?.ActiveAIProvider;
-            if (activeProvider == null || button == null)
-            {
-                return;
-            }
-
-            // Find the Image and TextBlock in the button
-            var image = FindChildByName<Image>(button, "AIProviderIcon");
-            var tooltip = FindChildByName<TextBlock>(button, "AIProviderTooltip");
-
-            if (image != null)
-            {
-                var iconPath = Microsoft.PowerToys.Settings.UI.Library.AIServiceTypeRegistry.GetIconPath(activeProvider.ServiceType);
-                image.Source = new Microsoft.UI.Xaml.Media.Imaging.SvgImageSource(new Uri(iconPath));
-            }
-
-            if (tooltip != null)
-            {
-                tooltip.Text = $"{activeProvider.ModelName} ({activeProvider.ServiceType}) - Click to change AI provider in Settings";
-            }
-        }
-
-        private T FindChildByName<T>(DependencyObject parent, string childName)
-            where T : DependencyObject
-        {
-            if (parent == null)
-            {
-                return null;
-            }
-
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < childrenCount; i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is FrameworkElement element && element.Name == childName && child is T typedChild)
-                {
-                    return typedChild;
-                }
-
-                var result = FindChildByName<T>(child, childName);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            return null;
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -129,15 +73,6 @@ namespace AdvancedPaste.Controls
             {
                 var state = ViewModel.IsBusy ? "LoadingState" : ViewModel.PasteActionError.HasText ? "ErrorState" : "DefaultState";
                 VisualStateManager.GoToState(this, state, true);
-            }
-            else if (e.PropertyName == nameof(ViewModel.ActiveAIProvider))
-            {
-                // Update the button when the active provider changes
-                var button = FindChildByName<Button>(InputTxtBox, "AIProviderButton");
-                if (button != null)
-                {
-                    UpdateAIProviderButtonContent(button);
-                }
             }
         }
 
@@ -186,9 +121,18 @@ namespace AdvancedPaste.Controls
             PreviewPasteBtn.Focus(FocusState.Programmatic);
         }
 
-        private void AIProviderButton_Click(object sender, RoutedEventArgs e)
+        private async void AIProviderListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ViewModel?.OpenSettings();
+            if (e.ClickedItem is PasteAIProviderDefinition provider)
+            {
+                if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
+                {
+                    await ViewModel.SetActiveProviderCommand.ExecuteAsync(provider);
+                }
+
+                var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
+                flyout?.Hide();
+            }
         }
 
         internal void IsLoading(bool loading)

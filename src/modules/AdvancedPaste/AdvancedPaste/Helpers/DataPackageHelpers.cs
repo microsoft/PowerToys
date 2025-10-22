@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Models;
 using ManagedCommon;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Data.Html;
@@ -234,6 +235,22 @@ internal static class DataPackageHelpers
         }
 
         return null;
+    }
+
+    internal static async Task<BitmapImage> GetPreviewBitmapAsync(this DataPackageView dataPackageView)
+    {
+        var stream = await dataPackageView.GetImageStreamAsync();
+        if (stream == null)
+        {
+            return null;
+        }
+
+        using (stream)
+        {
+            var bitmapImage = new BitmapImage();
+            bitmapImage.SetSource(stream);
+            return bitmapImage;
+        }
     }
 
     private static async Task<IRandomAccessStream> GetImageStreamAsync(this DataPackageView dataPackageView)

@@ -40,7 +40,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string ServiceType
         {
             get => _serviceType;
-            set => SetProperty(ref _serviceType, string.IsNullOrWhiteSpace(value) ? "OpenAI" : value);
+            set
+            {
+                if (SetProperty(ref _serviceType, string.IsNullOrWhiteSpace(value) ? "OpenAI" : value))
+                {
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
         }
 
         [JsonIgnore]
@@ -54,7 +60,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string ModelName
         {
             get => _modelName;
-            set => SetProperty(ref _modelName, value ?? string.Empty);
+            set
+            {
+                if (SetProperty(ref _modelName, value ?? string.Empty))
+                {
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
         }
 
         [JsonPropertyName("endpoint-url")]
@@ -112,6 +124,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             get => _isActive;
             set => SetProperty(ref _isActive, value);
         }
+
+        [JsonIgnore]
+        public string DisplayName => string.IsNullOrWhiteSpace(ModelName) ? ServiceType : ModelName;
 
         public PasteAIProviderDefinition Clone()
         {
