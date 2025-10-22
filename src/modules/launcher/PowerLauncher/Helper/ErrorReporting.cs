@@ -15,9 +15,6 @@ namespace PowerLauncher.Helper
     public static class ErrorReporting
     {
         private const string LoggerName = "UnHandledException";
-#pragma warning disable SA1310 // Field names should not contain underscore
-        private const int DWM_E_COMPOSITIONDISABLED = unchecked((int)0x80263001);
-#pragma warning restore SA1310 // Field names should not contain underscore
 
         public static void ShowMessageBox(string title, string message)
         {
@@ -64,7 +61,7 @@ namespace PowerLauncher.Helper
             // Many bug reports because users see the "Report problem UI" after "the" crash with System.Runtime.InteropServices.COMException 0xD0000701 or 0x80263001.
             // However, displaying this "Report problem UI" during WPF crashes, especially when DWM composition is changing, is not ideal; some users reported it hangs for up to a minute before the "Report problem UI" appears.
             // This change modifies the behavior to log the exception instead of showing the "Report problem UI".
-            if (IsDwmCompositionException(e as System.Runtime.InteropServices.COMException))
+            if (ExceptionHelper.IsRecoverableDwmCompositionException(e as System.Runtime.InteropServices.COMException))
             {
                 var logger = LogManager.GetLogger(LoggerName);
                 logger.Error($"From {(isNotUIThread ? "non" : string.Empty)} UI thread's exception: {ExceptionFormatter.FormatException(e)}");
@@ -93,28 +90,6 @@ namespace PowerLauncher.Helper
                     reportWindow.Show();
                 }
             }
-        }
-
-        private static bool IsDwmCompositionException(System.Runtime.InteropServices.COMException comException)
-        {
-            if (comException == null)
-            {
-                return false;
-            }
-
-            if (comException.HResult == DWM_E_COMPOSITIONDISABLED)
-            {
-                return true;
-            }
-
-            var stackTrace = comException.StackTrace;
-            if (string.IsNullOrEmpty(stackTrace))
-            {
-                return false;
-            }
-
-            // Check for common DWM composition changed patterns in the stack trace
-            return stackTrace.Contains("DwmCompositionChanged");
         }
     }
 }

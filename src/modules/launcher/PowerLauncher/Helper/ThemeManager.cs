@@ -26,9 +26,6 @@ namespace PowerLauncher.Helper
         private CancellationTokenSource _themeUpdateTokenSource;
         private const int MaxRetries = 5;
         private const int InitialDelayMs = 2000;
-#pragma warning disable SA1310 // Field names should not contain underscore
-        private const int DWM_E_COMPOSITIONDISABLED = unchecked((int)0x80263001);
-#pragma warning restore SA1310 // Field names should not contain underscore
 
         public Theme CurrentTheme { get; private set; }
 
@@ -163,25 +160,21 @@ namespace PowerLauncher.Helper
 
                     return;
                 }
-                catch (COMException ex) when (ex.HResult == DWM_E_COMPOSITIONDISABLED)
+                catch (COMException ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
                 {
-                    if (attempt == 1)
+                    switch (attempt)
                     {
-                        Log.Warn(
-                            $"Desktop composition is disabled (HRESULT: 0x{ex.HResult:X}). Scheduling retries for theme update.",
-                            typeof(ThemeManager));
-                        delayMs = InitialDelayMs;
-                    }
-                    else if (attempt < maxAttempts)
-                    {
-                        Log.Warn(
-                            $"Retry {attempt - 1}/{MaxRetries} failed: Desktop composition still disabled. Retrying in {delayMs * 2}ms...",
-                            typeof(ThemeManager));
-                        delayMs *= 2;
-                    }
-                    else
-                    {
-                        Log.Exception($"Failed to set theme after {MaxRetries} retry attempts. Desktop composition remains disabled.", ex, typeof(ThemeManager));
+                        case 1:
+                            Log.Warn($"Desktop composition is disabled (HRESULT: 0x{ex.HResult:X}). Scheduling retries for theme update.", typeof(ThemeManager));
+                            delayMs = InitialDelayMs;
+                            break;
+                        case < maxAttempts:
+                            Log.Warn($"Retry {attempt - 1}/{MaxRetries} failed: Desktop composition still disabled. Retrying in {delayMs * 2}ms...", typeof(ThemeManager));
+                            delayMs *= 2;
+                            break;
+                        default:
+                            Log.Exception($"Failed to set theme after {MaxRetries} retry attempts. Desktop composition remains disabled.", ex, typeof(ThemeManager));
+                            break;
                     }
                 }
                 catch (OperationCanceledException)
@@ -192,20 +185,7 @@ namespace PowerLauncher.Helper
                 catch (Exception ex)
                 {
                     Log.Exception($"Unexpected error during theme update (attempt {attempt}/{maxAttempts}): {ex.Message}", ex, typeof(ThemeManager));
-
-                    if (attempt >= maxAttempts)
-                    {
-                        return;
-                    }
-
-                    if (delayMs == 0)
-                    {
-                        delayMs = InitialDelayMs;
-                    }
-                    else
-                    {
-                        delayMs *= 2;
-                    }
+                    throw;
                 }
             }
         }
