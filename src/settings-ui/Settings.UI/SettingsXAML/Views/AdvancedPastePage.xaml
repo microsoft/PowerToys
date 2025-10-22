@@ -3,17 +3,24 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary>
+                    <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <ImageSource x:Key="DialogHeaderImage">ms-appx:///Assets/Settings/Modules/APDialog.dark.png</ImageSource>
@@ -106,10 +113,9 @@
                         <tkcontrols:SettingsExpander
                             Name="AdvancedPasteEnableAISettingsCard"
                             x:Uid="AdvancedPaste_EnableAISettingsCard"
+                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
                             IsEnabled="{x:Bind ViewModel.IsOnlineAIModelsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
-
-                            <!--  TO DO: Bind the list of Endpoints to the "ItemsSource" of this control  -->
 
                             <tkcontrols:SettingsExpander.HeaderIcon>
                                 <PathIcon Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z" />
@@ -125,140 +131,69 @@
                                     <HyperlinkButton x:Uid="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore" NavigateUri="https://learn.microsoft.com/windows/powertoys/advanced-paste" />
                                 </StackPanel>
                             </tkcontrols:SettingsExpander.Description>
+
                             <tkcontrols:SettingsExpander.ItemsHeader>
-                                <tkcontrols:SettingsCard Description="Add online or local models (you can toggle these in the Advanced Paste UI)" Header="Model providers">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <!--  Click="PasteAIProviderConfigureButton_Click"  -->
-                                        <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
-                                            <Button.Flyout>
-                                                <MenuFlyout>
-                                                    <MenuFlyoutItem
-                                                        FontSize="12"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        IsEnabled="False"
-                                                        IsHitTestVisible="False"
-                                                        Text="Online models" />
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/OpenAI.light.png}"
-                                                        Tag="OpenAI"
-                                                        Text="OpenAI" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/AzureAI.png}"
-                                                        Tag="AzureOpenAI"
-                                                        Text="Azure OpenAI" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Mistral.png}"
-                                                        Tag="Mistral"
-                                                        Text="Mistral" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Gemini.png}"
-                                                        Tag="Google"
-                                                        Text="Google" />
-
-                                                    <!--<MenuFlyoutItem Text="Hugging Face"
-                    Tag="HuggingFace"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/HuggingFace.png}"
-                    Click="ProviderMenuFlyoutItem_Click" />-->
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/AzureAI.png}"
-                                                        Tag="AzureAIInference"
-                                                        Text="Azure AI Inference" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Ollama.png}"
-                                                        Tag="Ollama"
-                                                        Text="Ollama" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Anthropic.png}"
-                                                        Tag="Anthropic"
-                                                        Text="Anthropic" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/Bedrock.png}"
-                                                        Tag="AmazonBedrock"
-                                                        Text="Amazon Bedrock" />
-
-                                                    <!--  Local models header  -->
-                                                    <MenuFlyoutItem
-                                                        Margin="0,16,0,0"
-                                                        FontSize="12"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        IsEnabled="False"
-                                                        IsHitTestVisible="False"
-                                                        Text="Local models" />
-
-                                                    <!--  Local providers  -->
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/FoundryLocal.png}"
-                                                        Tag="FoundryLocal"
-                                                        Text="Foundry Local" />
-
-                                                    <MenuFlyoutItem
-                                                        Click="ProviderMenuFlyoutItem_Click"
-                                                        Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Models/WindowsML.png}"
-                                                        Tag="WindowsML"
-                                                        Text="Windows ML" />
-                                                </MenuFlyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </StackPanel>
+                                <tkcontrols:SettingsCard 
+                                    Description="Add online or local models " 
+                                    Header="Model providers">
+                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph="" Opacity="0" />
+                                    </tkcontrols:SettingsCard.HeaderIcon>
+                                    <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
+                                        <Button.Flyout>
+                                            <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
+                                        </Button.Flyout>
+                                    </Button>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.ItemsHeader>
-                            <tkcontrols:SettingsExpander.Items />
-                            <!--<tkcontrols:SettingsExpander.ItemTemplate>
-                                <DataTemplate x:DataType="...">
-                                    <controls:SettingsCard Description="{x:Bind ModelProvider}" Header="{x:Bind ModelName}">
-                                        <controls:SettingsCard.HeaderIcon>
-                                            <ImageIcon Source="{x:Bind ModelIcon}" />
-                                        </controls:SettingsCard.HeaderIcon>
-                                        <Button Content="{ui:FontIcon Glyph=&#xE712;, FontSize=16}">
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem Icon="{ui:FontIcon Glyph=&#xE70F;}" Text="Edit" />
-                                                <MenuFlyoutSeparator />
-                                                <MenuFlyoutItem Icon="{ui:FontIcon Glyph=&#xE74D;}" Text="Remove" />
-                                            </MenuFlyout>
-                                        </Button>
-                                    </controls:SettingsCard>
-                                </DataTemplate>
-                            </tkcontrols:SettingsExpander.ItemTemplate>-->
-                        </tkcontrols:SettingsExpander>
 
-                        <!--  Advanced AI  -->
-                        <tkcontrols:SettingsExpander
-                            Name="AdvancedPasteEnableAdvancedAI"
-                            x:Uid="AdvancedPaste_EnableAdvancedAI"
-                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SemanticKernel.png}"
-                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
-                            IsExpanded="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard
-                                    Description="Choose which cloud or local model to use"
-                                    Header="Model provider"
-                                    IsEnabled="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=OneWay}">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind ViewModel.AdvancedAIConfiguration.ServiceType, Mode=OneWay}" />
-                                        <Button Click="AdvancedAIProviderConfigureButton_Click" Content="Configure" />
-                                    </StackPanel>
-                                </tkcontrols:SettingsCard>
-                            </tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsExpander.ItemTemplate>
+                                <DataTemplate x:DataType="models:PasteAIProviderDefinition">
+                                    <tkcontrols:SettingsCard
+                                        Description="{x:Bind ServiceType, Mode=OneWay}"
+                                        Header="{x:Bind ModelName, Mode=OneWay}"
+                                        HeaderIcon="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <!--  Default badge - subtle pill style  -->
+                                            <FontIcon
+                                                FontSize="16"
+                                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                Glyph="&#xE73E;"
+                                                ToolTipService.ToolTip="Default provider"
+                                                Visibility="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <Button
+                                                Padding="8"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Tag="{x:Bind}">
+                                                <FontIcon FontSize="16" Glyph="&#xE712;" />
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                        Click="SetActivePasteAIProvider_Click"
+                                                        Icon="{ui:FontIcon Glyph=&#xE735;}"
+                                                        IsEnabled="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                                        Tag="{x:Bind}"
+                                                        Text="Set as Default" />
+                                                        <MenuFlyoutSeparator />
+                                                        <MenuFlyoutItem
+                                                        Click="EditPasteAIProviderButton_Click"
+                                                        Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                        Tag="{x:Bind}"
+                                                        Text="Edit" />
+                                                        <MenuFlyoutSeparator />
+                                                        <MenuFlyoutItem
+                                                        Click="RemovePasteAIProviderButton_Click"
+                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                        Tag="{x:Bind}"
+                                                        Text="Remove" />
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </tkcontrols:SettingsExpander.ItemTemplate>
                         </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
 
@@ -682,6 +617,7 @@
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
             Title="Paste with AI provider configuration"
+            Closed="PasteAIProviderConfigurationDialog_Closed"
             PrimaryButtonClick="PasteAIProviderConfigurationDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
             PrimaryButtonText="Save"
@@ -690,110 +626,13 @@
                 <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
                 <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="NavigationViewContentBackground" />
             </ContentDialog.Resources>
-            <Grid
+            <StackPanel
                 MinWidth="720"
-                Padding="0,0,0,0"
-                ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="186" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Rectangle
-                    Grid.ColumnSpan="2"
-                    Height="1"
-                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                <ListView
-                    x:Name="PasteAIServiceTypeListView"
-                    Grid.Row="1"
-                    Margin="0,4,0,0"
-                    SelectedValue="{x:Bind ViewModel.PasteAIConfiguration.ServiceType, Mode=TwoWay}"
-                    SelectedValuePath="Tag"
-                    SelectionChanged="PasteAIServiceTypeListView_SelectionChanged">
-                    <ListViewHeaderItem
-                        Content="Cloud models"
-                        IsEnabled="False"
-                        IsHitTestVisible="False"
-                        Style="{StaticResource ModelHeaderStyle}" />
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="OpenAI">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="{ThemeResource OpenAIIconImage}" />
-                            <TextBlock Text="OpenAI" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureOpenAI">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Azure.svg" />
-                            <TextBlock Text="Azure OpenAI" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Mistral">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Mistral.svg" />
-                            <TextBlock Text="Mistral" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Google">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Gemini.svg" />
-                            <TextBlock Text="Google" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <!--<ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="HuggingFace">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/HuggingFace.svg" />
-                            <TextBlock Text="Hugging Face" />
-                        </StackPanel>
-                    </ListViewItem>-->
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureAIInference">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/AzureAI.svg" />
-                            <TextBlock Text="Azure AI Inference" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Ollama">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Ollama.svg" />
-                            <TextBlock Text="Ollama" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Anthropic">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Anthropic.svg" />
-                            <TextBlock Text="Anthropic" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AmazonBedrock">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Bedrock.svg" />
-                            <TextBlock Text="Amazon Bedrock" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewHeaderItem
-                        Margin="0,12,0,0"
-                        Content="Local models"
-                        IsEnabled="False"
-                        IsHitTestVisible="False"
-                        Style="{StaticResource ModelHeaderStyle}" />
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="FoundryLocal">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/FoundryLocal.svg" />
-                            <TextBlock Text="Foundry Local" />
-                        </StackPanel>
-                    </ListViewItem>
-                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="WindowsML">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="16" Source="/Assets/Settings/Icons/Models/WindowsML.svg" />
-                            <TextBlock Text="Windows ML" />
-                        </StackPanel>
-                    </ListViewItem>
-                </ListView>
-                <ScrollViewer Grid.Row="1" Grid.Column="1">
+                Spacing="16">
+                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <ScrollViewer>
                     <StackPanel
-                        Margin="0,16,0,0"
+                        Margin="0,8,0,0"
                         Orientation="Vertical"
                         Spacing="24">
                         <TextBox
@@ -802,7 +641,7 @@
                             HorizontalAlignment="Stretch"
                             Header="Model name"
                             PlaceholderText="gpt-4"
-                            Text="{x:Bind ViewModel.PasteAIConfiguration.ModelName, Mode=TwoWay}" />
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelName, Mode=TwoWay}" />
                         <TextBox
                             x:Name="PasteAISystemPromptTextBox"
                             MinWidth="200"
@@ -811,7 +650,7 @@
                             AcceptsReturn="True"
                             Header="System prompt"
                             PlaceholderText="You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content."
-                            Text="{x:Bind ViewModel.PasteAIConfiguration.SystemPrompt, Mode=TwoWay}"
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
                         <Grid
                             x:Name="FoundryLocalPanel"
@@ -825,21 +664,21 @@
                             HorizontalAlignment="Stretch"
                             Header="Endpoint URL"
                             PlaceholderText="https://your-resource.openai.azure.com/"
-                            Text="{x:Bind ViewModel.PasteAIConfiguration.EndpointUrl, Mode=TwoWay}" />
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.EndpointUrl, Mode=TwoWay}" />
                         <TextBox
                             x:Name="PasteAIApiVersionTextBox"
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
                             Header="API version"
                             PlaceholderText="2024-10-01"
-                            Text="{x:Bind ViewModel.PasteAIConfiguration.ApiVersion, Mode=TwoWay}"
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.ApiVersion, Mode=TwoWay}"
                             Visibility="Collapsed" />
                         <TextBox
                             x:Name="PasteAIDeploymentNameTextBox"
                             MinWidth="200"
                             Header="Deployment name"
                             PlaceholderText="gpt-4"
-                            Text="{x:Bind ViewModel.PasteAIConfiguration.DeploymentName, Mode=TwoWay}" />
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.DeploymentName, Mode=TwoWay}" />
                         <StackPanel
                             x:Name="PasteAIModelPanel"
                             Orientation="Horizontal"
@@ -850,7 +689,7 @@
                                 HorizontalAlignment="Stretch"
                                 Header="Model path"
                                 PlaceholderText="C:\Models\phi-3.onnx"
-                                Text="{x:Bind ViewModel.PasteAIConfiguration.ModelPath, Mode=TwoWay}" />
+                                Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelPath, Mode=TwoWay}" />
                             <Button
                                 VerticalAlignment="Bottom"
                                 Click="BrowsePasteAIModelPath_Click"
@@ -867,35 +706,35 @@
                         <CheckBox
                             x:Name="PasteAIModerationToggle"
                             x:Uid="AdvancedPaste_EnablePasteAIModerationToggle"
-                            IsChecked="{x:Bind ViewModel.PasteAIConfiguration.ModerationEnabled, Mode=TwoWay}"
+                            IsChecked="{x:Bind ViewModel.PasteAIProviderDraft.ModerationEnabled, Mode=TwoWay}"
                             Visibility="Collapsed" />
 
                         <StackPanel
                             Margin="0,12,0,0"
                             Orientation="Vertical"
                             Spacing="8"
-                            Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}">
+                            Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}">
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
+                                Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
                                 TextWrapping="Wrap" />
                             <StackPanel
                                 Margin="-12,0,0,0"
                                 Orientation="Horizontal"
                                 Spacing="8">
                                 <HyperlinkButton
-                                    Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
-                                    NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
-                                    Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}" />
+                                    Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                    NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                    Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
                                 <HyperlinkButton
-                                    Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
-                                    NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}"
-                                    Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIConfiguration.ServiceType), Mode=OneWay}" />
+                                    Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                    NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                    Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
-            </Grid>
+            </StackPanel>
         </ContentDialog>
     </Grid>
 </local:NavigablePage>

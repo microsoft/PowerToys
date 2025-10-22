@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 "azureopenai" or "azure" => AIServiceType.AzureOpenAI,
                 "onnx" => AIServiceType.Onnx,
                 "foundrylocal" or "foundry" or "fl" => AIServiceType.FoundryLocal,
-                "ml" => AIServiceType.ML,
+                "ml" or "windowsml" or "winml" => AIServiceType.ML,
                 "mistral" => AIServiceType.Mistral,
                 "google" or "googleai" or "googlegemini" => AIServiceType.Google,
                 "huggingface" => AIServiceType.HuggingFace,

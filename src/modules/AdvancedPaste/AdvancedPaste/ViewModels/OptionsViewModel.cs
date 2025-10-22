@@ -109,6 +109,10 @@ namespace AdvancedPaste.ViewModels
 
         public bool IsAdvancedAIEnabled => IsAllowedByGPO && _userSettings.IsAIEnabled && _userSettings.IsAdvancedAIEnabled && _credentialsProvider.IsConfigured(AICredentialScope.AdvancedAI);
 
+        public ObservableCollection<PasteAIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
+
+        public PasteAIProviderDefinition ActiveAIProvider => _userSettings?.PasteAIConfiguration?.ActiveProvider;
+
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
@@ -192,6 +196,8 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+            OnPropertyChanged(nameof(AIProviders));
+            OnPropertyChanged(nameof(ActiveAIProvider));
 
             EnqueueRefreshPasteFormats();
         }

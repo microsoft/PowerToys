@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -111,21 +112,23 @@ namespace AdvancedPaste.Services.CustomActions
         private PasteAIConfig BuildProviderConfig(PasteAIConfiguration config)
         {
             config ??= new PasteAIConfiguration();
-            var serviceType = NormalizeServiceType(config.ServiceTypeKind);
-            var systemPrompt = string.IsNullOrWhiteSpace(config.SystemPrompt) ? DefaultSystemPrompt : config.SystemPrompt;
+            var provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
+            var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
+            var systemPrompt = string.IsNullOrWhiteSpace(provider.SystemPrompt) ? DefaultSystemPrompt : provider.SystemPrompt;
             var apiKey = AcquireApiKey(serviceType);
-            var modelName = config.ModelName;
+            var modelName = provider.ModelName;
 
             var providerConfig = new PasteAIConfig
             {
                 ProviderType = serviceType,
                 ApiKey = apiKey,
                 Model = modelName,
-                Endpoint = config.EndpointUrl,
-                DeploymentName = config.DeploymentName,
-                ModelPath = config.ModelPath,
+                Endpoint = provider.EndpointUrl,
+                DeploymentName = provider.DeploymentName,
+                LocalModelPath = provider.ModelPath,
+                ModelPath = provider.ModelPath,
                 SystemPrompt = systemPrompt,
-                ModerationEnabled = config.ModerationEnabled,
+                ModerationEnabled = provider.ModerationEnabled,
             };
 
             return providerConfig;
