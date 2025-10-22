@@ -12,11 +12,11 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{d3222e6d-32b4-49a1-b490-f0574500c34c}</ProjectGuid>
+    <ProjectGuid>{ff038541-2c59-4ee2-a52f-a2e94863d517}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ScreencastMode</RootNamespace>
+    <RootNamespace>ScreencastModeModuleInterface</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>ScreencastMode</ProjectName>
+    <ProjectName>ScreencastModeModuleInterface</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -118,7 +118,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ScreencastMode.rc" />
+    <ResourceCompile Include="ScreencastModeModuleInterface.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
