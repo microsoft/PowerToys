@@ -15,7 +15,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
@@ -184,81 +183,6 @@ namespace Awake.Core
                 forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
         }
 
-        private static void MonitorProcessIfNeeded(int processId, string callerName)
-        {
-            if (processId <= 0)
-            {
-                return;
-            }
-
-            if (_tokenSource == null)
-            {
-                Logger.LogWarning("Process monitoring requested but token source is null.");
-                return;
-            }
-
-            CancellationToken token = _tokenSource.Token;
-
-            Logger.LogInfo($"Monitoring process {processId} for keep-awake binding. Invoked by {callerName}.");
-
-            Task.Run(
-                () =>
-                {
-                    try
-                    {
-                        using Process process = Process.GetProcessById(processId);
-
-                        if (process.HasExited)
-                        {
-                            Logger.LogInfo($"Process {processId} exited before monitoring began.");
-                            if (!token.IsCancellationRequested)
-                            {
-                                HandleProcessBindingTermination(processId);
-                            }
-
-                            return;
-                        }
-
-                        process.WaitForExit();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to monitor process {processId}. Error: {ex.Message}");
-                        if (token.IsCancellationRequested)
-                        {
-                            return;
-                        }
-
-                        HandleProcessBindingTermination(processId);
-                        return;
-                    }
-
-                    if (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    Logger.LogInfo($"Process {processId} terminated. Clearing process-bound keep-awake state.");
-                    HandleProcessBindingTermination(processId);
-                },
-                token);
-        }
-
-        private static void HandleProcessBindingTermination(int processId)
-        {
-            ProcessId = 0;
-
-            if (IsUsingPowerToysConfig)
-            {
-                SetPassiveKeepAwake();
-            }
-            else
-            {
-                Logger.LogInfo($"Process {processId} terminated while not using PowerToys configuration; awaiting CLI cleanup.");
-                SetModeShellIcon();
-            }
-        }
-
         internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
@@ -300,8 +224,6 @@ namespace Awake.Core
             ProcessId = processId;
 
             SetModeShellIcon();
-
-            MonitorProcessIfNeeded(processId, callerName);
         }
 
         internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
@@ -353,7 +275,6 @@ namespace Awake.Core
             IsDisplayOn = keepDisplayOn;
             CurrentOperatingMode = AwakeMode.EXPIRABLE;
             ExpireAt = expireAt;
-            ProcessId = 0;
 
             SetModeShellIcon();
 
@@ -410,7 +331,6 @@ namespace Awake.Core
 
             IsDisplayOn = keepDisplayOn;
             CurrentOperatingMode = AwakeMode.TIMED;
-            ProcessId = 0;
 
             SetModeShellIcon();
 
@@ -539,10 +459,9 @@ namespace Awake.Core
                 {
                     AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
 
-                    if (currentSettings.Properties.Mode != AwakeMode.PASSIVE || currentSettings.Properties.ProcessId != 0)
+                    if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
                     {
                         currentSettings.Properties.Mode = AwakeMode.PASSIVE;
-                        currentSettings.Properties.ProcessId = 0;
                         ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
 
                         // We return here because when the settings are saved, they will be automatically
@@ -560,7 +479,6 @@ namespace Awake.Core
             Logger.LogInfo($"Passive keep-awake starting...");
 
             CurrentOperatingMode = AwakeMode.PASSIVE;
-            ProcessId = 0;
 
             SetModeShellIcon();
         }
