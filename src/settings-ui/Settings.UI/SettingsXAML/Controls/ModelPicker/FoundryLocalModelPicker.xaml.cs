@@ -308,6 +308,11 @@ public sealed partial class FoundryLocalModelPicker : UserControl
         }
     }
 
+    private void RefreshModelsButton_Click(object sender, RoutedEventArgs e)
+    {
+        RequestLoad(refresh: true);
+    }
+
     private void UpdateVisualStates()
     {
         LoadingIndicator.IsActive = IsLoading;
