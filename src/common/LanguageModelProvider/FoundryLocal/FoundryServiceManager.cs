@@ -52,19 +52,29 @@ internal sealed class FoundryServiceManager
         return url is not null;
     }
 
-    public async Task<bool> StartService()
+    public async Task<bool> StartService(int maxWaitSeconds = 30)
     {
         if (await IsRunning().ConfigureAwait(false))
         {
             return true;
         }
 
-        var status = await Utils.RunFoundryWithArguments("service start").ConfigureAwait(false);
-        if (status.ExitCode != 0 || string.IsNullOrWhiteSpace(status.Output))
+        // Start foundry service (fire-and-forget, don't wait for the process to exit)
+        _ = Task.Run(() => Utils.RunFoundryWithArguments("service start"));
+
+        // Poll to check if service is running
+        int elapsedSeconds = 0;
+        while (elapsedSeconds < maxWaitSeconds)
         {
-            return false;
+            await Task.Delay(1000).ConfigureAwait(false);
+            elapsedSeconds++;
+
+            if (await IsRunning().ConfigureAwait(false))
+            {
+                return true;
+            }
         }
 
-        return GetUrl(status.Output) is not null;
+        return false;
     }
 }
