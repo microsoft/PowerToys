@@ -5,7 +5,6 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Data;
 using Windows.System;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
