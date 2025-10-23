@@ -298,19 +298,13 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
 
 IFACEMETHODIMP CPowerRenameRegEx::PutFileTime(_In_ SYSTEMTIME fileTime)
 {
-    union timeunion
-    {
-        FILETIME fileTime;
-        ULARGE_INTEGER ul;
-    };
+    FILETIME ft1;
+    FILETIME ft2;
 
-    timeunion ft1;
-    timeunion ft2;
+    SystemTimeToFileTime(&m_fileTime, &ft1);
+    SystemTimeToFileTime(&fileTime, &ft2);
 
-    SystemTimeToFileTime(&m_fileTime, &ft1.fileTime);
-    SystemTimeToFileTime(&fileTime, &ft2.fileTime);
-
-    if (ft2.ul.QuadPart != ft1.ul.QuadPart)
+    if (ft2.dwLowDateTime != ft1.dwLowDateTime || ft2.dwHighDateTime != ft1.dwHighDateTime)
     {
         m_fileTime = fileTime;
         m_useFileTime = true;
