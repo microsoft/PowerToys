@@ -10,6 +10,7 @@ using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -26,6 +27,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.UI.Core;
+using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -64,6 +66,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
+    private DockWindow? _dockWindow;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -99,6 +102,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
+
+        _dockWindow = new DockWindow();
+        _dockWindow.Show();
     }
 
     /// <summary>
