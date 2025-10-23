@@ -1160,6 +1160,7 @@ NTSYSAPI
 NULLCURSOR
 nullref
 nullonfailure
+nullref
 numberbox
 nwc
 ocr
