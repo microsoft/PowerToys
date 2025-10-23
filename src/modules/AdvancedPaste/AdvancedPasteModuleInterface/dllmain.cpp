@@ -301,7 +301,7 @@ private:
                 continue;
             }
 
-            const auto serviceType = providerObject.GetNamedString(JSON_KEY_SERVICE_TYPE, L"");
+            const std::wstring serviceType = providerObject.GetNamedString(JSON_KEY_SERVICE_TYPE, L"").c_str();
             const auto normalizedServiceType = to_lower_case(serviceType);
             if (normalizedServiceType == L"openai" || normalizedServiceType == L"azureopenai")
             {
