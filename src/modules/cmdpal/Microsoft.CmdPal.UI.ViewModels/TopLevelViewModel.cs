@@ -219,7 +219,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         {
             PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
 
-            if (e.PropertyName == "IsInitialized")
+            if (e.PropertyName is "IsInitialized" or nameof(CommandItemViewModel.Command))
             {
                 GenerateId();
 
