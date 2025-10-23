@@ -40,6 +40,8 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public partial class App : Application
 {
+    private readonly GlobalErrorHandler _globalErrorHandler = new();
+
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
@@ -61,6 +63,10 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+#if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
+        _globalErrorHandler.Register(this);
+#endif
+
         Services = ConfigureServices();
 
         this.InitializeComponent();
