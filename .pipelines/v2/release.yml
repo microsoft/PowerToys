@@ -44,7 +44,7 @@ variables:
   - template: templates/variables-nuget-package-version.yml
 
 extends:
-  template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     customBuildTags:
     - 1ES.PT.ViaStartRight
