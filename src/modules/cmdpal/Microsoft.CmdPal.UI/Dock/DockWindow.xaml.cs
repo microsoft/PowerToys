@@ -2,22 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -500,150 +494,6 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
     }
 
     public void Dispose() => viewModel.Dispose();
-}
-
-public enum DockSide
-{
-    Left = 0,
-    Top = 1,
-    Right = 2,
-    Bottom = 3,
-}
-
-public enum DockSize
-{
-    Small,
-    Medium,
-    Large,
-}
-
-public enum DockBackdrop
-{
-    Mica,
-    Transparent,
-    Acrylic,
-}
-
-public class DockSettings
-{
-    public bool ShowAppTitles { get; set; }
-
-    public bool ShowSearchButton { get; set; } = true;
-
-    public DockSide Side { get; set; } = DockSide.Top;
-
-    public DockSize DockSize { get; set; } = DockSize.Small;
-
-    public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
-}
-
-internal static class DockSettingsToViews
-{
-    public static double WidthForSize(DockSize size)
-    {
-        return size switch
-        {
-            DockSize.Small => 128,
-            DockSize.Medium => 192,
-            DockSize.Large => 256,
-            _ => throw new NotImplementedException(),
-        };
-    }
-
-    public static double HeightForSize(DockSize size)
-    {
-        return size switch
-        {
-            DockSize.Small => 32,
-            DockSize.Medium => 54,
-            DockSize.Large => 76,
-            _ => throw new NotImplementedException(),
-        };
-    }
-
-    public static Microsoft.UI.Xaml.Media.SystemBackdrop? GetSystemBackdrop(DockBackdrop backdrop)
-    {
-        return backdrop switch
-        {
-            DockBackdrop.Mica => new MicaBackdrop(),
-            DockBackdrop.Transparent => new TransparentTintBackdrop(),
-            DockBackdrop.Acrylic => null, // new DesktopAcrylicBackdrop(),
-            _ => throw new NotImplementedException(),
-        };
-    }
-
-    public static uint GetAppBarEdge(DockSide side)
-    {
-        return side switch
-        {
-            DockSide.Left => PInvoke.ABE_LEFT,
-            DockSide.Top => PInvoke.ABE_TOP,
-            DockSide.Right => PInvoke.ABE_RIGHT,
-            DockSide.Bottom => PInvoke.ABE_BOTTOM,
-            _ => throw new NotImplementedException(),
-        };
-    }
-}
-
-internal sealed partial class DockViewModel : IDisposable, IRecipient<CommandsReloadedMessage>
-{
-    private readonly TopLevelCommandManager _topLevelCommandManager;
-
-    // private TaskbarWindowsService _taskbarWindows;
-    // private Settings _settings;
-    private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
-
-    // TODO! make these DockBandViewModel
-    public ObservableCollection<CommandItemViewModel> StartItems { get; } = new();
-
-    public ObservableCollection<CommandItemViewModel> EndItems { get; } = new();
-
-    public DockViewModel(TopLevelCommandManager tlcManager, SettingsModel settings)
-    {
-        _topLevelCommandManager = tlcManager;
-        WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
-    }
-
-    private static string[] _startCommands = ["com.microsoft.cmdpal.windowwalker", "com.microsoft.cmdpal.timedate"];
-
-    private void SetupBands()
-    {
-        List<CommandItemViewModel> newBands = new();
-        foreach (var commandId in _startCommands)
-        {
-            var topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
-            if (topLevelCommand is not null)
-            {
-                // var band = CreateBandItem(topLevelCommand);
-                newBands.Add(topLevelCommand.ItemViewModel);
-            }
-        }
-
-        var beforeCount = StartItems.Count;
-        var afterCount = newBands.Count;
-
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            ListHelpers.InPlaceUpdateList(StartItems, newBands, out var removed);
-            Logger.LogDebug($"({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
-        });
-    }
-
-    public void Dispose()
-    {
-    }
-
-    public void Receive(CommandsReloadedMessage message)
-    {
-        SetupBands();
-        CoreLogger.LogDebug("Bands reloaded");
-    }
-}
-
-internal sealed class DockBandViewModel
-{
-    public ObservableCollection<CommandItemViewModel> Items { get; } = new();
 }
 
 // Thank you to https://stackoverflow.com/a/35422795/1481137
