@@ -269,6 +269,10 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
 
     case WM_NCHITTEST:
         return HTTRANSPARENT;
+
+    case WM_SETCURSOR:
+        SetCursor(LoadCursor(nullptr, IDC_ARROW));
+        return TRUE;
     }
 
     if (message == WM_PRIV_SHORTCUT)
@@ -535,7 +539,7 @@ void SuperSonar<D>::StartSonar()
     Trace::MousePointerFocused();
     // Cover the entire virtual screen.
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
-    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
+    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, SWP_NOACTIVATE);
     m_sonarPos = ptNowhere;
     OnMouseTimer();
     UpdateMouseSnooping();
