@@ -5,17 +5,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Search;
-using Common.Search.FuzzSearch;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -23,7 +21,6 @@ using Microsoft.UI.Xaml.Input;
 using Settings.UI.Library;
 using Windows.Data.Json;
 using Windows.System;
-using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -134,6 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public Controls.TitleBar TitleBar => AppTitleBar;
 
+        private static string _version = Helper.GetProductVersion();
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = [];
 
@@ -168,14 +166,25 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>().ToArray();
+            var newTopLevelItems = new HashSet<NavigationViewItem>();
 
             foreach (var parent in topLevelItems)
             {
                 foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
                 {
-                    _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
+                    var pageType = child.GetValue(NavHelper.NavigateToProperty) as Type;
+                    _navViewParentLookup.TryAdd(pageType, parent);
                     _searchSuggestions.Add(child.Content?.ToString());
+                    if (AddNewTagIfNeeded(child, pageType))
+                    {
+                        newTopLevelItems.Add(parent);
+                    }
                 }
+            }
+
+            foreach (var parent in newTopLevelItems)
+            {
+                parent.InfoBadge = GetNewInfoBadge();
             }
         }
 
@@ -715,6 +724,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var searchParams = new SearchResultsNavigationParams(queryText, matched);
             NavigationService.Navigate<SearchResultsPage>(searchParams);
+        }
+
+        private bool AddNewTagIfNeeded(NavigationViewItem item, Type pageType)
+        {
+            var newUtility = pageType.GetCustomAttribute<NewUtilityAttribute>();
+
+            if (newUtility != null && _version.StartsWith(newUtility.Version, StringComparison.InvariantCulture))
+            {
+                item.InfoBadge = GetNewInfoBadge();
+                return true;
+            }
+
+            return false;
+        }
+
+        private InfoBadge GetNewInfoBadge()
+        {
+            return new InfoBadge
+            {
+                Style = (Style)Application.Current.Resources["NewInfoBadge"],
+            };
         }
 
         public void Dispose()

@@ -21,10 +21,10 @@ using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
-using Windows.Services.Maps;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
+    [NewUtility("v0.95")]
     public sealed partial class LightSwitchPage : Page
     {
         private readonly string _appName = "LightSwitch";
