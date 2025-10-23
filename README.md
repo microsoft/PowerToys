@@ -48,7 +48,7 @@ Before you begin, make sure your device meets the system requirements:
 
 Choose one of the installation methods below:
 
-<details>
+<details open>
 <summary>Download .exe from GitHub</summary>
 
 Go to the [PowerToys GitHub releases][github-release-link], click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
