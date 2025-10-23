@@ -8,16 +8,21 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI.Dispatching;
 using Microsoft.Win32;
 using Windows.Security.Credentials;
 
@@ -40,6 +45,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly AdvancedPasteSettings _advancedPasteSettings;
         private readonly AdvancedPasteAdditionalActions _additionalActions;
         private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
+        private readonly DispatcherQueue _dispatcherQueue;
+        private IFileSystemWatcher _settingsWatcher;
+        private bool _suppressSave;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
@@ -63,6 +71,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // To obtain the settings configurations of Fancy zones.
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
             ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
@@ -76,6 +86,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+
+            SetupSettingsFileWatcher();
 
             InitializePasteAIProviderState();
 
@@ -628,6 +640,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     _customActions.CollectionChanged -= OnCustomActionsCollectionChanged;
+                    _settingsWatcher?.Dispose();
+                    _settingsWatcher = null;
                 }
 
                 _disposed = true;
@@ -899,6 +913,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void SaveAndNotifySettings()
         {
+            if (_suppressSave)
+            {
+                return;
+            }
+
             _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
             NotifySettingsChanged();
         }
@@ -974,6 +993,180 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void AttachConfigurationHandlers()
         {
             SubscribeToPasteAIConfiguration(_advancedPasteSettings.Properties.PasteAIConfiguration);
+        }
+
+        private void SetupSettingsFileWatcher()
+        {
+            _settingsWatcher = Helper.GetFileWatcher(AdvancedPasteSettings.ModuleName, SettingsUtils.DefaultFileName, OnSettingsFileChanged);
+        }
+
+        private void OnSettingsFileChanged()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            void Handler()
+            {
+                ApplyExternalSettings();
+            }
+
+            if (_dispatcherQueue is not null && !_dispatcherQueue.HasThreadAccess)
+            {
+                _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, Handler);
+            }
+            else
+            {
+                Handler();
+            }
+        }
+
+        private void ApplyExternalSettings()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            AdvancedPasteSettings latestSettings;
+
+            try
+            {
+                latestSettings = _settingsUtils.GetSettingsOrDefault<AdvancedPasteSettings>(AdvancedPasteSettings.ModuleName);
+            }
+            catch
+            {
+                return;
+            }
+
+            if (latestSettings?.Properties is null)
+            {
+                return;
+            }
+
+            try
+            {
+                _suppressSave = true;
+                ApplyExternalProperties(latestSettings.Properties);
+            }
+            finally
+            {
+                _suppressSave = false;
+            }
+        }
+
+        private void ApplyExternalProperties(AdvancedPasteProperties source)
+        {
+            var target = _advancedPasteSettings?.Properties;
+
+            if (target is null || source is null)
+            {
+                return;
+            }
+
+            if (target.IsAIEnabled != source.IsAIEnabled)
+            {
+                target.IsAIEnabled = source.IsAIEnabled;
+                OnPropertyChanged(nameof(IsAIEnabled));
+            }
+
+            if (target.ShowCustomPreview != source.ShowCustomPreview)
+            {
+                target.ShowCustomPreview = source.ShowCustomPreview;
+                OnPropertyChanged(nameof(ShowCustomPreview));
+            }
+
+            if (target.CloseAfterLosingFocus != source.CloseAfterLosingFocus)
+            {
+                target.CloseAfterLosingFocus = source.CloseAfterLosingFocus;
+                OnPropertyChanged(nameof(CloseAfterLosingFocus));
+            }
+
+            var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();
+            if (ShouldReplacePasteAIConfiguration(target.PasteAIConfiguration, incomingConfig))
+            {
+                PasteAIConfiguration = incomingConfig;
+            }
+        }
+
+        private static bool ShouldReplacePasteAIConfiguration(PasteAIConfiguration current, PasteAIConfiguration incoming)
+        {
+            if (incoming is null)
+            {
+                return false;
+            }
+
+            if (current is null)
+            {
+                return true;
+            }
+
+            if (!string.Equals(current.ActiveProviderId ?? string.Empty, incoming.ActiveProviderId ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (current.UseSharedCredentials != incoming.UseSharedCredentials)
+            {
+                return true;
+            }
+
+            var currentProviders = current.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
+            var incomingProviders = incoming.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
+
+            if (currentProviders.Count != incomingProviders.Count)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < currentProviders.Count; i++)
+            {
+                var existing = currentProviders[i];
+                var updated = incomingProviders[i];
+
+                if (!string.Equals(existing?.Id ?? string.Empty, updated?.Id ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (!string.Equals(existing?.ServiceType ?? string.Empty, updated?.ServiceType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (!string.Equals(existing?.ModelName ?? string.Empty, updated?.ModelName ?? string.Empty, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!string.Equals(existing?.EndpointUrl ?? string.Empty, updated?.EndpointUrl ?? string.Empty, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!string.Equals(existing?.DeploymentName ?? string.Empty, updated?.DeploymentName ?? string.Empty, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!string.Equals(existing?.ApiVersion ?? string.Empty, updated?.ApiVersion ?? string.Empty, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (!string.Equals(existing?.SystemPrompt ?? string.Empty, updated?.SystemPrompt ?? string.Empty, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+
+                if (existing?.ModerationEnabled != updated?.ModerationEnabled || existing?.EnableAdvancedAI != updated?.EnableAdvancedAI || existing?.IsActive != updated?.IsActive)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SubscribeToPasteAIConfiguration(PasteAIConfiguration configuration)
