@@ -344,6 +344,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
     <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
   </data>
+  <data name="Settings_GeneralPage_EnableChinesePinYinSupport_SettingsCard.Header" xml:space="preserve">
+    <value>Enable Chinese PinYin Support</value>
+  </data>
+  <data name="Settings_GeneralPage_EnableChinesePinYinSupport_SettingsCard.Description" xml:space="preserve">
+    <value>Allows searching for Chinese characters using PinYin</value>
+  </data>
   <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
     <value>Go home when activated</value>
   </data>

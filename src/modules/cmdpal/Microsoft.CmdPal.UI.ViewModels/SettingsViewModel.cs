@@ -138,6 +138,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool EnableChinesePinYinSupport
+    {
+        get => _settings.EnableChinesePinYinSupport;
+        set
+        {
+            _settings.EnableChinesePinYinSupport = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
