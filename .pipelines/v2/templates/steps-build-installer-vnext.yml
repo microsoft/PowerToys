@@ -29,6 +29,9 @@ steps:
     displayName: Prepare Installer variables
 
   # This dll needs to be built and signed before building the MSI.
+  # The Custom Actions project contains a pre-build event that prepares the .wxs files
+  # by filling them out with all our components. We pass RunBuildEvents=true to force
+  # that logic to run.
   - task: VSBuild@1
     displayName: Build Shared Support DLLs
     inputs:
@@ -58,6 +61,16 @@ steps:
 
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
+  #
+  # The MSI build contains code that reverts the .wxs files to their in-tree versions.
+  # This is only supposed to happen during local builds. Since this build system is
+  # supposed to run side by side--machine and then user--we do NOT want to destroy
+  # the .wxs files. Therefore, we pass RunBuildEvents=false to suppress all of that
+  # logic.
+  #
+  # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
+  # We only pass -restore on the first one because the second run should already have all
+  # of the dependencies.
   - task: VSBuild@1
     displayName: 💻 Build VNext MSI
     inputs:
@@ -123,6 +136,9 @@ steps:
   #### END MSI
   
   #### BOOTSTRAP BUILDING AND SIGNING
+  # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
+  # We only pass -restore on the first one because the second run should already have all
+  # of the dependencies.
   - task: VSBuild@1
     displayName: 💻 Build VNext Bootstrapper
     inputs:
@@ -133,7 +149,6 @@ steps:
         /t:PowerToysBootstrapperVNext
         /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
-        -restore -graph
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -147,11 +162,9 @@ steps:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
-        -restore
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog
-        -restore -graph
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
@@ -177,6 +190,19 @@ steps:
         wix burn reattach $(InstallerMachineRoot)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe -o $(InstallerMachineRoot)\$(InstallerMachineBasename).exe
         wix burn reattach $(InstallerUserRoot)\$(InstallerUserBasename).exe -engine installer\user-engine.exe -o $(InstallerUserRoot)\$(InstallerUserBasename).exe
       displayName: "WiX5: Reattach Engines to Bundles"
+
+    - pwsh: |-
+        & wix burn extract -oba installer\ba\m "$(InstallerMachineRoot)\$(InstallerMachineBasename).exe"
+        & wix burn extract -oba installer\ba\u "$(InstallerUserRoot)\$(InstallerUserBasename).exe"
+        Get-ChildItem installer\ba -Recurse -Include *.exe,*.dll | Get-AuthenticodeSignature | ForEach-Object {
+          If ($_.Status -Ne "Valid") {
+            Write-Error $_.StatusMessage
+          } Else {
+            Write-Host $_.StatusMessage
+          }
+        }
+        & git clean -fdx installer\ba
+      displayName: "WiX5: Verify Bootstrapper content is signed"
 
     - template: steps-esrp-sign-files-authenticode.yml
       parameters:
