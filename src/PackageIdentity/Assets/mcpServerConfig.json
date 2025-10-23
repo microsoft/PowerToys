@@ -1,6 +1,6 @@
 {
   "manifest_version": "0.1",
-  "name": "PowerToys-McpServer",
+  "name": "PowerToys.McpServer",
   "version": "1.0.0",
   "description": "PowerToys McpServer",
   "author": {
