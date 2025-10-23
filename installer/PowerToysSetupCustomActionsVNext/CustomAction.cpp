@@ -594,6 +594,216 @@ LExit:
     return WcaFinalize(er);
 }
 
+UINT __stdcall InstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPWSTR customActionData = nullptr;
+    std::wstring installFolderPath;
+    std::wstring installScope;
+    std::wstring msixPath;
+    std::wstring data;
+    size_t delimiterPos;
+    bool isMachineLevel = false;
+    
+    hr = WcaInitialize(hInstall, "InstallPackageIdentityMSIXCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = WcaGetProperty(L"CustomActionData", &customActionData);
+    ExitOnFailure(hr, "Failed to get CustomActionData property");
+    
+    // Parse CustomActionData: "[INSTALLFOLDER];[InstallScope]"
+    data = customActionData;
+    delimiterPos = data.find(L';');
+    installFolderPath = data.substr(0, delimiterPos);
+    installScope = data.substr(delimiterPos + 1);
+    
+    // Check if this is a machine-level installation
+    if (installScope == L"perMachine")
+    {
+        isMachineLevel = true;
+    }
+    
+    Logger::info(L"Installing PackageIdentity MSIX - perUser: {}", !isMachineLevel);
+
+    // Construct path to PackageIdentity MSIX
+    msixPath = installFolderPath;
+    msixPath += L"PowerToysSparse.msix";
+
+    if (std::filesystem::exists(msixPath))
+    {
+        using namespace winrt::Windows::Management::Deployment;
+        using namespace winrt::Windows::Foundation;
+
+        try
+        {
+            
+            std::wstring externalLocation = installFolderPath; // External content location (PowerToys install folder)
+            Uri externalUri{ externalLocation };               // External location URI for sparse package content
+            Uri packageUri{ msixPath };                        // The MSIX file URI
+            
+            PackageManager packageManager;
+            
+            if (isMachineLevel)
+            {
+                // Machine-level installation
+                
+                StagePackageOptions stageOptions;
+                stageOptions.ExternalLocationUri(externalUri);
+                
+                auto stageResult = packageManager.StagePackageByUriAsync(packageUri, stageOptions).get();
+                
+                uint32_t stageErrorCode = static_cast<uint32_t>(stageResult.ExtendedErrorCode());
+                if (stageErrorCode == 0)
+                {
+                    std::wstring packageFamilyName = L"Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe";
+                    
+                    try
+                    {
+                        auto provisionResult = packageManager.ProvisionPackageForAllUsersAsync(packageFamilyName).get();
+                        uint32_t provisionErrorCode = static_cast<uint32_t>(provisionResult.ExtendedErrorCode());
+                        
+                        if (provisionErrorCode != 0)
+                        {
+                            Logger::error(L"Machine-level provisioning failed: 0x{:08X}", provisionErrorCode);
+                        }
+                    }
+                    catch (const winrt::hresult_error& ex)
+                    {
+                        Logger::error(L"Provisioning exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                    }
+                }
+                else
+                {
+                    Logger::error(L"Package staging failed: 0x{:08X}", stageErrorCode);
+                }
+            }
+            else
+            {
+                AddPackageOptions addOptions;
+                addOptions.ExternalLocationUri(externalUri);
+                
+                auto addResult = packageManager.AddPackageByUriAsync(packageUri, addOptions).get();
+                
+                if (!addResult.IsRegistered())
+                {
+                    uint32_t errorCode = static_cast<uint32_t>(addResult.ExtendedErrorCode());
+                    Logger::error(L"Per-user installation failed: 0x{:08X}", errorCode);
+                }
+            }
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(L"PackageIdentity MSIX installation failed - Exception: {}", 
+                         winrt::to_hstring(ex.what()).c_str());
+        }
+    }
+    else
+    {
+        Logger::error(L"PackageIdentity MSIX not found: " + msixPath);
+    }
+
+LExit:
+    ReleaseStr(customActionData);
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UninstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    using namespace winrt::Windows::Management::Deployment; 
+    using namespace winrt::Windows::Foundation;
+    
+    LPWSTR installScope = nullptr;
+    bool isMachineLevel = false;
+    
+    PackageManager pm;
+
+    hr = WcaInitialize(hInstall, "UninstallPackageIdentityMSIXCA");
+    ExitOnFailure(hr, "Failed to initialize");
+    
+    // Check if this was a machine-level installation
+    hr = WcaGetProperty(L"InstallScope", &installScope);
+    if (SUCCEEDED(hr) && installScope && wcscmp(installScope, L"perMachine") == 0)
+    {
+        isMachineLevel = true;
+    }
+    
+    Logger::info(L"Uninstalling PackageIdentity MSIX - perUser: {}", !isMachineLevel);
+
+    try
+    {
+        std::wstring packageFamilyName = L"Microsoft.PowerToys.SparseApp_8wekyb3d8bbwe";
+        
+        if (isMachineLevel)
+        {
+            // Machine-level uninstallation: deprovision + remove for all users
+            
+            // First deprovision the package
+            try
+            {
+                auto deprovisionResult = pm.DeprovisionPackageForAllUsersAsync(packageFamilyName).get();
+                if (deprovisionResult.IsRegistered())
+                {
+                    Logger::warn(L"Machine-level deprovisioning completed with warnings");
+                }
+            }
+            catch (const winrt::hresult_error& ex)
+            {
+                Logger::warn(L"Machine-level deprovisioning failed: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+            }
+            
+            // Then remove packages for all users
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, packageFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                try
+                {
+                    auto machineResult = pm.RemovePackageAsync(package.Id().FullName(), RemovalOptions::RemoveForAllUsers).get();
+                    if (machineResult.IsRegistered())
+                    {
+                        uint32_t errorCode = static_cast<uint32_t>(machineResult.ExtendedErrorCode());
+                        Logger::error(L"Machine-level removal failed: 0x{:08X} - {}", errorCode, machineResult.ErrorText());
+                    }
+                }
+                catch (const winrt::hresult_error& ex)
+                {
+                    Logger::error(L"Machine-level removal exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                }
+            }
+        }
+        else
+        {
+            // Per-user uninstallation: standard removal
+            
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, packageFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                auto userResult = pm.RemovePackageAsync(package.Id().FullName()).get();
+                if (userResult.IsRegistered())
+                {
+                    uint32_t errorCode = static_cast<uint32_t>(userResult.ExtendedErrorCode());
+                    Logger::error(L"Per-user removal failed: 0x{:08X} - {}", errorCode, userResult.ErrorText());
+                }
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        std::string errorMsg = "Failed to uninstall PackageIdentity MSIX: " + std::string(ex.what());
+        Logger::error(errorMsg);
+        // Don't fail the entire uninstallation if PackageIdentity fails
+        Logger::warn(L"Continuing uninstallation despite PackageIdentity MSIX error");
+    }
+
+LExit:
+    ReleaseStr(installScope);
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
 {
     SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
@@ -1283,11 +1493,12 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 42> processesToTerminate = {
+    std::array<std::wstring_view, 43> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
         L"PowerToys.Awake.exe",
+        L"PowerToys.McpServer.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",
         L"PowerToys.FileLocksmithUI.exe",

@@ -347,6 +347,7 @@ function Test-CoreFiles {
         'PowerToys.AwakeModuleInterface.dll',
         'PowerToys.Awake.exe',
         'PowerToys.Awake.dll',
+        'PowerToys.McpServer.exe',
         
         # FancyZones
         'PowerToys.FancyZonesEditor.exe',

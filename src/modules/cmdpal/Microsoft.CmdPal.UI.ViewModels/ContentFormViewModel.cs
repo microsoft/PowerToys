@@ -52,7 +52,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error building card from template: {Message}", ex.Message);
+            Logger.LogError("Error building card from template", ex);
             error = ex;
             return false;
         }

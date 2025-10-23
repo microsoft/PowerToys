@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!-- CI Build Configuration -->
+  <PropertyGroup Condition="'$(CIBuild)'=='true' and '$(ForceSign)' != 'true'">
+    <ForceCIPackaging>true</ForceCIPackaging>
+    <EffectiveCIBuild>true</EffectiveCIBuild>
+  </PropertyGroup>
+
+  <!-- Target to generate sparse MSIX package -->
+  <Target Name="GenerateSparsePackage" BeforeTargets="PrepareForBuild">
+    <!-- Use NoSign only for CI builds to avoid certificate issues on hosted agents -->
+    <PropertyGroup>
+  <NoSignParam Condition="'$(EffectiveCIBuild)' == 'true'">-NoSign</NoSignParam>
+      <NoSignParam Condition="'$(EffectiveCIBuild)' != 'true'"></NoSignParam>
+    </PropertyGroup>
+    
+    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam)" 
+          ContinueOnError="false"
+          WorkingDirectory="$(MSBuildThisFileDirectory)" />
+  </Target>
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{E2A5A82E-1E5B-4C8D-9A4F-2B1A8F9E5C3D}</ProjectGuid>
+    <RootNamespace>PackageIdentity</RootNamespace>
+    <ProjectName>PackageIdentity</ProjectName>
+    <UseFastUpToDateCheck>false</UseFastUpToDateCheck>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Solution.props" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+
+  <ItemGroup>
+    <None Include="AppxManifest.xml" />
+    <None Include="BuildSparsePackage.ps1" />
+    <None Include="BuildSparsePackage.cmd" />
+    <None Include="Check-ProcessIdentity.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Image Include="Images\Square150x150Logo.png">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\Square44x44Logo.png">
+      <Filter>Images</Filter>
+    </Image>
+    <Image Include="Images\StoreLogo.png">
+      <Filter>Images</Filter>
+    </Image>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Assets\mcpServerConfig.json">
+      <Filter>Assets</Filter>
+    </None>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+
+</Project>

@@ -108,7 +108,7 @@ public:
 
         m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
-        m_manual_override_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_manual_override_event_handle = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
         init_settings();
     };
@@ -460,7 +460,7 @@ public:
             }
             else if (hotkeyId == 0)
             {
-                // get current will return true if in light mode, otherwise false
+                // get current will return true if in light mode; otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
                 if (g_settings.m_changeSystem)
                 {

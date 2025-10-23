@@ -4,7 +4,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-  <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion);InstallerSuffix=$(InstallerSuffix)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
+  <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
     simulate the build pipeline doing that for you. -->
@@ -18,7 +18,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion);InstallerSuffix=$(InstallerSuffix)</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
@@ -80,9 +80,8 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>{b6e94700-df38-41f6-a3fd-18b69674ab1e}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <InstallerSuffix Condition="'$(InstallerSuffix)'==''">wix5</InstallerSuffix>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>

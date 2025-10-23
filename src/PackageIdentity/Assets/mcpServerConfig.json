@@ -1,0 +1,18 @@
+{
+  "manifest_version": "0.1",
+  "name": "PowerToys-McpServer",
+  "version": "1.0.0",
+  "description": "PowerToys McpServer",
+  "author": {
+    "name": "Microsoft"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "PowerToys.McpServer.exe",
+    "mcp_config": {
+      "command": "PowerToys.McpServer.exe",
+      "args": [
+      ]
+    }
+  }
+}

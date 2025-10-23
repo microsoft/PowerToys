@@ -69,8 +69,11 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.37" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.250907003" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.4.0-preview.2" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />

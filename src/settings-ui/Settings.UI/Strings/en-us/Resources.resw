@@ -5200,7 +5200,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Configure shortcut</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
-    <value>Configure shortcut</value>
+    <value>Assign shortcut</value>
   </data>
   <data name="QuickAccessTitle.Title" xml:space="preserve">
     <value>Quick access</value>
