@@ -252,6 +252,11 @@ public:
         return m_enabled;
     }
 
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
+
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
         if (m_enabled)

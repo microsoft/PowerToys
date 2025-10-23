@@ -302,6 +302,11 @@ public:
         return m_enabled;
     }
 
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
+
     virtual void send_settings_telemetry() override
     {
         SetEvent(send_telemetry_event);

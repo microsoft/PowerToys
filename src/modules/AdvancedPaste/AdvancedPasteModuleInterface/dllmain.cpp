@@ -846,6 +846,11 @@ public:
     {
         return m_enabled;
     }
+
+    virtual bool is_enabled_by_default() const override
+    {
+        return true;
+    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
