@@ -63,7 +63,7 @@
         Square44x44Logo="Images\Square44x44Logo.png">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.McpServer" Executable="PowerToys.McpServer.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.McpServer" Executable="PowerToys.McpServer.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         AppListEntry="none"
         DisplayName="PowerToys.McpServer"
