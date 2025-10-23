@@ -18,6 +18,9 @@
 
     <Version>$(CmdPalVersion)</Version>
 
+    <!-- For MVVM Toolkit Partial Properties/AOT support -->
+    <LangVersion>preview</LangVersion>
+    
     <!-- OutputPath is set in CmdPal.Branding.props  -->
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

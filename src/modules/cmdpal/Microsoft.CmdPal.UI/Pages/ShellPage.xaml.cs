@@ -22,7 +22,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -50,7 +49,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
-    INotifyPropertyChanged
+    INotifyPropertyChanged,
+    IDisposable
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -248,10 +248,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
-    {
-        vm.SafeInitializePropertiesSynchronous();
-    }
+    private void InitializeConfirmationDialog(ConfirmResultViewModel vm) => vm.SafeInitializePropertiesSynchronous();
 
     public void Receive(OpenSettingsMessage message)
     {
@@ -328,10 +325,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
 
-    public void Receive(HotkeySummonMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
-    }
+    public void Receive(HotkeySummonMessage message) => _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
 
     public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
 
@@ -400,10 +394,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
-    public void Receive(GoBackMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
-    }
+    public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
@@ -444,10 +435,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(GoHomeMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
-    }
+    public void Receive(GoHomeMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
 
     private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
@@ -664,4 +652,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             Logger.LogError("Error handling mouse button press event", ex);
         }
     }
+
+    public void Dispose() => _dockWindow?.Dispose();
 }

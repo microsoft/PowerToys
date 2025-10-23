@@ -3,6 +3,7 @@
     x:Class="Microsoft.CmdPal.UI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:local="using:Microsoft.CmdPal.UI">
     <Application.Resources>
@@ -22,6 +23,14 @@
 
             <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
+            
+            <converters:StringVisibilityConverter
+                x:Key="StringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

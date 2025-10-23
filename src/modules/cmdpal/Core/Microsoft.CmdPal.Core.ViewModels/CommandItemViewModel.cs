@@ -65,6 +65,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
+    public bool HasTitle => !string.IsNullOrEmpty(Title);
+
+    public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+
+    public bool HasText => HasTitle || HasSubtitle;
+
     public List<IContextItemViewModel> AllCommands
     {
         get
@@ -411,11 +417,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
     }
 
-    private void UpdateDefaultContextItemIcon()
-    {
+    private void UpdateDefaultContextItemIcon() =>
+
         // Command icon takes precedence over our icon on the primary command
         _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
-    }
 
     private void UpdateTitle(string? title)
     {

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Dock.DockControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Dock"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:coreVm="using:Microsoft.CmdPal.Core.ViewModels"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
+            <DataTemplate x:Key="CommandButtonTemplate" x:DataType="coreVm:CommandViewModel">
+                <Button
+                    MaxHeight="32"
+                    Padding="4">
+                    <!-- TODO! Command="{x:Bind InvokeCommand, Mode=OneWay}"-->
+                    
+                    <Grid
+                        AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                        Background="Transparent"
+                        ColumnSpacing="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            Orientation="Vertical"
+                            Visibility="{x:Bind HasIcon, Mode=OneWay}">
+                            <cpcontrols:IconBox
+                                x:Name="IconBorder"
+                                Width="16"
+                                Height="16"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            Orientation="Vertical"
+                            Visibility="{x:Bind Name, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}">
+                            <TextBlock
+                                x:Name="TitleTextBlock"
+                                MaxWidth="200"
+                                MaxHeight="40"
+                                Margin="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                Foreground="{ThemeResource TextFillColorPrimary}"
+                                Text="{x:Bind Name, Mode=OneWay}"
+                                TextAlignment="Left"
+                                TextTrimming="WordEllipsis"
+                                TextWrapping="NoWrap" />
+                        </StackPanel>
+
+                    </Grid>
+
+
+                </Button>
+            </DataTemplate>
+
+            <DataTemplate x:Key="DeskbandTemplate" x:DataType="coreVm:CommandItemViewModel">
+                <Button
+                    Padding="2"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
+    
+                    <!-- TODO! Command="{x:Bind InvokeCommand, Mode=OneWay}"-->
+                    <Grid
+                        AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                        Background="Transparent"
+                        Visibility="{x:Bind ShouldBeVisible, Mode=OneWay}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Vertical"
+                            Visibility="{x:Bind Icon, Converter={StaticResource IconInfoVisibilityConverter}, Mode=OneWay}">
+                            <cpcontrols:IconBox
+                                x:Name="IconBorder"
+                                Height="16"
+                                MaxWidth="16"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="8,0,8,0"
+                            VerticalAlignment="Center"
+                            Visibility="{x:Bind HasText, Mode=OneWay}">
+                            <TextBlock
+                                x:Name="TitleTextBlock"
+                                MaxWidth="100"
+                                Margin="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorPrimary}"
+                                Text="{x:Bind Title, Mode=OneWay}"
+                                TextAlignment="Left"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                            <TextBlock
+                                x:Name="SubTitleTextBlock"
+                                Margin="0,-4,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorTertiary}"
+                                Text="{x:Bind Subtitle, Mode=OneWay}"
+                                TextAlignment="Center"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap"
+                                Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Button.ContextFlyout>
+                        <Flyout Placement="TopEdgeAlignedLeft" ShouldConstrainToRootBounds="False">
+                            <!--  More correctly, this ItemsControl should be a list view, but i ain't got time to write more templates  -->
+                            <!--<ItemsControl
+                                x:Name="ItemsFlyout"
+                                Grid.Column="0"
+                                MinWidth="200"
+                                MaxWidth="380"
+                                Margin="-8"
+                                Padding="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                Background="Blue"
+                                BorderBrush="Blue"
+                                BorderThickness="1"
+                                IsTabStop="False"
+                                ItemTemplate="{StaticResource DeskbandTemplate}"
+                                ItemsSource="{x:Bind ContextMenu, Mode=OneWay}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel
+                                            HorizontalAlignment="Left"
+                                            Orientation="Vertical"
+                                            Spacing="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>-->
+                            <!--<ListView
+                                MinWidth="200"
+                                MaxWidth="380"
+                                Margin="-8"
+                                Padding="-8"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                BorderThickness="1"
+                                IsTabStop="False"
+                                ItemTemplate="{StaticResource DeskbandTemplate}"
+                                ItemsSource="{x:Bind ContextMenu, Mode=OneWay}" />-->
+                        </Flyout>
+
+                    </Button.ContextFlyout>
+                </Button>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="16,0,16,0">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition x:Name="SearchColumn" Width="*" />
+            <ColumnDefinition x:Name="EndColumn" Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!--  EXPERIMENT: Try to add a shadow to the bottom. I didn't love how it actually turned out.  -->
+        <Rectangle
+            Grid.ColumnSpan="3"
+            Margin="-16,0"
+            Visibility="Collapsed">
+            <Rectangle.Fill>
+                <LinearGradientBrush MappingMode="RelativeToBoundingBox" Opacity="1" StartPoint=".5,1" EndPoint=".5,0.55">
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStop Offset="0" Color="#60000000" />
+                        <GradientStop Offset="1" Color="#0000" />
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <ScrollViewer
+            Grid.Column="0"
+            HorizontalAlignment="Stretch"
+            HorizontalScrollBarVisibility="Hidden"
+            HorizontalScrollMode="Enabled"
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Disabled">
+
+            <ItemsRepeater
+                HorizontalAlignment="Left"
+                ItemTemplate="{StaticResource DeskbandTemplate}"
+                ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}">
+
+                <ItemsRepeater.Layout>
+                    <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
+                </ItemsRepeater.Layout>
+
+                <ItemsRepeater.Transitions>
+                    <TransitionCollection />
+                </ItemsRepeater.Transitions>
+
+            </ItemsRepeater>
+
+        </ScrollViewer>
+
+        <Button
+            x:Name="SearchButton"
+            Grid.Column="1"
+            Height="24"
+            Margin="0,8"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Left"
+            AllowFocusOnInteraction="True"
+            BorderBrush="{ThemeResource TextBoxButtonBorderThemeBrush}"
+            Command="{x:Bind SearchOpenCmdPalCommand, Mode=OneWay}"
+            CornerRadius="12"
+            FontSize="8"
+            Visibility="{x:Bind ShowSearchButton, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock HorizontalAlignment="Left" Foreground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}">Search...</TextBlock>
+        </Button>
+
+        <ItemsRepeater
+            Grid.Column="2"
+            HorizontalAlignment="Right"
+            ItemTemplate="{StaticResource DeskbandTemplate}"
+            ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}">
+
+            <ItemsRepeater.Layout>
+                <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
+            </ItemsRepeater.Layout>
+
+            <ItemsRepeater.Transitions>
+                <TransitionCollection />
+            </ItemsRepeater.Transitions>
+
+        </ItemsRepeater>
+    </Grid>
+
+</UserControl>
