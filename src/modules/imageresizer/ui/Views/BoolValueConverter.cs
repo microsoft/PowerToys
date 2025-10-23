@@ -11,11 +11,21 @@ using System.Windows.Data;
 
 namespace ImageResizer.Views
 {
-    [ValueConversion(typeof(Enum), typeof(string))]
+    [ValueConversion(typeof(bool), typeof(Visibility))]
     internal class BoolValueConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-            => (bool)value ? Visibility.Visible : Visibility.Collapsed;
+        {
+            bool boolValue = (bool)value;
+            bool invert = parameter is string param && param.Equals("Inverted", StringComparison.OrdinalIgnoreCase);
+
+            if (invert)
+            {
+                boolValue = !boolValue;
+            }
+
+            return boolValue ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => (Visibility)value == Visibility.Visible;
