@@ -41,7 +41,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ClCompile Include="SilentFilesInUseBAFunctions.cpp" />
+    <ClCompile Include="SilentFilesInUseBAFunctions.cpp">
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="bafunctions.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>precomp.h</PrecompiledHeaderFile>
