@@ -6,8 +6,12 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
@@ -59,7 +63,7 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
         // _settings = DockSettingsWindow.LoadUserSettings();
         _settings = new(); // TODO!
 
-        viewModel = new DockViewModel();
+        viewModel = App.Current.Services.GetService<DockViewModel>()!;
         _dock = new DockControl(viewModel);
 
         InitializeComponent();
@@ -581,11 +585,13 @@ internal static class DockSettingsToViews
     }
 }
 
-internal sealed partial class DockViewModel : IDisposable
+internal sealed partial class DockViewModel : IDisposable, IRecipient<CommandsReloadedMessage>
 {
+    private readonly TopLevelCommandManager _topLevelCommandManager;
+
     // private TaskbarWindowsService _taskbarWindows;
     // private Settings _settings;
-    private Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+    private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
 
     // TODO! make these DockBandViewModel
@@ -593,8 +599,45 @@ internal sealed partial class DockViewModel : IDisposable
 
     public ObservableCollection<CommandItemViewModel> EndItems { get; } = new();
 
+    public DockViewModel(TopLevelCommandManager tlcManager, SettingsModel settings)
+    {
+        _topLevelCommandManager = tlcManager;
+        WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
+    }
+
+    private static string[] _startCommands = ["com.microsoft.cmdpal.windowwalker", "com.microsoft.cmdpal.timedate"];
+
+    private void SetupBands()
+    {
+        List<CommandItemViewModel> newBands = new();
+        foreach (var commandId in _startCommands)
+        {
+            var topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
+            if (topLevelCommand is not null)
+            {
+                // var band = CreateBandItem(topLevelCommand);
+                newBands.Add(topLevelCommand.ItemViewModel);
+            }
+        }
+
+        var beforeCount = StartItems.Count;
+        var afterCount = newBands.Count;
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            ListHelpers.InPlaceUpdateList(StartItems, newBands, out var removed);
+            Logger.LogDebug($"({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
+        });
+    }
+
     public void Dispose()
     {
+    }
+
+    public void Receive(CommandsReloadedMessage message)
+    {
+        SetupBands();
+        CoreLogger.LogDebug("Bands reloaded");
     }
 }
 

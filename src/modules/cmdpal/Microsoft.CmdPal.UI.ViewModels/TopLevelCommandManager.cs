@@ -308,6 +308,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+
+        WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
