@@ -21,7 +21,7 @@ namespace PowerToys.McpServer
             // Initialize PowerToys logger
             // Logger.InitializeLogger expects path relative to Constants.AppDataPath()
             // which already points to LocalAppData\Microsoft\PowerToys
-            string logPath = Path.Combine("\\McpServer", "Logs");
+            string logPath = Path.Combine("McpServer", "Logs");
             Logger.InitializeLogger(logPath);
             Logger.LogInfo("Starting PowerToys MCP Server with official SDK");
 
