@@ -68,7 +68,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
-            SeedProviderConfigurationSnapshots();
 
             AttachConfigurationHandlers();
 
@@ -571,7 +570,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var draft = PasteAIProviderDraft;
             draft.EndpointUrl = endpoint?.Trim() ?? string.Empty;
 
-            SavePasteAICredential(draft.Id, draft.ServiceType, draft.EndpointUrl, apiKey);
+            SavePasteAIApiKey(draft.Id, draft.ServiceType, apiKey);
 
             if (_editingPasteAIProvider is null)
             {
@@ -609,36 +608,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 OnPropertyChanged(nameof(PasteAIConfiguration));
             }
         }
-
-        public void SetActivePasteAIProvider(PasteAIProviderDefinition provider)
-        {
-            if (provider is null)
-            {
-                return;
-            }
-
-            var config = PasteAIConfiguration;
-            if (config is null)
-            {
-                return;
-            }
-
-            if (!string.Equals(config.ActiveProviderId, provider.Id, StringComparison.OrdinalIgnoreCase))
-            {
-                config.ActiveProviderId = provider.Id;
-                SaveAndNotifySettings();
-                OnPropertyChanged(nameof(PasteAIConfiguration));
-            }
-        }
-
-        public bool IsActivePasteAIProvider(string providerId)
-        {
-            var activeId = PasteAIConfiguration?.ActiveProviderId ?? string.Empty;
-            providerId ??= string.Empty;
-            return string.Equals(activeId, providerId, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public bool CanSetActivePasteAIProvider(string providerId) => !IsActivePasteAIProvider(providerId);
 
         protected override void Dispose(bool disposing)
         {
@@ -728,11 +697,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        internal void SavePasteAICredential(string providerId, string serviceType, string endpoint, string apiKey)
+        internal void SavePasteAIApiKey(string providerId, string serviceType, string apiKey)
         {
             try
             {
-                endpoint = endpoint?.Trim() ?? string.Empty;
                 apiKey = apiKey?.Trim() ?? string.Empty;
                 serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
                 providerId ??= string.Empty;
@@ -749,12 +717,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     PasswordCredential cred = new(credentialResource, credentialUserName, apiKey);
                     vault.Add(cred);
-                }
-
-                if (!string.IsNullOrWhiteSpace(endpoint))
-                {
-                    PasswordCredential endpointCred = new(credentialResource, endpointCredentialUserName, endpoint);
-                    vault.Add(endpointCred);
                 }
 
                 OnPropertyChanged(nameof(IsAIEnabled));
@@ -776,11 +738,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal string GetPasteAIEndpoint(string providerId, string serviceType)
         {
-            serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
             providerId ??= string.Empty;
-            return RetrieveCredentialValue(
-                GetAICredentialResource(serviceType),
-                GetPasteAIEndpointCredentialUserName(providerId, serviceType));
+            var providers = PasteAIConfiguration?.Providers;
+            if (providers is null)
+            {
+                return string.Empty;
+            }
+
+            var provider = providers.FirstOrDefault(p => string.Equals(p.Id ?? string.Empty, providerId, StringComparison.OrdinalIgnoreCase));
+            if (provider is null && !string.IsNullOrWhiteSpace(serviceType))
+            {
+                provider = providers.FirstOrDefault(p => string.Equals(p.ServiceType, serviceType, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return provider?.EndpointUrl?.Trim() ?? string.Empty;
         }
 
         private string GetAICredentialResource(string serviceType)
@@ -1108,11 +1079,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 SaveAndNotifySettings();
             }
-        }
-
-        private void SeedProviderConfigurationSnapshots()
-        {
-            // Paste AI provider configurations are handled through the new provider list.
         }
 
         private void InitializePasteAIProviderState()

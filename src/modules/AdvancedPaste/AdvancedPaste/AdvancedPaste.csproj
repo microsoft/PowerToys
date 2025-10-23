@@ -81,7 +81,7 @@
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-  <PackageReference Include="System.ClientModel" />
+    <PackageReference Include="System.ClientModel" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
