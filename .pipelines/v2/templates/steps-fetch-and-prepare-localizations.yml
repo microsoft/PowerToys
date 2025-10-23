@@ -4,5 +4,23 @@ parameters:
     default: false
 
 steps:
+  - task: TouchdownBuildTask@5
+    displayName: 'Download Localization Files -- PowerToys 37400'
+    inputs:
+      teamId: 37400
+      FederatedIdentityTDBuildServiceConnection: $(TouchdownServiceConnection)
+      authType: FederatedIdentityTDBuild
+      resourceFilePath: |
+       **\Resources.resx
+       **\Resource.resx
+       **\Resources.resw
+      appendRelativeDir: true
+      localizationTarget: false
+      ${{ if eq(parameters.includePseudoLoc, true) }}:
+        pseudoSetting: Included
+
   - pwsh: |-
-      echo "localizing some crap"
+      $VerbosePreference = "Continue"
+      ./tools/build/move-and-rename-resx.ps1
+      ./tools/build/move-uwp-resw.ps1
+    displayName: Move Loc files into final locations
