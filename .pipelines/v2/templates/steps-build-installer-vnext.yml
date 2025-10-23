@@ -22,11 +22,10 @@ steps:
       arguments: 'install --global wix --version 5.0.2'
 
   - pwsh: |-
-      Write-Host "##vso[task.setvariable variable=InstallerMachineRelativePath]$(BuildPlatform)\$(BuildConfiguration)\MachineSetup"
-      Write-Host "##vso[task.setvariable variable=InstallerUserRelativePath]$(BuildPlatform)\$(BuildConfiguration)\UserSetup"
+      Write-Host "##vso[task.setvariable variable=InstallerMachineRoot]installer\PowerToysSetupVNext\$(BuildPlatform)\$(BuildConfiguration)\MachineSetup"
+      Write-Host "##vso[task.setvariable variable=InstallerUserRoot]installer\PowerToysSetupVNext\$(BuildPlatform)\$(BuildConfiguration)\UserSetup"
       Write-Host "##vso[task.setvariable variable=InstallerMachineBasename]PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
       Write-Host "##vso[task.setvariable variable=InstallerUserBasename]PowerToysUserSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
-      Write-Host "##vso[task.setvariable variable=InstallerFolder]PowerToysSetupVNext"
     displayName: Prepare Installer variables
 
   # This dll needs to be built and signed before building the MSI.
@@ -48,37 +47,12 @@ steps:
       maximumCpuCount: true
 
   - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
+    - template: steps-esrp-sign-files-authenticode.yml
       parameters:
         displayName: Sign Shared Support DLLs
         signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'installer'
-          Pattern: '**/PowerToysSetupCustomActionsVNext.dll;**/SilentFilesInUseBAFunction.dll'
-          signConfigType: inlineSignParams
-          inlineOperation: |
-            [
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolSign",
-                    "Parameters": {
-                        "OpusName": "Microsoft",
-                        "OpusInfo": "http://www.microsoft.com",
-                        "FileDigest": "/fd \"SHA256\"",
-                        "PageHash": "/NPH",
-                        "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                    },
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
+        folder: 'installer'
+        pattern: '**/PowerToysSetupCustomActionsVNext.dll;**/SilentFilesInUseBAFunction.dll'
 
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
@@ -116,8 +90,8 @@ steps:
       maximumCpuCount: true
 
   - script: |-
-      wix msi decompile installer\$(InstallerFolder)\$(InstallerMachineRelativePath)\$(InstallerMachineBasename).msi -x $(build.sourcesdirectory)\extractedMachineMsi
-      wix msi decompile installer\$(InstallerFolder)\$(InstallerUserRelativePath)\$(InstallerUserBasename).msi -x $(build.sourcesdirectory)\extractedUserMsi
+      wix msi decompile $(InstallerMachineRoot)\$(InstallerMachineBasename).msi -x $(build.sourcesdirectory)\extractedMachineMsi
+      wix msi decompile $(InstallerUserRoot)\$(InstallerUserBasename).msi -x $(build.sourcesdirectory)\extractedUserMsi
       dir $(build.sourcesdirectory)\extractedMachineMsi
       dir $(build.sourcesdirectory)\extractedUserMsi
     displayName: "WiX5: Extract and verify MSIs"
@@ -137,38 +111,12 @@ steps:
         git clean -xfd ./extractedMachineMsi ./extractedUserMsi
       displayName: Verify all binaries are signed and versioned
 
-    - template: steps-esrp-signing.yml
+    - template: steps-esrp-sign-files-authenticode.yml
       parameters:
         displayName: Sign VNext MSIs
         signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'installer'
-          Pattern: '**/PowerToys*Setup-*.msi'
-          signConfigType: inlineSignParams
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-          inlineOperation: |
-            [
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolSign",
-                    "Parameters": {
-                        "OpusName": "Microsoft",
-                        "OpusInfo": "http://www.microsoft.com",
-                        "FileDigest": "/fd \"SHA256\"",
-                        "PageHash": "/NPH",
-                        "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                    },
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
+        folder: 'installer'
+        pattern: '**/PowerToys*Setup-*.msi'
 
   #### END MSI
   
@@ -212,79 +160,28 @@ steps:
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
   - ${{ if eq(parameters.codeSign, true) }}:
     - script: |-
-        wix burn detach installer\$(InstallerFolder)\$(InstallerMachineRelativePath)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe
-        wix burn detach installer\$(InstallerFolder)\$(InstallerUserRelativePath)\$(InstallerUserBasename).exe -engine installer\user-engine.exe
+        wix burn detach $(InstallerMachineRoot)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe
+        wix burn detach $(InstallerUserRoot)\$(InstallerUserBasename).exe -engine installer\user-engine.exe
       displayName: "WiX5: Extract Engines from Bundles"
 
-    - template: steps-esrp-signing.yml
+    - template: steps-esrp-sign-files-authenticode.yml
       parameters:
         displayName: Sign WiX Engines
         signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: "installer"
-          Pattern: '*-engine.exe'
-          signConfigType: inlineSignParams
-          inlineOperation: |
-            [
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolSign",
-                    "Parameters": {
-                        "OpusName": "Microsoft",
-                        "OpusInfo": "http://www.microsoft.com",
-                        "FileDigest": "/fd \"SHA256\"",
-                        "PageHash": "/NPH",
-                        "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                    },
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
+        folder: "installer"
+        pattern: '*-engine.exe'
 
     - script: |-
-        wix burn reattach installer\$(InstallerFolder)\$(InstallerMachineRelativePath)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe -o installer\$(InstallerFolder)\$(InstallerMachineRelativePath)\$(InstallerMachineBasename).exe
-        wix burn reattach installer\$(InstallerFolder)\$(InstallerUserRelativePath)\$(InstallerUserBasename).exe -engine installer\user-engine.exe -o installer\$(InstallerFolder)\$(InstallerUserRelativePath)\$(InstallerUserBasename).exe
+        wix burn reattach $(InstallerMachineRoot)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe -o $(InstallerMachineRoot)\$(InstallerMachineBasename).exe
+        wix burn reattach $(InstallerUserRoot)\$(InstallerUserBasename).exe -engine installer\user-engine.exe -o $(InstallerUserRoot)\$(InstallerUserBasename).exe
       displayName: "WiX5: Reattach Engines to Bundles"
 
-    - template: steps-esrp-signing.yml
+    - template: steps-esrp-sign-files-authenticode.yml
       parameters:
         displayName: Sign Final Bootstrappers
         signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'installer'
-          Pattern: '**/PowerToys*Setup-*.exe'
-          signConfigType: inlineSignParams
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-          inlineOperation: |
-            [
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolSign",
-                    "Parameters": {
-                        "OpusName": "Microsoft",
-                        "OpusInfo": "http://www.microsoft.com",
-                        "FileDigest": "/fd \"SHA256\"",
-                        "PageHash": "/NPH",
-                        "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                    },
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-230012",
-                    "OperationCode": "SigntoolVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
+        folder: 'installer'
+        pattern: '**/PowerToys*Setup-*.exe'
 
   #### END BOOTSTRAP
   ## END INSTALLER
