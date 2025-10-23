@@ -44,11 +44,13 @@ public partial class SettingsModel : ObservableObject
 
     public bool AllowExternalReload { get; set; }
 
-    public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
+    public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = new();
 
-    public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
+    public Dictionary<string, FallbackSettings> FallbackSettings { get; set; } = new();
 
-    public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
+    public Dictionary<string, CommandAlias> Aliases { get; set; } = new();
+
+    public List<TopLevelHotkey> CommandHotkeys { get; set; } = new();
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
 
@@ -74,6 +76,18 @@ public partial class SettingsModel : ObservableObject
         else
         {
             settings.Connect(provider);
+        }
+
+        return settings;
+    }
+
+    public FallbackSettings GetFallbackSettings(string fallbackId)
+    {
+        FallbackSettings? settings;
+        if (!FallbackSettings.TryGetValue(fallbackId, out settings))
+        {
+            settings = new FallbackSettings();
+            FallbackSettings[fallbackId] = settings;
         }
 
         return settings;
@@ -169,20 +183,6 @@ public partial class SettingsModel : ObservableObject
         // now, the settings is just next to the exe
         return Path.Combine(directory, "settings.json");
     }
-
-    // [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    // private static readonly JsonSerializerOptions _serializerOptions = new()
-    // {
-    //    WriteIndented = true,
-    //    Converters = { new JsonStringEnumConverter() },
-    // };
-    // private static readonly JsonSerializerOptions _deserializerOptions = new()
-    // {
-    //    PropertyNameCaseInsensitive = true,
-    //    IncludeFields = true,
-    //    Converters = { new JsonStringEnumConverter() },
-    //    AllowTrailingCommas = true,
-    // };
 }
 
 [JsonSerializable(typeof(float))]

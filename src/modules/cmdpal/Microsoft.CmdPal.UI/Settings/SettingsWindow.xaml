@@ -60,6 +60,10 @@
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
+                <NavigationViewItem
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Fallbacks"
+                    Icon="{ui:FontIcon Glyph=&#xE944;}"
+                    Tag="Fallbacks" />
             </NavigationView.MenuItems>
             <Grid>
                 <Grid.RowDefinitions>
