@@ -94,8 +94,8 @@ $items | ForEach-Object {
 }
 
 if ($totalFailure -gt 0) {
-    Write-Host "Some items had issues. But that's OK"
-    exit 0
+    Write-Error "Some items had issues."
+    exit 1
 }
 
 exit 0

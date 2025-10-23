@@ -10,5 +10,15 @@ parameters:
     default: {}
 
 steps:
-  - pwsh: |-
-      echo "signing some crap"
+  - task: EsrpCodeSigning@5
+    displayName: 🔏 ${{ parameters.displayName }}
+    inputs:
+      ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
+      AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}
+      AppRegistrationTenantId: ${{ parameters.signingIdentity.tenantId }}
+      AuthAKVName: ${{ parameters.signingIdentity.akvName }}
+      AuthCertName: ${{ parameters.signingIdentity.authCertName }}
+      AuthSignCertName: ${{ parameters.signingIdentity.signCertName }}
+      UseMSIAuthentication: ${{ coalesce(parameters.signingIdentity.useManagedIdentity, 'false') }}
+      EsrpClientId: ${{ parameters.signingIdentity.clientId }}
+      ${{ insert }}: ${{ parameters.inputs }}
