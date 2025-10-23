@@ -144,6 +144,30 @@ internal static class Receiver
                         return;
                     }
 
+                    // If the local system has swapped primary/secondary mouse buttons, swap incoming button events
+                    bool areButtonsSwapped = NativeMethods.GetSystemMetrics(NativeMethods.SM_SWAPBUTTON) != 0;
+
+                    if (areButtonsSwapped)
+                    {
+                        // Swap left/right button messages so remote clicks respect local primary button setting
+                        if (package.Md.dwFlags == Common.WM_LBUTTONDOWN)
+                        {
+                            package.Md.dwFlags = Common.WM_RBUTTONDOWN;
+                        }
+                        else if (package.Md.dwFlags == Common.WM_LBUTTONUP)
+                        {
+                            package.Md.dwFlags = Common.WM_RBUTTONUP;
+                        }
+                        else if (package.Md.dwFlags == Common.WM_RBUTTONDOWN)
+                        {
+                            package.Md.dwFlags = Common.WM_LBUTTONDOWN;
+                        }
+                        else if (package.Md.dwFlags == Common.WM_RBUTTONUP)
+                        {
+                            package.Md.dwFlags = Common.WM_LBUTTONUP;
+                        }
+                    }
+
                     if (Math.Abs(package.Md.X) >= Event.MOVE_MOUSE_RELATIVE && Math.Abs(package.Md.Y) >= Event.MOVE_MOUSE_RELATIVE)
                     {
                         if (package.Md.dwFlags == Common.WM_MOUSEMOVE)

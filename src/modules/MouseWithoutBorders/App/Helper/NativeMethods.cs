@@ -90,6 +90,11 @@ namespace MouseWithoutBorders
         internal static extern IntPtr GetDesktopWindow();
 
         [DllImport("user32.dll")]
+        internal static extern int GetSystemMetrics(int nIndex);
+
+        internal const int SM_SWAPBUTTON = 23; // Returns non-zero (e.g., 1) if Left and Right mouse buttons are swapped; 0 otherwise
+
+        [DllImport("user32.dll")]
         internal static extern IntPtr GetWindowDC(IntPtr hWnd);
 
         [DllImport("user32.dll")]
