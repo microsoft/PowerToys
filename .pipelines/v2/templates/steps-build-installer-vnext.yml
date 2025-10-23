@@ -183,7 +183,7 @@ steps:
       msbuildArgs: >-
         -restore
         /t:PowerToysBootstrapperVNext
-        /p:PerUser=false;CIBuild=true
+        /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
         -restore -graph
         ${{ parameters.additionalBuildOptions }}
@@ -205,7 +205,7 @@ steps:
       msbuildArgs: >-
         -restore
         /t:PowerToysBootstrapperVNext
-        /p:PerUser=true;CIBuild=true
+        /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog
         -restore -graph
         ${{ parameters.additionalBuildOptions }}
