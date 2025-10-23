@@ -18,6 +18,7 @@ steps:
       inputs:
         FolderPath: ${{ parameters.folder }}
         Pattern: ${{ parameters.pattern }}
+        UseMinimatch: true
         signConfigType: inlineSignParams
         inlineOperation: |-
           [

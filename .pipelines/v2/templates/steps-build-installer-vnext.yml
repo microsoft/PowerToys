@@ -52,7 +52,9 @@ steps:
         displayName: Sign Shared Support DLLs
         signingIdentity: ${{ parameters.signingIdentity }}
         folder: 'installer'
-        pattern: '**/PowerToysSetupCustomActionsVNext.dll;**/SilentFilesInUseBAFunction.dll'
+        pattern: |-
+          **/PowerToysSetupCustomActionsVNext.dll
+          **/SilentFilesInUseBAFunction.dll
 
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
