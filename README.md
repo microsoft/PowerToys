@@ -61,12 +61,12 @@ Go to the [PowerToys GitHub releases][github-release-link], click Assets to reve
 [ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.95.1/PowerToysSetup-0.95.1-x64.exe 
 [ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.95.1/PowerToysSetup-0.95.1-arm64.exe
  
-|  Description   | Filename | sha256 hash |
-|----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.95.1-x64.exe][ptUserX64] | 637861E7E9B799D21D87068651798893BDF16E927697B87760A2F884122FBCDB|
-| Per user - ARM64     | [PowerToysUserSetup-0.95.1-arm64.exe][ptUserArm64] | 90DC594E071BB0FD5797FE73B55F4E29F40F4B5B8CE6F13C1DBECCC8C7129F58| 
-| Machine wide - x64   | [PowerToysSetup-0.95.1-x64.exe][ptMachineX64] | 3C604B200A1E4637AFF98A4129286D309A7DE6E07AA1FDE77E268BC85363570C|
-| Machine wide - ARM64 | [PowerToysSetup-0.95.1-arm64.exe][ptMachineArm64] |A69BF84D1F627F8576DE5102FB293BDAACF5FD6AC821DDCB64EDC3327C446A2F|
+|  Description   | Filename |
+|----------------|----------|
+| Per user - x64       | [PowerToysUserSetup-0.95.1-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.95.1-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.95.1-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.95.1-arm64.exe][ptMachineArm64] |
 
 </details>
 
