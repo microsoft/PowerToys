@@ -43,8 +43,7 @@ public class StringMatcher
         List<string> queryList = [query];
         List<string> stringToCompareList = [stringToCompare];
 
-        // TODO: Add switch for Chinese.
-        if (true)
+        if (opt.ChinesePinYinSupport)
         {
             // Remove IME composition split characters.
             var input = query.Replace("'", string.Empty);

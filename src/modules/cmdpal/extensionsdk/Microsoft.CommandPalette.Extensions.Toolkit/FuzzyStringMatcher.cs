@@ -11,6 +11,11 @@ public static class FuzzyStringMatcher
 {
     private const int NOMATCH = 0;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to support Chinese PinYin
+    /// </summary>
+    public static bool ChinesePinYinSupport { get; set; }
+
     public static int ScoreFuzzy(string needle, string haystack, bool allowNonContiguousMatches = true)
     {
         var (s, _) = ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches);
@@ -25,8 +30,7 @@ public static class FuzzyStringMatcher
         List<string> needles = [needle];
         List<string> haystacks = [haystack];
 
-        // TODO: Add switch for Chinese.
-        if (true)
+        if (ChinesePinYinSupport)
         {
             // Remove IME composition split characters.
             var input = needle.Replace("'", string.Empty);
