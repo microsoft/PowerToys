@@ -345,10 +345,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
   </data>
   <data name="Settings_GeneralPage_EnableChinesePinYinSupport_SettingsCard.Header" xml:space="preserve">
-    <value>Enable Chinese PinYin Support</value>
+    <value>PinYin Support for Chinese</value>
   </data>
   <data name="Settings_GeneralPage_EnableChinesePinYinSupport_SettingsCard.Description" xml:space="preserve">
-    <value>Allows searching for Chinese characters using PinYin</value>
+    <value>Search Chinese contents with PinYin</value>
   </data>
   <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
     <value>Go home when activated</value>
