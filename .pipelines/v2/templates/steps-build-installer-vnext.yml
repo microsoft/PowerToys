@@ -124,8 +124,6 @@ steps:
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
-      gci extractedMachineMsi -rec -file | get-filehash | % { "$($_.Hash) $($_.Path)" }
-      gci extractedUserMsi -rec -file | get-filehash | % { "$($_.Hash) $($_.Path)" }
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\File'
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedUserMsi\File'
     displayName: Audit deps.json in MSI extracted files
@@ -193,10 +191,6 @@ steps:
       msbuildArchitecture: x64
       maximumCpuCount: true
 
-  - pwsh: |-
-      gci installer *.dll -rec -file | get-filehash | % { "$($_.Hash) $($_.Path)" }
-    displayName: Hash some shit
-
   - task: VSBuild@1
     displayName: 👤 Build VNext Bootstrapper
     inputs:
@@ -214,10 +208,6 @@ steps:
       clean: false # don't undo our hard work above by deleting the MSI nor SilentFilesInUseBAFunction
       msbuildArchitecture: x64
       maximumCpuCount: true
-
-  - pwsh: |-
-      gci installer *.dll -rec -file | get-filehash | % { "$($_.Hash) $($_.Path)" }
-    displayName: Hash some shit
 
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
   - ${{ if eq(parameters.codeSign, true) }}:
