@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ToolGood.Words.Pinyin;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 // Inspired by the fuzzy.rs from edit.exe
@@ -16,6 +18,29 @@ public static class FuzzyStringMatcher
     }
 
     public static (int Score, List<int> Positions) ScoreFuzzyWithPositions(string needle, string haystack, bool allowNonContiguousMatches)
+        => ScoreAllFuzzyWithPositions(needle, haystack, allowNonContiguousMatches).MaxBy(i => i.Score);
+
+    public static IEnumerable<(int Score, List<int> Positions)> ScoreAllFuzzyWithPositions(string needle, string haystack, bool allowNonContiguousMatches)
+    {
+        List<string> needles = [needle];
+        List<string> haystacks = [haystack];
+
+        // TODO: Add switch for Chinese.
+        if (true)
+        {
+            // Remove IME composition split characters.
+            var input = needle.Replace("'", string.Empty);
+            needles.Add(WordsHelper.GetPinyin(input));
+            if (WordsHelper.HasChinese(haystack))
+            {
+                haystacks.Add(WordsHelper.GetPinyin(haystack));
+            }
+        }
+
+        return needles.SelectMany(i => haystacks.Select(j => ScoreFuzzyWithPositionsInternal(i, j, allowNonContiguousMatches)));
+    }
+
+    private static (int Score, List<int> Positions) ScoreFuzzyWithPositionsInternal(string needle, string haystack, bool allowNonContiguousMatches)
     {
         if (string.IsNullOrEmpty(haystack) || string.IsNullOrEmpty(needle))
         {

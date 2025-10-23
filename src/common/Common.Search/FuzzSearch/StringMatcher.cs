@@ -4,6 +4,8 @@
 
 using System.Globalization;
 
+using ToolGood.Words.Pinyin;
+
 namespace Common.Search.FuzzSearch;
 
 public class StringMatcher
@@ -38,12 +40,33 @@ public class StringMatcher
 
         var bestResult = new MatchResult(false, score);
 
-        for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
+        List<string> queryList = [query];
+        List<string> stringToCompareList = [stringToCompare];
+
+        // TODO: Add switch for Chinese.
+        if (true)
         {
-            MatchResult result = FuzzyMatch(query, stringToCompare, opt, startIndex);
-            if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
+            // Remove IME composition split characters.
+            var input = query.Replace("'", string.Empty);
+            queryList.Add(WordsHelper.GetPinyin(input));
+            if (WordsHelper.HasChinese(stringToCompare))
             {
-                bestResult = result;
+                stringToCompareList.Add(WordsHelper.GetPinyin(stringToCompare));
+            }
+        }
+
+        foreach (var currentQuery in queryList)
+        {
+            foreach (var currentStringToCompare in stringToCompareList)
+            {
+                for (var startIndex = 0; startIndex < currentStringToCompare.Length; startIndex++)
+                {
+                    MatchResult result = FuzzyMatch(currentQuery, currentStringToCompare, opt, startIndex);
+                    if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
+                    {
+                        bestResult = result;
+                    }
+                }
             }
         }
 
