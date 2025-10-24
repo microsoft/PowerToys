@@ -206,19 +206,21 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     LightSwitchSettings::instance().LoadSettings();
     auto& settings = LightSwitchSettings::instance().settings();
 
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    int nowMinutes = st.wHour * 60 + st.wMinute;
+
     if (settings.scheduleMode != ScheduleMode::Off)
     {
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        int nowMinutes = st.wHour * 60 + st.wMinute;
         applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
-        g_lastUpdatedDay = st.wDay;
         Logger::trace(L"[LightSwitchService] Initialized g_lastUpdatedDay = {}", g_lastUpdatedDay);
     }
     else
     {
         Logger::info(L"[LightSwitchService] Schedule mode is OFF - ticker suspended, waiting for manual action or mode change.");
     }
+
+    g_lastUpdatedDay = st.wDay;
 
     for (;;)
     {
