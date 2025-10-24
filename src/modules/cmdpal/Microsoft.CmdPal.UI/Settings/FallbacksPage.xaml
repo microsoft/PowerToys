@@ -81,15 +81,26 @@
                                         Description="{x:Bind ExtensionName, Mode=OneWay}"
                                         Header="{x:Bind DisplayName, Mode=OneWay}"
                                         IsExpanded="False">
+                                        <controls:SettingsExpander.HeaderIcon>
+                                            <cpcontrols:ContentIcon>
+                                                <cpcontrols:ContentIcon.Content>
+                                                    <cpcontrols:IconBox
+                                                        Width="20"
+                                                        Height="20"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                </cpcontrols:ContentIcon.Content>
+                                            </cpcontrols:ContentIcon>
+                                        </controls:SettingsExpander.HeaderIcon>
 
                                         <ToggleSwitch
                                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
 
                                         <controls:SettingsExpander.Items>
-                                            <controls:SettingsCard 
-                                                x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard" 
-                                                HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}" />
-
+                                            <controls:SettingsCard ContentAlignment="Left">
+                                                <cpcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard" IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}" />
+                                            </controls:SettingsCard>
                                         </controls:SettingsExpander.Items>
                                     </controls:SettingsExpander>
                                 </Grid>

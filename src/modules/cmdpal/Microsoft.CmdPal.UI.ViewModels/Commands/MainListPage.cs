@@ -28,20 +28,16 @@ public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
-    private readonly string[] _specialFallbacks = [
-        "com.microsoft.cmdpal.builtin.run",
-        "com.microsoft.cmdpal.builtin.calculator"
-    ];
-
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
-    private List<Scored<IListItem>>? _fallbackItems;
+    private IEnumerable<Scored<IListItem>>? _fallbackItems;
     private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
+    private SettingsModel _settings;
 
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
@@ -74,6 +70,7 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
         var settings = _serviceProvider.GetService<SettingsModel>()!;
+        _settings = settings;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
@@ -180,7 +177,10 @@ public partial class MainListPage : DynamicListPage,
 
                                 // Add fallback items post-sort so they are always at the end of the list
                                 // and eventually ordered based on user preference
-                                .Concat(_fallbackItems is not null ? _fallbackItems.Where(w => !string.IsNullOrEmpty(w.Item.Title)) : [])
+                                .Concat(_fallbackItems is not null ?
+                                        _fallbackItems
+                                            .Where(w => !string.IsNullOrEmpty(w.Item.Title))
+                                            .OrderByDescending(o => o.Score) : [])
                                 .Select(s => s.Item)
                                 .ToArray();
                 return items;
@@ -250,23 +250,27 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var specialFallbacks = new List<TopLevelViewModel>(_specialFallbacks.Length);
+            var specialFallbacks = new List<TopLevelViewModel>();
             var commonFallbacks = new List<TopLevelViewModel>();
 
-            foreach (var s in commands)
+            lock (_settings)
             {
-                if (!s.IsFallback)
+                foreach (var s in commands)
                 {
-                    continue;
-                }
+                    if (!s.IsFallback)
+                    {
+                        continue;
+                    }
 
-                if (_specialFallbacks.Contains(s.CommandProviderId))
-                {
-                    specialFallbacks.Add(s);
-                }
-                else
-                {
-                    commonFallbacks.Add(s);
+                    var fallbackSettings = _settings.GetFallbackSettings(s.Id);
+                    if (fallbackSettings.IncludeInGlobalResults)
+                    {
+                        specialFallbacks.Add(s);
+                    }
+                    else
+                    {
+                        commonFallbacks.Add(s);
+                    }
                 }
             }
 
@@ -384,32 +388,25 @@ public partial class MainListPage : DynamicListPage,
             }
 
             var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands!;
-            Func<string, IListItem, int> scoreItem = (a, b) => { return ScoreTopLevelItem(a, b, history); };
+            Func<string, IListItem, int> scoreTopLevelItem = (a, b) => { return ScoreTopLevelItem(a, b, history, null); };
 
             // Produce a list of everything that matches the current filter.
-            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, scoreItem)];
+            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, scoreTopLevelItem)];
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
+            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(specialFallbacks ?? [], SearchText, scoreTopLevelItem);
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            // Defaulting scored to 1 but we'll eventually use user rankings
-            _fallbackItems = [.. newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 })];
+            Func<string, IListItem, int> scoreFallbackItem = (a, b) => { return ScoreTopLevelItem(a, b, history, null); };
+            _fallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, scoreFallbackItem);
 
             if (token.IsCancellationRequested)
             {
@@ -419,7 +416,7 @@ public partial class MainListPage : DynamicListPage,
             // Produce a list of filtered apps with the appropriate limit
             if (newApps.Any())
             {
-                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, scoreItem);
+                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, scoreTopLevelItem);
 
                 if (token.IsCancellationRequested)
                 {
@@ -486,7 +483,7 @@ public partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    internal static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
+    internal static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history, int? weightBoost)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -569,6 +566,12 @@ public partial class MainListPage : DynamicListPage,
             finalScore += recentWeightBoost;
         }
 
+        // If we're a fallback, we don't care about the rest. Use the weight boost.
+        if (isFallback && weightBoost is not null)
+        {
+            finalScore = weightBoost.Value;
+        }
+
         return (int)finalScore;
     }
 
@@ -600,7 +603,11 @@ public partial class MainListPage : DynamicListPage,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
-    private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+    private void HotReloadSettings(SettingsModel settings)
+    {
+        _settings = settings;
+        ShowDetails = settings.ShowAppDetails;
+    }
 
     public void Dispose()
     {

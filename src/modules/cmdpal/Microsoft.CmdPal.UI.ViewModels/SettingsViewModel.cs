@@ -208,7 +208,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
     }
 
-    private void ApplyFallbackSort()
+    public void ApplyFallbackSort()
     {
         var sorted = _fallbackSettings
             .OrderByDescending(o => o.IsEnabled)

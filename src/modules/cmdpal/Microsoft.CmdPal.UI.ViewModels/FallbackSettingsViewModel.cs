@@ -37,9 +37,6 @@ public partial class FallbackSettingsViewModel(
 
     public ContentPageViewModel? SettingsPage => _providerSettings.SettingsPage;
 
-    [ObservableProperty]
-    public partial bool LoadingSettings { get; set; } = _providerSettings.LoadingSettings;
-
     public bool IsEnabled
     {
         get => _fallbackSettings.IsEnabled;
