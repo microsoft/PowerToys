@@ -1,55 +1,11 @@
-<#
-.SYNOPSIS
-Build and package PowerToys (CmdPal and installer) for a specific platform and configuration LOCALLY.
-
-.DESCRIPTION
-This script automates the end-to-end build and packaging process for PowerToys, including:
-- Restoring and building all necessary solutions (CmdPal, BugReportTool, etc.)
-- Cleaning up old output
-- Building the WiX v5 (VNext) MSI and bootstrapper installers
-
-It is designed to work in local development. 
-
-.PARAMETER Platform
-Specifies the target platform for the build (e.g., 'arm64', 'x64'). Default is 'x64'.
-
-.PARAMETER Configuration
-Specifies the build configuration (e.g., 'Debug', 'Release'). Default is 'Release'.
-
-.PARAMETER PerUser
-Specifies whether to build a per-user installer (true) or machine-wide installer (false). Default is true (per-user).
-
-.PARAMETER InstallerSuffix
-Specifies the suffix for the installer naming (e.g., 'wix5', 'vnext'). Default is 'wix5'.
-
-.EXAMPLE
-.\build-installer.ps1
-Runs the installer build pipeline for x64 Release with default suffix (wix5).
-
-.EXAMPLE
-.\build-installer.ps1 -Platform x64 -Configuration Release
-Runs the pipeline for x64 Release.
-
-.EXAMPLE
-.\build-installer.ps1 -Platform x64 -Configuration Release -PerUser false
-Runs the pipeline for x64 Release with machine-wide installer.
-
-.EXAMPLE
-.\build-installer.ps1 -Platform x64 -Configuration Release -InstallerSuffix vnext
-Runs the pipeline for x64 Release with 'vnext' suffix.
-
-.NOTES
-- Make sure to run this script from a Developer PowerShell (e.g., VS2022 Developer PowerShell).
-- This script will clean previous outputs under the build directories and installer directory (except *.exe files).
-- The built installer will be placed under: installer/PowerToysSetupVNext/[Platform]/[Configuration]/User[Machine]Setup 
-  relative to the solution root directory.
-#>
-
 param (
     [string]$Platform = '',
     [string]$Configuration = 'Release',
     [string]$PerUser = 'true'
 )
+
+# Set NUGET_PACKAGES environment variable
+$env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages"
 
 # Ensure helpers are available
 . "$PSScriptRoot\build-common.ps1"
@@ -94,30 +50,10 @@ Write-Host "PowerToys repository root detected: $repoRoot"
 Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1} PerUser={2}" -f $Platform, $Configuration, $PerUser)
 Write-Host ''
 
-$cmdpalOutputPath = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps\CmdPal"
-
-if (Test-Path $cmdpalOutputPath) {
-    Write-Host "[CLEAN] Removing previous output: $cmdpalOutputPath"
-    Remove-Item $cmdpalOutputPath -Recurse -Force -ErrorAction Ignore
-}
 
 $commonArgs = '/p:CIBuild=true'
 # No local projects found (or continuing) - build full solution and tools
-RestoreThenBuild 'PowerToys.sln' $commonArgs $Platform $Configuration
-
-# Generate DSC manifest files
-Write-Host '[DSC] Generating DSC manifest files...'
-$dscScriptPath = Join-Path $repoRoot '.\tools\build\generate-dsc-manifests.ps1'
-if (Test-Path $dscScriptPath) {
-    & $dscScriptPath -BuildPlatform $Platform -BuildConfiguration $Configuration -RepoRoot $repoRoot
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "DSC manifest generation failed with exit code $LASTEXITCODE"
-        exit 1
-    }
-    Write-Host '[DSC] DSC manifest files generated successfully'
-} else {
-    Write-Warning "[DSC] DSC manifest generator script not found at: $dscScriptPath"
-}
+# RestoreThenBuild 'PowerToys.sln' $commonArgs $Platform $Configuration
 
 RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
 RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
@@ -132,8 +68,8 @@ try {
 
 RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix" $Platform $Configuration
 
 Write-Host '[PIPELINE] Completed'
