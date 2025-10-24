@@ -96,6 +96,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool UseWindowIcon { get => _useWindowIcon.Value; set => _useWindowIcon.Value = value; }
 
+    public bool ShowSubtitles { get; set; } = true;
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");

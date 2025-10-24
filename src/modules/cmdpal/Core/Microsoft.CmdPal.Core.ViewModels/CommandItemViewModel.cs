@@ -324,16 +324,19 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Title):
                 _itemTitle = model.Title;
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Subtitle):
                 var modelSubtitle = model.Subtitle;
                 this.Subtitle = modelSubtitle;
                 _defaultCommandContextItemViewModel?.Subtitle = modelSubtitle;
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Icon):

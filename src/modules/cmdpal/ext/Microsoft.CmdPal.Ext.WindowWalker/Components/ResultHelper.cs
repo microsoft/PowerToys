@@ -43,6 +43,14 @@ internal static class ResultHelper
             .Select(x => CreateResultFromSearchResult(x))
             .ToList();
 
+        if (!settings.ShowSubtitles)
+        {
+            foreach (var li in resultsList)
+            {
+                li.Subtitle = string.Empty;
+            }
+        }
+
         if (addExplorerInfo && !settings.HideExplorerSettingInfo)
         {
             resultsList.Insert(0, GetExplorerInfoResult());

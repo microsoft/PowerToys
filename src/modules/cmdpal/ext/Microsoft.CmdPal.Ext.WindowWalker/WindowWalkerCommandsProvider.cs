@@ -39,6 +39,7 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
         testSettings.InMruOrder = false;
         testSettings.ResultsFromVisibleDesktopOnly = true;
         testSettings.UseWindowIcon = true;
+        testSettings.ShowSubtitles = false;
         var testPage = new WindowWalkerListPage(testSettings);
         testPage.Id = "com.microsoft.cmdpal.windowwalker.dockband";
 

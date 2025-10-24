@@ -87,6 +87,7 @@
                         AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                         Background="Transparent"
                         Visibility="{x:Bind ShouldBeVisible, Mode=OneWay}">
+                        <!-- TODO! ShouldBeVisible is a bad hack, we don't want that for the visibility of a band -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />

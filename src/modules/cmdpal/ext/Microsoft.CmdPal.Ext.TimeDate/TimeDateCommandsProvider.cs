@@ -20,6 +20,8 @@ public partial class TimeDateCommandsProvider : CommandProvider
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
+    private readonly CommandItem _bandItem;
+
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
@@ -34,6 +36,8 @@ public partial class TimeDateCommandsProvider : CommandProvider
 
         Icon = _timeDateExtensionPage.Icon;
         Settings = _settingsManager.Settings;
+
+        _bandItem = new NowDockBand();
     }
 
     private string GetTranslatedPluginDescription()
@@ -45,7 +49,43 @@ public partial class TimeDateCommandsProvider : CommandProvider
         return string.Format(CultureInfo.CurrentCulture, MicrosoftPluginTimedatePluginDescription, Resources.Microsoft_plugin_timedate_plugin_description_example_day, dayExample, timeExample, calendarWeekExample);
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_command];
+    public override ICommandItem[] TopLevelCommands() => [_command, _bandItem];
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallbackTimeDateItem];
 }
+#pragma warning disable SA1402 // File may only contain a single type
+
+internal sealed partial class NowDockBand : CommandItem
+{
+    public NowDockBand()
+    {
+        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockband" };
+        UpdateText();
+    }
+
+    private void UpdateText()
+    {
+        var timeExtended = false; // timeLongFormat ?? settings.TimeWithSecond;
+        var dateExtended = false; // dateLongFormat ?? settings.DateWithWeekday;
+        var dateTimeNow = DateTime.Now;
+
+        // var isSystemDateTime = true;
+        // var result = new AvailableResult()
+        // {
+        //    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended), CultureInfo.CurrentCulture),
+        //    Label = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_DateAndTime", "Microsoft_plugin_timedate_Now"),
+        //    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+        //    IconType = ResultIconType.DateTime,
+        // };
+        Title = dateTimeNow.ToString(
+            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended),
+            CultureInfo.CurrentCulture);
+        Subtitle = dateTimeNow.ToString(
+            TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended),
+            CultureInfo.CurrentCulture);
+
+        // TODO! This is a hack - we shouldn't need to set a Name on band items to get them to appear. We should be able to figure it out if there's a Icon OR HasText
+        ((NoOpCommand)Command).Name = $"{Title}\n{Subtitle}";
+    }
+}
+#pragma warning restore SA1402 // File may only contain a single type

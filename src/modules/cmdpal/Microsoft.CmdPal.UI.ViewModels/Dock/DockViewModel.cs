@@ -34,12 +34,24 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
     }
 
-    private static string[] _startCommands = ["com.microsoft.cmdpal.windowwalker.dockband", "com.microsoft.cmdpal.timedate"];
+    private static string[] _startCommands = [
+        "com.microsoft.cmdpal.windowwalker.dockband",
+    ];
+
+    private static string[] _endCommands = [
+        "com.microsoft.cmdpal.timedate.dockband"
+    ];
 
     private void SetupBands()
     {
+        SetupBands(_startCommands, StartItems);
+        SetupBands(_endCommands, EndItems);
+    }
+
+    private void SetupBands(string[] bandIds, ObservableCollection<DockBandViewModel> target)
+    {
         List<DockBandViewModel> newBands = new();
-        foreach (var commandId in _startCommands)
+        foreach (var commandId in bandIds)
         {
             var topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
             if (topLevelCommand is not null)
@@ -49,12 +61,12 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
             }
         }
 
-        var beforeCount = StartItems.Count;
+        var beforeCount = target.Count;
         var afterCount = newBands.Count;
 
         _dispatcherQueue.TryEnqueue(() =>
         {
-            ListHelpers.InPlaceUpdateList(StartItems, newBands, out var removed);
+            ListHelpers.InPlaceUpdateList(target, newBands, out var removed);
             Logger.LogDebug($"({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
         });
     }
