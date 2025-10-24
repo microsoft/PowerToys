@@ -19,42 +19,42 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.OpenAI,
             DisplayName = "OpenAI",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/OpenAI.light.svg",
             IsOnlineService = true,
         },
         [AIServiceType.AzureOpenAI] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.AzureOpenAI,
             DisplayName = "Azure OpenAI",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/AzureAI.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/AzureAI.svg",
             IsOnlineService = true,
         },
         [AIServiceType.Mistral] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Mistral,
             DisplayName = "Mistral",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Mistral.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/Mistral.svg",
             IsOnlineService = true,
         },
         [AIServiceType.Google] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Google,
             DisplayName = "Google",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Gemini.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/Gemini.svg",
             IsOnlineService = true,
         },
         [AIServiceType.AzureAIInference] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.AzureAIInference,
             DisplayName = "Azure AI Inference",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/AzureAI.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/AzureAI.svg",
             IsOnlineService = true,
         },
         [AIServiceType.Ollama] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Ollama,
             DisplayName = "Ollama",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Ollama.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/Ollama.svg",
             IsOnlineService = true,
             IsLocalModel = true,
         },
@@ -62,21 +62,21 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.Anthropic,
             DisplayName = "Anthropic",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Anthropic.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/Anthropic.svg",
             IsOnlineService = true,
         },
         [AIServiceType.AmazonBedrock] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.AmazonBedrock,
             DisplayName = "Amazon Bedrock",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Bedrock.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/Bedrock.svg",
             IsOnlineService = true,
         },
         [AIServiceType.FoundryLocal] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.FoundryLocal,
             DisplayName = "Foundry Local",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/FoundryLocal.svg",
             IsOnlineService = false,
             IsLocalModel = true,
         },
@@ -84,14 +84,14 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.ML,
             DisplayName = "Windows ML",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/WindowsML.svg",
             IsOnlineService = false,
         },
         [AIServiceType.HuggingFace] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.HuggingFace,
             DisplayName = "Hugging Face",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/HuggingFace.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/HuggingFace.svg",
             IsOnlineService = true,
             IsAvailableInUI = false, // Currently disabled in UI
         },
@@ -99,7 +99,7 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.Onnx,
             DisplayName = "ONNX",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Onnx.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/Onnx.svg",
             IsOnlineService = false,
             IsAvailableInUI = false,
         },
@@ -107,7 +107,7 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.Unknown,
             DisplayName = "Unknown",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg",
+            IconPath = "ms-appx:///Assets/AdvancedPaste/OpenAI.light.svg",
             IsOnlineService = false,
             IsAvailableInUI = false,
         },

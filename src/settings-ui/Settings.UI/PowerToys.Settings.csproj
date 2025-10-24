@@ -217,4 +217,15 @@
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>-->
+
+	<!-- Copy AI Model icons from Settings/Icons/Models to AdvancedPaste Assets for runtime access -->
+	<Target Name="CopyAIModelIconsToAdvancedPaste" AfterTargets="Build">
+		<ItemGroup>
+			<AIModelIcons Include="$(MSBuildProjectDirectory)\Assets\Settings\Icons\Models\*.svg" />
+			<AIModelIcons Include="$(MSBuildProjectDirectory)\Assets\Settings\Icons\Models\*.png" />
+		</ItemGroup>
+		<Copy SourceFiles="@(AIModelIcons)" DestinationFolder="$(OutputPath)Assets\AdvancedPaste" SkipUnchangedFiles="true" />
+		<Message Importance="high" Text="[Settings] Copied AI Model icons to $(OutputPath)Assets\AdvancedPaste" />
+	</Target>
 </Project>
+

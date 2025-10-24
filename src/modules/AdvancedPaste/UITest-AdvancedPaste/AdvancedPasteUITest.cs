@@ -81,6 +81,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsPlainText")]
         [Ignore("Temporarily disabled due to wordpad.exe is missing in pipeline.")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsPlainText()
         {
             // Copy some rich text(e.g word of the text is different color, another work is bold, underlined, etd.).
@@ -129,6 +130,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsMarkdownCase1")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsMarkdownCase1()
         {
             if (_notepadSettingsChanged == false)
@@ -150,6 +152,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsMarkdownCase2")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsMarkdownCase2()
         {
             if (_notepadSettingsChanged == false)
@@ -171,6 +174,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsMarkdownCase3")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsMarkdownCase3()
         {
             if (_notepadSettingsChanged == false)
@@ -192,6 +196,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsJSONCase1")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsJSONCase1()
         {
             if (_notepadSettingsChanged == false)
@@ -213,6 +218,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsJSONCase2")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsJSONCase2()
         {
             if (_notepadSettingsChanged == false)
@@ -234,6 +240,7 @@ namespace Microsoft.AdvancedPaste.UITests
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsJSONCase3")]
+        [Ignore("Disabled per request")]
         public void TestCasePasteAsJSONCase3()
         {
             if (_notepadSettingsChanged == false)

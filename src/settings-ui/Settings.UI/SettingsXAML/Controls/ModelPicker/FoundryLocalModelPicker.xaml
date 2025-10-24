@@ -142,7 +142,7 @@
                 Spacing="8">
                 <Image
                     Width="36"
-                    Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
+                    Source="ms-appx:///Assets/AdvancedPaste/FoundryLocal.svg" />
                 <TextBlock
                     FontWeight="SemiBold"
                     Text="Foundry Local is not available on this device yet."
