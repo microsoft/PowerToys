@@ -2,11 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Accessibility;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker;
 
@@ -33,6 +38,42 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
                 new CommandContextItem(Settings.SettingsPage),
             ],
         };
+        _bandItem = new WindowsDockBand();
+
+        // var testSettings = new SettingsManager();
+        // testSettings.HideExplorerSettingInfo = true;
+        // testSettings.InMruOrder = false;
+        // testSettings.ResultsFromVisibleDesktopOnly = true;
+        // testSettings.UseWindowIcon = true;
+        // testSettings.ShowSubtitles = false;
+        // var testPage = new WindowWalkerListPage(testSettings);
+        // testPage.Id = "com.microsoft.cmdpal.windowwalker.dockband";
+
+        // _bandItem = new CommandItem(testPage)
+        // {
+        //    Title = Resources.window_walker_top_level_command_title,
+        //    Subtitle = Resources.windowwalker_name,
+        //    MoreCommands = [
+        //        new CommandContextItem(Settings.SettingsPage),
+        //    ],
+        // };
+    }
+
+    public override ICommandItem[] TopLevelCommands() => [_windowWalkerPageItem, _bandItem];
+}
+
+#pragma warning disable SA1402 // File may only contain a single type
+
+internal sealed partial class WindowsDockBand : CommandItem
+{
+    private WINEVENTPROC _hookProc;
+    private IntPtr _hookHandle = IntPtr.Zero;
+    private WindowWalkerListPage _page;
+
+    public WindowsDockBand()
+    {
+        Title = Resources.window_walker_top_level_command_title;
+        Subtitle = Resources.windowwalker_name;
 
         var testSettings = new SettingsManager();
         testSettings.HideExplorerSettingInfo = true;
@@ -42,16 +83,51 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
         testSettings.ShowSubtitles = false;
         var testPage = new WindowWalkerListPage(testSettings);
         testPage.Id = "com.microsoft.cmdpal.windowwalker.dockband";
+        _page = testPage;
+        Command = testPage;
 
-        _bandItem = new CommandItem(testPage)
-        {
-            Title = Resources.window_walker_top_level_command_title,
-            Subtitle = Resources.windowwalker_name,
-            MoreCommands = [
-                new CommandContextItem(Settings.SettingsPage),
-            ],
-        };
+        // install window event hook
+        _hookProc = (WINEVENTPROC)WinEventCallback;
+        _hookHandle = PInvoke.SetWinEventHook(
+            PInvoke.EVENT_OBJECT_CREATE,
+            PInvoke.EVENT_OBJECT_NAMECHANGE, // include name/title changes
+            HMODULE.Null,
+            _hookProc,
+            0,
+            0,
+            PInvoke.WINEVENT_OUTOFCONTEXT | PInvoke.WINEVENT_SKIPOWNPROCESS);
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_windowWalkerPageItem, _bandItem];
+    private void WinEventCallback(
+        HWINEVENTHOOK hWinEventHook,
+        uint eventType,
+        HWND hwnd,
+        int idObject,
+        int idChild,
+        uint dwEventThread,
+        uint dwmsEventTime)
+    {
+        if (idObject != (int)OBJECT_IDENTIFIER.OBJID_WINDOW ||
+            hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        switch (eventType)
+        {
+            case PInvoke.EVENT_OBJECT_CREATE:
+            case PInvoke.EVENT_OBJECT_SHOW:
+            // TryAddWindow(hwnd);
+            // break;
+            case PInvoke.EVENT_OBJECT_DESTROY:
+            case PInvoke.EVENT_OBJECT_HIDE:
+            // TryRemoveWindow(hwnd);
+            // break;
+            case PInvoke.EVENT_OBJECT_NAMECHANGE:
+                // TryUpdateWindow(hwnd);
+                _page.RaiseItemsChanged();
+                break;
+        }
+    }
 }
+#pragma warning restore SA1402 // File may only contain a single type

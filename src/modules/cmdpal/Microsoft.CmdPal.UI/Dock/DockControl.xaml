@@ -80,6 +80,7 @@
                     Padding="2"
                     Background="Transparent"
                     BorderBrush="Transparent"
+                    Command="{x:Bind InvokePrimaryCommand, Mode=OneWay}"
                     ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
     
                     <!-- TODO! Command="{x:Bind InvokeCommand, Mode=OneWay}"-->

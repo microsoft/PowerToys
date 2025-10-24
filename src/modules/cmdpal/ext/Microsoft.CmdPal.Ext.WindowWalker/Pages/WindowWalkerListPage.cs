@@ -76,4 +76,9 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
             }
         }
     }
+
+    internal void RaiseItemsChanged()
+    {
+        base.RaiseItemsChanged();
+    }
 }

@@ -69,14 +69,6 @@ internal sealed partial class NowDockBand : CommandItem
         var dateExtended = false; // dateLongFormat ?? settings.DateWithWeekday;
         var dateTimeNow = DateTime.Now;
 
-        // var isSystemDateTime = true;
-        // var result = new AvailableResult()
-        // {
-        //    Value = dateTimeNow.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.DateTime, timeExtended, dateExtended), CultureInfo.CurrentCulture),
-        //    Label = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_DateAndTime", "Microsoft_plugin_timedate_Now"),
-        //    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
-        //    IconType = ResultIconType.DateTime,
-        // };
         Title = dateTimeNow.ToString(
             TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended),
             CultureInfo.CurrentCulture);
