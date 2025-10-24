@@ -62,6 +62,7 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' == 'false'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="EventLocker.cpp" />
     <ClCompile Include="EventWaiter.cpp" />
