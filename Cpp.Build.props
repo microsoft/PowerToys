@@ -41,12 +41,12 @@
   </ItemDefinitionGroup>
 
   <!-- AppContainer/UWP projects must use MultiThreadedDLL -->
-  <ItemDefinitionGroup Condition="'$(AppContainerApplication)'=='true' and '$(_VC_Target_Library_Platform)'!='Desktop' And '$(Configuration)'=='Debug'">
+  <ItemDefinitionGroup Condition="'$(AppContainerApplication)'=='true' AND '$(_VC_Target_Library_Platform)'!='Desktop' And '$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(AppContainerApplication)'=='true' and '$(_VC_Target_Library_Platform)'!='Desktop' And '$(Configuration)'=='Release'">
+  <ItemDefinitionGroup Condition="'$(AppContainerApplication)'=='true' AND '$(_VC_Target_Library_Platform)'!='Desktop' And '$(Configuration)'=='Release'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
