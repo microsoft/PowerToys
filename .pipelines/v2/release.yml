@@ -44,7 +44,7 @@ variables:
   - template: templates/variables-nuget-package-version.yml
 
 extends:
-  template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     customBuildTags:
     - 1ES.PT.ViaStartRight
@@ -90,7 +90,6 @@ extends:
               official: true
               codeSign: true
               runTests: false
-              buildTests: false
               signingIdentity:
                 serviceName: $(SigningServiceName)
                 appId: $(SigningAppId)
@@ -107,6 +106,9 @@ extends:
                 - pwsh: |-
                     .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
                   displayName: Prepare versioning
+
+                # Prepare the localizations and telemetry config before the release build
+                - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
 
                 - pwsh: |-
                     $ErrorActionPreference = 'Stop'
