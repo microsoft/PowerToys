@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
-
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -31,6 +32,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool UpgradeSettingsConfiguration()
         {
             return false;
+        }
+
+        public HotkeyAccessor[] GetAllHotkeyAccessors()
+        {
+            var hotkeyAccessors = new List<HotkeyAccessor>
+            {
+                new HotkeyAccessor(
+                    () => Properties.ToggleShortcut,
+                    value => Properties.ToggleShortcut = value ?? Properties.DefaultToggleShortcut,
+                    "Toggle_Shortcut"),
+            };
+
+            return hotkeyAccessors.ToArray();
         }
     }
 }
