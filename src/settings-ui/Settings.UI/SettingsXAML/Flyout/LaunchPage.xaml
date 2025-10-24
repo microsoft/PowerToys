@@ -111,7 +111,8 @@
                 x:Uid="UpdateAvailableInfoBar"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Success" />
+                Severity="Success"
+                Tapped="UpdateInfoBar_Tapped" />
 
             <StackPanel
                 Grid.Row="1"
@@ -144,7 +145,6 @@
                 <Button
                     x:Name="SettingsBtn"
                     x:Uid="SettingsBtn"
-                    Padding="8"
                     Click="SettingsBtn_Click"
                     Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>
