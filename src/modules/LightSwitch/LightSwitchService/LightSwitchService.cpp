@@ -243,16 +243,22 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
                 bool shouldBeLight = false;
                 if (settings.lightTime < settings.darkTime)
+                {
                     shouldBeLight = (nowMinutes >= settings.lightTime && nowMinutes < settings.darkTime);
+                }
                 else
+                {
                     shouldBeLight = (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
+                }
 
                 if ((settings.changeSystem && (currentSystemTheme != shouldBeLight)) ||
                     (settings.changeApps && (currentAppsTheme != shouldBeLight)))
                 {
                     Logger::info(L"[LightSwitchService] Detected manual theme change outside of LightSwitch. Triggering manual override.");
                     if (hManualOverride)
+                    {
                         SetEvent(hManualOverride);
+                    }
                     skipRest = true;
                 }
             }
@@ -287,9 +293,13 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 DWORD countOff = 0;
                 waitsOff[countOff++] = g_ServiceStopEvent;
                 if (hParent)
+                {
                     waitsOff[countOff++] = hParent;
+                }
                 if (hManualOverride)
+                {
                     waitsOff[countOff++] = hManualOverride;
+                }
                 waitsOff[countOff++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
                 for (;;)
