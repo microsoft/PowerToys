@@ -34,7 +34,7 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
     }
 
-    private static string[] _startCommands = ["com.microsoft.cmdpal.windowwalker", "com.microsoft.cmdpal.timedate"];
+    private static string[] _startCommands = ["com.microsoft.cmdpal.windowwalker.dockband", "com.microsoft.cmdpal.timedate"];
 
     private void SetupBands()
     {

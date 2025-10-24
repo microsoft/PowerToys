@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -14,12 +14,17 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
 internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposable
 {
+    private readonly SettingsManager _settingsManager;
+    private readonly SearchController _searchController;
     private System.Threading.CancellationTokenSource _cancellationTokenSource = new();
 
     private bool _disposed;
 
-    public WindowWalkerListPage()
+    public WindowWalkerListPage(SettingsManager settings)
     {
+        _settingsManager = settings;
+        _searchController = new(_settingsManager);
+
         Icon = Icons.WindowWalkerIcon;
         Name = Resources.windowwalker_name;
         Id = "com.microsoft.cmdpal.windowwalker";
@@ -46,10 +51,10 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
         WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.UpdateDesktopList();
         OpenWindows.Instance.UpdateOpenWindowsList(_cancellationTokenSource.Token);
-        SearchController.Instance.UpdateSearchText(query);
-        var searchControllerResults = SearchController.Instance.SearchMatches;
+        _searchController.UpdateSearchText(query);
+        var searchControllerResults = _searchController.SearchMatches;
 
-        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query));
+        return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query), _settingsManager);
     }
 
     public override IListItem[] GetItems() => Query(SearchText).ToArray();

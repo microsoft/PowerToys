@@ -76,7 +76,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.windowwalker_SettingUseWindowIcon_Description,
         true);
 
-    public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
+    public bool ResultsFromVisibleDesktopOnly { get => _resultsFromVisibleDesktopOnly.Value; set => _resultsFromVisibleDesktopOnly.Value = value; }
 
     public bool SubtitleShowPid => _subtitleShowPid.Value;
 
@@ -88,13 +88,13 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool OpenAfterKillAndClose => _openAfterKillAndClose.Value;
 
-    public bool HideKillProcessOnElevatedProcesses => _hideKillProcessOnElevatedProcesses.Value;
+    public bool HideKillProcessOnElevatedProcesses { get => _hideKillProcessOnElevatedProcesses.Value; set => _hideKillProcessOnElevatedProcesses.Value = value; }
 
-    public bool HideExplorerSettingInfo => _hideExplorerSettingInfo.Value;
+    public bool HideExplorerSettingInfo { get => _hideExplorerSettingInfo.Value; set => _hideExplorerSettingInfo.Value = value; }
 
-    public bool InMruOrder => _inMruOrder.Value;
+    public bool InMruOrder { get => _inMruOrder.Value; set => _inMruOrder.Value = value; }
 
-    public bool UseWindowIcon => _useWindowIcon.Value;
+    public bool UseWindowIcon { get => _useWindowIcon.Value; set => _useWindowIcon.Value = value; }
 
     internal static string SettingsJsonPath()
     {

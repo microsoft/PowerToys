@@ -78,7 +78,7 @@ internal sealed class OpenWindows
             lock (_enumWindowsLock)
             {
                 windows.Clear();
-                EnumWindowsProc callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
+                var callbackptr = new EnumWindowsProc(WindowEnumerationCallBack);
                 _ = NativeMethods.EnumWindows(callbackptr, tokenHandleParam);
             }
         }
@@ -109,11 +109,12 @@ internal sealed class OpenWindows
             return false;
         }
 
-        Window newWindow = new Window(hwnd);
+        var newWindow = new Window(hwnd);
 
         if (newWindow.IsWindow && newWindow.Visible && newWindow.IsOwner &&
             (!newWindow.IsToolWindow || newWindow.IsAppWindow) && !newWindow.TaskListDeleted &&
-            (newWindow.Desktop.IsVisible || !SettingsManager.Instance.ResultsFromVisibleDesktopOnly || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2) &&
+
+            // (newWindow.Desktop.IsVisible || !SettingsManager.Instance.ResultsFromVisibleDesktopOnly || WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.GetDesktopCount() < 2) &&
             newWindow.ClassName != "Windows.UI.Core.CoreWindow" && newWindow.Process.Name != _powerLauncherExe)
         {
             // To hide (not add) preloaded uwp app windows that are invisible to the user and other cloaked windows, we check the cloak state. (Issue #13637.)

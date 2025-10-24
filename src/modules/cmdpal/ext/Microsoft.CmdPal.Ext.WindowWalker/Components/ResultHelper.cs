@@ -21,7 +21,10 @@ internal static class ResultHelper
     /// </summary>
     /// <param name="searchControllerResults">List with all search controller matches</param>
     /// <returns>List of results</returns>
-    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch)
+    internal static List<WindowWalkerListItem> GetResultList(
+        List<SearchResult> searchControllerResults,
+        bool isKeywordSearch,
+        SettingsManager settings)
     {
         if (searchControllerResults is null || searchControllerResults.Count == 0)
         {
@@ -40,7 +43,7 @@ internal static class ResultHelper
             .Select(x => CreateResultFromSearchResult(x))
             .ToList();
 
-        if (addExplorerInfo && !SettingsManager.Instance.HideExplorerSettingInfo)
+        if (addExplorerInfo && !settings.HideExplorerSettingInfo)
         {
             resultsList.Insert(0, GetExplorerInfoResult());
         }
