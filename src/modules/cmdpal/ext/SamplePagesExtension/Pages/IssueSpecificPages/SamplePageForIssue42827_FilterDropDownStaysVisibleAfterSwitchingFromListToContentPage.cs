@@ -2,20 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace SamplePagesExtension;
+namespace SamplePagesExtension.Pages.IssueSpecificPages;
 
-internal sealed partial class SampleDynamicListPage : DynamicListPage
+internal sealed partial class SamplePageForIssue42827_FilterDropDownStaysVisibleAfterSwitchingFromListToContentPage : DynamicListPage
 {
-    public SampleDynamicListPage()
+    public SamplePageForIssue42827_FilterDropDownStaysVisibleAfterSwitchingFromListToContentPage()
     {
         Icon = new IconInfo(string.Empty);
-        Name = "Dynamic List";
+        Name = "Issue 42827 - Filters not hiding when navigating between pages";
         IsLoading = true;
         var filters = new SampleFilters();
         filters.PropChanged += Filters_PropChanged;
@@ -31,7 +29,11 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
         var items = SearchText.ToCharArray().Select(ch => new ListItem(new SampleContentPage()) { Title = ch.ToString() }).ToArray();
         if (items.Length == 0)
         {
-            items = [new ListItem(new NoOpCommand()) { Title = "Start typing in the search box" }];
+            items = [
+                new ListItem(new SampleContentPage()) { Title = "This List item will open a content page" },
+                new ListItem(new SampleContentPage()) { Title = "This List item will open a content page too" },
+                new ListItem(new SampleContentPage()) { Title = "Guess what this one will do?" },
+            ];
         }
 
         if (!string.IsNullOrEmpty(Filters.CurrentFilterId))
@@ -51,26 +53,24 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
             }
         }
 
-        if (items.Length > 0)
+        foreach (var item in items)
         {
-            items[0].Subtitle = "Notice how the number of items changes for this page when you type in the filter box";
+            item.Subtitle = "Filter drop-down should be hidden when navigating to a content page";
         }
 
         return items;
     }
-}
 
-#pragma warning disable SA1402 // File may only contain a single type
-public partial class SampleFilters : Filters
-#pragma warning restore SA1402 // File may only contain a single type
-{
-    public override IFilterItem[] GetFilters()
+    internal sealed partial class SampleFilters : Filters
     {
-        return
-        [
-            new Filter() { Id = "all", Name = "All" },
-            new Filter() { Id = "mod2", Name = "Every 2nd", Icon = new IconInfo("2") },
-            new Filter() { Id = "mod3", Name = "Every 3rd (and long name)", Icon = new IconInfo("3") },
-        ];
+        public override IFilterItem[] GetFilters()
+        {
+            return
+            [
+                new Filter() { Id = "all", Name = "All" },
+                new Filter() { Id = "mod2", Name = "Every 2nd", Icon = new IconInfo("2") },
+                new Filter() { Id = "mod3", Name = "Every 3rd (and long name)", Icon = new IconInfo("3") },
+            ];
+        }
     }
 }
