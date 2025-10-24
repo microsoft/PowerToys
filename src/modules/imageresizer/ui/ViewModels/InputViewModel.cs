@@ -452,42 +452,10 @@ namespace ImageResizer.ViewModels
         {
             try
             {
-                // Step 1: Check system architecture - AI features require ARM64
-                var architecture = RuntimeInformation.ProcessArchitecture;
-                if (architecture != Architecture.Arm64)
-                {
-                    SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
-                    return;
-                }
-
-                // Step 2: Check Windows AI service state
-                // Following the pattern from sample project (Sample.xaml.cs:31-52)
                 var readyState = WinAiSuperResolutionService.GetModelReadyState();
 
-                // Step 3: Map AI service state to our internal state
-                switch (readyState)
-                {
-                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
-                        // AI is fully supported and model is ready
-                        SetAiState(AiFeatureState.Ready, string.Empty);
-                        await InitializeAiServiceAsync();
-                        break;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
-                        // AI is supported but model needs to be downloaded
-                        SetAiState(AiFeatureState.ModelNotReady, Resources.Input_AiModelNotAvailable);
-                        break;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
-                        // User disabled AI features in system settings
-                        SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelDisabledByUser);
-                        break;
-
-                    default:
-                        // AI not supported on this system or unknown state
-                        SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
-                        break;
-                }
+                SetAiState(AiFeatureState.Ready, string.Empty);
+                await InitializeAiServiceAsync();
             }
             catch (Exception)
             {
