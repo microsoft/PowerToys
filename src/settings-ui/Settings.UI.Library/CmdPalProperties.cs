@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 if (doc.RootElement.TryGetProperty(nameof(Hotkey), out JsonElement hotkeyElement))
                 {
-                    Hotkey = JsonSerializer.Deserialize<HotkeySettings>(hotkeyElement.GetRawText());
+                    Hotkey = JsonSerializer.Deserialize(hotkeyElement.GetRawText(), SettingsSerializationContext.Default.HotkeySettings);
                 }
             }
             catch (Exception)

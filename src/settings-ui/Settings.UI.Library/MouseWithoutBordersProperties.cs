@@ -15,8 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public struct ConnectionRequest
 #pragma warning restore SA1649 // File name should match first type name
     {
-        public string PCName;
-        public string SecurityKey;
+        public string PCName { get; set; }
+
+        public string SecurityKey { get; set; }
     }
 
     public struct NewKeyGenerationRequest
