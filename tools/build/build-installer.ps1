@@ -1,7 +1,8 @@
 param (
     [string]$Platform = '',
     [string]$Configuration = 'Release',
-    [string]$PerUser = 'true'
+    [string]$PerUser = 'true',
+    [string]$InstallerSuffix = 'wix5'
 )
 
 # Set NUGET_PACKAGES environment variable
@@ -53,7 +54,8 @@ Write-Host ''
 
 $commonArgs = '/p:CIBuild=true'
 # No local projects found (or continuing) - build full solution and tools
-# RestoreThenBuild 'PowerToys.sln' $commonArgs $Platform $Configuration
+
+RestoreThenBuild 'PowerToys.sln' $commonArgs $Platform $Configuration
 
 RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
 RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
