@@ -233,17 +233,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         if (g_lastUpdatedDay != -1)
         {
-            Logger::debug(L"[LightSwitchService] Entered if checking if manual override is active.");
             bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
-            Logger::debug(L"[LightSwitchService] Manual override active is set to {}", manualOverrideActive);
             if (!manualOverrideActive)
             {
-                Logger::debug(L"[LightSwitchService] Entering if since manual override was false");
                 bool currentSystemTheme = GetCurrentSystemTheme();
                 bool currentAppsTheme = GetCurrentAppsTheme();
-
-                Logger::debug(L"[LightSwitchService] CurrentSystemTheme equal light? {}", currentSystemTheme);
-                Logger::debug(L"[LightSwitchService] CurrentAppsTheme equal light? {}", currentAppsTheme);
 
                 SYSTEMTIME st;
                 GetLocalTime(&st);
@@ -259,15 +253,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                     shouldBeLight = (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
                 }
 
-                Logger::debug(L"[LightSwitchService] should we be in light mode? {}", shouldBeLight);
-
                 if ((settings.changeSystem && (currentSystemTheme != shouldBeLight)) ||
                     (settings.changeApps && (currentAppsTheme != shouldBeLight)))
                 {
-                    Logger::debug(L"[LightSwitchService] hManualOverride = {}", hManualOverride);
                     if (hManualOverride)
                     {
-                        Logger::debug(L"[LightSwitchService] we have the handle for the manual override, triggering now");
                         SetEvent(hManualOverride);
                         Logger::info(L"[LightSwitchService] Detected manual theme change outside of LightSwitch. Triggering manual override.");
                     }
