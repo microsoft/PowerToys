@@ -461,33 +461,42 @@ namespace ImageResizer.Properties
             {
             }
 
-            // Needs to be called on the App UI thread as the properties are bound to the UI.
-            App.Current.Dispatcher.Invoke(() =>
+            if (App.Current?.Dispatcher != null)
             {
-                ShrinkOnly = jsonSettings.ShrinkOnly;
-                Replace = jsonSettings.Replace;
-                IgnoreOrientation = jsonSettings.IgnoreOrientation;
-                RemoveMetadata = jsonSettings.RemoveMetadata;
-                JpegQualityLevel = jsonSettings.JpegQualityLevel;
-                PngInterlaceOption = jsonSettings.PngInterlaceOption;
-                TiffCompressOption = jsonSettings.TiffCompressOption;
-                FileName = jsonSettings.FileName;
-                KeepDateModified = jsonSettings.KeepDateModified;
-                FallbackEncoder = jsonSettings.FallbackEncoder;
-                CustomSize = jsonSettings.CustomSize;
-                SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-
-                if (jsonSettings.Sizes.Count > 0)
-                {
-                    Sizes.Clear();
-                    Sizes.AddRange(jsonSettings.Sizes);
-
-                    // Ensure Ids are unique and handle missing Ids
-                    IdRecoveryHelper.RecoverInvalidIds(Sizes);
-                }
-            });
+                // Needs to be called on the App UI thread as the properties are bound to the UI.
+                App.Current.Dispatcher.Invoke(() => ReloadCore(jsonSettings));
+            }
+            else
+            {
+                ReloadCore(jsonSettings);
+            }
 
             _jsonMutex.ReleaseMutex();
+        }
+
+        private void ReloadCore(Settings jsonSettings)
+        {
+            ShrinkOnly = jsonSettings.ShrinkOnly;
+            Replace = jsonSettings.Replace;
+            IgnoreOrientation = jsonSettings.IgnoreOrientation;
+            RemoveMetadata = jsonSettings.RemoveMetadata;
+            JpegQualityLevel = jsonSettings.JpegQualityLevel;
+            PngInterlaceOption = jsonSettings.PngInterlaceOption;
+            TiffCompressOption = jsonSettings.TiffCompressOption;
+            FileName = jsonSettings.FileName;
+            KeepDateModified = jsonSettings.KeepDateModified;
+            FallbackEncoder = jsonSettings.FallbackEncoder;
+            CustomSize = jsonSettings.CustomSize;
+            SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+
+            if (jsonSettings.Sizes.Count > 0)
+            {
+                Sizes.Clear();
+                Sizes.AddRange(jsonSettings.Sizes);
+
+                // Ensure Ids are unique and handle missing Ids
+                IdRecoveryHelper.RecoverInvalidIds(Sizes);
+            }
         }
     }
 }
