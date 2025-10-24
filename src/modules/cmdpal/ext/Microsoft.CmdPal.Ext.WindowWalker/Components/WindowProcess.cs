@@ -23,7 +23,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// An indicator if the window belongs to an 'Universal Windows Platform (UWP)' process
     /// </summary>
-    private readonly bool _isUwpAppFrameHost;
+    private bool _isUwpAppFrameHost;
 
     /// <summary>
     /// Gets the id of the process
@@ -127,6 +127,14 @@ internal sealed class WindowProcess
     }
 
     /// <summary>
+    /// Gets the type of the process (UWP app, packaged Win32 app, unpackaged Win32 app, ...).
+    /// </summary>
+    internal ProcessPackagingInfo ProcessType
+    {
+        get; private set;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="WindowProcess"/> class.
     /// </summary>
     /// <param name="pid">New process id.</param>
@@ -134,12 +142,9 @@ internal sealed class WindowProcess
     /// <param name="name">New process name.</param>
     internal WindowProcess(uint pid, uint tid, string name)
     {
+        ProcessType = ProcessPackagingInfo.Empty;
         UpdateProcessInfo(pid, tid, name);
-        ProcessType = ProcessPackagingInspector.Inspect((int)pid);
-        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
-
-    public ProcessPackagingInfo ProcessType { get; private set; }
 
     /// <summary>
     /// Updates the process information of the <see cref="WindowProcess"/> instance.
@@ -156,6 +161,10 @@ internal sealed class WindowProcess
 
         // Process can be elevated only if process id is not 0 (Dummy value on error)
         IsFullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
+
+        // Update process type
+        ProcessType = ProcessPackagingInspector.Inspect((int)pid);
+        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
