@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;

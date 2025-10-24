@@ -7,14 +7,13 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 
-namespace Microsoft.CmdPal.UI.Dock;
+namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-internal sealed partial class DockViewModel : IDisposable, IRecipient<CommandsReloadedMessage>
+public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsReloadedMessage>, IPageContext
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
@@ -24,13 +23,14 @@ internal sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRe
     private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
 
     // TODO! make these DockBandViewModel
-    public ObservableCollection<CommandItemViewModel> StartItems { get; } = new();
+    public ObservableCollection<DockBandViewModel> StartItems { get; } = new();
 
-    public ObservableCollection<CommandItemViewModel> EndItems { get; } = new();
+    public ObservableCollection<DockBandViewModel> EndItems { get; } = new();
 
-    public DockViewModel(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public DockViewModel(TopLevelCommandManager tlcManager, SettingsModel settings, TaskScheduler scheduler)
     {
         _topLevelCommandManager = tlcManager;
+        Scheduler = scheduler;
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
     }
 
@@ -38,14 +38,14 @@ internal sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRe
 
     private void SetupBands()
     {
-        List<CommandItemViewModel> newBands = new();
+        List<DockBandViewModel> newBands = new();
         foreach (var commandId in _startCommands)
         {
             var topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
             if (topLevelCommand is not null)
             {
-                // var band = CreateBandItem(topLevelCommand);
-                newBands.Add(topLevelCommand.ItemViewModel);
+                var band = CreateBandItem(topLevelCommand.ItemViewModel);
+                newBands.Add(band);
             }
         }
 
@@ -68,5 +68,21 @@ internal sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRe
         SetupBands();
         CoreLogger.LogDebug("Bands reloaded");
     }
+
+    private DockBandViewModel CreateBandItem(CommandItemViewModel commandItem)
+    {
+        DockBandViewModel band = new(commandItem, new(this));
+        band.InitializeProperties(); // TODO! make async
+        return band;
+    }
+
+    public TaskScheduler Scheduler { get; }
+
+    public void ShowException(Exception ex, string? extensionHint = null)
+    {
+        var extensionText = extensionHint ?? "<unknown>";
+        CoreLogger.LogError($"Error in extension {extensionText}", ex);
+    }
 }
+
 #pragma warning restore SA1402 // File may only contain a single type

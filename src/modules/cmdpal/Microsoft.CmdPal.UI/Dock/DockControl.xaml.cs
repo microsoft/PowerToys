@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Dock;

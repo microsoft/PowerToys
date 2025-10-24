@@ -10,6 +10,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:coreVm="using:Microsoft.CmdPal.Core.ViewModels"
+    xmlns:dockVm="using:Microsoft.CmdPal.UI.ViewModels.Dock"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -126,6 +127,7 @@
                                 TextWrapping="NoWrap" />
                             <TextBlock
                                 x:Name="SubTitleTextBlock"
+                                MaxWidth="100"
                                 Margin="0,-4,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
@@ -183,6 +185,25 @@
                 </Button>
             </DataTemplate>
 
+            <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
+
+                <ItemsRepeater
+                HorizontalAlignment="Left"
+                ItemTemplate="{StaticResource DeskbandTemplate}"
+                ItemsSource="{x:Bind Items, Mode=OneWay}">
+
+                    <ItemsRepeater.Layout>
+                        <!--<StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />-->
+                        <StackLayout Orientation="Horizontal" Spacing="4" />
+                    </ItemsRepeater.Layout>
+
+                    <ItemsRepeater.Transitions>
+                        <TransitionCollection />
+                    </ItemsRepeater.Transitions>
+
+                </ItemsRepeater>
+            </DataTemplate>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -219,7 +240,7 @@
 
             <ItemsRepeater
                 HorizontalAlignment="Left"
-                ItemTemplate="{StaticResource DeskbandTemplate}"
+                ItemTemplate="{StaticResource DockBandTemplate}"
                 ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}">
 
                 <ItemsRepeater.Layout>
@@ -234,7 +255,7 @@
 
         </ScrollViewer>
 
-        <Button
+        <!--<Button
             x:Name="SearchButton"
             Grid.Column="1"
             Height="24"
@@ -248,12 +269,12 @@
             FontSize="8"
             Visibility="{x:Bind ShowSearchButton, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock HorizontalAlignment="Left" Foreground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}">Search...</TextBlock>
-        </Button>
+        </Button>-->
 
         <ItemsRepeater
             Grid.Column="2"
             HorizontalAlignment="Right"
-            ItemTemplate="{StaticResource DeskbandTemplate}"
+            ItemTemplate="{StaticResource DockBandTemplate}"
             ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}">
 
             <ItemsRepeater.Layout>

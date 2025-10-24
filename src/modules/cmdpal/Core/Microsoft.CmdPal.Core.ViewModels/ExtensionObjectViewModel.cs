@@ -17,7 +17,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
         PageContext = new(realContext);
     }
 
-    internal ExtensionObjectViewModel(WeakReference<IPageContext> context)
+    protected ExtensionObjectViewModel(WeakReference<IPageContext> context)
     {
         PageContext = context;
     }
