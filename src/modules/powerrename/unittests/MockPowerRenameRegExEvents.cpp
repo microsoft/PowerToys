@@ -62,6 +62,12 @@ IFACEMETHODIMP CMockPowerRenameRegExEvents::OnFileTimeChanged(_In_ SYSTEMTIME fi
     return S_OK;
 }
 
+IFACEMETHODIMP CMockPowerRenameRegExEvents::OnMetadataChanged()
+{
+    return S_OK;
+}
+
+
 HRESULT CMockPowerRenameRegExEvents::s_CreateInstance(_Outptr_ IPowerRenameRegExEvents** ppsrree)
 {
     *ppsrree = nullptr;
@@ -74,3 +80,4 @@ HRESULT CMockPowerRenameRegExEvents::s_CreateInstance(_Outptr_ IPowerRenameRegEx
     }
     return hr;
 }
+

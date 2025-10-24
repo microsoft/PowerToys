@@ -302,9 +302,9 @@ namespace newplus::utilities
                     POINT mouse_position;
                     GetCursorPos(&mouse_position);
                     mouse_position.x -= GetSystemMetrics(SM_CXMENUSIZE);
-                    mouse_position.x = max(mouse_position.x, 20);
+                    mouse_position.x = (std::max)(mouse_position.x, 20L);
                     mouse_position.y -= GetSystemMetrics(SM_CXMENUSIZE)/2;
-                    mouse_position.y = max(mouse_position.y, 20);
+                    mouse_position.y = (std::max)(mouse_position.y, 20L);
                         POINT position[] = { mouse_position };
                     folder_view->SelectAndPositionItems(1, shell_item_to_select_and_position, position, common_select_flags | SVSI_POSITIONITEM);
                 }
