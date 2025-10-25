@@ -345,7 +345,8 @@
                     <cpcontrols:FiltersDropDown
                         x:Name="FiltersDropDown"
                         HorizontalAlignment="Right"
-                        CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+                        CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CurrentPage.HasFilters, Mode=OneWay}" />
                 </Grid>
             </Grid>
 
