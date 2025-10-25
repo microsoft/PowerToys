@@ -363,5 +363,42 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             Assert.AreEqual(0, layoutHotkeyCount);
         }
+
+        [TestMethod("FancyZonesEditor.Basic.DeleteTemplateLayout")]
+        [TestCategory("FancyZones Editor #5")]
+        public void DeleteTemplateLayout()
+        {
+            var deletedLayoutName = TestConstants.TemplateLayoutNames[LayoutType.Focus];
+            var initialTemplateCount = 6; // Blank, Focus, Columns, Rows, Grid, PriorityGrid
+            
+            // Delete Focus template layout via context menu
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, deletedLayoutName, FancyZonesEditorHelper.ElementName.Delete);
+            Session.SendKeySequence(Key.Tab, Key.Enter);
+
+            // verify the template layout is removed from UI
+            Assert.IsTrue(Session.FindAll<Element>(deletedLayoutName).Count == 0);
+
+            // check the template layouts file
+            var layoutTemplates = new LayoutTemplates();
+            var data = layoutTemplates.Read(layoutTemplates.File);
+            Assert.AreEqual(initialTemplateCount - 1, data.LayoutTemplates.Count);
+            Assert.IsFalse(data.LayoutTemplates.Exists(x => x.Type == LayoutType.Focus.TypeToString()));
+        }
+
+        [TestMethod("FancyZonesEditor.Basic.CannotDeleteBlankTemplate")]
+        [TestCategory("FancyZones Editor #5")]
+        public void CannotDeleteBlankTemplate()
+        {
+            var blankLayoutName = TestConstants.TemplateLayoutNames[LayoutType.Blank];
+            
+            // Try to open context menu on Blank template - should not have delete option
+            Session.Find<Element>(blankLayoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            
+            // Verify delete button is not visible for Blank layout
+            var deleteButtons = Session.FindAll<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.DeleteLayoutButton));
+            Assert.IsTrue(deleteButtons.Count == 0 || !deleteButtons[0].Displayed);
+            
+            Session.Find<Button>(ElementName.Cancel).Click();
+        }
     }
 }
