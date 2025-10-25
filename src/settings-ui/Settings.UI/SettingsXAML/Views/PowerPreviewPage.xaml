@@ -142,6 +142,19 @@
                             IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <InfoBar
+                        x:Uid="FileExplorerPreview_PdfDeprecationWarning"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Warning">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton
+                                x:Uid="FileExplorerPreview_PdfDeprecationWarningButton"
+                                HorizontalAlignment="Right"
+                                NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"
+                                Style="{StaticResource TextBlockButtonStyle}" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
                     <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchPreviewPDF"
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
@@ -220,6 +233,19 @@
                             IsOn="{x:Bind ViewModel.SVGThumbnailIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <InfoBar
+                        x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarning"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Warning">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton
+                                x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarningButton"
+                                HorizontalAlignment="Right"
+                                NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"
+                                Style="{StaticResource TextBlockButtonStyle}" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
                     <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchThumbnailPDF"
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
