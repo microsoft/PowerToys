@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class KeystrokeOverlayProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultOpenKeystrokeOverlay => new HotkeySettings(true, false, false, true, 0xBF);
+        public HotkeySettings DefaultSwitchMonitorHotkey => new HotkeySettings(true, false, false, true, 0xBF);
 
         [JsonPropertyName("enable_keystrokeoverlay")]
         public BoolProperty IsEnabled { get; set; }
