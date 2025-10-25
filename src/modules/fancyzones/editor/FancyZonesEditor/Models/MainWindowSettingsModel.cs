@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using FancyZonesEditor.Models;
@@ -51,11 +52,11 @@ namespace FancyZonesEditor
                 TemplateZoneCount = 0,
                 SensitivityRadius = 0,
             };
-            TemplateModels.Insert((int)LayoutType.Blank, blankModel);
+            TemplateModels.Add(blankModel);
 
             var focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
             focusModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Focus, focusModel);
+            TemplateModels.Add(focusModel);
 
             var columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
@@ -63,7 +64,7 @@ namespace FancyZonesEditor
                 RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
             columnsModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Columns, columnsModel);
+            TemplateModels.Add(columnsModel);
 
             var rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
@@ -71,15 +72,15 @@ namespace FancyZonesEditor
                 ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
             rowsModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Rows, rowsModel);
+            TemplateModels.Add(rowsModel);
 
             var gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
             gridModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Grid, gridModel);
+            TemplateModels.Add(gridModel);
 
             var priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
             priorityGridModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.PriorityGrid, priorityGridModel);
+            TemplateModels.Add(priorityGridModel);
 
             // set default layouts
             DefaultLayouts.Set(rowsModel, MonitorConfigurationType.Vertical);
@@ -130,11 +131,11 @@ namespace FancyZonesEditor
         {
             get
             {
-                return TemplateModels[(int)LayoutType.Blank];
+                return TemplateModels.FirstOrDefault(m => m.Type == LayoutType.Blank);
             }
         }
 
-        public static IList<LayoutModel> TemplateModels { get; } = new List<LayoutModel>(6);
+        public static ObservableCollection<LayoutModel> TemplateModels { get; } = new ObservableCollection<LayoutModel>();
 
         public static ObservableCollection<LayoutModel> CustomModels
         {
