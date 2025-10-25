@@ -1,0 +1,9 @@
+PackageName: Microsoft.PowerToys
+Name: PowerToys
+BackgroundProcess: True
+WindowFilter: "powertoys.exe"
+Shortcuts:
+  - SectionName: General
+    Properties:
+# <Populate start>
+# <Populate end>

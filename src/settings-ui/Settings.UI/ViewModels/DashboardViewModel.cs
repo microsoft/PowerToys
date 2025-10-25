@@ -119,6 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var newItem = new DashboardListItem()
             {
                 Tag = moduleType,
+                IsNew = moduleType == ModuleType.ShortcutGuide,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
@@ -489,9 +490,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils());
 
-            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? new List<object> { 92 } // Right Windows key code
-                : moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
+            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
 
             var list = new List<DashboardModuleItem>
             {

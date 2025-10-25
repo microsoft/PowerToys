@@ -7,9 +7,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2d604c07-51fc-46bb-9eb7-75aecc7f5e81}</ProjectGuid>
+    <ProjectGuid>{E487304A-B1FB-4E6B-8E70-014051AF5B99}</ProjectGuid>
     <RootNamespace>ShortcutGuideModuleInterface</RootNamespace>
     <ProjectName>ShortcutGuideModuleInterface</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -37,7 +38,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.ShortcutGuideModuleInterface</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
