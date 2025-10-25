@@ -16,6 +16,8 @@ namespace FileLocksmithUI
     /// </summary>
     public partial class App : Application
     {
+        public static string[] CommandLineArgs { get; private set; } = Array.Empty<string>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -43,6 +45,10 @@ namespace FileLocksmithUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            // Store command line arguments for access by other classes
+            string[] commandArgs = Environment.GetCommandLineArgs();
+            CommandLineArgs = commandArgs.Length > 1 ? commandArgs.Skip(1).ToArray() : Array.Empty<string>();
+
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileLocksmithEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
