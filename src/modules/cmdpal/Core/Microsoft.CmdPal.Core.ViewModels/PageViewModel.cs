@@ -68,7 +68,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     // `IsLoading` property as a combo of this value and `IsInitialized`
     public bool ModelIsLoading { get; protected set; } = true;
 
-    public bool HasSearchBox { get; protected set; }
+    public bool HasSearchBox { get; protected set; } = true;
 
     public IconInfoViewModel Icon { get; protected set; }
 
