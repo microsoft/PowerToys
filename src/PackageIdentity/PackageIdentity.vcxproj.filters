@@ -5,11 +5,18 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>png;jpg;jpeg;gif;bmp;ico</Extensions>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{B3E94A82-1F2C-4D3E-A5F6-789ABC012DEF}</UniqueIdentifier>
+      <Extensions>json;xml;txt</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="AppxManifest.xml" />
     <None Include="BuildSparsePackage.ps1" />
     <None Include="BuildSparsePackage.cmd" />
+    <None Include="Assets\mcpServerConfig.json">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Images\Square150x150Logo.png">

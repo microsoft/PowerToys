@@ -36,7 +36,7 @@
   </Capabilities>
 
   <Applications>
-    <Application Id="PowerToys.OCR" Executable="PowerToys.PowerOCR.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.OCR" Executable="PowerToys.PowerOCR.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.OCR"
         Description="PowerToys OCR Module"
@@ -45,7 +45,7 @@
         Square44x44Logo="Images\Square44x44Logo.png">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.SettingsUI" Executable="PowerToys.Settings.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.SettingsUI" Executable="PowerToys.Settings.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.SettingsUI"
         Description="PowerToys Settings UI"
@@ -54,7 +54,7 @@
         Square44x44Logo="Images\Square44x44Logo.png">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.ImageResizer"
         Description="PowerToys Image Resizer UI"
@@ -62,6 +62,29 @@
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
       </uap:VisualElements>
+    </Application>
+    <Application Id="PowerToys.McpServer" Executable="PowerToys.McpServer.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        AppListEntry="none"
+        DisplayName="PowerToys.McpServer"
+        Description="PowerToys MCP Server"
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+      </uap:VisualElements>
+      <Extensions>
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension
+            Name="com.microsoft.windows.ai.mcpServer"
+            Id="PowerToys.McpServer"
+            DisplayName="PowerToys MCP Server"
+            PublicFolder="Assets">
+            <uap3:Properties>
+              <Registration>mcpServerConfig.json</Registration>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
     </Application>
   </Applications>
 </Package>

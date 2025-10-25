@@ -330,6 +330,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AwakeModuleInterface", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Awake", "src\modules\awake\Awake\Awake.csproj", "{D940E07F-532C-4FF3-883F-790DA014F19A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.McpServer", "src\McpServer\PowerToys.McpServer.csproj", "{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.csproj", "{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
@@ -1454,6 +1456,14 @@ Global
 		{D940E07F-532C-4FF3-883F-790DA014F19A}.Release|ARM64.Build.0 = Release|ARM64
 		{D940E07F-532C-4FF3-883F-790DA014F19A}.Release|x64.ActiveCfg = Release|x64
 		{D940E07F-532C-4FF3-883F-790DA014F19A}.Release|x64.Build.0 = Release|x64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Debug|ARM64.Build.0 = Debug|ARM64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Debug|x64.ActiveCfg = Debug|x64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Debug|x64.Build.0 = Debug|x64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Release|ARM64.ActiveCfg = Release|ARM64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Release|ARM64.Build.0 = Release|ARM64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Release|x64.ActiveCfg = Release|x64
+		{8A6F5D3B-F59E-4F34-A1D3-3F69D3FDBD9D}.Release|x64.Build.0 = Release|x64
 		{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}.Debug|ARM64.Build.0 = Debug|ARM64
 		{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}.Debug|x64.ActiveCfg = Debug|x64
@@ -3345,6 +3355,7 @@ Global
 		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F} = {3DCCD936-D085-4869-A1DE-CA6A64152C94}
 		{4E0FCF69-B06B-D272-76BF-ED3A559B4EDA} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

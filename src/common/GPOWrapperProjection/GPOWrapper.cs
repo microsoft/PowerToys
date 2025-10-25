@@ -66,5 +66,11 @@ namespace PowerToys.GPOWrapperProjection
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredWorkspacesEnabledValue();
         }
+
+        public static GpoRuleConfigured GetConfiguredMcpEnabledValue()
+        {
+            // MCP doesn't have GPO support yet, always return NotConfigured
+            return GpoRuleConfigured.NotConfigured;
+        }
     }
 }
