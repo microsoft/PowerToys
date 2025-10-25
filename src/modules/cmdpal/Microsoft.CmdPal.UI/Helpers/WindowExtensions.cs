@@ -22,7 +22,7 @@ internal static class WindowExtensions
         appWindow.SetIcon(@"Assets\icon.ico");
     }
 
-    private static HWND GetWindowHwnd(this Window window)
+    public static HWND GetWindowHwnd(this Window window)
     {
         return window is null
             ? throw new ArgumentNullException(nameof(window))
