@@ -1,0 +1,99 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.KeystrokeOverlayPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl x:Uid="KeystrokeOverlay" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KeystrokeOverlay.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <tkcontrols:SettingsCard
+                    Name="KeystrokeOverlayEnable"
+                    x:Uid="KeystrokeOverlay_Enable"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeystrokeOverlay.png}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+
+                <controls:SettingsGroup x:Uid="Shortcuts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard Name="SwitchMonitorHotkeyCard" x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchMonitorHotkey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="Behavior_Appearance" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard Name="DraggableOverlay" x:Uid="KeystrokeOverlay_DraggableOverlay">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsDraggableOverlayEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="DisplayModeCard" x:Uid="KeystrokeOverlay_DisplayMode">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DisplayMode, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_Default" />
+                            <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_Detailed" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="OverlayTimeoutCard" x:Uid="KeystrokeOverlay_OverlayTimeout">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="100"
+                            Minimum="100"
+                            SmallChange="50"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.OverlayTimeout, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="TextSizeCard" x:Uid="KeystrokeOverlay_TextSize">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="2"
+                            Minimum="8"
+                            Maximum="128"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="TextColorCard" x:Uid="KeystrokeOverlay_TextColor">
+                        <controls:ColorPickerButton
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedColor="{x:Bind ViewModel.TextColorColor, Mode=TwoWay}"
+                            IsAlphaEnabled="False" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="TextOpacityCard" x:Uid="KeystrokeOverlay_TextOpacity">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="100"
+                            Minimum="0"
+                            Value="{x:Bind ViewModel.TextOpacity, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="BackgroundColorCard" x:Uid="KeystrokeOverlay_BackgroundColor">
+                        <controls:ColorPickerButton
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedColor="{x:Bind ViewModel.BackgroundColorColor, Mode=TwoWay}"
+                            IsAlphaEnabled="False" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="BackgroundOpacityCard" x:Uid="KeystrokeOverlay_BackgroundOpacity">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="100"
+                            Minimum="0"
+                            Value="{x:Bind ViewModel.BackgroundOpacity, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_KeystrokeOverlay" Link="https://aka.ms/PowerToysOverview_KeystrokeOverlay" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>
