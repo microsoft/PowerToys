@@ -1124,10 +1124,6 @@ opera.exe</value>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
     <value>Shows a help overlay with shortcuts for your apps and Windows.</value>
   </data>
-  <data name="ShortcutGuide_PressTimeForGlobalWindowsShortcuts.Header" xml:space="preserve">
-    <value>Press duration before showing global Windows shortcuts (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
@@ -1158,9 +1154,6 @@ opera.exe</value>
   <data name="ShortcutGuide_Enable.Header" xml:space="preserve">
     <value>Enable Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
-  </data>
-  <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
-    <value>Background opacity (%)</value>
   </data>
   <data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
     <value>Exclude apps</value>
@@ -2069,7 +2062,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
-    <value>The new Shortcut Guide displays keyboard shortcuts for your apps and for the Windows environment.</value>
+    <value>The new Shortcut Guide displays keyboard shortcuts for your apps and for the Windows environment. The following apps are included by default (with more to come in the future):
+The Microsoft Windows Operating System
+Windows Explorer
+Notepad
+Microsoft PowerToys
+
+The shortcuts always correspond to the most current application/Windows version.</value>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
@@ -2893,7 +2892,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
     <value>Crosshairs orientation</value>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
@@ -3824,10 +3823,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Open as administrator</value>
   </data>
-  <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
-    <value>Press duration before showing taskbar icon shortcuts (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
     <comment>{Locked="Windows"}</comment>
@@ -4664,7 +4659,7 @@ Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or s
   </data>
   <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
     <value>Smooth zoomed image</value>
-  </data>  
+  </data>
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
     <value>Specify the initial level of magnification when zooming in</value>
   </data>

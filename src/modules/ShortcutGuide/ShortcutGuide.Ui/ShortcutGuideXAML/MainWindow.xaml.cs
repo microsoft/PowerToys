@@ -3,16 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using Common.UI;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,9 +16,11 @@ using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
 using Windows.Foundation;
+using Windows.Graphics;
 using Windows.System;
 using WinRT.Interop;
 using WinUIEx;
+using WinUIEx.Messaging;
 
 namespace ShortcutGuide
 {
@@ -48,6 +45,17 @@ namespace ShortcutGuide
             this.SetIsAlwaysOnTop(true);
             this.SetIsShownInSwitchers(false);
 #endif
+            WindowMessageMonitor msgMonitor = new(this);
+            msgMonitor.WindowMessageReceived += (_, e) =>
+            {
+                const int WM_NCLBUTTONDBLCLK = 0x00A3;
+                if (e.Message.MessageId == WM_NCLBUTTONDBLCLK)
+                {
+                    // Disable double click on title bar to maximize window
+                    e.Result = 0;
+                    e.Handled = true;
+                }
+            };
 
             Activated += Window_Activated;
 
@@ -78,13 +86,32 @@ namespace ShortcutGuide
             }
         }
 
+        protected override void OnStateChanged(WindowState state)
+        {
+            if (state == WindowState.Maximized)
+            {
+                SetWindowPosition();
+            }
+        }
+
+        protected override void OnPositionChanged(PointInt32 position)
+        {
+            SetWindowPosition();
+        }
+
         private void Window_Activated(object sender, WindowActivatedEventArgs e)
         {
-            if (e.WindowActivationState == WindowActivationState.Deactivated)
+            if (e.WindowActivationState == WindowActivationState.Deactivated && !_taskBarWindowActivated)
             {
 #if !DEBUG
                 Close();
 #endif
+            }
+
+            if (_taskBarWindowActivated)
+            {
+                _taskBarWindowActivated = false;
+                this.BringToFront();
             }
 
             // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
@@ -214,6 +241,11 @@ namespace ShortcutGuide
             }
         }
 
+        /// <summary>
+        /// Tracks whether the taskbar window was activated. So that the main window does not close.
+        /// </summary>
+        private bool _taskBarWindowActivated;
+
         private void SubNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && _shortcutFile is ShortcutFile file)
@@ -227,6 +259,7 @@ namespace ShortcutGuide
                     // We only show the taskbar button window when the overview page of Windows is selected.
                     if (_selectedAppName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
                     {
+                        _taskBarWindowActivated = true;
                         App.TaskBarWindow.Activate();
                     }
                 }
