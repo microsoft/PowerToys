@@ -511,6 +511,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Microsoft Store</value>
   </data>
 	<data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
-    <value>Search extensions..</value>
+    <value>Search extensions</value>
   </data>
 </root>
