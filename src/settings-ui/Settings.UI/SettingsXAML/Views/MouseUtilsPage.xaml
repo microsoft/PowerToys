@@ -51,7 +51,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x3}">
                                 <!--  Visible for both Press Left Control twice and Press Right Control twice activation methods  -->
-                                <CheckBox x:Uid="MouseUtils_Include_Win_Key" IsChecked="{x:Bind ViewModel.FindMyMouseIncludeWinKey, Mode=TwoWay}" />
+                                <CheckBox x:Uid="MouseUtils_Include_Win_Key" IsChecked="{x:Bind ViewModel.FindMyMouseIncludeWinKey, Mode=TwoWay}" />                            
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="MouseUtilsFindMyMouseShakingMinimumDistance"
@@ -280,7 +280,7 @@
 
                 <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
-                <controls:SettingsGroup x:Uid="MouseUtils_CursorWrap">
+                <controls:SettingsGroup x:Uid="MouseUtils_CursorWrap" AutomationProperties.AutomationId="MouseUtils_CursorWrapTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="MouseUtilsEnableCursorWrap"
@@ -300,6 +300,20 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.CursorWrapAutoActivate, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="CursorWrapAppearanceBehavior"
+                        x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_CursorWrapAppearanceBehaviorId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}"
+                        IsExpanded="False">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_CursorWrap_DisableWrapDuringDrag" IsChecked="{x:Bind ViewModel.CursorWrapDisableWrapDuringDrag, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

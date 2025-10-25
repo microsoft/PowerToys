@@ -19,10 +19,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("auto_activate")]
         public BoolProperty AutoActivate { get; set; }
 
+        [JsonPropertyName("disable_wrap_during_drag")]
+        public BoolProperty DisableWrapDuringDrag { get; set; }
+
         public CursorWrapProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
             AutoActivate = new BoolProperty(false);
+            DisableWrapDuringDrag = new BoolProperty(true);
         }
     }
 }

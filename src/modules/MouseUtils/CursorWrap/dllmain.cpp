@@ -45,6 +45,7 @@ namespace
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
+    const wchar_t JSON_KEY_DISABLE_WRAP_DURING_DRAG[] = L"disable_wrap_during_drag";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -94,6 +95,7 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     bool m_autoActivate = false;
+    bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
     
     // Mouse hook
     HHOOK m_mouseHook = nullptr;
@@ -162,6 +164,7 @@ public:
 
         settings.add_hotkey(JSON_KEY_ACTIVATION_SHORTCUT, IDS_CURSORWRAP_NAME, hotkey_object);
         settings.add_bool_toggle(JSON_KEY_AUTO_ACTIVATE, IDS_CURSORWRAP_NAME, m_autoActivate);
+        settings.add_bool_toggle(JSON_KEY_DISABLE_WRAP_DURING_DRAG, IDS_CURSORWRAP_NAME, m_disableWrapDuringDrag);
 
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -302,6 +305,21 @@ private:
             {
                 Logger::warn("Failed to initialize CursorWrap auto activate from settings. Will use default value");
             }
+            
+            try
+            {
+                // Parse disable wrap during drag
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_DISABLE_WRAP_DURING_DRAG))
+                {
+                    auto disableDragObject = propertiesObject.GetNamedObject(JSON_KEY_DISABLE_WRAP_DURING_DRAG);
+                    m_disableWrapDuringDrag = disableDragObject.GetNamedBoolean(JSON_KEY_VALUE);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap disable wrap during drag from settings. Will use default value (true)");
+            }
         }
         else
         {
@@ -415,6 +433,15 @@ private:
     {
         POINT newPos = currentPos;
         
+        // Check if we should skip wrapping during drag if the setting is enabled
+        if (m_disableWrapDuringDrag && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+        {
+#ifdef _DEBUG
+            Logger::info(L"CursorWrap DEBUG: Left mouse button is down and disable_wrap_during_drag is enabled - skipping wrap");
+#endif
+            return currentPos; // Return unchanged position (no wrapping)
+        }
+
 #ifdef _DEBUG
         Logger::info(L"CursorWrap DEBUG: ======= HANDLE MOUSE MOVE START =======");
         Logger::info(L"CursorWrap DEBUG: Input position ({}, {})", currentPos.x, currentPos.y);

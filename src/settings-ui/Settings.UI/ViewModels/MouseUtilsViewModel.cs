@@ -110,6 +110,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             CursorWrapSettingsConfig = cursorWrapSettingsRepository.SettingsConfig;
             _cursorWrapAutoActivate = CursorWrapSettingsConfig.Properties.AutoActivate.Value;
 
+            // Null-safe access in case property wasn't upgraded yet - default to TRUE
+            _cursorWrapDisableWrapDuringDrag = CursorWrapSettingsConfig.Properties.DisableWrapDuringDrag?.Value ?? true;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -1045,6 +1048,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CursorWrapDisableWrapDuringDrag
+        {
+            get
+            {
+                return _cursorWrapDisableWrapDuringDrag;
+            }
+
+            set
+            {
+                if (value != _cursorWrapDisableWrapDuringDrag)
+                {
+                    _cursorWrapDisableWrapDuringDrag = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.DisableWrapDuringDrag == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.DisableWrapDuringDrag = new BoolProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.DisableWrapDuringDrag.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1115,5 +1146,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _cursorWrapEnabledStateIsGPOConfigured;
         private bool _isCursorWrapEnabled;
         private bool _cursorWrapAutoActivate;
+        private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
     }
 }

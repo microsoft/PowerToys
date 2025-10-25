@@ -2589,7 +2589,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
-  </data>
+  </data>	
 
   <!-- CursorWrap Module -->
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
@@ -2612,6 +2612,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
   </data>
+	
+  <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
+    <value>Disable wrapping while dragging</value>
+  </data>	
 
   <!-- Auto-activate -->
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
