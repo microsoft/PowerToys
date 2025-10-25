@@ -591,24 +591,31 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                          InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
 
         var onlyAlt = altPressed && !ctrlPressed && !shiftPressed && !winPressed;
-        if (e.Key == VirtualKey.Left && onlyAlt)
+        var onlyCtrl = !altPressed && ctrlPressed && !shiftPressed && !winPressed;
+        switch (e.Key)
         {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Home && onlyAlt)
-        {
-            WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
-            e.Handled = true;
-        }
-        else
-        {
-            // The CommandBar is responsible for handling all the item keybindings,
-            // since the bound context item may need to then show another
-            // context menu
-            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-            WeakReferenceMessenger.Default.Send(msg);
-            e.Handled = msg.Handled;
+            case VirtualKey.Left when onlyAlt: // Alt+Left arrow
+                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                e.Handled = true;
+                break;
+            case VirtualKey.Home when onlyAlt: // Alt+Home
+                WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
+                e.Handled = true;
+                break;
+            case (VirtualKey)188 when onlyCtrl: // Ctrl+,
+                WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                e.Handled = true;
+                break;
+            default:
+            {
+                // The CommandBar is responsible for handling all the item keybindings,
+                // since the bound context item may need to then show another
+                // context menu
+                TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                WeakReferenceMessenger.Default.Send(msg);
+                e.Handled = msg.Handled;
+                break;
+            }
         }
     }
 
