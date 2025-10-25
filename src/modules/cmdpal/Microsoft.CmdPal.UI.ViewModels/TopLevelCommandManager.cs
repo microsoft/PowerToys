@@ -44,6 +44,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
+    public ObservableCollection<TopLevelViewModel> DockBands { get; set; } = [];
+
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
 
@@ -79,12 +81,23 @@ public partial class TopLevelCommandManager : ObservableObject,
                 _builtInCommands.Add(wrapper);
             }
 
-            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
+            var objects = await LoadTopLevelCommandsFromProvider(wrapper);
             lock (TopLevelCommands)
             {
-                foreach (var c in commands)
+                if (objects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
-                    TopLevelCommands.Add(c);
+                    foreach (var c in commands)
+                    {
+                        TopLevelCommands.Add(c);
+                    }
+                }
+
+                if (objects.DockBands is IEnumerable<TopLevelViewModel> bands)
+                {
+                    foreach (var c in bands)
+                    {
+                        DockBands.Add(c);
+                    }
                 }
             }
         }
@@ -97,7 +110,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     }
 
     // May be called from a background thread
-    private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
+    private async Task<TopLevelObjectSets> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         WeakReference<IPageContext> weakSelf = new(this);
 
@@ -107,6 +120,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             () =>
             {
                 List<TopLevelViewModel> commands = [];
+                List<TopLevelViewModel> bands = [];
                 foreach (var item in commandProvider.TopLevelItems)
                 {
                     commands.Add(item);
@@ -120,7 +134,12 @@ public partial class TopLevelCommandManager : ObservableObject,
                     }
                 }
 
-                return commands;
+                foreach (var item in commandProvider.DockBandItems)
+                {
+                    bands.Add(item);
+                }
+
+                return new TopLevelObjectSets(commands, bands);
             },
             CancellationToken.None,
             TaskCreationOptions.None,
@@ -297,11 +316,22 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         lock (TopLevelCommands)
         {
-            foreach (var commands in commandSets)
+            foreach (var providerObjects in commandSets)
             {
-                foreach (var c in commands)
+                if (providerObjects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
-                    TopLevelCommands.Add(c);
+                    foreach (var c in commands)
+                    {
+                        TopLevelCommands.Add(c);
+                    }
+                }
+
+                if (providerObjects.DockBands is IEnumerable<TopLevelViewModel> bands)
+                {
+                    foreach (var c in bands)
+                    {
+                        DockBands.Add(c);
+                    }
                 }
             }
         }
@@ -327,7 +357,9 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
+    private record TopLevelObjectSets(IEnumerable<TopLevelViewModel>? Commands, IEnumerable<TopLevelViewModel>? DockBands);
+
+    private async Task<TopLevelObjectSets?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
     {
         try
         {
@@ -396,6 +428,23 @@ public partial class TopLevelCommandManager : ObservableObject,
         lock (TopLevelCommands)
         {
             foreach (var command in TopLevelCommands)
+            {
+                if (command.Id == id)
+                {
+                    return command;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public TopLevelViewModel? LookupDockBand(string id)
+    {
+        // TODO! bad that we're using TopLevelCommands as the object to lock, even for bands
+        lock (TopLevelCommands)
+        {
+            foreach (var command in DockBands)
             {
                 if (command.Id == id)
                 {

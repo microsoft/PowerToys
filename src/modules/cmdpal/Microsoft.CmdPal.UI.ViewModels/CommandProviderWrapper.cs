@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
@@ -26,6 +27,8 @@ public sealed class CommandProviderWrapper
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
+
+    public TopLevelViewModel[] DockBandItems { get; private set; } = [];
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -141,6 +144,7 @@ public sealed class CommandProviderWrapper
 
         ICommandItem[]? commands = null;
         IFallbackCommandItem[]? fallbacks = null;
+        ICommandItem[]? dockBands = null;
 
         try
         {
@@ -158,6 +162,21 @@ public sealed class CommandProviderWrapper
                 UnsafePreCacheApiAdditions(two);
             }
 
+            if (model is IExtendedAttributesProvider iHaveProperties)
+            {
+                var props = iHaveProperties.GetProperties();
+                var hasBands = props.TryGetValue("DockBands", out var obj);
+                if (hasBands)
+                {
+                    // CoreLogger.LogDebug($"Found bands object on {DisplayName} ({ProviderId}) ");
+                    if (obj is ICommandItem[] bands)
+                    {
+                        CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
+                        dockBands = bands;
+                    }
+                }
+            }
+
             Id = model.Id;
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
@@ -168,7 +187,8 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            var objects = new TopLevelObjects(commands, fallbacks, dockBands);
+            InitializeCommands(objects, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -180,12 +200,14 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private record TopLevelObjects(ICommandItem[]? Commands, IFallbackCommandItem[]? Fallbacks, ICommandItem[]? DockBands);
+
+    private void InitializeCommands(TopLevelObjects objects, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        Func<ICommandItem?, bool, TopLevelViewModel> make = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
@@ -193,17 +215,24 @@ public sealed class CommandProviderWrapper
 
             return topLevelViewModel;
         };
-        if (commands is not null)
+        if (objects.Commands is not null)
         {
-            TopLevelItems = commands
-                .Select(c => makeAndAdd(c, false))
+            TopLevelItems = objects.Commands
+                .Select(c => make(c, false))
                 .ToArray();
         }
 
-        if (fallbacks is not null)
+        if (objects.Fallbacks is not null)
         {
-            FallbackItems = fallbacks
-                .Select(c => makeAndAdd(c, true))
+            FallbackItems = objects.Fallbacks
+                .Select(c => make(c, true))
+                .ToArray();
+        }
+
+        if (objects.DockBands is not null)
+        {
+            DockBandItems = objects.DockBands
+                .Select(c => make(c, false))
                 .ToArray();
         }
     }

@@ -3,16 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
-public partial class TimeDateCommandsProvider : CommandProvider
+public partial class TimeDateCommandsProvider : CommandProvider, IExtendedAttributesProvider
 {
     private readonly CommandItem _command;
     private static readonly SettingsManager _settingsManager = new SettingsManager();
@@ -49,9 +51,17 @@ public partial class TimeDateCommandsProvider : CommandProvider
         return string.Format(CultureInfo.CurrentCulture, MicrosoftPluginTimedatePluginDescription, Resources.Microsoft_plugin_timedate_plugin_description_example_day, dayExample, timeExample, calendarWeekExample);
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_command, _bandItem];
+    public override ICommandItem[] TopLevelCommands() => [_command];
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallbackTimeDateItem];
+
+    public IDictionary<string, object> GetProperties()
+    {
+        return new PropertySet()
+        {
+            { "DockBands", new ICommandItem[] { _bandItem } },
+        };
+    }
 }
 #pragma warning disable SA1402 // File may only contain a single type
 

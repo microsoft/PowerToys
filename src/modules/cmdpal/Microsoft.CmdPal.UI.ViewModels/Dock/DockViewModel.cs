@@ -53,7 +53,7 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
         List<DockBandViewModel> newBands = new();
         foreach (var commandId in bandIds)
         {
-            var topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
+            var topLevelCommand = _topLevelCommandManager.LookupDockBand(commandId);
             if (topLevelCommand is not null)
             {
                 var band = CreateBandItem(topLevelCommand.ItemViewModel);
