@@ -60,6 +60,12 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
     </PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
+    <PostBuildEvent></PostBuildEvent>
+    <RunPostBuildEvent></RunPostBuildEvent>
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+  </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
   </PropertyGroup>
