@@ -53,18 +53,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>
-        ./../;
-        ..\..\..\common;
-        ..\..\..\common\logger;
-        ..\..\..\common\utils;
-        ..\..\..\common\SettingsAPI;
-        ..\..\..\common\Telemetry;
-        ..\..\..\;
-        ..\..\..\..\deps\spdlog\include;
-        ./;
-        %(AdditionalIncludeDirectories)
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\LightSwitchCommon;.\..\;..\..\..\common;..\..\..\common\logger;..\..\..\common\utils;..\..\..\common\SettingsAPI;..\..\..\common\Telemetry;..\..\..\;..\..\..\..\deps\spdlog\include;./;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -73,10 +62,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\LightSwitchCommon\ThemeHelper.cpp" />
     <ClCompile Include="LightSwitchService.cpp" />
     <ClCompile Include="LightSwitchSettings.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
-    <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
@@ -84,10 +73,10 @@
     <ResourceCompile Include="LightSwitchService.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\LightSwitchCommon\ThemeHelper.h" />
     <ClInclude Include="LightSwitchSettings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
-    <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeScheduler.h" />
     <ClInclude Include="WinHookEventIDs.h" />
   </ItemGroup>
