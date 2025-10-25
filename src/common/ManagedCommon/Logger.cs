@@ -130,7 +130,7 @@ namespace ManagedCommon
                 {
                     exMessage +=
                         "Inner exception: " + Environment.NewLine +
-                        ex.InnerException.GetType() + " (" + ex.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
+                        ex.InnerException.GetType() + " (" + ex.InnerException.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
                 }
 
                 exMessage +=
