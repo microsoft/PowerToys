@@ -652,6 +652,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string RecordFormat
+        {
+            get => _zoomItSettings.Properties.RecordFormat.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.RecordFormat.Value != value)
+                {
+                    _zoomItSettings.Properties.RecordFormat.Value = value;
+                    OnPropertyChanged(nameof(RecordFormat));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool RecordCaptureAudio
         {
             get => _zoomItSettings.Properties.CaptureAudio.Value;
