@@ -142,6 +142,11 @@
                             IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <InfoBar x:Uid="FileExplorerPreview_PdfDeprecationWarning" IsOpen="True" IsClosable="False" Severity="Warning">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton x:Uid="FileExplorerPreview_PdfDeprecationWarningButton" HorizontalAlignment="Right" Style="{StaticResource TextBlockButtonStyle}" NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"/>
+                        </InfoBar.ActionButton>
+                    </InfoBar>
                     <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchPreviewPDF"
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
@@ -220,6 +225,11 @@
                             IsOn="{x:Bind ViewModel.SVGThumbnailIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <InfoBar x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarning" IsOpen="True" IsClosable="False" Severity="Warning">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarningButton" HorizontalAlignment="Right" Style="{StaticResource TextBlockButtonStyle}" NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"/>
+                        </InfoBar.ActionButton>
+                    </InfoBar>
                     <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchThumbnailPDF"
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
