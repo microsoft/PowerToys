@@ -142,9 +142,17 @@
                             IsOn="{x:Bind ViewModel.MDRenderIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <InfoBar x:Uid="FileExplorerPreview_PdfDeprecationWarning" IsOpen="True" IsClosable="False" Severity="Warning">
+                    <InfoBar
+                        x:Uid="FileExplorerPreview_PdfDeprecationWarning"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Warning">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="FileExplorerPreview_PdfDeprecationWarningButton" HorizontalAlignment="Right" Style="{StaticResource TextBlockButtonStyle}" NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"/>
+                            <HyperlinkButton
+                                x:Uid="FileExplorerPreview_PdfDeprecationWarningButton"
+                                HorizontalAlignment="Right"
+                                NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"
+                                Style="{StaticResource TextBlockButtonStyle}" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsCard
@@ -225,9 +233,17 @@
                             IsOn="{x:Bind ViewModel.SVGThumbnailIsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <InfoBar x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarning" IsOpen="True" IsClosable="False" Severity="Warning">
+                    <InfoBar
+                        x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarning"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Warning">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarningButton" HorizontalAlignment="Right" Style="{StaticResource TextBlockButtonStyle}" NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"/>
+                            <HyperlinkButton
+                                x:Uid="FileExplorerPreview_PdfThumbnailDeprecationWarningButton"
+                                HorizontalAlignment="Right"
+                                NavigateUri="https://github.com/microsoft/PowerToys/issues/20008"
+                                Style="{StaticResource TextBlockButtonStyle}" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsCard
