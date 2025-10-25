@@ -1762,6 +1762,7 @@ tlbimp
 tlc
 tmain
 TNP
+toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
