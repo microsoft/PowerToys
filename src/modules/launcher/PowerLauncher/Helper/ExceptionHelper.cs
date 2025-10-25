@@ -11,7 +11,6 @@ namespace PowerLauncher.Helper
     {
 #pragma warning disable SA1310 // Field names should not contain underscore
         private const int DWM_E_COMPOSITIONDISABLED = unchecked((int)0x80263001);
-        private const int UCEERR_RENDERTHREADFAILURE = unchecked((int)0x88980406);
 #pragma warning restore SA1310 // Field names should not contain underscore
 
         /// <summary>
