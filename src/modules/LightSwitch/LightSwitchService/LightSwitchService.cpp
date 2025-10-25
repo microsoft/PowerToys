@@ -216,6 +216,10 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     LightSwitchSettings::instance().LoadSettings();
     auto& settings = LightSwitchSettings::instance().settings();
 
+    prevMode = settings.scheduleMode;
+    prevLat = settings.latitude;
+    prevLon = settings.longitude;
+
     // --- Initial theme application (if schedule enabled) ---
     if (settings.scheduleMode != ScheduleMode::Off)
     {
@@ -241,7 +245,9 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         // Check for changes in schedule mode or coordinates
         bool modeChangedToSunset = (prevMode != settings.scheduleMode &&
                                     settings.scheduleMode == ScheduleMode::SunsetToSunrise);
-        bool coordsChanged = (prevLat != settings.latitude || prevLon != settings.longitude);
+
+        // ensures that coordsChanged is false on first run (since we already did this work below)
+        bool coordsChanged = (g_lastUpdatedDay != -1) && (prevLat != settings.latitude || prevLon != settings.longitude);
 
         if ((modeChangedToSunset || coordsChanged) && settings.scheduleMode == ScheduleMode::SunsetToSunrise)
         {
