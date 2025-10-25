@@ -471,4 +471,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
     <value>Navigated to {0} page</value>
   </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings (Ctrl+,)</value>
+  </data>
 </root>
