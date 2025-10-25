@@ -131,6 +131,19 @@ namespace ShortcutGuide.Helpers
                 content.Append(HotkeySettingsToYaml(SettingsRepository<WorkspacesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, SettingsResourceLoader.GetString("Workspaces/ModuleTitle"), SettingsResourceLoader.GetString("Workspaces_ShortDescription")));
             }
 
+            // Todo: ZoomIt hotkeys currently not supported, because ZoomIt does save their settings in the viewmodel instread of the settings properties, which is weird.
+            /*
+            if (enabledModules.ZoomIt)
+            {
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_ZoomGroup/Header")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.LiveZoomToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_LiveZoomGroup/Header")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DrawToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_DrawGroup/Header")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DemoTypeToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_DemoTypeGroup/Header")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.BreakTimerKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_BreakGroup/Header")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.RecordToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_RecordGroup/Header")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.SnipToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_SnipGroup/Header")));
+            }*/
+
             content.Append(populateEndString);
 
             File.WriteAllText(path, content.ToString());
