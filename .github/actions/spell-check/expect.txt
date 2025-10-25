@@ -94,6 +94,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+ATX
 ATRIOX
 aumid
 Authenticode
@@ -113,6 +114,7 @@ azman
 bbwe
 BCIE
 bck
+backticks
 BESTEFFORT
 bezelled
 bhid
@@ -193,6 +195,7 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
@@ -268,6 +271,7 @@ countof
 covrun
 cpcontrols
 cph
+cppcoreguidelines
 cplusplus
 CPower
 cpptools
@@ -384,6 +388,7 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
+djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -444,6 +449,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+eku
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -637,6 +643,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
@@ -817,6 +824,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+ksa
 kvp
 Kybd
 LARGEICON
@@ -923,6 +931,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -1255,6 +1264,7 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 pkgfamily
+PKI
 plib
 ploc
 ploca
@@ -1696,6 +1706,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
