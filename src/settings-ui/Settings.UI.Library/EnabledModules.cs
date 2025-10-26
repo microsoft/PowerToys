@@ -530,6 +530,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool keystrokeOverlay;
+
+        [JsonPropertyName("ZoomIt")]
+        public bool KeystrokeOverlay
+        {
+            get => keystrokeOverlay;
+            set
+            {
+                if (keystrokeOverlay != value)
+                {
+                    LogTelemetryEvent(value);
+                    keystrokeOverlay = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();
