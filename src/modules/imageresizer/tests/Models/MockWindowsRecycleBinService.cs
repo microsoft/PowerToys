@@ -36,7 +36,7 @@ internal sealed class MockWindowsRecycleBinService : IRecycleBinService
     public IReadOnlyList<string> DeletedFiles => _deletedFiles.AsReadOnly();
 
     /// <summary>
-    /// Sets whether a drive has a Reclycle Bin present. Use for testing QueryRecycleBin
+    /// Sets whether a drive has a Recycle Bin present. Use for testing QueryRecycleBin
     /// functionality.
     /// </summary>
     /// <param name="driveLetter">The drive letter, e.g. "C".</param>
