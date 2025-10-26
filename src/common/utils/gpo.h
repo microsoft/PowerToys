@@ -68,6 +68,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
     const std::wstring POLICY_CONFIGURE_ENABLED_WORKSPACES = L"ConfigureEnabledUtilityWorkspaces";
+    const std::wstring POLICY_CONFIGURE_ENABLED_KEYSTROKE_OVERLAY = L"ConfigureEnabledUtilityKeystrokeOverlay";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -459,6 +460,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredPeekEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PEEK);
+    }
+
+    inline gpo_rule_configured_t getConfiguredKeystrokeOverlayEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_KEYSTROKE_OVERLAY);
     }
 
     inline gpo_rule_configured_t getConfiguredRegistryPreviewEnabledValue()
