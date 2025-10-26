@@ -164,12 +164,6 @@ BOOLEAN g_running = TRUE;
 #define DEFAULT_RECORDING_FILE		L"Recording.mp4"
 #define DEFAULT_GIF_RECORDING_FILE	L"Recording.gif"
 
-enum class RecordingFormat
-{
-    GIF,
-    MP4
-};
-
 BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
@@ -177,7 +171,6 @@ std::wstring	g_RecordingSaveLocation;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
-RecordingFormat g_RecordingFormat = RecordingFormat::GIF;
 
 type_pGetMonitorInfo		pGetMonitorInfo;
 type_MonitorFromPoint		pMonitorFromPoint;
@@ -1793,7 +1786,20 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
     case WM_COMMAND:
         // Handle combo box selection changes
         if (HIWORD(wParam) == CBN_SELCHANGE) {
-            if (LOWORD(wParam) == IDC_RECORD_FORMAT) {
+            if (LOWORD(wParam) == IDC_RECORD_SCALING) {
+
+                int format = static_cast<int>(SendMessage(GetDlgItem(hDlg, IDC_RECORD_FORMAT), CB_GETCURSEL, 0, 0));
+                int scale = static_cast<int>(SendMessage(GetDlgItem(hDlg, IDC_RECORD_SCALING), CB_GETCURSEL, 0, 0));
+                if(format == 0)
+                {
+                    g_RecordScalingGIF = static_cast<BYTE>((scale + 1) * 10);
+                }
+                else
+                {
+                    g_RecordScalingMP4 = static_cast<BYTE>((scale + 1) * 10);
+                }
+            }
+            else if (LOWORD(wParam) == IDC_RECORD_FORMAT) {
                 // Get the currently selected format
                 int selection = static_cast<int>(SendMessage(GetDlgItem(hDlg, IDC_RECORD_FORMAT),
                                                             CB_GETCURSEL, 0, 0));
@@ -1805,6 +1811,24 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
 
                 // Check if GIF is selected by comparing the text
                 bool isGifSelected = (wcscmp(selectedText, L"GIF") == 0);
+
+                // if gif is selected set the scaling to the g_recordScaleGIF value otherwise to the g_recordScaleMP4 value
+                if (isGifSelected) {
+                    g_RecordScaling = g_RecordScalingGIF;
+
+                } else {
+
+                    g_RecordScaling = g_RecordScalingMP4;
+                }
+
+                for (int i = 0; i < 10; i++) {
+                    int scalingValue = (i + 1) * 10;
+                    if (scalingValue == static_cast<int>(g_RecordScaling)) {
+                        SendMessage(GetDlgItem(hDlg, IDC_RECORD_SCALING),
+                                    CB_SETCURSEL, i, 0);
+                        break;
+                    }
+                }
 
                 // Enable/disable microphone controls based on selection
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
@@ -2159,12 +2183,33 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), CB_SETCURSEL, static_cast<WPARAM>(i), static_cast<LPARAM>(0));
             }
         }
+
+        // Add the recording format to the combo box and set the current selection
+        size_t selection = 0;
+        const wchar_t* currentFormatString = (g_RecordingFormat == RecordingFormat::GIF) ? L"GIF" : L"MP4";
+
+        for( size_t i = 0; i < (sizeof(g_RecordingFormats) / sizeof(g_RecordingFormats[0])); i++ )
+        {
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(g_RecordingFormats[i]) );
+
+            if( selection == 0 && wcscmp( g_RecordingFormats[i], currentFormatString ) == 0 )
+            {
+                selection = i;
+            }
+        }
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
+
         for(unsigned int i = 1; i < 11; i++) {
 
             _stprintf(text, L"%2.1f", (static_cast<double>(i)) / 10 );
             SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_ADDSTRING),
                 static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(text));
-            if (g_RecordScaling == i*10 ) {
+
+            if (g_RecordingFormat == RecordingFormat::GIF && i*10 == g_RecordScalingGIF ) {
+
+                SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), CB_SETCURSEL, static_cast<WPARAM>(i)-1, static_cast<LPARAM>(0));
+            }
+            if (g_RecordingFormat == RecordingFormat::MP4 && i*10 == g_RecordScalingMP4 ) {
 
                 SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), CB_SETCURSEL, static_cast<WPARAM>(i)-1, static_cast<LPARAM>(0));
             }
@@ -2182,7 +2227,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         // Add the microphone devices to the combo box and set the current selection
         SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(L"Default"));
-        size_t selection = 0;
+        selection = 0;
         for( size_t i = 0; i < microphones.size(); i++ )
         {
             SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(microphones[i].second.c_str()) );
@@ -2192,21 +2237,6 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
         }
         SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
-
-        // Add the recording format to the combo box and set the current selection
-        selection = 0;
-        const wchar_t* currentFormatString = (g_RecordingFormat == RecordingFormat::GIF) ? L"GIF" : L"MP4";
-
-        for( size_t i = 0; i < (sizeof(g_RecordingFormats) / sizeof(g_RecordingFormats[0])); i++ )
-        {
-            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(g_RecordingFormats[i]) );
-
-            if( selection == 0 && wcscmp( g_RecordingFormats[i], currentFormatString ) == 0 )
-            {
-                selection = i;
-            }
-        }
-        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
 
         // Set initial state of microphone controls based on recording format
         bool isGifSelected = (g_RecordingFormat == RecordingFormat::GIF);
@@ -2324,8 +2354,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             {
                 g_RecordFrameRate = g_FramerateOptions[SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0))];
             }
-            g_RecordScaling = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)) * 10 + 10);
+
             g_RecordingFormat = static_cast<RecordingFormat>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)));
+            g_RecordScaling = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)) * 10 + 10);
 
             // Get the selected microphone
             int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
@@ -3912,6 +3943,13 @@ LRESULT APIENTRY MainWndProc(
         DeleteDC( hDc );
 
         reg.ReadRegSettings( RegSettings );
+
+        // Set g_RecordScaling based on the current recording format
+        if (g_RecordingFormat == RecordingFormat::GIF) {
+            g_RecordScaling = g_RecordScalingGIF;
+        } else {
+            g_RecordScaling = g_RecordScalingMP4;
+        }
 
         // to support migrating from
         if ((g_PenColor >> 24) == 0) {
