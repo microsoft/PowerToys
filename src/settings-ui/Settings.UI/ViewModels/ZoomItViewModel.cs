@@ -652,16 +652,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public string RecordFormat
+        public int RecordFormatIndex
         {
-            get => _zoomItSettings.Properties.RecordFormat.Value;
+            get
+            {
+                if (_zoomItSettings.Properties.RecordFormat.Value == "GIF")
+                {
+                    return 0;
+                }
+
+                if (_zoomItSettings.Properties.RecordFormat.Value == "MP4")
+                {
+                    return 1;
+                }
+
+                return 0;
+            }
+
             set
             {
-                if (_zoomItSettings.Properties.RecordFormat.Value != value)
+                int format = 0;
+                if (_zoomItSettings.Properties.RecordFormat.Value == "GIF")
                 {
-                    _zoomItSettings.Properties.RecordFormat.Value = value;
-                    OnPropertyChanged(nameof(RecordFormat));
+                    format = 0;
+                }
+
+                if (_zoomItSettings.Properties.RecordFormat.Value == "MP4")
+                {
+                    format = 1;
+                }
+
+                if (format != value)
+                {
+                    _zoomItSettings.Properties.RecordFormat.Value = value == 0 ? "GIF" : "MP4";
+                    OnPropertyChanged(nameof(RecordFormatIndex));
                     NotifySettingsChanged();
+
+                    // Reload settings to get the new format's scaling value
+                    var reloadedSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
+                    var reloaded = JsonSerializer.Deserialize<ZoomItSettings>(reloadedSettings, _serializerOptions);
+                    if (reloaded != null && reloaded.Properties != null)
+                    {
+                        _zoomItSettings.Properties.RecordScaling.Value = reloaded.Properties.RecordScaling.Value;
+                        OnPropertyChanged(nameof(RecordScalingIndex));
+                    }
                 }
             }
         }

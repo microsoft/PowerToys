@@ -242,7 +242,7 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordFormat, Mode=TwoWay}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordFormatIndex, Mode=TwoWay}">
                             <ComboBoxItem>GIF</ComboBoxItem>
                             <ComboBoxItem>MP4</ComboBoxItem>
                         </ComboBox>
