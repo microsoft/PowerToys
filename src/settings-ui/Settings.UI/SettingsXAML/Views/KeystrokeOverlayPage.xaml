@@ -27,7 +27,7 @@
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="SwitchMonitorHotkeyCard" x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchMonitorHotkey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCar
+                    </tkcontrols:SettingsCard>
                     
                     <tkcontrols:SettingsCard Name="DraggableOverlay" x:Uid="KeystrokeOverlay_DraggableOverlay">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsDraggableOverlayEnabled, Mode=TwoWay}" />
