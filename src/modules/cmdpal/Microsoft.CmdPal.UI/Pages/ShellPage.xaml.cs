@@ -451,7 +451,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         while (RootFrame.CanGoBack)
         {
-            GoBack(withAnimation, focusSearch);
+            // don't focus on each step, just at the end
+            GoBack(withAnimation, focusSearch: false);
+        }
+
+        // focus search box, even if we were already home
+        if (focusSearch)
+        {
+            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            SearchBox.SelectSearch();
         }
     }
 
