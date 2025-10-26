@@ -102,6 +102,46 @@ namespace TopToolbar.Services.Workspaces
             File.Delete(tempPath);
         }
 
+        public async Task<bool> DeleteWorkspaceAsync(string workspaceId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(workspaceId))
+            {
+                return false;
+            }
+
+            var document = await ReadDocumentAsync(cancellationToken).ConfigureAwait(false);
+            if (document?.Workspaces == null || document.Workspaces.Count == 0)
+            {
+                return false;
+            }
+
+            var removed = document.Workspaces.RemoveAll(ws =>
+                string.Equals(ws.Id, workspaceId, StringComparison.OrdinalIgnoreCase));
+
+            if (removed == 0)
+            {
+                return false;
+            }
+
+            var directory = Path.GetDirectoryName(_workspacesPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var tempPath = _workspacesPath + ".tmp";
+
+            await using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await JsonSerializer.SerializeAsync(stream, document, _writeSerializerOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            File.Copy(tempPath, _workspacesPath, overwrite: true);
+            File.Delete(tempPath);
+
+            return true;
+        }
+
         private async Task<WorkspaceDocument> ReadDocumentAsync(CancellationToken cancellationToken)
         {
             if (!File.Exists(_workspacesPath))

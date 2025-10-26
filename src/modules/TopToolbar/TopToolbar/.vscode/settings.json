@@ -1,0 +1,24 @@
+{
+    "dotnet.defaultSolutionOrFolder": "${workspaceFolder}",
+    "dotnet.targetFramework": "net9.0-windows10.0.19041.0",
+    "[csharp]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.analyzers": "explicit"
+        }
+    },
+    "omnisharp.path": "latest",
+    "omnisharp.useGlobalMono": "never",
+    "omnisharp.useModernNet": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.analysisLevel": "latest",
+    "omnisharp.projectLoadTimeout": 120,
+    "omnisharp.maxProjectResults": 250,
+    "omnisharp.showOmnisharpLogOnError": true,
+    "omnisharp.msbuildProperties": {
+        "Platform": "x64",
+        "RuntimeIdentifier": "win-x64"
+    },
+    "extensions.ignoreRecommendations": false
+}

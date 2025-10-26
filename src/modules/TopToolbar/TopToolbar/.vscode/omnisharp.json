@@ -1,0 +1,19 @@
+{
+    "omnisharp": {
+        "msbuildProperties": {
+            "Platform": "x64",
+            "RuntimeIdentifier": "win-x64"
+        },
+        "enableRoslynAnalyzers": true,
+        "analyzersPath": null,
+        "organizeImportsOnFormat": true,
+        "enableEditorConfigSupport": true,
+        "enableRoslynAnalyzers": true,
+        "showOmnisharpLogOnError": true,
+        "loggingLevel": "information"
+    },
+    "omnisharp.defaultLaunchSolution": "TopToolbar.csproj",
+    "omnisharp.useGlobalMono": "never",
+    "omnisharp.useModernNet": true,
+    "omnisharp.projectLoadTimeout": 120
+}

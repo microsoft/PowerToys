@@ -4,23 +4,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Shapes;
 using TopToolbar.Actions;
-using TopToolbar.Controls;
-using TopToolbar.Helpers;
+using TopToolbar.Logging;
 using TopToolbar.Models;
 using TopToolbar.Providers;
-using TopToolbar.Providers.Configuration;
-using TopToolbar.Providers.External.Mcp;
 using TopToolbar.Services;
 using TopToolbar.Services.Workspaces;
 using TopToolbar.ViewModels;
@@ -779,7 +775,13 @@ namespace TopToolbar
                 return;
             }
 
-            if (this.Content is not FrameworkElement rootElement || rootElement.XamlRoot is null)
+            if (this.Content is not FrameworkElement rootElement)
+            {
+                return;
+            }
+
+            var xamlRoot = rootElement.XamlRoot;
+            if (xamlRoot is null)
             {
                 return;
             }
@@ -804,17 +806,21 @@ namespace TopToolbar
                     var workspace = await runtime.SnapshotAsync(workspaceName, CancellationToken.None).ConfigureAwait(true);
                     if (workspace == null)
                     {
-                        await ShowSimpleMessageAsync(rootElement.XamlRoot, "Snapshot failed", "No eligible windows were detected to capture.");
+                        await ShowSimpleMessageOnUiThreadAsync(xamlRoot, "Snapshot failed", "No eligible windows were detected to capture.");
                         return;
                     }
 
-                    await ShowSimpleMessageAsync(rootElement.XamlRoot, "Snapshot saved", $"Workspace \"{workspace.Name}\" has been saved.");
+                    await ShowSimpleMessageOnUiThreadAsync(xamlRoot, "Snapshot saved", $"Workspace \"{workspace.Name}\" has been saved.");
                     await RefreshWorkspaceGroupAsync();
                 }
                 catch (Exception ex)
                 {
-                    await ShowSimpleMessageAsync(rootElement.XamlRoot, "Snapshot failed", ex.Message);
+                    await ShowSimpleMessageOnUiThreadAsync(xamlRoot, "Snapshot failed", ex.Message);
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
             }
             finally
             {
@@ -825,6 +831,44 @@ namespace TopToolbar
 
                 _snapshotInProgress = false;
             }
+        }
+
+        private System.Threading.Tasks.Task ShowSimpleMessageOnUiThreadAsync(XamlRoot xamlRoot, string title, string message)
+        {
+            if (xamlRoot == null)
+            {
+                return System.Threading.Tasks.Task.CompletedTask;
+            }
+
+            var dispatcher = DispatcherQueue;
+            if (dispatcher == null)
+            {
+                return System.Threading.Tasks.Task.CompletedTask;
+            }
+
+            if (dispatcher.HasThreadAccess)
+            {
+                return ShowSimpleMessageAsync(xamlRoot, title, message);
+            }
+
+            var tcs = new System.Threading.Tasks.TaskCompletionSource<bool>();
+            if (!dispatcher.TryEnqueue(async () =>
+            {
+                try
+                {
+                    await ShowSimpleMessageAsync(xamlRoot, title, message);
+                    tcs.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            }))
+            {
+                return System.Threading.Tasks.Task.CompletedTask;
+            }
+
+            return tcs.Task;
         }
 
         private static async System.Threading.Tasks.Task ShowSimpleMessageAsync(XamlRoot xamlRoot, string title, string message)
@@ -1133,6 +1177,86 @@ namespace TopToolbar
                 }
             }
 
+            void OnRightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+            {
+                e.Handled = true;
+                var flyout = new MenuFlyout();
+
+                // Delete menu item
+                var deleteItem = new MenuFlyoutItem
+                {
+                    Text = "Remove Button",
+                    Icon = new FontIcon { Glyph = "\uE74D" }, // Trash icon
+                };
+
+                deleteItem.Click += async (s, args) =>
+                {
+                    try
+                    {
+                        // Check if this is a workspace button (from Provider)
+                        if (model.Action?.Type == ToolbarActionType.Provider &&
+                            string.Equals(model.Action.ProviderId, "WorkspaceProvider", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Extract workspace ID from the button ID or action
+                            string workspaceId = null;
+                            if (!string.IsNullOrEmpty(model.Id) && model.Id.StartsWith("workspace::", StringComparison.OrdinalIgnoreCase))
+                            {
+                                workspaceId = model.Id.Substring("workspace::".Length);
+                            }
+                            else if (!string.IsNullOrEmpty(model.Action.ProviderActionId) && model.Action.ProviderActionId.StartsWith("workspace::", StringComparison.OrdinalIgnoreCase))
+                            {
+                                workspaceId = model.Action.ProviderActionId.Substring("workspace::".Length);
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(workspaceId))
+                            {
+                                // Delete from workspaces.json
+                                var workspaceLoader = new WorkspaceFileLoader();
+                                var deleted = await workspaceLoader.DeleteWorkspaceAsync(workspaceId, CancellationToken.None);
+
+                                if (deleted)
+                                {
+                                    AppLogger.LogInfo($"Deleted workspace '{workspaceId}' from workspaces.json");
+
+                                    // Reload ViewModel to refresh providers and update UI
+                                    await _vm.LoadAsync(DispatcherQueue);
+                                }
+
+                                return;
+                            }
+                        }
+
+                        // For non-workspace buttons, use the original deletion logic
+                        // Find the corresponding group in _vm (the source of truth)
+                        var vmGroup = _vm.Groups.FirstOrDefault(g =>
+                            string.Equals(g.Id, group.Id, StringComparison.OrdinalIgnoreCase));
+
+                        if (vmGroup != null)
+                        {
+                            // Remove from _vm.Groups (the actual data source)
+                            vmGroup.Buttons.Remove(model);
+
+                            // Save to config file
+                            await _vm.SaveAsync();
+
+                            // Re-sync Store from ViewModel to reflect the deletion
+                            SyncStaticGroupsIntoStore();
+
+                            // Rebuild UI
+                            BuildToolbarFromStore();
+                            ResizeToContent();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.LogError($"Failed to delete button '{model.Name}': {ex.Message}");
+                    }
+                };
+
+                flyout.Items.Add(deleteItem);
+                flyout.ShowAt(button, e.GetPosition(button));
+            }
+
             UpdateVisualState();
             UpdateToolTip();
 
@@ -1180,6 +1304,7 @@ namespace TopToolbar
                 }
             };
             button.Click += OnClick;
+            button.RightTapped += OnRightTapped;
             return containerStack;
         }
 

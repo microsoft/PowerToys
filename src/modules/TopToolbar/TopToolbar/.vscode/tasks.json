@@ -1,0 +1,76 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-debug-x64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "-c",
+                "Debug",
+                "-p:Platform=x64",
+                "${workspaceFolder}/TopToolbar.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build-debug-arm64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "-c",
+                "Debug",
+                "-p:Platform=ARM64",
+                "${workspaceFolder}/TopToolbar.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-release-x64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "-c",
+                "Release",
+                "-p:Platform=x64",
+                "${workspaceFolder}/TopToolbar.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "clean",
+                "${workspaceFolder}/TopToolbar.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run-debug-x64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "-c",
+                "Debug",
+                "-p:Platform=x64",
+                "--project",
+                "${workspaceFolder}/TopToolbar.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}

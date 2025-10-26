@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch TopToolbar (x64 Debug)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-debug-x64",
+            "program": "${workspaceFolder}/bin/x64/Debug/${config:dotnet.targetFramework}/TopToolbar.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "requireExactSource": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": "Attach to TopToolbar Process",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "requireExactSource": false
+        },
+        {
+            "name": "Launch TopToolbar (ARM64 Debug)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-debug-arm64",
+            "program": "${workspaceFolder}/bin/ARM64/Debug/${config:dotnet.targetFramework}/TopToolbar.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "requireExactSource": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        }
+    ]
+}
