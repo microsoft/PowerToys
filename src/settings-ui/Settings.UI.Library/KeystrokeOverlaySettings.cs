@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
         }
 
-        public ModuleType GetModuleType() => ModuleType.AdvancedPaste;
+        public ModuleType GetModuleType() => ModuleType.KeystrokeOverlay;
 
         public HotkeyAccessor[] GetAllHotkeyAccessors()
         {
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 new HotkeyAccessor(
                     () => Properties.SwitchMonitorHotkey,
-                    value => Properties.SwitchMonitorHotkey = value ?? Properties.SwitchMonitorHotkey,
+                    value => Properties.SwitchMonitorHotkey = value ?? Properties.DefaultSwitchMonitorHotkey,
                     "SwitchMonitor_Shortcut"),
             };
 
