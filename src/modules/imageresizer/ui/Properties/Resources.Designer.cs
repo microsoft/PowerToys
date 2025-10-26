@@ -214,6 +214,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This drive does not have a Recycle Bin..
+        /// </summary>
+        public static string NoRecycleBin_ExceptionMessage {
+            get {
+                return ResourceManager.GetString("NoRecycleBin_ExceptionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to OK.
         /// </summary>
         public static string OK {
@@ -511,11 +520,101 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t resize the following pictures.
+        ///   Looks up a localized string similar to Error.
         /// </summary>
-        public static string Results_MainInstruction {
+        public static string Results_ErrorItemType_AccessibilityText {
             get {
-                return ResourceManager.GetString("Results_MainInstruction", resourceCulture);
+                return ResourceManager.GetString("Results_ErrorItemType_AccessibilityText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error message.
+        /// </summary>
+        public static string Results_ErrorMessage_AccessibilityText {
+            get {
+                return ResourceManager.GetString("Results_ErrorMessage_AccessibilityText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to These images could not be resized.
+        /// </summary>
+        public static string Results_Errors_SectionHeader {
+            get {
+                return ResourceManager.GetString("Results_Errors_SectionHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File path.
+        /// </summary>
+        public static string Results_FilePath_AccessibilityText {
+            get {
+                return ResourceManager.GetString("Results_FilePath_AccessibilityText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Original file path.
+        /// </summary>
+        public static string Results_OriginalFilePath_AccessibilityText {
+            get {
+                return ResourceManager.GetString("Results_OriginalFilePath_AccessibilityText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Processing completed with errors.
+        /// </summary>
+        public static string Results_PageHeader_CompleteWithErrors {
+            get {
+                return ResourceManager.GetString("Results_PageHeader_CompleteWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Processing completed successfully.
+        /// </summary>
+        public static string Results_PageHeader_CompleteWithNotes {
+            get {
+                return ResourceManager.GetString("Results_PageHeader_CompleteWithNotes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup files for these images could not be recycled.
+        /// </summary>
+        public static string Results_RecycleFailed_SectionHeader {
+            get {
+                return ResourceManager.GetString("Results_RecycleFailed_SectionHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to overwrite these files with resized images.
+        /// </summary>
+        public static string Results_ReplaceFailed_SectionHeader {
+            get {
+                return ResourceManager.GetString("Results_ReplaceFailed_SectionHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resized as:.
+        /// </summary>
+        public static string Results_ResizedAs_Label {
+            get {
+                return ResourceManager.GetString("Results_ResizedAs_Label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning.
+        /// </summary>
+        public static string Results_WarningItemType_AccessibilityText {
+            get {
+                return ResourceManager.GetString("Results_WarningItemType_AccessibilityText", resourceCulture);
             }
         }
         

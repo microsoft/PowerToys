@@ -15,17 +15,16 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Extensions;
+using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
-using Microsoft.VisualBasic.FileIO;
-
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace ImageResizer.Models
 {
     internal class ResizeOperation
     {
-        private readonly IFileSystem _fileSystem = new System.IO.Abstractions.FileSystem();
+        private readonly IFileSystem _fileSystem;
+        private readonly IRecycleBinService _recycleBinService;
 
         private readonly string _file;
         private readonly string _destinationDirectory;
@@ -39,99 +38,136 @@ namespace ImageResizer.Models
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
             };
 
-        public ResizeOperation(string file, string destinationDirectory, Settings settings)
+        public ResizeOperation(
+            string file,
+            string destinationDirectory,
+            Settings settings,
+            IFileSystem fileSystem,
+            IRecycleBinService recycleBinService)
         {
             _file = file;
             _destinationDirectory = destinationDirectory;
             _settings = settings;
+            _fileSystem = fileSystem;
+            _recycleBinService = recycleBinService;
         }
 
-        public void Execute()
+        public ResizeOperation(string file, string destinationDirectory, Settings settings)
+            : this(file, destinationDirectory, settings, new FileSystem(), new WindowsRecycleBinService())
         {
-            string path;
-            using (var inputStream = _fileSystem.File.OpenRead(_file))
+        }
+
+        public ResizeResult Execute()
+        {
+            try
             {
-                var decoder = BitmapDecoder.Create(
-                    inputStream,
-                    BitmapCreateOptions.PreservePixelFormat,
-                    BitmapCacheOption.None);
-
-                var containerFormat = decoder.CodecInfo.ContainerFormat;
-
-                var encoder = CreateEncoder(containerFormat);
-
-                if (decoder.Metadata != null)
+                string path;
+                using (var inputStream = _fileSystem.File.OpenRead(_file))
                 {
-                    try
-                    {
-                        encoder.Metadata = decoder.Metadata;
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
-                }
+                    var decoder = BitmapDecoder.Create(
+                        inputStream,
+                        BitmapCreateOptions.PreservePixelFormat,
+                        BitmapCacheOption.None);
 
-                if (decoder.Palette != null)
-                {
-                    encoder.Palette = decoder.Palette;
-                }
+                    var containerFormat = decoder.CodecInfo.ContainerFormat;
 
-                foreach (var originalFrame in decoder.Frames)
-                {
-                    var transformedBitmap = Transform(originalFrame);
+                    var encoder = CreateEncoder(containerFormat);
 
-                    // if the frame was not modified, we should not replace the metadata
-                    if (transformedBitmap == originalFrame)
+                    if (decoder.Metadata != null)
                     {
-                        encoder.Frames.Add(originalFrame);
+                        try
+                        {
+                            encoder.Metadata = decoder.Metadata;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                        }
                     }
-                    else
+
+                    if (decoder.Palette != null)
                     {
-                        BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
+                        encoder.Palette = decoder.Palette;
+                    }
+
+                    foreach (var originalFrame in decoder.Frames)
+                    {
+                        var transformedBitmap = Transform(originalFrame);
+
+                        // if the frame was not modified, we should not replace the metadata
+                        if (transformedBitmap == originalFrame)
+                        {
+                            encoder.Frames.Add(originalFrame);
+                        }
+                        else
+                        {
+                            BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
 
 #if DEBUG
-                        Debug.WriteLine($"### Processing metadata of file {_file}");
-                        originalMetadata.PrintsAllMetadataToDebugOutput();
+                            Debug.WriteLine($"### Processing metadata of file {_file}");
+                            originalMetadata.PrintsAllMetadataToDebugOutput();
 #endif
 
-                        var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
+                            var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
 
-                        if (_settings.RemoveMetadata && metadata != null)
-                        {
-                            // strip any metadata that doesn't affect rendering
-                            var newMetadata = new BitmapMetadata(metadata.Format);
+                            if (_settings.RemoveMetadata && metadata != null)
+                            {
+                                // strip any metadata that doesn't affect rendering
+                                var newMetadata = new BitmapMetadata(metadata.Format);
 
-                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
-                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
+                                metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
+                                metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
 
-                            metadata = newMetadata;
+                                metadata = newMetadata;
+                            }
+
+                            var frame = CreateBitmapFrame(transformedBitmap, metadata);
+
+                            encoder.Frames.Add(frame);
                         }
+                    }
 
-                        var frame = CreateBitmapFrame(transformedBitmap, metadata);
-
-                        encoder.Frames.Add(frame);
+                    path = GetDestinationPath(encoder);
+                    _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
+                    using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                    {
+                        encoder.Save(outputStream);
                     }
                 }
 
-                path = GetDestinationPath(encoder);
-                _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
-                using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                if (_settings.KeepDateModified)
                 {
-                    encoder.Save(outputStream);
+                    _fileSystem.File.SetLastWriteTimeUtc(path, _fileSystem.File.GetLastWriteTimeUtc(_file));
+                }
+
+                if (_settings.Replace)
+                {
+                    string backupPath = GetBackupPath();
+
+                    try
+                    {
+                        _fileSystem.File.Replace(path, _file, backupPath, ignoreMetadataErrors: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new FileReplaceFailedResult(path, _file, backupPath, ex);
+                    }
+
+                    try
+                    {
+                        _recycleBinService.DeleteToRecycleBin(backupPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new FileRecycleFailedResult(_file, backupPath, ex);
+                    }
                 }
             }
-
-            if (_settings.KeepDateModified)
+            catch (Exception ex)
             {
-                _fileSystem.File.SetLastWriteTimeUtc(path, _fileSystem.File.GetLastWriteTimeUtc(_file));
+                return new ErrorResult(_file, ex);
             }
 
-            if (_settings.Replace)
-            {
-                var backup = GetBackupPath();
-                _fileSystem.File.Replace(path, _file, backup, ignoreMetadataErrors: true);
-                FileSystem.DeleteFile(backup, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-            }
+            return new SuccessResult(_file);
         }
 
         private BitmapEncoder CreateEncoder(Guid containerFormat)
