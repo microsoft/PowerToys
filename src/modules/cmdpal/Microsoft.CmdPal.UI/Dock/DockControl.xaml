@@ -317,6 +317,7 @@
                         <Setter Target="EndItemsRepeater.(Grid.Column)" Value="3" />
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Right" />
                         
                     </VisualState.Setters>
                 </VisualState>
@@ -335,6 +336,7 @@
                         <Setter Target="EndItemsRepeater.(Grid.Column)" Value="0" />
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Left" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

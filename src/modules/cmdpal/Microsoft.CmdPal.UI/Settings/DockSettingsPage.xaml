@@ -35,42 +35,10 @@
               </StackPanel.ChildrenTransitions>-->
 
                     <!--  Appearance Section  -->
-                    <controls:SettingsCard Header="Appearance">
-                        <!--<controls:SettingsCard.HeaderIcon>
-                            <SymbolIcon Symbol="Personalize" />
-                        </controls:SettingsCard.HeaderIcon>-->
-                        <controls:SettingsCard.Description>
-                            Configure the visual appearance of your dock
-                        </controls:SettingsCard.Description>
-                    </controls:SettingsCard>
-
-                    <!--  Show App Titles  -->
-                    <!-- <controls:SettingsCard Header="Show App Titles">
-                    <controls:SettingsCard.HeaderIcon>
-                        <SymbolIcon Symbol="FontSize" />
-                    </controls:SettingsCard.HeaderIcon>
-                    <controls:SettingsCard.Description>
-                        Display application names next to icons
-                    </controls:SettingsCard.Description>
-                    <ToggleSwitch x:Name="ShowAppTitlesToggle" IsOn="{x:Bind Settings.ShowAppTitles, Mode=TwoWay}" />
-                </controls:SettingsCard> -->
-
-                    <!--  Show Search Button  -->
-                    <!-- <controls:SettingsCard Header="Show Search Button">
-                    <controls:SettingsCard.HeaderIcon>
-                        <SymbolIcon Symbol="Find" />
-                    </controls:SettingsCard.HeaderIcon>
-                    <controls:SettingsCard.Description>
-                        Display the search button to access Command Palette
-                    </controls:SettingsCard.Description>
-                    <ToggleSwitch x:Name="ShowSearchButtonToggle" IsOn="{x:Bind Settings.ShowSearchButton, Mode=TwoWay}" />
-                </controls:SettingsCard> -->
+                    <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Size  -->
                     <controls:SettingsCard Header="Dock Size">
-                        <!--<controls:SettingsCard.HeaderIcon>
-                            <SymbolIcon Symbol="Resize" />
-                        </controls:SettingsCard.HeaderIcon>-->
                         <controls:SettingsCard.Description>
                             Choose the size of your dock
                         </controls:SettingsCard.Description>
@@ -105,9 +73,6 @@
 
                     <!--  Backdrop Style  -->
                     <controls:SettingsCard Header="Background Style">
-                        <!--<controls:SettingsCard.HeaderIcon>
-                            <SymbolIconSource Symbol="BackgroundColor" />
-                        </controls:SettingsCard.HeaderIcon>-->
                         <controls:SettingsCard.Description>
                             Choose the background effect for your dock
                         </controls:SettingsCard.Description>

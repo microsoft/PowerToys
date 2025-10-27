@@ -40,15 +40,16 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
 #pragma warning restore SA1310 // Field names should not contain underscore
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 
-    private readonly DockSettings _settings;
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
 
+    private DockSettings _settings;
     private DockViewModel viewModel;
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+    private DockSize _lastSize;
 
     // Store the original WndProc
     private WNDPROC? _originalWndProc;
@@ -61,6 +62,7 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
         var mainSettings = serviceProvider.GetService<SettingsModel>()!;
         mainSettings.SettingsChanged += SettingsChangedHandler;
         _settings = mainSettings.DockSettings;
+        _lastSize = _settings.DockSize;
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
         _dock = new DockControl(viewModel);
@@ -118,7 +120,8 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
 
     private void SettingsChangedHandler(SettingsModel sender, object? args)
     {
-        _dock.UpdateSettings(sender.DockSettings);
+        _settings = sender.DockSettings;
+        UpdateSettings();
     }
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -153,7 +156,9 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
 
         if (_appBarData.hWnd != IntPtr.Zero)
         {
-            if (_appBarData.uEdge == side)
+            var sameEdge = _appBarData.uEdge == side;
+            var sameSize = _lastSize == _settings.DockSize;
+            if (sameEdge && sameSize)
             {
                 return;
             }
@@ -230,6 +235,10 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
 
         // Register this window as an appbar
         PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
+
+        // Stash the last size we created the bar at, so we know when to hot-
+        // reload it
+        _lastSize = _settings.DockSize;
 
         UpdateWindowPosition();
     }
@@ -337,7 +346,6 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
         // check settings changed
         if (msg == PInvoke.WM_SETTINGCHANGE)
         {
-            // PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
             var isFullscreen = IsWindowFullscreen();
 
             Logger.LogDebug($"WM_SETTINGCHANGE ({isFullscreen})");
@@ -473,8 +481,6 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
             var onTop = message.OnTop ? HWND.HWND_TOPMOST : HWND.HWND_NOTOPMOST;
             PInvoke.SetWindowPos(_hwnd, onTop, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
             PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-
-            // DispatcherQueue.TryEnqueue(() => { PInvoke.SetWindowPos(_hwnd, HWND.Null, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE); });
         });
     }
 
