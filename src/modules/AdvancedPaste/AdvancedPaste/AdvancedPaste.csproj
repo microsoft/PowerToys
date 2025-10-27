@@ -37,22 +37,10 @@
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />
     <None Remove="AdvancedPasteXAML\Styles\Button.xaml" />
     <None Remove="Assets\AdvancedPaste\AIIcon.png" />
-    <None Remove="Assets\AdvancedPaste\Anthropic.svg" />
-    <None Remove="Assets\AdvancedPaste\Azure.svg" />
-    <None Remove="Assets\AdvancedPaste\AzureAI.svg" />
-    <None Remove="Assets\AdvancedPaste\Bedrock.svg" />
-    <None Remove="Assets\AdvancedPaste\FoundryLocal.svg" />
-    <None Remove="Assets\AdvancedPaste\Gemini.svg" />
     <None Remove="Assets\AdvancedPaste\Gradient.png" />
     <None Remove="AdvancedPasteXAML\Controls\AnimatedContentControl\AnimatedBorderBrush.xaml" />
     <None Remove="AdvancedPasteXAML\Views\MainPage.xaml" />
-    <None Remove="Assets\AdvancedPaste\HuggingFace.svg" />
-    <None Remove="Assets\AdvancedPaste\Mistral.svg" />
-    <None Remove="Assets\AdvancedPaste\Ollama.svg" />
-    <None Remove="Assets\AdvancedPaste\Onnx.svg" />
-    <None Remove="Assets\AdvancedPaste\OpenAI.dark.svg" />
-    <None Remove="Assets\AdvancedPaste\OpenAI.light.svg" />
-    <None Remove="Assets\AdvancedPaste\WindowsML.svg" />
+    <None Remove="Assets\AdvancedPaste\SemanticKernel.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -150,5 +138,24 @@
     <Page Update="AdvancedPasteXAML\Styles\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Share AI Model Provider Icons from Settings.UI to avoid duplication -->
+    <!-- These icons are included from Settings.UI project -->
+    <Content Include="..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Models\*.svg">
+      <Link>Assets\Settings\Icons\Models\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- AdvancedPaste specific assets -->
+    <Content Include="Assets\AdvancedPaste\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\AdvancedPaste\*.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Keep SemanticKernel.svg as it's specific to AdvancedPaste -->
+    <Content Include="Assets\AdvancedPaste\SemanticKernel.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

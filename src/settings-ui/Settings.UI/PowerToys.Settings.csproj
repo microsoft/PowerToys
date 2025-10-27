@@ -73,6 +73,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- AI Model Provider Icons - SVG files -->
+		<Content Include="Assets\Settings\Icons\Models\*.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<!-- AI Model Provider Icons - PNG files -->
+		<Content Include="Assets\Settings\Icons\Models\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<EmbeddedResource Include="Images\MouseJump-Desktop.png" />
 	</ItemGroup>
 

@@ -4,6 +4,8 @@
 
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -100,8 +102,30 @@ namespace AdvancedPaste.Services.CustomActions
                     throw;
                 }
 
-                throw new PasteActionException(ErrorHelpers.TranslateErrorText(-1), ex);
+                var statusCode = ExtractStatusCode(ex);
+                var failureMessage = providerConfig.ProviderType switch
+                {
+                    AIServiceType.OpenAI or AIServiceType.AzureOpenAI => ErrorHelpers.TranslateErrorText(statusCode),
+                    _ => ResourceLoaderInstance.ResourceLoader.GetString("PasteError"),
+                };
+
+                throw new PasteActionException(failureMessage, ex);
             }
+        }
+
+        private static int ExtractStatusCode(Exception exception)
+        {
+            if (exception is HttpOperationException httpOperationException)
+            {
+                return (int?)httpOperationException.StatusCode ?? -1;
+            }
+
+            if (exception is HttpRequestException httpRequestException && httpRequestException.StatusCode is HttpStatusCode statusCode)
+            {
+                return (int)statusCode;
+            }
+
+            return -1;
         }
 
         private static AIServiceType NormalizeServiceType(AIServiceType serviceType)

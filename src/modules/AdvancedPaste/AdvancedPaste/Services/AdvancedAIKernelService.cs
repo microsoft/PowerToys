@@ -167,6 +167,11 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
             return true;
         }
 
+        if (activeProvider is not null)
+        {
+            return false;
+        }
+
         var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedProvider);
         if (fallback is not null)
         {
