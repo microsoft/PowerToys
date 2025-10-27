@@ -37,8 +37,8 @@ namespace PowerLauncher.Helper
                 return true;
             }
 
-            var stackTrace = comException.StackTrace;
             // Check for common DWM composition changed patterns in the stack trace
+            var stackTrace = comException.StackTrace;
             return !string.IsNullOrEmpty(stackTrace) &&
                    stackTrace.Contains("DwmCompositionChanged");
         }
