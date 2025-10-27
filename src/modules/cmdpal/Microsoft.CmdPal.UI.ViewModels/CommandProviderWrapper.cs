@@ -166,10 +166,12 @@ public sealed class CommandProviderWrapper
             {
                 var props = iHaveProperties.GetProperties();
                 var hasBands = props.TryGetValue("DockBands", out var obj);
-                if (hasBands)
+                if (hasBands && obj is not null)
                 {
                     // CoreLogger.LogDebug($"Found bands object on {DisplayName} ({ProviderId}) ");
-                    if (obj is ICommandItem[] bands)
+                    // var bands = (ICommandItem[])obj;
+                    var bands = obj as ICommandItem[];
+                    if (bands is not null)
                     {
                         CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
                         dockBands = bands;
@@ -246,6 +248,10 @@ public sealed class CommandProviderWrapper
             if (a is IExtendedAttributesProvider command2)
             {
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
+            }
+            else if (a is ICommandItem[] commands)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an ICommandItem[]");
             }
         }
     }

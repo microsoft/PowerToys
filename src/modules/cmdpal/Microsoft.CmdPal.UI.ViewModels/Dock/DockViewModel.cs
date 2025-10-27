@@ -39,7 +39,9 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
     ];
 
     private static string[] _endCommands = [
-        "com.microsoft.cmdpal.timedate.dockband"
+        "com.crloewen.performanceMonitor.dockband",
+        "com.microsoft.cmdpal.clipboardHistory.Band",
+        "com.microsoft.cmdpal.timedate.dockband",
     ];
 
     private void SetupBands()
@@ -54,6 +56,14 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
         foreach (var commandId in bandIds)
         {
             var topLevelCommand = _topLevelCommandManager.LookupDockBand(commandId);
+
+            // TODO! temp hack: fallback to looking up a top-level command
+            // remove this once the API is added
+            if (topLevelCommand is null)
+            {
+                topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
+            }
+
             if (topLevelCommand is not null)
             {
                 var band = CreateBandItem(topLevelCommand.ItemViewModel);
