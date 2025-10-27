@@ -34,7 +34,10 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
             newViewModels.Add(newItemVm);
         }
 
-        ListHelpers.InPlaceUpdateList(Items, newViewModels, out var removed);
+        DoOnUiThread(() =>
+        {
+            ListHelpers.InPlaceUpdateList(Items, newViewModels, out var removed);
+        });
 
         // TODO! dispose removed VMs
     }
