@@ -14,7 +14,6 @@
         </Style>
 
         <DataTemplate x:Key="ResultTemplate">
-            <!--  We use Border for exposing the item accessibility information only.  -->
             <StackPanel Margin="6">
                 <TextBlock
                     Margin="0,0,0,4"

@@ -65,7 +65,7 @@ internal partial class NativeMethods
     /// overrides FOF_NO_CONFIRMATION.) This can be tested by attempting to delete a file on a
     /// FAT volume, e.g. a USB key.
     /// </summary>
-    /// <remarks>Declared in shellapi.h./remarks>
+    /// <remarks>Declared in shellapi.h.</remarks>
     internal const ushort FOF_WANTNUKEWARNING = 0x4000;
 
     /// <summary>

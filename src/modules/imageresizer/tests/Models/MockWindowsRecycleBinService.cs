@@ -82,7 +82,7 @@ internal sealed class MockWindowsRecycleBinService : IRecycleBinService
         }
         else
         {
-            // Models a non-existent real world drive.
+            // Models a nonexistent real world drive.
             return null;
         }
     }
