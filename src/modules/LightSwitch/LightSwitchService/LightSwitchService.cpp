@@ -11,11 +11,12 @@
 #include <logger/logger_settings.h>
 #include <logger/logger.h>
 #include <utils/logger_helper.h>
+#include <LightSwitchServiceObserver.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
-static int g_lastUpdatedDay = -1;
+extern int g_lastUpdatedDay = -1;
 static ScheduleMode prevMode = ScheduleMode::Off;
 static std::wstring prevLat, prevLon;
 
@@ -162,6 +163,13 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     Logger::info(L"[LightSwitchService] Parent PID: {}", parentPid);
 
     LightSwitchSettings::instance().InitFileWatcher();
+
+    LightSwitchServiceObserver observer({ SettingId::LightTime,
+                                          SettingId::DarkTime,
+                                          SettingId::ScheduleMode,
+                                          SettingId::Sunrise_Offset,
+                                          SettingId::Sunset_Offset });
+
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
     auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
@@ -444,6 +452,32 @@ cleanup:
     return 0;
 }
 
+void ApplyThemeNow()
+{
+    LightSwitchSettings::instance().LoadSettings();
+    const auto& settings = LightSwitchSettings::instance().settings();
+
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    int nowMinutes = st.wHour * 60 + st.wMinute;
+
+    bool shouldBeLight = false;
+    if (settings.lightTime < settings.darkTime)
+        shouldBeLight = (nowMinutes >= settings.lightTime && nowMinutes < settings.darkTime);
+    else
+        shouldBeLight = (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
+
+    bool currentSystemTheme = GetCurrentSystemTheme();
+    bool currentAppsTheme = GetCurrentAppsTheme();
+
+    if ((settings.changeSystem && (currentSystemTheme != shouldBeLight)) ||
+        (settings.changeApps && (currentAppsTheme != shouldBeLight)))
+    {
+        Logger::info(L"[LightSwitchService] Applying theme immediately after schedule change.");
+        SetSystemTheme(shouldBeLight);
+        SetAppsTheme(shouldBeLight);
+    }
+}
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
