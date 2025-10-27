@@ -14,6 +14,10 @@ public class DockSettings
     public DockSize DockSize { get; set; } = DockSize.Small;
 
     public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
+
+    public List<string> StartBands { get; set; } = [];
+
+    public List<string> EndBands { get; set; } = [];
 }
 
 public enum DockSide

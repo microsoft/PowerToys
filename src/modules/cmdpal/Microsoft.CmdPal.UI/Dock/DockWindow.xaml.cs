@@ -143,6 +143,8 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
 
     private void UpdateSettings()
     {
+        this.viewModel.UpdateSettings(_settings);
+
         SystemBackdrop = DockSettingsToViews.GetSystemBackdrop(_settings.Backdrop);
 
         // If the backdrop is acrylic, things are more complicated

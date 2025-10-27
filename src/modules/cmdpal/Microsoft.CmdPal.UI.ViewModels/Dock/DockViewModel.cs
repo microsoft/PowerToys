@@ -8,16 +8,19 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsReloadedMessage>, IPageContext
+public sealed partial class DockViewModel : IDisposable,
+    IRecipient<CommandsReloadedMessage>,
+    IPageContext
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
-    // private Settings _settings;
+    private DockSettings _settings;
     private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
 
@@ -25,31 +28,44 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
 
     public ObservableCollection<DockBandViewModel> EndItems { get; } = new();
 
-    public DockViewModel(TopLevelCommandManager tlcManager, SettingsModel settings, TaskScheduler scheduler)
+    public DockViewModel(
+        TopLevelCommandManager tlcManager,
+        SettingsModel settings,
+        TaskScheduler scheduler)
     {
         _topLevelCommandManager = tlcManager;
+        _settings = settings.DockSettings;
         Scheduler = scheduler;
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
     }
 
-    private static string[] _startCommands = [
-        "com.microsoft.cmdpal.windowwalker.dockband",
-    ];
-
-    private static string[] _endCommands = [
-        "com.crloewen.performanceMonitor.dockband",
-        "com.microsoft.cmdpal.clipboardHistory.Band",
-        "com.zadjii.virtualDesktops.band",
-        "com.microsoft.cmdpal.timedate.dockband",
-    ];
-
-    private void SetupBands()
+    public void UpdateSettings(DockSettings settings)
     {
-        SetupBands(_startCommands, StartItems);
-        SetupBands(_endCommands, EndItems);
+        Logger.LogDebug($"DockViewModel.UpdateSettings");
+        _settings = settings;
+        SetupBands();
     }
 
-    private void SetupBands(string[] bandIds, ObservableCollection<DockBandViewModel> target)
+    // private static string[] _startCommands = [
+    //    "com.microsoft.cmdpal.windowwalker.dockband",
+    // ];
+
+    // private static string[] _endCommands = [
+    //    "com.crloewen.performanceMonitor.dockband",
+    //    "com.microsoft.cmdpal.clipboardHistory.Band",
+    //    "com.zadjii.virtualDesktops.band",
+    //    "com.microsoft.cmdpal.timedate.dockband",
+    // ];
+    private void SetupBands()
+    {
+        Logger.LogDebug($"Setting up dock bands");
+        SetupBands(_settings.StartBands, StartItems);
+        SetupBands(_settings.EndBands, EndItems);
+    }
+
+    private void SetupBands(
+        List<string> bandIds,
+        ObservableCollection<DockBandViewModel> target)
     {
         List<DockBandViewModel> newBands = new();
         foreach (var commandId in bandIds)
@@ -60,6 +76,7 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
             // remove this once the API is added
             if (topLevelCommand is null)
             {
+                Logger.LogWarning($"Temporary fallback to loading top-level command '{commandId}'");
                 topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
             }
 
@@ -76,7 +93,9 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
         _dispatcherQueue.TryEnqueue(() =>
         {
             ListHelpers.InPlaceUpdateList(target, newBands, out var removed);
-            Logger.LogDebug($"({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
+            var isStartBand = target == StartItems;
+            var label = isStartBand ? "Start bands:" : "End bands:";
+            Logger.LogDebug($"{label} ({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
         });
     }
 
