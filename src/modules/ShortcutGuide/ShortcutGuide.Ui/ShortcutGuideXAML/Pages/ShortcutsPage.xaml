@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ShortcutGuide.Pages.ShortcutsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -22,7 +22,10 @@
                 </Grid.ColumnDefinitions>
                 <Grid.ContextFlyout>
                     <MenuFlyout Opening="PinFlyout_Opening">
-                        <MenuFlyoutItem Click="Pin_Click" x:Uid="PinShortcut" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem
+                            x:Uid="PinShortcut"
+                            Click="Pin_Click"
+                            CommandParameter="{x:Bind}" />
                     </MenuFlyout>
                 </Grid.ContextFlyout>
                 <StackPanel

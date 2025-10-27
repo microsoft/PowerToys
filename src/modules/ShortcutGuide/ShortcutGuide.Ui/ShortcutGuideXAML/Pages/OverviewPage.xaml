@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ShortcutGuide.Pages.OverviewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,7 +23,10 @@
                 </Grid.ColumnDefinitions>
                 <Grid.ContextFlyout>
                     <MenuFlyout Opening="PinFlyout_Opening">
-                        <MenuFlyoutItem Click="Pin_Click" Text="Pin" CommandParameter="{x:Bind}" />
+                        <MenuFlyoutItem
+                            Click="Pin_Click"
+                            CommandParameter="{x:Bind}"
+                            Text="Pin" />
                     </MenuFlyout>
                 </Grid.ContextFlyout>
                 <StackPanel
@@ -128,9 +131,7 @@
                         x:Uid="TaskbarHeaderTxt"
                         Margin="16,24,16,2"
                         FontWeight="SemiBold" />
-                    <TextBlock
-                        x:Uid="TaskbarDescriptionTxt"
-                        Margin="16,2,16,12" />
+                    <TextBlock x:Uid="TaskbarDescriptionTxt" Margin="16,2,16,12" />
                     <ItemsRepeater
                         x:Name="TaskbarShortcutsListView"
                         ItemTemplate="{StaticResource ShortcutItemTemplate}"

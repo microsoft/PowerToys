@@ -54,13 +54,13 @@
                 x:Name="WindowSelector"
                 Grid.Row="1"
                 IsBackButtonVisible="Collapsed"
-                IsSettingsVisible="False"
                 IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
                 SelectionChanged="WindowSelector_SelectionChanged"
                 Style="{StaticResource RailNavigationViewStyle}">
                 <NavigationView.MenuItems />
                 <NavigationView.FooterMenuItems>
-                    <!-- If footer only has one item, a visual bug can occur. This fake settings button will have set height to zero as soon as the content is loaded -->
+                    <!--  If footer only has one item, a visual bug can occur. This fake settings button will have set height to zero as soon as the content is loaded  -->
                     <NavigationViewItem
                         x:Name="FakeSettingsButton"
                         Icon="Setting"
@@ -76,18 +76,18 @@
                 </NavigationView.FooterMenuItems>
                 <NavigationView.Content>
                     <NavigationView
-                    x:Name="SubNav"
-                    IsBackButtonVisible="Collapsed"
-                    IsSettingsVisible="False"
-                    PaneDisplayMode="Top"
-                    SelectionChanged="SubNav_SelectionChanged">
+                        x:Name="SubNav"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        PaneDisplayMode="Top"
+                        SelectionChanged="SubNav_SelectionChanged">
                         <Frame
-                        x:Name="ContentFrame"
-                        Margin="4,8,0,0"
-                        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8,0,0,0" />
+                            x:Name="ContentFrame"
+                            Margin="4,8,0,0"
+                            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8,0,0,0" />
                     </NavigationView>
                 </NavigationView.Content>
                 <NavigationView.Resources>

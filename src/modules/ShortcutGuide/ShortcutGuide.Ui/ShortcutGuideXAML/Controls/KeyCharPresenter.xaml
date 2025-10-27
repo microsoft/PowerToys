@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:ShortcutGuide.Controls"
     xmlns:helpers="using:ShortcutGuide.Helpers"
+    xmlns:local="using:ShortcutGuide.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI">
 
     <Style BasedOn="{StaticResource DefaultKeyCharPresenterStyle}" TargetType="local:KeyCharPresenter" />
 
-    
+
     <Style x:Key="DefaultKeyCharPresenterStyle" TargetType="local:KeyCharPresenter">
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -34,21 +34,22 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="UnderlinedLetterKeyCharPresenterStyle" 
-    BasedOn="{StaticResource DefaultKeyCharPresenterStyle}"
-       TargetType="local:KeyCharPresenter">
+    <Style
+        x:Key="UnderlinedLetterKeyCharPresenterStyle"
+        BasedOn="{StaticResource DefaultKeyCharPresenterStyle}"
+        TargetType="local:KeyCharPresenter">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:KeyCharPresenter">
                     <Grid Height="{TemplateBinding FontSize}">
                         <TextBlock
-                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                        FontFamily="{TemplateBinding FontFamily}"
-                        FontSize="{TemplateBinding FontSize}"
-                        FontWeight="{TemplateBinding FontWeight}"
-                        TextLineBounds="Tight">
-                        <Run Text="{helpers:StringResourceExtension Key='UnderlinedKeyChar/Text', Treatment=FirstCharOnly}" TextDecorations="Underline" /><Run Text="{helpers:StringResourceExtension Key='UnderlinedKeyChar/Text', Treatment=EverythingExceptFirstChar}"/>
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            TextLineBounds="Tight">
+                            <Run Text="{helpers:StringResourceExtension Key='UnderlinedKeyChar/Text', Treatment=FirstCharOnly}" TextDecorations="Underline" /><Run Text="{helpers:StringResourceExtension Key='UnderlinedKeyChar/Text', Treatment=EverythingExceptFirstChar}" />
                         </TextBlock>
                     </Grid>
                 </ControlTemplate>
