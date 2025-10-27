@@ -102,9 +102,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         }
     }
 
-    internal void RaiseItemsChanged()
+    internal void UpdateWindows()
     {
-        // base.RaiseItemsChanged();
-        Query(SearchText);
+        UpdateSearchText(string.Empty, string.Empty);
     }
 }

@@ -118,7 +118,7 @@ internal sealed partial class WindowsDockBand : CommandItem
             // break;
             case PInvoke.EVENT_OBJECT_NAMECHANGE:
                 // TryUpdateWindow(hwnd);
-                _page.RaiseItemsChanged();
+                _page.UpdateWindows();
                 break;
         }
     }
