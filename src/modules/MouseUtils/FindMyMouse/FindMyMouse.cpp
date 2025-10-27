@@ -818,18 +818,18 @@ private:
         // Radial gradient mask (center opaque to carve hole, outer transparent for soft fade)
         m_spotlightMaskGradient = m_compositor.CreateRadialGradientBrush();
         m_spotlightMaskGradient.MappingMode(muxc::CompositionMappingMode::Absolute);
-        m_maskStopCenter = m_compositor.CreateColorGradientStop();
-        m_maskStopCenter.Offset(0.0f);
-        m_maskStopCenter.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
-        m_maskStopInner = m_compositor.CreateColorGradientStop();
-        m_maskStopInner.Offset(0.995f);
-        m_maskStopInner.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
-        m_maskStopOuter = m_compositor.CreateColorGradientStop();
-        m_maskStopOuter.Offset(1.0f);
-        m_maskStopOuter.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
-        m_spotlightMaskGradient.ColorStops().Append(m_maskStopCenter);
-        m_spotlightMaskGradient.ColorStops().Append(m_maskStopInner);
-        m_spotlightMaskGradient.ColorStops().Append(m_maskStopOuter);
+        auto maskStopCenter = m_compositor.CreateColorGradientStop();
+        maskStopCenter.Offset(0.0f);
+        maskStopCenter.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
+        auto maskStopInner = m_compositor.CreateColorGradientStop();
+        maskStopInner.Offset(0.995f);
+        maskStopInner.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
+        auto maskStopOuter = m_compositor.CreateColorGradientStop();
+        maskStopOuter.Offset(1.0f);
+        maskStopOuter.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        m_spotlightMaskGradient.ColorStops().Append(maskStopCenter);
+        m_spotlightMaskGradient.ColorStops().Append(maskStopInner);
+        m_spotlightMaskGradient.ColorStops().Append(maskStopOuter);
         m_spotlightMaskGradient.EllipseCenter({ rDip * zoom, rDip * zoom });
         m_spotlightMaskGradient.EllipseRadius({ rDip * zoom, rDip * zoom });
 
@@ -1019,9 +1019,6 @@ private:
     muxc::CompositionSpriteShape m_circleShape{ nullptr };
     // Radial gradient mask components
     muxc::CompositionRadialGradientBrush m_spotlightMaskGradient{ nullptr };
-    muxc::CompositionColorGradientStop m_maskStopCenter{ nullptr };
-    muxc::CompositionColorGradientStop m_maskStopInner{ nullptr };
-    muxc::CompositionColorGradientStop m_maskStopOuter{ nullptr };
     muxc::CompositionEffectBrush m_backdropEffectBrush{ nullptr };
     winrt::Windows::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
     winrt::Windows::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
