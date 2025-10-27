@@ -467,15 +467,36 @@ void ApplyThemeNow()
     else
         shouldBeLight = (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
 
-    bool currentSystemTheme = GetCurrentSystemTheme();
-    bool currentAppsTheme = GetCurrentAppsTheme();
+    bool isSystemCurrentlyLight = GetCurrentSystemTheme();
+    bool isAppsCurrentlyLight = GetCurrentAppsTheme();
 
-    if ((settings.changeSystem && (currentSystemTheme != shouldBeLight)) ||
-        (settings.changeApps && (currentAppsTheme != shouldBeLight)))
+    Logger::info(L"[LightSwitchService] Applying (if needed) theme immediately due to schedule change.");
+
+    if (shouldBeLight)
     {
-        Logger::info(L"[LightSwitchService] Applying theme immediately after schedule change.");
-        SetSystemTheme(shouldBeLight);
-        SetAppsTheme(shouldBeLight);
+        if (settings.changeSystem && !isSystemCurrentlyLight)
+        {
+            SetSystemTheme(true);
+            Logger::info(L"[LightSwitchService] Changing system theme to light mode.");
+        }
+        if (settings.changeApps && !isAppsCurrentlyLight)
+        {
+            SetAppsTheme(true);
+            Logger::info(L"[LightSwitchService] Changing apps theme to light mode.");
+        }
+    }
+    else
+    {
+        if (settings.changeSystem && isSystemCurrentlyLight)
+        {
+            SetSystemTheme(false);
+            Logger::info(L"[LightSwitchService] Changing system theme to dark mode.");
+        }
+        if (settings.changeApps && isAppsCurrentlyLight)
+        {
+            SetAppsTheme(false);
+            Logger::info(L"[LightSwitchService] Changing apps theme to dark mode.");
+        }
     }
 }
 
