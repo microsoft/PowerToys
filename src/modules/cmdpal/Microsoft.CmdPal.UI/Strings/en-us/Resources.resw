@@ -395,6 +395,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
     <value>Extensions</value>
   </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Dock.Content" xml:space="preserve">
+    <value>Dock</value>
+  </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings</value>
   </data>
@@ -418,6 +421,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
     <value>Disable animations when switching between pages</value>
+  </data>
+    <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
+    <value>Enable dock</value>
+  </data>
+  <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
+    <value>Enable a toolbar with quick access to commands</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>

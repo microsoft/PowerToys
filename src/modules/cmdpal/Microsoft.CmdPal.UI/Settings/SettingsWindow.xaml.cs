@@ -83,6 +83,7 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             "General" => typeof(GeneralPage),
             "Extensions" => typeof(ExtensionsPage),
+            "Dock" => typeof(DockSettingsPage),
             _ => null,
         };
         if (pageType is not null)

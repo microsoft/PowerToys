@@ -54,6 +54,10 @@ public partial class SettingsModel : ObservableObject
 
     public bool DisableAnimations { get; set; } = true;
 
+    public bool EnableDock { get; set; }
+
+    public DockSettings DockSettings { get; set; } = new();
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

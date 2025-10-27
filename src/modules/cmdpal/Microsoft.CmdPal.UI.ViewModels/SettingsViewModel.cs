@@ -138,6 +138,46 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public DockSide Dock_Side
+    {
+        get => _settings.DockSettings.Side;
+        set
+        {
+            _settings.DockSettings.Side = value;
+            Save();
+        }
+    }
+
+    public DockSize Dock_DockSize
+    {
+        get => _settings.DockSettings.DockSize;
+        set
+        {
+            _settings.DockSettings.DockSize = value;
+            Save();
+        }
+    }
+
+    public DockBackdrop Dock_Backdrop
+    {
+        get => _settings.DockSettings.Backdrop;
+        set
+        {
+            _settings.DockSettings.Backdrop = value;
+            Save();
+        }
+    }
+
+    public bool EnableDock
+    {
+        get => _settings.EnableDock;
+        set
+        {
+            _settings.EnableDock = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)

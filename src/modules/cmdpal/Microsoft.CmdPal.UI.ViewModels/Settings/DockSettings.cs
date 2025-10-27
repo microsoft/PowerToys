@@ -2,14 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.UI.Dock;
+namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
 public class DockSettings
 {
-    public bool ShowAppTitles { get; set; }
+    // public bool ShowAppTitles { get; set; }
 
-    public bool ShowSearchButton { get; set; }
-
+    // public bool ShowSearchButton { get; set; }
     public DockSide Side { get; set; } = DockSide.Top;
 
     public DockSize DockSize { get; set; } = DockSize.Small;

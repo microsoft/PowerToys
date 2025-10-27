@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -30,6 +31,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
         }
     }
 
+    // TODO! Remove me
     public bool ShowSearchButton
     {
         get => field;
@@ -56,7 +58,8 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
 
         // _viewModel.UpdateSettings(); // TODO!
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
-        ShowSearchButton = settings.ShowSearchButton;
+
+        // ShowSearchButton = settings.ShowSearchButton;
         SearchColumn.Width = ShowSearchButton
             ? new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star)
             : new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);

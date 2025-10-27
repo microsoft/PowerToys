@@ -5,8 +5,10 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
@@ -55,10 +57,12 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
     // internal Settings CurrentSettings => _settings;
     public DockWindow()
     {
-        // _settings = DockSettingsWindow.LoadUserSettings();
-        _settings = new(); // TODO!
+        var serviceProvider = App.Current.Services;
+        var mainSettings = serviceProvider.GetService<SettingsModel>()!;
+        mainSettings.SettingsChanged += SettingsChangedHandler;
+        _settings = mainSettings.DockSettings;
 
-        viewModel = App.Current.Services.GetService<DockViewModel>()!;
+        viewModel = serviceProvider.GetService<DockViewModel>()!;
         _dock = new DockControl(viewModel);
 
         InitializeComponent();
@@ -110,6 +114,11 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
         ShowDesktop.AddHook(this);
 
         UpdateSettings();
+    }
+
+    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    {
+        _dock.UpdateSettings(sender.DockSettings);
     }
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
