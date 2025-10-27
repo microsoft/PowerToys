@@ -149,7 +149,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         Icon.InitializeProperties();
 
         HasSearchBox = page is IListPage;
-        HasFilters = page is IListPage listPage && listPage?.Filters?.GetFilters()?.Length > 0;
 
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
@@ -158,7 +157,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         UpdateProperty(nameof(IsLoading));
         UpdateProperty(nameof(Icon));
         UpdateProperty(nameof(HasSearchBox));
-        UpdateProperty(nameof(HasFilters));
 
         page.PropChanged += Model_PropChanged;
     }
