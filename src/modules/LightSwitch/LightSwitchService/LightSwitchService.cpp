@@ -221,6 +221,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     }
 
     g_lastUpdatedDay = st.wDay;
+    ULONGLONG lastSettingsReload = 0;
 
     for (;;)
     {
@@ -228,42 +229,121 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DWORD count = hParent ? 2 : 1;
         bool skipRest = false;
 
-        LightSwitchSettings::instance().LoadSettings();
         const auto& settings = LightSwitchSettings::instance().settings();
+
+        if (settings.scheduleMode == ScheduleMode::Off)
+        {
+            Logger::info(L"[LightSwitchService] Schedule mode OFF - suspending scheduler but keeping service alive.");
+
+            if (!hManualOverride)
+                hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+
+            HANDLE waitsOff[4];
+            DWORD countOff = 0;
+            waitsOff[countOff++] = g_ServiceStopEvent;
+            if (hParent)
+            {
+                waitsOff[countOff++] = hParent;
+            }
+            if (hManualOverride)
+            {
+                waitsOff[countOff++] = hManualOverride;
+            }
+            waitsOff[countOff++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
+
+            for (;;)
+            {
+                DWORD wait = WaitForMultipleObjects(countOff, waitsOff, FALSE, INFINITE);
+
+                if (wait == WAIT_OBJECT_0)
+                {
+                    Logger::info(L"[LightSwitchService] Stop event triggered - exiting worker loop.");
+                    goto cleanup;
+                }
+                if (hParent && wait == WAIT_OBJECT_0 + 1)
+                {
+                    Logger::info(L"[LightSwitchService] Parent exited - stopping service.");
+                    goto cleanup;
+                }
+
+                if (wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
+                {
+                    Logger::info(L"[LightSwitchService] Manual override received while schedule OFF.");
+                    ResetEvent(hManualOverride);
+                    continue;
+                }
+
+                if (wait == WAIT_OBJECT_0 + (hParent ? 3 : 2))
+                {
+                    Logger::trace(L"[LightSwitchService] Settings change event triggered, reloading settings...");
+                    ResetEvent(LightSwitchSettings::instance().GetSettingsChangedEvent());
+                    LightSwitchSettings::instance().LoadSettings();
+                    const auto& newSettings = LightSwitchSettings::instance().settings();
+                    lastSettingsReload = GetTickCount64();
+
+                    if (newSettings.scheduleMode != ScheduleMode::Off)
+                    {
+                        Logger::info(L"[LightSwitchService] Schedule re-enabled, resuming normal loop.");
+                        break;
+                    }
+                }
+            }
+
+            continue;
+        }
+
+        ULONGLONG nowTick = GetTickCount64();
+        bool recentSettingsReload = (nowTick - lastSettingsReload < 5000);
 
         if (g_lastUpdatedDay != -1)
         {
             bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
-            if (!manualOverrideActive)
+            // Skip detection when schedule is OFF or settings were just changed
+            if (settings.scheduleMode != ScheduleMode::Off && !recentSettingsReload)
             {
-                bool currentSystemTheme = GetCurrentSystemTheme();
-                bool currentAppsTheme = GetCurrentAppsTheme();
+                Logger::debug(L"[LightSwitchService] Checking if manual override is active...");
+                bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
+                Logger::debug(L"[LightSwitchService] Manual override active = {}", manualOverrideActive);
 
-                SYSTEMTIME st;
-                GetLocalTime(&st);
-                int nowMinutes = st.wHour * 60 + st.wMinute;
+                if (!manualOverrideActive)
+                {
+                    bool currentSystemTheme = GetCurrentSystemTheme();
+                    bool currentAppsTheme = GetCurrentAppsTheme();
 
-                bool shouldBeLight = false;
-                if (settings.lightTime < settings.darkTime)
-                {
-                    shouldBeLight = (nowMinutes >= settings.lightTime && nowMinutes < settings.darkTime);
-                }
-                else
-                {
-                    shouldBeLight = (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
-                }
+                    SYSTEMTIME st;
+                    GetLocalTime(&st);
+                    int nowMinutes = st.wHour * 60 + st.wMinute;
 
-                if ((settings.changeSystem && (currentSystemTheme != shouldBeLight)) ||
-                    (settings.changeApps && (currentAppsTheme != shouldBeLight)))
-                {
-                    if (hManualOverride)
+                    bool shouldBeLight = (settings.lightTime < settings.darkTime) ? (nowMinutes >= settings.lightTime && nowMinutes < settings.darkTime) : (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
+
+                    Logger::debug(L"[LightSwitchService] shouldBeLight = {}", shouldBeLight);
+
+                    if ((settings.changeSystem && (currentSystemTheme != shouldBeLight)) ||
+                        (settings.changeApps && (currentAppsTheme != shouldBeLight)))
                     {
-                        SetEvent(hManualOverride);
-                        Logger::info(L"[LightSwitchService] Detected manual theme change outside of LightSwitch. Triggering manual override.");
+                        Logger::debug(L"[LightSwitchService] External theme change detected - enabling manual override");
+
+                        if (!hManualOverride)
+                        {
+                            hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+                            if (!hManualOverride)
+                                hManualOverride = CreateEventW(nullptr, TRUE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+                        }
+
+                        if (hManualOverride)
+                        {
+                            SetEvent(hManualOverride);
+                            Logger::info(L"[LightSwitchService] Detected manual theme change outside of LightSwitch. Triggering manual override.");
+                            skipRest = true;
+                        }
                     }
-                    skipRest = true;
                 }
             }
+            else
+            {
+                Logger::debug(L"[LightSwitchService] Skipping external-change detection (schedule off or recent settings reload).");
+            }
+
         }
 
         if (!skipRest)
@@ -282,64 +362,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 prevMode = settings.scheduleMode;
                 prevLat = settings.latitude;
                 prevLon = settings.longitude;
-            }
-
-            if (settings.scheduleMode == ScheduleMode::Off)
-            {
-                Logger::info(L"[LightSwitchService] Schedule mode OFF - suspending scheduler but keeping service alive.");
-
-                if (!hManualOverride)
-                    hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-
-                HANDLE waitsOff[4];
-                DWORD countOff = 0;
-                waitsOff[countOff++] = g_ServiceStopEvent;
-                if (hParent)
-                {
-                    waitsOff[countOff++] = hParent;
-                }
-                if (hManualOverride)
-                {
-                    waitsOff[countOff++] = hManualOverride;
-                }
-                waitsOff[countOff++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
-
-                for (;;)
-                {
-                    DWORD wait = WaitForMultipleObjects(countOff, waitsOff, FALSE, INFINITE);
-
-                    if (wait == WAIT_OBJECT_0)
-                    {
-                        Logger::info(L"[LightSwitchService] Stop event triggered - exiting worker loop.");
-                        goto cleanup;
-                    }
-                    if (hParent && wait == WAIT_OBJECT_0 + 1)
-                    {
-                        Logger::info(L"[LightSwitchService] Parent exited - stopping service.");
-                        goto cleanup;
-                    }
-
-                    if (wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
-                    {
-                        Logger::info(L"[LightSwitchService] Manual override received while schedule OFF.");
-                        ResetEvent(hManualOverride);
-                        continue;
-                    }
-
-                    if (wait == WAIT_OBJECT_0 + (hParent ? 3 : 2))
-                    {
-                        Logger::trace(L"[LightSwitchService] Settings change event triggered, reloading settings...");
-                        ResetEvent(LightSwitchSettings::instance().GetSettingsChangedEvent());
-                        LightSwitchSettings::instance().LoadSettings();
-                        const auto& newSettings = LightSwitchSettings::instance().settings();
-
-                        if (newSettings.scheduleMode != ScheduleMode::Off)
-                        {
-                            Logger::info(L"[LightSwitchService] Schedule re-enabled, resuming normal loop.");
-                            break;
-                        }
-                    }
-                }
             }
 
             SYSTEMTIME st;
