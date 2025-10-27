@@ -98,20 +98,30 @@ namespace ShortcutGuide.Controls
 
             if (Content is string key)
             {
-                switch (key)
+                SetGlyphOrText(key switch
                 {
-                    case "<Copilot>":
-                        _keyPresenter.Style = (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"];
-                        break;
+                    "<TASKBAR1-9>" => "Num",
+                    "<Left>" => "\uE0E2",
+                    "<Right>" => "\uE0E3",
+                    "<Up>" => "\uE0E4",
+                    "<Down>" => "\uE0E5",
+                    "<ArrowUD>" => "\uE0E4\uE0E5",
+                    "<ArrowLR>" => "\uE0E2\uE0E3",
+                    "<Arrow>" => "\uE0E2\uE0E3\uE0E4\uE0E5",
+                    "<Enter>" => "\uE751",
+                    "<Backspace>" => "\uE750",
+                    "<Escape>" => "Esc",
+                    string s when s.StartsWith('<') => s.Trim('<', '>'),
+                    _ => key,
+                });
 
-                    case "<Office>":
-                        _keyPresenter.Style = (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"];
-                        break;
-
-                    default:
-                        _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
-                        break;
-                }
+                _keyPresenter.Style = key switch
+                {
+                    "<Copilot>" => (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"],
+                    "<Office>" => (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"],
+                    "<Underlined letter>" => (Style)Application.Current.Resources["UnderlinedLetterKeyCharPresenterStyle"],
+                    _ => _keyPresenter.Style,
+                };
 
                 return;
             }
@@ -122,33 +132,33 @@ namespace ShortcutGuide.Controls
                 switch (virtualKey)
                 {
                     case VirtualKey.Enter:
-                        SetGlyphOrText("\uE751", virtualKey);
+                        SetGlyphOrText("\uE751");
                         break;
 
                     case VirtualKey.Back:
-                        SetGlyphOrText("\uE750", virtualKey);
+                        SetGlyphOrText("\uE750");
                         break;
 
                     case VirtualKey.Shift:
                     case (VirtualKey)160: // Left Shift
                     case (VirtualKey)161: // Right Shift
-                        SetGlyphOrText("\uE752", virtualKey);
+                        SetGlyphOrText("\uE752");
                         break;
 
                     case VirtualKey.Up:
-                        _keyPresenter.Content = "\uE0E4";
+                        SetGlyphOrText("\uE0E4");
                         break;
 
                     case VirtualKey.Down:
-                        _keyPresenter.Content = "\uE0E5";
+                        SetGlyphOrText("\uE0E5");
                         break;
 
                     case VirtualKey.Left:
-                        _keyPresenter.Content = "\uE0E2";
+                        SetGlyphOrText("\uE0E2");
                         break;
 
                     case VirtualKey.Right:
-                        _keyPresenter.Content = "\uE0E3";
+                        SetGlyphOrText("\uE0E3");
                         break;
 
                     case VirtualKey.LeftWindows:
@@ -156,8 +166,7 @@ namespace ShortcutGuide.Controls
                         _keyPresenter.Style = (Style)Application.Current.Resources["WindowsKeyCharPresenterStyle"];
                         break;
                     default: // For all other keys, we will use the key name.
-                        _keyPresenter.Content = virtualKey.ToString();
-                        _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+                        SetGlyphOrText(virtualKey.ToString());
                         break;
                 }
 
@@ -167,18 +176,14 @@ namespace ShortcutGuide.Controls
             Visibility = Visibility.Collapsed;
         }
 
-        private void SetGlyphOrText(string glyph, VirtualKey key)
+        private void SetGlyphOrText(string glyphOrText)
         {
-            if (RenderKeyAsGlyph)
-            {
-                _keyPresenter.Content = glyph;
-                _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
-            }
-            else
-            {
-                _keyPresenter.Content = key.ToString();
-                _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
-            }
+            RenderKeyAsGlyph = ((glyphOrText[0] >> 12) & 0xF) is 0xE or 0xF;
+            _keyPresenter.Content = glyphOrText;
+
+            _keyPresenter.Style = RenderKeyAsGlyph
+                ? (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"]
+                : (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
         }
 
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

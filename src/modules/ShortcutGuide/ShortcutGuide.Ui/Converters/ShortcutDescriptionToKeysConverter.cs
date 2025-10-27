@@ -84,6 +84,9 @@ namespace ShortcutGuide.Converters
                         case "Back":
                             shortcutList.Add(8); // The Back key or button.
                             break;
+                        case "<TASKBAR1-9>":
+                            shortcutList.Add("Num");
+                            break;
                         default:
                             shortcutList.Add(key); // Add other keys as strings.
                             break;

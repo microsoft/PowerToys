@@ -197,4 +197,14 @@
     <value>Shortcut Guide</value>
     <comment>Shortcut refers to a keyboard shortcut</comment>
   </data>
+  <data name="TaskbarDescriptionTxt.Text" xml:space="preserve">
+    <value>In combination with the number shown above the taskbar</value>
+  </data>
+  <data name="UnderlinedKeyChar.Text" xml:space="preserve">
+    <value>Underlined character</value>
+    <comment>character meaning a letter</comment>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
 </root>

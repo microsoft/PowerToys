@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.UI.Windowing;
@@ -117,6 +118,12 @@ namespace ShortcutGuide
             // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
             if (!_setPosition)
             {
+                Content.GettingFocus += (_, _) =>
+                {
+                    FakeSettingsButton.Height = 10;
+                    FakeSettingsButton.Height = 0;
+                };
+
                 SetWindowPosition();
                 _setPosition = true;
 
@@ -166,10 +173,21 @@ namespace ShortcutGuide
         {
             var hwnd = WindowNative.GetWindowHandle(this);
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, monitorRect.Height);
+            if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X <= AppWindow.Position.X + Width)
+            {
+                MaxHeight = App.TaskBarWindow.AppWindow.Position.Y / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
+                MinHeight = MaxHeight;
+                Height = MaxHeight;
+                return;
+            }
+
+            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, monitorRect.Height / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32()));
+            MaxHeight = monitorRect.Height / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
+            MinHeight = MaxHeight;
+            Height = MaxHeight;
         }
 
-        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        /*private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // TO DO: should the results of this be shown on a separate results page? Or as part of the suggested items of the search box?
             // The current UX is a bit weird as search is about the content that is selected on the page, vs. global search (which a search box in the title bar communicates).
@@ -193,7 +211,7 @@ namespace ShortcutGuide
         private void SearchBox_KeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             SearchBox.Focus(FocusState.Programmatic);
-        }
+        }*/
 
         private void WindowSelector_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -257,13 +275,15 @@ namespace ShortcutGuide
                     selectedPage = typeof(OverviewPage);
 
                     // We only show the taskbar button window when the overview page of Windows is selected.
-                    if (_selectedAppName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                    if (_shortcutFile is not null && _shortcutFile.Value.Shortcuts.Any(c => c.SectionName.Contains("<TASKBAR1-9>")))
                     {
                         _taskBarWindowActivated = true;
                         App.TaskBarWindow.Activate();
                     }
                 }
 
+                // Set window position so that the taskbar window does not potentially clip into the main window
+                SetWindowPosition();
                 ContentFrame.Navigate(selectedPage, new ShortcutPageNavParam() { ShortcutFile = file, PageIndex = param, AppName = _selectedAppName });
             }
         }

@@ -126,9 +126,11 @@
                     <TextBlock
                         x:Name="TaskbarHeaderTxt"
                         x:Uid="TaskbarHeaderTxt"
-                        Margin="16,24,16,8"
-                        FontWeight="SemiBold"
-                        Text="Taskbar shortcuts" />
+                        Margin="16,24,16,2"
+                        FontWeight="SemiBold" />
+                    <TextBlock
+                        x:Uid="TaskbarDescriptionTxt"
+                        Margin="16,2,16,12" />
                     <ItemsRepeater
                         x:Name="TaskbarShortcutsListView"
                         ItemTemplate="{StaticResource ShortcutItemTemplate}"

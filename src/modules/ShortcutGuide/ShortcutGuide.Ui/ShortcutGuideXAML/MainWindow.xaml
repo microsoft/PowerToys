@@ -23,7 +23,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TitleBar x:Uid="TitleBar">
-                <TitleBar.Content>
+                <!--<TitleBar.Content>
+
                     <AutoSuggestBox
                         x:Name="SearchBox"
                         x:Uid="SearchBox"
@@ -41,12 +42,12 @@
                             <DataTemplate x:DataType="models:ShortcutEntry">
                                 <Grid>
                                     <TextBlock Text="{x:Bind Name}" />
-                                    <!--  TO DO: Add shortcuts / description  -->
+                                     TO DO: Add shortcuts / description
                                 </Grid>
                             </DataTemplate>
                         </AutoSuggestBox.ItemTemplate>
                     </AutoSuggestBox>
-                </TitleBar.Content>
+                </TitleBar.Content>-->
             </TitleBar>
 
             <NavigationView
@@ -54,11 +55,19 @@
                 Grid.Row="1"
                 IsBackButtonVisible="Collapsed"
                 IsSettingsVisible="False"
+                IsPaneToggleButtonVisible="False"
                 SelectionChanged="WindowSelector_SelectionChanged"
                 Style="{StaticResource RailNavigationViewStyle}">
                 <NavigationView.MenuItems />
                 <NavigationView.FooterMenuItems>
-                    <!--  TO DO: SOME WEIRD VISUAL GLITCH WITH THE ICON BEING CLIPPED  -->
+                    <!-- If footer only has one item, a visual bug can occur. This fake settings button will have set height to zero as soon as the content is loaded -->
+                    <NavigationViewItem
+                        x:Name="FakeSettingsButton"
+                        Content="Settings"
+                        Icon="Setting"
+                        SelectsOnInvoked="False"
+                        Tag="Settings"
+                        Tapped="Settings_Tapped" />
                     <NavigationViewItem
                         Content="Settings"
                         Icon="Setting"
@@ -66,21 +75,22 @@
                         Tag="Settings"
                         Tapped="Settings_Tapped" />
                 </NavigationView.FooterMenuItems>
-                <NavigationView
+                <NavigationView.Content>
+                    <NavigationView
                     x:Name="SubNav"
                     IsBackButtonVisible="Collapsed"
                     IsSettingsVisible="False"
                     PaneDisplayMode="Top"
                     SelectionChanged="SubNav_SelectionChanged">
-                    <Frame
+                        <Frame
                         x:Name="ContentFrame"
                         Margin="4,8,0,0"
                         Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         CornerRadius="8,0,0,0" />
-                </NavigationView>
-
+                    </NavigationView>
+                </NavigationView.Content>
                 <NavigationView.Resources>
                     <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                     <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
