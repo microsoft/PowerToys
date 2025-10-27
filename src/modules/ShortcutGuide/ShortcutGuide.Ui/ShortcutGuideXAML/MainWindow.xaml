@@ -63,13 +63,12 @@
                     <!-- If footer only has one item, a visual bug can occur. This fake settings button will have set height to zero as soon as the content is loaded -->
                     <NavigationViewItem
                         x:Name="FakeSettingsButton"
-                        Content="Settings"
                         Icon="Setting"
                         SelectsOnInvoked="False"
                         Tag="Settings"
                         Tapped="Settings_Tapped" />
                     <NavigationViewItem
-                        Content="Settings"
+                        x:Uid="SettingsButton"
                         Icon="Setting"
                         SelectsOnInvoked="False"
                         Tag="Settings"

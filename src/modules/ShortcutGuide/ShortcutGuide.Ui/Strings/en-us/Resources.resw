@@ -204,7 +204,7 @@
     <value>Underlined character</value>
     <comment>character meaning a letter</comment>
   </data>
-  <data name="Settings" xml:space="preserve">
+  <data name="SettingsButton.Content" xml:space="preserve">
     <value>Settings</value>
   </data>
 </root>
