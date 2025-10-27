@@ -9,12 +9,17 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="using:CommunityToolkit.WinUI"
+
     xmlns:coreVm="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:dockVm="using:Microsoft.CmdPal.UI.ViewModels.Dock"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <ResourceDictionary>
+            <StackLayout x:Key="ItemsOrientation" Orientation="{x:Bind ItemsOrientation, Mode=OneWay}" Spacing="4" />
+
+
             <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
             <DataTemplate x:Key="CommandButtonTemplate" x:DataType="coreVm:CommandViewModel">
                 <Button
@@ -191,12 +196,9 @@
                 <ItemsRepeater
                 HorizontalAlignment="Left"
                 ItemTemplate="{StaticResource DeskbandTemplate}"
+                Layout="{StaticResource ItemsOrientation}"
                 ItemsSource="{x:Bind Items, Mode=OneWay}">
 
-                    <ItemsRepeater.Layout>
-                        <!--<StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />-->
-                        <StackLayout Orientation="Horizontal" Spacing="4" />
-                    </ItemsRepeater.Layout>
 
                     <ItemsRepeater.Transitions>
                         <TransitionCollection />
@@ -215,6 +217,11 @@
             <ColumnDefinition x:Name="SearchColumn" Width="*" />
             <ColumnDefinition x:Name="EndColumn" Width="Auto" />
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*" />
+            <RowDefinition  x:Name="SearchRow" Height="*" />
+            <RowDefinition  x:Name="EndRow" Height="Auto" />
+        </Grid.RowDefinitions>
 
         <!--  EXPERIMENT: Try to add a shadow to the bottom. I didn't love how it actually turned out.  -->
         <Rectangle
@@ -232,6 +239,7 @@
         </Rectangle>
 
         <ScrollViewer
+                x:Name="StartItemsView"
             Grid.Column="0"
             HorizontalAlignment="Stretch"
             HorizontalScrollBarVisibility="Hidden"
@@ -240,13 +248,15 @@
             VerticalScrollMode="Disabled">
 
             <ItemsRepeater
+                x:Name="StartItemsRepeater"
                 HorizontalAlignment="Left"
                 ItemTemplate="{StaticResource DockBandTemplate}"
+                Layout="{StaticResource ItemsOrientation}"
                 ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}">
 
-                <ItemsRepeater.Layout>
+                <!--<ItemsRepeater.Layout>
                     <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
-                </ItemsRepeater.Layout>
+                </ItemsRepeater.Layout>-->
 
                 <ItemsRepeater.Transitions>
                     <TransitionCollection />
@@ -273,20 +283,62 @@
         </Button>-->
 
         <ItemsRepeater
+            x:Name="EndItemsRepeater"
             Grid.Column="2"
             HorizontalAlignment="Right"
             ItemTemplate="{StaticResource DockBandTemplate}"
+                Layout="{StaticResource ItemsOrientation}"
             ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}">
 
-            <ItemsRepeater.Layout>
+            <!--<ItemsRepeater.Layout>
                 <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
-            </ItemsRepeater.Layout>
+            </ItemsRepeater.Layout>-->
 
             <ItemsRepeater.Transitions>
                 <TransitionCollection />
             </ItemsRepeater.Transitions>
 
         </ItemsRepeater>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="DockOrientation">
+                <VisualState x:Name="DockOnTopBottom">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ItemsOrientation, Mode=OneWay}" To="Horizontal" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
+
+
+                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="0" />
+                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
+                        
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="DockOnLeftRight">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ItemsOrientation, Mode=OneWay}" To="Vertical" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
+
+
+                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="0" />
+                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 
 </UserControl>
