@@ -13,8 +13,13 @@
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.Composition.Effects.h>
 #include <winrt/Microsoft.UI.h>
 #include <winrt/Windows.UI.h>
+#include <winrt/Windows.Graphics.Effects.h>
+// Win2D C++/WinRT projections
+#include <winrt/Microsoft.Graphics.Canvas.h>
+#include <winrt/Microsoft.Graphics.Canvas.Effects.h>
 #endif
 
 #include <winrt/Windows.Foundation.Collections.h>

@@ -157,6 +157,7 @@
   <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.Runtime.1.8.250907003\build\native\Microsoft.WindowsAppSDK.Runtime.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.Runtime.1.8.250907003\build\native\Microsoft.WindowsAppSDK.Runtime.targets')" />
   <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.DWrite.1.8.25090401\build\Microsoft.WindowsAppSDK.DWrite.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.DWrite.1.8.25090401\build\Microsoft.WindowsAppSDK.DWrite.targets')" />
   <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.InteractiveExperiences.1.8.250906004\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.InteractiveExperiences.1.8.250906004\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets')" />
+  <Import Project="..\..\..\..\packages\Microsoft.Graphics.Win2D.1.3.2\build\native\Microsoft.Graphics.Win2D.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Graphics.Win2D.1.3.2\build\native\Microsoft.Graphics.Win2D.targets')" />
 
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -179,5 +180,6 @@
     <Error Condition="!Exists('..\\..\\..\\..\\packages\\Microsoft.WindowsAppSDK.DWrite.1.8.25090401\\build\\Microsoft.WindowsAppSDK.DWrite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\\..\\..\\..\\packages\\Microsoft.WindowsAppSDK.DWrite.1.8.25090401\\build\\Microsoft.WindowsAppSDK.DWrite.targets'))" />
     <Error Condition="!Exists('..\\..\\..\\..\\packages\\Microsoft.WindowsAppSDK.InteractiveExperiences.1.8.250906004\\build\\native\\Microsoft.WindowsAppSDK.InteractiveExperiences.props')" Text="$([System.String]::Format('$(ErrorText)', '..\\..\\..\\..\\packages\\Microsoft.WindowsAppSDK.InteractiveExperiences.1.8.250906004\\build\\native\\Microsoft.WindowsAppSDK.InteractiveExperiences.props'))" />
     <Error Condition="!Exists('..\\..\\..\\..\\packages\\Microsoft.WindowsAppSDK.InteractiveExperiences.1.8.250906004\\build\\native\\Microsoft.WindowsAppSDK.InteractiveExperiences.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\\..\\..\\..\\packages\\Microsoft.WindowsAppSDK.InteractiveExperiences.1.8.250906004\\build\\native\\Microsoft.WindowsAppSDK.InteractiveExperiences.targets'))" />
+    <Error Condition="!Exists('..\\..\\..\\..\\packages\\Microsoft.Graphics.Win2D.1.3.2\\build\\native\\Microsoft.Graphics.Win2D.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\\..\\..\\..\\packages\\Microsoft.Graphics.Win2D.1.3.2\\build\\native\\Microsoft.Graphics.Win2D.targets'))" />
   </Target>
 </Project>
