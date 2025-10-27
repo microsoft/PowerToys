@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
@@ -165,12 +165,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
     auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
-        bool isLightActive = false;
-
-        if (lightMinutes < darkMinutes)
-            isLightActive = (nowMinutes >= lightMinutes && nowMinutes < darkMinutes);
-        else
-            isLightActive = (nowMinutes >= lightMinutes || nowMinutes < darkMinutes);
+        bool isLightActive = (lightMinutes < darkMinutes) ? (nowMinutes >= lightMinutes && nowMinutes < darkMinutes) : (nowMinutes >= lightMinutes || nowMinutes < darkMinutes);
 
         bool isSystemCurrentlyLight = GetCurrentSystemTheme();
         bool isAppsCurrentlyLight = GetCurrentAppsTheme();
@@ -212,7 +207,10 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     if (settings.scheduleMode != ScheduleMode::Off)
     {
-        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
+        applyTheme(nowMinutes,
+                   settings.lightTime + settings.sunrise_offset,
+                   settings.darkTime + settings.sunset_offset,
+                   settings);
         Logger::trace(L"[LightSwitchService] Initialized g_lastUpdatedDay = {}", g_lastUpdatedDay);
     }
     else
@@ -231,6 +229,10 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         const auto& settings = LightSwitchSettings::instance().settings();
 
+        bool scheduleJustEnabled = (prevMode == ScheduleMode::Off && settings.scheduleMode != ScheduleMode::Off);
+        prevMode = settings.scheduleMode;
+
+        // ─── Handle "Schedule Off" Mode ─────────────────────────────────────────────
         if (settings.scheduleMode == ScheduleMode::Off)
         {
             Logger::info(L"[LightSwitchService] Schedule mode OFF - suspending scheduler but keeping service alive.");
@@ -242,13 +244,9 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             DWORD countOff = 0;
             waitsOff[countOff++] = g_ServiceStopEvent;
             if (hParent)
-            {
                 waitsOff[countOff++] = hParent;
-            }
             if (hManualOverride)
-            {
                 waitsOff[countOff++] = hManualOverride;
-            }
             waitsOff[countOff++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
             for (;;)
@@ -292,14 +290,15 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             continue;
         }
 
+        // ─── Normal Schedule Loop ───────────────────────────────────────────────────
         ULONGLONG nowTick = GetTickCount64();
         bool recentSettingsReload = (nowTick - lastSettingsReload < 5000);
 
         if (g_lastUpdatedDay != -1)
         {
             bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
-            // Skip detection when schedule is OFF or settings were just changed
-            if (settings.scheduleMode != ScheduleMode::Off && !recentSettingsReload)
+
+            if (settings.scheduleMode != ScheduleMode::Off && !recentSettingsReload && !scheduleJustEnabled)
             {
                 Logger::debug(L"[LightSwitchService] Checking if manual override is active...");
                 bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
@@ -341,11 +340,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             }
             else
             {
-                Logger::debug(L"[LightSwitchService] Skipping external-change detection (schedule off or recent settings reload).");
+                Logger::debug(L"[LightSwitchService] Skipping external-change detection (schedule off, recent reload, or just enabled).");
             }
-
         }
 
+        // ─── Apply Schedule Logic ───────────────────────────────────────────────────
         if (!skipRest)
         {
             bool modeChangedToSunset = (prevMode != settings.scheduleMode &&
@@ -410,9 +409,13 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             }
 
             if (!skipRest)
-                applyTheme(nowMinutes, currentSettings.lightTime + currentSettings.sunrise_offset, currentSettings.darkTime + currentSettings.sunset_offset, currentSettings);
+                applyTheme(nowMinutes,
+                           currentSettings.lightTime + currentSettings.sunrise_offset,
+                           currentSettings.darkTime + currentSettings.sunset_offset,
+                           currentSettings);
         }
 
+        // ─── Wait For Next Minute Tick Or Stop Event ────────────────────────────────
         SYSTEMTIME st;
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
@@ -440,6 +443,7 @@ cleanup:
 
     return 0;
 }
+
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
