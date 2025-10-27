@@ -41,24 +41,6 @@ public partial class WindowWalkerCommandsProvider : CommandProvider, IExtendedAt
             ],
         };
         _bandItem = new WindowsDockBand();
-
-        // var testSettings = new SettingsManager();
-        // testSettings.HideExplorerSettingInfo = true;
-        // testSettings.InMruOrder = false;
-        // testSettings.ResultsFromVisibleDesktopOnly = true;
-        // testSettings.UseWindowIcon = true;
-        // testSettings.ShowSubtitles = false;
-        // var testPage = new WindowWalkerListPage(testSettings);
-        // testPage.Id = "com.microsoft.cmdpal.windowwalker.dockband";
-
-        // _bandItem = new CommandItem(testPage)
-        // {
-        //    Title = Resources.window_walker_top_level_command_title,
-        //    Subtitle = Resources.windowwalker_name,
-        //    MoreCommands = [
-        //        new CommandContextItem(Settings.SettingsPage),
-        //    ],
-        // };
     }
 
     public override ICommandItem[] TopLevelCommands() => [_windowWalkerPageItem];
@@ -91,6 +73,7 @@ internal sealed partial class WindowsDockBand : CommandItem
         testSettings.ResultsFromVisibleDesktopOnly = true;
         testSettings.UseWindowIcon = true;
         testSettings.ShowSubtitles = false;
+        testSettings.ShowTitlesOnDock = SettingsManager.Instance.ShowTitlesOnDock;
         var testPage = new WindowWalkerListPage(testSettings);
         testPage.Id = "com.microsoft.cmdpal.windowwalker.dockband";
         _page = testPage;

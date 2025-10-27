@@ -46,16 +46,6 @@ public sealed partial class DockViewModel : IDisposable,
         SetupBands();
     }
 
-    // private static string[] _startCommands = [
-    //    "com.microsoft.cmdpal.windowwalker.dockband",
-    // ];
-
-    // private static string[] _endCommands = [
-    //    "com.crloewen.performanceMonitor.dockband",
-    //    "com.microsoft.cmdpal.clipboardHistory.Band",
-    //    "com.zadjii.virtualDesktops.band",
-    //    "com.microsoft.cmdpal.timedate.dockband",
-    // ];
     private void SetupBands()
     {
         Logger.LogDebug($"Setting up dock bands");
