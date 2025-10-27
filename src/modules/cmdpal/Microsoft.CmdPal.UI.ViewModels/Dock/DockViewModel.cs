@@ -17,12 +17,10 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
-    // private TaskbarWindowsService _taskbarWindows;
     // private Settings _settings;
     private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
 
-    // TODO! make these DockBandViewModel
     public ObservableCollection<DockBandViewModel> StartItems { get; } = new();
 
     public ObservableCollection<DockBandViewModel> EndItems { get; } = new();
@@ -41,6 +39,7 @@ public sealed partial class DockViewModel : IDisposable, IRecipient<CommandsRelo
     private static string[] _endCommands = [
         "com.crloewen.performanceMonitor.dockband",
         "com.microsoft.cmdpal.clipboardHistory.Band",
+        "com.zadjii.virtualDesktops.band",
         "com.microsoft.cmdpal.timedate.dockband",
     ];
 
