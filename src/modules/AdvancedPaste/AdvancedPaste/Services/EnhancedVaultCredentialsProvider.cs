@@ -130,6 +130,11 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
             return NormalizeServiceType(activeProvider.ServiceTypeKind);
         }
 
+        if (activeProvider is not null)
+        {
+            return AIServiceType.OpenAI;
+        }
+
         var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedProvider);
         if (fallback is not null)
         {

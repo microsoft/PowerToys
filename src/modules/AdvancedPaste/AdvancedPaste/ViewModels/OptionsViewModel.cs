@@ -714,6 +714,11 @@ namespace AdvancedPaste.ViewModels
                 return true;
             }
 
+            if (activeProvider is not null)
+            {
+                return false;
+            }
+
             var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedAIProvider);
             if (fallback is not null)
             {
