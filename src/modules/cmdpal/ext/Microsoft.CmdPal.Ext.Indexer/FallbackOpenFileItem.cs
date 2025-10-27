@@ -2,14 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Globalization;
-using System.IO;
-using System.Text;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -120,9 +114,9 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 // Exit 4: We found more than one result. Make our command take
                 // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
-                Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
+                Title = Resources.Indexer_Title;
                 Icon = Icons.FileExplorerIcon;
-                Subtitle = Resources.Indexer_Subtitle;
+                Subtitle = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
                 Command = indexerPage;
 
                 return;
