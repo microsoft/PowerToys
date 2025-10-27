@@ -29,7 +29,6 @@ src/
 ```
 
 ---
-
 ## 2. Design and Planning
 
 ### Decide the Type of Module
@@ -110,32 +109,49 @@ virtual bool on_hotkey(size_t hotkeyId) override // performs logic when the hotk
 * init/set/get config use preset functions to access the settings. Check out the `settings_objects.h` in `src\common\SettingsAPI`
 
 ---
-
 ## 3. Bootstrapping Your Module
 1. **Copy a similar module folder** (e.g., `Awake`) as a template.
 2. Rename projects and namespaces.
 3. Update GUIDs in `.vcxproj` and solution files.
-4. Register your module in the PowerToys runner:
-  * `src/runner/modules.h`
-  * `src/runner/modules.cpp`
-  * `src/runner/resource.h`
-  * `src/runner/settings_window.h`
-  * `src/runner/settings_window.cpp`
-  * `src/runner/main.cpp`
-  * `src/common/logger.h` (for logging)
+4. Fill in functions mentioned in the above section.
+5. Register your module in the PowerToys runner. (Hint: Search for all instances of other modules and slot your module in. ie: search "Awake" and make sure your module is in every list where Awake is.)
+    * `src/runner/modules.h`
+    * `src/runner/modules.cpp`
+    * `src/runner/resource.h`
+    * `src/runner/settings_window.h`
+    * `src/runner/settings_window.cpp`
+    * `src/runner/main.cpp`
+    * `src/common/logger.h` (for logging)
+6. ModuleInterface should build your ModuleInterface.dll. This will allow the runner to interact with your service.
 
-> **Gotcha:** Mismatched module IDs are one of the most common causes of load failures. Keep your ID consistent across manifest, registry, and service. At this point you are mostly linking your ModuleInterface to the runner so it knows how to communicate with your PowerToy module. 
+> **Gotcha:** Mismatched module IDs are one of the most common causes of load failures. Keep your ID consistent across manifest, registry, and service.
 
 ---
-
 ## 4. Write your service
 This is going to look different for every PowerToy. Sometimes it is easier to write the application on its own first and then link in the PowerToys settings logic later. But you have to write the service first before connecting it to the runner.
 
 ### Notes
 * Set the service icon using the `.rc` file.
 * Set the service name in the `.vcxproj` by setting the `<TargetName>`
+```
+<PropertyGroup>
+  <OutDir>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
+  <TargetName>PowerToys.LightSwitchService</TargetName>
+</PropertyGroup>
+```
 * To view the code of the `.vcxproj` right click the item and press `Unload project`
+* Use the following functions to interact with settings from your service
+```
+ModuleSettings::instance().InitFileWatcher();
+ModuleSettings::instance().LoadSettings();
+auto& settings = ModuleSettings::instance().settings();
+```
+These come from a ModuleSettings.h file that lives with the Service. You can copy this from another module (e.g., Light Switch) and adjust to fit your needs.
 
+If your module has a visual interface:
+* Use **WinUI 3** Desktop templates
+* Follow PowerToys conventions for theming, icons, and accessibility
+* Connect settings via `ViewModel` pattern
 ## 5. Settings Integration
 
 PowerToys settings are stored per-module as JSON under:
@@ -159,24 +175,30 @@ public ModuleSettings()
 ```
 * In `src\settings-ui\Settings.UI\ViewModels` create `<module>ViewModel.cs` this is where the interaction happens between your settings page in the PowerToys app and the settings file that is stored on the device. Changes here will trigger the settings watcher via a `NotifyPropertyChanged` event.
 * Create a `SettingsPage.xaml` at `src\settings-ui\Settings.UI\SettingsXAML\Views` this will be how the user interacts with the settings of your module.
+* Be sure to use resource strings for user facing strings so they can later be localized. (x:Uid connects to Resources.resw)
+```xaml
+// LightSwitch.xaml
+<ComboBoxItem
+    x:Uid="LightSwitch_ModeOff"
+    AutomationProperties.AutomationId="OffCBItem_LightSwitch"
+    Tag="Off" />
+
+// Resources.resw
+<data name="LightSwitch_ModeOff.Content" xml:space="preserve">
+  <value>Off</value>
+</data>
+```
+> Note: in the above example we use `.Content` to target the content of the Combobox. This can change per UI element (e.g., `.Text`, `.Header`, etc.)
 
 > **Reminder:** Manual edits in external editors (VS Code, Notepad++) do **not** trigger the settings watcher. Only changes written through PowerToys trigger reloads.
 
 ---
 
-If your module has a visual interface:
-
-* Use **WinUI 3** Desktop templates
-* Follow PowerToys conventions for theming, icons, and accessibility
-* Connect settings via `ViewModel` pattern
-
-> **Gotchas:**
->
-> * Only use the WinUI 3 Desktop framework, not UWP.
-> * Use `DispatcherQueue` when updating UI from non-UI threads.
+### Gotchas:
+* Only use the WinUI 3 Desktop framework, not UWP.
+* Use `DispatcherQueue` when updating UI from non-UI threads.
 
 ---
-
 ## 6. Building and Debugging
 ### Debugging steps
 1. If this is your first time debugging PowerToys be sure to follow [these steps first](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md#pre-debugging-setup).
@@ -187,7 +209,6 @@ If your module has a visual interface:
 
 > **Gotcha:** PowerToys caches `.nuget` artifacts aggressively. Use `git clean -xfd` when builds behave unexpectedly.
 ---
-
 ## 7. Installer and Packaging (WiX)
 
 ### Add Your Module to Installer
@@ -223,9 +244,3 @@ Generate-FileComponents -fileListName "<Module>Files" -wxsFilePath $PSScriptRoot
 ---
 ## 9. OOBE page
 The OOBE page is a custom settings page that shows off the module in the OOBE experience. This Window opens first before the Settings application and allows the user to learn about each module at a glace. Create `OOBE<ModuleName>.xaml` at ` src\settings-ui\Settings.UI\SettingsXAML\OOBE\Views`. You will also need to add your module name to the enum at `src\settings-ui\Settings.UI\OOBE\Enums\PowerToysModules.cs`
-
-## 10. Common Gotchas & Notes
-
-* 🧩 **Mismatched Module IDs** break startup registration.
-* 🧱 **Build cache corruption:** clear with `git clean -xfd`.
-* ❓ **Data not connecting in VS:** ensure projects are referenced correctly and added to the project.
