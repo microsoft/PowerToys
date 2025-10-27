@@ -26,10 +26,20 @@ namespace ShortcutGuide.ShortcutGuideXAML
         {
             InitializeComponent();
             UpdateTasklistButtons();
+            this.Activated += (_, _) => UpdateTasklistButtons();
         }
+
+        private bool _hasMovedToRightMonitor;
 
         public void UpdateTasklistButtons()
         {
+            if (!_hasMovedToRightMonitor)
+            {
+                GetCursorPos(out POINT lpPoint);
+                AppWindow.Move(new POINT { Y = lpPoint.Y, X = lpPoint.X });
+                _hasMovedToRightMonitor = true;
+            }
+
             TasklistButton[] buttons = TasklistPositions.GetButtons();
             double windowsLogoColumnWidth = WindowsLogoColumnWidth.Width.Value;
             double windowHeight = 58;
@@ -37,6 +47,8 @@ namespace ShortcutGuide.ShortcutGuideXAML
             double windowWidth = windowsLogoColumnWidth;
             double xPosition = buttons[0].X - (windowsLogoColumnWidth * DPI);
             double yPosition = WorkArea.Bottom - (windowHeight * DPI);
+
+            KeyHolder.Children.Clear();
 
             foreach (TasklistButton b in buttons)
             {

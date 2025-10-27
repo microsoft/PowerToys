@@ -3,10 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.UI.Windowing;
@@ -19,6 +17,7 @@ using ShortcutGuide.Pages;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
+using Windows.UI.WindowManagement;
 using WinRT.Interop;
 using WinUIEx;
 using WinUIEx.Messaging;
@@ -169,11 +168,21 @@ namespace ShortcutGuide
             }
         }
 
+        private bool _hasMovedToRightMonitor;
+
         private void SetWindowPosition()
         {
+            if (!_hasMovedToRightMonitor)
+            {
+                NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
+                AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y, X = lpPoint.X });
+                _hasMovedToRightMonitor = true;
+            }
+
             var hwnd = WindowNative.GetWindowHandle(this);
+            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-            if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X <= AppWindow.Position.X + Width)
+            if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X < AppWindow.Position.X + Width)
             {
                 MaxHeight = App.TaskBarWindow.AppWindow.Position.Y / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
                 MinHeight = MaxHeight;
