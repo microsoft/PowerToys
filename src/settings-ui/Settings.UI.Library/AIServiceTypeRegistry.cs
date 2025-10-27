@@ -21,6 +21,11 @@ public static class AIServiceTypeRegistry
             DisplayName = "OpenAI",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg",
             IsOnlineService = true,
+            LegalDescription = "Your API key connects directly to OpenAI services. By configuring this provider you agree to follow OpenAI usage policies and data handling rules.",
+            TermsLabel = "Terms of Use",
+            TermsUri = new Uri("https://openai.com/terms"),
+            PrivacyLabel = "Privacy Policy",
+            PrivacyUri = new Uri("https://openai.com/privacy"),
         },
         [AIServiceType.AzureOpenAI] = new AIServiceTypeMetadata
         {
@@ -28,6 +33,11 @@ public static class AIServiceTypeRegistry
             DisplayName = "Azure OpenAI",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/AzureAI.svg",
             IsOnlineService = true,
+            LegalDescription = "This connector routes requests to OpenAI models hosted on Microsoft Azure. Saving this configuration means you accept Microsoft terms and data protections.",
+            TermsLabel = "Microsoft Azure Terms of Service",
+            TermsUri = new Uri("https://azure.microsoft.com/support/legal/"),
+            PrivacyLabel = "Microsoft Privacy Statement",
+            PrivacyUri = new Uri("https://privacy.microsoft.com/privacystatement"),
         },
         [AIServiceType.Mistral] = new AIServiceTypeMetadata
         {
@@ -35,6 +45,11 @@ public static class AIServiceTypeRegistry
             DisplayName = "Mistral",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Mistral.svg",
             IsOnlineService = true,
+            LegalDescription = "You can connect with a personal Mistral API key. Configuring this provider indicates you accept Mistral's published legal terms.",
+            TermsLabel = "Mistral Terms of Use",
+            TermsUri = new Uri("https://mistral.ai/terms-of-service/"),
+            PrivacyLabel = "Mistral Privacy Policy",
+            PrivacyUri = new Uri("https://mistral.ai/privacy-policy/"),
         },
         [AIServiceType.Google] = new AIServiceTypeMetadata
         {
@@ -42,6 +57,11 @@ public static class AIServiceTypeRegistry
             DisplayName = "Google",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Gemini.svg",
             IsOnlineService = true,
+            LegalDescription = "Connecting to Gemini requires a Google API key. Using this integration means you agree to Google's general terms and privacy policies.",
+            TermsLabel = "Google Terms of Service",
+            TermsUri = new Uri("https://policies.google.com/terms"),
+            PrivacyLabel = "Google Privacy Policy",
+            PrivacyUri = new Uri("https://policies.google.com/privacy"),
         },
         [AIServiceType.AzureAIInference] = new AIServiceTypeMetadata
         {
@@ -49,14 +69,26 @@ public static class AIServiceTypeRegistry
             DisplayName = "Azure AI Inference",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/AzureAI.svg",
             IsOnlineService = true,
+            LegalDescription = "Azure AI Inference is governed by Microsoft service and privacy commitments. Continuing indicates you accept Microsoft terms for this offering.",
+            TermsLabel = "Microsoft Azure Terms of Service",
+            TermsUri = new Uri("https://azure.microsoft.com/support/legal/"),
+            PrivacyLabel = "Microsoft Privacy Statement",
+            PrivacyUri = new Uri("https://privacy.microsoft.com/privacystatement"),
         },
         [AIServiceType.Ollama] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Ollama,
             DisplayName = "Ollama",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Ollama.svg",
-            IsOnlineService = true,
+
+            // Olllama provide online service, but we treat it as local model at first version since it can is known for local model.
+            IsOnlineService = false,
             IsLocalModel = true,
+            LegalDescription = "Ollama usage, local or remote, is bound by its license and usage policies. Continuing means you accept Ollama's terms and privacy commitments.",
+            TermsLabel = "Ollama Terms of Service",
+            TermsUri = new Uri("https://ollama.com/terms"),
+            PrivacyLabel = "Ollama Privacy Policy",
+            PrivacyUri = new Uri("https://ollama.com/privacy"),
         },
         [AIServiceType.Anthropic] = new AIServiceTypeMetadata
         {
@@ -64,6 +96,11 @@ public static class AIServiceTypeRegistry
             DisplayName = "Anthropic",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Anthropic.svg",
             IsOnlineService = true,
+            LegalDescription = "This integration accesses Anthropic Claude models. You are responsible for complying with Anthropic policies whenever you use this provider.",
+            TermsLabel = "Anthropic Terms of Service",
+            TermsUri = new Uri("https://www.anthropic.com/legal/terms-of-service"),
+            PrivacyLabel = "Anthropic Privacy Policy",
+            PrivacyUri = new Uri("https://www.anthropic.com/legal/privacy"),
         },
         [AIServiceType.AmazonBedrock] = new AIServiceTypeMetadata
         {
@@ -71,6 +108,11 @@ public static class AIServiceTypeRegistry
             DisplayName = "Amazon Bedrock",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Bedrock.svg",
             IsOnlineService = true,
+            LegalDescription = "AWS credentials let you invoke Amazon Bedrock models. Saving this setup confirms you will follow AWS service terms and privacy commitments.",
+            TermsLabel = "AWS Service Terms",
+            TermsUri = new Uri("https://aws.amazon.com/service-terms/"),
+            PrivacyLabel = "AWS Privacy Notice",
+            PrivacyUri = new Uri("https://aws.amazon.com/privacy/"),
         },
         [AIServiceType.FoundryLocal] = new AIServiceTypeMetadata
         {
@@ -85,7 +127,9 @@ public static class AIServiceTypeRegistry
             ServiceType = AIServiceType.ML,
             DisplayName = "Windows ML",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg",
+            IsAvailableInUI = false,
             IsOnlineService = false,
+            IsLocalModel = true,
         },
         [AIServiceType.HuggingFace] = new AIServiceTypeMetadata
         {
@@ -169,6 +213,6 @@ public static class AIServiceTypeRegistry
     /// </summary>
     public static IEnumerable<AIServiceTypeMetadata> GetLocalServiceTypes()
     {
-        return GetAvailableServiceTypes().Where(m => !m.IsOnlineService);
+        return GetAvailableServiceTypes().Where(m => m.IsLocalModel);
     }
 }

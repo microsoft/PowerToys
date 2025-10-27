@@ -24,5 +24,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool IsAvailableInUI { get; init; } = true;
 
         public bool IsLocalModel { get; init; }
+
+        public string LegalDescription { get; init; }
+
+        public string TermsLabel { get; init; }
+
+        public Uri TermsUri { get; init; }
+
+        public string PrivacyLabel { get; init; }
+
+        public Uri PrivacyUri { get; init; }
+
+        public bool HasLegalInfo => !string.IsNullOrWhiteSpace(LegalDescription);
+
+        public bool HasTermsLink => TermsUri is not null && !string.IsNullOrEmpty(TermsLabel);
+
+        public bool HasPrivacyLink => PrivacyUri is not null && !string.IsNullOrEmpty(PrivacyLabel);
     }
 }
