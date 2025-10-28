@@ -43,6 +43,8 @@ public abstract class KernelServiceBase(
 
     protected abstract AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage);
 
+    protected abstract IKernelRuntimeConfiguration GetRuntimeConfiguration();
+
     public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery, CancellationToken cancellationToken, IProgress<double> progress)
     {
         Logger.LogTrace();
@@ -138,15 +140,11 @@ public abstract class KernelServiceBase(
 
     private async Task<(ChatHistory ChatHistory, AIServiceUsage Usage)> ExecuteAICompletion(Kernel kernel, string prompt, CancellationToken cancellationToken)
     {
+        var runtimeConfig = GetRuntimeConfiguration();
+
         ChatHistory chatHistory = [];
 
-        chatHistory.AddSystemMessage("""
-                You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task.
-                You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best.
-                The user will put in a request to format their clipboard data and you will fulfill it.
-                You will not directly see the output clipboard content, and do not need to provide it in the chat. You just need to do the transform operations as needed.
-                If you are unable to fulfill the request, end with an error message in the language of the user's request.
-                """);
+        chatHistory.AddSystemMessage(runtimeConfig.SystemPrompt);
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
 

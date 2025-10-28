@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using AdvancedPaste.Settings;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.Security.Credentials;
@@ -29,59 +29,53 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
     }
 
     private readonly IUserSettings _userSettings;
-    private readonly Dictionary<AICredentialScope, CredentialSlot> _slots;
-    private readonly object _syncRoot = new();
+    private readonly CredentialSlot _slot;
+    private readonly Lock _syncRoot = new();
 
     public EnhancedVaultCredentialsProvider(IUserSettings userSettings)
     {
         _userSettings = userSettings ?? throw new ArgumentNullException(nameof(userSettings));
 
-        _slots = new Dictionary<AICredentialScope, CredentialSlot>
-        {
-            [AICredentialScope.PasteAI] = new CredentialSlot(),
-            [AICredentialScope.AdvancedAI] = new CredentialSlot(),
-        };
+        _slot = new CredentialSlot();
 
-        Refresh(AICredentialScope.PasteAI);
-        Refresh(AICredentialScope.AdvancedAI);
+        Refresh();
     }
 
-    public string GetKey(AICredentialScope scope)
+    public string GetKey()
     {
-        lock (_syncRoot)
+        using (_syncRoot.EnterScope())
         {
-            UpdateSlot(scope, forceRefresh: false);
-            return _slots[scope].Key;
+            UpdateSlot(forceRefresh: false);
+            return _slot.Key;
         }
     }
 
-    public bool IsConfigured(AICredentialScope scope)
+    public bool IsConfigured()
     {
-        return !string.IsNullOrEmpty(GetKey(scope));
+        return !string.IsNullOrEmpty(GetKey());
     }
 
-    public bool Refresh(AICredentialScope scope)
+    public bool Refresh()
     {
-        lock (_syncRoot)
+        using (_syncRoot.EnterScope())
         {
-            return UpdateSlot(scope, forceRefresh: true);
+            return UpdateSlot(forceRefresh: true);
         }
     }
 
-    private bool UpdateSlot(AICredentialScope scope, bool forceRefresh)
+    private bool UpdateSlot(bool forceRefresh)
     {
-        var slot = _slots[scope];
-        var (serviceType, providerId) = ResolveCredentialTarget(scope);
+        var (serviceType, providerId) = ResolveCredentialTarget();
         var desiredServiceType = NormalizeServiceType(serviceType);
         providerId ??= string.Empty;
 
         var hasChanged = false;
 
-        if (slot.ServiceType != desiredServiceType || !string.Equals(slot.ProviderId, providerId, StringComparison.Ordinal))
+        if (_slot.ServiceType != desiredServiceType || !string.Equals(_slot.ProviderId, providerId, StringComparison.Ordinal))
         {
-            slot.ServiceType = desiredServiceType;
-            slot.ProviderId = providerId;
-            slot.Entry = BuildCredentialEntry(desiredServiceType, providerId, scope);
+            _slot.ServiceType = desiredServiceType;
+            _slot.ProviderId = providerId;
+            _slot.Entry = BuildCredentialEntry(desiredServiceType, providerId);
             forceRefresh = true;
             hasChanged = true;
         }
@@ -91,60 +85,17 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
             return hasChanged;
         }
 
-        var newKey = LoadKey(slot.Entry);
-        if (!string.Equals(slot.Key, newKey, StringComparison.Ordinal))
+        var newKey = LoadKey(_slot.Entry);
+        if (!string.Equals(_slot.Key, newKey, StringComparison.Ordinal))
         {
-            slot.Key = newKey;
+            _slot.Key = newKey;
             hasChanged = true;
         }
 
         return hasChanged;
     }
 
-    private (AIServiceType ServiceType, string ProviderId) ResolveCredentialTarget(AICredentialScope scope)
-    {
-        return scope switch
-        {
-            AICredentialScope.AdvancedAI => (ResolveAdvancedAiServiceType(), string.Empty),
-            AICredentialScope.PasteAI => ResolvePasteAiServiceTarget(),
-            _ => (AIServiceType.OpenAI, string.Empty),
-        };
-    }
-
-    private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
-    {
-        return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
-    }
-
-    private AIServiceType ResolveAdvancedAiServiceType()
-    {
-        var configuration = _userSettings.PasteAIConfiguration;
-        if (configuration is null)
-        {
-            return AIServiceType.OpenAI;
-        }
-
-        var activeProvider = configuration.ActiveProvider;
-        if (IsAdvancedProvider(activeProvider))
-        {
-            return NormalizeServiceType(activeProvider.ServiceTypeKind);
-        }
-
-        if (activeProvider is not null)
-        {
-            return AIServiceType.OpenAI;
-        }
-
-        var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedProvider);
-        if (fallback is not null)
-        {
-            return NormalizeServiceType(fallback.ServiceTypeKind);
-        }
-
-        return AIServiceType.OpenAI;
-    }
-
-    private (AIServiceType ServiceType, string ProviderId) ResolvePasteAiServiceTarget()
+    private (AIServiceType ServiceType, string ProviderId) ResolveCredentialTarget()
     {
         var provider = _userSettings.PasteAIConfiguration?.ActiveProvider;
         if (provider is null)
@@ -155,19 +106,9 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         return (provider.ServiceTypeKind, provider.Id ?? string.Empty);
     }
 
-    private static bool IsAdvancedProvider(PasteAIProviderDefinition provider)
+    private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
     {
-        if (provider is null || !provider.EnableAdvancedAI)
-        {
-            return false;
-        }
-
-        return SupportsAdvancedAI(provider.ServiceTypeKind);
-    }
-
-    private static bool SupportsAdvancedAI(AIServiceType serviceType)
-    {
-        return NormalizeServiceType(serviceType) is AIServiceType.OpenAI or AIServiceType.AzureOpenAI;
+        return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
     }
 
     private static string LoadKey((string Resource, string Username)? entry)
@@ -188,27 +129,7 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
         }
     }
 
-    private static (string Resource, string Username)? BuildCredentialEntry(AIServiceType serviceType, string providerId, AICredentialScope scope)
-    {
-        return scope switch
-        {
-            AICredentialScope.AdvancedAI => GetAdvancedAiEntry(serviceType),
-            AICredentialScope.PasteAI => GetPasteAiEntry(serviceType, providerId),
-            _ => null,
-        };
-    }
-
-    private static (string Resource, string Username)? GetAdvancedAiEntry(AIServiceType serviceType)
-    {
-        return serviceType switch
-        {
-            AIServiceType.OpenAI => ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_OpenAI"),
-            AIServiceType.AzureOpenAI => ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI"),
-            _ => null,
-        };
-    }
-
-    private static (string Resource, string Username)? GetPasteAiEntry(AIServiceType serviceType, string providerId)
+    private static (string Resource, string Username)? BuildCredentialEntry(AIServiceType serviceType, string providerId)
     {
         string resource;
         string serviceKey;

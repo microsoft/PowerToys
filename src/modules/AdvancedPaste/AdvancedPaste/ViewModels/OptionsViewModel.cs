@@ -116,13 +116,12 @@ namespace AdvancedPaste.ViewModels
                     return false;
                 }
 
-                if (!TryResolveAdvancedAIProvider(out var provider, out var usesPasteScope))
+                if (!TryResolveAdvancedAIProvider(out _))
                 {
                     return false;
                 }
 
-                var scope = usesPasteScope ? AICredentialScope.PasteAI : AICredentialScope.AdvancedAI;
-                return _credentialsProvider.IsConfigured(scope);
+                return _credentialsProvider.IsConfigured();
             }
         }
 
@@ -160,7 +159,10 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
-        private PasteFormats CustomAIFormat => _userSettings.IsAIEnabled && TryResolveAdvancedAIProvider(out _, out _) ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
+        private PasteFormats CustomAIFormat =>
+            _userSettings.IsAIEnabled && TryResolveAdvancedAIProvider(out _)
+                ? PasteFormats.KernelQuery
+                : PasteFormats.CustomTextTransformation;
 
         private bool Visible
         {
@@ -695,10 +697,9 @@ namespace AdvancedPaste.ViewModels
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
         }
 
-        private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider, out bool usesPasteScope)
+        private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider)
         {
             provider = null;
-            usesPasteScope = false;
 
             var configuration = _userSettings?.PasteAIConfiguration;
             if (configuration is null)
@@ -710,7 +711,6 @@ namespace AdvancedPaste.ViewModels
             if (IsAdvancedAIProvider(activeProvider))
             {
                 provider = activeProvider;
-                usesPasteScope = true;
                 return true;
             }
 
@@ -723,7 +723,6 @@ namespace AdvancedPaste.ViewModels
             if (fallback is not null)
             {
                 provider = fallback;
-                usesPasteScope = configuration.UseSharedCredentials;
                 return true;
             }
 
@@ -745,10 +744,7 @@ namespace AdvancedPaste.ViewModels
         {
             UpdateAllowedByGPO();
 
-            var pasteKeyChanged = _credentialsProvider.Refresh(AICredentialScope.PasteAI);
-            var advancedKeyChanged = _credentialsProvider.Refresh(AICredentialScope.AdvancedAI);
-
-            return pasteKeyChanged || advancedKeyChanged;
+            return _credentialsProvider.Refresh();
         }
 
         [RelayCommand]

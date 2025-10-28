@@ -165,8 +165,8 @@ namespace AdvancedPaste.Services.CustomActions
                 return string.Empty;
             }
 
-            credentialsProvider.Refresh(AICredentialScope.PasteAI);
-            return credentialsProvider.GetKey(AICredentialScope.PasteAI) ?? string.Empty;
+            credentialsProvider.Refresh();
+            return credentialsProvider.GetKey() ?? string.Empty;
         }
 
         private static bool RequiresApiKey(AIServiceType serviceType)

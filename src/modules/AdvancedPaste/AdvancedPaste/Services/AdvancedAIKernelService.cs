@@ -23,16 +23,16 @@ namespace AdvancedPaste.Services;
 
 public sealed class AdvancedAIKernelService : KernelServiceBase
 {
-    private readonly IAICredentialsProvider credentialsProvider;
-
-    private readonly record struct RuntimeConfig(
+    private sealed record RuntimeConfiguration(
         AIServiceType ServiceType,
         string ModelName,
         string Endpoint,
         string DeploymentName,
         string ModelPath,
-        bool UsePasteScope,
-        bool ModerationEnabled);
+        string SystemPrompt,
+        bool ModerationEnabled) : IKernelRuntimeConfiguration;
+
+    private readonly IAICredentialsProvider credentialsProvider;
 
     public AdvancedAIKernelService(
         IAICredentialsProvider credentialsProvider,
@@ -47,7 +47,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         this.credentialsProvider = credentialsProvider;
     }
 
-    protected override string AdvancedAIModelName => GetRuntimeConfig().ModelName;
+    protected override string AdvancedAIModelName => GetRuntimeConfiguration().ModelName;
 
     protected override PromptExecutionSettings PromptExecutionSettings => CreatePromptExecutionSettings();
 
@@ -55,16 +55,15 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
     {
         ArgumentNullException.ThrowIfNull(kernelBuilder);
 
-        var runtimeConfig = GetRuntimeConfig();
+        var runtimeConfig = GetRuntimeConfiguration();
         var serviceType = runtimeConfig.ServiceType;
         var modelName = runtimeConfig.ModelName;
         var requiresApiKey = RequiresApiKey(serviceType);
         var apiKey = string.Empty;
         if (requiresApiKey)
         {
-            var scope = runtimeConfig.UsePasteScope ? AICredentialScope.PasteAI : AICredentialScope.AdvancedAI;
-            this.credentialsProvider.Refresh(scope);
-            apiKey = (this.credentialsProvider.GetKey(scope) ?? string.Empty).Trim();
+            this.credentialsProvider.Refresh();
+            apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
@@ -94,7 +93,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     protected override bool ShouldModerateAdvancedAI()
     {
-        if (!TryGetRuntimeConfig(out var runtimeConfig))
+        if (!TryGetRuntimeConfiguration(out var runtimeConfig))
         {
             return false;
         }
@@ -112,9 +111,9 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return "gpt-4o";
     }
 
-    private RuntimeConfig GetRuntimeConfig()
+    protected override IKernelRuntimeConfiguration GetRuntimeConfiguration()
     {
-        if (TryGetRuntimeConfig(out var runtimeConfig))
+        if (TryGetRuntimeConfiguration(out var runtimeConfig))
         {
             return runtimeConfig;
         }
@@ -122,11 +121,11 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         throw new InvalidOperationException("No Advanced AI provider is configured.");
     }
 
-    private bool TryGetRuntimeConfig(out RuntimeConfig runtimeConfig)
+    private bool TryGetRuntimeConfiguration(out IKernelRuntimeConfiguration runtimeConfig)
     {
-        runtimeConfig = default;
+        runtimeConfig = null;
 
-        if (!TryResolveAdvancedProvider(out var provider, out var usePasteScope))
+        if (!TryResolveAdvancedProvider(out var provider))
         {
             return false;
         }
@@ -137,21 +136,20 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
             return false;
         }
 
-        runtimeConfig = new RuntimeConfig(
+        runtimeConfig = new RuntimeConfiguration(
             serviceType,
             GetModelName(provider),
             provider.EndpointUrl,
             provider.DeploymentName,
             provider.ModelPath,
-            usePasteScope,
+            provider.SystemPrompt,
             provider.ModerationEnabled);
         return true;
     }
 
-    private bool TryResolveAdvancedProvider(out PasteAIProviderDefinition provider, out bool usePasteScope)
+    private bool TryResolveAdvancedProvider(out PasteAIProviderDefinition provider)
     {
         provider = null;
-        usePasteScope = false;
 
         var configuration = this.UserSettings?.PasteAIConfiguration;
         if (configuration is null)
@@ -163,7 +161,6 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         if (IsAdvancedProvider(activeProvider))
         {
             provider = activeProvider;
-            usePasteScope = true;
             return true;
         }
 
@@ -176,7 +173,6 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         if (fallback is not null)
         {
             provider = fallback;
-            usePasteScope = configuration.UseSharedCredentials;
             return true;
         }
 
@@ -221,10 +217,10 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private PromptExecutionSettings CreatePromptExecutionSettings()
     {
-        var serviceType = GetRuntimeConfig().ServiceType;
+        var serviceType = GetRuntimeConfiguration().ServiceType;
         return new OpenAIPromptExecutionSettings
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
             Temperature = 0.01,
         };
     }

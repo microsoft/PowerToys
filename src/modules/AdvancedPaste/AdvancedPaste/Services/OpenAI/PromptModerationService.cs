@@ -24,16 +24,8 @@ public sealed class PromptModerationService(IAICredentialsProvider aiCredentials
     {
         try
         {
-            _aiCredentialsProvider.Refresh(AICredentialScope.AdvancedAI);
-            var apiKey = _aiCredentialsProvider.GetKey(AICredentialScope.AdvancedAI);
-
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                _aiCredentialsProvider.Refresh(AICredentialScope.PasteAI);
-                apiKey = _aiCredentialsProvider.GetKey(AICredentialScope.PasteAI);
-            }
-
-            apiKey = apiKey?.Trim() ?? string.Empty;
+            _aiCredentialsProvider.Refresh();
+            var apiKey = _aiCredentialsProvider.GetKey()?.Trim() ?? string.Empty;
 
             if (string.IsNullOrEmpty(apiKey))
             {
