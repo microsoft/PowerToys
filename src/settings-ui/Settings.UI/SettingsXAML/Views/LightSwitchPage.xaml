@@ -88,16 +88,14 @@
                                     x:Uid="LightSwitch_LocationSettingsCard"
                                     Visibility="Collapsed">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock
+                                        <controls:IsEnabledTextBlock
                                             VerticalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Text="{x:Bind ViewModel.SyncButtonInformation, Mode=OneWay}" />
                                         <Button
-                                            Padding="8"
                                             AutomationProperties.AutomationId="SetLocationButton_LightSwitch"
                                             Click="SyncLocationButton_Click"
-                                            Content="{ui:FontIcon Glyph=&#xECAF;,
-                                                                  FontSize=16}" />
+                                            Content="Set location" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
 
@@ -268,6 +266,11 @@
                                     IsActive="False"
                                     Visibility="Collapsed" />
 
+                                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                    <NumberBox Header="Latitude" PlaceholderText="52" />
+                                    <NumberBox Header="Longitude" PlaceholderText="6" />
+                                    <Button Content="Find location" />
+                                </StackPanel>
                                 <Grid
                                     x:Name="LocationResultPanel"
                                     Grid.Row="1"
@@ -281,6 +284,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
