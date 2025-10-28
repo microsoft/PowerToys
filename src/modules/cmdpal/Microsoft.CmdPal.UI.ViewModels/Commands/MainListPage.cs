@@ -28,6 +28,7 @@ public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
+    private readonly object _fallbackDebounceLock = new();
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
     private List<Scored<IListItem>>? _filteredItems;
@@ -38,6 +39,10 @@ public partial class MainListPage : DynamicListPage,
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
     private SettingsModel _settings;
+
+    private int _fallbackBatchId;
+    private Timer? _fallbackItemsChangedDebounceTimer;
+    private const int FallbackItemsChangedDebounceDelayMs = 75;
 
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
@@ -443,33 +448,105 @@ public partial class MainListPage : DynamicListPage,
 
     private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken token)
     {
-        _ = Task.Run(
-            () =>
+        if (commands.Count == 0)
         {
-            var needsToUpdate = false;
+            return;
+        }
 
-            foreach (var command in commands)
+        // Start a new batch; invalidate any previous in‑flight batch.
+        var batchId = Interlocked.Increment(ref _fallbackBatchId);
+
+        // Cancel any pending debounce raise from prior batch.
+        lock (_fallbackDebounceLock)
+        {
+            _fallbackItemsChangedDebounceTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+
+        // Track remaining updates so we can force a final RaiseItemsChanged.
+        var remaining = commands.Count;
+
+        foreach (var command in commands)
+        {
+            _ = Task.Run(
+                () =>
             {
-                if (token.IsCancellationRequested)
+                try
                 {
-                    return;
-                }
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
 
-                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
-                needsToUpdate = needsToUpdate || changedVisibility;
+                    // Skip if this batch became stale (new search started).
+                    if (batchId != _fallbackBatchId)
+                    {
+                        return;
+                    }
+
+                    var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
+
+                    if (token.IsCancellationRequested || batchId != _fallbackBatchId)
+                    {
+                        return;
+                    }
+
+                    if (changedVisibility)
+                    {
+                        // Visibility/text changed—schedule a debounced raise.
+                        ScheduleDebouncedFallbackRaise(batchId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Fallback update failed", ex);
+                }
+                finally
+                {
+                    // When the last one finishes, force a raise (cancels debounce).
+                    if (Interlocked.Decrement(ref remaining) == 0)
+                    {
+                        // Last completion may happen before debounce fires; ensure current batch.
+                        if (batchId == _fallbackBatchId && !token.IsCancellationRequested)
+                        {
+                            lock (_fallbackDebounceLock)
+                            {
+                                _fallbackItemsChangedDebounceTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+                            }
+
+                            RaiseItemsChanged();
+                        }
+                    }
+                }
+            },
+                token);
+        }
+    }
+
+    // Add helper methods somewhere in the class (e.g., before UpdateFallbacks)
+    private void ScheduleDebouncedFallbackRaise(int batchId)
+    {
+        lock (_fallbackDebounceLock)
+        {
+            // Ignore stale batches
+            if (batchId != _fallbackBatchId)
+            {
+                return;
             }
 
-            if (needsToUpdate)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
+            _fallbackItemsChangedDebounceTimer ??= new Timer(FallbackItemsChangedDebounceTimerCallback!, null, Timeout.Infinite, Timeout.Infinite);
 
-                RaiseItemsChanged();
-            }
-        },
-            token);
+            // Restart debounce timer
+            _fallbackItemsChangedDebounceTimer.Change(FallbackItemsChangedDebounceDelayMs, Timeout.Infinite);
+        }
+    }
+
+    private void FallbackItemsChangedDebounceTimerCallback(object? state)
+    {
+        // Ensure this callback is for the current batch
+        var currentBatch = Volatile.Read(ref _fallbackBatchId);
+        RaiseItemsChanged();
+
+        // We do NOT dispose the timer here—keep it for reuse.
     }
 
     private bool ActuallyLoading()
@@ -617,6 +694,13 @@ public partial class MainListPage : DynamicListPage,
         }
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
+
+        lock (_fallbackDebounceLock)
+        {
+            _fallbackItemsChangedDebounceTimer?.Dispose();
+            _fallbackItemsChangedDebounceTimer = null;
+        }
+
         GC.SuppressFinalize(this);
     }
 }

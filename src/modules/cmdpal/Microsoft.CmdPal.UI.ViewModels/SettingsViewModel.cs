@@ -142,7 +142,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
-    private readonly ObservableCollection<FallbackSettingsViewModel> _fallbackSettings = new();
+    private ObservableCollection<FallbackSettingsViewModel> _fallbackSettings = new();
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackSettings => _fallbackSettings;
 
@@ -172,7 +172,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
                     }
 
                     var fallbackSettings = _settings.GetFallbackSettings(fallback.Id);
-                    var fallbackSettingsModel = new FallbackSettingsViewModel(fallback, fallbackSettings, settingsModel, _serviceProvider);
+                    var fallbackSettingsModel = new FallbackSettingsViewModel(fallback, fallbackSettings, settingsModel, _serviceProvider, this);
                     _fallbackSettings.Add(fallbackSettingsModel);
                 }
             }
@@ -191,7 +191,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     // ReorderFallbacks is called after the UI collection has been reordered.
     // Assign descending WeightBoost values (highest priority = largest boost) once,
     // then persist settings.
-    public void ReorderFallbacks(FallbackSettingsViewModel droppedCommand, List<FallbackSettingsViewModel> allFallbacks)
+    public void ReorderFallbacks(FallbackSettingsViewModel _, List<FallbackSettingsViewModel> allFallbacks)
     {
         // Highest weight to first item
         var weight = allFallbacks.Count;
@@ -204,26 +204,18 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         Save();
         ApplyFallbackSort();
 
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackSettings)));
         WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
     }
 
     public void ApplyFallbackSort()
     {
-        var sorted = _fallbackSettings
+        _fallbackSettings = new(_fallbackSettings
             .OrderByDescending(o => o.IsEnabled)
+            .ThenByDescending(o => o.IncludeInGlobalResults)
             .ThenByDescending(o => o.WeightBoost)
-            .ToList();
+            .ToList());
 
-        for (var targetIndex = 0; targetIndex < sorted.Count; targetIndex++)
-        {
-            var item = sorted[targetIndex];
-            var currentIndex = _fallbackSettings.IndexOf(item);
-            if (currentIndex != targetIndex)
-            {
-                _fallbackSettings.Move(currentIndex, targetIndex);
-            }
-        }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackSettings)));
     }
 
     private void Save() => SettingsModel.SaveSettings(_settings);

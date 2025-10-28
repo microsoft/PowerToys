@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -26,17 +25,6 @@ public sealed partial class FallbacksPage : Page
         viewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
     }
 
-    private void SettingsCard_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is SettingsCard card)
-        {
-            if (card.DataContext is ProviderSettingsViewModel vm)
-            {
-                WeakReferenceMessenger.Default.Send<NavigateToExtensionSettingsMessage>(new(vm));
-            }
-        }
-    }
-
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
         if (args.DropResult == DataPackageOperation.Move &&
@@ -46,6 +34,17 @@ public sealed partial class FallbacksPage : Page
             if (item is FallbackSettingsViewModel droppedCommand)
             {
                 viewModel?.ReorderFallbacks(droppedCommand, sender.Items.Cast<FallbackSettingsViewModel>().ToList());
+            }
+        }
+    }
+
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button)
+        {
+            if (button.DataContext is ProviderSettingsViewModel vm)
+            {
+                WeakReferenceMessenger.Default.Send<NavigateToExtensionSettingsMessage>(new(vm));
             }
         }
     }

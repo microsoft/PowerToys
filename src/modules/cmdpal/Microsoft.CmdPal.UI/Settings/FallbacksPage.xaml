@@ -16,6 +16,15 @@
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToVisibilityConverter"
+                FalseValue="Collapsed"
+                TrueValue="Visible" />
+        </ResourceDictionary>
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -32,8 +41,8 @@
                         AllowDrop="True"
                         CanDragItems="True"
                         CanReorderItems="True"
-                        ItemsSource="{x:Bind viewModel.FallbackSettings, Mode=OneWay}"
                         DragItemsCompleted="ListView_DragItemsCompleted"
+                        ItemsSource="{x:Bind viewModel.FallbackSettings, Mode=OneWay}"
                         SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:FallbackSettingsViewModel">
@@ -94,12 +103,42 @@
                                             </cpcontrols:ContentIcon>
                                         </controls:SettingsExpander.HeaderIcon>
 
-                                        <ToggleSwitch
-                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                        <StackPanel Orientation="Horizontal">
+
+                                            <cpcontrols:Tag
+                                                Margin="0,0,16,0"
+                                                Text="Global"
+                                                ToolTipService.ToolTip="Displays in global results"
+                                                Visibility="{x:Bind IncludeInGlobalResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                            <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                        </StackPanel>
+
 
                                         <controls:SettingsExpander.Items>
                                             <controls:SettingsCard ContentAlignment="Left">
-                                                <cpcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard" IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}" />
+                                                <cpcontrols:CheckBoxWithDescriptionControl
+                                                    x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard"
+                                                    IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
+                                                    IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
+                                            </controls:SettingsCard>
+
+                                            <controls:SettingsCard
+                                                MinHeight="0"
+                                                BorderThickness="0"
+                                                ContentAlignment="Right"
+                                                Description="{x:Bind ProviderSettingsViewModel.DisplayName,Mode=OneWay}">
+                                                <StackPanel
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal"
+                                                    Spacing="4">
+                                                    <Button
+                                                        Click="Button_Click"
+                                                        DataContext="{x:Bind ProviderSettingsViewModel, Mode=OneWay}">
+                                                        <TextBlock
+                                                            Text="{x:Bind DisplayName, Mode=OneWay}"/>
+                                                    </Button>
+                                                </StackPanel>
                                             </controls:SettingsCard>
                                         </controls:SettingsExpander.Items>
                                     </controls:SettingsExpander>

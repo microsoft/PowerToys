@@ -15,7 +15,8 @@ public partial class FallbackSettingsViewModel(
     TopLevelViewModel fallback,
     FallbackSettings _fallbackSettings,
     ProviderSettingsViewModel _providerSettings,
-    IServiceProvider _serviceProvider) : ObservableObject
+    IServiceProvider _serviceProvider,
+    SettingsViewModel _settingsViewModel) : ObservableObject
 {
     private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
 
@@ -27,15 +28,17 @@ public partial class FallbackSettingsViewModel(
 
     public IExtensionWrapper? Extension => _providerSettings.Extension;
 
+    public ProviderSettingsViewModel ProviderSettingsViewModel => _providerSettings;
+
     public string ExtensionVersion => _providerSettings.ExtensionVersion;
 
     public string ProviderId => fallback.CommandProviderId;
 
     public IconInfoViewModel Icon => _providerSettings.Icon;
 
-    public bool HasSettings => _providerSettings.HasSettings;
-
     public ContentPageViewModel? SettingsPage => _providerSettings.SettingsPage;
+
+    public string Id => fallback.Id;
 
     public bool IsEnabled
     {
@@ -45,8 +48,13 @@ public partial class FallbackSettingsViewModel(
             if (value != _fallbackSettings.IsEnabled)
             {
                 _fallbackSettings.IsEnabled = value;
+
+                if (!_fallbackSettings.IsEnabled)
+                {
+                    _fallbackSettings.IncludeInGlobalResults = false;
+                }
+
                 Save();
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
             }
         }
@@ -60,8 +68,13 @@ public partial class FallbackSettingsViewModel(
             if (value != _fallbackSettings.IncludeInGlobalResults)
             {
                 _fallbackSettings.IncludeInGlobalResults = value;
+
+                if (!_fallbackSettings.IsEnabled)
+                {
+                    _fallbackSettings.IsEnabled = true;
+                }
+
                 Save();
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IncludeInGlobalResults));
             }
         }
@@ -79,5 +92,10 @@ public partial class FallbackSettingsViewModel(
         }
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save()
+    {
+        _settingsViewModel.ApplyFallbackSort();
+        SettingsModel.SaveSettings(_settings);
+        WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+    }
 }
