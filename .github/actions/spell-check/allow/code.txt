@@ -321,6 +321,7 @@ MRUINFO
 REGSTR
 
 #Xaml
+NVI
 Storyboards
 
 # Misc Win32 APIs and PInvokes
