@@ -30,25 +30,72 @@ internal sealed partial class AddBookmarkForm : FormContent
             "type": "Input.Text",
             "style": "text",
             "id": "bookmark",
-            "value": {{JsonSerializer.Serialize(url, BookmarkSerializationContext.Default.String)}},
-            "label": "{{Resources.bookmarks_form_bookmark_label}}",
+            "value": {{EncodeString(url)}},
+            "label": {{EncodeString(Resources.bookmarks_form_bookmark_label)}},
             "isRequired": true,
-            "errorMessage": "{{Resources.bookmarks_form_bookmark_required}}"
+            "errorMessage": {{EncodeString(Resources.bookmarks_form_bookmark_required)}},
+            "placeholder": {{EncodeString(Resources.bookmarks_form_bookmark_placeholder)}}
         },
         {
             "type": "Input.Text",
             "style": "text",
             "id": "name",
-            "label": "{{Resources.bookmarks_form_name_label}}",
-            "value": {{JsonSerializer.Serialize(name, BookmarkSerializationContext.Default.String)}},
-            "isRequired": false,
-            "errorMessage": "{{Resources.bookmarks_form_name_required}}"
+            "label": {{EncodeString(Resources.bookmarks_form_name_label)}},
+            "value": {{EncodeString(name)}},
+            "isRequired": false
+        },
+        {
+            "type": "RichTextBlock",
+            "inlines": [
+                {
+                    "type": "TextRun",
+                    "text": {{EncodeString(Resources.bookmarks_form_hint_text1)}},
+                    "isSubtle": true,
+                    "size": "Small"
+                },
+                {
+                    "type": "TextRun",
+                    "text": " ",
+                    "isSubtle": true,
+                    "size": "Small"
+                },
+                {
+                    "type": "TextRun",
+                    "text": {{EncodeString(Resources.bookmarks_form_hint_text2)}},
+                    "fontType": "Monospace",
+                    "size": "Small"
+                },
+                {
+                    "type": "TextRun",
+                    "text": " ",
+                    "isSubtle": true,
+                    "size": "Small"
+                },
+                {
+                    "type": "TextRun",
+                    "text": {{EncodeString(Resources.bookmarks_form_hint_text3)}},
+                    "isSubtle": true,
+                    "size": "Small"
+                },
+                {
+                    "type": "TextRun",
+                    "text": " ",
+                    "isSubtle": true,
+                    "size": "Small"
+                },
+                {
+                    "type": "TextRun",
+                    "text": {{EncodeString(Resources.bookmarks_form_hint_text4)}},
+                    "fontType": "Monospace",
+                    "size": "Small"
+                }
+            ]
         }
     ],
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "{{Resources.bookmarks_form_save}}",
+            "title": {{EncodeString(Resources.bookmarks_form_save)}},
             "data": {
                 "name": "name",
                 "bookmark": "bookmark"
@@ -58,6 +105,8 @@ internal sealed partial class AddBookmarkForm : FormContent
 }
 """;
     }
+
+    private static string EncodeString(string s) => JsonSerializer.Serialize(s, BookmarkSerializationContext.Default.String);
 
     public override CommandResult SubmitForm(string payload)
     {
