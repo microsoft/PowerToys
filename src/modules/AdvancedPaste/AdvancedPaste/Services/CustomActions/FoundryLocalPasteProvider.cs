@@ -47,62 +47,97 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var systemPrompt = request.SystemPrompt;
-        if (string.IsNullOrWhiteSpace(systemPrompt))
+        try
         {
-            throw new ArgumentException("System prompt must be provided", nameof(request));
+            var systemPrompt = request.SystemPrompt;
+            if (string.IsNullOrWhiteSpace(systemPrompt))
+            {
+                throw new PasteActionException(
+                    "System prompt is required for Foundry Local",
+                    new ArgumentException("System prompt must be provided", nameof(request)));
+            }
+
+            var prompt = request.Prompt;
+            var inputText = request.InputText;
+            if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrWhiteSpace(inputText))
+            {
+                throw new PasteActionException(
+                    "Prompt and input text are required",
+                    new ArgumentException("Prompt and input text must be provided", nameof(request)));
+            }
+
+            var modelReference = _config?.Model;
+            if (string.IsNullOrWhiteSpace(modelReference))
+            {
+                throw new PasteActionException(
+                    "No Foundry Local model selected",
+                    new InvalidOperationException("Model identifier is required"),
+                    aiServiceMessage: "Please select a model in the AI provider settings. Model identifier should be in the format 'fl://model-name'.");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            var chatClient = LanguageModels.GetClient(modelReference);
+            if (chatClient is null)
+            {
+                throw new PasteActionException(
+                    $"Unable to load Foundry Local model: {modelReference}",
+                    new InvalidOperationException("Chat client resolution failed"),
+                    aiServiceMessage: "The model may not be downloaded or the Foundry Local service may not be running. Please check the model status in settings.");
+            }
+
+            // Extract actual model ID from the URL (format: fl://modelId)
+            var actualModelId = modelReference.Replace("fl://", string.Empty).Trim('/');
+
+            var userMessageContent = $"""
+                User instructions:
+                {prompt}
+
+                Text:
+                {inputText}
+
+                Output:
+                """;
+
+            var chatMessages = new List<ChatMessage>
+            {
+                new(ChatRole.System, systemPrompt),
+                new(ChatRole.User, userMessageContent),
+            };
+
+            var chatOptions = CreateChatOptions(_config?.SystemPrompt, actualModelId);
+
+            progress?.Report(0.1);
+
+            var response = await chatClient.GetResponseAsync(chatMessages, chatOptions, cancellationToken).ConfigureAwait(false);
+
+            progress?.Report(0.8);
+
+            var responseText = GetResponseText(response);
+            request.Usage = ToUsage(response.Usage);
+
+            progress?.Report(1.0);
+
+            return responseText ?? string.Empty;
         }
-
-        var prompt = request.Prompt;
-        var inputText = request.InputText;
-        if (string.IsNullOrWhiteSpace(prompt) || string.IsNullOrWhiteSpace(inputText))
+        catch (OperationCanceledException)
         {
-            throw new ArgumentException("Prompt and input text must be provided", nameof(request));
+            // Let cancellation exceptions pass through unchanged
+            throw;
         }
-
-        var modelReference = _config?.Model;
-        if (string.IsNullOrWhiteSpace(modelReference))
+        catch (PasteActionException)
         {
-            throw new InvalidOperationException("Foundry Local requires a model identifier (for example, 'fl://model-name').");
+            // Let our custom exceptions pass through unchanged
+            throw;
         }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        var chatClient = LanguageModels.GetClient(modelReference);
-        if (chatClient is null)
+        catch (Exception ex)
         {
-            throw new InvalidOperationException($"Unable to resolve Foundry Local client for '{modelReference}'. Ensure the model is downloaded.");
+            // Wrap any other exceptions with context
+            var modelInfo = !string.IsNullOrWhiteSpace(_config?.Model) ? $" (Model: {_config.Model})" : string.Empty;
+            throw new PasteActionException(
+                $"Failed to generate response using Foundry Local{modelInfo}",
+                ex,
+                aiServiceMessage: $"Error details: {ex.Message}");
         }
-
-        var userMessageContent = $"""
-            User instructions:
-            {prompt}
-
-            Text:
-            {inputText}
-
-            Output:
-            """;
-
-        var chatMessages = new List<ChatMessage>
-        {
-            new(ChatRole.System, systemPrompt),
-            new(ChatRole.User, userMessageContent),
-        };
-
-        var chatOptions = CreateChatOptions(_config?.SystemPrompt, modelReference);
-
-        progress?.Report(0.1);
-
-        var response = await chatClient.GetResponseAsync(chatMessages, chatOptions, cancellationToken).ConfigureAwait(false);
-
-        progress?.Report(0.8);
-
-        var responseText = GetResponseText(response);
-        request.Usage = ToUsage(response.Usage);
-
-        progress?.Report(1.0);
-
-        return responseText ?? string.Empty;
     }
 
     private static ChatOptions CreateChatOptions(string systemPrompt, string modelReference)

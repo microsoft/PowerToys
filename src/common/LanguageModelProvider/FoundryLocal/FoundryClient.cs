@@ -2,9 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
-using System.Text;
-using System.Text.Json;
+using ManagedCommon;
+using Microsoft.AI.Foundry.Local;
 
 namespace LanguageModelProvider.FoundryLocal;
 
@@ -12,53 +11,64 @@ internal sealed class FoundryClient
 {
     public static async Task<FoundryClient?> CreateAsync()
     {
-        var serviceManager = FoundryServiceManager.TryCreate();
-        if (serviceManager is null)
+        try
         {
-            return null;
-        }
+            Logger.LogInfo("[FoundryClient] Creating Foundry Local client");
+            var manager = new FoundryLocalManager();
 
-        if (!await serviceManager.IsRunning().ConfigureAwait(false))
-        {
-            if (!await serviceManager.StartService().ConfigureAwait(false))
+            // Ensure service is running
+            if (!manager.IsServiceRunning)
             {
-                return null;
+                Logger.LogInfo("[FoundryClient] Starting Foundry Local service");
+                await manager.StartServiceAsync().ConfigureAwait(false);
+
+                if (!manager.IsServiceRunning)
+                {
+                    Logger.LogError("[FoundryClient] Failed to start Foundry Local service");
+                    return null;
+                }
             }
+
+            Logger.LogInfo("[FoundryClient] Foundry Local service is running");
+            return new FoundryClient(manager);
         }
-
-        var serviceUrl = await serviceManager.GetServiceUrl().ConfigureAwait(false);
-
-        if (string.IsNullOrEmpty(serviceUrl))
+        catch (Exception ex)
         {
+            Logger.LogError($"[FoundryClient] Error creating client: {ex.Message}");
             return null;
         }
-
-        var serviceUri = new Uri(serviceUrl, UriKind.Absolute);
-        var baseAddress = serviceUri.AbsoluteUri.EndsWith('/')
-            ? serviceUri
-            : new Uri(serviceUri, "/");
-
-        var httpClient = new HttpClient
-        {
-            BaseAddress = baseAddress,
-            Timeout = TimeSpan.FromHours(2),
-        };
-
-        var assemblyVersion = typeof(FoundryClient).Assembly.GetName().Version?.ToString() ?? "unknown";
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($"foundry-local-cs-sdk/{assemblyVersion}");
-
-        return new FoundryClient(serviceManager, httpClient);
     }
 
-    public FoundryServiceManager ServiceManager { get; }
-
-    private readonly HttpClient _httpClient;
+    private readonly FoundryLocalManager _foundryManager;
     private readonly List<FoundryCatalogModel> _catalogModels = [];
 
-    private FoundryClient(FoundryServiceManager serviceManager, HttpClient httpClient)
+    private FoundryClient(FoundryLocalManager foundryManager)
     {
-        ServiceManager = serviceManager;
-        _httpClient = httpClient;
+        _foundryManager = foundryManager;
+    }
+
+    public Task<string?> GetServiceUrl()
+    {
+        try
+        {
+            return Task.FromResult(_foundryManager.Endpoint?.ToString());
+        }
+        catch
+        {
+            return Task.FromResult<string?>(null);
+        }
+    }
+
+    public Uri? GetServiceUri()
+    {
+        try
+        {
+            return _foundryManager.ServiceUri;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public async Task<List<FoundryCatalogModel>> ListCatalogModels()
@@ -70,20 +80,39 @@ internal sealed class FoundryClient
 
         try
         {
-            var response = await _httpClient.GetAsync("/foundry/list").ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            Logger.LogInfo("[FoundryClient] Listing catalog models");
+            var models = await _foundryManager.ListCatalogModelsAsync().ConfigureAwait(false);
 
-            var models = await JsonSerializer.DeserializeAsync(
-                response.Content.ReadAsStream(),
-                FoundryJsonContext.Default.ListFoundryCatalogModel).ConfigureAwait(false);
-
-            if (models is { Count: > 0 })
+            if (models != null)
             {
-                models.ForEach(_catalogModels.Add);
+                foreach (var model in models)
+                {
+                    _catalogModels.Add(new FoundryCatalogModel
+                    {
+                        Name = model.ModelId ?? string.Empty,
+                        DisplayName = model.DisplayName ?? string.Empty,
+                        ProviderType = model.ProviderType ?? string.Empty,
+                        Uri = model.Uri ?? string.Empty,
+                        Version = model.Version ?? string.Empty,
+                        ModelType = model.ModelType ?? string.Empty,
+                        Publisher = model.Publisher ?? string.Empty,
+                        Task = model.Task ?? string.Empty,
+                        FileSizeMb = model.FileSizeMb,
+                        Alias = model.Alias ?? string.Empty,
+                        License = model.License ?? string.Empty,
+                        LicenseDescription = model.LicenseDescription ?? string.Empty,
+                        ParentModelUri = model.ParentModelUri ?? string.Empty,
+                        SupportsToolCalling = model.SupportsToolCalling,
+                    });
+                }
+
+                Logger.LogInfo($"[FoundryClient] Found {_catalogModels.Count} catalog models");
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError($"[FoundryClient] Error listing catalog models: {ex.Message}");
+
             // Surfacing errors here prevents listing other providers; swallow and return cached list instead.
         }
 
@@ -92,138 +121,136 @@ internal sealed class FoundryClient
 
     public async Task<List<FoundryCachedModel>> ListCachedModels()
     {
-        var response = await _httpClient.GetAsync("/openai/models").ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var catalogModels = await ListCatalogModels().ConfigureAwait(false);
-
-        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var modelIds = content
-            .Trim('[', ']')
-            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Select(id => id.Trim('"'));
-
-        List<FoundryCachedModel> models = [];
-
-        foreach (var id in modelIds)
+        try
         {
-            var model = catalogModels.FirstOrDefault(m => m.Name == id);
-            models.Add(model != null ? new FoundryCachedModel(id, model.Alias) : new FoundryCachedModel(id, null));
-        }
+            Logger.LogInfo("[FoundryClient] Listing cached models");
+            var cachedModels = await _foundryManager.ListCachedModelsAsync().ConfigureAwait(false);
+            var catalogModels = await ListCatalogModels().ConfigureAwait(false);
 
-        return models;
+            List<FoundryCachedModel> models = [];
+
+            foreach (var model in cachedModels)
+            {
+                var catalogModel = catalogModels.FirstOrDefault(m => m.Name == model.ModelId);
+                var alias = catalogModel?.Alias ?? model.Alias;
+                models.Add(new FoundryCachedModel(model.ModelId ?? string.Empty, alias));
+            }
+
+            Logger.LogInfo($"[FoundryClient] Found {models.Count} cached models");
+            return models;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryClient] Error listing cached models: {ex.Message}");
+            return [];
+        }
+    }
+
+    public async Task<bool> IsModelLoaded(string modelId)
+    {
+        try
+        {
+            var loadedModels = await _foundryManager.ListLoadedModelsAsync().ConfigureAwait(false);
+            var isLoaded = loadedModels.Any(m => m.ModelId == modelId);
+            Logger.LogInfo($"[FoundryClient] IsModelLoaded({modelId}): {isLoaded}");
+            Logger.LogInfo($"[FoundryClient] Loaded models: {string.Join(", ", loadedModels.Select(m => m.ModelId))}");
+            return isLoaded;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryClient] IsModelLoaded exception: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> EnsureModelLoaded(string modelId)
+    {
+        try
+        {
+            Logger.LogInfo($"[FoundryClient] EnsureModelLoaded called with: {modelId}");
+
+            // Check if already loaded
+            if (await IsModelLoaded(modelId).ConfigureAwait(false))
+            {
+                Logger.LogInfo($"[FoundryClient] Model already loaded: {modelId}");
+                return true;
+            }
+
+            // Check if model exists in cache
+            var cachedModels = await ListCachedModels().ConfigureAwait(false);
+            Logger.LogInfo($"[FoundryClient] Cached models: {string.Join(", ", cachedModels.Select(m => m.Name))}");
+
+            if (!cachedModels.Any(m => m.Name == modelId))
+            {
+                Logger.LogWarning($"[FoundryClient] Model not found in cache: {modelId}");
+                return false;
+            }
+
+            // Load the model
+            Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
+            await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);
+
+            // Verify it's loaded
+            var loaded = await IsModelLoaded(modelId).ConfigureAwait(false);
+            Logger.LogInfo($"[FoundryClient] Model load result: {loaded}");
+            return loaded;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryClient] EnsureModelLoaded exception: {ex.Message}");
+            return false;
+        }
     }
 
     public async Task<FoundryDownloadResult> DownloadModel(FoundryCatalogModel model, IProgress<float>? progress, CancellationToken cancellationToken = default)
     {
-        var models = await ListCachedModels().ConfigureAwait(false);
-
-        if (models.Any(m => m.Name == model.Name))
+        try
         {
-            return new(true, "Model already downloaded");
-        }
+            Logger.LogInfo($"[FoundryClient] Downloading model: {model.Name}");
+            var models = await ListCachedModels().ConfigureAwait(false);
 
-        return await Task.Run(
-            async () =>
+            if (models.Any(m => m.Name == model.Name))
             {
-                try
+                Logger.LogInfo($"[FoundryClient] Model already downloaded: {model.Name}");
+                return new(true, "Model already downloaded");
+            }
+
+            // Use the SDK's download with progress
+            // CA2016: The cancellationToken is properly forwarded via WithCancellation extension method
+#pragma warning disable CA2016
+            await foreach (var downloadProgress in _foundryManager.DownloadModelWithProgressAsync(model.Name).WithCancellation(cancellationToken).ConfigureAwait(false))
+#pragma warning restore CA2016
+            {
+                if (downloadProgress.Percentage >= 0 && downloadProgress.Percentage <= 100)
                 {
-                    var providerType = model.ProviderType.EndsWith("Local", StringComparison.OrdinalIgnoreCase)
-                        ? model.ProviderType
-                        : $"{model.ProviderType}Local";
-
-                    var downloadRequest = new FoundryDownloadBody
-                    {
-                        Model = new FoundryModelDownload
-                        {
-                            Name = model.Name,
-                            Uri = model.Uri,
-                            Publisher = model.Publisher,
-                            ProviderType = providerType,
-                            PromptTemplate = model.PromptTemplate,
-                        },
-                        Token = string.Empty,
-                        IgnorePipeReport = true,
-                    };
-
-                    var downloadBodyContext = FoundryJsonContext.Default.FoundryDownloadBody;
-                    string body = JsonSerializer.Serialize(downloadRequest, downloadBodyContext);
-
-                    using var request = new HttpRequestMessage(HttpMethod.Post, "/openai/download")
-                    {
-                        Content = new StringContent(body, Encoding.UTF8, "application/json"),
-                    };
-
-                    using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-
-                    response.EnsureSuccessStatusCode();
-
-                    using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    using var reader = new StreamReader(stream);
-
-                    StringBuilder jsonBuilder = new();
-                    var collectingJson = false;
-                    var completed = false;
-
-                    while (!completed && (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is string line)
-                    {
-                        if (string.IsNullOrWhiteSpace(line))
-                        {
-                            continue;
-                        }
-
-                        if (line.StartsWith("Total", StringComparison.CurrentCultureIgnoreCase) &&
-                            line.Contains("Downloading", StringComparison.OrdinalIgnoreCase) &&
-                            line.Contains('%'))
-                        {
-                            var percentStr = line.Split('%')[0].Split(' ').Last();
-                            if (double.TryParse(percentStr, NumberStyles.Float, CultureInfo.CurrentCulture, out var percentage))
-                            {
-                                progress?.Report((float)(percentage / 100));
-                            }
-                        }
-                        else if (line.Contains("[DONE]", StringComparison.OrdinalIgnoreCase) ||
-                                 line.Contains("All Completed", StringComparison.OrdinalIgnoreCase))
-                        {
-                            collectingJson = true;
-                        }
-                        else if (collectingJson && line.TrimStart().StartsWith('{'))
-                        {
-                            jsonBuilder.AppendLine(line);
-                        }
-                        else if (collectingJson && jsonBuilder.Length > 0)
-                        {
-                            jsonBuilder.AppendLine(line);
-                            if (line.Trim() == "}")
-                            {
-                                completed = true;
-                            }
-                        }
-                    }
-
-                    var downloadResultContext = FoundryJsonContext.Default.FoundryDownloadResult;
-                    var jsonPayload = jsonBuilder.Length > 0 ? jsonBuilder.ToString() : null;
-
-                    if (jsonPayload is null)
-                    {
-                        return new FoundryDownloadResult(false, "No completion response received from server.");
-                    }
-
-                    try
-                    {
-                        return JsonSerializer.Deserialize(jsonPayload, downloadResultContext)
-                               ?? new FoundryDownloadResult(false, "Failed to parse completion response.");
-                    }
-                    catch (JsonException ex)
-                    {
-                        return new FoundryDownloadResult(false, $"Failed to parse completion response: {ex.Message}");
-                    }
+                    progress?.Report((float)(downloadProgress.Percentage / 100));
                 }
-                catch (Exception e)
+
+                if (downloadProgress.IsCompleted)
                 {
-                    return new FoundryDownloadResult(false, e.Message);
+                    Logger.LogInfo($"[FoundryClient] Download completed: {model.Name}");
+                    return new FoundryDownloadResult(true, "Download completed successfully");
                 }
-            },
-            cancellationToken).ConfigureAwait(false);
+
+                if (!string.IsNullOrEmpty(downloadProgress.ErrorMessage))
+                {
+                    Logger.LogError($"[FoundryClient] Download error: {downloadProgress.ErrorMessage}");
+                    return new FoundryDownloadResult(false, downloadProgress.ErrorMessage);
+                }
+            }
+
+            Logger.LogInfo($"[FoundryClient] Download completed: {model.Name}");
+            return new FoundryDownloadResult(true, "Download completed successfully");
+        }
+        catch (OperationCanceledException)
+        {
+            Logger.LogInfo($"[FoundryClient] Download cancelled: {model.Name}");
+            return new FoundryDownloadResult(false, "Download was cancelled");
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"[FoundryClient] Download exception: {e.Message}");
+            return new FoundryDownloadResult(false, e.Message);
+        }
     }
 }
