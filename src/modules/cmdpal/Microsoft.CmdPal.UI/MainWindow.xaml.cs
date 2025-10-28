@@ -82,7 +82,7 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        PositionCentered();
+        RestoreWindowPosition();
         UpdateWindowPositionInMemory();
 
         SetAcrylic();
@@ -163,6 +163,39 @@ public sealed partial class MainWindow : WindowEx,
     {
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         PositionCentered(displayArea);
+    }
+
+    private void RestoreWindowPosition()
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>();
+        if (settings?.LastWindowPosition is not WindowPosition savedPosition)
+        {
+            PositionCentered();
+            return;
+        }
+
+        if (savedPosition.Width <= 0 || savedPosition.Height <= 0)
+        {
+            PositionCentered();
+            return;
+        }
+
+        AppWindow.Resize(new SizeInt32 { Width = savedPosition.Width, Height = savedPosition.Height });
+
+        var savedRect = new RectInt32(savedPosition.X, savedPosition.Y, savedPosition.Width, savedPosition.Height);
+        var displayArea = DisplayArea.GetFromRect(savedRect, DisplayAreaFallback.Nearest);
+        var workArea = displayArea.WorkArea;
+
+        var maxX = workArea.X + Math.Max(0, workArea.Width - savedPosition.Width);
+        var maxY = workArea.Y + Math.Max(0, workArea.Height - savedPosition.Height);
+
+        var targetPoint = new PointInt32
+        {
+            X = Math.Clamp(savedPosition.X, workArea.X, maxX),
+            Y = Math.Clamp(savedPosition.Y, workArea.Y, maxY),
+        };
+
+        AppWindow.Move(targetPoint);
     }
 
     private void PositionCentered(DisplayArea displayArea)
@@ -442,6 +475,22 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
+        UpdateWindowPositionInMemory();
+
+        var settings = serviceProvider.GetService<SettingsModel>();
+        if (settings is not null)
+        {
+            settings.LastWindowPosition = new WindowPosition
+            {
+                X = _currentWindowPosition.X,
+                Y = _currentWindowPosition.Y,
+                Width = _currentWindowPosition.Width,
+                Height = _currentWindowPosition.Height,
+            };
+
+            SettingsModel.SaveSettings(settings);
+        }
+
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
