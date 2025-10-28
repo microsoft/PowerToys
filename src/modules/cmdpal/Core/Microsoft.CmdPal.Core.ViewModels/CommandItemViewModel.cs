@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
@@ -72,13 +70,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
 
     public bool HasText => HasTitle || HasSubtitle;
-
-    [RelayCommand]
-    public void InvokePrimary()
-    {
-        PerformCommandMessage m = new(Command.Model);
-        WeakReferenceMessenger.Default.Send(m);
-    }
 
     public List<IContextItemViewModel> AllCommands
     {

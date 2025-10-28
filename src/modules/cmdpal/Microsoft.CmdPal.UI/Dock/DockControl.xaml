@@ -80,7 +80,7 @@
                 </Button>
             </DataTemplate>
 
-            <DataTemplate x:Key="DeskbandTemplate" x:DataType="coreVm:CommandItemViewModel">
+            <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
                 <Button
                     Padding="2"
                     Background="Transparent"

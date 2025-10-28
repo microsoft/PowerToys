@@ -3,7 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -15,7 +21,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 {
     private readonly CommandItemViewModel _rootItem;
 
-    public ObservableCollection<CommandItemViewModel> Items { get; } = new();
+    public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
     internal DockBandViewModel(CommandItemViewModel commandItemViewModel, WeakReference<IPageContext> errorContext)
         : base(errorContext)
@@ -26,10 +32,10 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     private void InitializeFromList(IListPage list)
     {
         var items = list.GetItems();
-        var newViewModels = new List<CommandItemViewModel>();
+        var newViewModels = new List<DockItemViewModel>();
         foreach (var item in items)
         {
-            var newItemVm = new CommandItemViewModel(new(item), this.PageContext);
+            var newItemVm = new DockItemViewModel(new(item), this.PageContext);
             newItemVm.SlowInitializeProperties();
             newViewModels.Add(newItemVm);
         }
@@ -53,7 +59,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         }
         else
         {
-            Items.Add(_rootItem);
+            Items.Add(new(_rootItem));
         }
     }
 
@@ -65,5 +71,39 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         }
     }
 }
+
+public partial class DockItemViewModel : CommandItemViewModel
+{
+    public DockItemViewModel(CommandItemViewModel root)
+        : base(root.Model, root.PageContext)
+    {
+    }
+
+    public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext)
+        : base(item, errorContext)
+    {
+    }
+
+    [RelayCommand]
+    public void InvokePrimary()
+    {
+        try
+        {
+            var isPage = Command.Model.Unsafe is not IInvokableCommand invokable;
+            if (isPage)
+            {
+                WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(0));
+            }
+
+            PerformCommandMessage m = new(Command.Model);
+            WeakReferenceMessenger.Default.Send(m);
+        }
+        catch (COMException e)
+        {
+            Logger.LogError("Error invoking dock command", e);
+        }
+    }
+}
+
 
 #pragma warning restore SA1402 // File may only contain a single type
