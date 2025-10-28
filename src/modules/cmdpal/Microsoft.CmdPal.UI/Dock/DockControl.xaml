@@ -194,7 +194,7 @@
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
 
                 <ItemsRepeater
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Center"
                 ItemTemplate="{StaticResource DeskbandTemplate}"
                 Layout="{StaticResource ItemsOrientation}"
                 ItemsSource="{x:Bind Items, Mode=OneWay}">
@@ -210,7 +210,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="16,0,16,0">
+    <Grid x:Name="RootGrid" Margin="16,0,16,0">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
@@ -285,7 +285,6 @@
         <ItemsRepeater
             x:Name="EndItemsRepeater"
             Grid.Column="2"
-            HorizontalAlignment="Right"
             ItemTemplate="{StaticResource DockBandTemplate}"
                 Layout="{StaticResource ItemsOrientation}"
             ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}">
@@ -318,7 +317,9 @@
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Right" />
-                        
+
+                        <Setter Target="RootGrid.Margin" Value="16,0,16,0" />
+
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnLeftRight">
@@ -337,6 +338,8 @@
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Left" />
+
+                        <Setter Target="RootGrid.Margin" Value="8,8,8,8" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

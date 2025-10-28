@@ -71,6 +71,36 @@ internal sealed partial class NowDockBand : CommandItem
     {
         Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockband" };
         UpdateText();
+
+        // Create a timer to update the time every minute
+        System.Timers.Timer timer = new(60000); // 60000 ms = 1 minute
+
+        // but we want it to tick on the minute, so calculate the initial delay
+        var now = DateTime.Now;
+        timer.Interval = 60000 - ((now.Second * 1000) + now.Millisecond);
+
+        // then after the first tick, set it to 60 seconds
+        timer.Elapsed += Timer_ElapsedFirst;
+        timer.Start();
+    }
+
+    private void Timer_ElapsedFirst(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        // After the first tick, set the interval to 60 seconds
+        if (sender is System.Timers.Timer timer)
+        {
+            timer.Interval = 60000;
+            timer.Elapsed -= Timer_ElapsedFirst;
+            timer.Elapsed += Timer_Elapsed;
+
+            // Still call the callback, so that we update the clock
+            Timer_Elapsed(sender, e);
+        }
+    }
+
+    private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        UpdateText();
     }
 
     private void UpdateText()

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -30,6 +31,9 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
             }
         }
     }
+
+    [ObservableProperty]
+    public partial double IconSize { get; set; }
 
     // TODO! Remove me
     public bool ShowSearchButton

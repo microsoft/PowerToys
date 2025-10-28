@@ -59,7 +59,13 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         }
         else
         {
-            Items.Add(new(_rootItem));
+            // Items.Add(new(_rootItem));
+            DoOnUiThread(() =>
+             {
+                 var dockItem = new DockItemViewModel(_rootItem);
+                 dockItem.SlowInitializeProperties();
+                 Items.Add(dockItem);
+             });
         }
     }
 
@@ -74,6 +80,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
 public partial class DockItemViewModel : CommandItemViewModel
 {
+    public override string Title => ItemTitle;
+
     public DockItemViewModel(CommandItemViewModel root)
         : base(root.Model, root.PageContext)
     {

@@ -57,7 +57,7 @@ internal sealed partial class ClipboardHistoryBand : CommandItem
 {
     public ClipboardHistoryBand(ClipboardHistoryListPage page)
     {
-        var item = new CommandItem(page)
+        var item = new WrappedItem(page)
         {
             Icon = Icons.ClipboardListIcon,
         };
@@ -69,13 +69,16 @@ internal sealed partial class ClipboardHistoryBand : CommandItem
         Title = string.Empty;
     }
 
-    // private sealed partial class WrappedItem : CommandItem
-    // {
-    //    public WrappedItem(IListPage page)
-    //    {
-    //        Command = new WrappedDockList(page);
-    //    }
-    // }
+    private sealed partial class WrappedItem : CommandItem
+    {
+        public override string Title => string.Empty;
+
+        public WrappedItem(ICommand command)
+        {
+            Command = command;
+        }
+    }
+
     private sealed partial class WrappedDockList : ListPage
     {
         public override string Name => "TODO!";
@@ -96,7 +99,8 @@ internal sealed partial class ClipboardHistoryBand : CommandItem
             // then CommandItemViewModel will fall back to the Command's name,
             // and we don't want to have to modify the page (since we're using the
             // same Page instance for the command and the band)
-            return _items.Select(i => new ListItem(i) { Title = " " }).ToArray();
+            // return _items.Select(i => new ListItem(i) { Title = " " }).ToArray();
+            return _items.Select(i => new ListItem(i)).ToArray();
         }
     }
 }

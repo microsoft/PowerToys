@@ -39,7 +39,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private string _itemTitle = string.Empty;
 
-    public string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
+    protected string ItemTitle => _itemTitle;
+
+    public virtual string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
 
     public string Subtitle { get; private set; } = string.Empty;
 
