@@ -8,7 +8,7 @@ using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using YamlDotNet.Serialization;
 
-// This should all be outsourced to WinGet in the future
+// This class should be moved to WinGet in the future
 namespace ShortcutGuide.IndexYmlGenerator
 {
     public class IndexYmlGenerator

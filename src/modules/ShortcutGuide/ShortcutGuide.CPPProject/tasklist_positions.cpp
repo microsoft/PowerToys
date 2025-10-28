@@ -69,10 +69,10 @@ extern "C"
         else if (wcscmp(class_name, L"Shell_SecondaryTrayWnd") == 0)
         {
             // Secondary taskbar structure
-            HWND workerw = FindWindowExW(taskbar_hwnd, 0, L"WorkerW", nullptr);
-            if (!workerw)
+            HWND worker_hwnd = FindWindowExW(taskbar_hwnd, 0, L"WorkerW", nullptr);
+            if (!worker_hwnd)
                 return;
-            tasklist_hwnd = FindWindowExW(workerw, 0, L"MSTaskListWClass", nullptr);
+            tasklist_hwnd = FindWindowExW(worker_hwnd, 0, L"MSTaskListWClass", nullptr);
             if (!tasklist_hwnd)
                 return;
         }

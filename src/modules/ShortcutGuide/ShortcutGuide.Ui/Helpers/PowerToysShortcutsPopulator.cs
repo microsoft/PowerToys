@@ -131,7 +131,7 @@ namespace ShortcutGuide.Helpers
                 content.Append(HotkeySettingsToYaml(SettingsRepository<WorkspacesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, SettingsResourceLoader.GetString("Workspaces/ModuleTitle"), SettingsResourceLoader.GetString("Workspaces_ShortDescription")));
             }
 
-            // Todo: ZoomIt hotkeys currently not supported, because ZoomIt does save their settings in the viewmodel instread of the settings properties, which is weird.
+            // Todo: ZoomIt hotkeys currently not supported, because ZoomIt does save their settings in the view model instead of the settings properties, which is weird.
             /*
             if (enabledModules.ZoomIt)
             {

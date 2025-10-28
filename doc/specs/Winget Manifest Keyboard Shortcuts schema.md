@@ -1,4 +1,4 @@
-# Winget Manifest Keyboard Shortcuts schema
+# WinGet Manifest Keyboard Shortcuts schema
 
 ## 1 What this spec is about
 
@@ -215,7 +215,7 @@ Special keys are enclosed between `<` and `>` and correspond to a key that shoul
 |`<Insert>`| Corresponds to the Insert key |
 |`<Home>`| Corresponds to the Home key |
 |`<End>`| Corresponds to the End key |
-|`<PrtSc>`| Corresponds to the Print Screen key |
+|`<PrtScr>`| Corresponds to the Print Screen key |
 |`<Pause>`| Corresponds to the pause key |
 |`<PageUp>`| Corresponds to the Page Up key |
 |`<PageDown>`| Corresponds to the Page Down key |

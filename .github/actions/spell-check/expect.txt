@@ -1252,6 +1252,7 @@ phwnd
 pici
 pidl
 PIDLIST
+pinboard
 pinfo
 pinvoke
 pipename

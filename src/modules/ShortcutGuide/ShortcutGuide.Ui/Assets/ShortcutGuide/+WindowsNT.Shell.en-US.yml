@@ -475,7 +475,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - "<PrtSc>"
+              - "<PrtScr>"
         Description: Save to the pictures folder
       - Name: Open search
         Shortcut:
