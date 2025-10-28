@@ -19,13 +19,13 @@ void XmlDocumentEx::Print(winrt::Windows::Data::Xml::Dom::IXmlNode node, int ind
     PrintTagWithAttributes(node);
     if (!node.HasChildNodes())
     {
-        stream << L"<\\" << node.NodeName().c_str() << ">" << std::endl;
+        stream << L"</" << node.NodeName().c_str() << ">" << std::endl;
         return;
     }
 
     if (node.ChildNodes().Size() == 1 && !node.FirstChild().HasChildNodes())
     {
-        stream << node.InnerText().c_str() << L"<\\" << node.NodeName().c_str() << ">" << std::endl;
+        stream << node.InnerText().c_str() << L"</" << node.NodeName().c_str() << ">" << std::endl;
         return;
     }
 
@@ -40,7 +40,7 @@ void XmlDocumentEx::Print(winrt::Windows::Data::Xml::Dom::IXmlNode node, int ind
     {
         stream << " ";
     }
-    stream << L"<\\" << node.NodeName().c_str() << ">" << std::endl;
+    stream << L"</" << node.NodeName().c_str() << ">" << std::endl;
 }
 
 void XmlDocumentEx::PrintTagWithAttributes(winrt::Windows::Data::Xml::Dom::IXmlNode node)

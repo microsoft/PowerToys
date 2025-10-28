@@ -14,6 +14,9 @@ extern void InclusiveCrosshairsRequestUpdatePosition();
 extern void InclusiveCrosshairsEnsureOn();
 extern void InclusiveCrosshairsEnsureOff();
 extern void InclusiveCrosshairsSetExternalControl(bool enabled);
+extern void InclusiveCrosshairsSetOrientation(CrosshairsOrientation orientation);
+extern bool InclusiveCrosshairsIsEnabled();
+extern void InclusiveCrosshairsSwitch();
 
 // Non-Localizable strings
 namespace
@@ -244,12 +247,19 @@ public:
             return false;
         }
 
-        if (hotkeyId == 0)
+        if (hotkeyId == 0) // Crosshairs activation
         {
+            // If gliding cursor is active, cancel it and activate crosshairs
+            if (m_glideState.load() != 0)
+            {
+                CancelGliding(true /*activateCrosshairs*/);
+                return true;
+            }
+            // Otherwise, normal crosshairs toggle
             InclusiveCrosshairsSwitch();
             return true;
         }
-        if (hotkeyId == 1)
+        if (hotkeyId == 1) // Gliding cursor activation
         {
             HandleGlidingHotkey();
             return true;
@@ -268,25 +278,44 @@ private:
         SendInput(2, inputs, sizeof(INPUT));
     }
 
-    // Cancel gliding without performing the final click (Escape handling)
-    void CancelGliding()
+    // Cancel gliding with option to activate crosshairs in user's preferred orientation
+    void CancelGliding(bool activateCrosshairs)
     {
         int state = m_glideState.load();
         if (state == 0)
         {
             return; // nothing to cancel
         }
+        
+        // Stop all gliding operations
         StopXTimer();
         StopYTimer();
         m_glideState = 0;
-        InclusiveCrosshairsEnsureOff();
+        UninstallKeyboardHook();
+        
+        // Reset crosshairs control and restore user settings
         InclusiveCrosshairsSetExternalControl(false);
+        InclusiveCrosshairsSetOrientation(m_inclusiveCrosshairsSettings.crosshairsOrientation);
+        
+        if (activateCrosshairs)
+        {
+            // User is switching to crosshairs mode - enable with their settings
+            InclusiveCrosshairsEnsureOn();
+        }
+        else
+        {
+            // User canceled (Escape) - turn off crosshairs completely
+            InclusiveCrosshairsEnsureOff();
+        }
+        
+        // Reset gliding state
         if (auto s = m_state)
         {
             s->xFraction = 0.0;
             s->yFraction = 0.0;
         }
-        Logger::debug("Gliding cursor cancelled via Escape key");
+        
+        Logger::debug("Gliding cursor cancelled (activateCrosshairs={})", activateCrosshairs ? 1 : 0);
     }
 
     // Stateless helpers operating on shared State
@@ -425,21 +454,22 @@ private:
         {
             return;
         }
-        // Simulate the AHK state machine
+        
         int state = m_glideState.load();
         switch (state)
         {
-        case 0:
+        case 0: // Starting gliding
         {
-            // For detect for cancel key
+            // Install keyboard hook for Escape cancellation
             InstallKeyboardHook();
-            // Ensure crosshairs on (do not toggle off if already on)
-            InclusiveCrosshairsEnsureOn();
-            // Disable internal mouse hook so we control position updates explicitly
+            
+            // Force crosshairs visible in BOTH orientation for gliding, regardless of user setting
+            // Set external control before enabling to prevent internal movement hook from attaching
             InclusiveCrosshairsSetExternalControl(true);
-            // Override crosshairs to show both for Gliding Cursor
             InclusiveCrosshairsSetOrientation(CrosshairsOrientation::Both);
+            InclusiveCrosshairsEnsureOn(); // Always ensure they are visible
 
+            // Initialize gliding state
             s->currentXPos = 0;
             s->currentXSpeed = s->fastHSpeed;
             s->xFraction = 0.0;
@@ -447,20 +477,17 @@ private:
             int y = GetSystemMetrics(SM_CYVIRTUALSCREEN) / 2;
             SetCursorPos(0, y);
             InclusiveCrosshairsRequestUpdatePosition();
+            
             m_glideState = 1;
             StartXTimer();
             break;
         }
-        case 1:
-        {
-            // Slow horizontal
+        case 1: // Slow horizontal
             s->currentXSpeed = s->slowHSpeed;
             m_glideState = 2;
             break;
-        }
-        case 2:
+        case 2: // Switch to vertical fast
         {
-            // Stop horizontal, start vertical (fast)
             StopXTimer();
             s->currentYSpeed = s->fastVSpeed;
             s->currentYPos = 0;
@@ -471,33 +498,37 @@ private:
             StartYTimer();
             break;
         }
-        case 3:
-        {
-            // Slow vertical
+        case 3: // Slow vertical
             s->currentYSpeed = s->slowVSpeed;
             m_glideState = 4;
             break;
-        }
-        case 4:
+        case 4: // Finalize (click and end)
         default:
         {
-            UninstallKeyboardHook();
-            // Stop vertical, click, turn crosshairs off, re-enable internal tracking, reset state
+            // Complete the gliding sequence
             StopYTimer();
             m_glideState = 0;
             LeftClick();
-            InclusiveCrosshairsEnsureOff();
+            
+            // Restore normal crosshairs operation and turn them off
             InclusiveCrosshairsSetExternalControl(false);
-            // Restore original crosshairs orientation setting
             InclusiveCrosshairsSetOrientation(m_inclusiveCrosshairsSettings.crosshairsOrientation);
-            s->xFraction = 0.0;
-            s->yFraction = 0.0;
+            InclusiveCrosshairsEnsureOff();
+            
+            UninstallKeyboardHook();
+            
+            // Reset state
+            if (auto sp = m_state)
+            {
+                sp->xFraction = 0.0;
+                sp->yFraction = 0.0;
+            }
             break;
         }
         }
     }
 
-    // Low-level keyboard hook procedures
+    // Low-level keyboard hook for Escape cancellation
     static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         if (nCode == HC_ACTION)
@@ -509,14 +540,11 @@ private:
                 {
                     if (inst->m_enabled && inst->m_glideState.load() != 0)
                     {
-                        inst->UninstallKeyboardHook();
-                        inst->CancelGliding();
+                        inst->CancelGliding(false); // Escape cancels without activating crosshairs
                     }
                 }
             }
         }
-
-        // Do not swallow Escape; pass it through
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
 

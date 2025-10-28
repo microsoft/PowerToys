@@ -189,6 +189,62 @@ internal sealed class Window
     }
 
     /// <summary>
+    /// Tries to get the window icon.
+    /// </summary>
+    /// <param name="icon">The window icon if found; otherwise, null.</param>
+    /// <returns>True if an icon was found; otherwise, false.</returns>
+    internal bool TryGetWindowIcon(out System.Drawing.Icon? icon)
+    {
+        icon = null;
+
+        if (hwnd == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        // Try WM_GETICON with SendMessageTimeout
+        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
+        {
+            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)result);
+            return true;
+        }
+
+        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        {
+            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)result);
+            return true;
+        }
+
+        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        {
+            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)result);
+            return true;
+        }
+
+        // Fallback to GetClassLongPtr
+        var iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICON);
+        if (iconHandle != IntPtr.Zero)
+        {
+            icon = System.Drawing.Icon.FromHandle(iconHandle);
+            NativeMethods.DestroyIcon((IntPtr)iconHandle);
+            return true;
+        }
+
+        iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICONSM);
+        if (iconHandle != IntPtr.Zero)
+        {
+            icon = System.Drawing.Icon.FromHandle(iconHandle);
+            NativeMethods.DestroyIcon((IntPtr)iconHandle);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Converts the window name to string along with the process name
     /// </summary>
     /// <returns>The title of the window</returns>

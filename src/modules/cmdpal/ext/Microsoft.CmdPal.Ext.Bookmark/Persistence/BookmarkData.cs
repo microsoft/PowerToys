@@ -19,7 +19,7 @@ public sealed record BookmarkData
     [SetsRequiredMembers]
     public BookmarkData(Guid id, string? name, string? bookmark)
     {
-        Id = id == Guid.Empty ? Guid.NewGuid() : id;
+        Id = id;
         Name = name ?? string.Empty;
         Bookmark = bookmark ?? string.Empty;
     }

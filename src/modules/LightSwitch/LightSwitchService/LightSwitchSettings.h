@@ -14,6 +14,7 @@ class SettingsObserver;
 
 enum class ScheduleMode
 {
+    Off,
     FixedHours,
     SunsetToSunrise
     // Add more in the future
@@ -28,7 +29,7 @@ inline std::wstring ToString(ScheduleMode mode)
     case ScheduleMode::SunsetToSunrise:
         return L"SunsetToSunrise";
     default:
-        return L"FixedHours";
+        return L"Off";
     }
 }
 
@@ -36,8 +37,10 @@ inline ScheduleMode FromString(const std::wstring& str)
 {
     if (str == L"SunsetToSunrise")
         return ScheduleMode::SunsetToSunrise;
-    else
+    if (str == L"FixedHours")
         return ScheduleMode::FixedHours;
+    else
+        return ScheduleMode::Off;
 }
 
 struct LightSwitchConfig
@@ -76,6 +79,8 @@ public:
 
     void LoadSettings();
 
+    HANDLE GetSettingsChangedEvent() const { return m_settingsChangedEvent; }
+
 private:
     LightSwitchSettings();
     ~LightSwitchSettings() = default;
@@ -85,4 +90,6 @@ private:
     std::unordered_set<SettingsObserver*> m_observers;
 
     void NotifyObservers(SettingId id) const;
+
+    HANDLE m_settingsChangedEvent = nullptr;
 };

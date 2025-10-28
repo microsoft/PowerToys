@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <WinHookEventIDs.h>
+#include <logger.h>
 
 using namespace std;
 
@@ -27,10 +28,20 @@ std::wstring LightSwitchSettings::GetSettingsFileName()
 
 void LightSwitchSettings::InitFileWatcher()
 {
-    const std::wstring& settingsFileName = GetSettingsFileName();
-    m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
-        PostMessageW(HWND_BROADCAST, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
-    });
+    if (!m_settingsChangedEvent)
+    {
+        m_settingsChangedEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    }
+
+    if (!m_settingsFileWatcher)
+    {
+        m_settingsFileWatcher = std::make_unique<FileWatcher>(
+            GetSettingsFileName(),
+            [this]() {
+                Logger::info(L"[LightSwitchSettings] Settings file changed, signaling event.");
+                SetEvent(m_settingsChangedEvent);
+            });
+    }
 }
 
 void LightSwitchSettings::AddObserver(SettingsObserver& observer)

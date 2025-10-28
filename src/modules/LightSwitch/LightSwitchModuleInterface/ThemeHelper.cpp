@@ -3,6 +3,26 @@
 #include "ThemeHelper.h"
 
 // Controls changing the themes.
+static void ResetColorPrevalence()
+{
+    HKEY hKey;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                     0,
+                     KEY_SET_VALUE,
+                     &hKey) == ERROR_SUCCESS)
+    {
+        DWORD value = 0; // back to default value
+        RegSetValueEx(hKey, L"ColorPrevalence", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
+        RegCloseKey(hKey);
+
+        SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
+
+        SendMessageTimeout(HWND_BROADCAST, WM_THEMECHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
+
+        SendMessageTimeout(HWND_BROADCAST, WM_DWMCOLORIZATIONCOLORCHANGED, 0, 0, SMTO_ABORTIFHUNG, 5000, nullptr);
+    }
+}
 
 void SetAppsTheme(bool mode)
 {
@@ -35,6 +55,11 @@ void SetSystemTheme(bool mode)
         DWORD value = mode;
         RegSetValueEx(hKey, L"SystemUsesLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
         RegCloseKey(hKey);
+
+        if (mode) // if are changing to light mode
+        {
+            ResetColorPrevalence();
+        }
 
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"ImmersiveColorSet"), SMTO_ABORTIFHUNG, 5000, nullptr);
 

@@ -300,26 +300,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ModeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SunriseModeChartState();
-        }
-
-        private void SunriseModeChartState()
-        {
-            if (ViewModel.Latitude == "0.0" && ViewModel.Longitude == "0.0" && ViewModel.ScheduleMode == "SunsetToSunrise")
+            switch (ViewModel.ScheduleMode)
             {
-                TimelineCard.Visibility = Visibility.Collapsed;
-                LocationWarningBar.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                TimelineCard.Visibility = Visibility.Visible;
-                LocationWarningBar.Visibility = Visibility.Collapsed;
+                case "FixedHours":
+                    VisualStateManager.GoToState(this, "ManualState", true);
+                    TimelineCard.Visibility = Visibility.Visible;
+                    break;
+                case "SunsetToSunrise":
+                    VisualStateManager.GoToState(this, "SunsetToSunriseState", true);
+                    SunriseModeChartState();
+                    break;
+                default:
+                    VisualStateManager.GoToState(this, "OffState", true);
+                    TimelineCard.Visibility = Visibility.Collapsed;
+                    break;
             }
         }
 
         private async void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             await GetGeoLocation();
+        }
+
+        private void SunriseModeChartState()
+        {
+            if (ViewModel.Latitude != "0.0" && ViewModel.Longitude != "0.0")
+            {
+                TimelineCard.Visibility = Visibility.Visible;
+                LocationWarningBar.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                TimelineCard.Visibility = Visibility.Collapsed;
+                LocationWarningBar.Visibility = Visibility.Visible;
+            }
         }
     }
 }

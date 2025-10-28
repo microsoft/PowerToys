@@ -103,7 +103,33 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
         try
         {
             var jsonData = _dataSource.GetBookmarkData();
-            _bookmarksData = _parser.ParseBookmarks(jsonData);
+            var bookmarksData = _parser.ParseBookmarks(jsonData);
+
+            // Upgrade old bookmarks if necessary
+            // Pre .95 versions did not assign IDs to bookmarks
+            var upgraded = false;
+            for (var index = 0; index < bookmarksData.Data.Count; index++)
+            {
+                var bookmark = bookmarksData.Data[index];
+                if (bookmark.Id == Guid.Empty)
+                {
+                    bookmarksData.Data[index] = bookmark with { Id = Guid.NewGuid() };
+                    upgraded = true;
+                }
+            }
+
+            lock (_lock)
+            {
+                _bookmarksData = bookmarksData;
+            }
+
+            // LOAD BEARING: Save upgraded data back to file
+            // This ensures that old bookmarks are not repeatedly upgraded on each load,
+            // as the hotkeys and aliases are tied to the generated bookmark IDs.
+            if (upgraded)
+            {
+                _ = SaveChangesAsync();
+            }
         }
         catch (Exception ex)
         {

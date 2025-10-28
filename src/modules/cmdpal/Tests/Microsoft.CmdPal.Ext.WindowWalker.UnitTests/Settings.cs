@@ -17,6 +17,7 @@ public class Settings : ISettingsInterface
     private readonly bool hideKillProcessOnElevatedProcesses;
     private readonly bool hideExplorerSettingInfo;
     private readonly bool inMruOrder;
+    private readonly bool useWindowIcon;
 
     public Settings(
         bool resultsFromVisibleDesktopOnly = false,
@@ -27,7 +28,8 @@ public class Settings : ISettingsInterface
         bool openAfterKillAndClose = false,
         bool hideKillProcessOnElevatedProcesses = false,
         bool hideExplorerSettingInfo = true,
-        bool inMruOrder = true)
+        bool inMruOrder = true,
+        bool useWindowIcon = true)
     {
         this.resultsFromVisibleDesktopOnly = resultsFromVisibleDesktopOnly;
         this.subtitleShowPid = subtitleShowPid;
@@ -38,6 +40,7 @@ public class Settings : ISettingsInterface
         this.hideKillProcessOnElevatedProcesses = hideKillProcessOnElevatedProcesses;
         this.hideExplorerSettingInfo = hideExplorerSettingInfo;
         this.inMruOrder = inMruOrder;
+        this.useWindowIcon = useWindowIcon;
     }
 
     public bool ResultsFromVisibleDesktopOnly => resultsFromVisibleDesktopOnly;
@@ -57,4 +60,6 @@ public class Settings : ISettingsInterface
     public bool HideExplorerSettingInfo => hideExplorerSettingInfo;
 
     public bool InMruOrder => inMruOrder;
+
+    public bool UseWindowIcon => useWindowIcon;
 }

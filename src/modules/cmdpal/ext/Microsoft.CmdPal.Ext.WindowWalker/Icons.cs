@@ -15,4 +15,6 @@ internal sealed class Icons
     internal static IconInfo CloseWindow { get; } = new IconInfo("\uE894"); // Clear
 
     internal static IconInfo Info { get; } = new IconInfo("\uE946"); // Info
+
+    internal static IconInfo GenericAppIcon { get; } = new("\uE737"); // Favicon
 }
