@@ -796,6 +796,8 @@ jpnime
 Jsons
 jsonval
 jxr
+KBSC
+kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
