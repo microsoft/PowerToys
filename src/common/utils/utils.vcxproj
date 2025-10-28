@@ -49,12 +49,41 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="package.h" />
+    <ClInclude Include="appMutex.h" />
+    <ClInclude Include="clean_video_conference.h" />
+    <ClInclude Include="color.h" />
+    <ClInclude Include="com_object_factory.h" />
     <ClInclude Include="elevation.h" />
-    <ClInclude Include="resources.h" />
+    <ClInclude Include="EventLocker.h" />
+    <ClInclude Include="EventWaiter.h" />
+    <ClInclude Include="excluded_apps.h" />
+    <ClInclude Include="exec.h" />
+    <ClInclude Include="game_mode.h" />
     <ClInclude Include="gpo.h" />
+    <ClInclude Include="HDropIterator.h" />
+    <ClInclude Include="HttpClient.h" />
+    <ClInclude Include="json.h" />
+    <ClInclude Include="language_helper.h" />
+    <ClInclude Include="logger_helper.h" />
+    <ClInclude Include="modulesRegistry.h" />
+    <ClInclude Include="MsiUtils.h" />
+    <ClInclude Include="MsWindowsSettings.h" />
+    <ClInclude Include="OnThreadExecutor.h" />
+    <ClInclude Include="os-detect.h" />
+    <ClInclude Include="package.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="process_path.h" />
+    <ClInclude Include="processApi.h" />
+    <ClInclude Include="ProcessWaiter.h" />
     <ClInclude Include="registry.h" />
+    <ClInclude Include="resources.h" />
+    <ClInclude Include="serialized.h" />
+    <ClInclude Include="shell_ext_registration.h" />
+    <ClInclude Include="string_utils.h" />
+    <ClInclude Include="timeutil.h" />
+    <ClInclude Include="UnhandledExceptionHandler.h" />
+    <ClInclude Include="winapi_error.h" />
+    <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
