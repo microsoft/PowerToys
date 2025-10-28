@@ -57,6 +57,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
@@ -65,6 +66,7 @@ public sealed partial class MainWindow : WindowEx,
     public MainWindow()
     {
         InitializeComponent();
+        HideWindow();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -72,6 +74,8 @@ public sealed partial class MainWindow : WindowEx,
         {
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
+
+        _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
@@ -126,16 +130,6 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
-
-        ApplyWindowStyle();
-    }
-
-    private void ApplyWindowStyle()
-    {
-        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
-        // Since tool windows have smaller corner radii, we need to force the normal ones
-        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, !Debugger.IsAttached);
-        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -264,7 +258,7 @@ public sealed partial class MainWindow : WindowEx,
         // because that would make it hard to debug the app
         if (Debugger.IsAttached)
         {
-            ApplyWindowStyle();
+            _hiddenOwnerBehavior.ShowInTaskbar(this, true);
         }
 
         // Just to be sure, SHOW our hwnd.
