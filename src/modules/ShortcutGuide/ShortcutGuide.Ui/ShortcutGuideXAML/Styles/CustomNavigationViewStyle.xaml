@@ -330,7 +330,7 @@
                         </Grid>
 
                         <!--  Content layouts  -->
-                        <!--  Displaymode (compact/minimal/normal) left  -->
+                        <!--  DisplayMode (compact/minimal/normal) left  -->
                         <SplitView
                             x:Name="RootSplitView"
                             Grid.Row="1"

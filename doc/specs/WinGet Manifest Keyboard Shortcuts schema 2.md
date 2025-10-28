@@ -32,7 +32,7 @@ When a manifest interpreter starts, it should download the latest version of the
 
 The updater is also responsible for updating the local `index.yaml` file, which contains all the information about the different manifest files that are saved in the same directory.
 
-> Note: Winget must provide a way to update the keyboard shortcuts manifests given a package id.
+> Note: WinGet must provide a way to update the keyboard shortcuts manifests given a package id.
 
 ### 2.3 File names
 

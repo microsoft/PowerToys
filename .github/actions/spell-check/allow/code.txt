@@ -320,5 +320,8 @@ MRUCMPPROC
 MRUINFO
 REGSTR
 
+#Xaml
+Storyboards
+
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
