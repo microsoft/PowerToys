@@ -293,7 +293,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 // --- Manual override triggered ---
                 if (wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
                 {
-                    Logger::info(L"[LightSwitchService] Manual override received while schedule OFF.");
+                    Logger::debug(L"[LightSwitchService] Manual override received while schedule OFF.");
                     ResetEvent(hManualOverride);
                     continue;
                 }
@@ -301,7 +301,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 // --- Settings file changed ---
                 if (wait == WAIT_OBJECT_0 + (hParent ? 3 : 2))
                 {
-                    Logger::trace(L"[LightSwitchService] Settings change event triggered, reloading settings...");
+                    Logger::debug(L"[LightSwitchService] Settings change event triggered, reloading settings...");
 
                     ResetEvent(LightSwitchSettings::instance().GetSettingsChangedEvent());
 
@@ -345,7 +345,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                    currentSettings.darkTime / 60,
                    currentSettings.darkTime % 60,
                    static_cast<int>(currentSettings.scheduleMode));
-        Logger::info(msg);
+        Logger::debug(msg);
 
         // --- Manual override check ---
         bool manualOverrideActive = false;
@@ -360,11 +360,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 nowMinutes == (currentSettings.darkTime + currentSettings.sunset_offset) % 1440)
             {
                 ResetEvent(hManualOverride);
-                Logger::info(L"[LightSwitchService] Manual override cleared at boundary");
+                Logger::debug(L"[LightSwitchService] Manual override cleared at boundary");
             }
             else
             {
-                Logger::info(L"[LightSwitchService] Skipping schedule due to manual override");
+                Logger::debug(L"[LightSwitchService] Skipping schedule due to manual override");
                 goto sleep_until_next_minute;
             }
         }

@@ -38,7 +38,7 @@ void LightSwitchSettings::InitFileWatcher()
         m_settingsFileWatcher = std::make_unique<FileWatcher>(
             GetSettingsFileName(),
             [this]() {
-                Logger::info(L"[LightSwitchSettings] Settings file changed, signaling event.");
+                Logger::debug(L"[LightSwitchSettings] Settings file changed, signaling event.");
                 SetEvent(m_settingsChangedEvent);
             });
     }
