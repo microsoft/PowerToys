@@ -170,6 +170,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_peekSettings.Properties.ActivationShortcut != value)
                 {
+                    // If space mode toggle is on, ignore external attempts to change (UI will be disabled, but defensive).
+                    if (EnableSpaceToActivate)
+                    {
+                        return;
+                    }
+
                     _peekSettings.Properties.ActivationShortcut = value ?? _peekSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
                     NotifySettingsChanged();
@@ -214,6 +220,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _peekSettings.Properties.ConfirmFileDelete.Value = value;
                     OnPropertyChanged(nameof(ConfirmFileDelete));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool EnableSpaceToActivate
+        {
+            get => _peekSettings.Properties.EnableSpaceToActivate.Value;
+            set
+            {
+                if (_peekSettings.Properties.EnableSpaceToActivate.Value != value)
+                {
+                    _peekSettings.Properties.EnableSpaceToActivate.Value = value;
+
+                    if (value)
+                    {
+                        // Force single space (0x20) without modifiers.
+                        _peekSettings.Properties.ActivationShortcut = new HotkeySettings(false, false, false, false, 0x20);
+                    }
+                    else
+                    {
+                        // Revert to default (design simplification, not restoring previous custom combo).
+                        _peekSettings.Properties.ActivationShortcut = _peekSettings.Properties.DefaultActivationShortcut;
+                    }
+
+                    OnPropertyChanged(nameof(EnableSpaceToActivate));
+                    OnPropertyChanged(nameof(ActivationShortcut));
                     NotifySettingsChanged();
                 }
             }

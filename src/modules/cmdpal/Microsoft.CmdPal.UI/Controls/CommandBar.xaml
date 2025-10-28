@@ -41,14 +41,18 @@
                 <Style.Setters>
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 </Style.Setters>
             </Style>
 
+            <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="ContextMenuFlyout"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
                 Opened="ContextMenuFlyout_Opened"
-                ShouldConstrainToRootBounds="False">
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
 
@@ -161,6 +165,7 @@
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.AutomationId="PrimaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
                 Click="PrimaryButton_Clicked"
@@ -168,9 +173,13 @@
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        MaxWidth="160"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                     <Border Style="{StaticResource HotkeyStyle}">
                         <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                     </Border>
@@ -180,15 +189,20 @@
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.AutomationId="SecondaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Click="SecondaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        MaxWidth="160"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
                             <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
@@ -203,6 +217,7 @@
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
                 Padding="6,4,4,4"
+                AutomationProperties.AutomationId="MoreContextMenuButton"
                 Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="Ctrl+K"
@@ -211,7 +226,9 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="More" />
+                        Text="More"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
                             <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />

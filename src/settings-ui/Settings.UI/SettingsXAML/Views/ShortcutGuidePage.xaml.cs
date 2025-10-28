@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ShortcutGuidePage : Page, IRefreshablePage
+    public sealed partial class ShortcutGuidePage : NavigablePage, IRefreshablePage
     {
         private ShortcutGuideViewModel ViewModel { get; set; }
 

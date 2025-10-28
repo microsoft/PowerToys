@@ -3,6 +3,7 @@ abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
 ABOUTBOX
+ABORTIFHUNG
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -25,13 +26,13 @@ ADMINS
 adml
 admx
 advancedpaste
-advancedpasteui
-advancedpasteuishortcut
+advapi
 advfirewall
 AFeature
 affordances
 AFX
 AGGREGATABLE
+AHK
 AHybrid
 akv
 ALarger
@@ -42,12 +43,12 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
-allpc
 ALLVIEW
 ALPHATYPE
 AModifier
 amr
 ANDSCANS
+animatedvisuals
 Animnate
 ANull
 AOC
@@ -68,11 +69,13 @@ APPMODEL
 APPNAME
 appref
 appsettings
+appsfeatures
 appwindow
 appwiz
 appxpackage
 APSTUDIO
 AQS
+Aquadrant
 ARandom
 ARCHITEW
 ARemapped
@@ -91,6 +94,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+ATX
 ATRIOX
 aumid
 Authenticode
@@ -110,6 +114,7 @@ azman
 bbwe
 BCIE
 bck
+backticks
 BESTEFFORT
 bezelled
 bhid
@@ -130,7 +135,6 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-blogs
 Blt
 BLURBEHIND
 BLURREGION
@@ -156,6 +160,7 @@ BUILDARCH
 BUILDNUMBER
 buildtransitive
 builttoroam
+BUNDLEINFO
 BVal
 BValue
 byapp
@@ -167,6 +172,7 @@ callbackptr
 calpwstr
 Cangjie
 CANRENAME
+Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
@@ -189,6 +195,7 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
@@ -243,6 +250,7 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+coreclr
 constexpr
 contentdialog
 contentfiles
@@ -262,8 +270,11 @@ countof
 covrun
 cpcontrols
 cph
+cppcoreguidelines
 cplusplus
 CPower
+cpptools
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -275,6 +286,7 @@ CRH
 critsec
 cropandlock
 Crossdevice
+csdevkit
 CSearch
 CSettings
 cso
@@ -302,6 +314,7 @@ CXVIRTUALSCREEN
 CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
+Czechia
 cziplib
 Dac
 dacl
@@ -326,6 +339,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
@@ -354,11 +368,12 @@ desktopshorcutinstalled
 DESKTOPVERTRES
 devblogs
 devdocs
+devenv
 devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
 digicert
 DINORMAL
@@ -372,6 +387,7 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
+djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -382,6 +398,7 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downscale
 DPICHANGED
 DPIs
 DPSAPI
@@ -398,6 +415,7 @@ DString
 DSVG
 DTo
 DUMMYUNIONNAME
+dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -430,6 +448,8 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+eku
+emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 ENABLETAB
@@ -439,6 +459,7 @@ encryptor
 ENDSESSION
 ENSUREVISIBLE
 ENTERSIZEMOVE
+ENTRYW
 ENU
 environmentvariables
 EOAC
@@ -469,6 +490,7 @@ examplehandler
 examplepowertoy
 EXAND
 EXCLUDEFROMCAPTURE
+EXECUTEDEFAULT
 executionpolicy
 exename
 exf
@@ -491,8 +513,8 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdx
 fesf
-fff
 FFFF
 FILEEXPLORER
 fileexploreraddons
@@ -555,6 +577,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -564,6 +587,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gitmodules
 GHND
 GMEM
 GNumber
@@ -573,6 +597,7 @@ GPOCA
 gpp
 gpu
 gradians
+Gridcustomlayout
 GSM
 gtm
 guiddata
@@ -617,6 +642,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
@@ -650,11 +676,7 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
-hotkeylockmachine
-hotkeyreconnect
 hotkeys
-hotkeyswitch
-hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -667,6 +689,7 @@ HROW
 hsb
 HSCROLL
 hsi
+HSpeed
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -712,8 +735,6 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
-imagetotext
-imagetotextshortcut
 imagingdevices
 ime
 imgflip
@@ -771,6 +792,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IUWP
 IWIC
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -791,6 +813,7 @@ KEYBOARDMANAGEREDITORLIBRARYWRAPPER
 keyboardmanagerstate
 keyboardmanagerui
 keyboardtester
+keycap
 KEYEVENTF
 KEYIMAGE
 keynum
@@ -800,12 +823,15 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+ksa
 kvp
 Kybd
+LARGEICON
 lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 LCh
+lbl
 lcid
 LCIDTo
 lcl
@@ -824,10 +850,12 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+lightswitch
 linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -839,17 +867,19 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+LOGMSG
 LOGPIXELSX
 LOGPIXELSY
-LOn
+lng
+lon
 longdate
 LONGNAMES
 lowlevel
+lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -896,11 +926,11 @@ luid
 LUMA
 lusrmgr
 LVal
-lvm
 LWA
 lwin
 LZero
 MAGTRANSFORM
+makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -925,7 +955,6 @@ MDL
 mdtext
 mdtxt
 mdwn
-measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -975,10 +1004,12 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
-mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
+muxx
+muxxc
+muxxh
 MRM
 MRT
 mru
@@ -1005,6 +1036,7 @@ Mso
 msrc
 msstore
 msvcp
+MT
 MTND
 MULTIPLEUSE
 multizone
@@ -1115,6 +1147,7 @@ NOTSRCCOPY
 NOTSRCERASE
 notwindows
 NOTXORPEN
+nowarn
 NOZORDER
 NPH
 npmjs
@@ -1125,6 +1158,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 numberbox
 nwc
@@ -1171,23 +1205,13 @@ PACL
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
+PARENTRELATIVE
 PARENTRELATIVEEDITING
 PARENTRELATIVEFORADDRESSBAR
+PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
-pasteashtmlfile
-pasteashtmlfileshortcut
-pasteasjson
-pasteasjsonshortcut
-pasteasmarkdown
-pasteasmarkdownshortcut
-pasteasplaintext
-pasteasplaintextshortcut
-pasteaspngfile
-pasteaspngfileshortcut
-pasteastxtfile
-pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1195,6 +1219,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
@@ -1228,6 +1253,7 @@ pgp
 pguid
 phbm
 phbmp
+phicon
 phwnd
 pici
 pidl
@@ -1236,6 +1262,8 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+pkgfamily
+PKI
 plib
 ploc
 ploca
@@ -1255,7 +1283,6 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
-powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1313,6 +1340,7 @@ PRTL
 prvpane
 psapi
 pscid
+pscustomobject
 PSECURITY
 psfgao
 psfi
@@ -1353,8 +1381,9 @@ quickaccent
 QUNS
 RAII
 RAlt
+RAquadrant
 randi
-Rasterization
+rasterization
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1385,6 +1414,7 @@ regkey
 regroot
 regsvr
 REINSTALLMODE
+releaseblog
 reloadable
 Relogger
 remappings
@@ -1396,7 +1426,6 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
-reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1422,7 +1451,6 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-Rns
 RNumber
 rop
 ROUNDSMALL
@@ -1435,7 +1463,6 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
-RTB
 RTLREADING
 rtm
 runas
@@ -1493,6 +1520,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1649,6 +1677,7 @@ sublang
 SUBMODULEUPDATE
 subresource
 Superbar
+suntimes
 sut
 svchost
 SVGIn
@@ -1676,6 +1705,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
@@ -1714,9 +1744,9 @@ tgz
 themeresources
 THH
 THICKFRAME
+THEMECHANGED
 THISCOMPONENT
 throughs
-thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1730,10 +1760,9 @@ tkconverters
 tlb
 tlbimp
 tlc
+tmain
 TNP
-TOGGLEEASYMOUSE
 Toolhelp
-toolkitconverters
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF
@@ -1745,7 +1774,6 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
-transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
@@ -1754,6 +1782,7 @@ trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD
@@ -1764,10 +1793,13 @@ UACUI
 UAL
 uap
 UBR
+UBreak
+ubrk
 UCallback
 ucrt
 ucrtd
 uefi
+UError
 uesc
 UFlags
 UHash
@@ -1775,12 +1807,14 @@ UIA
 UIEx
 uild
 uitests
+UITo
 ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter
@@ -1836,6 +1870,7 @@ VFT
 vget
 vgetq
 viewmodels
+virama
 VIRTKEY
 VIRTUALDESK
 VISEGRADRELAY
@@ -1860,6 +1895,7 @@ VSINSTALLDIR
 VSM
 vso
 vsonline
+VSpeed
 vstemplate
 vstest
 VSTHRD
@@ -1942,6 +1978,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+wmsg
 WMSYSCOMMAND
 wnd
 WNDCLASS
@@ -1955,6 +1992,7 @@ WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
+worktree
 wox
 wparam
 wpf
@@ -1986,6 +2024,7 @@ XButton
 xclip
 xcopy
 XDeployment
+xdf
 XDocument
 XElement
 xfd
@@ -1996,10 +2035,13 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+XPos
 XResource
 xsi
+XSpeed
 XStr
 xstyler
+XTimer
 XUP
 XVIRTUALSCREEN
 xxxxxx
@@ -2009,7 +2051,10 @@ YIncrement
 yinle
 yinyue
 YPels
+YPos
 YResolution
+YSpeed
+YTimer
 YStr
 YVIRTUALSCREEN
 ZEROINIT

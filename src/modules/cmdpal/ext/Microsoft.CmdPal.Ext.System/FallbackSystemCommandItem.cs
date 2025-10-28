@@ -17,6 +17,7 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
     {
         Title = string.Empty;
         Subtitle = string.Empty;
+        Icon = Icons.LockIcon;
 
         var isBootedInUefiMode = settings.GetSystemFirmwareType() == FirmwareType.Uefi;
         var hideEmptyRB = settings.HideEmptyRecycleBin();
@@ -46,8 +47,8 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
         {
             var title = command.Title;
             var subTitle = command.Subtitle;
-            var titleScore = StringMatcher.FuzzySearch(query, title).Score;
-            var subTitleScore = StringMatcher.FuzzySearch(query, subTitle).Score;
+            var titleScore = FuzzyStringMatcher.ScoreFuzzy(query, title);
+            var subTitleScore = FuzzyStringMatcher.ScoreFuzzy(query, subTitle);
 
             var maxScore = Math.Max(titleScore, subTitleScore);
             if (maxScore > resultScore)

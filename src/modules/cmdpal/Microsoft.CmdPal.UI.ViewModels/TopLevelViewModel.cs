@@ -32,6 +32,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private string _generatedId = string.Empty;
 
     private HotkeySettings? _hotkey;
+    private IIconInfo? _initialIcon;
 
     private CommandAlias? Alias { get; set; }
 
@@ -56,6 +57,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     public string Subtitle => _commandItemViewModel.Subtitle;
 
     public IIconInfo Icon => _commandItemViewModel.Icon;
+
+    public IIconInfo InitialIcon => _initialIcon ?? _commandItemViewModel.Icon;
 
     ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
 
@@ -110,6 +113,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         get => Alias?.Alias ?? string.Empty;
         set
         {
+            var previousAlias = Alias?.Alias ?? string.Empty;
+
             if (string.IsNullOrEmpty(value))
             {
                 Alias = null;
@@ -126,9 +131,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
                 }
             }
 
-            HandleChangeAlias();
-            OnPropertyChanged(nameof(AliasText));
-            OnPropertyChanged(nameof(IsDirectAlias));
+            // Only call HandleChangeAlias if there was an actual change.
+            if (previousAlias != Alias?.Alias)
+            {
+                HandleChangeAlias();
+                OnPropertyChanged(nameof(AliasText));
+                OnPropertyChanged(nameof(IsDirectAlias));
+            }
         }
     }
 
@@ -199,6 +208,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 DisplayTitle = fallback.DisplayTitle;
             }
+
+            UpdateInitialIcon(false);
         }
     }
 
@@ -208,14 +219,38 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         {
             PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
 
-            if (e.PropertyName == "IsInitialized")
+            if (e.PropertyName is "IsInitialized" or nameof(CommandItemViewModel.Command))
             {
                 GenerateId();
 
                 FetchAliasFromAliasManager();
                 UpdateHotkey();
                 UpdateTags();
+                UpdateInitialIcon();
             }
+            else if (e.PropertyName == nameof(CommandItem.Icon))
+            {
+                UpdateInitialIcon();
+            }
+        }
+    }
+
+    private void UpdateInitialIcon(bool raiseNotification = true)
+    {
+        if (_initialIcon != null || !_commandItemViewModel.Icon.IsSet)
+        {
+            return;
+        }
+
+        _initialIcon = _commandItemViewModel.Icon;
+
+        if (raiseNotification)
+        {
+            DoOnUiThread(
+                () =>
+                {
+                    PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(InitialIcon)));
+                });
         }
     }
 

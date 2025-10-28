@@ -20,27 +20,14 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid
-            x:Name="titleBar"
-            Height="32"
-            ColumnSpacing="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
-                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
-                <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
-            </Grid.ColumnDefinitions>
-            <Image
-                Grid.Column="1"
-                Width="16"
-                Height="16"
-                VerticalAlignment="Center"
-                Source="../Assets/EnvironmentVariables/EnvironmentVariables.ico" />
-            <TextBlock
-                x:Name="AppTitleTextBlock"
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}" />
-        </Grid>
+        <TitleBar x:Name="titleBar" IsTabStop="False">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="/Assets/EnvironmentVariables/EnvironmentVariables.ico" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
     </Grid>
 </winuiex:WindowEx>

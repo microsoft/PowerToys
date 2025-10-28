@@ -145,6 +145,7 @@
         <Setter Property="Background" Value="{DynamicResource LayoutItemBackgroundBrush}" />
         <Setter Property="IsSelected" Value="{Binding IsApplied, Mode=OneWay}" />
         <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+        <Setter Property="AutomationProperties.AutomationId" Value="{Binding AutomationId}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
         <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
         <Setter Property="CornerRadius" Value="4" />

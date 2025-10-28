@@ -38,11 +38,6 @@ parameters:
     displayName: "Build Using Visual Studio Preview"
     default: false
 
-  - name: enableAOT
-    type: boolean
-    displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
-    default: true
-
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
@@ -78,10 +73,11 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                ${{ if eq(parameters.useVSPreview, true) }}:
-                  demands: ImageOverride -equals SHINE-VS17-Preview
-                ${{ else }}:
-                  image: SHINE-VS17-Latest
+                demands:
+                  # Our INT agents have a large disk mounted at P:\
+                  - WorkFolder -equals P:\_work
+                  - ${{ if eq(parameters.useVSPreview, true) }}:
+                    - ImageOverride -equals SHINE-VS17-Preview
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
@@ -104,7 +100,7 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }}
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=true
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-

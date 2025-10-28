@@ -1,0 +1,171 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <Import Project="..\..\src\CmdPalVersion.props" Condition="Exists('..\..\src\CmdPalVersion.props')" />
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+  <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
+    The build pipeline builds the Settings and Launcher projects for Publication
+    using a specific profile. If you're doing local installer builds, this will
+    simulate the build pipeline doing that for you. -->
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
+SET PTRoot=$(SolutionDir)\..
+call "..\..\..\publish.cmd" x64
+)
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
+    </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)' != 'x64'">
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
+SET PTRoot=$(SolutionDir)\..
+call "..\..\..\publish.cmd" arm64
+)
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
+    </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <PostBuildEvent>
+      call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
+      call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
+      call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
+      call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
+      call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
+      call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
+      call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
+      call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
+      call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
+      call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+      call move /Y ..\..\..\LightSwitch.wxs.bk ..\..\..\LightSwitch.wxs
+      call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
+      call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
+      call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
+      call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs
+      call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
+      call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
+      call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
+      call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
+      call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
+      call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
+      call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
+      call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
+      call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
+      call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
+      call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
+      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
+  </PropertyGroup>
+    <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Name>PowerToysVNextInstaller</Name>
+    <!-- We do not support debug installer builds -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform>$(Platform)</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>{b6e94700-df38-41f6-a3fd-18b69674ab1e}</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
+    <OutputType>Package</OutputType>
+    <SuppressAclReset>True</SuppressAclReset>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <!-- 1076 and ICE91 - warning: using this configuration for perMachine install could cause problems. -->
+    <!-- 1026 - warning: file ID is too long -->
+    <SuppressIces>ICE91</SuppressIces>
+    <SuppressSpecificWarnings>1026;1076</SuppressSpecificWarnings>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
+    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
+    <SuppressIces>ICE40</SuppressIces>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
+    <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
+    <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
+    <Compile Include="NewPlus.wxs" />
+    <Compile Include="Product.wxs" />
+    <Compile Include="AdvancedPaste.wxs" />
+    <Compile Include="Awake.wxs" />
+    <Compile Include="BaseApplications.wxs" />
+    <Compile Include="CmdPal.wxs" />
+    <Compile Include="ColorPicker.wxs" />
+    <Compile Include="EnvironmentVariables.wxs" />
+    <Compile Include="FileExplorerPreview.wxs" />
+    <Compile Include="FileLocksmith.wxs" />
+    <Compile Include="Hosts.wxs" />
+    <Compile Include="ImageResizer.wxs" />
+    <Compile Include="LightSwitch.wxs" />
+    <Compile Include="KeyboardManager.wxs" />
+    <Compile Include="Peek.wxs" />
+    <Compile Include="PowerRename.wxs" />
+    <Compile Include="DscResources.wxs" />
+    <Compile Include="RegistryPreview.wxs" />
+    <Compile Include="Run.wxs" />
+    <Compile Include="Settings.wxs" />
+    <Compile Include="ShortcutGuide.wxs" />
+    <Compile Include="Tools.wxs" />
+    <Compile Include="MouseWithoutBorders.wxs" />
+    <Compile Include="WinUI3Applications.wxs" />
+    <Compile Include="MonacoSRC.wxs" />
+    <Compile Include="Core.wxs" />
+    <Compile Include="Resources.wxs" />
+    <Compile Include="WinAppSDK.wxs" />
+    <Compile Include="Workspaces.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CustomDialogs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Heat" />
+      <PackageReference Include="WixToolset.Firewall.wixext" />
+      <PackageReference Include="WixToolset.Util.wixext" />
+      <PackageReference Include="WixToolset.UI.wixext" />
+      <PackageReference Include="WixToolset.NetFx.wixext" />
+     <PackageReference Include="WixToolset.Bal.wixext" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj">
+      <Name>PowerToysSetupCustomActionsVNext</Name>
+      <Project>{B3A354B0-1E54-4B55-A962-FB5AF9330C19}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+  </Target>
+  <!-- Prevents NU1503 -->
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="Restore" />
+</Project>

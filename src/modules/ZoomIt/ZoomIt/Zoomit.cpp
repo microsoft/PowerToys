@@ -170,6 +170,8 @@ type_pMagSetFullscreenTransform pMagSetFullscreenTransform;
 type_pMagSetInputTransform	pMagSetInputTransform;
 type_pMagShowSystemCursor	pMagShowSystemCursor;
 type_pMagSetWindowFilterList pMagSetWindowFilterList;
+type_MagSetFullscreenUseBitmapSmoothing pMagSetFullscreenUseBitmapSmoothing;
+type_pMagSetLensUseBitmapSmoothing pMagSetLensUseBitmapSmoothing;
 type_pMagInitialize			pMagInitialize;
 type_pDwmIsCompositionEnabled	pDwmIsCompositionEnabled;
 type_pGetPointerType		pGetPointerType;
@@ -1099,6 +1101,8 @@ void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBr
     // Create a new bitmap that's the size of the area covered by the line + 2 * g_PenWidth
     Gdiplus::Rect lineBounds(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1));
 
+    OutputDebug(L"DrawHighlightedShape\n");
+
     // Expand for line drawing
     if (Shape == DRAW_LINE)
         lineBounds.Inflate(static_cast<int>(g_PenWidth / 2), static_cast<int>(g_PenWidth / 2));
@@ -1186,7 +1190,7 @@ void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBr
     DeleteDC(hdcDIBOrig);
 
     // Invalidate the updated rectangle
-    // InvalidateGdiplusRect(hWnd, lineBounds);
+    //InvalidateGdiplusRect(hWnd, lineBounds);
 }
 
 //----------------------------------------------------------------------------
@@ -1284,7 +1288,12 @@ void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
     {
         Gdiplus::Bitmap		srcBitmap( bmSrc, NULL );
 
-        dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
+        // Use high quality interpolation when smooth image is enabled
+        if (g_SmoothImage) {
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeHighQuality );
+        } else {
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
+        }
         dstGraphics.SetPixelOffsetMode( Gdiplus::PixelOffsetModeHalf );
 
         dstGraphics.DrawImage( &srcBitmap, Gdiplus::RectF(xDst,yDst,wDst,hDst), xSrc, ySrc, wSrc, hSrc, Gdiplus::UnitPixel );
@@ -2071,6 +2080,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             IsAutostartConfigured() ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM, 
             g_AnimateZoom ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_SMOOTH_IMAGE, 
+            g_SmoothImage ? BST_CHECKED: BST_UNCHECKED );
 
         SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_SETRANGE, false, MAKELONG(0,_countof(g_ZoomLevels)-1) );
         SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_SETPOS, true, g_SliderZoomLevel );
@@ -2210,6 +2221,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
             g_ShowTrayIcon = IsDlgButtonChecked( hDlg, IDC_SHOW_TRAY_ICON ) == BST_CHECKED;
             g_AnimateZoom = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM ) == BST_CHECKED;
+            g_SmoothImage = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_SMOOTH_IMAGE ) == BST_CHECKED;
             g_DemoTypeUserDriven = IsDlgButtonChecked( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN ) == BST_CHECKED;
 
             newToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
@@ -2723,7 +2735,6 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
     bool	isBlur = false;
 
     Gdiplus::Graphics	dstGraphics(hDc);
-
 	if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
 	{
 		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
@@ -2746,6 +2757,7 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
             InflateRect(Rect, g_PenWidth / 2, g_PenWidth / 2);
         isBlur = true;
     }
+    OutputDebug(L"Draw shape: highlight: %d pbrush: %d\n", PEN_COLOR_HIGHLIGHT(g_PenColor), pBrush != NULL);
 
     switch (Shape) {
     case DRAW_RECTANGLE:
@@ -2920,7 +2932,7 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 {
     int		x, y;
     RECT	rc;
-    int		invWidth = g_PenWidth;
+    int		invWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
 
     if( DrawHighlightedCursor( zoomLevel, width, height ) ) {
         
@@ -2945,7 +2957,7 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 {
     OutputDebug( L"SaveCursorArea\n");
-    int penWidth = g_PenWidth + 2;
+    int penWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
     BitBlt( hDcTarget, 0, 0, penWidth +CURSOR_ARM_LENGTH*2, penWidth +CURSOR_ARM_LENGTH*2,
         hDcSource, static_cast<INT> (pt.x- penWidth /2)-CURSOR_ARM_LENGTH,
         static_cast<INT>(pt.y- penWidth /2)-CURSOR_ARM_LENGTH, SRCCOPY|CAPTUREBLT );
@@ -2959,7 +2971,7 @@ void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 void RestoreCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 {
     OutputDebug( L"RestoreCursorArea\n");
-    int penWidth = g_PenWidth + 2;
+    int penWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
     BitBlt( hDcTarget, static_cast<INT>(pt.x- penWidth /2)-CURSOR_ARM_LENGTH,
         static_cast<INT>(pt.y- penWidth /2)-CURSOR_ARM_LENGTH, penWidth +CURSOR_ARM_LENGTH*2,
         penWidth + CURSOR_ARM_LENGTH*2, hDcSource, 0, 0, SRCCOPY|CAPTUREBLT );
@@ -3525,6 +3537,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         }
         if( destFile == nullptr ) {
 
+            if (stream) {
+                stream.Close();
+                stream = nullptr;
+            }
             co_await file.DeleteAsync();
         }
         else {
@@ -3544,6 +3560,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else {
 
+        if (stream) {
+            stream.Close();
+            stream = nullptr;
+        }
         co_await file.DeleteAsync();
         g_RecordingSession = nullptr;
     }
@@ -4016,7 +4036,10 @@ LRESULT APIENTRY MainWndProc(
             // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
             {
+                // Hide cursor for screen capture
+                ShowCursor(false);
                 SendMessage( hWnd, WM_COMMAND, IDC_SAVE_CROP, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+                ShowCursor(true);
             }
             else
             {
@@ -4047,12 +4070,6 @@ LRESULT APIENTRY MainWndProc(
                 {
                     OutputDebug( L"Exiting liveDraw after snip\n" );
                     SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
-                }
-                else
-                {
-                    // Set wparam to 1 to exit without animation
-                    OutputDebug(L"Exiting zoom after snip\n" );
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
                 }
             }
             break;
@@ -4172,6 +4189,11 @@ LRESULT APIENTRY MainWndProc(
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                     }
 #endif
+                }
+                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+                if (!pMagSetLensUseBitmapSmoothing(g_hWndLiveZoomMag, g_SmoothImage))
+                {
+                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
                 }
 
                 if ( g_RecordToggle )
@@ -5291,6 +5313,8 @@ LRESULT APIENTRY MainWndProc(
 
             if( g_Drawing ) {
 
+                OutputDebug(L"Mousemove: Drawing\n");
+
                 POINT currentPt;
 
                 // Are we in pen mode on a tablet?
@@ -5329,7 +5353,15 @@ LRESULT APIENTRY MainWndProc(
                         }
                         else
                         {
-                            DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle );
+                            if (PEN_COLOR_HIGHLIGHT(g_PenColor))
+                            {
+                                // copy original bitmap to screen bitmap to erase previous highlight
+                                BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth, bmp.bmHeight, drawUndoList->hDc, 0, 0, SRCCOPY | CAPTUREBLT);
+                            }
+                            else
+                            {
+                                DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle, PEN_COLOR_HIGHLIGHT(g_PenColor));
+                            }
                         }
                     }
 
@@ -5375,7 +5407,7 @@ LRESULT APIENTRY MainWndProc(
                         g_rcRectangle.top != g_rcRectangle.bottom) {
 
                         // Draw the new target rectangle. 
-                        DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                        DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle, PEN_COLOR_HIGHLIGHT(g_PenColor));
                         OutputDebug(L"SHAPE: (%d, %d) - (%d, %d)\n", g_rcRectangle.left, g_rcRectangle.top, 
                             g_rcRectangle.right, g_rcRectangle.bottom);
                     }
@@ -5413,9 +5445,6 @@ LRESULT APIENTRY MainWndProc(
                         Gdiplus::BitmapData* lineData = LockGdiPlusBitmap(lineBitmap);
                         BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
 
-                        // Copy the contents of the screen bitmap to the temporary bitmap
-                        GetOldestUndo(drawUndoList);
-
                         // Create a GDI bitmap that's the size of the lineBounds rectangle
                         Gdiplus::Bitmap *blurBitmap = CreateGdiplusBitmap( hdcScreenCompat, // oldestUndo->hDc, 
                                             lineBounds.X, lineBounds.Y, lineBounds.Width, lineBounds.Height);
@@ -5439,6 +5468,8 @@ LRESULT APIENTRY MainWndProc(
                         DrawCursor(hdcScreenCompat, currentPt, zoomLevel, width, height);
                     } 
                     else if(PEN_COLOR_HIGHLIGHT(g_PenColor)) { 
+
+                        OutputDebug(L"HIGHLIGHT\n");
 
                         // This is a highlighting pen color
                         Gdiplus::Rect lineBounds = GetLineBounds(prevPt, currentPt, g_PenWidth);
@@ -5778,18 +5809,31 @@ LRESULT APIENTRY MainWndProc(
 
             if( !g_DrawingShape ) {
 
-                Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
+                // If the point has changed, draw a line to it
+                if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
                 {
-                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    if (prevPt.x != LOWORD(lParam) || prevPt.y != HIWORD(lParam))
+                    {
+                        Gdiplus::Graphics dstGraphics(hdcScreenCompat);
+                        if ((GetWindowLong(g_hWndMain, GWL_EXSTYLE) & WS_EX_LAYERED) == 0)
+                        {
+                            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                        }
+                        Gdiplus::Color color = ColorFromColorRef(g_PenColor);
+                        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                        Gdiplus::GraphicsPath path;
+                        pen.SetLineJoin(Gdiplus::LineJoinRound);
+                        path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
+                        dstGraphics.DrawPath(&pen, &path);
+                    }
+                    // Draw a dot at the current point, if the point hasn't changed
+                    else
+                    {
+                        MoveToEx(hdcScreenCompat, prevPt.x, prevPt.y, NULL);
+                        LineTo(hdcScreenCompat, LOWORD(lParam), HIWORD(lParam));
+                        InvalidateRect(hWnd, NULL, FALSE);
+                    }
                 }
-                Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
-                Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
-                Gdiplus::GraphicsPath path;
-                pen.SetLineJoin(Gdiplus::LineJoinRound);
-                path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
-                dstGraphics.DrawPath(&pen, &path);
-
                 prevPt.x = LOWORD( lParam );
                 prevPt.y = HIWORD( lParam );
 
@@ -5804,8 +5848,11 @@ LRESULT APIENTRY MainWndProc(
                         g_rcRectangle.left != g_rcRectangle.right ) {
 
                 // erase previous
-                SetROP2(hdcScreenCompat, R2_NOTXORPEN); 
-                DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle );
+                if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
+                {
+                    SetROP2(hdcScreenCompat, R2_NOTXORPEN);
+                    DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                }
 
                 // Draw the final shape
                 HBRUSH hBrush = static_cast<HBRUSH>(GetStockObject( NULL_BRUSH ));
@@ -6171,8 +6218,14 @@ LRESULT APIENTRY MainWndProc(
             SetStretchBltMode( hInterimSaveDc, HALFTONE );
             SetStretchBltMode( hSaveDc, HALFTONE );
 #else
-            SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
-            SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hInterimSaveDc, HALFTONE );
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
 #endif
             StretchBlt( hInterimSaveDc,
                         0, 0,
@@ -6295,7 +6348,12 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hSaveDc, HALFTONE );
 #else
-            SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
 #endif
 			StretchBlt( hSaveDc,
                         0, 0,
@@ -6632,8 +6690,8 @@ LRESULT APIENTRY MainWndProc(
                             (float)x, (float)y, 
                             width/zoomLevel, height/zoomLevel ); 
             } else {
-                // do a fast, less accurate render
-                SetStretchBltMode( hDc, HALFTONE );
+                // do a fast, less accurate render (but use smooth if enabled)
+                SetStretchBltMode( hDc, g_SmoothImage ? HALFTONE : COLORONCOLOR );
                 StretchBlt( ps.hdc, 
                         0, 0, 
                         bmp.bmWidth, bmp.bmHeight, 
@@ -6646,7 +6704,12 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hDc, zoomLevel == zoomTelescopeTarget ? HALFTONE : COLORONCOLOR );
 #else
-            SetStretchBltMode( hDc, COLORONCOLOR );
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hDc, COLORONCOLOR );
+            }
 #endif
             StretchBlt( ps.hdc, 
                     0, 0, 
@@ -6669,7 +6732,7 @@ LRESULT APIENTRY MainWndProc(
 
                 BITMAP local_bmp;
                 GetObject(g_hBackgroundBmp, sizeof(local_bmp), &local_bmp);
-                SetStretchBltMode( hdcScreenCompat, HALFTONE );
+                SetStretchBltMode( hdcScreenCompat, g_SmoothImage ? HALFTONE : COLORONCOLOR );
                 if( g_BreakBackgroundStretch ) {
                     StretchBlt( hdcScreenCompat, 0, 0, width, height,
                         g_hDcBackgroundFile, 0, 0, local_bmp.bmWidth, local_bmp.bmHeight, SRCCOPY|CAPTUREBLT  );
@@ -6828,7 +6891,6 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                                         WS_CHILD | MS_SHOWMAGNIFIEDCURSOR | WS_VISIBLE,
                                         0, 0, 0, 0, hWnd, NULL, g_hInstance, NULL );
         }
-
         ShowWindow( hWnd, SW_SHOW );
         InvalidateRect( g_hWndLiveZoomMag, NULL, TRUE );
 
@@ -7541,6 +7603,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     "MagSetWindowTransform" );
     pMagSetFullscreenTransform = (type_pMagSetFullscreenTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MagSetFullscreenTransform");
+    pMagSetFullscreenUseBitmapSmoothing = (type_MagSetFullscreenUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetFullscreenUseBitmapSmoothing");
+    pMagSetLensUseBitmapSmoothing = (type_pMagSetLensUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetLensUseBitmapSmoothing");
     pMagSetInputTransform = (type_pMagSetInputTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MagSetInputTransform");
     pMagShowSystemCursor = (type_pMagShowSystemCursor)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),

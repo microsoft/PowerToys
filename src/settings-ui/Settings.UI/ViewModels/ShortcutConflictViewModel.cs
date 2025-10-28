@@ -12,12 +12,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Windows;
 using System.Windows.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -70,6 +68,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override string ModuleName => "ShortcutConflictsWindow";
 
+        /// <summary>
+        /// Ignore a specific HotkeySettings
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to ignore</param>
+        public void IgnoreShortcut(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return;
+            }
+
+            HotkeyConflictIgnoreHelper.AddToIgnoredList(hotkeySettings);
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
+
+        /// <summary>
+        /// Remove a HotkeySettings from the ignored list
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to unignore</param>
+        public void UnignoreShortcut(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return;
+            }
+
+            HotkeyConflictIgnoreHelper.RemoveFromIgnoredList(hotkeySettings);
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
+
         private IHotkeyConfig GetModuleSettings(string moduleKey)
         {
             try
@@ -120,20 +148,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (var conflict in conflicts)
             {
-                ProcessConflictGroup(conflict, isSystemConflict);
+                HotkeySettings hotkey = new(conflict.Hotkey.Win, conflict.Hotkey.Ctrl, conflict.Hotkey.Alt, conflict.Hotkey.Shift, conflict.Hotkey.Key);
+                var isIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkey);
+                conflict.ConflictIgnored = isIgnored;
+
+                ProcessConflictGroup(conflict, isSystemConflict, isIgnored);
                 items.Add(conflict);
             }
         }
 
-        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, bool isSystemConflict)
+        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, bool isSystemConflict, bool isIgnored)
         {
             foreach (var module in conflict.Modules)
             {
-                SetupModuleData(module, isSystemConflict);
+                SetupModuleData(module, isSystemConflict, isIgnored);
             }
         }
 
-        private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict)
+        private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict, bool isIgnored)
         {
             try
             {
@@ -145,6 +177,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     // Get current hotkey settings (fresh from file) using the accessor's getter
                     module.HotkeySettings = hotkeyAccessor.Value;
+                    module.HotkeySettings.ConflictDescription = isSystemConflict
+                        ? ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText")
+                        : ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
 
                     // Set header using localization key
                     module.Header = GetHotkeyLocalizationHeader(module.ModuleName, module.HotkeyID, hotkeyAccessor.LocalizationHeaderKey);
@@ -214,55 +249,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error updating hotkey settings for {moduleName}.{hotkeyID}: {ex.Message}");
-            }
-        }
-
-        private void SaveModuleSettingsAndNotify(string moduleName)
-        {
-            try
-            {
-                var settings = GetModuleSettings(moduleName);
-
-                if (settings is ISettingsConfig settingsConfig)
-                {
-                    // No need to save settings here, the runner will call module interface to save it
-                    // SaveSettingsToFile(settings);
-
-                    // Send IPC notification using the same format as other ViewModels
-                    SendConfigMSG(settingsConfig, moduleName);
-
-                    System.Diagnostics.Debug.WriteLine($"Saved settings and sent IPC notification for module: {moduleName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error saving settings and notifying for {moduleName}: {ex.Message}");
-            }
-        }
-
-        private void SaveSettingsToFile(IHotkeyConfig settings)
-        {
-            try
-            {
-                // Get the repository for this settings type using reflection
-                var settingsType = settings.GetType();
-                var repositoryMethod = typeof(SettingsFactory).GetMethod("GetRepository");
-                if (repositoryMethod != null)
-                {
-                    var genericMethod = repositoryMethod.MakeGenericMethod(settingsType);
-                    var repository = genericMethod.Invoke(_settingsFactory, null);
-
-                    if (repository != null)
-                    {
-                        var saveMethod = repository.GetType().GetMethod("SaveSettingsToFile");
-                        saveMethod?.Invoke(repository, null);
-                        System.Diagnostics.Debug.WriteLine($"Saved settings to file for type: {settingsType.Name}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error saving settings to file: {ex.Message}");
             }
         }
 
