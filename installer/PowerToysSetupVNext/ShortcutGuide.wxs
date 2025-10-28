@@ -16,7 +16,7 @@
 
     <!-- Shortcut guide -->
     <ComponentGroup Id="ShortcutGuideComponentGroup" >
-      <Component Id="RemoveShortcutGuideFolder" Guid="AD1ABC55-B593-4A60-A86A-BA8C0ED493A5" Directory="ShortcutGuideSvgsInstallFolder" >
+      <Component Id="RemoveShortcutGuideFolder" Guid="AD1ABC55-B593-4A60-A86A-BA8C0ED493A5" Directory="ShortcutGuideAssetsFolder" >
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveShortcutGuideFolder" Value="" KeyPath="yes"/>
         </RegistryKey>
