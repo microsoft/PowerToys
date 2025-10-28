@@ -1,8 +1,8 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
-#include <common/settings_objects.h>
+#include <common/hooks/LowlevelKeyboardEvent.h>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include "trace.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -25,9 +25,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"$projectname$";
+const static wchar_t* MODULE_NAME = L"ScreencastMode";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
+const static wchar_t* MODULE_DESC = L"This is a module that allows you to visualise keystrokes on the screen";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
@@ -46,7 +46,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class ScreencastModeInterface : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -57,10 +57,15 @@ private:
 
 public:
     // Constructor
-    $safeprojectname$()
+    ScreencastModeInterface()
     {
         init_settings();
     };
+
+    virtual const wchar_t* get_key() override
+    {
+        return L"ScreencastMode";
+    }
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -74,10 +79,12 @@ public:
         return MODULE_NAME;
     }
 
+
+
     // Return array of the names of all events that this powertoy listens for, with
     // nullptr as the last element of the array. Nullptr can also be retured for empty
     // list.
-    virtual const wchar_t** get_events() override
+    virtual const wchar_t** get_events()
     {
         static const wchar_t* events[] = { nullptr };
         // Available events:
@@ -177,7 +184,7 @@ public:
         {
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             // Update a bool property.
             //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
@@ -230,42 +237,34 @@ public:
     }
 
     // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
+    //virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
+    //{
+    //    if (wcscmp(name, ll_keyboard) == 0)
+    //    {
+    //        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
+    //        // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
+    //        // otherwise return 0.
+    //        return 0;
+    //    }
+    //    else if (wcscmp(name, win_hook_event) == 0)
+    //    {
+    //        auto& event = *(reinterpret_cast<WinHookEvent*>(data));
+    //        // Return value is ignored
+    //        return 0;
+    //    }
+    //    return 0;
+    //}
 
-    // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
-
-    virtual void signal_system_menu_action(const wchar_t* name) override
-    {
-    }
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void ScreencastModeInterface::init_settings()
 {
     try
     {
         // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(ScreencastModeInterface::get_name());
 
         // Load a bool property.
         //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
@@ -334,5 +333,5 @@ void $safeprojectname$::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new ScreencastModeInterface();
 }
