@@ -128,7 +128,19 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool DisableAnimations
+    {
+        get => _settings.DisableAnimations;
+        set
+        {
+            _settings.DisableAnimations = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
+
+    public SettingsExtensionsViewModel Extensions { get; }
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
     {
@@ -145,6 +157,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);
         }
+
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

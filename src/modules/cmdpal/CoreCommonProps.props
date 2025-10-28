@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
   <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
@@ -36,4 +36,11 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+		
 </Project>

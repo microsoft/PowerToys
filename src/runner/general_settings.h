@@ -19,6 +19,7 @@ struct GeneralSettings
     std::wstring theme;
     std::wstring systemTheme;
     std::wstring powerToysVersion;
+    json::JsonObject ignoredConflictProperties;
 
     json::JsonObject to_json();
 };

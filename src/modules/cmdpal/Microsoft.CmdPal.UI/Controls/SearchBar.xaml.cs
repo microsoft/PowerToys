@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Views;
@@ -121,31 +122,11 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-        if (ctrlPressed && e.Key == VirtualKey.Enter)
-        {
-            // ctrl+enter
-            WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Enter)
-        {
-            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-            e.Handled = true;
-        }
-        else if (ctrlPressed && e.Key == VirtualKey.K)
-        {
-            // ctrl+k
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-            e.Handled = true;
-        }
-        else if (ctrlPressed && e.Key == VirtualKey.I)
+        var ctrlPressed = (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
+        if (ctrlPressed && e.Key == VirtualKey.I)
         {
             // Today you learned that Ctrl+I in a TextBox will insert a tab
+            // We don't want that, so we'll suppress it, this way it can be used for other purposes
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Escape)
@@ -235,6 +216,16 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.PageDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageUp)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+            e.Handled = true;
+        }
 
         if (InSuggestion)
         {
@@ -278,22 +269,6 @@ public sealed partial class SearchBar : UserControl,
             // Logger.LogInfo("leaving suggestion");
             _inSuggestion = false;
             _lastText = null;
-        }
-
-        if (!e.Handled)
-        {
-            var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-            var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-                InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-
-            // The CommandBar is responsible for handling all the item keybindings,
-            // since the bound context item may need to then show another
-            // context menu
-            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-            WeakReferenceMessenger.Default.Send(msg);
-            e.Handled = msg.Handled;
         }
     }
 
