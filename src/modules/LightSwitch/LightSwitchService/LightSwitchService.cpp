@@ -148,7 +148,6 @@ static void update_sun_times(auto& settings)
         std::wstring wmsg(e.what(), e.what() + strlen(e.what()));
         Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
     }
-    
 }
 
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
@@ -184,10 +183,29 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         bool isSystemCurrentlyLight = GetCurrentSystemTheme();
         bool isAppsCurrentlyLight = GetCurrentAppsTheme();
 
+        // Call before SetTheme to take advantage of the additional notifications they perform
+        auto SetWallpaper = [settings](bool light) {
+            // true is light, false is dark
+            if (settings.wallpaperEnabled)
+            {
+                std::wstring const& wallpaperPath = light ? settings.wallpaperPathLight : settings.wallpaperPathDark;
+                auto style = light ? settings.wallpaperStyleLight : settings.wallpaperStyleDark;
+                if (auto e = SetDesktopWallpaper(wallpaperPath, style, settings.wallpaperVirtualDesktop) == 0)
+                {
+                    Logger::info(L"[LightSwitchService] Wallpaper is changed to {}.", wallpaperPath);
+                }
+                else
+                {
+                    Logger::error(L"[LightSwitchService] Failed to set wallpaper, error: {}.", e);
+                }
+            }
+        };
+
         if (isLightActive)
         {
             if (settings.changeSystem && !isSystemCurrentlyLight)
             {
+                SetWallpaper(true);
                 SetSystemTheme(true);
                 Logger::info(L"[LightSwitchService] Changing system theme to light mode.");
             }
@@ -201,6 +219,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         {
             if (settings.changeSystem && isSystemCurrentlyLight)
             {
+                SetWallpaper(false);
                 SetSystemTheme(false);
                 Logger::info(L"[LightSwitchService] Changing system theme to dark mode.");
             }
@@ -317,7 +336,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             }
         }
 
-
         // --- When schedule is active, run once per minute ---
         SYSTEMTIME st;
         GetLocalTime(&st);
@@ -397,7 +415,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     return 0;
 }
-
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {

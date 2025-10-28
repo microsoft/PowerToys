@@ -17,11 +17,15 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.Windows.Storage.Pickers;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
+using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -128,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.SelectedCity = null;
 
                 // CityAutoSuggestBox.Text = string.Empty;
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}Â°, {ViewModel.Longitude}Â°";
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
@@ -153,7 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
             {
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}Â°, {ViewModel.Longitude}Â°";
             }
 
             SunriseModeChartState();
@@ -320,6 +324,51 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             await GetGeoLocation();
+        }
+
+        private async void PickWallpaper_Click(object sender, RoutedEventArgs e)
+        {
+            var tag = (sender as Button).Tag as string;
+
+            var fileOpenPicker = new FileOpenPicker((sender as Button).XamlRoot.ContentIslandEnvironment.AppWindowId);
+            string[] extensions = { ".jpg", ".jpeg", ".bmp", ".dib", ".png", ".jfif", ".jpe", ".gif", ".tif", ".tiff", ".wdp", ".heic", ".heif", ".heics", ".heifs", ".hif", ".avci", ".avcs", ".avif", ".avifs", ".jxr", ".jxl", ".webp" };
+            foreach (var ext in extensions)
+            {
+                fileOpenPicker.FileTypeFilter.Add(ext);
+            }
+
+            fileOpenPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            var selectedFile = await fileOpenPicker.PickSingleFileAsync();
+
+            if (selectedFile == null)
+            {
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(ViewModel.WallpaperPathLight) && tag == "Light")
+            {
+                LightSwitchViewModel.DeleteFile(ViewModel.WallpaperPathLight);
+                ViewModel.WallpaperPathLight = string.Empty;
+            }
+            else if (!string.IsNullOrEmpty(ViewModel.WallpaperPathDark) && tag == "Dark")
+            {
+                LightSwitchViewModel.DeleteFile(ViewModel.WallpaperPathDark);
+                ViewModel.WallpaperPathDark = string.Empty;
+            }
+
+            var srcFile = await StorageFile.GetFileFromPathAsync(selectedFile.Path);
+            var settingsFolder = await StorageFolder.GetFolderFromPathAsync(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\LightSwitch");
+            var dstFile = await settingsFolder.CreateFileAsync($"{tag}{DateTime.Now.ToFileTime()}{srcFile.FileType}", CreationCollisionOption.ReplaceExisting);
+            await FileIO.WriteBufferAsync(dstFile, await FileIO.ReadBufferAsync(srcFile));
+
+            if (tag == "Light")
+            {
+                ViewModel.WallpaperPathLight = dstFile.Path;
+            }
+            else if (tag == "Dark")
+            {
+                ViewModel.WallpaperPathDark = dstFile.Path;
+            }
         }
 
         private void SunriseModeChartState()
