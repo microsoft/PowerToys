@@ -13,7 +13,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-internal sealed partial class AppListItem : ListItem
+public sealed partial class AppListItem : ListItem
 {
     private static readonly Tag _appTag = new("App");
 
