@@ -150,7 +150,7 @@
         </Grid.RowDefinitions>
 
         <Grid
-            Margin="8,8,8,4"
+            Margin="8,0,8,16"
             Padding="4"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -161,7 +161,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <controls:ClipboardHistoryItemPreviewControl Height="64" ClipboardItem="{x:Bind ViewModel.CurrentClipboardItem, Mode=OneWay}" />
+            <controls:ClipboardHistoryItemPreviewControl Height="48" ClipboardItem="{x:Bind ViewModel.CurrentClipboardItem, Mode=OneWay}" />
             <Button
                 x:Uid="ClipboardHistoryButton"
                 Grid.Column="1"
@@ -210,7 +210,10 @@
                                                 <ColumnDefinition Width="*" MaxWidth="240" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <controls:ClipboardHistoryItemPreviewControl x:Phase="0" ClipboardItem="{x:Bind}" />
+                                            <controls:ClipboardHistoryItemPreviewControl
+                                                Height="64"
+                                                x:Phase="0"
+                                                ClipboardItem="{x:Bind}" />
                                             <Button
                                                 x:Name="ClipboardHistoryItemMoreOptionsButton"
                                                 x:Uid="ClipboardHistoryItemMoreOptionsButton"
@@ -244,62 +247,54 @@
             x:Name="CustomFormatTextBox"
             x:Uid="CustomFormatTextBox"
             Grid.Row="1"
-            Margin="20,4,20,0"
+            Margin="20,0,20,0"
             x:FieldModifier="public"
             TabIndex="0">
             <controls:PromptBox.Footer>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
+                        x:Uid="AIMistakeNote"
                         Margin="0,0,2,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Run x:Uid="AIMistakeNote" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </TextBlock>
-                    <TextBlock
-                        Margin="4,0,2,0"
-                        HorizontalAlignment="Left"
+                        FontSize="10"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button
+                        Padding="0"
                         VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Hyperlink
-                            x:Name="TermsHyperlink"
-                            NavigateUri="https://openai.com/policies/terms-of-use"
-                            TabIndex="3">
-                            <Run x:Uid="TermsLink" />
-                        </Hyperlink>
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="https://openai.com/policies/terms-of-use" />
-                        </ToolTipService.ToolTip>
-                    </TextBlock>
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        ToolTipService.ToolTip="">
-                        <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
-                    </TextBlock>
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
-                            <Run x:Uid="PrivacyLink" />
-                        </Hyperlink>
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="https://openai.com/policies/privacy-policy" />
-                        </ToolTipService.ToolTip>
-                    </TextBlock>
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <FontIcon FontSize="12" Glyph="&#xE946;" />
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Spacing="8">
+                                    <TextBlock TextWrapping="Wrap">
+                                        <Run x:Uid="AIMistakeNote" /><LineBreak /><Run
+                                            FontSize="12"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="You are using a custom endpoint. Verify all answers." />
+                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <HyperlinkButton
+                                            x:Name="TermsHyperlink"
+                                            x:Uid="TermsLink"
+                                            Padding="0"
+                                            FontSize="12"
+                                            NavigateUri="https://openai.com/policies/terms-of-use" />
+                                        <HyperlinkButton
+                                            x:Name="PrivacyHyperLink"
+                                            x:Uid="PrivacyLink"
+                                            Padding="0"
+                                            FontSize="12"
+                                            NavigateUri="https://openai.com/policies/privacy-policy" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>
-        <Grid
-            Grid.Row="2"
-            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0"
-            RowSpacing="4">
+        <Grid Grid.Row="2" RowSpacing="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
                 <RowDefinition Height="Auto" />
@@ -320,7 +315,6 @@
                 ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
                 TabIndex="1" />
-
             <Rectangle
                 Grid.Row="1"
                 Height="1"

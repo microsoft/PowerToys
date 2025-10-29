@@ -323,11 +323,11 @@
   <data name="NextResultBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Next result</value>
   </data>
-  <data name="PrivacyLink.Text" xml:space="preserve">
-    <value>OpenAI Privacy</value>
+  <data name="PrivacyLink.Content" xml:space="preserve">
+    <value>Privacy Policy</value>
   </data>
-  <data name="TermsLink.Text" xml:space="preserve">
-    <value>OpenAI Terms</value>
+  <data name="TermsLink.Content" xml:space="preserve">
+    <value>Terms</value>
   </data>
   <data name="OpenAIGpoDisabled" xml:space="preserve">
     <value>To custom with AI is disabled by your organization</value>
