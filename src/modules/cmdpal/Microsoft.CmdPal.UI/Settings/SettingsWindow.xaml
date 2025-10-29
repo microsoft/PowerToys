@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:text="using:Windows.UI.Text"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
     Title="SettingsWindow"
@@ -24,7 +25,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="AppTitleBar" PaneToggleRequested="AppTitleBar_PaneToggleRequested">
+        <TitleBar
+            x:Name="AppTitleBar"
+            IsTabStop="False"
+            PaneToggleRequested="AppTitleBar_PaneToggleRequested">
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
             <TitleBar.LeftHeader>
                 <ImageIcon
@@ -73,14 +77,14 @@
                         ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
                         <BreadcrumbBar.ItemTemplate>
                             <DataTemplate x:DataType="local:Crumb">
-                                <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind Label}" />
                             </DataTemplate>
                         </BreadcrumbBar.ItemTemplate>
                         <BreadcrumbBar.Resources>
                             <ResourceDictionary>
                                 <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
                                 <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
-                                <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
+                                <text:FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</text:FontWeight>
                                 <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
                             </ResourceDictionary>
                         </BreadcrumbBar.Resources>
