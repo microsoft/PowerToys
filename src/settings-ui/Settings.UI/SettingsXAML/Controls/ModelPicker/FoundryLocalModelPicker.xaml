@@ -1,14 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.FoundryLocalModelPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:LanguageModelProvider"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     x:Name="Root"
     mc:Ignorable="d">
 
@@ -42,15 +42,13 @@
                 HorizontalAlignment="Center" />
             <TextBlock
                 x:Name="LoadingStatusTextBlock"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Loading Foundry Local status..."
                 TextAlignment="Center"
-                TextWrapping="Wrap"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                TextWrapping="Wrap" />
         </StackPanel>
 
-        <ScrollViewer
-            x:Name="ModelsView"
-            Visibility="Collapsed">
+        <ScrollViewer x:Name="ModelsView" Visibility="Collapsed">
             <Grid Padding="16,12,16,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -66,9 +64,7 @@
                     HorizontalAlignment="Center"
                     Orientation="Vertical"
                     Spacing="8">
-                    <FontIcon
-                        FontSize="24"
-                        Glyph="&#xE74E;" />
+                    <FontIcon FontSize="24" Glyph="&#xE74E;" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -83,10 +79,10 @@
                         TextWrapping="Wrap" />
                     <Button
                         x:Name="LaunchFoundryModelListButton"
-                        Content="Open Foundry model list"
                         HorizontalAlignment="Center"
-                        Style="{StaticResource AccentButtonStyle}"
-                        Click="LaunchFoundryModelListButton_Click" />
+                        Click="LaunchFoundryModelListButton_Click"
+                        Content="Open Foundry model list"
+                        Style="{StaticResource AccentButtonStyle}" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Spacing="12">
@@ -99,11 +95,11 @@
                             x:Name="CachedModelsComboBox"
                             Grid.Column="0"
                             HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Name"
                             ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
                             PlaceholderText="Select a downloaded model"
                             SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
-                            SelectionChanged="CachedModelsComboBox_SelectionChanged"
-                            DisplayMemberPath="Name" />
+                            SelectionChanged="CachedModelsComboBox_SelectionChanged" />
                         <Button
                             x:Name="RefreshModelsButton"
                             Grid.Column="1"
@@ -131,18 +127,14 @@
             </Grid>
         </ScrollViewer>
 
-        <Grid
-            x:Name="NotAvailableGrid"
-            Visibility="Collapsed">
+        <Grid x:Name="NotAvailableGrid" Visibility="Collapsed">
             <StackPanel
                 Margin="48,0,48,48"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Orientation="Vertical"
                 Spacing="8">
-                <Image
-                    Width="36"
-                    Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
+                <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
                 <TextBlock
                     FontWeight="SemiBold"
                     Text="Foundry Local is not available on this device yet."
@@ -156,9 +148,7 @@
                     TextWrapping="Wrap">
                     <Run Text="Start the Foundry Local service before returning to PowerToys." />
                 </TextBlock>
-                <HyperlinkButton
-                    Content="Follow the Foundry Local CLI guide"
-                    NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/reference/reference-cli" />
+                <HyperlinkButton Content="Follow the Foundry Local CLI guide" NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/reference/reference-cli" />
             </StackPanel>
         </Grid>
 
