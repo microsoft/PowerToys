@@ -1038,6 +1038,7 @@ msrc
 msstore
 msvcp
 MT
+mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1181,6 +1182,7 @@ OOBEUI
 openas
 opencode
 OPENFILENAME
+openrdp
 opensource
 openxmlformats
 OPTIMIZEFORINVOKE
@@ -1393,6 +1395,8 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
+remotedesktop
+rdp
 RDW
 READMODE
 READOBJECTS

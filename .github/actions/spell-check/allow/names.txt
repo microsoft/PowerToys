@@ -220,15 +220,11 @@ modernwpf
 Moq
 mozilla
 mspaint
-mstsc
 Newtonsoft
 onenote
 openai
-openrdp
 Quickime
-remotedesktop
 regedit
-rdp
 roslyn
 Skia
 Spotify
