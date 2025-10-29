@@ -69,12 +69,23 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_LiveZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
+                    <tkcontrols:SettingsExpander
                         Name="ZoomItLiveZoomShortcut"
                         x:Uid="ZoomIt_LiveZoom_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItLiveZoomShortcutDraw"
+                                x:Uid="ZoomIt_LiveZoom_Shortcut_Draw">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay}"
+                                    IsEnabled="False" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_DrawGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
@@ -105,12 +116,23 @@
                         Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
                         <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
+                    <tkcontrols:SettingsExpander
                         Name="ZoomItDemoTypeShortcut"
                         x:Uid="ZoomIt_DemoType_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItDemoTypeShortcutReset"
+                                x:Uid="ZoomIt_DemoType_Shortcut_Reset">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKeyReset, Mode=OneWay}"
+                                    IsEnabled="False" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsCard Name="ZoomItDemoTypeToggleUserDrivenMode" x:Uid="ZoomIt_DemoType_Toggle_UserDrivenMode">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.DemoTypeUserDrivenMode, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
@@ -281,12 +303,23 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
+                    <tkcontrols:SettingsExpander
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItSnipShortcutSave"
+                                x:Uid="ZoomIt_Snip_Shortcut_Save">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKeySave, Mode=OneWay}"
+                                    IsEnabled="False" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

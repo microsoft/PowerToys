@@ -4683,6 +4683,12 @@ To enter and exit LiveZoom, enter the hotkey specified below.</value>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
     <value>Live Zoom hotkey</value>
   </data>
+  <data name="ZoomIt_LiveZoom_Shortcut_Draw.Header" xml:space="preserve">
+    <value>Live Zoom drawing</value>
+  </data>
+  <data name="ZoomIt_LiveZoom_Shortcut_Draw.Description" xml:space="preserve">
+    <value>Press this hotkey combination to enter Live Zoom with drawing mode. Note: XOR logic applies - if base hotkey includes Shift, it will be removed; if not, it will be added.</value>
+  </data>
   <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
     <value>Draw</value>
   </data>
@@ -4733,6 +4739,12 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
     <value>DemoType toggle hotkey</value>
+  </data>
+  <data name="ZoomIt_DemoType_Shortcut_Reset.Header" xml:space="preserve">
+    <value>DemoType reset</value>
+  </data>
+  <data name="ZoomIt_DemoType_Shortcut_Reset.Description" xml:space="preserve">
+    <value>Press this hotkey combination to reset DemoType and start from the beginning. Note: XOR logic applies - if base hotkey includes Shift, it will be removed; if not, it will be added.</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4927,6 +4939,12 @@ Change the break timer color using the same keys that the drawing color. The bre
   </data>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
     <value>Snip hotkey</value>
+  </data>
+  <data name="ZoomIt_Snip_Shortcut_Save.Header" xml:space="preserve">
+    <value>Snip to file</value>
+  </data>
+  <data name="ZoomIt_Snip_Shortcut_Save.Description" xml:space="preserve">
+    <value>Press this hotkey combination to save the snip directly to a file instead of the clipboard. Note: XOR logic applies - if base hotkey includes Shift, it will be removed; if not, it will be added.</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
