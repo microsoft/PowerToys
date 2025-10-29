@@ -235,4 +235,10 @@
   <data name="windowwalker_NoResultsMessage" xml:space="preserve">
     <value>No open windows found</value>
   </data>
+  <data name="windowwalker_SettingUseWindowIcon" xml:space="preserve">
+    <value>Use window icons</value>
+  </data>
+  <data name="windowwalker_SettingUseWindowIcon_Description" xml:space="preserve">
+    <value>Show the actual window icon instead of the process icon</value>
+  </data>
 </root>

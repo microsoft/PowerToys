@@ -77,7 +77,7 @@
         SelectedValue="{x:Bind ViewModel.CurrentFilter, Mode=OneWay}"
         SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
-        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <ComboBox.ItemContainerStyle>
             <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
                 <Setter Property="MinHeight" Value="0" />
