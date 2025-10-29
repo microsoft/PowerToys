@@ -220,9 +220,11 @@ modernwpf
 Moq
 mozilla
 mspaint
+mstsc
 Newtonsoft
 onenote
 openai
+openrdp
 Quickime
 remotedesktop
 regedit
