@@ -26,6 +26,7 @@
             "PowerToys.GPOWrapper.dll",
             "PowerToys.GPOWrapperProjection.dll",
             "PowerToys.AllExperiments.dll",
+            "LanguageModelProvider.dll",
 
             "Common.Search.dll",
 
@@ -345,7 +346,6 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
-                "LanguageModelProvider.dll",
                 "Microsoft.SemanticKernel.Connectors.Ollama.dll",
                 "OllamaSharp.dll",
 
