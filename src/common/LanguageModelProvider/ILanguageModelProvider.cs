@@ -23,8 +23,4 @@ public interface ILanguageModelProvider
     IChatClient? GetIChatClient(string url);
 
     string GetIChatClientString(string url);
-
-    string GetDetailsUrl(ModelDetails details);
-
-    string Url { get; }
 }

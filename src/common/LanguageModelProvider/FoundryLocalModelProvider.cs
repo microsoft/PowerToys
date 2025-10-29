@@ -2,13 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.ClientModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using LanguageModelProvider.FoundryLocal;
+using ManagedCommon;
 using Microsoft.Extensions.AI;
 using OpenAI;
 
@@ -33,38 +29,68 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public string Icon => $"fl{AppUtils.GetThemeAssetSuffix()}.svg";
 
-    public string Url => _serviceUrl ?? string.Empty;
-
-    public string GetDetailsUrl(ModelDetails details)
-    {
-        throw new NotImplementedException();
-    }
-
     public IChatClient? GetIChatClient(string url)
     {
         try
         {
+            Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {url}");
             InitializeAsync().GetAwaiter().GetResult();
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError($"[FoundryLocal] Failed to initialize: {ex.Message}");
             return null;
         }
 
-        if (string.IsNullOrWhiteSpace(_serviceUrl))
+        if (string.IsNullOrWhiteSpace(_serviceUrl) || _foundryManager == null)
         {
+            Logger.LogError("[FoundryLocal] Service URL or manager is null");
             return null;
         }
 
-        var modelId = url.Split('/').LastOrDefault();
+        // Extract model ID from URL (format: fl://modelname)
+        var modelId = url.Replace(UrlPrefix, string.Empty).Trim('/');
         if (string.IsNullOrWhiteSpace(modelId))
         {
+            Logger.LogError("[FoundryLocal] Model ID is empty after extraction");
             return null;
         }
+
+        Logger.LogInfo($"[FoundryLocal] Extracted model ID: {modelId}");
+
+        // Ensure the model is loaded before returning chat client
+        try
+        {
+            var isLoaded = _foundryManager.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
+            if (!isLoaded)
+            {
+                Logger.LogError($"[FoundryLocal] Failed to load model: {modelId}");
+                return null;
+            }
+
+            Logger.LogInfo($"[FoundryLocal] Model is loaded: {modelId}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryLocal] Exception ensuring model loaded: {ex.Message}");
+            return null;
+        }
+
+        // Use ServiceUri instead of Endpoint since Endpoint already includes /v1
+        var baseUri = _foundryManager.GetServiceUri();
+        if (baseUri == null)
+        {
+            Logger.LogError("[FoundryLocal] Service URI is null");
+            return null;
+        }
+
+        var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
+        Logger.LogInfo($"[FoundryLocal] Creating OpenAI client with endpoint: {endpointUri}");
+        Logger.LogInfo($"[FoundryLocal] Model ID for chat client: {modelId}");
 
         return new OpenAIClient(
             new ApiKeyCredential("none"),
-            new OpenAIClientOptions { Endpoint = new Uri($"{_serviceUrl}/v1") })
+            new OpenAIClientOptions { Endpoint = endpointUri })
             .GetChatClient(modelId)
             .AsIChatClient();
     }
@@ -94,16 +120,19 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     {
         if (ignoreCached)
         {
+            Logger.LogInfo("[FoundryLocal] Ignoring cached models, resetting");
             Reset();
         }
 
         await InitializeAsync(cancelationToken);
 
+        Logger.LogInfo($"[FoundryLocal] Returning {_downloadedModels?.Count() ?? 0} downloaded models");
         return _downloadedModels ?? [];
     }
 
     public IEnumerable<ModelDetails> GetAllModelsInCatalog()
     {
+        Logger.LogInfo($"[FoundryLocal] Returning {_catalogModels?.Count() ?? 0} catalog models");
         return _catalogModels ?? [];
     }
 
@@ -111,15 +140,20 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     {
         if (_foundryManager == null)
         {
+            Logger.LogError("[FoundryLocal] Cannot download model: manager is null");
             return false;
         }
 
         if (modelDetails.ProviderModelDetails is not FoundryCatalogModel model)
         {
+            Logger.LogError("[FoundryLocal] Cannot download model: invalid model details type");
             return false;
         }
 
-        return (await _foundryManager.DownloadModel(model, progress, cancellationToken)).Success;
+        Logger.LogInfo($"[FoundryLocal] Starting download for model: {model.Name}");
+        var result = await _foundryManager.DownloadModel(model, progress, cancellationToken);
+        Logger.LogInfo($"[FoundryLocal] Download result: {result.Success}, error: {result.ErrorMessage ?? "none"}");
+        return result.Success;
     }
 
     private void Reset()
@@ -135,21 +169,27 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             return;
         }
 
+        Logger.LogInfo("[FoundryLocal] Initializing provider");
         _foundryManager ??= await FoundryClient.CreateAsync();
 
         if (_foundryManager == null)
         {
+            Logger.LogError("[FoundryLocal] Failed to create Foundry client");
             return;
         }
 
-        _serviceUrl ??= await _foundryManager.ServiceManager.GetServiceUrl();
+        _serviceUrl ??= await _foundryManager.GetServiceUrl();
+        Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
 
         if (_catalogModels == null || !_catalogModels.Any())
         {
+            Logger.LogInfo("[FoundryLocal] Loading catalog models");
             _catalogModels = (await _foundryManager.ListCatalogModels()).Select(ToModelDetails).ToArray();
+            Logger.LogInfo($"[FoundryLocal] Loaded {_catalogModels.Count()} catalog models");
         }
 
         var cachedModels = await _foundryManager.ListCachedModels();
+        Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
 
         List<ModelDetails> downloadedModels = [];
 
@@ -159,7 +199,10 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
             if (cachedModel != default)
             {
-                model.Id = $"{UrlPrefix}{cachedModel.Id}";
+                // Use the actual model Name (ModelId), not the alias (Id)
+                model.Id = $"fl-{model.Name}";
+                model.Url = $"{UrlPrefix}{cachedModel.Name}";
+                Logger.LogInfo($"[FoundryLocal] Adding cached model: {model.Name}, URL: {model.Url}");
                 downloadedModels.Add(model);
                 cachedModels.Remove(cachedModel);
             }
@@ -167,6 +210,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         foreach (var model in cachedModels)
         {
+            Logger.LogInfo($"[FoundryLocal] Adding unmatched cached model: {model.Name}");
             downloadedModels.Add(new ModelDetails
             {
                 Id = $"fl-{model.Name}",
@@ -180,6 +224,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         }
 
         _downloadedModels = downloadedModels;
+        Logger.LogInfo($"[FoundryLocal] Initialization complete. Total downloaded models: {downloadedModels.Count}");
     }
 
     private ModelDetails ToModelDetails(FoundryCatalogModel model)
@@ -200,7 +245,10 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public async Task<bool> IsAvailable()
     {
+        Logger.LogInfo("[FoundryLocal] Checking availability");
         await InitializeAsync();
-        return _foundryManager != null;
+        var available = _foundryManager != null;
+        Logger.LogInfo($"[FoundryLocal] Available: {available}");
+        return available;
     }
 }
