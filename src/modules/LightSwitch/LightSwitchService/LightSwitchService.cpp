@@ -20,6 +20,7 @@ HANDLE g_ServiceStopEvent = nullptr;
 extern int g_lastUpdatedDay = -1;
 static ScheduleMode prevMode = ScheduleMode::Off;
 static std::wstring prevLat, prevLon;
+static int prevMinutes = -1;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
@@ -478,6 +479,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             {
                 update_sun_times(settings);
                 g_lastUpdatedDay = st.wDay;
+                prevMinutes = -1;
                 Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
             }
 
@@ -491,10 +493,36 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
             if (manualOverrideActive)
             {
-                if (nowMinutes == lightTimeToUse % 1440 || nowMinutes == darkTimeToUse % 1440)
+                int lightBoundary = (currentSettings.lightTime + currentSettings.sunrise_offset) % 1440;
+                int darkBoundary = (currentSettings.darkTime + currentSettings.sunset_offset) % 1440;
+
+                bool crossedLight = false;
+                bool crossedDark = false;
+
+                if (prevMinutes != -1)
+                {
+                    if (nowMinutes < prevMinutes)
+                    {
+                        crossedLight = (prevMinutes <= lightBoundary || nowMinutes >= lightBoundary);
+                        crossedDark = (prevMinutes <= darkBoundary || nowMinutes >= darkBoundary);
+                    }
+                    else
+                    {
+                        crossedLight = (prevMinutes < lightBoundary && nowMinutes >= lightBoundary);
+                        crossedDark = (prevMinutes < darkBoundary && nowMinutes >= darkBoundary);
+                    }
+                }
+
+                Logger::debug(L"[LightSwitchService] prevMinutes={} nowMinutes={} light={} dark={}",
+                              prevMinutes,
+                              nowMinutes,
+                              lightBoundary,
+                              darkBoundary);
+
+                if (crossedLight || crossedDark)
                 {
                     ResetEvent(hManualOverride);
-                    Logger::info(L"[LightSwitchService] Manual override cleared at boundary");
+                    Logger::info(L"[LightSwitchService] Manual override cleared after crossing schedule boundary.");
                 }
                 else
                 {
@@ -514,6 +542,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         int msToNextMinute = (60 - stWait.wSecond) * 1000 - stWait.wMilliseconds;
         if (msToNextMinute < 50)
             msToNextMinute = 50;
+
+       prevMinutes = nowMinutes;
 
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
         if (wait == WAIT_OBJECT_0)
