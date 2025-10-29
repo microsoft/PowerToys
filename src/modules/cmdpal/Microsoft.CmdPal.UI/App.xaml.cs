@@ -3,8 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -65,6 +66,9 @@ public partial class App : Application
 
         this.InitializeComponent();
 
+        // Ensure types used in XAML are preserved for AOT compilation
+        TypePreservation.PreserveTypes();
+
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
@@ -72,6 +76,11 @@ public partial class App : Application
                 AppWindow?.Close();
                 Environment.Exit(0);
             });
+
+        // Connect the PT logging to the core project's logging.
+        // This way, log statements from the core project will be captured by the PT logs
+        var logWrapper = new LogWrapper();
+        CoreLogger.InitializeLogger(logWrapper);
     }
 
     /// <summary>
@@ -83,7 +92,7 @@ public partial class App : Application
         AppWindow = new MainWindow();
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
+        ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
     }
 
     /// <summary>
@@ -106,7 +115,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
+        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
@@ -153,7 +162,7 @@ public partial class App : Application
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
-        services.AddSingleton(new TelemetryForwarder());
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();

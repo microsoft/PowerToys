@@ -19,6 +19,7 @@ namespace Common.UI
             Awake,
             ColorPicker,
             CmdNotFound,
+            LightSwitch,
             FancyZones,
             FileLocksmith,
             Run,
@@ -62,6 +63,8 @@ namespace Common.UI
                     return "ColorPicker";
                 case SettingsWindow.CmdNotFound:
                     return "CmdNotFound";
+                case SettingsWindow.LightSwitch:
+                    return "LightSwitch";
                 case SettingsWindow.FancyZones:
                     return "FancyZones";
                 case SettingsWindow.FileLocksmith:

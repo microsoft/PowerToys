@@ -34,15 +34,38 @@ public sealed partial class ContentPage : Page,
     public ContentPage()
     {
         this.InitializeComponent();
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        this.Unloaded += OnUnloaded;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Unhook from everything to ensure nothing can reach us
+        // between this point and our complete and utter destruction.
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ContentPageViewModel vm)
+        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
         {
-            ViewModel = vm;
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
+        }
+
+        if (navigationRequest.TargetViewModel is not ContentPageViewModel contentPageViewModel)
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ContentPageViewModel)}");
+        }
+
+        ViewModel = contentPageViewModel;
+
+        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
+        {
+            WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
+        }
+
+        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSecondaryCommandMessage>(this))
+        {
+            WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
         }
 
         base.OnNavigatedTo(e);
@@ -55,6 +78,12 @@ public sealed partial class ContentPage : Page,
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
         // Clean-up event listeners
+        if (e.NavigationMode != NavigationMode.New)
+        {
+            ViewModel?.SafeCleanup();
+            CleanupHelper.Cleanup(this);
+        }
+
         ViewModel = null;
     }
 

@@ -41,13 +41,18 @@
                 <Style.Setters>
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 </Style.Setters>
             </Style>
 
+            <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="ContextMenuFlyout"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
-                Opened="ContextMenuFlyout_Opened">
+                Opened="ContextMenuFlyout_Opened"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
 
@@ -59,7 +64,23 @@
                     <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="MinWidth" Value="20" />
                 </Style.Setters>
+            </Style>
+
+            <Style x:Key="HotkeyTextBlockStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="CharacterSpacing" Value="4" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="HotkeyFontIconStyle" TargetType="FontIcon">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -144,6 +165,7 @@
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.AutomationId="PrimaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
                 Click="PrimaryButton_Clicked"
@@ -151,16 +173,15 @@
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        MaxWidth="160"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                     <Border Style="{StaticResource HotkeyStyle}">
-                        <FontIcon
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            FontSize="10"
-                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                            Glyph="&#xE751;" />
+                        <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                     </Border>
                 </StackPanel>
             </Button>
@@ -168,30 +189,26 @@
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.AutomationId="SecondaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Click="SecondaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        MaxWidth="160"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
-                            <TextBlock
-                                CharacterSpacing="4"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                Text="Ctrl" />
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
                         </Border>
                         <Border Style="{StaticResource HotkeyStyle}">
-                            <FontIcon
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                Glyph="&#xE751;" />
+                            <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                         </Border>
                     </StackPanel>
                 </StackPanel>
@@ -199,7 +216,8 @@
             <Button
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
-                Padding="4"
+                Padding="6,4,4,4"
+                AutomationProperties.AutomationId="MoreContextMenuButton"
                 Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="Ctrl+K"
@@ -208,33 +226,15 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="More" />
-                    <StackPanel Orientation="Horizontal" Spacing="2">
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                CharacterSpacing="4"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Ctrl" />
+                        Text="More"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
                         </Border>
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="K" />
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="K" />
                         </Border>
                     </StackPanel>
                 </StackPanel>

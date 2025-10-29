@@ -232,6 +232,12 @@ namespace Microsoft.PowerToys.Settings.UI
             });
             ipcmanager.Start();
 
+            GlobalHotkeyConflictManager.Initialize(message =>
+            {
+                ipcmanager.Send(message);
+                return 0;
+            });
+
             if (!ShowOobe && !ShowScoobe && !ShowFlyout)
             {
                 settingsWindow = new MainWindow();
@@ -320,38 +326,20 @@ namespace Microsoft.PowerToys.Settings.UI
                 WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
-                ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
+
+                // In DEBUG mode, we might not have IPC set up, so provide a dummy implementation
+                GlobalHotkeyConflictManager.Initialize(message =>
+                {
+                    // In debug mode, just log or do nothing
+                    System.Diagnostics.Debug.WriteLine($"IPC Message: {message}");
+                    return 0;
+                });
 #else
-                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-                Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
-                Exit();
+        /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Exit();
 #endif
             }
-        }
-
-#if !DEBUG
-        private async void ShowMessageDialogAndExit(string content, string title = null)
-#else
-        private async void ShowMessageDialog(string content, string title = null)
-#endif
-        {
-            await ShowDialogAsync(content, title);
-#if !DEBUG
-            this.Exit();
-#endif
-        }
-
-        public static Task<IUICommand> ShowDialogAsync(string content, string title = null)
-        {
-            var dialog = new MessageDialog(content, title ?? string.Empty);
-            var handle = NativeMethods.GetActiveWindow();
-            if (handle == IntPtr.Zero)
-            {
-                throw new InvalidOperationException();
-            }
-
-            InitializeWithWindow.Initialize(dialog, handle);
-            return dialog.ShowAsync().AsTask<IUICommand>();
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
@@ -429,6 +417,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
+                case "LightSwitch": return typeof(LightSwitchPage);
                 case "FancyZones": return typeof(FancyZonesPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);
                 case "Run": return typeof(PowerLauncherPage);

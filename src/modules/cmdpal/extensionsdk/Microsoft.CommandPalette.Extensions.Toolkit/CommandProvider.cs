@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public abstract partial class CommandProvider : ICommandProvider
+public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -31,7 +31,7 @@ public abstract partial class CommandProvider : ICommandProvider
     public virtual void InitializeWithHost(IExtensionHost host) => ExtensionHost.Initialize(host);
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose()
+    public virtual void Dispose()
     {
     }
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
@@ -46,5 +46,27 @@ public abstract partial class CommandProvider : ICommandProvider
         catch
         {
         }
+    }
+
+    /// <summary>
+    /// This is used to manually populate the WinRT type cache in CmdPal with
+    /// any interfaces that might not follow a straight linear path of requires.
+    ///
+    /// You don't need to call this as an extension author.
+    /// </summary>
+    /// <returns>an array of objects that implement all the leaf interfaces we support</returns>
+    public object[] GetApiExtensionStubs()
+    {
+        return [new SupportCommandsWithProperties()];
+    }
+
+    /// <summary>
+    /// A stub class which implements IExtendedAttributesProvider. Just marshalling this
+    /// across the ABI will be enough for CmdPal to store IExtendedAttributesProvider in
+    /// its type cache.
+    /// </summary>
+    private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
+    {
+        public IDictionary<string, object>? GetProperties() => null;
     }
 }

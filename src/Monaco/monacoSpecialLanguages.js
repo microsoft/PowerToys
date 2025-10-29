@@ -7,7 +7,7 @@ import { srtDefinition } from './customLanguages/srt.js';
 export async function registerAdditionalLanguages(monaco){
     await languageDefinitions();
     registerAdditionalLanguage("cppExt", [".ino", ".pde"], "cpp", monaco);
-    registerAdditionalLanguage("xmlExt", [".wsdl", ".csproj", ".vcxproj", ".vbproj", ".fsproj", ".resx", ".resw"], "xml", monaco);
+    registerAdditionalLanguage("xmlExt", [".wsdl", ".projitems", ".csproj", ".fsproj", ".shproj", ".vcxproj", ".vbproj", ".resx", ".resw"], "xml", monaco);
     registerAdditionalLanguage("txtExt", [".sln", ".log", ".vsconfig", ".env", ".ahk", ".ion"], "txt", monaco);
     registerAdditionalLanguage("razorExt", [".razor"], "razor", monaco);
     registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco);

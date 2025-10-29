@@ -28,11 +28,12 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     public bool HasTag => !string.IsNullOrEmpty(_tag);
 
     private readonly Lock _resultsLock = new();
+    private readonly Lock _taskLock = new();
 
-    private CancellationTokenSource? _cancellationTokenSource;
-    private Task<IEnumerable<CatalogPackage>>? _currentSearchTask;
+    private string? _nextSearchQuery;
+    private bool _isTaskRunning;
 
-    private IEnumerable<CatalogPackage>? _results;
+    private List<CatalogPackage>? _results;
 
     public static string ExtensionsTag => "windows-commandpalette-extension";
 
@@ -48,12 +49,11 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
-        IListItem[] items = [];
         lock (_resultsLock)
         {
             // emptySearchForTag ===
             // we don't have results yet, we haven't typed anything, and we're searching for a tag
-            var emptySearchForTag = _results == null &&
+            var emptySearchForTag = _results is null &&
                 string.IsNullOrEmpty(SearchText) &&
                 HasTag;
 
@@ -61,13 +61,31 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             {
                 IsLoading = true;
                 DoUpdateSearchText(string.Empty);
-                return items;
+                return [];
             }
 
-            if (_results != null && _results.Any())
+            if (_results is not null && _results.Count != 0)
             {
-                ListItem[] results = _results.Select(PackageToListItem).ToArray();
-                IsLoading = false;
+                var stopwatch = Stopwatch.StartNew();
+                var count = _results.Count;
+                var results = new ListItem[count];
+                var next = 0;
+                for (var i = 0; i < count; i++)
+                {
+                    try
+                    {
+                        var li = PackageToListItem(_results[i]);
+                        results[next] = li;
+                        next++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("error converting result to listitem", ex);
+                    }
+                }
+
+                stopwatch.Stop();
+                Logger.LogDebug($"Building ListItems took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(GetItems));
                 return results;
             }
         }
@@ -80,9 +98,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                             Properties.Resources.winget_no_packages_found,
         };
 
-        IsLoading = false;
-
-        return items;
+        return [];
     }
 
     private static ListItem PackageToListItem(CatalogPackage p) => new InstallPackageListItem(p);
@@ -99,64 +115,70 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private void DoUpdateSearchText(string newSearch)
     {
-        // Cancel any ongoing search
-        if (_cancellationTokenSource != null)
+        lock (_taskLock)
         {
-            Logger.LogDebug("Cancelling old search", memberName: nameof(DoUpdateSearchText));
-            _cancellationTokenSource.Cancel();
-        }
-
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        CancellationToken cancellationToken = _cancellationTokenSource.Token;
-
-        IsLoading = true;
-
-        try
-        {
-            // Save the latest search task
-            _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // DO NOTHING HERE
-            return;
-        }
-        catch (Exception ex)
-        {
-            // Handle other exceptions
-            ExtensionHost.LogMessage($"[WinGet] DoUpdateSearchText throw exception: {ex.Message}");
-            return;
-        }
-
-        // Await the task to ensure only the latest one gets processed
-        _ = ProcessSearchResultsAsync(_currentSearchTask, newSearch);
-    }
-
-    private async Task ProcessSearchResultsAsync(
-        Task<IEnumerable<CatalogPackage>> searchTask,
-        string newSearch)
-    {
-        try
-        {
-            IEnumerable<CatalogPackage> results = await searchTask;
-
-            // Ensure this is still the latest task
-            if (_currentSearchTask == searchTask)
+            if (_isTaskRunning)
             {
-                // Process the results (e.g., update UI)
-                UpdateWithResults(results, newSearch);
+                // If a task is running, queue the next search query
+                // Keep IsLoading = true since we still have work to do
+                Logger.LogDebug($"Task is running, queueing next search: '{newSearch}'", memberName: nameof(DoUpdateSearchText));
+                _nextSearchQuery = newSearch;
+            }
+            else
+            {
+                // No task is running, start a new search
+                Logger.LogDebug($"Starting new search: '{newSearch}'", memberName: nameof(DoUpdateSearchText));
+                _isTaskRunning = true;
+                _nextSearchQuery = null;
+                IsLoading = true;
+
+                _ = ExecuteSearchChainAsync(newSearch);
             }
         }
-        catch (OperationCanceledException)
+    }
+
+    private async Task ExecuteSearchChainAsync(string query)
+    {
+        while (true)
         {
-            // Handle cancellation gracefully (e.g., log or ignore)
-            Logger.LogDebug($"  Cancelled search for '{newSearch}'");
-        }
-        catch (Exception ex)
-        {
-            // Handle other exceptions
-            Logger.LogError(ex.Message);
+            try
+            {
+                Logger.LogDebug($"Executing search for '{query}'", memberName: nameof(ExecuteSearchChainAsync));
+
+                var results = await DoSearchAsync(query);
+
+                // Update UI with results
+                UpdateWithResults(results, query);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unexpected error while searching for '{query}'", ex);
+            }
+
+            // Check if there's a next query to process
+            string? nextQuery;
+            lock (_taskLock)
+            {
+                if (_nextSearchQuery is not null)
+                {
+                    // There's a queued search, execute it
+                    nextQuery = _nextSearchQuery;
+                    _nextSearchQuery = null;
+
+                    Logger.LogDebug($"Found queued search, continuing with: '{nextQuery}'", memberName: nameof(ExecuteSearchChainAsync));
+                }
+                else
+                {
+                    // No more searches queued, mark task as completed
+                    _isTaskRunning = false;
+                    IsLoading = false;
+                    Logger.LogDebug("No more queued searches, task chain completed", memberName: nameof(ExecuteSearchChainAsync));
+                    break;
+                }
+            }
+
+            // Continue with the next query
+            query = nextQuery;
         }
     }
 
@@ -165,17 +187,14 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         Logger.LogDebug($"Completed search for '{query}'");
         lock (_resultsLock)
         {
-            this._results = results;
+            this._results = results.ToList();
         }
 
-        RaiseItemsChanged(this._results.Count());
+        RaiseItemsChanged();
     }
 
-    private async Task<IEnumerable<CatalogPackage>> DoSearchAsync(string query, CancellationToken ct)
+    private async Task<IEnumerable<CatalogPackage>> DoSearchAsync(string query)
     {
-        // Were we already canceled?
-        ct.ThrowIfCancellationRequested();
-
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
@@ -190,12 +209,12 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         HashSet<CatalogPackage> results = new(new PackageIdCompare());
 
         // Default selector: this is the way to do a `winget search <query>`
-        PackageMatchFilter selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+        var selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
         selector.Field = Microsoft.Management.Deployment.PackageMatchField.CatalogDefault;
         selector.Value = query;
         selector.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
 
-        FindPackagesOptions opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
+        var opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
         opts.Selectors.Add(selector);
 
         // testing
@@ -204,7 +223,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Selectors is "OR", Filters is "AND"
         if (HasTag)
         {
-            PackageMatchFilter tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+            var tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
             tagFilter.Field = Microsoft.Management.Deployment.PackageMatchField.Tag;
             tagFilter.Value = _tag;
             tagFilter.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
@@ -212,16 +231,13 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             opts.Filters.Add(tagFilter);
         }
 
-        // Clean up here, then...
-        ct.ThrowIfCancellationRequested();
-
-        Lazy<Task<PackageCatalog>> catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
+        var catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
 
         // Both these catalogs should have been instantiated by the
         // WinGetStatics static ctor when we were created.
-        PackageCatalog catalog = await catalogTask.Value;
+        var catalog = await catalogTask.Value;
 
-        if (catalog == null)
+        if (catalog is null)
         {
             // This error should have already been displayed by WinGetStatics
             return [];
@@ -229,14 +245,19 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         // foreach (var catalog in connections)
         {
+            Stopwatch findPackages_stopwatch = new();
+            findPackages_stopwatch.Start();
             Logger.LogDebug($"  Searching {catalog.Info.Name} ({query})", memberName: nameof(DoSearchAsync));
 
-            ct.ThrowIfCancellationRequested();
+            Logger.LogDebug($"Preface for \"{searchDebugText}\" took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
-            Task<FindPackagesResult> internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
-            FindPackagesResult searchResults = await internalSearchTask;
+            var internalSearchTask = Task.Run(() => catalog.FindPackages(opts));
+            var searchResults = await internalSearchTask;
+
+            findPackages_stopwatch.Stop();
+            Logger.LogDebug($"FindPackages for \"{searchDebugText}\" took {findPackages_stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
@@ -247,13 +268,15 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             }
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
-            foreach (Management.Deployment.MatchResult? match in searchResults.Matches.ToArray())
+
+            // FYI Using .ToArray or any other kind of enumerable loop
+            // on arrays returned by the winget API are NOT trim safe
+            var count = searchResults.Matches.Count;
+            for (var i = 0; i < count; i++)
             {
-                ct.ThrowIfCancellationRequested();
+                var match = searchResults.Matches[i];
 
-                // Print the packages
-                CatalogPackage package = match.CatalogPackage;
-
+                var package = match.CatalogPackage;
                 results.Add(package);
             }
 

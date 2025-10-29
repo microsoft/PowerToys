@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static partial class QueryHelper
 {
-    public static ListItem Query(string query, SettingsManager settings, bool isFallbackSearch, TypedEventHandler<object, object> handleSave = null)
+    public static ListItem Query(string query, ISettingsInterface settings, bool isFallbackSearch, TypedEventHandler<object, object> handleSave = null)
     {
         ArgumentNullException.ThrowIfNull(query);
         if (!isFallbackSearch)
