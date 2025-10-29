@@ -5,7 +5,7 @@
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
 - [ ] The plugin target framework should be `net10.0-windows10.0.22621.0`
 - [ ] If the plugin uses any 3rd party dependencies the project file should import `DynamicPlugin.props`
-- [ ] 3rd party dependencies must be compatible with .NET 9
+- [ ] 3rd party dependencies must be compatible with .NET 10
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder:
 
 ```json
