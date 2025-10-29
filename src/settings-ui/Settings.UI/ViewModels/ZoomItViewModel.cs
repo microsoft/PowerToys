@@ -262,8 +262,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.RecordToggleKey.Value = value ?? ZoomItProperties.DefaultRecordToggleKey;
                     OnPropertyChanged(nameof(RecordToggleKey));
+                    OnPropertyChanged(nameof(RecordToggleKeyCrop));
+                    OnPropertyChanged(nameof(RecordToggleKeyWindow));
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public HotkeySettings RecordToggleKeyCrop
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.RecordToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Shift: if Shift is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift,  // XOR with Shift
+                    baseKey.Code);
+            }
+        }
+
+        public HotkeySettings RecordToggleKeyWindow
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.RecordToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Alt: if Alt is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    !baseKey.Alt,    // XOR with Alt
+                    baseKey.Shift,
+                    baseKey.Code);
             }
         }
 

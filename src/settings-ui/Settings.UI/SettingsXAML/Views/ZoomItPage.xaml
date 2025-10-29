@@ -221,12 +221,39 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
+                    <tkcontrols:SettingsExpander
                         Name="ZoomItRecordShortcut"
                         x:Uid="ZoomIt_Record_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordShortcutFullScreen"
+                                x:Uid="ZoomIt_Record_Shortcut_FullScreen">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=OneWay}"
+                                    IsEnabled="False" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordShortcutCrop"
+                                x:Uid="ZoomIt_Record_Shortcut_Crop">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKeyCrop, Mode=OneWay}"
+                                    IsEnabled="False" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordShortcutWindow"
+                                x:Uid="ZoomIt_Record_Shortcut_Window">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKeyWindow, Mode=OneWay}"
+                                    IsEnabled="False" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsCard Name="ZoomItRecordScaling" x:Uid="ZoomIt_Record_Scaling">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordScalingIndex, Mode=TwoWay}">
                             <ComboBoxItem>0.1</ComboBoxItem>

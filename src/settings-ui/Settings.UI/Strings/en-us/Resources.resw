@@ -4881,14 +4881,31 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Record</value>
   </data>
   <data name="ZoomIt_RecordGroup.Description" xml:space="preserve">
-    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hotkey and finish the recording by entering it again.
-
-To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode.
-
-To record a specific window, enter the hotkey with the Alt key in the opposite mode.</value>
+    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hotkey and finish the recording by entering it again.</value>
   </data>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
     <value>Record hotkey</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut.Description" xml:space="preserve">
+    <value>Configure the base hotkey for recording. Use modifier keys (Shift or Alt) to access different recording modes.</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_FullScreen.Header" xml:space="preserve">
+    <value>Full screen recording</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_FullScreen.Description" xml:space="preserve">
+    <value>Press the recording hotkey to start/stop recording the full screen or current zoom session.</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Crop.Header" xml:space="preserve">
+    <value>Portion recording (crop)</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Crop.Description" xml:space="preserve">
+    <value>Press this hotkey combination to select and record a specific portion of the screen. Note: XOR logic applies - if base hotkey includes Shift, it will be removed; if not, it will be added.</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Window.Header" xml:space="preserve">
+    <value>Window recording</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Window.Description" xml:space="preserve">
+    <value>Press this hotkey combination to record a specific window. Note: XOR logic applies - if base hotkey includes Alt, it will be removed; if not, it will be added.</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
