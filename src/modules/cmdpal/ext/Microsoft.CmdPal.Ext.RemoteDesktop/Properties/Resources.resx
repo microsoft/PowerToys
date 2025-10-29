@@ -121,9 +121,18 @@
     <value>Remote Desktop</value>
   </data>
   <data name="remotedesktop_subtitle" xml:space="preserve">
-    <value>Connect to remote desktops</value>
+    <value>Establish Remote Desktop connections</value>
   </data>
-  <data name="remotedesktop_no_connections" xml:space="preserve">
-    <value>Couldn't find previous connections. Press Ctrl+Enter to create a new connection.</value>
+  <data name="remotedesktop_command_open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="remotedesktop_open_host" xml:space="preserve">
+    <value>Connect to {0} via Remote Desktop Client</value>
+  </data>
+  <data name="remotedesktop_command_connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="remotedesktop_open_rdp" xml:space="preserve">
+    <value>Open Remote Desktop Client</value>
   </data>
 </root>

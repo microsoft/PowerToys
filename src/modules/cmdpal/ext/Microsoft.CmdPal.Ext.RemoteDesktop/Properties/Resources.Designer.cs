@@ -61,16 +61,43 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find previous connections. Press Ctrl+Enter to create a new connection..
+        ///   Looks up a localized string similar to Connect.
         /// </summary>
-        public static string remotedesktop_no_connections {
+        public static string remotedesktop_command_connect {
             get {
-                return ResourceManager.GetString("remotedesktop_no_connections", resourceCulture);
+                return ResourceManager.GetString("remotedesktop_command_connect", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect to remote desktops.
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string remotedesktop_command_open {
+            get {
+                return ResourceManager.GetString("remotedesktop_command_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connect to {0} via Remote Desktop Client.
+        /// </summary>
+        public static string remotedesktop_open_host {
+            get {
+                return ResourceManager.GetString("remotedesktop_open_host", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Remote Desktop Client.
+        /// </summary>
+        public static string remotedesktop_open_rdp {
+            get {
+                return ResourceManager.GetString("remotedesktop_open_rdp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Establish Remote Desktop connections.
         /// </summary>
         public static string remotedesktop_subtitle {
             get {

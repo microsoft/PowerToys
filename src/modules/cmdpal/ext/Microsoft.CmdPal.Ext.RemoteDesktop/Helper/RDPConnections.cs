@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
@@ -19,6 +21,19 @@ internal sealed class RDPConnections
     }
 
     public static RDPConnections Create(IEnumerable<string> connections) => new(connections);
+
+    public static string[] GetRdpConnectionsFromRegistry()
+    {
+        var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Terminal Server Client\Default");
+        if (key is null)
+        {
+            return [];
+        }
+
+        return [.. key.GetValueNames().Select(x => key.GetValue(x.Trim())?.ToString()).Where(value => value != null).Cast<string>()];
+    }
+
+    public static ConnectionListItem MapToResult(Scored<string> item) => new(item.Item);
 
     public IReadOnlyCollection<string> Connections => _connections;
 
