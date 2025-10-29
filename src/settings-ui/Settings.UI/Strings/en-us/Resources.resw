@@ -641,7 +641,7 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
     <value>Enable OpenAI content moderation</value>
   </data>
-  <data name="AdvancedPaste_EnablePasteAIModerationToggle.Content" xml:space="preserve">
+  <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
     <value>Enable OpenAI content moderation</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Header" xml:space="preserve">

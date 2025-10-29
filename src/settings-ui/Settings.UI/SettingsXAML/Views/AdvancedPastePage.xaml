@@ -33,40 +33,13 @@
                     <ImageSource x:Key="OpenAIIconImage">ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg</ImageSource>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
-            <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
-            <Style x:Name="ModelHeaderStyle" TargetType="ListViewHeaderItem">
-                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Style x:Key="MenuFlyoutItemHeaderStyle" TargetType="MenuFlyoutItem">
                 <Setter Property="FontSize" Value="12" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
-                <Setter Property="Margin" Value="0,0,0,4" />
-                <Setter Property="Padding" Value="16,12,12,0" />
-                <Setter Property="HorizontalContentAlignment" Value="Left" />
-                <Setter Property="VerticalContentAlignment" Value="Top" />
-                <Setter Property="MinHeight" Value="0" />
-                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="ListViewHeaderItem">
-                            <StackPanel
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{TemplateBinding CornerRadius}">
-                                <ContentPresenter
-                                    x:Name="ContentPresenter"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    ContentTransitions="{TemplateBinding ContentTransitions}"
-                                    Foreground="{TemplateBinding Foreground}" />
-                            </StackPanel>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
+                <Setter Property="IsEnabled" Value="False" />
+                <Setter Property="IsHitTestVisible" Value="False" />
             </Style>
+
+            <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
             <DataTemplate x:Key="AdditionalActionTemplate" x:DataType="models:AdvancedPasteAdditionalAction">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <controls:ShortcutControl
@@ -134,7 +107,6 @@
                                     Description="Add online or local models"
                                     Header="Model providers"
                                     Style="{StaticResource DefaultSettingsExpanderItemStyle}">
-
                                     <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
@@ -466,16 +438,48 @@
                 <x:Double x:Key="ContentDialogMaxHeight">700</x:Double>
                 <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="NavigationViewContentBackground" />
             </ContentDialog.Resources>
-            <StackPanel MinWidth="720" Spacing="16">
-                <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                <ScrollViewer
-                    MaxHeight="550"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
+            <ScrollViewer
+                MaxHeight="550"
+                Margin="-16,0,-24,-24"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel
+                    MinWidth="640"
+                    Padding="16,0,16,16"
+                    Spacing="16">
+                    <StackPanel
+                        Margin="0,12,0,0"
+                        Orientation="Vertical"
+                        Spacing="8"
+                        Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                        <StackPanel
+                            Margin="0,0,0,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <HyperlinkButton
+                                Padding="0"
+                                Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                FontSize="12"
+                                NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
+                            <HyperlinkButton
+                                Padding="0"
+                                Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                FontSize="12"
+                                NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                     <StackPanel
                         Margin="0,8,0,48"
                         Orientation="Vertical"
-                        Spacing="24">
+                        Spacing="16">
                         <TextBox
                             x:Name="PasteAIModelNameTextBox"
                             MinWidth="200"
@@ -484,28 +488,18 @@
                             PlaceholderText="gpt-4"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelName, Mode=TwoWay}" />
                         <TextBox
-                            x:Name="PasteAISystemPromptTextBox"
-                            MinWidth="200"
-                            MinHeight="98"
-                            HorizontalAlignment="Stretch"
-                            AcceptsReturn="True"
-                            Header="System prompt"
-                            PlaceholderText="You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content."
-                            Text="{x:Bind ViewModel.PasteAIProviderDraft.SystemPrompt, Mode=TwoWay}"
-                            TextWrapping="Wrap" />
-                        <Grid
-                            x:Name="FoundryLocalPanel"
-                            Margin="0,8,0,0"
-                            Visibility="Collapsed">
-                            <controls:FoundryLocalModelPicker x:Name="FoundryLocalPicker" />
-                        </Grid>
-                        <TextBox
                             x:Name="PasteAIEndpointUrlTextBox"
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
                             Header="Endpoint URL"
                             PlaceholderText="https://your-resource.openai.azure.com/"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.EndpointUrl, Mode=TwoWay}" />
+
+                        <PasswordBox
+                            x:Name="PasteAIApiKeyPasswordBox"
+                            MinWidth="200"
+                            Header="API key"
+                            PlaceholderText="Enter API Key" />
                         <TextBox
                             x:Name="PasteAIApiVersionTextBox"
                             MinWidth="200"
@@ -520,6 +514,23 @@
                             Header="Deployment name"
                             PlaceholderText="gpt-4"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.DeploymentName, Mode=TwoWay}" />
+                        <TextBox
+                            x:Name="PasteAISystemPromptTextBox"
+                            MinWidth="200"
+                            MinHeight="76"
+                            HorizontalAlignment="Stretch"
+                            AcceptsReturn="True"
+                            Header="System prompt"
+                            PlaceholderText="You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content."
+                            Text="{x:Bind ViewModel.PasteAIProviderDraft.SystemPrompt, Mode=TwoWay}"
+                            TextWrapping="Wrap" />
+                        <Grid
+                            x:Name="FoundryLocalPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <controls:FoundryLocalModelPicker x:Name="FoundryLocalPicker" />
+                        </Grid>
+
                         <StackPanel
                             x:Name="PasteAIModelPanel"
                             Orientation="Horizontal"
@@ -539,56 +550,30 @@
                                 Style="{StaticResource SubtleButtonStyle}" />
                         </StackPanel>
 
-                        <PasswordBox
-                            x:Name="PasteAIApiKeyPasswordBox"
-                            MinWidth="200"
-                            Header="API key"
-                            PlaceholderText="Enter API Key" />
-
-                        <CheckBox
+                        <ToggleSwitch
                             x:Name="PasteAIModerationToggle"
                             x:Uid="AdvancedPaste_EnablePasteAIModerationToggle"
-                            IsChecked="{x:Bind ViewModel.PasteAIProviderDraft.ModerationEnabled, Mode=TwoWay}"
+                            IsOn="{x:Bind ViewModel.PasteAIProviderDraft.ModerationEnabled, Mode=TwoWay}"
                             Visibility="Collapsed" />
 
-                        <StackPanel
-                            Margin="0,12,0,0"
-                            Orientation="Vertical"
-                            Spacing="8"
-                            Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}">
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                            <StackPanel
-                                Margin="-12,0,0,0"
-                                Orientation="Horizontal"
-                                Spacing="8">
-                                <HyperlinkButton
-                                    Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                    NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                    Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
-                                <HyperlinkButton
-                                    Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                    NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                    Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
-                            </StackPanel>
-                        </StackPanel>
-
-                        <CheckBox
+                        <ToggleSwitch
                             x:Name="PasteAIEnableAdvancedAICheckBox"
-                            Checked="PasteAIEnableAdvancedAICheckBox_Changed"
-                            Content="Enable Advanced AI"
-                            IsChecked="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
-                            Unchecked="PasteAIEnableAdvancedAICheckBox_Changed"
+                            IsOn="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
+                            Toggled="PasteAIEnableAdvancedAICheckBox_Toggled"
                             Visibility="Collapsed">
                             <ToolTipService.ToolTip>
-                                <TextBlock Text="Use built-in functions to handle complex tasks. Token consumption may increase." TextWrapping="Wrap" />
+                                <TextBlock Text="" TextWrapping="Wrap" />
                             </ToolTipService.ToolTip>
-                        </CheckBox>
+                            <ToggleSwitch.Header>
+                                <TextBlock>
+                                    <Run Text="Enable Advanced AI" /> <LineBreak />
+                                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Use built-in functions to handle complex tasks. Token consumption may increase." />
+                                </TextBlock>
+                            </ToggleSwitch.Header>
+                        </ToggleSwitch>
                     </StackPanel>
-                </ScrollViewer>
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </ContentDialog>
     </Grid>
 </local:NavigablePage>

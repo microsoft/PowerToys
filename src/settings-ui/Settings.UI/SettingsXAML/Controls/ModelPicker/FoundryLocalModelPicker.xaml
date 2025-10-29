@@ -49,7 +49,7 @@
         </StackPanel>
 
         <ScrollViewer x:Name="ModelsView" Visibility="Collapsed">
-            <Grid Padding="16,12,16,16">
+            <Grid Padding="0,12,0,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -63,7 +63,7 @@
                     Margin="0,0,0,16"
                     HorizontalAlignment="Center"
                     Orientation="Vertical"
-                    Spacing="8">
+                    Spacing="4">
                     <FontIcon FontSize="24" Glyph="&#xE74E;" />
                     <TextBlock
                         HorizontalAlignment="Center"
@@ -86,7 +86,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Spacing="12">
-                    <Grid ColumnSpacing="8">
+                    <Grid ColumnSpacing="4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -97,14 +97,24 @@
                             HorizontalAlignment="Stretch"
                             DisplayMemberPath="Name"
                             ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
-                            PlaceholderText="Select a downloaded model"
                             SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
-                            SelectionChanged="CachedModelsComboBox_SelectionChanged" />
+                            SelectionChanged="CachedModelsComboBox_SelectionChanged">
+                            <ComboBox.Header>
+                                <TextBlock>
+                                    <Run Text="Foundry Local model" /><LineBreak /><Run
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="Use the Foundry Local CLI to download models that run locally on-device. They'll appear here." />
+                                </TextBlock>
+                            </ComboBox.Header>
+                        </ComboBox>
                         <Button
                             x:Name="RefreshModelsButton"
                             Grid.Column="1"
-                            VerticalAlignment="Stretch"
+                            MinHeight="32"
+                            VerticalAlignment="Bottom"
                             Click="RefreshModelsButton_Click"
+                            Style="{StaticResource SubtleButtonStyle}"
                             ToolTipService.ToolTip="Refresh model list">
                             <FontIcon FontSize="16" Glyph="&#xE72C;" />
                         </Button>

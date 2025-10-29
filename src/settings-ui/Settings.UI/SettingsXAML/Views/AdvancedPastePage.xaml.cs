@@ -794,7 +794,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ShowApiKeySavedMessage("Paste AI");
         }
 
-        private void PasteAIEnableAdvancedAICheckBox_Changed(object sender, RoutedEventArgs e)
+        private void PasteAIEnableAdvancedAICheckBox_Toggled(object sender, RoutedEventArgs e)
         {
             var draft = ViewModel?.PasteAIProviderDraft;
             if (draft is null)
@@ -982,7 +982,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Text = "Online models",
                 FontSize = 12,
-                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
                 IsEnabled = false,
                 IsHitTestVisible = false,
             };
@@ -1006,7 +1005,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Text = "Local models",
                 FontSize = 12,
-                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
                 IsEnabled = false,
                 IsHitTestVisible = false,
                 Margin = new Thickness(0, 16, 0, 0),
