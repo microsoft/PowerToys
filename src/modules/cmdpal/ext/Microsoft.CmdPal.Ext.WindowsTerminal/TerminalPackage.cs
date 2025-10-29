@@ -4,7 +4,7 @@
 
 using System;
 using System.IO;
-using Microsoft.UI.Xaml.Media.Imaging;
+using ManagedCommon;
 
 // using Wox.Infrastructure.Image;
 namespace Microsoft.CmdPal.Ext.WindowsTerminal;
@@ -28,23 +28,5 @@ public class TerminalPackage
         DisplayName = displayName;
         SettingsPath = settingsPath;
         LogoPath = logoPath;
-    }
-
-    public BitmapImage GetLogo()
-    {
-        var image = new BitmapImage();
-
-        if (File.Exists(LogoPath))
-        {
-            using var fileStream = File.OpenRead(LogoPath);
-            image.SetSource(fileStream.AsRandomAccessStream());
-        }
-        else
-        {
-            // Not using wox anymore, TODO: find the right new way to handle this
-            // image.UriSource = new Uri(ImageLoader.ErrorIconPath);
-        }
-
-        return image;
     }
 }

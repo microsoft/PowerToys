@@ -7,10 +7,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class RecentCommandsManager : ObservableObject
+public partial class RecentCommandsManager : ObservableObject, IRecentCommandsManager
 {
     [JsonInclude]
-    private List<HistoryItem> History { get; set; } = [];
+    internal List<HistoryItem> History { get; set; } = [];
+
+    private readonly Lock _lock = new();
 
     public RecentCommandsManager()
     {
@@ -18,57 +20,70 @@ public partial class RecentCommandsManager : ObservableObject
 
     public int GetCommandHistoryWeight(string commandId)
     {
-        var entry = History
+        lock (_lock)
+        {
+            var entry = History
             .Index()
             .Where(item => item.Item.CommandId == commandId)
             .FirstOrDefault();
 
-        // These numbers are vaguely scaled so that "VS" will make "Visual Studio" the
-        // match after one use.
-        // Usually it has a weight of 84, compared to 109 for the VS cmd prompt
-        if (entry.Item != null)
-        {
-            var index = entry.Index;
-
-            // First, add some weight based on how early in the list this appears
-            var bucket = index switch
+            // These numbers are vaguely scaled so that "VS" will make "Visual Studio" the
+            // match after one use.
+            // Usually it has a weight of 84, compared to 109 for the VS cmd prompt
+            if (entry.Item is not null)
             {
-                var i when index <= 2 => 35,
-                var i when index <= 10 => 25,
-                var i when index <= 15 => 15,
-                var i when index <= 35 => 10,
-                _ => 5,
-            };
+                var index = entry.Index;
 
-            // Then, add weight for how often this is used, but cap the weight from usage.
-            var uses = Math.Min(entry.Item.Uses * 5, 35);
+                // First, add some weight based on how early in the list this appears
+                var bucket = index switch
+                {
+                    var i when index <= 2 => 35,
+                    var i when index <= 10 => 25,
+                    var i when index <= 15 => 15,
+                    var i when index <= 35 => 10,
+                    _ => 5,
+                };
 
-            return bucket + uses;
+                // Then, add weight for how often this is used, but cap the weight from usage.
+                var uses = Math.Min(entry.Item.Uses * 5, 35);
+
+                return bucket + uses;
+            }
+
+            return 0;
         }
-
-        return 0;
     }
 
     public void AddHistoryItem(string commandId)
     {
-        var entry = History
+        lock (_lock)
+        {
+            var entry = History
             .Where(item => item.CommandId == commandId)
             .FirstOrDefault();
-        if (entry == null)
-        {
-            var newitem = new HistoryItem() { CommandId = commandId, Uses = 1 };
-            History.Insert(0, newitem);
-        }
-        else
-        {
-            History.Remove(entry);
-            entry.Uses++;
-            History.Insert(0, entry);
-        }
+            if (entry is null)
+            {
+                var newitem = new HistoryItem() { CommandId = commandId, Uses = 1 };
+                History.Insert(0, newitem);
+            }
+            else
+            {
+                History.Remove(entry);
+                entry.Uses++;
+                History.Insert(0, entry);
+            }
 
-        if (History.Count > 50)
-        {
-            History.RemoveRange(50, History.Count - 50);
+            if (History.Count > 50)
+            {
+                History.RemoveRange(50, History.Count - 50);
+            }
         }
     }
+}
+
+public interface IRecentCommandsManager
+{
+    int GetCommandHistoryWeight(string commandId);
+
+    void AddHistoryItem(string commandId);
 }

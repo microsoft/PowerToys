@@ -1,10 +1,18 @@
 Param(
   [string]$Configuration = "release",
-  [string]$VersionOfSDK = "0.0.0",
+  [string]$VersionOfSDK = "",
   [string]$BuildStep = "all",
   [switch]$IsAzurePipelineBuild = $false,
   [switch]$Help = $false
 )
+
+If ([String]::IsNullOrEmpty($VersionOfSDK)) {
+  $VersionOfSDK = $Env:XES_PACKAGEVERSIONNUMBER
+}
+
+If ([String]::IsNullOrEmpty($VersionOfSDK)) {
+  $VersionOfSDK = "0.0.0"
+}
 
 $StartTime = Get-Date
 
@@ -60,6 +68,10 @@ if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
           ("/binaryLogger:CmdPal.Extensions.$platform.$config.binlog"),
           ("/p:VersionNumber="+$VersionOfSDK)
           )
+
+        if ($IsAzurePipelineBuild) {
+          $msbuildArgs += "/p:CIBuild=true"
+        }
 
         & $msbuildPath $msbuildArgs
       }

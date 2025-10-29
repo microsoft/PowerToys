@@ -12,21 +12,21 @@ namespace Microsoft.CmdPal.Ext.Calc;
 
 public partial class CalculatorCommandProvider : CommandProvider
 {
+    private static ISettingsInterface settings = new SettingsManager();
     private readonly ListItem _listItem = new(new CalculatorListPage(settings))
     {
         Subtitle = Resources.calculator_top_level_subtitle,
-        MoreCommands = [new CommandContextItem(settings.Settings.SettingsPage)],
+        MoreCommands = [new CommandContextItem(((SettingsManager)settings).Settings.SettingsPage)],
     };
 
     private readonly FallbackCalculatorItem _fallback = new(settings);
-    private static SettingsManager settings = new();
 
     public CalculatorCommandProvider()
     {
-        Id = "Calculator";
+        Id = "com.microsoft.cmdpal.builtin.calculator";
         DisplayName = Resources.calculator_display_name;
-        Icon = CalculatorIcons.ProviderIcon;
-        Settings = settings.Settings;
+        Icon = Icons.CalculatorIcon;
+        Settings = ((SettingsManager)settings).Settings;
     }
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];

@@ -13,17 +13,16 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
 {
     private readonly TerminalTopLevelCommandItem _terminalCommand;
     private readonly SettingsManager _settingsManager = new();
-
-    public static IconInfo TerminalIcon { get; } = IconHelpers.FromRelativePath("Assets\\WindowsTerminal.svg");
+    private readonly AppSettingsManager _appSettingsManager = new();
 
     public WindowsTerminalCommandsProvider()
     {
         Id = "WindowsTerminalProfiles";
         DisplayName = Resources.extension_name;
-        Icon = TerminalIcon;
+        Icon = Icons.TerminalIcon;
         Settings = _settingsManager.Settings;
 
-        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager)
+        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager, _appSettingsManager)
         {
             MoreCommands = [
                 new CommandContextItem(Settings.SettingsPage),

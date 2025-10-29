@@ -11,6 +11,9 @@ parameters:
     default:
       - x64
       - arm64
+  - name: official
+    type: boolean
+    default: false
   - name: codeSign
     type: boolean
     default: false
@@ -47,16 +50,19 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
+    type: boolean
+    default: true
+  - name: buildTests
     type: boolean
     default: true
   - name: useVSPreview
     type: boolean
     default: false
   - name: versionNumber
-    type: string
-    default: '0.0.1'
-  - name: cmdPalVersionNumber
     type: string
     default: '0.0.1'
   - name: useLatestWinAppSDK
@@ -78,6 +84,12 @@ parameters:
       - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
       - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
       - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+  - name: timeoutInMinutes
+    type: number
+    default: 240
+  - name: cancelTimeoutInMinutes
+    type: number
+    default: 1
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -99,7 +111,7 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
-    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
@@ -110,7 +122,7 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.runTests, true) }}:
+    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
@@ -120,8 +132,8 @@ jobs:
     ${{ else }}:
       RestoreAdditionalProjectSourcesArg: ''
   displayName: Build
-  timeoutInMinutes: 240
-  cancelTimeoutInMinutes: 1
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
   templateContext: # Required when this template is hosted in 1ES PT
     outputs:
     - output: pipelineArtifact
@@ -142,6 +154,11 @@ jobs:
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
         $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        # Cache read-only policy controlled by parameter
+        $cacheIsReadOnly = "${{ parameters.msBuildCacheIsReadOnly }}"
+        if ($cacheIsReadOnly -eq "True") {
+          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=true"
+        }
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
@@ -215,9 +232,12 @@ jobs:
       env:
         VCWhereExtraVersionTarget: '-prerelease'
 
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
-    displayName: Download and install WiX 3.14 development build
+  - ${{ if eq(parameters.official, true) }}:
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\cmdpal
+
+
 
   - ${{ parameters.beforeBuildSteps }}
 
@@ -245,6 +265,23 @@ jobs:
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
+  - task: VSBuild@1
+    displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
+    condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
+    inputs:
+      solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
+      msbuildArgs: /t:Build /m /restore
+      platform: x64
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # Generate DSC manifests using PowerToys.DSC.exe
+  - pwsh: |-
+      & '.pipelines/generateDscManifests.ps1' -BuildPlatform '$(BuildPlatform)' -BuildConfiguration '$(BuildConfiguration)' -RepoRoot '$(Build.SourcesDirectory)'
+    displayName: Generate DSC manifests
 
   - task: CopyFiles@2
     displayName: Stage SDK/build
@@ -327,6 +364,7 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
+          /p:TargetFramework=net9.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
           $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
@@ -343,6 +381,11 @@ jobs:
       targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
       flattenFolders: True
       OverWrite: True
+
+  # Check if all projects (located in src sub-folder) import common props
+  - pwsh: |-
+      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
+    displayName: Audit shared common props for CSharp projects in src sub-folder
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
@@ -384,18 +427,35 @@ jobs:
         testAssemblyVer2: |
           **\KeyboardManagerEngineTest.dll
           **\KeyboardManagerEditorTest.dll
-          **\UnitTests-CommonLib.dll
-          **\PowerRenameUnitTests.dll
-          **\UnitTests-FancyZones.dll
+          **\*UnitTest*.dll
           !**\obj\**
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - pwsh: |-
-        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
-        $PackageFilename = $Package.FullName
-        Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
-      displayName: Locate the MSIX
+  - pwsh: |-
+      $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
+      Write-Host "Found $($Packages.Count) CmdPal MSIX package(s):"
+      foreach ($pkg in $Packages) {
+          Write-Host "  - $($pkg.FullName)"
+      }
+      
+      if ($Packages.Count -gt 0) {
+          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fall back to any
+          $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.UI_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+          if ($PlatformPackage) {
+              $Package = $PlatformPackage
+              Write-Host "Using platform-specific package: $($Package.FullName)"
+          } else {
+              $Package = $Packages | Select-Object -First 1
+              Write-Host "Using first available package: $($Package.FullName)"
+          }
+          
+          $PackageFilename = $Package.FullName
+          Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+      } else {
+          Write-Warning "No CmdPal MSIX packages found!"
+      }
+    displayName: Locate the CmdPal MSIX
 
+  - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
         & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
       displayName: Unpack the MSIX for signing
@@ -415,6 +475,8 @@ jobs:
         $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
         & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
         Copy-Item -Force $PackageFilename "$(CmdPalPackagePath)"
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/CmdPalPackageContents" -ErrorAction:Ignore
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
 
     - template: steps-esrp-signing.yml
@@ -437,14 +499,20 @@ jobs:
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
-  - template: steps-build-installer.yml
+  - pwsh: |-
+      Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
+    displayName: Stage the final CmdPal package
+
+
+
+  - template: steps-build-installer-vnext.yml
     parameters:
       codeSign: ${{ parameters.codeSign }}
       signingIdentity: ${{ parameters.signingIdentity }}
       versionNumber: ${{ parameters.versionNumber }}
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
-  - template: steps-build-installer.yml
+  - template: steps-build-installer-vnext.yml
     parameters:
       codeSign: ${{ parameters.codeSign }}
       signingIdentity: ${{ parameters.signingIdentity }}
@@ -454,7 +522,7 @@ jobs:
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
-  # - All .pdbs from any static libs .libs (which were only used during linking)
+  # - All .pdb files from any static libs .libs (which were only used during linking)
   - pwsh: |-
       $binDir = '$(Build.SourcesDirectory)'
       $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
@@ -470,60 +538,73 @@ jobs:
   - task: CopyFiles@2
     displayName: Stage Installers
     inputs:
-      contents: "**/PowerToys*Setup-*.exe"
+      contents: |-
+        **/PowerToys*Setup-*.exe
+        !**/PowerToysSetupVNext/obj/**
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
-  - task: CopyFiles@2
-    displayName: Stage Symbols
-    inputs:
-      contents: |-
-        **\*.pdb
-        !**\vc143.pdb
-        !**\*test*.pdb
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
+  - pwsh: |-
+      $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb" |
+          Group-Object Name | ForEach-Object { $_.Group[0] }
+      $OutDir = "$(JobOutputDirectory)/symbols-$(BuildPlatform)"
+      New-Item -Type Directory $OutDir -EA:Ignore
+      Write-Host "Linking $($Symbols.Length) symbols into place at $OutDir"
+      ForEach($s in $Symbols) {
+        New-Item -Type HardLink -Target $s.FullName (Join-Path $OutDir $s.Name)
+      }
+    displayName: Stage Unique Symbols (as hard links)
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
-      $userHash = ((Get-Item $p\PowerToysUserSetup*.exe | Get-FileHash).Hash);
-      $machineHash = ((Get-Item $p\PowerToysSetup*.exe | Get-FileHash).Hash);
-      $userPlat = "hash_user_$(BuildPlatform).txt";
-      $machinePlat = "hash_machine_$(BuildPlatform).txt";
-      $combinedUserPath = $p + $userPlat;
-      $combinedMachinePath = $p + $machinePlat;
-
-      echo $p
-
-      echo $userPlat
-      echo $userHash
-      echo $combinedUserPath
-
-      echo $machinePlat
-      echo $machineHash
-      echo $combinedMachinePath
-
-      $userHash | out-file -filepath $combinedUserPath
-      $machineHash | out-file -filepath $combinedMachinePath
-    displayName: Calculate file hashes
+      
+      # Calculate hashes for installers
+      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe"
+      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
+      
+      if ($userSetupFiles.Count -gt 0) {
+          $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
+          $userPlat = "hash_user_$(BuildPlatform).txt";
+          $combinedUserPath = $p + $userPlat;
+          echo "User: $userHash"
+          $userHash | out-file -filepath $combinedUserPath
+      }
+      
+      if ($machineSetupFiles.Count -gt 0) {
+          $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
+          $machinePlat = "hash_machine_$(BuildPlatform).txt";
+          $combinedMachinePath = $p + $machinePlat;
+          echo "Machine: $machineHash"
+          $machineHash | out-file -filepath $combinedMachinePath
+      }
+    displayName: Calculate file hashes for all installers
 
   # Publishing the GPO files
   - pwsh: |-
-      New-Item "$(JobOutputDirectory)/gpo" -Type Directory
-      Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
+      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
+      tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
 
-  # Running the tests may result in future jobs consuming artifacts out of this build
-  - ${{ if eq(parameters.runTests, true) }}:
-    - task: CopyFiles@2
-      displayName: Stage entire build output
-      inputs:
-        sourceFolder: '$(Build.SourcesDirectory)'
-        contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    # Running the tests may result in future jobs consuming artifacts out of this build
+    # Instead of running an expensive file copy step, move everything over since the build is totally done.
+    - pwsh: |-
+        # It seems weird, but this is for compatibility. Our artifacts historically contained the folder x64/Release/x64/Release (for example).
+        $FinalOutputRoot = "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)"
+        $ProjectBuildRoot = "$(Build.SourcesDirectory)\$(BuildPlatform)"
+        $ProjectBuildDirectory = "$ProjectBuildRoot\$(BuildConfiguration)"
+
+        New-Item -Type Directory $FinalOutputRoot -EA:Ignore
+        Move-Item $ProjectBuildDirectory $FinalOutputRoot
+      displayName: Move entire output directory into artifacts
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
       displayName: Publish all outputs
-      condition: always()
+      condition: succeeded()
+
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
+      displayName: Publish failure logs
+      condition: or(failed(), canceled())

@@ -8,6 +8,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -34,5 +35,11 @@ public sealed partial class ExtensionsPage : Page
                 WeakReferenceMessenger.Default.Send<NavigateToExtensionSettingsMessage>(new(vm));
             }
         }
+    }
+
+    private void OnFindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        SearchBox?.Focus(FocusState.Keyboard);
+        args.Handled = true;
     }
 }

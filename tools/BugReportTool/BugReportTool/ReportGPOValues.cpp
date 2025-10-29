@@ -50,14 +50,17 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredCropAndLockEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCropAndLockEnabledValue()) << std::endl;
     report << "getConfiguredFancyZonesEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFancyZonesEnabledValue()) << std::endl;
     report << "getConfiguredFileLocksmithEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFileLocksmithEnabledValue()) << std::endl;
+    report << "getConfiguredLightSwitchEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredLightSwitchEnabledValue()) << std::endl;
     report << "getConfiguredSvgPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMarkdownPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMarkdownPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMonacoPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMonacoPreviewEnabledValue()) << std::endl;
     report << "getConfiguredPdfPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfPreviewEnabledValue()) << std::endl;
     report << "getConfiguredGcodePreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodePreviewEnabledValue()) << std::endl;
+    report << "getConfiguredBgcodePreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredBgcodePreviewEnabledValue()) << std::endl;
     report << "getConfiguredSvgThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredPdfThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredGcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue()) << std::endl;
+    report << "getConfiguredBgcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredStlThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredStlThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredHostsFileEditorEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredHostsFileEditorEnabledValue()) << std::endl;
     report << "getConfiguredImageResizerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredImageResizerEnabledValue()) << std::endl;

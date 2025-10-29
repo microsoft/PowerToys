@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -75,6 +75,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string application {
             get {
                 return ResourceManager.GetString("application", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        internal static string copy_path {
+            get {
+                return ResourceManager.GetString("copy_path", resourceCulture);
             }
         }
         
@@ -151,6 +160,78 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 0.
+        /// </summary>
+        internal static string limit_0 {
+            get {
+                return ResourceManager.GetString("limit_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1.
+        /// </summary>
+        internal static string limit_1 {
+            get {
+                return ResourceManager.GetString("limit_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 10.
+        /// </summary>
+        internal static string limit_10 {
+            get {
+                return ResourceManager.GetString("limit_10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 20.
+        /// </summary>
+        internal static string limit_20 {
+            get {
+                return ResourceManager.GetString("limit_20", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 5.
+        /// </summary>
+        internal static string limit_5 {
+            get {
+                return ResourceManager.GetString("limit_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Limit the number of applications returned from the top level.
+        /// </summary>
+        internal static string limit_fallback_results_source {
+            get {
+                return ResourceManager.GetString("limit_fallback_results_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Limit fallback results to n apps.
+        /// </summary>
+        internal static string limit_fallback_results_source_description {
+            get {
+                return ResourceManager.GetString("limit_fallback_results_source_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unlimited.
+        /// </summary>
+        internal static string limit_none {
+            get {
+                return ResourceManager.GetString("limit_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open containing folder.
         /// </summary>
         internal static string open_containing_folder {
@@ -160,7 +241,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open location.
+        ///   Looks up a localized string similar to Open file location.
         /// </summary>
         internal static string open_location {
             get {
@@ -183,6 +264,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string packaged_application {
             get {
                 return ResourceManager.GetString("packaged_application", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pin.
+        /// </summary>
+        internal static string pin_app {
+            get {
+                return ResourceManager.GetString("pin_app", resourceCulture);
             }
         }
         
@@ -237,6 +327,60 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string search_installed_apps_placeholder {
             get {
                 return ResourceManager.GetString("search_installed_apps_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall.
+        /// </summary>
+        internal static string uninstall_application {
+            get {
+                return ResourceManager.GetString("uninstall_application", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This app and its related information will be removed..
+        /// </summary>
+        internal static string uninstall_application_confirm_description {
+            get {
+                return ResourceManager.GetString("uninstall_application_confirm_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall &quot;{0}&quot;?.
+        /// </summary>
+        internal static string uninstall_application_confirm_title {
+            get {
+                return ResourceManager.GetString("uninstall_application_confirm_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while uninstalling &apos;{0}&apos;.
+        /// </summary>
+        internal static string uninstall_application_failed {
+            get {
+                return ResourceManager.GetString("uninstall_application_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; has been successfully uninstalled..
+        /// </summary>
+        internal static string uninstall_application_successful {
+            get {
+                return ResourceManager.GetString("uninstall_application_successful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin.
+        /// </summary>
+        internal static string unpin_app {
+            get {
+                return ResourceManager.GetString("unpin_app", resourceCulture);
             }
         }
         

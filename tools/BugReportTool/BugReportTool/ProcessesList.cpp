@@ -11,6 +11,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.FancyZonesEditor.exe",
     L"PowerToys.FancyZones.exe",
     L"PowerToys.FileLocksmithUI.exe",
+    L"PowerToys.LightSwitch.exe",
     L"PowerToys.KeyboardManagerEngine.exe",
     L"PowerToys.KeyboardManagerEditor.exe",
     L"PowerToys.PowerAccent.exe",
@@ -27,6 +28,8 @@ std::vector<std::wstring> processes =
     L"PowerToys.Hosts.exe",
     L"PowerToys.GcodePreviewHandler.exe",
     L"PowerToys.GcodeThumbnailProvider.exe",
+    L"PowerToys.BgcodePreviewHandler.exe",
+    L"PowerToys.BgcodeThumbnailProvider.exe",
     L"PowerToys.MarkdownPreviewHandler.exe",
     L"PowerToys.MonacoPreviewHandler.exe",
     L"PowerToys.PdfPreviewHandler.exe",
@@ -49,4 +52,5 @@ std::vector<std::wstring> processes =
     L"PowerToys.WorkspacesWindowArranger.exe",
     L"PowerToys.WorkspacesEditor.exe",
     L"PowerToys.ZoomIt.exe",
+    L"Microsoft.CmdPal.UI.exe",
 };

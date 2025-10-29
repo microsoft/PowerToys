@@ -90,6 +90,7 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
     }
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
+    SetForegroundWindow(hwnd_main); // Bring the settings window to the front
 }
 
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe, bool showRestartNotificationAfterUpdate)
@@ -104,6 +105,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
     start_tray_icon(isProcessElevated);
+    set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
     int result = -1;
@@ -147,7 +149,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         std::vector<std::wstring_view> knownModules = {
             L"PowerToys.FancyZonesModuleInterface.dll",
             L"PowerToys.powerpreview.dll",
-            L"PowerToys.ImageResizerExt.dll",
+            L"WinUI3Apps/PowerToys.ImageResizerExt.dll",
             L"PowerToys.KeyboardManager.dll",
             L"PowerToys.Launcher.dll",
             L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
@@ -175,6 +177,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.WorkspacesModuleInterface.dll",
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
+            L"PowerToys.LightSwitchModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)
@@ -188,10 +191,19 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
                 errorMessage += moduleSubdir;
+                
+#ifdef _DEBUG
+                // In debug mode, simply log the warning and continue execution.
+                // This contrasts with the past approach where developers had to build all modules
+                // without errors before debugging—slowing down quick clone-and-fix iterations.
+                Logger::warn(L"Debug mode: {}", errorMessage);
+#else
+                // In release mode, show error dialog as before
                 MessageBoxW(NULL,
                             errorMessage.c_str(),
                             L"PowerToys",
                             MB_OK | MB_ICONERROR);
+#endif
             }
         }
         // Start initial powertoys
@@ -324,6 +336,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     GdiplusStartup(&gpToken, &gpStartupInput, NULL);
 
     winrt::init_apartment();
+
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
         L"G:BA" // Group: Builtin (local) administrator
@@ -515,5 +528,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         }
     }
     stop_tray_icon();
+
     return result;
 }

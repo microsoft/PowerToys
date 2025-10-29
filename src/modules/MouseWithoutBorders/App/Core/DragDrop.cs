@@ -27,7 +27,7 @@ namespace MouseWithoutBorders.Core;
  *
  * SEQUENCE OF EVENTS:
  * DragDropStep01: MachineX: Remember mouse down state since it could be a start of a dragging
- * DragDropStep02: MachineY: Send an message to the MachineX to ask it to check if it is
+ * DragDropStep02: MachineY: Send a message to the MachineX to ask it to check if it is
  *                           doing drag/drop
  * DragDropStep03: MachineX: Got explorerDragDrop, send WM_CHECK_EXPLORER_DRAG_DROP to its mainForm
  * DragDropStep04: MachineX: Show Mouse Without Borders Helper form at mouse cursor to get DragEnter event.
@@ -83,7 +83,7 @@ internal static class DragDrop
         if (wParam == Common.WM_RBUTTONUP && IsDropping)
         {
             IsDropping = false;
-            Common.LastIDWithClipboardData = ID.NONE;
+            Clipboard.LastIDWithClipboardData = ID.NONE;
         }
     }
 
@@ -193,7 +193,7 @@ internal static class DragDrop
             {
                 if (!string.IsNullOrEmpty(dragFileName) && (File.Exists(dragFileName) || Directory.Exists(dragFileName)))
                 {
-                    Common.LastDragDropFile = dragFileName;
+                    Clipboard.LastDragDropFile = dragFileName;
                     /*
                      * possibleDropMachineID is used as desID sent in DragDropStep06();
                      * */
@@ -270,7 +270,7 @@ internal static class DragDrop
             else
             {
                 IsDragging = false;
-                Common.LastIDWithClipboardData = ID.NONE;
+                Clipboard.LastIDWithClipboardData = ID.NONE;
             }
         }
     }
@@ -280,7 +280,7 @@ internal static class DragDrop
         Logger.LogDebug("DragDropStep10: Hide the form and get data...");
         IsDropping = false;
         IsDragging = false;
-        Common.LastIDWithClipboardData = ID.NONE;
+        Clipboard.LastIDWithClipboardData = ID.NONE;
 
         Common.DoSomethingInUIThread(() =>
         {
@@ -288,7 +288,7 @@ internal static class DragDrop
         });
 
         PowerToysTelemetry.Log.WriteEvent(new MouseWithoutBorders.Telemetry.MouseWithoutBordersDragAndDropEvent());
-        Common.GetRemoteClipboard("desktop");
+        Clipboard.GetRemoteClipboard("desktop");
     }
 
     internal static void DragDropStep11()
@@ -298,8 +298,8 @@ internal static class DragDrop
         IsDropping = false;
         IsDragging = false;
         DragMachine = (ID)1;
-        Common.LastIDWithClipboardData = ID.NONE;
-        Common.LastDragDropFile = null;
+        Clipboard.LastIDWithClipboardData = ID.NONE;
+        Clipboard.LastDragDropFile = null;
         MouseDown = false;
     }
 
@@ -307,7 +307,7 @@ internal static class DragDrop
     {
         Logger.LogDebug("DragDropStep12: ClipboardDragDropEnd received");
         IsDropping = false;
-        Common.LastIDWithClipboardData = ID.NONE;
+        Clipboard.LastIDWithClipboardData = ID.NONE;
 
         Common.DoSomethingInUIThread(() =>
         {

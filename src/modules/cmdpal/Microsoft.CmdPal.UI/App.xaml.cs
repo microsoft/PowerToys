@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
+using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
@@ -19,6 +22,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -61,38 +65,33 @@ public partial class App : Application
 
         this.InitializeComponent();
 
+        // Ensure types used in XAML are preserved for AOT compilation
+        TypePreservation.PreserveTypes();
+
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
                 EtwTrace?.Dispose();
+                AppWindow?.Close();
                 Environment.Exit(0);
             });
+
+        // Connect the PT logging to the core project's logging.
+        // This way, log statements from the core project will be captured by the PT logs
+        var logWrapper = new LogWrapper();
+        CoreLogger.InitializeLogger(logWrapper);
     }
 
     /// <summary>
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         AppWindow = new MainWindow();
 
-        var cmdArgs = Environment.GetCommandLineArgs();
-
-        var runFromPT = false;
-        foreach (var arg in cmdArgs)
-        {
-            if (arg == "RunFromPT")
-            {
-                runFromPT = true;
-                break;
-            }
-        }
-
-        if (!runFromPT)
-        {
-            AppWindow.Activate();
-        }
+        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
     }
 
     /// <summary>
@@ -108,16 +107,18 @@ public partial class App : Application
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
+        var files = new IndexerCommandsProvider();
+        files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
+
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
-        services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
+        services.AddSingleton<ICommandProvider>(files);
+        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
 
-        // TODO GH #527 re-enable the clipboard commands
-        // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
+        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
@@ -154,9 +155,16 @@ public partial class App : Application
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
+        services.AddSingleton<TrayIconService>();
+        services.AddSingleton<IRunHistoryService, RunHistoryService>();
+
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
         return services.BuildServiceProvider();
     }

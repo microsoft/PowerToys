@@ -12,7 +12,7 @@ body:
   attributes:
     label: Microsoft PowerToys version
     placeholder: X.XX.X
-    description: Hover over system tray icon or look at Settings
+    description: Hover over the system tray icon or look at Settings
   validations:
     required: true
 
@@ -20,7 +20,7 @@ body:
   type: dropdown
   attributes:
     label: Installation method
-    description: How / Where was PowerToys installed from?
+    description: How / where was PowerToys installed from?
     multiple: true
     options:
       - GitHub
@@ -58,6 +58,7 @@ body:
       - Image Resizer
       - Installer
       - Keyboard Manager
+      - Light Switch
       - Mouse Utilities
       - Mouse Without Borders
       - New+

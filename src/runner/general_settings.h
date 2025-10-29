@@ -5,6 +5,7 @@
 struct GeneralSettings
 {
     bool isStartupEnabled;
+    bool showSystemTrayIcon;
     std::wstring startupDisabledReason;
     std::map<std::wstring, bool> isModulesEnabledMap;
     bool isElevated;
@@ -18,6 +19,7 @@ struct GeneralSettings
     std::wstring theme;
     std::wstring systemTheme;
     std::wstring powerToysVersion;
+    json::JsonObject ignoredConflictProperties;
 
     json::JsonObject to_json();
 };

@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MouseUtilsPage : Page, IRefreshablePage
+    public sealed partial class MouseUtilsPage : NavigablePage, IRefreshablePage
     {
         private MouseUtilsViewModel ViewModel { get; set; }
 
@@ -48,6 +48,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
 
             this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

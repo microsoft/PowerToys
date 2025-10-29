@@ -6,20 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-
-using Mages.Core;
+using CalculatorEngineCommon;
+using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class CalculateEngine
 {
-    private static readonly Engine _magesEngine = new Engine(new Configuration
+    private static readonly PropertySet _constants = new()
     {
-        Scope = new Dictionary<string, object>
-        {
-            { "e", Math.E }, // e is not contained in the default mages engine
-        },
-    });
+        { "pi", Math.PI },
+        { "e", Math.E },
+    };
+
+    private static readonly Calculator _calculator = new Calculator(_constants);
 
     public const int RoundingDigits = 10;
 
@@ -34,7 +34,7 @@ public static class CalculateEngine
     /// Interpret
     /// </summary>
     /// <param name="cultureInfo">Use CultureInfo.CurrentCulture if something is user facing</param>
-    public static CalculateResult Interpret(SettingsManager settings, string input, CultureInfo cultureInfo, out string error)
+    public static CalculateResult Interpret(ISettingsInterface settings, string input, CultureInfo cultureInfo, out string error)
     {
         error = default;
 
@@ -68,29 +68,23 @@ public static class CalculateEngine
         // Expand conversions between trig units
         input = CalculateHelper.ExpandTrigConversions(input, trigMode);
 
-        var result = _magesEngine.Interpret(input);
+        var result = _calculator.EvaluateExpression(input);
 
         // This could happen for some incorrect queries, like pi(2)
-        if (result == null)
+        if (result == "NaN")
         {
             error = Properties.Resources.calculator_expression_not_complete;
             return default;
         }
 
-        result = TransformResult(result);
-        if (result is string)
-        {
-            error = result as string;
-            return default;
-        }
-
-        if (string.IsNullOrEmpty(result?.ToString()))
+        if (string.IsNullOrEmpty(result))
         {
             return default;
         }
 
-        var decimalResult = Convert.ToDecimal(result, cultureInfo);
-        var roundedResult = Round(decimalResult);
+        var decimalResult = Convert.ToDecimal(result, new CultureInfo("en-US"));
+
+        var roundedResult = FormatMax15Digits(decimalResult, cultureInfo);
 
         return new CalculateResult()
         {
@@ -104,24 +98,27 @@ public static class CalculateEngine
         return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
     }
 
-    private static dynamic TransformResult(object result)
+    /// <summary>
+    /// Format a decimal so that the output contains **at most 15 total digits**
+    /// (integer + fraction, not counting the decimal point or minus sign).
+    /// Any extra fractional digits are rounded using “away-from-zero” rounding.
+    /// Trailing zeros in the fractional part—and a dangling decimal point—are removed.
+    /// Examples
+    ///   1.9999999999      → "1.9999999999"
+    ///   100000.9999999999 → "100001"
+    ///   1234567890123.45  → "1234567890123.45"
+    /// </summary>
+    public static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
     {
-        if (result.ToString() == "NaN")
-        {
-            return Properties.Resources.calculator_not_a_number;
-        }
+        var absValue = Math.Abs(value);
+        var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;
 
-        if (result is Function)
-        {
-            return Properties.Resources.calculator_expression_not_complete;
-        }
+        var maxDecimalDigits = Math.Max(0, 15 - integerDigits);
 
-        if (result is double[,])
-        {
-            // '[10,10]' is interpreted as array by mages engine
-            return Properties.Resources.calculator_double_array_returned;
-        }
+        var rounded = Math.Round(value, maxDecimalDigits, MidpointRounding.AwayFromZero);
 
-        return result;
+        var formatted = rounded.ToString("G29", cultureInfo);
+
+        return Convert.ToDecimal(formatted, cultureInfo);
     }
 }

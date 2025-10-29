@@ -3,9 +3,6 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
-  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-    - name: EnablePipelineCache
-      value: true
 
 parameters:
   - name: buildPlatforms
@@ -16,6 +13,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -55,21 +55,11 @@ stages:
             buildConfigurations: [Release]
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
-
-    - ${{ if and(eq(parameters.runTests, true), not(and(eq(platform, 'arm64'), eq(variables['System.PullRequest.IsFork'], true)))) }}:
-      - stage: Test_${{ platform }}
-        displayName: Test ${{ platform }}
-        dependsOn:
-          - Build_${{platform}}
-        jobs:
-          - template: job-test-project.yml
-            parameters:
-              platform: ${{ platform }}
-              configuration: Release
-              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            timeoutInMinutes: 90

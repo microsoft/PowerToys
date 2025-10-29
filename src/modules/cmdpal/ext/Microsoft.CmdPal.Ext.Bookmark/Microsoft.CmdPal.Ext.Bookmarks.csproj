@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Bookmarks</RootNamespace>
     <Nullable>enable</Nullable>
@@ -10,13 +11,15 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Bookmarks.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Assets\Bookmark.svg" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
     <ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
   </ItemGroup>
-  
+  <ItemGroup>
+	  <Content Update="Assets\**\*.*">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
@@ -24,20 +27,15 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
-  
-  <ItemGroup>
-    <Content Update="Assets\Bookmark.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Bookmark.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  
+
+  <ItemGroup>
+	  <InternalsVisibleTo Include="Microsoft.CmdPal.Ext.Bookmarks.UnitTests" />
+  </ItemGroup>
 </Project>

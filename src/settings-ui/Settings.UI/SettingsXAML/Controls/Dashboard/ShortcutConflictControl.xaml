@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutConflictControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Button Click="ShortcutConflictBtn_Click" Style="{StaticResource SubtleButtonStyle}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    x:Name="Icon"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="20"
+                    Glyph="&#xEDA7;" />
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <TextBlock x:Uid="ShortcutConflictControl_Title" FontWeight="SemiBold" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ConflictText, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
+        </Button>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ConflictsStateGroup">
+                <VisualState x:Name="NoConflictState" />
+                <VisualState x:Name="ConflictState">
+                    <VisualState.Setters>
+                        <Setter Target="Icon.Glyph" Value="&#xE814;" />
+                        <Setter Target="Icon.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

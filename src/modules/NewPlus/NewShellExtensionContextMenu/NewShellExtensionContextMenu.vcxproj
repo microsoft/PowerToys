@@ -67,8 +67,6 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>dll.def</ModuleDefinitionFile>
       <AdditionalDependencies>runtimeobject.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>
-      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PreBuildEvent>
       <Command>del $(OutDir)\NewPlusPackage.msix /q
@@ -100,8 +98,6 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>dll.def</ModuleDefinitionFile>
       <AdditionalDependencies>runtimeobject.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>
-      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PreBuildEvent>
       <Command>del $(OutDir)\NewPlusPackage.msix /q
@@ -123,6 +119,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="new_utilities.h" />
+    <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="template_folder.h" />
     <ClInclude Include="pch.h" />

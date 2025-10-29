@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,14 +6,14 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="TagBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush" />
+            <StaticResource x:Key="TagBackground" ResourceKey="ControlFillColorSecondaryBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="TagBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush" />
+            <StaticResource x:Key="TagBackground" ResourceKey="ControlFillColorSecondaryBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
 
@@ -26,6 +26,8 @@
     </ResourceDictionary.ThemeDictionaries>
     <Thickness x:Key="TagPadding">4,2,4,2</Thickness>
     <Thickness x:Key="TagBorderThickness">1</Thickness>
+
+    <local:IconMarginConverter x:Key="IconMarginConverter" />
 
     <Style BasedOn="{StaticResource DefaultTagStyle}" TargetType="local:Tag" />
 
@@ -71,7 +73,7 @@
                                 x:Name="PART_Icon"
                                 Grid.Column="0"
                                 Height="12"
-                                Margin="0,0,4,0"
+                                Margin="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconMarginConverter}}"
                                 SourceKey="{TemplateBinding Icon}" />
                             <TextBlock
                                 Grid.Column="1"

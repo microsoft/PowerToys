@@ -5,7 +5,9 @@
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -16,7 +18,7 @@ public sealed partial class ContentFormControl : UserControl
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
-    // tree. If this gets GC'd, then it'll revoke our Action handler, and the
+    // tree. If this gets GC'ed, then it'll revoke our Action handler, and the
     // form will do seemingly nothing.
     private RenderedAdaptiveCard? _renderedCard;
 
@@ -42,7 +44,7 @@ public sealed partial class ContentFormControl : UserControl
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".
         // SO only set this once.
-        if (_renderer.OverrideStyles == null)
+        if (_renderer.OverrideStyles is null)
         {
             _renderer.OverrideStyles = CardOverrideStyles;
         }
@@ -53,19 +55,19 @@ public sealed partial class ContentFormControl : UserControl
 
     private void AttachViewModel(ContentFormViewModel? vm)
     {
-        if (_viewModel != null)
+        if (_viewModel is not null)
         {
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
 
         _viewModel = vm;
 
-        if (_viewModel != null)
+        if (_viewModel is not null)
         {
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             var c = _viewModel.Card;
-            if (c != null)
+            if (c is not null)
             {
                 DisplayCard(c);
             }
@@ -74,7 +76,7 @@ public sealed partial class ContentFormControl : UserControl
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (ViewModel == null)
+        if (ViewModel is null)
         {
             return;
         }
@@ -82,7 +84,7 @@ public sealed partial class ContentFormControl : UserControl
         if (e.PropertyName == nameof(ViewModel.Card))
         {
             var c = ViewModel.Card;
-            if (c != null)
+            if (c is not null)
             {
                 DisplayCard(c);
             }
@@ -93,12 +95,66 @@ public sealed partial class ContentFormControl : UserControl
     {
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
-        if (_renderedCard.FrameworkElement != null)
+        if (_renderedCard.FrameworkElement is not null)
         {
             ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+
+            // Use the Loaded event to ensure we focus after the card is in the visual tree
+            _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
         }
 
         _renderedCard.Action += Rendered_Action;
+    }
+
+    private void OnFrameworkElementLoaded(object sender, RoutedEventArgs e)
+    {
+        // Unhook the event handler to avoid multiple registrations
+        if (sender is FrameworkElement element)
+        {
+            element.Loaded -= OnFrameworkElementLoaded;
+
+            if (!ViewModel?.OnlyControlOnPage ?? true)
+            {
+                return;
+            }
+
+            // Focus on the first focusable element asynchronously to ensure the visual tree is fully built
+            element.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                var focusableElement = FindFirstFocusableElement(element);
+                focusableElement?.Focus(FocusState.Programmatic);
+            });
+        }
+    }
+
+    private Control? FindFirstFocusableElement(DependencyObject parent)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(parent);
+
+        // Process children first (depth-first search)
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            // If the child is a focusable control like TextBox, ComboBox, etc.
+            if (child is Control control &&
+                control.IsEnabled &&
+                control.IsTabStop &&
+                control.Visibility == Visibility.Visible &&
+                control.AllowFocusOnInteraction)
+            {
+                return control;
+            }
+
+            // Recursively check children
+            var result = FindFirstFocusableElement(child);
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     private void Rendered_Action(RenderedAdaptiveCard sender, AdaptiveActionEventArgs args) =>

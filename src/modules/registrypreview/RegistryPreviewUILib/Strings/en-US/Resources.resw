@@ -258,11 +258,17 @@
   <data name="YesNoCancelDialogCloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="ReloadDialogCloseButtonText" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="YesNoCancelDialogContent" xml:space="preserve">
     <value>Save changes?</value>
   </data>
   <data name="YesNoCancelDialogPrimaryButtonText" xml:space="preserve">
     <value>Save</value>
+  </data>
+  <data name="ReloadDialogPrimaryButtonText" xml:space="preserve">
+    <value>Yes</value>
   </data>
   <data name="YesNoCancelDialogSecondaryButtonText" xml:space="preserve">
     <value>Don't save</value>
@@ -277,16 +283,20 @@
     <value>Copy path</value>
     <comment>Like "Copy item"</comment>
   </data>
-  <data name="ContextMenu_CopyName.Text" xml:space="preserve">
+  <data name="ContextMenu_CopyKeyName.Text" xml:space="preserve">
     <value>Copy name</value>
     <comment>Like "Copy item"</comment>
   </data>
+  <data name="ContextMenu_CopyName.Text" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Like "Copy item"</comment>
+  </data>
   <data name="ContextMenu_CopyType.Text" xml:space="preserve">
-    <value>Copy type</value>
+    <value>Copy</value>
     <comment>Like "Copy item"</comment>
   </data>
   <data name="ContextMenu_CopyData.Text" xml:space="preserve">
-    <value>Copy data</value>
+    <value>Copy</value>
     <comment>Like "Copy item"</comment>
   </data>
   <data name="ContextMenu_CopyValue.Text" xml:space="preserve">
@@ -296,5 +306,70 @@
   <data name="ContextMenu_CopyValueWithPath.Text" xml:space="preserve">
     <value>Copy value with key path</value>
     <comment>Like "Copy item"</comment>
+  </data>
+  <data name="ShowDataPreviewButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show extended preview</value>
+  </data>
+  <data name="ShowDataPreviewButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show extended preview</value>
+  </data>
+  <data name="DataPreviewTitle" xml:space="preserve">
+    <value>View data</value>
+  </data>
+  <data name="DataPreviewClose" xml:space="preserve">
+    <value>Close</value>
+    <comment>like "Close window"</comment>
+  </data>
+  <data name="DataPreviewHex" xml:space="preserve">
+    <value>Hexadecimal</value>
+  </data>
+  <data name="DataPreviewDec" xml:space="preserve">
+    <value>Decimal</value>
+  </data>
+  <data name="DataPreviewRawValue" xml:space="preserve">
+    <value>Raw value</value>
+  </data>
+  <data name="DataPreviewExpandedValue" xml:space="preserve">
+    <value>Expanded value</value>
+  </data>
+  <data name="DataPreviewVisibleText" xml:space="preserve">
+    <value>Readable text</value>
+    <comment>Means text that is human readable and not only control characters.</comment>
+  </data>
+  <data name="DataPreviewDataView" xml:space="preserve">
+    <value>Data</value>
+    <comment>Like "binary data"</comment>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_MultilineTextValue" xml:space="preserve">
+    <value>Multiline text value</value>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_TextValue" xml:space="preserve">
+    <value>Text value</value>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_BinaryDataPreview" xml:space="preserve">
+    <value>Binary data preview</value>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_VisibleTextPreview" xml:space="preserve">
+    <value>Preview of readable text</value>
+  </data>
+  <data name="HexBox_CopyCommand.Text" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Like "copy the value"</comment>
+  </data>
+  <data name="HexBox_CopyTextCommand.Text" xml:space="preserve">
+    <value>Copy text</value>
+    <comment>Like "Copy the text"</comment>
+  </data>
+  <data name="HexBox_SelectAllCommand.Text" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="ContextMenu_DataPreview.Text" xml:space="preserve">
+    <value>Extended data preview</value>
+  </data>
+  <data name="NewButton.Label" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ReloadDialogContent" xml:space="preserve">
+    <value>You lose any unsaved changes. Reload anyway?</value>
   </data>
 </root>

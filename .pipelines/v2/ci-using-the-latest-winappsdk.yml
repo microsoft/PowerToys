@@ -19,7 +19,7 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     displayName: "Enable MSBuild Caching"
-    default: false
+    default: true
   - name: runTests
     type: boolean
     displayName: "Run Tests"
@@ -33,7 +33,7 @@ parameters:
     default: true
   - name: winAppSDKVersionNumber
     type: string
-    default: 1.6
+    default: 1.7
   - name: useExperimentalVersion
     type: boolean
     default: false
@@ -42,7 +42,8 @@ extends:
   template: templates/pipeline-ci-build.yml
   parameters:
     buildPlatforms: ${{ parameters.buildPlatforms }}
-    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    ${{ if eq(variables['System.PullRequest.IsFork'], 'False') }}:
+      enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
     useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}

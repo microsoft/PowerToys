@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
@@ -15,13 +15,15 @@ internal sealed partial class PasteCommand : InvokableCommand
 {
     private readonly ClipboardItem _clipboardItem;
     private readonly ClipboardFormat _clipboardFormat;
+    private readonly ISettingOptions _settings;
 
-    internal PasteCommand(ClipboardItem clipboardItem, ClipboardFormat clipboardFormat)
+    internal PasteCommand(ClipboardItem clipboardItem, ClipboardFormat clipboardFormat, ISettingOptions settings)
     {
         _clipboardItem = clipboardItem;
         _clipboardFormat = clipboardFormat;
-        Name = "Paste";
-        Icon = new("\xE8C8"); // Copy icon
+        _settings = settings;
+        Name = Properties.Resources.paste_command_name;
+        Icon = Icons.PasteIcon;
     }
 
     private void HideWindow()
@@ -37,8 +39,14 @@ internal sealed partial class PasteCommand : InvokableCommand
     {
         ClipboardHelper.SetClipboardContent(_clipboardItem, _clipboardFormat);
         HideWindow();
+
         ClipboardHelper.SendPasteKeyCombination();
-        Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
-        return CommandResult.ShowToast("Pasting");
+
+        if (!_settings.KeepAfterPaste)
+        {
+            Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
+        }
+
+        return CommandResult.ShowToast(Properties.Resources.paste_toast_text);
     }
 }

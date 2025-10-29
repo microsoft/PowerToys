@@ -3,22 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using ManagedCommon;
-using Windows.Win32;
-using Windows.Win32.System.Com;
-using Windows.Win32.System.Search;
+using ManagedCsWin32;
+using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
 internal static class DataSourceManager
 {
-    private static readonly Guid CLSIDCollatorDataSource = new("9E175B8B-F52A-11D8-B9A5-505054503030");
-
     private static IDBInitialize _dataSource;
 
     public static IDBInitialize GetDataSource()
     {
-        if (_dataSource == null)
+        if (_dataSource is null)
         {
             InitializeDataSource();
         }
@@ -28,20 +26,18 @@ internal static class DataSourceManager
 
     private static bool InitializeDataSource()
     {
-        var hr = PInvoke.CoCreateInstance(CLSIDCollatorDataSource, null, CLSCTX.CLSCTX_INPROC_SERVER, typeof(IDBInitialize).GUID, out var dataSourceObj);
-        if (hr != 0)
+        var riid = typeof(IDBInitialize).GUID;
+
+        try
         {
-            Logger.LogError("CoCreateInstance failed: " + hr);
+            _dataSource = ComHelper.CreateComInstance<IDBInitialize>(ref Unsafe.AsRef(in CLSID.CollatorDataSource), CLSCTX.InProcServer);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"Failed to create datasource. ex: {e.Message}");
             return false;
         }
 
-        if (dataSourceObj == null)
-        {
-            Logger.LogError("CoCreateInstance failed: dataSourceObj is null");
-            return false;
-        }
-
-        _dataSource = (IDBInitialize)dataSourceObj;
         _dataSource.Initialize();
 
         return true;

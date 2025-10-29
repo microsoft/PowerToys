@@ -28,6 +28,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCropAndLockEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredLightSwitchEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredLightSwitchEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredFancyZonesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredFancyZonesEnabledValue());
@@ -56,6 +60,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodePreviewEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredBgcodePreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredBgcodePreviewEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredSvgThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue());
@@ -67,6 +75,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetConfiguredGcodeThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredBgcodeThumbnailsEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredStlThumbnailsEnabledValue()
     {

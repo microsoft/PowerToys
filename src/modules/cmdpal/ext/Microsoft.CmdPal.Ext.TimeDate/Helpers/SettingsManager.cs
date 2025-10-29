@@ -11,8 +11,13 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public class SettingsManager : JsonSettingsManager
+public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
+    // Line break character used in WinUI3 TextBox and TextBlock.
+    private const char TEXTBOXNEWLINE = '\r';
+
+    private const string CUSTOMFORMATPLACEHOLDER = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
+
     private static readonly string _namespace = "timeDate";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
@@ -70,11 +75,11 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         _firstDayOfWeekChoices);
 
-    private readonly ToggleSetting _onlyDateTimeNowGlobal = new(
-        Namespaced(nameof(OnlyDateTimeNowGlobal)),
-        Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
-        Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description,
-        true); // TODO -- double check default value
+    private readonly ToggleSetting _enableFallbackItems = new(
+        Namespaced(nameof(EnableFallbackItems)),
+        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems,
+        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems_Description,
+        true);
 
     private readonly ToggleSetting _timeWithSeconds = new(
         Namespaced(nameof(TimeWithSecond)),
@@ -88,17 +93,17 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _hideNumberMessageOnGlobalQuery = new(
-        Namespaced(nameof(HideNumberMessageOnGlobalQuery)),
-        Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
-        Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
-        true); // TODO -- double check default value
+    private readonly TextSetting _customFormats = new(
+        Namespaced(nameof(CustomFormats)),
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
+        string.Empty);
 
     public int FirstWeekOfYear
     {
         get
         {
-            if (_firstWeekOfYear.Value == null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
+            if (_firstWeekOfYear.Value is null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
             {
                 return -1;
             }
@@ -118,7 +123,7 @@ public class SettingsManager : JsonSettingsManager
     {
         get
         {
-            if (_firstDayOfWeek.Value == null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
+            if (_firstDayOfWeek.Value is null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
             {
                 return -1;
             }
@@ -134,13 +139,13 @@ public class SettingsManager : JsonSettingsManager
         }
     }
 
-    public bool OnlyDateTimeNowGlobal => _onlyDateTimeNowGlobal.Value;
+    public bool EnableFallbackItems => _enableFallbackItems.Value;
 
     public bool TimeWithSecond => _timeWithSeconds.Value;
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
-    public bool HideNumberMessageOnGlobalQuery => _hideNumberMessageOnGlobalQuery.Value;
+    public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
 
     internal static string SettingsJsonPath()
     {
@@ -155,12 +160,15 @@ public class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        Settings.Add(_firstWeekOfYear);
-        Settings.Add(_firstDayOfWeek);
-        Settings.Add(_onlyDateTimeNowGlobal);
+        Settings.Add(_enableFallbackItems);
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);
-        Settings.Add(_hideNumberMessageOnGlobalQuery);
+        Settings.Add(_firstWeekOfYear);
+        Settings.Add(_firstDayOfWeek);
+
+        _customFormats.Multiline = true;
+        _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;
+        Settings.Add(_customFormats);
 
         // Load settings from file upon initialization
         LoadSettings();

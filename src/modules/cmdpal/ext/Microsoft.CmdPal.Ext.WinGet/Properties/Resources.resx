@@ -154,6 +154,10 @@
   <value>Install</value>
   <comment></comment>
 </data>
+<data name="winget_update_name" xml:space="preserve">
+  <value>Update</value>
+  <comment></comment>
+</data>
 <data name="winget_uninstalling_package" xml:space="preserve">
   <value>Uninstalling {0}...</value>
   <comment>{0} will be replaced by the name of an app package</comment>

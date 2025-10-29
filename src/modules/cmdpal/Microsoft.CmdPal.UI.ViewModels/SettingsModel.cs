@@ -40,6 +40,10 @@ public partial class SettingsModel : ObservableObject
 
     public bool ShowSystemTrayIcon { get; set; } = true;
 
+    public bool IgnoreShortcutWhenFullscreen { get; set; }
+
+    public bool AllowExternalReload { get; set; }
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
@@ -47,6 +51,10 @@ public partial class SettingsModel : ObservableObject
     public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+
+    public bool DisableAnimations { get; set; } = true;
+
+    public WindowPosition? LastWindowPosition { get; set; }
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -91,9 +99,9 @@ public partial class SettingsModel : ObservableObject
             // Read the JSON content from the file
             var jsonContent = File.ReadAllText(FilePath);
 
-            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, _deserializerOptions);
+            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
 
-            Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
+            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
 
             return loaded ?? new();
         }
@@ -115,7 +123,7 @@ public partial class SettingsModel : ObservableObject
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, _serializerOptions);
+            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.SettingsModel);
 
             // Is it valid JSON?
             if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
@@ -128,10 +136,10 @@ public partial class SettingsModel : ObservableObject
                 {
                     foreach (var item in newSettings)
                     {
-                        savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
+                        savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
-                    var serialized = savedSettings.ToJsonString(_serializerOptions);
+                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
                     File.WriteAllText(FilePath, serialized);
 
                     // TODO: Instead of just raising the event here, we should
@@ -164,19 +172,37 @@ public partial class SettingsModel : ObservableObject
         return Path.Combine(directory, "settings.json");
     }
 
-    private static readonly JsonSerializerOptions _serializerOptions = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
-    };
+    // [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    // private static readonly JsonSerializerOptions _serializerOptions = new()
+    // {
+    //    WriteIndented = true,
+    //    Converters = { new JsonStringEnumConverter() },
+    // };
+    // private static readonly JsonSerializerOptions _deserializerOptions = new()
+    // {
+    //    PropertyNameCaseInsensitive = true,
+    //    IncludeFields = true,
+    //    Converters = { new JsonStringEnumConverter() },
+    //    AllowTrailingCommas = true,
+    // };
+}
 
-    private static readonly JsonSerializerOptions _deserializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        IncludeFields = true,
-        Converters = { new JsonStringEnumConverter() },
-        AllowTrailingCommas = true,
-    };
+[JsonSerializable(typeof(float))]
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(HistoryItem))]
+[JsonSerializable(typeof(SettingsModel))]
+[JsonSerializable(typeof(WindowPosition))]
+[JsonSerializable(typeof(AppStateModel))]
+[JsonSerializable(typeof(RecentCommandsManager))]
+[JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
+[JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
+[JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
+internal sealed partial class JsonSerializationContext : JsonSerializerContext
+{
 }
 
 public enum MonitorBehavior
@@ -185,4 +211,5 @@ public enum MonitorBehavior
     ToPrimary = 1,
     ToFocusedWindow = 2,
     InPlace = 3,
+    ToLast = 4,
 }

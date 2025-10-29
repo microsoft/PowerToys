@@ -27,6 +27,88 @@ struct InclusiveCrosshairs
     void SwitchActivationMode();
     void ApplySettings(InclusiveCrosshairsSettings& settings, bool applyToRuntimeObjects);
 
+public:
+    // Allow external callers to request a position update (thread-safe enqueue)
+    static void RequestUpdatePosition()
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([]() {
+                if (instance != nullptr)
+                {
+                    instance->UpdateCrosshairsPosition();
+                }
+            });
+        }
+    }
+
+    static void EnsureOn()
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([]() {
+                if (instance != nullptr && !instance->m_drawing)
+                {
+                    instance->StartDrawing();
+                }
+            });
+        }
+    }
+
+    static void EnsureOff()
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([]() {
+                if (instance != nullptr && instance->m_drawing)
+                {
+                    instance->StopDrawing();
+                }
+            });
+        }
+    }
+
+    static void SetExternalControl(bool enabled)
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([enabled]() {
+                if (instance != nullptr)
+                {
+                    instance->m_externalControl = enabled;
+                    if (enabled && instance->m_mouseHook)
+                    {
+                        UnhookWindowsHookEx(instance->m_mouseHook);
+                        instance->m_mouseHook = NULL;
+                    }
+                    else if (!enabled && instance->m_drawing && !instance->m_mouseHook)
+                    {
+                        instance->m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, instance->m_hinstance, 0);
+                    }
+                }
+            });
+        }
+    }
+
+    static void SetCrosshairsOrientation(CrosshairsOrientation orientation)
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([orientation]() {
+                if (instance != nullptr)
+                {
+                    instance->m_crosshairs_orientation = orientation;
+                    instance->UpdateCrosshairsPosition();
+                }
+            });
+        }
+    }
+
 private:
     enum class MouseButton
     {
@@ -69,6 +151,7 @@ private:
     bool m_drawing = false;
     bool m_destroyed = false;
     bool m_hiddenCursor = false;
+    bool m_externalControl = false;
     void SetAutoHideTimer() noexcept;
 
     // Configurable Settings
@@ -79,6 +162,7 @@ private:
     int m_crosshairs_border_size = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_BORDER_SIZE;
     bool m_crosshairs_is_fixed_length_enabled = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED;
     int m_crosshairs_fixed_length = INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH;
+    CrosshairsOrientation m_crosshairs_orientation = static_cast<CrosshairsOrientation>(INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION);
     float m_crosshairs_opacity = max(0.f, min(1.f, (float)INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY / 100.0f));
     bool m_crosshairs_auto_hide = INCLUSIVE_MOUSE_DEFAULT_AUTO_HIDE;
 };
@@ -181,7 +265,7 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
 {
     POINT ptCursor;
 
-    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
+    // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
 
     GetCursorPos(&ptCursor);
@@ -218,6 +302,8 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
     float halfPixelAdjustment = m_crosshairs_thickness % 2 == 1 ? 0.5f : 0.0f;
     float borderSizePadding = m_crosshairs_border_size * 2.f;
 
+    // Left and Right crosshairs (horizontal line)
+    if (m_crosshairs_orientation == CrosshairsOrientation::Both || m_crosshairs_orientation == CrosshairsOrientation::HorizontalOnly)
     {
         float leftCrosshairsFullScreenLength = ptCursor.x - ptMonitorUpperLeft.x - m_crosshairs_radius + halfPixelAdjustment * 2.f;
         float leftCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : leftCrosshairsFullScreenLength;
@@ -226,9 +312,7 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
         m_left_crosshairs_border.Size({ leftCrosshairsBorderLength, m_crosshairs_thickness + borderSizePadding });
         m_left_crosshairs.Offset({ ptCursor.x - m_crosshairs_radius + halfPixelAdjustment * 2.f, ptCursor.y + halfPixelAdjustment, .0f });
         m_left_crosshairs.Size({ leftCrosshairsLength, static_cast<float>(m_crosshairs_thickness) });
-    }
 
-    {
         float rightCrosshairsFullScreenLength = static_cast<float>(ptMonitorBottomRight.x) - ptCursor.x - m_crosshairs_radius;
         float rightCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : rightCrosshairsFullScreenLength;
         float rightCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : rightCrosshairsFullScreenLength + m_crosshairs_border_size;
@@ -237,7 +321,17 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
         m_right_crosshairs.Offset({ static_cast<float>(ptCursor.x) + m_crosshairs_radius, ptCursor.y + halfPixelAdjustment, .0f });
         m_right_crosshairs.Size({ rightCrosshairsLength, static_cast<float>(m_crosshairs_thickness) });
     }
+    else
+    {
+        // Hide horizontal crosshairs by setting size to 0
+        m_left_crosshairs_border.Size({ 0.0f, 0.0f });
+        m_left_crosshairs.Size({ 0.0f, 0.0f });
+        m_right_crosshairs_border.Size({ 0.0f, 0.0f });
+        m_right_crosshairs.Size({ 0.0f, 0.0f });
+    }
 
+    // Top and Bottom crosshairs (vertical line)
+    if (m_crosshairs_orientation == CrosshairsOrientation::Both || m_crosshairs_orientation == CrosshairsOrientation::VerticalOnly)
     {
         float topCrosshairsFullScreenLength = ptCursor.y - ptMonitorUpperLeft.y - m_crosshairs_radius + halfPixelAdjustment * 2.f;
         float topCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : topCrosshairsFullScreenLength;
@@ -246,9 +340,7 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
         m_top_crosshairs_border.Size({ m_crosshairs_thickness + borderSizePadding, topCrosshairsBorderLength });
         m_top_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, ptCursor.y - m_crosshairs_radius + halfPixelAdjustment * 2.f, .0f });
         m_top_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), topCrosshairsLength });
-    }
 
-    {
         float bottomCrosshairsFullScreenLength = static_cast<float>(ptMonitorBottomRight.y) - ptCursor.y - m_crosshairs_radius;
         float bottomCrosshairsLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length : bottomCrosshairsFullScreenLength;
         float bottomCrosshairsBorderLength = m_crosshairs_is_fixed_length_enabled ? m_crosshairs_fixed_length + borderSizePadding : bottomCrosshairsFullScreenLength + m_crosshairs_border_size;
@@ -257,6 +349,14 @@ void InclusiveCrosshairs::UpdateCrosshairsPosition()
         m_bottom_crosshairs.Offset({ ptCursor.x + halfPixelAdjustment, static_cast<float>(ptCursor.y) + m_crosshairs_radius, .0f });
         m_bottom_crosshairs.Size({ static_cast<float>(m_crosshairs_thickness), bottomCrosshairsLength });
     }
+    else
+    {
+        // Hide vertical crosshairs by setting size to 0
+        m_top_crosshairs_border.Size({ 0.0f, 0.0f });
+        m_top_crosshairs.Size({ 0.0f, 0.0f });
+        m_bottom_crosshairs_border.Size({ 0.0f, 0.0f });
+        m_bottom_crosshairs.Size({ 0.0f, 0.0f });
+    }
 }
 
 LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept
@@ -264,9 +364,12 @@ LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LP
     if (nCode >= 0)
     {
         MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-        if (wParam == WM_MOUSEMOVE)
+        if (instance && !instance->m_externalControl)
         {
-            instance->UpdateCrosshairsPosition();
+            if (wParam == WM_MOUSEMOVE)
+            {
+                instance->UpdateCrosshairsPosition();
+            }
         }
     }
     return CallNextHookEx(0, nCode, wParam, lParam);
@@ -327,6 +430,7 @@ void InclusiveCrosshairs::ApplySettings(InclusiveCrosshairsSettings& settings, b
     m_crosshairs_auto_hide = settings.crosshairsAutoHide;
     m_crosshairs_is_fixed_length_enabled = settings.crosshairsIsFixedLengthEnabled;
     m_crosshairs_fixed_length = settings.crosshairsFixedLength;
+    m_crosshairs_orientation = settings.crosshairsOrientation;
 
     if (applyToRunTimeObjects)
     {
@@ -525,6 +629,31 @@ void InclusiveCrosshairsDisable()
 bool InclusiveCrosshairsIsEnabled()
 {
     return (InclusiveCrosshairs::instance != nullptr);
+}
+
+void InclusiveCrosshairsRequestUpdatePosition()
+{
+    InclusiveCrosshairs::RequestUpdatePosition();
+}
+
+void InclusiveCrosshairsEnsureOn()
+{
+    InclusiveCrosshairs::EnsureOn();
+}
+
+void InclusiveCrosshairsEnsureOff()
+{
+    InclusiveCrosshairs::EnsureOff();
+}
+
+void InclusiveCrosshairsSetExternalControl(bool enabled)
+{
+    InclusiveCrosshairs::SetExternalControl(enabled);
+}
+
+void InclusiveCrosshairsSetOrientation(CrosshairsOrientation orientation)
+{
+    InclusiveCrosshairs::SetCrosshairsOrientation(orientation);
 }
 
 int InclusiveCrosshairsMain(HINSTANCE hInstance, InclusiveCrosshairsSettings& settings)

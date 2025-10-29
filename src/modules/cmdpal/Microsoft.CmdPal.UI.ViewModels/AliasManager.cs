@@ -4,7 +4,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -35,10 +35,11 @@ public partial class AliasManager : ObservableObject
             try
             {
                 var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
-                if (topLevelCommand != null)
+                if (topLevelCommand is not null)
                 {
                     WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand));
+
+                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
                     return true;
                 }
             }
@@ -87,7 +88,7 @@ public partial class AliasManager : ObservableObject
         }
 
         // If we already have _this exact alias_, do nothing
-        if (newAlias != null &&
+        if (newAlias is not null &&
             _aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
         {
             if (existingAlias.CommandId == commandId)
@@ -96,13 +97,26 @@ public partial class AliasManager : ObservableObject
             }
         }
 
-        // Look for the old alias, and remove it
         List<CommandAlias> toRemove = [];
         foreach (var kv in _aliases)
         {
+            // Look for the old aliases for the command, and remove it
             if (kv.Value.CommandId == commandId)
             {
                 toRemove.Add(kv.Value);
+            }
+
+            // Look for the alias belonging to another command, and remove it
+            if (newAlias is not null && kv.Value.Alias == newAlias.Alias)
+            {
+                toRemove.Add(kv.Value);
+
+                // Remove alias from other TopLevelViewModels it may be assigned to
+                var topLevelCommand = _topLevelCommandManager.LookupCommand(kv.Value.CommandId);
+                if (topLevelCommand is not null)
+                {
+                    topLevelCommand.AliasText = string.Empty;
+                }
             }
         }
 
@@ -112,7 +126,7 @@ public partial class AliasManager : ObservableObject
             _aliases.Remove(alias.SearchPrefix);
         }
 
-        if (newAlias != null)
+        if (newAlias is not null)
         {
             AddAlias(newAlias);
         }

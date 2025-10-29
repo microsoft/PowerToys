@@ -1,14 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System.Runtime.CompilerServices;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-
-[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-internal class AvailableResult
+internal sealed class AvailableResult
 {
     /// <summary>
     /// Gets or sets the time/date value
@@ -31,6 +28,11 @@ internal class AvailableResult
     internal ResultIconType IconType { get; set; }
 
     /// <summary>
+    /// Gets or sets a value to show additional error details
+    /// </summary>
+    internal string ErrorDetails { get; set; } = string.Empty;
+
+    /// <summary>
     /// Returns the path to the icon
     /// </summary>
     /// <param name="theme">Theme</param>
@@ -39,9 +41,10 @@ internal class AvailableResult
     {
         return IconType switch
         {
-            ResultIconType.Time => ResultHelper.TimeIcon,
-            ResultIconType.Date => ResultHelper.CalendarIcon,
-            ResultIconType.DateTime => ResultHelper.TimeDateIcon,
+            ResultIconType.Time => Icons.TimeIcon,
+            ResultIconType.Date => Icons.CalendarIcon,
+            ResultIconType.DateTime => Icons.TimeDateIcon,
+            ResultIconType.Error => Icons.ErrorIcon,
             _ => null,
         };
     }
@@ -53,18 +56,19 @@ internal class AvailableResult
             Title = this.Value,
             Subtitle = this.Label,
             Icon = this.GetIconInfo(),
+            Details = string.IsNullOrEmpty(this.ErrorDetails) ? null : new Details() { Body = this.ErrorDetails },
         };
     }
 
     public int Score(string query, string label, string tags)
     {
         // Get match for label (or for tags if label score is <1)
-        var score = StringMatcher.FuzzySearch(query, label).Score;
+        var score = FuzzyStringMatcher.ScoreFuzzy(query, label);
         if (score < 1)
         {
             foreach (var t in tags.Split(";"))
             {
-                var tagScore = StringMatcher.FuzzySearch(query, t.Trim()).Score / 2;
+                var tagScore = FuzzyStringMatcher.ScoreFuzzy(query, t.Trim()) / 2;
                 if (tagScore > score)
                 {
                     score = tagScore / 2;
@@ -81,4 +85,5 @@ public enum ResultIconType
     Time,
     Date,
     DateTime,
+    Error,
 }

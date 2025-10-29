@@ -24,6 +24,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HostsEncoding Encoding { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool NoLeadingSpaces { get; set; }
+
         public HostsProperties()
         {
             ShowStartupWarning = true;
@@ -31,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            NoLeadingSpaces = false;
         }
     }
 }

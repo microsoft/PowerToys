@@ -12,7 +12,7 @@ public abstract class DynamicListPage : ListPage, IDynamicListPage
         set
         {
             var oldSearch = base.SearchText;
-            base.SearchText = value;
+            SetSearchNoUpdate(value);
             UpdateSearchText(oldSearch, value);
         }
     }

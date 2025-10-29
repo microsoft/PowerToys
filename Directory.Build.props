@@ -30,7 +30,6 @@
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
-
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -47,7 +46,7 @@
 
   <!-- Add ability to run tests via "msbuild /t:Test" -->
   <!--
-    Workaround an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
+    Work around an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
     See: https://github.com/dotnet/msbuild/pull/9984
     NB 1: This means that using "/t:Test" is not supported for Arm64 builds and tests will need to be run in an alternate way,
           eg running tests in VS or invoking vstest.console directly.

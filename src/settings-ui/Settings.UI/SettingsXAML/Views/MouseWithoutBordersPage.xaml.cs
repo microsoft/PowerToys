@@ -6,7 +6,6 @@ using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -14,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.ApplicationModel.DataTransfer;
 using WinRT;
 
@@ -21,7 +21,7 @@ using static Microsoft.PowerToys.Settings.UI.ViewModels.MouseWithoutBordersViewM
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MouseWithoutBordersPage : Page, IRefreshablePage
+    public sealed partial class MouseWithoutBordersPage : NavigablePage, IRefreshablePage
     {
         private const string MouseWithoutBordersDragDropCheckString = "MWB Device Drag Drop";
 
@@ -47,6 +47,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OnConfigFileUpdate()

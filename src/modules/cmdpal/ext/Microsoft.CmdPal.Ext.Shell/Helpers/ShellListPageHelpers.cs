@@ -2,115 +2,216 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Shell.Commands;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 public class ShellListPageHelpers
 {
-    private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(Properties.Resources.cmd_has_been_executed_times);
-    private readonly SettingsManager _settings;
-
-    public ShellListPageHelpers(SettingsManager settings)
+    internal static bool FileExistInPath(string filename)
     {
-        _settings = settings;
+        return FileExistInPath(filename, out var _);
     }
 
-    private ListItem GetCurrentCmd(string cmd)
+    internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
-        ListItem result = new ListItem(new ExecuteItem(cmd, _settings))
+        return ShellHelpers.FileExistInPath(filename, out fullPath, token ?? CancellationToken.None);
+    }
+
+    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory, ITelemetryService? telemetryService)
+    {
+        var li = new ListItem();
+
+        var searchText = query.Trim();
+        var expanded = Environment.ExpandEnvironmentVariables(searchText);
+        searchText = expanded;
+        if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
-            Title = cmd,
-            Subtitle = Properties.Resources.cmd_plugin_name + ": " + Properties.Resources.cmd_execute_through_shell,
-            Icon = new IconInfo(string.Empty),
-        };
+            return null;
+        }
 
-        return result;
-    }
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
 
-    private List<ListItem> GetHistoryCmds(string cmd, ListItem result)
-    {
-        IEnumerable<ListItem?> history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
-            .OrderByDescending(o => o.Value)
-            .Select(m =>
+        var exeExists = false;
+        var pathIsDir = false;
+        var fullExePath = string.Empty;
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+
+            // Use Task.Run with timeout - this will actually timeout even if the sync operations don't respond to cancellation
+            var pathResolutionTask = Task.Run(
+                () =>
             {
-                if (m.Key == cmd)
-                {
-                    // Using CurrentCulture since this is user facing
-                    result.Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value);
-                    return null;
-                }
+                // Don't check cancellation token here - let the Task timeout handle it
+                exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
+                pathIsDir = Directory.Exists(expanded);
+            },
+                CancellationToken.None); // Use None here since we're handling timeout differently
 
-                var ret = new ListItem(new ExecuteItem(m.Key, _settings))
-                {
-                    Title = m.Key,
-
-                    // Using CurrentCulture since this is user facing
-                    Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                    Icon = new IconInfo("\uE81C"),
-                };
-                return ret;
-            }).Where(o => o != null).Take(4);
-        return history.Select(o => o!).ToList();
-    }
-
-    public List<ListItem> Query(string query)
-    {
-        ArgumentNullException.ThrowIfNull(query);
-
-        List<ListItem> results = new List<ListItem>();
-        var cmd = query;
-        if (string.IsNullOrEmpty(cmd))
+            // Wait for either completion or timeout
+            pathResolutionTask.Wait(cts.Token);
+        }
+        catch (OperationCanceledException)
         {
-            results = ResultsFromlHistory();
+        }
+
+        if (exeExists)
+        {
+            // TODO we need to probably get rid of the settings for this provider entirely
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory, telemetryService);
+            li.Command = exeItem.Command;
+            li.Title = exeItem.Title;
+            li.Subtitle = exeItem.Subtitle;
+            li.Icon = exeItem.Icon;
+            li.MoreCommands = exeItem.MoreCommands;
+        }
+        else if (pathIsDir)
+        {
+            var pathItem = new PathListItem(exe, query, addToHistory, telemetryService);
+            li.Command = pathItem.Command;
+            li.Title = pathItem.Title;
+            li.Subtitle = pathItem.Subtitle;
+            li.Icon = pathItem.Icon;
+            li.MoreCommands = pathItem.MoreCommands;
+        }
+        else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
+        {
+            li.Command = new OpenUrlWithHistoryCommand(searchText, addToHistory, telemetryService) { Result = CommandResult.Dismiss() };
+            li.Title = searchText;
         }
         else
         {
-            var queryCmd = GetCurrentCmd(cmd);
-            results.Add(queryCmd);
-            var history = GetHistoryCmds(cmd, queryCmd);
-            results.AddRange(history);
+            return null;
         }
 
-        foreach (var currItem in results)
+        if (li is not null)
         {
-            currItem.MoreCommands = LoadContextMenus(currItem).ToArray();
+            li.TextToSuggest = searchText;
         }
 
-        return results;
+        return li;
     }
 
-    public List<CommandContextItem> LoadContextMenus(ListItem listItem)
+    /// <summary>
+    /// This is a version of ParseExecutableAndArgs that handles whitespace in
+    /// paths better. It will try to find the first matching executable in the
+    /// input string.
+    ///
+    /// If the input is quoted, it will treat everything inside the quotes as
+    /// the executable. If the input is not quoted, it will try to find the
+    /// first segment that matches
+    /// </summary>
+    public static void NormalizeCommandLineAndArgs(string input, out string executable, out string arguments)
     {
-        var resultlist = new List<CommandContextItem>
-            {
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.Administrator)),
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.OtherUser )),
-            };
+        var normalized = CommandLineNormalizer.NormalizeCommandLine(input, allowDirectory: true);
+        var segments = normalized.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        executable = string.Empty;
+        arguments = string.Empty;
+        if (segments.Length == 0)
+        {
+            return;
+        }
 
-        return resultlist;
+        executable = segments[0];
+        if (segments.Length > 1)
+        {
+            arguments = ArgumentBuilder.BuildArguments(segments[1..]);
+        }
     }
 
-    private List<ListItem> ResultsFromlHistory()
+    private static class ArgumentBuilder
     {
-        IEnumerable<ListItem> history = _settings.Count.OrderByDescending(o => o.Value)
-            .Select(m => new ListItem(new ExecuteItem(m.Key, _settings))
+        internal static string BuildArguments(string[] arguments)
+        {
+            if (arguments.Length <= 0)
             {
-                Title = m.Key,
+                return string.Empty;
+            }
 
-                // Using CurrentCulture since this is user facing
-                Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                Icon = new IconInfo("\uE81C"),
-            }).Take(5);
+            var stringBuilder = new StringBuilder();
+            foreach (var argument in arguments)
+            {
+                AppendArgument(stringBuilder, argument);
+            }
 
-        return history.ToList();
+            return stringBuilder.ToString();
+        }
+
+        private static void AppendArgument(StringBuilder stringBuilder, string argument)
+        {
+            if (stringBuilder.Length > 0)
+            {
+                stringBuilder.Append(' ');
+            }
+
+            if (argument.Length == 0 || ShouldBeQuoted(argument))
+            {
+                stringBuilder.Append('\"');
+                var index = 0;
+                while (index < argument.Length)
+                {
+                    var c = argument[index++];
+                    if (c == '\\')
+                    {
+                        var numBackSlash = 1;
+                        while (index < argument.Length && argument[index] == '\\')
+                        {
+                            index++;
+                            numBackSlash++;
+                        }
+
+                        if (index == argument.Length)
+                        {
+                            stringBuilder.Append('\\', numBackSlash * 2);
+                        }
+                        else if (argument[index] == '\"')
+                        {
+                            stringBuilder.Append('\\', (numBackSlash * 2) + 1);
+                            stringBuilder.Append('\"');
+                            index++;
+                        }
+                        else
+                        {
+                            stringBuilder.Append('\\', numBackSlash);
+                        }
+
+                        continue;
+                    }
+
+                    if (c == '\"')
+                    {
+                        stringBuilder.Append('\\');
+                        stringBuilder.Append('\"');
+                        continue;
+                    }
+
+                    stringBuilder.Append(c);
+                }
+
+                stringBuilder.Append('\"');
+            }
+            else
+            {
+                stringBuilder.Append(argument);
+            }
+        }
+
+        private static bool ShouldBeQuoted(string s)
+        {
+            foreach (var c in s)
+            {
+                if (char.IsWhiteSpace(c) || c == '\"')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -13,15 +13,15 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
 
 internal sealed partial class SearchWebCommand : InvokableCommand
 {
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
 
     public string Arguments { get; internal set; } = string.Empty;
 
-    internal SearchWebCommand(string arguments, SettingsManager settingsManager)
+    internal SearchWebCommand(string arguments, ISettingsInterface settingsManager)
     {
         Arguments = arguments;
         BrowserInfo.UpdateIfTimePassed();
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
         Name = Properties.Resources.open_in_default_browser;
         _settingsManager = settingsManager;
     }
@@ -34,9 +34,9 @@ internal sealed partial class SearchWebCommand : InvokableCommand
             return CommandResult.KeepOpen();
         }
 
-        if (_settingsManager.ShowHistory != Resources.history_none)
+        if (_settingsManager.HistoryItemCount != 0)
         {
-            _settingsManager.SaveHistory(new HistoryItem(Arguments, DateTime.Now));
+            _settingsManager.AddHistoryItem(new HistoryItem(Arguments, DateTime.Now));
         }
 
         return CommandResult.Dismiss();

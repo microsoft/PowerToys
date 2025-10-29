@@ -1,0 +1,58 @@
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: useVSPreview
+    type: boolean
+    default: false
+  - name: useLatestWebView2
+    type: boolean
+    default: false
+  - name: buildSource
+    type: string
+    default: "latestMainOfficialBuild"
+    displayName: "Build Source"
+    values:
+      - latestMainOfficialBuild
+      - buildNow
+      - specificBuildId
+  - name: specificBuildId
+    type: string
+    default: 'xxxx'
+    displayName: "Build ID (only used when Build Source = specificBuildId)"
+  - name: uiTestModules
+    type: object
+    default: []
+
+stages:
+  - ${{ each platform in parameters.buildPlatforms }}:
+    # Full build path: build PowerToys + UI tests + run tests
+    - ${{ if eq(parameters.buildSource, 'buildNow') }}:
+      - template: pipeline-ui-tests-full-build.yml
+        parameters:
+          platform: ${{ platform }}
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          useVSPreview: ${{ parameters.useVSPreview }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          uiTestModules: ${{ parameters.uiTestModules }}
+
+    # Official build path: build UI tests only + download official build + run tests  
+    - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+      - template: pipeline-ui-tests-official-build.yml
+        parameters:
+          platform: ${{ platform }}
+          buildSource: ${{ parameters.buildSource }}
+          specificBuildId: ${{ parameters.specificBuildId }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          uiTestModules: ${{ parameters.uiTestModules }}

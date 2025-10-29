@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 using Windows.System;
 using Windows.Win32;
 
@@ -69,62 +73,48 @@ internal sealed partial class SampleListPage : ListPage
             },
 
             new ListItem(
-                new AnonymousCommand(() =>
-                {
-                    var t = new ToastStatusMessage(new StatusMessage()
-                    {
-                        Message = "Primary command invoked",
-                        State = MessageState.Info,
-                    });
-                    t.Show();
-                })
-                {
-                    Result = CommandResult.KeepOpen(),
-                    Icon = new IconInfo("\uE712"),
-                })
+                new ToastCommand("Primary command invoked", MessageState.Info) { Name = "Primary command", Icon = new IconInfo("\uF146") }) // dial 1
             {
                 Title = "You can add context menu items too. Press Ctrl+k",
                 Subtitle = "Try pressing Ctrl+1 with me selected",
-                Icon = new IconInfo("\uE712"),
+                Icon = new IconInfo("\uE712"),  // "More" dots
                 MoreCommands = [
                     new CommandContextItem(
-                        new AnonymousCommand(() =>
-                        {
-                            var t = new ToastStatusMessage(new StatusMessage()
-                            {
-                                Message = "Secondary command invoked",
-                                State = MessageState.Warning,
-                            });
-                            t.Show();
-                        })
-                        {
-                            Name = "Secondary command",
-                            Icon = new IconInfo("\uF147"), // Dial 2
-                            Result = CommandResult.KeepOpen(),
-                        })
+                        new ToastCommand("Secondary command invoked", MessageState.Warning) { Name = "Secondary command", Icon = new IconInfo("\uF147") }) // dial 2
                     {
                         Title = "I'm a second command",
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
                     },
+                    new Separator(),
                     new CommandContextItem(
-                        new AnonymousCommand(() =>
-                        {
-                            var t = new ToastStatusMessage(new StatusMessage()
-                            {
-                                Message = "Third command invoked",
-                                State = MessageState.Error,
-                            });
-                            t.Show();
-                        })
-                        {
-                            Name = "Do it",
-                            Icon = new IconInfo("\uF148"), // dial 3
-                            Result = CommandResult.KeepOpen(),
-                        })
+                        new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do 3", Icon = new IconInfo("\uF148") }) // dial 3
                     {
-                        Title = "A third command too",
+                        Title = "We can go deeper...",
                         Icon = new IconInfo("\uF148"),
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number2),
+                        MoreCommands = [
+                            new CommandContextItem(
+                                new ToastCommand("Nested A invoked") { Name = "Do it", Icon = new IconInfo("A") })
+                            {
+                                Title = "Nested A",
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(alt: true, vkey: VirtualKey.A),
+                            },
+
+                            new CommandContextItem(
+                                new ToastCommand("Nested B invoked") { Name = "Do it", Icon = new IconInfo("B") })
+                            {
+                                Title = "Nested B with a really, really long title that should be trimmed",
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                                MoreCommands = [
+                                    new CommandContextItem(
+                                        new ToastCommand("Nested C invoked") { Name = "Do it" })
+                                    {
+                                        Title = "You get it",
+                                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                                    }
+                                ],
+                            },
+                        ],
                     }
                 ],
             },
@@ -184,6 +174,146 @@ internal sealed partial class SampleListPage : ListPage
                 Title = "Get the name of the Foreground window",
             },
 
+            new ListItem(new CommandWithProperties())
+            {
+                Title = "I have properties",
+            },
+            new ListItem(new OtherCommandWithProperties())
+            {
+                Title = "I also have properties",
+            },
+            new ListItem(new EverChangingCommand("Cat", "🐈‍⬛", "🐈"))
+            {
+                Title = "And I have a commands with changing name and icon",
+                MoreCommands = [
+                    new CommandContextItem(new EverChangingCommand("Water", "🐬", "🐳", "🐟", "🦈")),
+                    new CommandContextItem(new EverChangingCommand("Faces", "😁", "🥺", "😍")),
+                    new CommandContextItem(new EverChangingCommand("Hearts", "♥️", "💚", "💜", "🧡", "💛", "💙")),
+                ],
+            },
+            new ListItemChangingCommandInTime()
+            {
+                Title = "I'm a list item that changes entire command in time",
+            },
         ];
+    }
+
+    internal sealed partial class CommandWithProperties : InvokableCommand, IExtendedAttributesProvider
+    {
+        private FontIconData _icon = new("\u0026", "Wingdings");
+
+        public override IconInfo Icon => new(_icon, _icon);
+
+        public override string Name => "Whatever";
+
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
+        {
+            { "Foo", "bar" },
+            { "Secret", 42 },
+            { "hmm?", null },
+        };
+    }
+
+    internal sealed partial class OtherCommandWithProperties : IExtendedAttributesProvider, IInvokableCommand
+    {
+        public string Name => "Whatever 2";
+
+        public IIconInfo Icon => new IconInfo("\uF146");
+
+        public string Id => string.Empty;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged;
+
+        public ICommandResult Invoke(object sender)
+        {
+            PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Name)));
+            return CommandResult.ShowToast("whoop");
+        }
+
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
+        {
+            { "yo", "dog" },
+            { "Secret", 12345 },
+            { "hmm?", null },
+        };
+    }
+
+    internal sealed partial class EverChangingCommand : InvokableCommand, IDisposable
+    {
+        private readonly string[] _icons;
+        private readonly Timer _timer;
+        private readonly string _name;
+        private int _currentIndex;
+
+        public EverChangingCommand(string name, params string[] icons)
+            : this(name, TimeSpan.FromSeconds(5), icons)
+        {
+        }
+
+        public EverChangingCommand(string name, TimeSpan interval, params string[] icons)
+        {
+            _icons = icons ?? throw new ArgumentNullException(nameof(icons));
+            if (_icons.Length == 0)
+            {
+                throw new ArgumentException("Icons array cannot be empty", nameof(icons));
+            }
+
+            _name = name;
+            Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
+            Icon = new IconInfo(_icons[_currentIndex]);
+
+            // Start timer to change icon and name every 5 seconds
+            _timer = new Timer(OnTimerElapsed, null, interval, interval);
+        }
+
+        private void OnTimerElapsed(object state)
+        {
+            var nextIndex = (_currentIndex + 1) % _icons.Length;
+            if (nextIndex == _currentIndex && _icons.Length > 1)
+            {
+                nextIndex = (_currentIndex + 1) % _icons.Length;
+            }
+
+            _currentIndex = nextIndex;
+
+            Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
+            Icon = new IconInfo(_icons[_currentIndex]);
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+        }
+    }
+
+    internal sealed partial class ListItemChangingCommandInTime : ListItem
+    {
+        private readonly EverChangingCommand[] _commands =
+        [
+            new("Water", TimeSpan.FromSeconds(2), "🐬", "🐳", "🐟", "🦈"),
+            new("Faces", TimeSpan.FromSeconds(2), "😁", "🥺", "😍"),
+            new("Hearts", TimeSpan.FromSeconds(2), "♥️", "💚", "💜", "🧡", "💛", "💙"),
+        ];
+
+        private int _state;
+
+        public ListItemChangingCommandInTime()
+        {
+            Subtitle = "I change my command every 10 seconds, and the command changes it's icon every 2 seconds";
+            var timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+            this.Command = _commands[0];
+        }
+
+        private void OnTimerElapsed(object state)
+        {
+            _state = (_state + 1) % _commands.Length;
+            this.Command = _commands[_state];
+        }
     }
 }

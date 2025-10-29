@@ -1,6 +1,9 @@
 # D2D
 #D?2D
 
+# Repeated letters
+\b([a-z])\g{-1}{2,}\b
+
 # marker to ignore all code on line
 ^.*/\* #no-spell-check-line \*/.*$
 # marker to ignore all code on line
@@ -10,6 +13,9 @@
 # cspell inline
 ^.*\b[Cc][Ss][Pp][Ee][Ll]{2}:\s*[Dd][Ii][Ss][Aa][Bb][Ll][Ee]-[Ll][Ii][Nn][Ee]\b
 
+# copyright
+Copyright (?:\([Cc]\)|)(?:[-\d, ]|and)+(?: [A-Z][a-z]+ [A-Z][a-z]+,?)+
+
 # patch hunk comments
 ^@@ -\d+(?:,\d+|) \+\d+(?:,\d+|) @@ .*
 # git index header
@@ -17,6 +23,9 @@ index (?:[0-9a-z]{7,40},|)[0-9a-z]{7,40}\.\.[0-9a-z]{7,40}
 
 # file permissions
 ['"`\s][-bcdLlpsw](?:[-r][-w][-Ssx]){2}[-r][-w][-SsTtx]\+?['"`\s]
+
+# css fonts
+\bfont(?:-family|):[^;}]+
 
 # css url wrappings
 \burl\([^)]+\)
@@ -29,7 +38,7 @@ index (?:[0-9a-z]{7,40},|)[0-9a-z]{7,40}\.\.[0-9a-z]{7,40}
 # data url in quotes
 ([`'"])data:(?:[^ `'"].*?|)(?:[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,}).*\g{-1}
 # data url
-\bdata:[-a-zA-Z=;:/0-9+]*,\S*
+\bdata:[-a-zA-Z=;:/0-9+_]*,\S*
 
 # https/http/file urls
 #(?:\b(?:https?|ftp|file)://)[-A-Za-z0-9+&@#/*%?=~_|!:,.;]+[-A-Za-z0-9+&@#/*%=~_|]
@@ -68,6 +77,8 @@ magnet:[?=:\w]+
 
 # Amazon
 \bamazon\.com/[-\w]+/(?:dp/[0-9A-Z]+|)
+# AWS ARN
+arn:aws:[-/:\w]+
 # AWS S3
 \b\w*\.s3[^.]*\.amazonaws\.com/[-\w/&#%_?:=]*
 # AWS execute-api
@@ -94,6 +105,8 @@ vpc-\w+
 \bgoogle-analytics\.com/collect.[-0-9a-zA-Z?%=&_.~]*
 # Google APIs
 \bgoogleapis\.(?:com|dev)/[a-z]+/(?:v\d+/|)[a-z]+/[-@:./?=\w+|&]+
+# Google Artifact Registry
+\.pkg\.dev(?:/[-\w]+)+(?::[-\w]+|)
 # Google Storage
 \b[-a-zA-Z0-9.]*\bstorage\d*\.googleapis\.com(?:/\S*|)
 # Google Calendar
@@ -129,6 +142,8 @@ themes\.googleusercontent\.com/static/fonts/[^/\s"]+/v\d+/[^.]+.
 \bscholar\.google\.com/citations\?user=[A-Za-z0-9_]+
 # Google Colab Research Drive
 \bcolab\.research\.google\.com/drive/[-0-9a-zA-Z_?=]*
+# Google Cloud regions
+(?:us|(?:north|south)america|europe|asia|australia|me|africa)-(?:north|south|east|west|central){1,2}\d+
 
 # GitHub SHAs (api)
 \bapi.github\.com/repos(?:/[^/\s"]+){3}/[0-9a-f]+\b
@@ -166,6 +181,12 @@ GHSA(?:-[0-9a-z]{4}){3}
 \bgitlab\.[^/\s"]*/uploads/[-a-zA-Z=;:/0-9+]*
 # GitLab commits
 \bgitlab\.[^/\s"]*/(?:[^/\s"]+/){2}commits?/[0-9a-f]+\b
+
+# #includes
+^\s*#include\s*(?:<.*?>|".*?")
+
+# #pragma lib
+^\s*#pragma comment\(lib, ".*?"\)
 
 # binance
 accounts\.binance\.com/[a-z/]*oauth/authorize\?[-0-9a-zA-Z&%]*
@@ -219,7 +240,7 @@ accounts\.binance\.com/[a-z/]*oauth/authorize\?[-0-9a-zA-Z&%]*
 \bmedium\.com/@?[^/\s"]+/[-\w]+
 
 # microsoft
-\b(?:https?://|)(?:(?:download\.visualstudio|docs|msdn2?|research)\.microsoft|blogs\.msdn)\.com/[-_a-zA-Z0-9()=./%]*
+\b(?:https?://|)(?:(?:(?:blogs|download\.visualstudio|docs|msdn2?|research)\.|)microsoft|blogs\.msdn)\.co(?:m|\.\w\w)/[-_a-zA-Z0-9()=./%]*
 # powerbi
 \bapp\.powerbi\.com/reportEmbed/[^"' ]*
 # vs devops
@@ -393,7 +414,7 @@ ipfs://[0-9a-zA-Z]{3,}
 \bgetopts\s+(?:"[^"]+"|'[^']+')
 
 # ANSI color codes
-(?:\\(?:u00|x)1[Bb]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+|)m
+(?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+)*m
 
 # URL escaped characters
 %[0-9A-F][A-F](?=[A-Za-z])
@@ -429,10 +450,14 @@ sha\d+:[0-9a-f]*?[a-f]{3,}[0-9a-f]*
 # pki (base64)
 LS0tLS1CRUdJT.*
 
+# C# includes
+^\s*using [^;]+;
+
 # uuid:
 \b[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\b
 # hex digits including css/html color classes:
-(?:[\\0][xX]|\\u|[uU]\+|#x?|%23)[0-9_a-fA-FgGrR]*?[a-fA-FgGrR]{2,}[0-9_a-fA-FgGrR]*(?:[uUlL]{0,3}|[iu]\d+)\b
+(?:[\\0][xX]|\\u\{?|[uU]\+|#x?|%23|&H)[0-9_a-fA-FgGrR]*?[a-fA-FgGrR]{2,}[0-9_a-fA-FgGrR]*(?:[uUlL]{0,3}|[iu]\d+)\b
+
 # integrity
 integrity=(['"])(?:\s*sha\d+-[-a-zA-Z=;:/0-9+]{40,})+\g{-1}
 
@@ -450,7 +475,10 @@ integrity=(['"])(?:\s*sha\d+-[-a-zA-Z=;:/0-9+]{40,})+\g{-1}
 Name\[[^\]]+\]=.*
 
 # IServiceProvider / isAThing
-(?:\b|_)(?:(?:ns|)I|isA)(?=(?:[A-Z][a-z]{2,})+(?:[A-Z\d]|\b))
+(?:(?:\b|_|(?<=[a-z]))I|(?:\b|_)(?:nsI|isA))(?=(?:[A-Z][a-z]{2,})+(?:[A-Z\d]|\b))
+
+# python
+#\b(?i)py(?!gments|gmy|lon|ramid|ro|th)(?=[a-z]{2,})
 
 # crypt
 (['"])\$2[ayb]\$.{56}\g{-1}
@@ -464,17 +492,14 @@ Name\[[^\]]+\]=.*
 # machine learning (?)
 #\b(?i)ml(?=[a-z]{2,})
 
-# python
-#\b(?i)py(?!gments|gmy|lon|ramid|ro|th)(?=[a-z]{2,})
-
 # scrypt / argon
 \$(?:scrypt|argon\d+[di]*)\$\S+
 
 # go.sum
 \bh1:\S+
 
-# scala imports
-^import (?:[\w.]|\{\w*?(?:,\s*(?:\w*|\*))+\})+
+# imports
+^import\s+(?:(?:static|type)\s+|)(?:[\w.]|\{\s*\w*?(?:,\s*(?:\w*|\*))+\s*\})+
 
 # scala modules
 #("[^"]+"\s*%%?\s*){2,3}"[^"]+"
@@ -483,13 +508,13 @@ Name\[[^\]]+\]=.*
 image: [-\w./:@]+
 
 # Docker images
-^\s*FROM\s+\S+:\S+(?:\s+AS\s+\S+|)
+^\s*(?i)FROM\s+\S+:\S+(?:\s+AS\s+\S+|)
 
 # `docker images` REPOSITORY TAG IMAGE ID CREATED SIZE
 \s*\S+/\S+\s+\S+\s+[0-9a-f]{8,}\s+\d+\s+(?:hour|day|week)s ago\s+[\d.]+[KMGT]B
 
 # Intel intrinsics
-_mm_(?!dd)\w+
+_mm\d*_(?!dd)\w+
 
 # Input to GitHub JSON
 content: (['"])[-a-zA-Z=;:/0-9+]*=\g{-1}
@@ -523,7 +548,7 @@ content: (['"])[-a-zA-Z=;:/0-9+]*=\g{-1}
 # javascript replace regex
 \.replace\(/[^/\s"]{3,}/[gim]*\s*,
 # assign regex
-= /[^*].*?(?:[a-z]{3,}|[A-Z]{3,}|[A-Z][a-z]{2,}).*/[gi]?(?=\W|$)
+= /[^*].*?(?:[a-z]{3,}|[A-Z]{3,}|[A-Z][a-z]{2,}).*/[gim]*(?=\W|$)
 # perl regex test
 [!=]~ (?:/.*/|m\{.*?\}|m<.*?>|m([|!/@#,;']).*?\g{-1})
 
@@ -537,7 +562,7 @@ perl(?:\s+-[a-zA-Z]\w*)+
 #(?:\d|\bh)to(?!ken)(?=[a-z])|to(?=[adhiklpun]\()
 
 # Go regular expressions
-regexp?\.MustCompile\(`[^`]*`\)
+regexp?\.MustCompile\((?:`[^`]*`|".*"|'.*')\)
 
 # regex choice
 \(\?:[^)]+\|[^)]+\)
@@ -585,7 +610,7 @@ urn:shemas-jetbrains-com
 # xcode
 
 # xcodeproject scenes
-(?:Controller|destination|ID|id)="\w{3}-\w{2}-\w{3}"
+(?:Controller|destination|(?:first|second)Item|ID|id)="\w{3}-\w{2}-\w{3}"
 
 # xcode api botches
 customObjectInstantitationMethod
@@ -600,27 +625,33 @@ PrependWithABINamepsace
 \.fa-[-a-z0-9]+
 
 # bearer auth
-(['"])[Bb]ear[e][r] .*?\g{-1}
+(['"])[Bb]ear[e][r] .{3,}?\g{-1}
 
 # bearer auth
-\b[Bb]ear[e][r]:? [-a-zA-Z=;:/0-9+.]+
+\b[Bb]ear[e][r]:? [-a-zA-Z=;:/0-9+.]{3,}
 
 # basic auth
 (['"])[Bb]asic [-a-zA-Z=;:/0-9+]{3,}\g{-1}
+
+# basic auth
+: [Bb]asic [-a-zA-Z=;:/0-9+.]{3,}
 
 # base64 encoded content
 #([`'"])[-a-zA-Z=;:/0-9+]{3,}=\g{-1}
 # base64 encoded content in xml/sgml
 >[-a-zA-Z=;:/0-9+]{3,}=</
 # base64 encoded content, possibly wrapped in mime
-(?:^|[\s=;:?])[-a-zA-Z=;:/0-9+]{50,}(?:[\s=;:?]|$)
+#(?:^|[\s=;:?])[-a-zA-Z=;:/0-9+]{50,}(?:[\s=;:?]|$)
 # base64 encoded json
 \beyJ[-a-zA-Z=;:/0-9+]+
 # base64 encoded pkcs
-\bMII[-a-zA-Z=;:/0-9+]+
+#\bMII[-a-zA-Z=;:/0-9+]+
+
+# uuencoded
+#[!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_]{40,}
 
 # DNS rr data
-(?:\d+\s+){3}(?:[-+/=.\w]{2,}\s*){1,2}
+#(?:\d+\s+){3}(?:[-+/=.\w]{2,}\s*){1,2}
 
 # encoded-word
 =\?[-a-zA-Z0-9"*%]+\?[BQ]\?[^?]{0,75}\?=
@@ -629,7 +660,7 @@ PrependWithABINamepsace
 \bnumer\b(?=.*denom)
 
 # Time Zones
-\b(?:Africa|Atlantic|America|Antarctica|Asia|Australia|Europe|Indian|Pacific)(?:/\w+)+
+\b(?:Africa|Atlantic|America|Antarctica|Arctic|Asia|Australia|Europe|Indian|Pacific)(?:/[-\w]+)+
 
 # linux kernel info
 ^(?:bugs|flags|Features)\s+:.*
@@ -669,19 +700,22 @@ systemd.*?running in system mode \([-+].*\)$
 TeX/AMS
 
 # File extensions
-\*\.[+\w]+,
+#\*\.[+\w]+,
 
 # eslint
 "varsIgnorePattern": ".+"
 
 # nolint
-nolint:\w+
+nolint:\s*[\w,]+
 
 # Windows short paths
 [/\\][^/\\]{5,6}~\d{1,2}(?=[/\\])
 
 # Windows Resources with accelerators
 \b[A-Z]&[a-z]+\b(?!;)
+
+# signed off by
+(?i)Signed-off-by: .*
 
 # cygwin paths
 /cygdrive/[a-zA-Z]/(?:Program Files(?: \(.*?\)| ?)(?:/[-+.~\\/()\w ]+)*|[-+.~\\/()\w])+
@@ -715,29 +749,31 @@ W/"[^"]+"
 
 # Compiler flags (Unix, Java/Scala)
 # Use if you have things like `-Pdocker` and want to treat them as `docker`
-#(?:^|[\t ,>"'`=(])-(?:(?:J-|)[DPWXY]|[Llf])(?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
+#(?:^|[\t ,>"'`=(#])-(?:(?:J-|)[DPWXY]|[Llf])(?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
 
 # Compiler flags (Windows / PowerShell)
 # This is a subset of the more general compiler flags pattern.
 # It avoids matching `-Path` to prevent it from being treated as `ath`
-#(?:^|[\t ,"'`=(])-(?:[DPL](?=[A-Z]{2,})|[WXYlf](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,}))
+#(?:^|[\t ,"'`=(#])-(?:[DPL](?=[A-Z]{2,})|[WXYlf](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,}))
 
 # Compiler flags (linker)
 ,-B
 
-# libraries
-(?:\b|_)lib(?:re(?=office)|)(?!era[lt]|ero|erty|rar(?:i(?:an|es)|y))(?=[a-z])
-
-# WWNN/WWPN (NAA identifiers)
-\b(?:0x)?10[0-9a-f]{14}\b|\b(?:0x|3)?[25][0-9a-f]{15}\b|\b(?:0x|3)?6[0-9a-f]{31}\b
+# Library prefix
+# e.g., `lib`+`archive`, `lib`+`raw`, `lib`+`unwind`
+# (ignores some words that happen to start with `lib`)
+(?:\b|_)[Ll]ib(?:re(?=office)|)(?!era[lt]|ero|erty|rar(?:i(?:an|es)|y))(?=[a-z])
 
 # iSCSI iqn (approximate regex)
 \biqn\.[0-9]{4}-[0-9]{2}(?:[\.-][a-z][a-z0-9]*)*\b
 
+# WWNN/WWPN (NAA identifiers)
+\b(?:0x)?10[0-9a-f]{14}\b|\b(?:0x|3)?[25][0-9a-f]{15}\b|\b(?:0x|3)?6[0-9a-f]{31}\b
+
 # curl arguments
 \b(?:\\n|)curl(?:\.exe|)(?:\s+-[a-zA-Z]{1,2}\b)*(?:\s+-[a-zA-Z]{3,})(?:\s+-[a-zA-Z]+)*
 # set arguments
-\b(?:bash|sh|set)(?:\s+-[abefimouxE]{1,2})*\s+-[abefimouxE]{3,}(?:\s+-[abefimouxE]+)*
+\b(?:bash|sh|set)(?:\s+[-+][abefimouxE]{1,2})*\s+[-+][abefimouxE]{3,}(?:\s+[-+][abefimouxE]+)*
 # tar arguments
 \b(?:\\n|)g?tar(?:\.exe|)(?:(?:\s+--[-a-zA-Z]+|\s+-[a-zA-Z]+|\s[ABGJMOPRSUWZacdfh-pr-xz]+\b)(?:=[^ ]*|))+
 # tput arguments -- https://man7.org/linux/man-pages/man5/terminfo.5.html -- technically they can be more than 5 chars long...

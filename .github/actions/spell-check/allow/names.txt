@@ -46,8 +46,8 @@ betsegaw
 bricelam
 bsky
 CCcat
-chenmy
 chemwolf
+chenmy
 Chinh
 chrdavis
 Chrzan
@@ -55,6 +55,7 @@ clayton
 Coplen
 craigloewen
 crutkas
+Chubercik
 damienleroy
 daverayment
 davidegiacometti
@@ -65,8 +66,8 @@ Deondre
 DHowett
 ductdo
 Essey
-Feng
 ethanfangg
+Feng
 ferraridavide
 foxmsft
 frankychen
@@ -77,6 +78,7 @@ Galaxi
 Garside
 Gershaft
 Giordani
+Gleb
 Gokce
 gordon
 Griese
@@ -90,12 +92,15 @@ Hemmerlein
 hlaueriksson
 Horvalds
 Howett
+hotkidfamily
 htcfreek
 Huynh
 Ionut
 jamrobot
 Jaswal
+Jaylyn
 jefflord
+Jeremic
 Jordi
 jyuwono
 kai
@@ -105,6 +110,7 @@ Kantarci
 Karthick
 kaylacinnamon
 kevinguo
+Khmyznikov
 Krigun
 Lambson
 Laute
@@ -127,6 +133,8 @@ Naro
 nathancartlidge
 Nemeth
 nielslaute
+Noraa
+noraajunker
 oldnewthing
 onegreatworld
 palenshus
@@ -146,11 +154,13 @@ ricardosantos
 riri
 ritchielawrence
 robmikh
+ruslanlap
 Russinovich
 Rutkas
 ryanbodrug
 saahmedm
 sachaple
+Sameerjs
 Santossio
 Schoen
 Sekan
@@ -166,9 +176,11 @@ Tadele
 talynone
 Taras
 TBM
+Teutsch
 tilovell
 Triet
 urnotdfs
+vednig
 waaverecords
 wang
 Whuihuan
@@ -187,9 +199,6 @@ zhaopy
 zhaoqpcn
 Zoltan
 Zykova
-Sameerjs
-ruslanlap
-vednig
 
 # OTHERS
 
@@ -199,6 +208,7 @@ capturevideosample
 cmdow
 Controlz
 cortana
+devhints
 dlnilsson
 fancymouse
 firefox
@@ -216,7 +226,9 @@ openai
 Quickime
 regedit
 roslyn
+Skia
 Spotify
+tldr
 Vanara
 wangyi
 WEX

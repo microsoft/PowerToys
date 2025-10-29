@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -63,46 +64,61 @@ public class NumberTranslator
         return Translate(input, targetCulture, sourceCulture, splitRegexForTarget);
     }
 
+    private static string ConvertBaseLiteral(string token, CultureInfo cultureTo)
+    {
+        var prefixes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "0x", 16 },
+            { "0b", 2 },
+            { "0o", 8 },
+        };
+
+        foreach (var (prefix, numberBase) in prefixes)
+        {
+            if (token.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var num = Convert.ToInt64(token.Substring(prefix.Length), numberBase);
+                    return num.ToString(cultureTo);
+                }
+                catch
+                {
+                    return null; // fallback
+                }
+            }
+        }
+
+        return null;
+    }
+
     private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
     {
         var outputBuilder = new StringBuilder();
-        var hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
 
-        var hexTokens = hexRegex.Split(input);
+        // Match numbers in hexadecimal (0x..), binary (0b..), or octal (0o..) format,
+        // and convert them to decimal form for compatibility with ExprTk (which only supports decimal input).
+        var baseNumberRegex = new Regex(@"(0[xX][\da-fA-F]+|0[bB][0-9]+|0[oO][0-9]+)");
 
-        foreach (var hexToken in hexTokens)
+        var tokens = baseNumberRegex.Split(input);
+
+        foreach (var token in tokens)
         {
-            if (hexToken.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
-            {
-                // Mages engine has issues processing large hex number (larger than 7 hex digits + 0x prefix = 9 characters). So we convert it to decimal and pass it to the engine.
-                if (hexToken.Length > 9)
-                {
-                    try
-                    {
-                        var num = Convert.ToInt64(hexToken, 16);
-                        var numStr = num.ToString(cultureFrom);
-                        outputBuilder.Append(numStr);
-                    }
-                    catch (Exception)
-                    {
-                        outputBuilder.Append(hexToken);
-                    }
-                }
-                else
-                {
-                    outputBuilder.Append(hexToken);
-                }
+            // Currently, we only convert base literals (hexadecimal, binary, octal) to decimal.
+            var converted = ConvertBaseLiteral(token, cultureTo);
 
+            if (converted is not null)
+            {
+                outputBuilder.Append(converted);
                 continue;
             }
 
-            var tokens = splitRegex.Split(hexToken);
-            foreach (var token in tokens)
+            foreach (var inner in splitRegex.Split(token))
             {
                 var leadingZeroCount = 0;
 
                 // Count leading zero characters.
-                foreach (var c in token)
+                foreach (var c in inner)
                 {
                     if (c != '0')
                     {
@@ -113,7 +129,7 @@ public class NumberTranslator
                 }
 
                 // number is all zero characters. no need to add zero characters at the end.
-                if (token.Length == leadingZeroCount)
+                if (inner.Length == leadingZeroCount)
                 {
                     leadingZeroCount = 0;
                 }
@@ -121,9 +137,9 @@ public class NumberTranslator
                 decimal number;
 
                 outputBuilder.Append(
-                    decimal.TryParse(token, NumberStyles.Number, cultureFrom, out number)
+                    decimal.TryParse(inner, NumberStyles.Number, cultureFrom, out number)
                     ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
-                    : token.Replace(cultureFrom.TextInfo.ListSeparator, cultureTo.TextInfo.ListSeparator));
+                    : inner.Replace(cultureFrom.TextInfo.ListSeparator, cultureTo.TextInfo.ListSeparator));
             }
         }
 
@@ -132,13 +148,16 @@ public class NumberTranslator
 
     private static Regex GetSplitRegex(CultureInfo culture)
     {
-        var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
-        if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
+        var groupSeparator = culture.NumberFormat.NumberGroupSeparator;
+
+        // if the group separator is a no-break space, we also add a normal space to the regex
+        if (groupSeparator == "\u00a0")
         {
-            splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";
+            groupSeparator = "\u0020\u00a0";
         }
 
-        splitPattern += ")+)";
+        var splitPattern = $"([0-9{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}" +
+            $"{Regex.Escape(groupSeparator)}]+)";
         return new Regex(splitPattern);
     }
 }
