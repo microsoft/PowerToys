@@ -294,7 +294,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DWORD count = hParent ? 2 : 1;
         bool skipRest = false;
 
-        LightSwitchSettings::instance().LoadSettings();
         const auto& settings = LightSwitchSettings::instance().settings();
 
         bool scheduleJustEnabled = (prevMode == ScheduleMode::Off && settings.scheduleMode != ScheduleMode::Off);
@@ -539,6 +538,54 @@ cleanup:
         g_nightLightWatcher.reset();
 
     return 0;
+}
+
+void ApplyThemeNow()
+{
+    LightSwitchSettings::instance().LoadSettings();
+    const auto& settings = LightSwitchSettings::instance().settings();
+
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    int nowMinutes = st.wHour * 60 + st.wMinute;
+
+    bool shouldBeLight = false;
+    if (settings.lightTime < settings.darkTime)
+        shouldBeLight = (nowMinutes >= settings.lightTime && nowMinutes < settings.darkTime);
+    else
+        shouldBeLight = (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
+
+    bool isSystemCurrentlyLight = GetCurrentSystemTheme();
+    bool isAppsCurrentlyLight = GetCurrentAppsTheme();
+
+    Logger::info(L"[LightSwitchService] Applying (if needed) theme immediately due to schedule change.");
+
+    if (shouldBeLight)
+    {
+        if (settings.changeSystem && !isSystemCurrentlyLight)
+        {
+            SetSystemTheme(true);
+            Logger::info(L"[LightSwitchService] Changing system theme to light mode.");
+        }
+        if (settings.changeApps && !isAppsCurrentlyLight)
+        {
+            SetAppsTheme(true);
+            Logger::info(L"[LightSwitchService] Changing apps theme to light mode.");
+        }
+    }
+    else
+    {
+        if (settings.changeSystem && isSystemCurrentlyLight)
+        {
+            SetSystemTheme(false);
+            Logger::info(L"[LightSwitchService] Changing system theme to dark mode.");
+        }
+        if (settings.changeApps && isAppsCurrentlyLight)
+        {
+            SetAppsTheme(false);
+            Logger::info(L"[LightSwitchService] Changing apps theme to dark mode.");
+        }
+    }
 }
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
