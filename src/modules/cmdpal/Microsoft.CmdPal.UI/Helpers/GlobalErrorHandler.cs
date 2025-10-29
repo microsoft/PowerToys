@@ -68,7 +68,7 @@ internal sealed partial class GlobalErrorHandler
                           {error}
                           """;
 
-            StoreReport(report, true);
+            StoreReport(report, storeOnDesktop: false);
 
             PInvoke.MessageBox(
                 HWND.Null,
