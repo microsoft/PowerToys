@@ -13,7 +13,7 @@
         <converters:DateTimeToFriendlyStringConverter x:Key="DateTimeToFriendlyStringConverter" />
         <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
     </UserControl.Resources>
-    <Grid Height="64" ColumnSpacing="12">
+    <Grid ColumnSpacing="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="80" />
             <ColumnDefinition Width="*" />
