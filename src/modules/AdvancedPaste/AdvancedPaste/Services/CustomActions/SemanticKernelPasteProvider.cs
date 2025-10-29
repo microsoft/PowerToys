@@ -146,7 +146,7 @@ namespace AdvancedPaste.Services.CustomActions
                     kernelBuilder.AddHuggingFaceChatCompletion(_config.Model, apiKey: apiKey);
                     break;
                 case AIServiceType.AzureAIInference:
-                    kernelBuilder.AddAzureAIInferenceChatCompletion(_config.Model, apiKey: apiKey);
+                    kernelBuilder.AddAzureAIInferenceChatCompletion(_config.Model, apiKey: apiKey, endpoint: new Uri(endpoint));
                     break;
                 case AIServiceType.Ollama:
                     kernelBuilder.AddOllamaChatCompletion(_config.Model, endpoint: new Uri(endpoint));
