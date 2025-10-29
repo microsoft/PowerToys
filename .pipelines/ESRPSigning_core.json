@@ -5,7 +5,6 @@
         {
           "MatchedPath": [
             "*.resources.dll",
-
             "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
 
             "PowerToys.ActionRunner.exe",
@@ -346,6 +345,9 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
+                "LanguageModelProvider.dll",
+                "Microsoft.SemanticKernel.Connectors.Ollama.dll",
+                "OllamaSharp.dll",
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
