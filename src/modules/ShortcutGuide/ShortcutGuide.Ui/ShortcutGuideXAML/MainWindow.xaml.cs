@@ -175,7 +175,7 @@ namespace ShortcutGuide
             if (!_hasMovedToRightMonitor)
             {
                 NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
-                AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y, X = lpPoint.X });
+                AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
                 _hasMovedToRightMonitor = true;
             }
 
@@ -184,16 +184,18 @@ namespace ShortcutGuide
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
             if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X < AppWindow.Position.X + Width)
             {
-                MaxHeight = App.TaskBarWindow.AppWindow.Position.Y / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
+                MaxHeight = (monitorRect.Height / dpi) - App.TaskBarWindow.AppWindow.Size.Height;
                 MinHeight = MaxHeight;
                 Height = MaxHeight;
-                return;
+            }
+            else
+            {
+                MaxHeight = monitorRect.Height / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
+                MinHeight = MaxHeight;
+                Height = MaxHeight;
             }
 
-            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, monitorRect.Height / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32()));
-            MaxHeight = monitorRect.Height / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
-            MinHeight = MaxHeight;
-            Height = MaxHeight;
+            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, Height);
         }
 
         /*private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

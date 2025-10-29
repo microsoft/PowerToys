@@ -29,16 +29,11 @@ namespace ShortcutGuide.ShortcutGuideXAML
             this.Activated += (_, _) => UpdateTasklistButtons();
         }
 
-        private bool _hasMovedToRightMonitor;
-
         public void UpdateTasklistButtons()
         {
-            if (!_hasMovedToRightMonitor)
-            {
-                GetCursorPos(out POINT lpPoint);
-                AppWindow.Move(new POINT { Y = lpPoint.Y, X = lpPoint.X });
-                _hasMovedToRightMonitor = true;
-            }
+            // This move ensures the window spawns on the same monitor as the main window
+            AppWindow.MoveInZOrderAtBottom();
+            AppWindow.Move(App.MainWindow.AppWindow.Position);
 
             TasklistButton[] buttons = TasklistPositions.GetButtons();
             double windowsLogoColumnWidth = WindowsLogoColumnWidth.Width.Value;
@@ -68,6 +63,7 @@ namespace ShortcutGuide.ShortcutGuideXAML
             }
 
             this.MoveAndResize(xPosition - windowMargin, yPosition, windowWidth + (2 * windowMargin), windowHeight);
+            AppWindow.MoveInZOrderAtTop();
         }
     }
 }
