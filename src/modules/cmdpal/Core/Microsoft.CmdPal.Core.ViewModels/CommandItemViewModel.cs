@@ -71,7 +71,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
 
-    public bool HasText => HasTitle || HasSubtitle;
+    public virtual bool HasText => HasTitle || HasSubtitle;
 
     public List<IContextItemViewModel> AllCommands
     {

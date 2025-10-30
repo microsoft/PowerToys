@@ -54,12 +54,13 @@ public sealed partial class DockViewModel : IDisposable,
     }
 
     private void SetupBands(
-        List<string> bandIds,
+        List<DockBandSettings> bands,
         ObservableCollection<DockBandViewModel> target)
     {
         List<DockBandViewModel> newBands = new();
-        foreach (var commandId in bandIds)
+        foreach (var band in bands)
         {
+            var commandId = band.Id;
             var topLevelCommand = _topLevelCommandManager.LookupDockBand(commandId);
 
             // TODO! temp hack: fallback to looking up a top-level command
@@ -72,8 +73,8 @@ public sealed partial class DockViewModel : IDisposable,
 
             if (topLevelCommand is not null)
             {
-                var band = CreateBandItem(topLevelCommand.ItemViewModel);
-                newBands.Add(band);
+                var bandVm = CreateBandItem(band, topLevelCommand.ItemViewModel);
+                newBands.Add(bandVm);
             }
         }
 
@@ -99,9 +100,9 @@ public sealed partial class DockViewModel : IDisposable,
         CoreLogger.LogDebug("Bands reloaded");
     }
 
-    private DockBandViewModel CreateBandItem(CommandItemViewModel commandItem)
+    private DockBandViewModel CreateBandItem(DockBandSettings bandSettings, CommandItemViewModel commandItem)
     {
-        DockBandViewModel band = new(commandItem, new(this));
+        DockBandViewModel band = new(commandItem, new(this), bandSettings);
         band.InitializeProperties(); // TODO! make async
         return band;
     }

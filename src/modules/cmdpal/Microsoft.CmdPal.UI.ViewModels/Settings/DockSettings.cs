@@ -4,6 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
+#pragma warning disable SA1402 // File may only contain a single type
 public class DockSettings
 {
     // public bool ShowAppTitles { get; set; }
@@ -13,11 +14,20 @@ public class DockSettings
 
     public DockSize DockSize { get; set; } = DockSize.Small;
 
+    public DockSize DockIconsSize { get; set; } = DockSize.Small;
+
     public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
 
-    public List<string> StartBands { get; set; } = [];
+    public List<DockBandSettings> StartBands { get; set; } = [];
 
-    public List<string> EndBands { get; set; } = [];
+    public List<DockBandSettings> EndBands { get; set; } = [];
+}
+
+public class DockBandSettings
+{
+    public string Id { get; set; } = string.Empty;
+
+    public bool? ShowLabels { get; set; }
 }
 
 public enum DockSide
@@ -41,3 +51,5 @@ public enum DockBackdrop
     Transparent,
     Acrylic,
 }
+
+#pragma warning restore SA1402 // File may only contain a single type

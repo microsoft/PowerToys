@@ -4,29 +4,38 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreVm="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dockVm="using:Microsoft.CmdPal.UI.ViewModels.Dock"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ui="using:CommunityToolkit.WinUI"
-
-    xmlns:coreVm="using:Microsoft.CmdPal.Core.ViewModels"
-    xmlns:dockVm="using:Microsoft.CmdPal.UI.ViewModels.Dock"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <StackLayout x:Key="ItemsOrientation" Orientation="{x:Bind ItemsOrientation, Mode=OneWay}" Spacing="4" />
+            <StackLayout
+                x:Key="ItemsOrientation"
+                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
+                Spacing="4" />
 
+            <Style x:Key="ResizingIconStyle" TargetType="cpcontrols:IconBox">
+                <Setter Property="Height" Value="{x:Bind IconSize, Mode=OneWay}" />
+                <Setter Property="MaxWidth" Value="{x:Bind IconSize, Mode=OneWay}" />
+                <Setter Property="MinWidth" Value="{x:Bind IconMinWidth, Mode=OneWay}" />
+            </Style>
+            <Style x:Key="ResizingTitleTextBlock" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{x:Bind TitleTextFontSize, Mode=OneWay}" />
+                <Setter Property="MaxWidth" Value="{x:Bind TitleTextMaxWidth, Mode=OneWay}" />
+            </Style>
 
             <local:IconInfoVisibilityConverter x:Key="IconInfoVisibilityConverter" />
             <DataTemplate x:Key="CommandButtonTemplate" x:DataType="coreVm:CommandViewModel">
-                <Button
-                    MaxHeight="32"
-                    Padding="4">
-                    <!-- TODO! Command="{x:Bind InvokeCommand, Mode=OneWay}"-->
-                    
+                <Button MaxHeight="32" Padding="4">
+                    <!--  TODO! Command="{x:Bind InvokeCommand, Mode=OneWay}"  -->
+
                     <Grid
                         AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                         Background="Transparent"
@@ -85,14 +94,13 @@
                     Padding="2"
                     Background="Transparent"
                     BorderBrush="Transparent"
-                    Command="{x:Bind InvokePrimaryCommand, Mode=OneWay}"
+                    DataContext="{x:Bind}"
+                    Tapped="BandItem_Tapped"
                     ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
-    
-                    <Grid
-                        AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
-                        Background="Transparent">
-                        <!--Visibility="{x:Bind ShouldBeVisible, Mode=OneWay}">-->
-                        <!-- TODO! ShouldBeVisible is a bad hack, we don't want that for the visibility of a band -->
+
+                    <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" Background="Transparent">
+                        <!--  Visibility="{x:Bind ShouldBeVisible, Mode=OneWay}">  -->
+                        <!--  TODO! ShouldBeVisible is a bad hack, we don't want that for the visibility of a band  -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -106,13 +114,12 @@
                             Visibility="{x:Bind Icon, Converter={StaticResource IconInfoVisibilityConverter}, Mode=OneWay}">
                             <cpcontrols:IconBox
                                 x:Name="IconBorder"
-                                Height="16"
-                                MaxWidth="16"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                                Style="{StaticResource ResizingIconStyle}" />
                         </StackPanel>
                         <StackPanel
                             Grid.Column="1"
@@ -121,12 +128,11 @@
                             Visibility="{x:Bind HasText, Mode=OneWay}">
                             <TextBlock
                                 x:Name="TitleTextBlock"
-                                MaxWidth="100"
                                 Margin="0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 FontSize="12"
-                                Foreground="{ThemeResource TextFillColorPrimary}"
+                                Style="{StaticResource ResizingTitleTextBlock}"
                                 Text="{x:Bind Title, Mode=OneWay}"
                                 TextAlignment="Left"
                                 TextTrimming="CharacterEllipsis"
@@ -194,10 +200,10 @@
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
 
                 <ItemsRepeater
-                HorizontalAlignment="Center"
-                ItemTemplate="{StaticResource DeskbandTemplate}"
-                Layout="{StaticResource ItemsOrientation}"
-                ItemsSource="{x:Bind Items, Mode=OneWay}">
+                    HorizontalAlignment="Center"
+                    ItemTemplate="{StaticResource DeskbandTemplate}"
+                    ItemsSource="{x:Bind Items, Mode=OneWay}"
+                    Layout="{StaticResource ItemsOrientation}">
 
 
                     <ItemsRepeater.Transitions>
@@ -211,16 +217,15 @@
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Margin="16,0,16,0">
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
-            <ColumnDefinition x:Name="SearchColumn" Width="*" />
+            <ColumnDefinition x:Name="SearchColumn" Width="Auto" />
             <ColumnDefinition x:Name="EndColumn" Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*" />
-            <RowDefinition  x:Name="SearchRow" Height="*" />
-            <RowDefinition  x:Name="EndRow" Height="Auto" />
+            <RowDefinition x:Name="SearchRow" Height="Auto" />
+            <RowDefinition x:Name="EndRow" Height="Auto" />
         </Grid.RowDefinitions>
 
         <!--  EXPERIMENT: Try to add a shadow to the bottom. I didn't love how it actually turned out.  -->
@@ -239,7 +244,7 @@
         </Rectangle>
 
         <ScrollViewer
-                x:Name="StartItemsView"
+            x:Name="StartItemsView"
             Grid.Column="0"
             HorizontalAlignment="Stretch"
             HorizontalScrollBarVisibility="Hidden"
@@ -251,8 +256,8 @@
                 x:Name="StartItemsRepeater"
                 HorizontalAlignment="Left"
                 ItemTemplate="{StaticResource DockBandTemplate}"
-                Layout="{StaticResource ItemsOrientation}"
-                ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}">
+                ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
+                Layout="{StaticResource ItemsOrientation}">
 
                 <!--<ItemsRepeater.Layout>
                     <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
@@ -286,8 +291,8 @@
             x:Name="EndItemsRepeater"
             Grid.Column="2"
             ItemTemplate="{StaticResource DockBandTemplate}"
-                Layout="{StaticResource ItemsOrientation}"
-            ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}">
+            ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
+            Layout="{StaticResource ItemsOrientation}">
 
             <!--<ItemsRepeater.Layout>
                 <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
