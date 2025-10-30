@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Controls/Timeline/TimelineStyles.xaml" />
 
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>

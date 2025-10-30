@@ -39,6 +39,8 @@
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxBundle>Never</AppxBundle>
+    <AppxPackageTestDir>$(OutputPath)\AppPackages\Microsoft.CmdPal.UI_$(Version)_Test\</AppxPackageTestDir>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -64,7 +66,9 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
@@ -72,7 +76,6 @@
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
     <None Remove="ShellPage.xaml" />
-    <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
@@ -97,13 +100,6 @@
     </PackageReference>
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-
-    <PackageReference Include="System.Net.Http" />
-
-    <PackageReference Include="System.Private.Uri" />
-    <PackageReference Include="System.Text.Json" />
-
-    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <!--
@@ -121,7 +117,7 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
-    <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
+    <ProjectReference Include="..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
 
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
@@ -167,9 +163,6 @@
     <Page Update="Controls\SearchBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Styles\Button.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
     <Page Update="Styles\TextBox.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
@@ -188,6 +181,27 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\StoreLogo.dark.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\StoreLogo.light.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\WinGetLogo.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="IsEnabledTextBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\KeyVisual\KeyCharPresenter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">

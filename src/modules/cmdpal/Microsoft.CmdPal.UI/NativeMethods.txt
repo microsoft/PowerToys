@@ -44,6 +44,7 @@ MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+DWM_WINDOW_CORNER_PREFERENCE
 
 CoWaitForMultipleObjects
 INFINITE
@@ -53,4 +54,13 @@ GetCurrentThreadId
 SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
+GetModuleHandle
+
+GetWindowLong
+SetWindowLong
+WINDOW_EX_STYLE
+CreateWindowEx
+WNDCLASSEXW
+RegisterClassEx
+GetStockObject
 GetModuleHandle

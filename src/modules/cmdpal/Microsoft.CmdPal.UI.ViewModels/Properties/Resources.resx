@@ -233,4 +233,13 @@
   <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
     <value>Search for apps, files and commands...</value>
   </data>
+  <data name="builtin_home_name" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="builtin_settings_extension_n_extensions_found" xml:space="preserve">
+    <value>{0} extensions found</value>
+  </data>
+  <data name="builtin_settings_extension_n_extensions_installed" xml:space="preserve">
+    <value>{0} extensions installed</value>
+  </data>
 </root>

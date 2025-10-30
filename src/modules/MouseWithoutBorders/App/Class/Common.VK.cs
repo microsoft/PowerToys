@@ -112,6 +112,7 @@ namespace MouseWithoutBorders
         internal const int WM_RBUTTONDBLCLK = 0x206;
         internal const int WM_MBUTTONDBLCLK = 0x209;
         internal const int WM_MOUSEWHEEL = 0x020A;
+        internal const int WM_MOUSEHWHEEL = 0x020E;
 
         internal const int WM_KEYDOWN = 0x100;
         internal const int WM_KEYUP = 0x101;

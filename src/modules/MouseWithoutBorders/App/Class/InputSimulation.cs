@@ -204,6 +204,9 @@ namespace MouseWithoutBorders.Class
                 case Common.WM_MOUSEWHEEL:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.WHEEL;
                     break;
+                case Common.WM_MOUSEHWHEEL:
+                    mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.HWHEEL;
+                    break;
                 case Common.WM_XBUTTONUP:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.XUP;
                     break;
@@ -407,7 +410,7 @@ namespace MouseWithoutBorders.Class
                     {
                         ResetModifiersState(Setting.Values.HotKeyLockMachine);
                         eatKey = true;
-                        Common.ReleaseAllKeys();
+                        InitAndCleanup.ReleaseAllKeys();
                         _ = NativeMethods.LockWorkStation();
                     }
                 }
@@ -439,7 +442,7 @@ namespace MouseWithoutBorders.Class
                         {
                             ctrlDown = altDown = false;
                             eatKey = true;
-                            Common.ReleaseAllKeys();
+                            InitAndCleanup.ReleaseAllKeys();
                         }
 
                         break;
@@ -449,7 +452,7 @@ namespace MouseWithoutBorders.Class
                         {
                             winDown = false;
                             eatKey = true;
-                            Common.ReleaseAllKeys();
+                            InitAndCleanup.ReleaseAllKeys();
                             uint rv = NativeMethods.LockWorkStation();
                             Logger.LogDebug("LockWorkStation returned " + rv.ToString(CultureInfo.CurrentCulture));
                         }

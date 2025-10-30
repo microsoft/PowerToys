@@ -4,7 +4,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-  <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion);InstallerSuffix=$(InstallerSuffix)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
+  <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
     simulate the build pipeline doing that for you. -->
@@ -14,16 +14,18 @@ SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion);InstallerSuffix=$(InstallerSuffix)</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
@@ -39,6 +41,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
       call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
       call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+      call move /Y ..\..\..\LightSwitch.wxs.bk ..\..\..\LightSwitch.wxs
       call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
       call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
       call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
@@ -77,9 +80,8 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>{b6e94700-df38-41f6-a3fd-18b69674ab1e}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <InstallerSuffix Condition="'$(InstallerSuffix)'==''">wix5</InstallerSuffix>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>
@@ -112,9 +114,11 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="FileLocksmith.wxs" />
     <Compile Include="Hosts.wxs" />
     <Compile Include="ImageResizer.wxs" />
+    <Compile Include="LightSwitch.wxs" />
     <Compile Include="KeyboardManager.wxs" />
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
+    <Compile Include="DscResources.wxs" />
     <Compile Include="RegistryPreview.wxs" />
     <Compile Include="Run.wxs" />
     <Compile Include="Settings.wxs" />

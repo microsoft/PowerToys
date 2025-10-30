@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
@@ -55,7 +54,16 @@ internal sealed partial class Win32ProgramFileSystemWatchers : IDisposable
             }
         }
 
-        return paths.Except(invalidPaths).ToArray();
+        var validPaths = new List<string>();
+        foreach (var path in paths)
+        {
+            if (!invalidPaths.Contains(path))
+            {
+                validPaths.Add(path);
+            }
+        }
+
+        return validPaths.ToArray();
     }
 
     public void Dispose()

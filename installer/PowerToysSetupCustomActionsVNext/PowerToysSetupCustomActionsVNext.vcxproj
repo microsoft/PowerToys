@@ -38,7 +38,6 @@
     <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
     <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
     <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
-    <!-- The CMD script below checks this value, and it is **CASE SENSITIVE** -->
     <NormalizedPerUserValue>false</NormalizedPerUserValue>
     <NormalizedPerUserValue Condition=" '$(PerUser)' == 'true' ">true</NormalizedPerUserValue>
   </PropertyGroup>
@@ -65,6 +64,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\LightSwitch.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\LightSwitch.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs.bk""""
@@ -114,7 +114,6 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,7 +126,6 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>

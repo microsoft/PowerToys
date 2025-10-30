@@ -52,12 +52,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _findMyMouseDoNotActivateOnGameMode = FindMyMouseSettingsConfig.Properties.DoNotActivateOnGameMode.Value;
 
             string backgroundColor = FindMyMouseSettingsConfig.Properties.BackgroundColor.Value;
-            _findMyMouseBackgroundColor = !string.IsNullOrEmpty(backgroundColor) ? backgroundColor : "#000000";
+            _findMyMouseBackgroundColor = !string.IsNullOrEmpty(backgroundColor) ? backgroundColor : "#80000000";
 
             string spotlightColor = FindMyMouseSettingsConfig.Properties.SpotlightColor.Value;
-            _findMyMouseSpotlightColor = !string.IsNullOrEmpty(spotlightColor) ? spotlightColor : "#FFFFFF";
+            _findMyMouseSpotlightColor = !string.IsNullOrEmpty(spotlightColor) ? spotlightColor : "#80FFFFFF";
 
-            _findMyMouseOverlayOpacity = FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value;
             _findMyMouseSpotlightRadius = FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value;
             _findMyMouseAnimationDurationMs = FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value;
             _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
@@ -103,6 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsAutoHide = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsAutoHide.Value;
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
+            _mousePointerCrosshairsOrientation = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsOrientation.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
             ArgumentNullException.ThrowIfNull(cursorWrapSettingsRepository);
@@ -302,7 +302,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#000000";
+                value = (value != null) ? SettingsUtilities.ToARGBHex(value) : "#FF000000";
                 if (!value.Equals(_findMyMouseBackgroundColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _findMyMouseBackgroundColor = value;
@@ -321,29 +321,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = (value != null) ? SettingsUtilities.ToARGBHex(value) : "#FFFFFFFF";
                 if (!value.Equals(_findMyMouseSpotlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _findMyMouseSpotlightColor = value;
                     FindMyMouseSettingsConfig.Properties.SpotlightColor.Value = value;
-                    NotifyFindMyMousePropertyChanged();
-                }
-            }
-        }
-
-        public int FindMyMouseOverlayOpacity
-        {
-            get
-            {
-                return _findMyMouseOverlayOpacity;
-            }
-
-            set
-            {
-                if (value != _findMyMouseOverlayOpacity)
-                {
-                    _findMyMouseOverlayOpacity = value;
-                    FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -911,6 +893,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int MousePointerCrosshairsOrientation
+        {
+            get
+            {
+                return _mousePointerCrosshairsOrientation;
+            }
+
+            set
+            {
+                if (value != _mousePointerCrosshairsOrientation)
+                {
+                    _mousePointerCrosshairsOrientation = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.CrosshairsOrientation.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public bool MousePointerCrosshairsAutoActivate
         {
             get
@@ -1106,7 +1106,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _findMyMouseDoNotActivateOnGameMode;
         private string _findMyMouseBackgroundColor;
         private string _findMyMouseSpotlightColor;
-        private int _findMyMouseOverlayOpacity;
         private int _findMyMouseSpotlightRadius;
         private int _findMyMouseAnimationDurationMs;
         private int _findMyMouseSpotlightInitialZoom;
@@ -1139,6 +1138,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsAutoHide;
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
+        private int _mousePointerCrosshairsOrientation;
         private bool _mousePointerCrosshairsAutoActivate;
         private bool _isAnimationEnabledBySystem;
 

@@ -34,13 +34,33 @@ public class SettingsManager : JsonSettingsManager
         Resources.open_quake_description,
         false);
 
+    private readonly ToggleSetting _saveLastSelectedChannel = new(
+        Namespaced(nameof(SaveLastSelectedChannel)),
+        Resources.save_last_selected_channel!,
+        Resources.save_last_selected_channel_description!,
+        false);
+
+    private readonly ChoiceSetSetting _profileSortOrder = new(
+        Namespaced(nameof(ProfileSortOrder)),
+        Resources.profile_sort_order!,
+        Resources.profile_sort_order_description!,
+        [
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_default!, ProfileSortOrder.Default.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_alphabetical!, ProfileSortOrder.Alphabetical.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_mru!, ProfileSortOrder.MostRecentlyUsed.ToString("G")),
+        ]);
+
     public bool ShowHiddenProfiles => _showHiddenProfiles.Value;
 
     public bool OpenNewTab => _openNewTab.Value;
 
     public bool OpenQuake => _openQuake.Value;
 
-    internal static string SettingsJsonPath()
+    public bool SaveLastSelectedChannel => _saveLastSelectedChannel.Value;
+
+    public ProfileSortOrder ProfileSortOrder => System.Enum.TryParse<ProfileSortOrder>(_profileSortOrder.Value, out var result) ? result : ProfileSortOrder.Default;
+
+    private static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
@@ -56,6 +76,8 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_showHiddenProfiles);
         Settings.Add(_openNewTab);
         Settings.Add(_openQuake);
+        Settings.Add(_saveLastSelectedChannel);
+        Settings.Add(_profileSortOrder);
 
         // Load settings from file upon initialization
         LoadSettings();

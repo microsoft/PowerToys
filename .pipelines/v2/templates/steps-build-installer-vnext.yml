@@ -14,9 +14,6 @@ parameters:
   - name: additionalBuildOptions
     type: string
     default: ''
-  - name: installerSuffix
-    type: string
-    default: "wix5"
 
 steps:
   # Install WiX 5.0.2 tools needed for VNext installer (matching project SDK)
@@ -41,10 +38,10 @@ steps:
       # VNext bundle folder; base name intentionally omits the VNext suffix
       $InstallerFolder = 'PowerToysSetupVNext'
       if ($IsPerUser) {
-        $InstallerBasename = "PowerToysUserSetup-${{ parameters.versionNumber }}-${{ parameters.installerSuffix }}-$(BuildPlatform)"
+        $InstallerBasename = "PowerToysUserSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
       }
       else {
-        $InstallerBasename = "PowerToysSetup-${{ parameters.versionNumber }}-${{ parameters.installerSuffix }}-$(BuildPlatform)"
+        $InstallerBasename = "PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
       }
 
       # Export variables for downstream steps
@@ -63,7 +60,6 @@ steps:
       msbuildArgs: >-
         /t:PowerToysSetupCustomActionsVNext
         /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
-        /p:InstallerSuffix=${{ parameters.installerSuffix }}
         -restore -graph
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-actions.binlog
         ${{ parameters.additionalBuildOptions }}
@@ -95,7 +91,6 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true
-        /p:InstallerSuffix=${{ parameters.installerSuffix }}
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -132,6 +127,38 @@ steps:
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   #### END MSI
+  
+  #### BUILDING AND SIGNING SilentFilesInUseBAFunction DLL
+  - task: VSBuild@1
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build SilentFilesInUseBAFunction
+    inputs:
+      solution: "**/installer/PowerToysSetup.sln"
+      vsVersion: 17.0
+      msbuildArgs: >-
+        /t:SilentFilesInUseBAFunction
+        /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
+        -restore -graph
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-SilentFilesInUseBAFunction.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the msi
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign SilentFilesInUseBAFunction
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'installer/$(BuildPlatform)/$(BuildConfiguration)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  #### END BUILDING AND SIGNING SilentFilesInUseBAFunction DLL
+  
   #### BOOTSTRAP BUILDING AND SIGNING
   - task: VSBuild@1
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build VNext Bootstrapper
@@ -142,13 +169,12 @@ steps:
         -restore
         /t:PowerToysBootstrapperVNext
         /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
-        /p:InstallerSuffix=${{ parameters.installerSuffix }}
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bootstrapper.binlog
         -restore -graph
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      clean: false # don't undo our hard work above by deleting the MSI
+      clean: false # don't undo our hard work above by deleting the MSI nor SilentFilesInUseBAFunction
       msbuildArchitecture: x64
       maximumCpuCount: true
 

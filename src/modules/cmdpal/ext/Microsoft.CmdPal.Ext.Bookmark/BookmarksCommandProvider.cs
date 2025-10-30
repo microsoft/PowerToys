@@ -2,186 +2,129 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using ManagedCommon;
-using Microsoft.CmdPal.Ext.Bookmarks.Properties;
-using Microsoft.CmdPal.Ext.Indexer;
+using System.Threading;
+using Microsoft.CmdPal.Ext.Bookmarks.Pages;
+using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
+using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-public partial class BookmarksCommandProvider : CommandProvider
+public sealed partial class BookmarksCommandProvider : CommandProvider
 {
-    private readonly List<CommandItem> _commands = [];
+    private const int LoadStateNotLoaded = 0;
+    private const int LoadStateLoading = 1;
+    private const int LoadStateLoaded = 2;
 
-    private readonly AddBookmarkPage _addNewCommand = new(null);
+    private readonly IPlaceholderParser _placeholderParser = new PlaceholderParser();
+    private readonly IBookmarksManager _bookmarksManager;
+    private readonly IBookmarkResolver _commandResolver;
+    private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
 
-    private readonly IBookmarkDataSource _dataSource;
-    private readonly BookmarkJsonParser _parser;
-    private Bookmarks? _bookmarks;
+    private readonly ListItem _addNewItem;
+    private readonly Lock _bookmarksLock = new();
 
-    public BookmarksCommandProvider()
-        : this(new FileBookmarkDataSource(StateJsonPath()))
+    private ICommandItem[] _commands = [];
+    private List<BookmarkListItem> _bookmarks = [];
+    private int _loadState;
+
+    private static string StateJsonPath()
     {
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        Directory.CreateDirectory(directory);
+        return Path.Combine(directory, "bookmarks.json");
     }
 
-    internal BookmarksCommandProvider(IBookmarkDataSource dataSource)
+    public static BookmarksCommandProvider CreateWithDefaultStore()
     {
-        _dataSource = dataSource;
-        _parser = new BookmarkJsonParser();
+        return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(StateJsonPath())));
+    }
+
+    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager)
+    {
+        ArgumentNullException.ThrowIfNull(bookmarksManager);
+        _bookmarksManager = bookmarksManager;
+        _bookmarksManager.BookmarkAdded += OnBookmarkAdded;
+        _bookmarksManager.BookmarkRemoved += OnBookmarkRemoved;
+
+        _commandResolver = new BookmarkResolver(_placeholderParser);
 
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
         Icon = Icons.PinIcon;
 
-        _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
+        var addBookmarkPage = new AddBookmarkPage(null);
+        addBookmarkPage.AddedCommand += (_, e) => _bookmarksManager.Add(e.Name, e.Bookmark);
+        _addNewItem = new ListItem(addBookmarkPage);
     }
 
-    private void AddNewCommand_AddedCommand(object sender, BookmarkData args)
+    private void OnBookmarkAdded(BookmarkData bookmarkData)
     {
-        ExtensionHost.LogMessage($"Adding bookmark ({args.Name},{args.Bookmark})");
-        _bookmarks?.Data.Add(args);
+        var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser);
+        lock (_bookmarksLock)
+        {
+            _bookmarks.Add(newItem);
+        }
 
-        SaveAndUpdateCommands();
+        NotifyChange();
     }
 
-    // In the edit path, `args` was already in _bookmarks, we just updated it
-    private void Edit_AddedCommand(object sender, BookmarkData args)
+    private void OnBookmarkRemoved(BookmarkData bookmarkData)
     {
-        ExtensionHost.LogMessage($"Edited bookmark ({args.Name},{args.Bookmark})");
-
-        SaveAndUpdateCommands();
-    }
-
-    private void SaveAndUpdateCommands()
-    {
-        try
+        lock (_bookmarksLock)
         {
-            var jsonData = _parser.SerializeBookmarks(_bookmarks);
-            _dataSource.SaveBookmarkData(jsonData);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to save bookmarks: {ex.Message}");
+            _bookmarks.RemoveAll(t => t.BookmarkId == bookmarkData.Id);
         }
 
-        LoadCommands();
-        RaiseItemsChanged(0);
-    }
-
-    private void LoadCommands()
-    {
-        List<CommandItem> collected = [];
-        collected.Add(new CommandItem(_addNewCommand));
-
-        if (_bookmarks is null)
-        {
-            LoadBookmarksFromFile();
-        }
-
-        if (_bookmarks is not null)
-        {
-            collected.AddRange(_bookmarks.Data.Select(BookmarkToCommandItem));
-        }
-
-        _commands.Clear();
-        _commands.AddRange(collected);
-    }
-
-    private void LoadBookmarksFromFile()
-    {
-        try
-        {
-            var jsonData = _dataSource.GetBookmarkData();
-            _bookmarks = _parser.ParseBookmarks(jsonData);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex.Message);
-        }
-
-        if (_bookmarks is null)
-        {
-            _bookmarks = new();
-        }
-    }
-
-    private CommandItem BookmarkToCommandItem(BookmarkData bookmark)
-    {
-        ICommand command = bookmark.IsPlaceholder ?
-            new BookmarkPlaceholderPage(bookmark) :
-            new UrlCommand(bookmark);
-
-        var listItem = new CommandItem(command) { Icon = command.Icon };
-
-        List<CommandContextItem> contextMenu = [];
-
-        // Add commands for folder types
-        if (command is UrlCommand urlCommand)
-        {
-            if (!bookmark.IsWebUrl())
-            {
-                contextMenu.Add(
-                    new CommandContextItem(new DirectoryPage(urlCommand.Url)));
-
-                contextMenu.Add(
-                    new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
-            }
-        }
-
-        listItem.Title = bookmark.Name;
-        listItem.Subtitle = bookmark.Bookmark;
-
-        var edit = new AddBookmarkPage(bookmark) { Icon = Icons.EditIcon };
-        edit.AddedCommand += Edit_AddedCommand;
-        contextMenu.Add(new CommandContextItem(edit));
-
-        var delete = new CommandContextItem(
-            title: Resources.bookmarks_delete_title,
-            name: Resources.bookmarks_delete_name,
-            action: () =>
-            {
-                if (_bookmarks is not null)
-                {
-                    ExtensionHost.LogMessage($"Deleting bookmark ({bookmark.Name},{bookmark.Bookmark})");
-
-                    _bookmarks.Data.Remove(bookmark);
-
-                    SaveAndUpdateCommands();
-                }
-            },
-            result: CommandResult.KeepOpen())
-        {
-            IsCritical = true,
-            Icon = Icons.DeleteIcon,
-        };
-        contextMenu.Add(delete);
-
-        listItem.MoreCommands = contextMenu.ToArray();
-
-        return listItem;
+        NotifyChange();
     }
 
     public override ICommandItem[] TopLevelCommands()
     {
-        if (_commands.Count == 0)
+        if (Volatile.Read(ref _loadState) != LoadStateLoaded)
         {
-            LoadCommands();
+            if (Interlocked.CompareExchange(ref _loadState, LoadStateLoading, LoadStateNotLoaded) == LoadStateNotLoaded)
+            {
+                try
+                {
+                    lock (_bookmarksLock)
+                    {
+                        _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser))];
+                        _commands = BuildTopLevelCommandsUnsafe();
+                    }
+
+                    Volatile.Write(ref _loadState, LoadStateLoaded);
+                    RaiseItemsChanged();
+                }
+                catch
+                {
+                    Volatile.Write(ref _loadState, LoadStateNotLoaded);
+                    throw;
+                }
+            }
         }
 
-        return _commands.ToArray();
+        return _commands;
     }
 
-    internal static string StateJsonPath()
+    private void NotifyChange()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
+        if (Volatile.Read(ref _loadState) != LoadStateLoaded)
+        {
+            return;
+        }
 
-        // now, the state is just next to the exe
-        return System.IO.Path.Combine(directory, "bookmarks.json");
+        lock (_bookmarksLock)
+        {
+            _commands = BuildTopLevelCommandsUnsafe();
+        }
+
+        RaiseItemsChanged();
     }
+
+    [Pure]
+    private ICommandItem[] BuildTopLevelCommandsUnsafe() => [_addNewItem, .. _bookmarks];
 }
