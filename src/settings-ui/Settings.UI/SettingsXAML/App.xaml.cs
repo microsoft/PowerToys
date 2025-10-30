@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -16,11 +15,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using PowerToys.Interop;
-using Windows.UI.Popups;
 using WinRT.Interop;
 using WinUIEx;
 
@@ -365,6 +364,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
         private static FlyoutWindow flyoutWindow;
+        private static ShortcutConflictWindow shortcutConflictWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -404,6 +404,21 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void ClearFlyoutWindow()
         {
             flyoutWindow = null;
+        }
+
+        public static ShortcutConflictWindow GetShortcutConflictWindow()
+        {
+            return shortcutConflictWindow;
+        }
+
+        public static void SetShortcutConflictWindow(ShortcutConflictWindow window)
+        {
+            shortcutConflictWindow = window;
+        }
+
+        public static void ClearShortcutConflictWindow()
+        {
+            shortcutConflictWindow = null;
         }
 
         public static Type GetPage(string settingWindow)
