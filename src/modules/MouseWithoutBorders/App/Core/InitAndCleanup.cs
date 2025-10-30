@@ -220,7 +220,7 @@ internal static class InitAndCleanup
         lastReleaseAllKeysCall = Common.GetTick();
 
         KEYBDDATA kd;
-        kd.dwFlags = (int)Common.LLKHF.UP;
+        kd.dwFlags = (int)WM.LLKHF.UP;
 
         VK[] keys = new VK[]
         {

@@ -102,7 +102,7 @@ internal static class Receiver
                     bool nonElevated = Common.RunWithNoAdminRight && false;
                     if (nonElevated && Setting.Values.OneWayControlMode)
                     {
-                        if ((package.Kd.dwFlags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
+                        if ((package.Kd.dwFlags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP)
                         {
                             Helper.ShowOneWayModeMessage();
                         }
@@ -127,16 +127,16 @@ internal static class Receiver
 
                     // NOTE(@yuyoyuppe): disabled to drop elevation requirement
                     bool nonElevated = Common.RunWithNoAdminRight && false;
-                    if (nonElevated && Setting.Values.OneWayControlMode && package.Md.dwFlags != Common.WM_MOUSEMOVE)
+                    if (nonElevated && Setting.Values.OneWayControlMode && package.Md.dwFlags != WM.WM_MOUSEMOVE)
                     {
                         if (!DragDrop.IsDropping)
                         {
-                            if (package.Md.dwFlags is Common.WM_LBUTTONDOWN or Common.WM_RBUTTONDOWN)
+                            if (package.Md.dwFlags is WM.WM_LBUTTONDOWN or WM.WM_RBUTTONDOWN)
                             {
                                 Helper.ShowOneWayModeMessage();
                             }
                         }
-                        else if (package.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
+                        else if (package.Md.dwFlags is WM.WM_LBUTTONUP or WM.WM_RBUTTONUP)
                         {
                             DragDrop.IsDropping = false;
                         }
@@ -146,7 +146,7 @@ internal static class Receiver
 
                     if (Math.Abs(package.Md.X) >= Event.MOVE_MOUSE_RELATIVE && Math.Abs(package.Md.Y) >= Event.MOVE_MOUSE_RELATIVE)
                     {
-                        if (package.Md.dwFlags == Common.WM_MOUSEMOVE)
+                        if (package.Md.dwFlags == WM.WM_MOUSEMOVE)
                         {
                             InputSimulation.MoveMouseRelative(
                                 package.Md.X < 0 ? package.Md.X + Event.MOVE_MOUSE_RELATIVE : package.Md.X - Event.MOVE_MOUSE_RELATIVE,

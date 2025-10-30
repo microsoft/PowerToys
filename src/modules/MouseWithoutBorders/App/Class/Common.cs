@@ -677,7 +677,7 @@ namespace MouseWithoutBorders
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });
-                    InputSimulation.SendKey(new KEYBDDATA() { dwFlags = (int)Common.LLKHF.UP, wVk = (int)VK.SNAPSHOT });
+                    InputSimulation.SendKey(new KEYBDDATA() { dwFlags = (int)WM.LLKHF.UP, wVk = (int)VK.SNAPSHOT });
 
                     Logger.LogDebug("PrepareScreenCapture: SNAPSHOT simulated.");
 
