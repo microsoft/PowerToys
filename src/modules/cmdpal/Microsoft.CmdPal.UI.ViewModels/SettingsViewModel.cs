@@ -142,6 +142,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
+    public SettingsExtensionsViewModel Extensions { get; }
+
     private ObservableCollection<FallbackSettingsViewModel> _fallbackSettings = new();
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackSettings => _fallbackSettings;
@@ -179,6 +181,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
 
         ApplyFallbackSort();
+
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

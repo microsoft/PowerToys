@@ -94,6 +94,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+ATX
 ATRIOX
 aumid
 Authenticode
@@ -113,6 +114,7 @@ azman
 bbwe
 BCIE
 bck
+backticks
 BESTEFFORT
 bezelled
 bhid
@@ -268,6 +270,7 @@ countof
 covrun
 cpcontrols
 cph
+cppcoreguidelines
 cplusplus
 CPower
 cpptools
@@ -513,6 +516,7 @@ FARPROC
 fdx
 fesf
 FFFF
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -747,7 +751,7 @@ INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
-Inlines
+inlines
 INPC
 inproc
 INPUTHARDWARE
@@ -1178,6 +1182,7 @@ openas
 opencode
 OPENFILENAME
 opensource
+openurl
 openxmlformats
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
