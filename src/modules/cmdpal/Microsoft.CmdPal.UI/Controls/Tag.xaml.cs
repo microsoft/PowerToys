@@ -29,6 +29,18 @@ public partial class Tag : Control
         set => SetValue(ForegroundColorProperty, value);
     }
 
+    public OptionalColor? BorderBrushColor
+    {
+        get => (OptionalColor?)GetValue(BorderBrushColorProperty);
+        set => SetValue(BorderBrushColorProperty, value);
+    }
+
+    public double CornerRadiusValue
+    {
+        get => (double)GetValue(CornerRadiusValueProperty);
+        set => SetValue(CornerRadiusValueProperty, value);
+    }
+
     public bool HasIcon => Icon?.HasIcon(this.ActualTheme == ElementTheme.Light) ?? false;
 
     public IconInfoViewModel? Icon
@@ -49,11 +61,19 @@ public partial class Tag : Control
 
     private static Brush? OriginalBorder => Application.Current.Resources["TagBorderBrush"] as Brush;
 
+    private static CornerRadius? OriginalCornerRadius => Application.Current.Resources["TagCornerRadius"] as CornerRadius?;
+
     public static readonly DependencyProperty ForegroundColorProperty =
         DependencyProperty.Register(nameof(ForegroundColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnForegroundColorPropertyChanged));
 
     public static readonly DependencyProperty BackgroundColorProperty =
         DependencyProperty.Register(nameof(BackgroundColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnBackgroundColorPropertyChanged));
+
+    public static readonly DependencyProperty BorderBrushColorProperty =
+        DependencyProperty.Register(nameof(BorderBrushColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnBorderBrushColorPropertyChanged));
+
+    public static readonly DependencyProperty CornerRadiusValueProperty =
+        DependencyProperty.Register(nameof(CornerRadiusValue), typeof(double), typeof(Tag), new PropertyMetadata(0.0, OnCornerRadiusValuePropertyChanged));
 
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(nameof(Icon), typeof(IconInfoViewModel), typeof(Tag), new PropertyMetadata(null));
@@ -88,22 +108,10 @@ public partial class Tag : Control
             OptionalColorBrushCacheProvider.Convert(tag.ForegroundColor.Value) is SolidColorBrush brush)
         {
             tag.Foreground = brush;
-
-            // If we have a BG color, then don't apply a border.
-            if (tag.BackgroundColor is OptionalColor bg && bg.HasValue)
-            {
-                tag.BorderBrush = OriginalBorder;
-            }
-            else
-            {
-                // Otherwise (no background), use the FG as the border
-                tag.BorderBrush = brush;
-            }
         }
         else
         {
             tag.Foreground = OriginalFg;
-            tag.BorderBrush = OriginalBorder;
         }
     }
 
@@ -118,35 +126,48 @@ public partial class Tag : Control
             OptionalColorBrushCacheProvider.Convert(tag.BackgroundColor.Value) is SolidColorBrush brush)
         {
             tag.Background = brush;
-
-            // Since we have a BG here, we never want a border.
-            tag.BorderBrush = OriginalBorder;
-
-            // If we have a FG color, then don't apply a border.
-            if (tag.ForegroundColor is OptionalColor fg && fg.HasValue)
-            {
-                tag.BorderBrush = OriginalBorder;
-            }
-            else
-            {
-                // Otherwise (no foreground), use the FG as the border
-                tag.BorderBrush = brush;
-            }
         }
         else
         {
-            // No BG color here.
             tag.Background = OriginalBg;
+        }
+    }
 
-            // If we have a FG color, then don't apply a border.
-            if (tag.ForegroundColor is OptionalColor fg && fg.HasValue)
+    private static void OnBorderBrushColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not Tag tag)
+        {
+            return;
+        }
+
+        if (tag.BorderBrushColor is not null &&
+            OptionalColorBrushCacheProvider.Convert(tag.BorderBrushColor.Value) is SolidColorBrush brush)
+        {
+            tag.BorderBrush = brush;
+        }
+        else
+        {
+            tag.BorderBrush = OriginalBorder;
+        }
+    }
+
+    private static void OnCornerRadiusValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not Tag tag)
+        {
+            return;
+        }
+
+        if (tag.CornerRadiusValue > 0)
+        {
+            tag.CornerRadius = new CornerRadius(tag.CornerRadiusValue);
+        }
+        else
+        {
+            // Use TagCornerRadius from theme resources
+            if (OriginalCornerRadius is CornerRadius defaultRadius)
             {
-                tag.BorderBrush = tag.Foreground;
-            }
-            else
-            {
-                // Otherwise (no foreground), use the FG as the border
-                tag.BorderBrush = OriginalBorder;
+                tag.CornerRadius = defaultRadius;
             }
         }
     }

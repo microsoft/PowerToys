@@ -23,6 +23,10 @@ public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context
 
     public OptionalColor Background { get; private set; }
 
+    public OptionalColor BorderBrushColor { get; private set; }
+
+    public double CornerRadius { get; private set; }
+
     public IconInfoViewModel Icon { get; private set; } = new(null);
 
     public override void InitializeProperties()
@@ -36,6 +40,8 @@ public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context
         Text = model.Text;
         Foreground = model.Foreground;
         Background = model.Background;
+        BorderBrushColor = model.BorderBrushColor;
+        CornerRadius = model.CornerRadius;
         ModelToolTip = model.ToolTip;
         Icon = new(model.Icon);
         Icon.InitializeProperties();
@@ -43,6 +49,8 @@ public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context
         UpdateProperty(nameof(Text));
         UpdateProperty(nameof(Foreground));
         UpdateProperty(nameof(Background));
+        UpdateProperty(nameof(BorderBrushColor));
+        UpdateProperty(nameof(CornerRadius));
         UpdateProperty(nameof(ToolTip));
         UpdateProperty(nameof(Icon));
     }
