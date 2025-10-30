@@ -145,6 +145,69 @@ GifRecordingSession::GifRecordingSession(
         m_gifEncoder.put()));
 
     winrt::check_hresult(m_gifEncoder->Initialize(m_wicStream.get(), WICBitmapEncoderNoCache));
+
+    // Set global GIF metadata for looping (NETSCAPE2.0 application extension)
+    try
+    {
+        winrt::com_ptr<IWICMetadataQueryWriter> encoderMetadataWriter;
+        if (SUCCEEDED(m_gifEncoder->GetMetadataQueryWriter(encoderMetadataWriter.put())) && encoderMetadataWriter)
+        {
+            OutputDebugStringW(L"Setting NETSCAPE2.0 looping extension on encoder...\n");
+
+            // Set application extension
+            PROPVARIANT propValue;
+            PropVariantInit(&propValue);
+            propValue.vt = VT_UI1 | VT_VECTOR;
+            propValue.caub.cElems = 11;
+            propValue.caub.pElems = static_cast<UCHAR*>(CoTaskMemAlloc(11));
+            if (propValue.caub.pElems != nullptr)
+            {
+                memcpy(propValue.caub.pElems, "NETSCAPE2.0", 11);
+                HRESULT hr = encoderMetadataWriter->SetMetadataByName(L"/appext/application", &propValue);
+                if (SUCCEEDED(hr))
+                {
+                    OutputDebugStringW(L"Encoder application extension set successfully\n");
+                }
+                else
+                {
+                    OutputDebugStringW(L"Failed to set encoder application extension\n");
+                }
+                PropVariantClear(&propValue);
+
+                // Set loop count (0 = infinite)
+                PropVariantInit(&propValue);
+                propValue.vt = VT_UI1 | VT_VECTOR;
+                propValue.caub.cElems = 5;
+                propValue.caub.pElems = static_cast<UCHAR*>(CoTaskMemAlloc(5));
+                if (propValue.caub.pElems != nullptr)
+                {
+                    propValue.caub.pElems[0] = 3;
+                    propValue.caub.pElems[1] = 1;
+                    propValue.caub.pElems[2] = 0;
+                    propValue.caub.pElems[3] = 0;
+                    propValue.caub.pElems[4] = 0;
+                    hr = encoderMetadataWriter->SetMetadataByName(L"/appext/data", &propValue);
+                    if (SUCCEEDED(hr))
+                    {
+                        OutputDebugStringW(L"Encoder loop count set successfully\n");
+                    }
+                    else
+                    {
+                        OutputDebugStringW(L"Failed to set encoder loop count\n");
+                    }
+                    PropVariantClear(&propValue);
+                }
+            }
+        }
+        else
+        {
+            OutputDebugStringW(L"Failed to get encoder metadata writer\n");
+        }
+    }
+    catch (...)
+    {
+        OutputDebugStringW(L"Warning: Failed to set GIF encoder looping metadata\n");
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -272,47 +335,6 @@ HRESULT GifRecordingSession::EncodeFrame(ID3D11Texture2D* frameTexture)
             winrt::com_ptr<IWICMetadataQueryWriter> frameMetadataWriter;
             if (SUCCEEDED(frameEncode->GetMetadataQueryWriter(frameMetadataWriter.put())) && frameMetadataWriter)
             {
-                // For the FIRST frame, set the NETSCAPE2.0 looping extension
-                if (m_frameCount == 0)
-                {
-                    OutputDebugStringW(L"Setting NETSCAPE2.0 looping extension on first frame...\n");
-
-                    // Set application extension
-                    PROPVARIANT propValue;
-                    PropVariantInit(&propValue);
-                    propValue.vt = VT_UI1 | VT_VECTOR;
-                    propValue.caub.cElems = 11;
-                    propValue.caub.pElems = static_cast<UCHAR*>(CoTaskMemAlloc(11));
-                    if (propValue.caub.pElems != nullptr)
-                    {
-                        memcpy(propValue.caub.pElems, "NETSCAPE2.0", 11);
-                        HRESULT hr = frameMetadataWriter->SetMetadataByName(L"/appext/application", &propValue);
-                        if (SUCCEEDED(hr))
-                        {
-                            OutputDebugStringW(L"Application extension set successfully\n");
-                        }
-                        PropVariantClear(&propValue);
-
-                        // Set loop count (0 = infinite)
-                        PropVariantInit(&propValue);
-                        propValue.vt = VT_UI1 | VT_VECTOR;
-                        propValue.caub.cElems = 3;
-                        propValue.caub.pElems = static_cast<UCHAR*>(CoTaskMemAlloc(3));
-                        if (propValue.caub.pElems != nullptr)
-                        {
-                            propValue.caub.pElems[0] = 1; // Sub-block index
-                            propValue.caub.pElems[1] = 0; // Loop count low byte (0 = infinite)
-                            propValue.caub.pElems[2] = 0; // Loop count high byte
-                            hr = frameMetadataWriter->SetMetadataByName(L"/appext/data", &propValue);
-                            if (SUCCEEDED(hr))
-                            {
-                                OutputDebugStringW(L"Loop count set successfully\n");
-                            }
-                            PropVariantClear(&propValue);
-                        }
-                    }
-                }
-
                 // Set the frame delay in the metadata (in hundredths of a second)
                 PROPVARIANT propValue;
                 PropVariantInit(&propValue);
