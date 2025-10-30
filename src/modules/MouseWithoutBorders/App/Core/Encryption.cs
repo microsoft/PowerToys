@@ -38,7 +38,7 @@ internal static class Encryption
     /// The first block is a handshake one containing random data.
     /// Related Unit Test: TestEncryptDecrypt
     /// </summary>
-    internal static readonly string InitialIV = ulong.MaxValue.ToString(CultureInfo.InvariantCulture);
+    private static readonly string InitialIV = ulong.MaxValue.ToString(CultureInfo.InvariantCulture);
 
     internal static Random Ran
     {
@@ -70,7 +70,7 @@ internal static class Encryption
         }
     }
 
-    internal static string KeyDisplayedText(string key)
+    private static string KeyDisplayedText(string key)
     {
         string displayedValue = string.Empty;
         int i = 0;
@@ -114,7 +114,7 @@ internal static class Encryption
 
     private static readonly ConcurrentDictionary<string, byte[]> LegalKeyDictionary = new(StringComparer.OrdinalIgnoreCase);
 
-    internal static byte[] GenLegalKey()
+    private static byte[] GenLegalKey()
     {
         byte[] rv;
         string myKey = Encryption.MyKey;
@@ -208,7 +208,7 @@ internal static class Encryption
 
     private const int PW_LENGTH = 16;
 
-    public static string CreateRandomKey()
+    internal static string CreateRandomKey()
     {
         // Not including characters like "'`O0& since they are confusing to users.
         string[] chars = new[] { "abcdefghjkmnpqrstuvxyz", "ABCDEFGHJKMNPQRSTUVXYZ", "123456789", "~!@#$%^*()_-+=:;<,>.?/\\|[]" };

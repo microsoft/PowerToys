@@ -22,7 +22,7 @@ namespace MouseWithoutBorders.Core;
 
 // The beauty of "union" in C#
 [StructLayout(LayoutKind.Explicit)]
-internal class DATA
+internal sealed class DATA
 {
     [FieldOffset(0)]
     internal PackageType Type; // 4 (first byte = package type, 1 = checksum, 2+3 = magic no.)

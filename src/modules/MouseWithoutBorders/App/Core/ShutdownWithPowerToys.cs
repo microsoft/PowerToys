@@ -6,15 +6,12 @@ using System;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using MouseWithoutBorders.Class;
-
-using Logger = MouseWithoutBorders.Core.Logger;
 
 namespace MouseWithoutBorders.Core;
 
 internal static class ShutdownWithPowerToys
 {
-    public static void WaitForPowerToysRunner(ETWTrace etwTrace)
+    internal static void WaitForPowerToysRunner(ETWTrace etwTrace)
     {
         try
         {

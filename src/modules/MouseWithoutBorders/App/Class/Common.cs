@@ -577,7 +577,7 @@ namespace MouseWithoutBorders
             lastInputEventCount = Event.InputEventCount;
         }
 
-        private static void PokeMyself()
+        internal static void PokeMyself()
         {
             int x, y = 0;
 

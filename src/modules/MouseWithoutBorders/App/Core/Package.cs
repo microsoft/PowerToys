@@ -2,11 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
-
 // <summary>
 //     Package format/conversion.
 // </summary>
@@ -21,7 +16,7 @@ internal static class Package
 {
     internal const byte PACKAGE_SIZE = 32;
     internal const byte PACKAGE_SIZE_EX = 64;
-    internal const byte WP_PACKAGE_SIZE = 6;
+    private const byte WP_PACKAGE_SIZE = 6;
     internal static PackageMonitor PackageSent;
     internal static PackageMonitor PackageReceived;
     internal static int PackageID;

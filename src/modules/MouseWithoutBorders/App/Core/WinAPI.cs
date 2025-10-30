@@ -14,8 +14,6 @@ using System.Windows.Forms;
 
 using MouseWithoutBorders.Class;
 
-using Thread = MouseWithoutBorders.Core.Thread;
-
 // <summary>
 //     Screen/Desktop helper functions.
 // </summary>
@@ -33,7 +31,7 @@ internal static class WinAPI
     private static MyRectangle newPrimaryScreenBounds;
     private static string activeDesktop;
 
-    internal static string ActiveDesktop => WinAPI.activeDesktop;
+    private static string ActiveDesktop => WinAPI.activeDesktop;
 
     internal static void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
     {
@@ -263,7 +261,7 @@ internal static class WinAPI
         return string.Empty;
     }
 
-    internal static void StartMMService(string desktopToRunMouseWithoutBordersOn)
+    private static void StartMMService(string desktopToRunMouseWithoutBordersOn)
     {
         if (!Common.RunWithNoAdminRight)
         {
