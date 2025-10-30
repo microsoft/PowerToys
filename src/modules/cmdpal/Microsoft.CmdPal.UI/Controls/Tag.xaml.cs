@@ -35,9 +35,9 @@ public partial class Tag : Control
         set => SetValue(BorderBrushColorProperty, value);
     }
 
-    public double CornerRadiusValue
+    public Microsoft.CommandPalette.Extensions.CornerRadius? CornerRadiusValue
     {
-        get => (double)GetValue(CornerRadiusValueProperty);
+        get => (Microsoft.CommandPalette.Extensions.CornerRadius?)GetValue(CornerRadiusValueProperty);
         set => SetValue(CornerRadiusValueProperty, value);
     }
 
@@ -73,7 +73,7 @@ public partial class Tag : Control
         DependencyProperty.Register(nameof(BorderBrushColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnBorderBrushColorPropertyChanged));
 
     public static readonly DependencyProperty CornerRadiusValueProperty =
-        DependencyProperty.Register(nameof(CornerRadiusValue), typeof(double), typeof(Tag), new PropertyMetadata(0.0, OnCornerRadiusValuePropertyChanged));
+        DependencyProperty.Register(nameof(CornerRadiusValue), typeof(Microsoft.CommandPalette.Extensions.CornerRadius?), typeof(Tag), new PropertyMetadata(null, OnCornerRadiusValuePropertyChanged));
 
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(nameof(Icon), typeof(IconInfoViewModel), typeof(Tag), new PropertyMetadata(null));
@@ -158,9 +158,9 @@ public partial class Tag : Control
             return;
         }
 
-        if (tag.CornerRadiusValue > 0)
+        if (tag.CornerRadiusValue is Microsoft.CommandPalette.Extensions.CornerRadius extensionRadius)
         {
-            tag.CornerRadius = new CornerRadius(tag.CornerRadiusValue);
+            tag.CornerRadius = new CornerRadius(extensionRadius.TopLeft, extensionRadius.TopRight, extensionRadius.BottomRight, extensionRadius.BottomLeft);
         }
         else
         {

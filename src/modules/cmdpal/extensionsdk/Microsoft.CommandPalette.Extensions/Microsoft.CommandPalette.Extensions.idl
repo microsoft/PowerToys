@@ -148,6 +148,14 @@ namespace Microsoft.CommandPalette.Extensions
         Microsoft.CommandPalette.Extensions.Color Color;
     };
     
+    struct CornerRadius
+    {
+        Double TopLeft;
+        Double TopRight;
+        Double BottomRight;
+        Double BottomLeft;
+    };
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ITag {
         IIconInfo Icon { get; };
@@ -155,7 +163,7 @@ namespace Microsoft.CommandPalette.Extensions
         OptionalColor Foreground { get; };
         OptionalColor Background { get; };
         OptionalColor BorderBrushColor { get; };
-        Double CornerRadius { get; };
+        Microsoft.CommandPalette.Extensions.CornerRadius CornerRadius { get; };
         String ToolTip { get; };
     };
     

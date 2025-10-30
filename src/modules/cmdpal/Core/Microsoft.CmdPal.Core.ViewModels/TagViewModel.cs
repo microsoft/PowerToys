@@ -25,7 +25,7 @@ public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context
 
     public OptionalColor BorderBrushColor { get; private set; }
 
-    public double CornerRadius { get; private set; }
+    public Microsoft.CommandPalette.Extensions.CornerRadius CornerRadius { get; private set; }
 
     public IconInfoViewModel Icon { get; private set; } = new(null);
 
