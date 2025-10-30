@@ -89,23 +89,23 @@ internal static class InitAndCleanup
     internal static void Init()
     {
         _ = Helper.GetUserName();
-        Common.GeneratedKey = true;
+        Encryption.GeneratedKey = true;
 
         try
         {
-            Common.MyKey = Setting.Values.MyKey;
+            Encryption.MyKey = Setting.Values.MyKey;
             int tmp = Setting.Values.MyKeyDaysToExpire;
         }
         catch (FormatException e)
         {
-            Common.KeyCorrupted = true;
-            Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
+            Encryption.KeyCorrupted = true;
+            Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
             Logger.Log(e.Message);
         }
         catch (CryptographicException e)
         {
-            Common.KeyCorrupted = true;
-            Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
+            Encryption.KeyCorrupted = true;
+            Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
             Logger.Log(e.Message);
         }
 
@@ -131,7 +131,7 @@ internal static class InitAndCleanup
         Common.PackageSent = new PackageMonitor(0);
         Common.PackageReceived = new PackageMonitor(0);
         SetupMachineNameAndID();
-        Common.InitEncryption();
+        Encryption.InitEncryption();
         CreateHelperThreads();
 
         SystemEvents.DisplaySettingsChanged += new EventHandler(Common.SystemEvents_DisplaySettingsChanged);

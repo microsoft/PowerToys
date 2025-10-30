@@ -369,21 +369,21 @@ namespace MouseWithoutBorders
                             if (myDesktopNotActive)
                             {
                                 myDesktopNotActive = false;
-                                Common.MyKey = Setting.Values.MyKey;
+                                Encryption.MyKey = Setting.Values.MyKey;
                             }
 
                             MachineStuff.UpdateMachinePoolStringSetting();
 
-                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Common.KeyCorrupted))
+                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Encryption.KeyCorrupted))
                             {
                                 if (!shownSetupFormOneTime)
                                 {
                                     shownSetupFormOneTime = true;
                                     MachineStuff.ShowMachineMatrix();
 
-                                    if (Common.KeyCorrupted && !Setting.Values.FirstRun)
+                                    if (Encryption.KeyCorrupted && !Setting.Values.FirstRun)
                                     {
-                                        Common.KeyCorrupted = false;
+                                        Encryption.KeyCorrupted = false;
                                         string msg = "The security key is corrupted for some reason, please re-setup.";
                                         MessageBox.Show(msg, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                     }
@@ -490,9 +490,9 @@ namespace MouseWithoutBorders
 
                     if (count == 600)
                     {
-                        if (!Common.GeneratedKey)
+                        if (!Encryption.GeneratedKey)
                         {
-                            Common.MyKey = Setting.Values.MyKey;
+                            Encryption.MyKey = Setting.Values.MyKey;
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
@@ -505,7 +505,7 @@ namespace MouseWithoutBorders
                                 Common.ShowToolTip("The security key must be auto generated in one of the machines.", 10000);
                             }
                         }
-                        else if (!Common.KeyCorrupted && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Setting.Values.FirstRun && Common.AtLeastOneSocketConnected())
+                        else if (!Encryption.KeyCorrupted && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Setting.Values.FirstRun && Common.AtLeastOneSocketConnected())
                         {
                             int myKeyDaysToExpire = Setting.Values.MyKeyDaysToExpire;
 

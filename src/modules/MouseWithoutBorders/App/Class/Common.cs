@@ -514,7 +514,7 @@ namespace MouseWithoutBorders
 
         internal static void SendHeartBeat(bool initial = false)
         {
-            SendPackage(ID.ALL, initial && Common.GeneratedKey ? PackageType.Heartbeat_ex : PackageType.Heartbeat);
+            SendPackage(ID.ALL, initial && Encryption.GeneratedKey ? PackageType.Heartbeat_ex : PackageType.Heartbeat);
         }
 
         private static long lastSendNextMachine;
@@ -583,7 +583,7 @@ namespace MouseWithoutBorders
 
             for (int i = 0; i < 10; i++)
             {
-                x = Ran.Next(-9, 10);
+                x = Encryption.Ran.Next(-9, 10);
                 InputSimulation.MoveMouseRelative(x, y);
                 Thread.Sleep(50);
                 InputSimulation.MoveMouseRelative(-x, -y);
@@ -1379,7 +1379,7 @@ namespace MouseWithoutBorders
 
                 if (string.IsNullOrEmpty(machine_Name))
                 {
-                    machine_Name = "RANDOM" + Ran.Next().ToString(CultureInfo.CurrentCulture);
+                    machine_Name = "RANDOM" + Encryption.Ran.Next().ToString(CultureInfo.CurrentCulture);
                 }
             }
 
@@ -1533,13 +1533,13 @@ namespace MouseWithoutBorders
 
         internal static void SendOrReceiveARandomDataBlockPerInitialIV(Stream st, bool send = true)
         {
-            byte[] ranData = new byte[SymAlBlockSize];
+            byte[] ranData = new byte[Encryption.SymAlBlockSize];
 
             try
             {
                 if (send)
                 {
-                    ranData = RandomNumberGenerator.GetBytes(SymAlBlockSize);
+                    ranData = RandomNumberGenerator.GetBytes(Encryption.SymAlBlockSize);
                     st.Write(ranData, 0, ranData.Length);
                 }
                 else

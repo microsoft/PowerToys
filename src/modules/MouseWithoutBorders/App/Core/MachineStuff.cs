@@ -793,8 +793,8 @@ internal static class MachineStuff
     internal static void ShowSetupForm(bool reopenSockets = false)
     {
         Logger.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
-        Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
-        Common.GeneratedKey = true;
+        Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+        Encryption.GeneratedKey = true;
 
         if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
         {

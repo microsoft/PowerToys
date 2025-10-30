@@ -211,11 +211,11 @@ internal static class Receiver
             case PackageType.Heartbeat_ex:
                 Common.PackageReceived.Heartbeat++;
 
-                Common.GeneratedKey = Common.GeneratedKey || package.Type == PackageType.Heartbeat_ex;
+                Encryption.GeneratedKey = Encryption.GeneratedKey || package.Type == PackageType.Heartbeat_ex;
 
-                if (Common.GeneratedKey)
+                if (Encryption.GeneratedKey)
                 {
-                    Setting.Values.MyKey = Common.MyKey;
+                    Setting.Values.MyKey = Encryption.MyKey;
                     Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l2);
                 }
 
@@ -230,15 +230,15 @@ internal static class Receiver
                 break;
 
             case PackageType.Heartbeat_ex_l2:
-                Common.GeneratedKey = true;
-                Setting.Values.MyKey = Common.MyKey;
+                Encryption.GeneratedKey = true;
+                Setting.Values.MyKey = Encryption.MyKey;
                 Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l3);
 
                 break;
 
             case PackageType.Heartbeat_ex_l3:
-                Common.GeneratedKey = true;
-                Setting.Values.MyKey = Common.MyKey;
+                Encryption.GeneratedKey = true;
+                Setting.Values.MyKey = Encryption.MyKey;
 
                 break;
 

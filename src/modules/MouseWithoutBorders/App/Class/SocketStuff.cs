@@ -101,7 +101,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (encryptedStream == null && BackingSocket.Connected)
                 {
-                    encryptedStream = Common.GetEncryptedStream(new NetworkStream(BackingSocket));
+                    encryptedStream = Encryption.GetEncryptedStream(new NetworkStream(BackingSocket));
                     Common.SendOrReceiveARandomDataBlockPerInitialIV(encryptedStream);
                 }
 
@@ -115,7 +115,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (decryptedStream == null && BackingSocket.Connected)
                 {
-                    decryptedStream = Common.GetDecryptedStream(new NetworkStream(BackingSocket));
+                    decryptedStream = Encryption.GetDecryptedStream(new NetworkStream(BackingSocket));
                     Common.SendOrReceiveARandomDataBlockPerInitialIV(decryptedStream, false);
                 }
 
@@ -181,7 +181,7 @@ namespace MouseWithoutBorders.Class
             Logger.LogDebug("SocketStuff started.");
 
             bASE_PORT = port;
-            Common.Ran = new Random();
+            Encryption.Ran = new Random();
 
             Logger.LogDebug("Validating session...");
 
@@ -221,10 +221,10 @@ namespace MouseWithoutBorders.Class
 
                 if (Setting.Values.IsMyKeyRandom)
                 {
-                    Setting.Values.MyKey = Common.MyKey;
+                    Setting.Values.MyKey = Encryption.MyKey;
                 }
 
-                Common.MagicNumber = Common.Get24BitHash(Common.MyKey);
+                Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
                 Common.PackageID = Setting.Values.PackageID;
 
                 TcpPort = bASE_PORT;
@@ -505,8 +505,8 @@ namespace MouseWithoutBorders.Class
                 throw new ExpectedSocketException(log);
             }
 
-            bytes[3] = (byte)((Common.MagicNumber >> 24) & 0xFF);
-            bytes[2] = (byte)((Common.MagicNumber >> 16) & 0xFF);
+            bytes[3] = (byte)((Encryption.MagicNumber >> 24) & 0xFF);
+            bytes[2] = (byte)((Encryption.MagicNumber >> 16) & 0xFF);
             bytes[1] = 0;
             for (int i = 2; i < Common.PACKAGE_SIZE; i++)
             {
@@ -535,7 +535,7 @@ namespace MouseWithoutBorders.Class
 
             magic = (buf[3] << 24) + (buf[2] << 16);
 
-            if (magic != (Common.MagicNumber & 0xFFFF0000))
+            if (magic != (Encryption.MagicNumber & 0xFFFF0000))
             {
                 Logger.Log("Magic number invalid!");
                 buf[0] = (byte)PackageType.Invalid;
@@ -1984,7 +1984,7 @@ namespace MouseWithoutBorders.Class
                             if (tcp.MachineId == Setting.Values.MachineId)
                             {
                                 tcp = null;
-                                Setting.Values.MachineId = Common.Ran.Next();
+                                Setting.Values.MachineId = Encryption.Ran.Next();
                                 InitAndCleanup.UpdateMachineTimeAndID();
                                 InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_HOTKEY;
 

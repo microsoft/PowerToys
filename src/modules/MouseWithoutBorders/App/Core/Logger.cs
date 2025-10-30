@@ -209,9 +209,9 @@ internal static class Logger
                 "Private Mem: " + (Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString(CultureInfo.CurrentCulture) + "KB",
                 sb.ToString());
 
-            if (!string.IsNullOrEmpty(Common.myKey))
+            if (!string.IsNullOrEmpty(Encryption.myKey))
             {
-                log = log.Replace(Common.MyKey, Common.GetDebugInfo(Common.MyKey));
+                log = log.Replace(Encryption.MyKey, Encryption.GetDebugInfo(Encryption.MyKey));
             }
 
             log += Thread.DumpThreadsStack();
@@ -294,7 +294,7 @@ internal static class Logger
         // strArr[3] = t.FullName;
         strArr[4] = " = ";
         strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
-            ? Common.GetDebugInfo(objString)
+            ? Encryption.GetDebugInfo(objString)
             : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : objString

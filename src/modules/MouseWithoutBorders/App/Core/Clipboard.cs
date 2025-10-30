@@ -812,14 +812,14 @@ internal static class Clipboard
             byte[] buf = new byte[Common.PACKAGE_SIZE_EX];
 
             NetworkStream ns = new(s);
-            enStream = Common.GetEncryptedStream(ns);
+            enStream = Encryption.GetEncryptedStream(ns);
             Common.SendOrReceiveARandomDataBlockPerInitialIV(enStream);
             Logger.LogDebug($"{nameof(ShakeHand)}: Writing header package.");
             enStream.Write(package.Bytes, 0, Common.PACKAGE_SIZE_EX);
 
             Logger.LogDebug($"{nameof(ShakeHand)}: Sent: clientPush={clientPushData}, postAction={postAction}.");
 
-            deStream = Common.GetDecryptedStream(ns);
+            deStream = Encryption.GetDecryptedStream(ns);
             Common.SendOrReceiveARandomDataBlockPerInitialIV(deStream, false);
 
             Logger.LogDebug($"{nameof(ShakeHand)}: Reading header package.");
