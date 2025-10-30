@@ -74,6 +74,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRename.UnitTests", "sr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleTemplateCompileTest", "tools\project_template\ModuleTemplate\ModuleTemplateCompileTest.vcxproj", "{64A80062-4D8B-4229-8A38-DFA1D7497749}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ptcli", "tools\ptcli\ptcli.csproj", "{2589570C-B068-41CA-A554-BDCAE6FC4CAC}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManager", "src\modules\keyboardmanager\dll\KeyboardManager.vcxproj", "{89F34AF7-1C34-4A72-AA6E-534BCF972BD9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "imageresizer", "imageresizer", "{6C7F47CC-2151-44A3-A546-41C70025132C}"
@@ -926,6 +928,14 @@ Global
 		{64A80062-4D8B-4229-8A38-DFA1D7497749}.Release|ARM64.Build.0 = Release|ARM64
 		{64A80062-4D8B-4229-8A38-DFA1D7497749}.Release|x64.ActiveCfg = Release|x64
 		{64A80062-4D8B-4229-8A38-DFA1D7497749}.Release|x64.Build.0 = Release|x64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Debug|ARM64.Build.0 = Debug|ARM64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Debug|x64.ActiveCfg = Debug|x64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Debug|x64.Build.0 = Debug|x64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Release|ARM64.ActiveCfg = Release|ARM64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Release|ARM64.Build.0 = Release|ARM64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Release|x64.ActiveCfg = Release|x64
+		{2589570C-B068-41CA-A554-BDCAE6FC4CAC}.Release|x64.Build.0 = Release|x64
 		{89F34AF7-1C34-4A72-AA6E-534BCF972BD9}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{89F34AF7-1C34-4A72-AA6E-534BCF972BD9}.Debug|ARM64.Build.0 = Debug|ARM64
 		{89F34AF7-1C34-4A72-AA6E-534BCF972BD9}.Debug|x64.ActiveCfg = Debug|x64

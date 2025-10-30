@@ -29,6 +29,8 @@
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
+#include "command_registry.h"
+#include "cli_server.h"
 
 #include <winrt/Windows.System.h>
 
@@ -184,8 +186,13 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         {
             try
             {
-                auto pt_module = load_powertoy(moduleSubdir);
-                modules().emplace(pt_module->get_key(), std::move(pt_module));
+                auto ptModule = load_powertoy(moduleSubdir);
+                std::wstring moduleKey{ ptModule->get_key() };
+                auto [it, inserted] = modules().emplace(moduleKey, std::move(ptModule));
+                if (inserted)
+                {
+                    CommandRegistry::instance().register_module(it->second.operator->());
+                }
             }
             catch (...)
             {
@@ -208,6 +215,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
         // Start initial powertoys
         start_enabled_powertoys();
+        start_cli_server();
         std::wstring product_version = get_product_version();
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);

@@ -1,6 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="command_registry.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="cli_server.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="unhandled_exception_handler.cpp">
@@ -55,6 +61,12 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="tray_icon.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="command_registry.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="cli_server.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="powertoy_module.h">

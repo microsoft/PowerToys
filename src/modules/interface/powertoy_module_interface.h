@@ -2,6 +2,7 @@
 
 #include <compare>
 #include <common/utils/gpo.h>
+#include "powertoy_cli.h"
 
 /*
   DLL Interface for PowerToys. The powertoy_create() (see below) must return
@@ -153,6 +154,11 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration()
     {
         return powertoys_gpo::gpo_rule_configured_not_configured;
+    }
+
+    virtual pt::cli::IModuleCommandProvider* command_provider()
+    {
+        return nullptr;
     }
 
     // Some actions like AdvancedPaste generate new inputs, which we don't want to catch again.

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
     <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)\tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h runner.base.rc runner.rc" />
@@ -65,6 +65,8 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="powertoy_module.cpp" />
+    <ClCompile Include="command_registry.cpp" />
+    <ClCompile Include="cli_server.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="centralized_kb_hook.cpp" />
@@ -86,6 +88,8 @@
     <ClInclude Include="centralized_kb_hook.h" />
     <ClInclude Include="settings_telemetry.h" />
     <ClInclude Include="UpdateUtils.h" />
+    <ClInclude Include="command_registry.h" />
+    <ClInclude Include="cli_server.h" />
     <ClInclude Include="powertoy_module.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="restart_elevated.h" />

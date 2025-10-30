@@ -9,6 +9,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/json.h>
 
 #include <WorkspacesLib/trace.h>
 #include <WorkspacesLib/WorkspacesData.h>
@@ -17,6 +18,9 @@
 
 #include "resource.h"
 #include <common/utils/EventWaiter.h>
+#include <algorithm>
+#include <cwctype>
+#include <memory>
 
 // Non-localizable
 const std::wstring workspacesLauncherPath = L"PowerToys.WorkspacesLauncher.exe";
@@ -68,6 +72,8 @@ public:
     {
         return app_key.c_str();
     }
+
+    pt::cli::IModuleCommandProvider* command_provider() override;
 
     virtual std::optional<HotkeyEx> GetHotkeyEx() override
     {
@@ -359,9 +365,85 @@ private:
         .modifiersMask = MOD_CONTROL | MOD_WIN,
         .vkCode = 0xC0, // VK_OEM_3 key; usually `~
     };
+
+    std::unique_ptr<pt::cli::IModuleCommandProvider> m_cliProvider;
+
+    pt::cli::CommandResult HandleList(const json::JsonObject& args) const;
 };
+
+class WorkspacesCommandProvider final : public pt::cli::IModuleCommandProvider
+{
+public:
+    explicit WorkspacesCommandProvider(const WorkspacesModuleInterface& owner) :
+        m_owner(owner)
+    {
+    }
+
+    std::wstring ModuleKey() const override
+    {
+        return L"workspaces";
+    }
+
+    std::vector<pt::cli::CommandDescriptor> DescribeCommands() const override
+    {
+        pt::cli::CommandDescriptor listDescriptor;
+        listDescriptor.action = L"list";
+        listDescriptor.description = L"List configured workspaces.";
+        return { std::move(listDescriptor) };
+    }
+
+    pt::cli::CommandResult Execute(const pt::cli::CommandInvocation& invocation) override
+    {
+        std::wstring action = invocation.action;
+        std::transform(action.begin(), action.end(), action.begin(), [](wchar_t ch) {
+            return static_cast<wchar_t>(std::towlower(ch));
+        });
+
+        if (action == L"list")
+        {
+            return m_owner.HandleList(invocation.args);
+        }
+
+        return pt::cli::CommandResult::Error(L"E_COMMAND_NOT_FOUND", L"Unsupported Workspaces command.");
+    }
+
+private:
+    const WorkspacesModuleInterface& m_owner;
+};
+
+pt::cli::IModuleCommandProvider* WorkspacesModuleInterface::command_provider()
+{
+    if (!m_cliProvider)
+    {
+        m_cliProvider = std::make_unique<WorkspacesCommandProvider>(*this);
+    }
+
+    return m_cliProvider.get();
+}
+
+pt::cli::CommandResult WorkspacesModuleInterface::HandleList(const json::JsonObject& args) const
+{
+    UNREFERENCED_PARAMETER(args);
+
+    json::JsonObject payload = json::JsonObject();
+    auto workspacesPath = WorkspacesData::WorkspacesFile();
+    payload.SetNamedValue(L"path", json::value(workspacesPath));
+
+    auto stored = json::from_file(workspacesPath);
+    if (stored.has_value())
+    {
+        payload.SetNamedValue(L"data", json::value(*stored));
+    }
+    else
+    {
+        payload.SetNamedValue(L"data", json::value(json::JsonObject()));
+    }
+
+    return pt::cli::CommandResult::Success(std::move(payload));
+}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
     return new WorkspacesModuleInterface();
 }
+

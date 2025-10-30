@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common settings as well -->
+  <Import Project="..\..\src\Common.SelfContained.props" />
+  <Import Project="..\..\src\Common.Dotnet.CsWinRT.props" />
+
+	<PropertyGroup>
+    <ProjectGuid>{2589570C-B068-41CA-A554-BDCAE6FC4CAC}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>PowerToys.Cli</AssemblyName>
+    <RootNamespace>PowerToys.Cli</RootNamespace>
+    <OutputPath>..\..\$(Platform)\$(Configuration)\ptcli\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+</Project>
