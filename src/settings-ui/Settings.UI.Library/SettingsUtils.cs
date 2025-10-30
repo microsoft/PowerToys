@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
@@ -23,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             MaxDepth = 0,
             IncludeFields = true,
+            TypeInfoResolver = SettingsSerializationContext.Default,
         };
 
         public SettingsUtils()
@@ -156,7 +158,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return newSettingsItem;
         }
 
-        // Given the powerToy folder name and filename to be accessed, this function deserializes and returns the file.
+        /// <summary>
+        /// Deserializes settings from a JSON file.
+        /// </summary>
+        /// <typeparam name="T">The settings type to deserialize. Must be registered in <see cref="SettingsSerializationContext"/>.</typeparam>
+        /// <param name="powertoyFolderName">The PowerToy module folder name.</param>
+        /// <param name="fileName">The settings file name.</param>
+        /// <returns>Deserialized settings object of type T.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when type T is not registered in <see cref="SettingsSerializationContext"/>.
+        /// All settings types must be registered with <c>[JsonSerializable(typeof(T))]</c> attribute
+        /// for Native AOT compatibility.
+        /// </exception>
+        /// <remarks>
+        /// This method uses Native AOT-compatible JSON deserialization. Type T must be registered
+        /// in <see cref="SettingsSerializationContext"/> before calling this method.
+        /// </remarks>
         private T GetFile<T>(string powertoyFolderName = DefaultModuleName, string fileName = DefaultFileName)
         {
             // Adding Trim('\0') to overcome possible NTFS file corruption.
@@ -165,8 +182,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // The file itself did write the content correctly but something is off with the actual end of the file, hence the 0x00 bug
             var jsonSettingsString = _file.ReadAllText(_settingsPath.GetSettingsPath(powertoyFolderName, fileName)).Trim('\0');
 
-            var options = _serializerOptions;
-            return JsonSerializer.Deserialize<T>(jsonSettingsString, options);
+            // For Native AOT compatibility, get JsonTypeInfo from the TypeInfoResolver
+            var typeInfo = _serializerOptions.TypeInfoResolver?.GetTypeInfo(typeof(T), _serializerOptions);
+
+            if (typeInfo == null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T).FullName} is not registered in SettingsSerializationContext. Please add it to the [JsonSerializable] attributes.");
+            }
+
+            // Use AOT-friendly deserialization
+            return (T)JsonSerializer.Deserialize(jsonSettingsString, typeInfo)!;
         }
 
         // Save settings to a json file.
