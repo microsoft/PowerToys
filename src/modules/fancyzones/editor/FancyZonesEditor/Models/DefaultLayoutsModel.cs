@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace FancyZonesEditor.Models
@@ -23,14 +24,26 @@ namespace FancyZonesEditor.Models
 
         public void Reset(MonitorConfigurationType type)
         {
+            LayoutModel defaultLayout = null;
             switch (type)
             {
                 case MonitorConfigurationType.Horizontal:
-                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], type);
+                    // Try to get PriorityGrid, fallback to first available template or Blank
+                    defaultLayout = MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == LayoutType.PriorityGrid)
+                                    ?? MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type != LayoutType.Blank)
+                                    ?? MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == LayoutType.Blank);
                     break;
                 case MonitorConfigurationType.Vertical:
-                    Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], type);
+                    // Try to get Rows, fallback to first available template or Blank
+                    defaultLayout = MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == LayoutType.Rows)
+                                    ?? MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type != LayoutType.Blank)
+                                    ?? MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == LayoutType.Blank);
                     break;
+            }
+
+            if (defaultLayout != null)
+            {
+                Set(defaultLayout, type);
             }
         }
 
@@ -38,12 +51,12 @@ namespace FancyZonesEditor.Models
         {
             if (Layouts[MonitorConfigurationType.Horizontal].Uuid == uuid)
             {
-                Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.PriorityGrid], MonitorConfigurationType.Horizontal);
+                Reset(MonitorConfigurationType.Horizontal);
             }
 
             if (Layouts[MonitorConfigurationType.Vertical].Uuid == uuid)
             {
-                Set(MainWindowSettingsModel.TemplateModels[(int)LayoutType.Rows], MonitorConfigurationType.Vertical);
+                Reset(MonitorConfigurationType.Vertical);
             }
         }
 

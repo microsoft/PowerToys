@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows;
 
@@ -648,15 +649,18 @@ namespace FancyZonesEditor.Utils
                 // replace deleted layout with the Blank layout
                 if (!existingLayout)
                 {
-                    LayoutModel blankLayout = MainWindowSettingsModel.TemplateModels[(int)LayoutType.Blank];
-                    settings.ZonesetUuid = blankLayout.Uuid;
-                    settings.Type = blankLayout.Type;
-                    settings.ZoneCount = blankLayout.TemplateZoneCount;
-                    settings.SensitivityRadius = blankLayout.SensitivityRadius;
+                    LayoutModel blankLayout = MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == LayoutType.Blank);
+                    if (blankLayout != null)
+                    {
+                        settings.ZonesetUuid = blankLayout.Uuid;
+                        settings.Type = blankLayout.Type;
+                        settings.ZoneCount = blankLayout.TemplateZoneCount;
+                        settings.SensitivityRadius = blankLayout.SensitivityRadius;
 
-                    // grid layout settings, just resetting them
-                    settings.ShowSpacing = false;
-                    settings.Spacing = 0;
+                        // grid layout settings, just resetting them
+                        settings.ShowSpacing = false;
+                        settings.Spacing = 0;
+                    }
                 }
 
                 bool unused = true;
@@ -748,18 +752,21 @@ namespace FancyZonesEditor.Utils
             foreach (var wrapper in templateLayouts)
             {
                 LayoutType type = JsonTagToLayoutType(wrapper.Type);
-                LayoutModel layout = MainWindowSettingsModel.TemplateModels[(int)type];
+                LayoutModel layout = MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == type);
 
-                layout.SensitivityRadius = wrapper.SensitivityRadius;
-                layout.TemplateZoneCount = wrapper.ZoneCount;
-
-                if (layout is GridLayoutModel grid)
+                if (layout != null)
                 {
-                    grid.ShowSpacing = wrapper.ShowSpacing;
-                    grid.Spacing = wrapper.Spacing;
-                }
+                    layout.SensitivityRadius = wrapper.SensitivityRadius;
+                    layout.TemplateZoneCount = wrapper.ZoneCount;
 
-                layout.InitTemplateZones();
+                    if (layout is GridLayoutModel grid)
+                    {
+                        grid.ShowSpacing = wrapper.ShowSpacing;
+                        grid.Spacing = wrapper.Spacing;
+                    }
+
+                    layout.InitTemplateZones();
+                }
             }
 
             return true;
@@ -807,17 +814,21 @@ namespace FancyZonesEditor.Utils
                 else
                 {
                     LayoutType layoutType = JsonTagToLayoutType(layout.Layout.Type);
-                    defaultLayoutModel = MainWindowSettingsModel.TemplateModels[(int)layoutType];
-                    defaultLayoutModel.TemplateZoneCount = layout.Layout.ZoneCount;
-                    defaultLayoutModel.SensitivityRadius = layout.Layout.SensitivityRadius;
-
-                    if (defaultLayoutModel is GridLayoutModel gridDefaultLayoutModel)
+                    defaultLayoutModel = MainWindowSettingsModel.TemplateModels.FirstOrDefault(m => m.Type == layoutType);
+                    
+                    if (defaultLayoutModel != null)
                     {
-                        gridDefaultLayoutModel.ShowSpacing = layout.Layout.ShowSpacing;
-                        gridDefaultLayoutModel.Spacing = layout.Layout.Spacing;
-                    }
+                        defaultLayoutModel.TemplateZoneCount = layout.Layout.ZoneCount;
+                        defaultLayoutModel.SensitivityRadius = layout.Layout.SensitivityRadius;
 
-                    MainWindowSettingsModel.DefaultLayouts.Set(defaultLayoutModel, type);
+                        if (defaultLayoutModel is GridLayoutModel gridDefaultLayoutModel)
+                        {
+                            gridDefaultLayoutModel.ShowSpacing = layout.Layout.ShowSpacing;
+                            gridDefaultLayoutModel.Spacing = layout.Layout.Spacing;
+                        }
+
+                        MainWindowSettingsModel.DefaultLayouts.Set(defaultLayoutModel, type);
+                    }
                 }
 
                 if (defaultLayoutModel != null)
