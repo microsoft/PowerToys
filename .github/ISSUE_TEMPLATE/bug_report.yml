@@ -7,6 +7,12 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
+- type: markdown
+  attributes:
+    value: |
+      ## Known issues
+      We are aware of the following high-volume issues and are actively working on them. Please check if your issue is one of these before filing a new bug report:
+      * **PowerToys Run crashes:** We are aware of several crashes related to PowerToys Run, including `COMException: {Desktop composition is disabled} 0x80263001`, `COMException (0xD0000701)`, and `System.InvalidOperationException: Cyclic reference found while evaluating the Style property on element`. If you are experiencing a crash with PowerToys Run, it is likely a duplicate of one of these. Please check issues #31226, #30769, and #36451 for more information.
 - id: version
   type: input
   attributes:
