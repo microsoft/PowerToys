@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using Common.Search.FuzzSearch;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.PowerToys.Commands;
 using Microsoft.CommandPalette.Extensions;
@@ -93,7 +94,7 @@ internal static class WorkspaceItemsHelper
 
         foreach (var item in allItems)
         {
-            var matchResult = StringMatcher.FuzzySearch(query, item.Title);
+            var matchResult = StringMatcher.FuzzyMatch(query, item.Title);
             if (matchResult.Success)
             {
                 matched.Add(new Tuple<int, ListItem>(matchResult.Score, item));

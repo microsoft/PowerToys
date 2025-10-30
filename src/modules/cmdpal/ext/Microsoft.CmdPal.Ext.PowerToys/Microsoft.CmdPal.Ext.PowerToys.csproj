@@ -14,6 +14,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />

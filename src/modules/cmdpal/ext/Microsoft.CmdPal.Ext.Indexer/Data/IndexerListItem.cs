@@ -91,7 +91,6 @@ internal sealed partial class IndexerListItem : ListItem
             commands.Add(new CommandContextItem(openCommand));
         }
 
-        commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
         commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }) { RequestedShortcut = KeyChords.OpenFileLocation });
         commands.Add(new CommandContextItem(new CopyPathCommand(fullPath) { Name = Resources.Indexer_Command_CopyPath }) { RequestedShortcut = KeyChords.CopyFilePath });
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)) { RequestedShortcut = KeyChords.OpenInConsole });
