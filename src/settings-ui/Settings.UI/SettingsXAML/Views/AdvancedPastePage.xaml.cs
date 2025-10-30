@@ -19,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -159,7 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public async void DeleteCustomActionButton_Click(object sender, RoutedEventArgs e)
         {
-            var customAction = GetBoundCustomAction(sender);
+            var customAction = GetBoundCustomAction(sender, e);
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             ContentDialog dialog = new()
@@ -192,20 +193,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             CustomActionDialog.Title = resourceLoader.GetString("EditCustomAction");
-            CustomActionDialog.DataContext = GetBoundCustomAction(sender).Clone();
+            CustomActionDialog.DataContext = GetBoundCustomAction(sender, e).Clone();
             CustomActionDialog.PrimaryButtonText = resourceLoader.GetString("CustomActionUpdate");
             await CustomActionDialog.ShowAsync();
         }
 
         private void ReorderButtonDown_Click(object sender, RoutedEventArgs e)
         {
-            var index = ViewModel.CustomActions.IndexOf(GetBoundCustomAction(sender));
+            var index = ViewModel.CustomActions.IndexOf(GetBoundCustomAction(sender, e));
             ViewModel.CustomActions.Move(index, index + 1);
         }
 
         private void ReorderButtonUp_Click(object sender, RoutedEventArgs e)
         {
-            var index = ViewModel.CustomActions.IndexOf(GetBoundCustomAction(sender));
+            var index = ViewModel.CustomActions.IndexOf(GetBoundCustomAction(sender, e));
             ViewModel.CustomActions.Move(index, index - 1);
         }
 
@@ -216,7 +217,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            var dialogCustomAction = GetBoundCustomAction(sender);
+            var dialogCustomAction = GetBoundCustomAction(sender, args);
             var existingCustomAction = ViewModel.CustomActions.FirstOrDefault(candidate => candidate.Id == dialogCustomAction.Id);
 
             if (existingCustomAction == null)
@@ -229,22 +230,73 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private static AdvancedPasteCustomAction GetBoundCustomAction(object sender)
+        private AdvancedPasteCustomAction GetBoundCustomAction(object sender, object eventArgs = null)
         {
-            if (sender is FrameworkElement element)
+            if (TryResolveCustomAction(sender, out var action))
             {
-                if (element.DataContext is AdvancedPasteCustomAction action)
-                {
-                    return action;
-                }
+                return action;
+            }
 
-                if (element.Tag is AdvancedPasteCustomAction taggedAction)
-                {
-                    return taggedAction;
-                }
+            if (eventArgs is RoutedEventArgs routedEventArgs && TryResolveCustomAction(routedEventArgs.OriginalSource, out action))
+            {
+                return action;
+            }
+
+            if (CustomActionDialog?.DataContext is AdvancedPasteCustomAction dialogAction)
+            {
+                return dialogAction;
             }
 
             throw new InvalidOperationException("Unable to determine Advanced Paste custom action from sender.");
+        }
+
+        private static bool TryResolveCustomAction(object source, out AdvancedPasteCustomAction action)
+        {
+            action = ResolveCustomAction(source);
+            return action is not null;
+        }
+
+        private static AdvancedPasteCustomAction ResolveCustomAction(object source)
+        {
+            if (source is null)
+            {
+                return null;
+            }
+
+            if (source is AdvancedPasteCustomAction directAction)
+            {
+                return directAction;
+            }
+
+            if (source is MenuFlyoutItemBase menuItem && menuItem.Tag is AdvancedPasteCustomAction taggedAction)
+            {
+                return taggedAction;
+            }
+
+            if (source is FrameworkElement element)
+            {
+                return ResolveFromElement(element);
+            }
+
+            return null;
+        }
+
+        private static AdvancedPasteCustomAction ResolveFromElement(FrameworkElement element)
+        {
+            for (FrameworkElement current = element; current is not null; current = VisualTreeHelper.GetParent(current) as FrameworkElement)
+            {
+                if (current.Tag is AdvancedPasteCustomAction tagged)
+                {
+                    return tagged;
+                }
+
+                if (current.DataContext is AdvancedPasteCustomAction contextual)
+                {
+                    return contextual;
+                }
+            }
+
+            return null;
         }
 
         private void BrowsePasteAIModelPath_Click(object sender, RoutedEventArgs e)

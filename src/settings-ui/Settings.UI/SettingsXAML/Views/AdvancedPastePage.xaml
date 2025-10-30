@@ -322,7 +322,8 @@
                                         Description="{x:Bind Description, Mode=OneWay}"
                                         Header="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         IsActionIconVisible="False"
-                                        IsClickEnabled="True">
+                                        IsClickEnabled="True"
+                                        Tag="{x:Bind}">
                                         <tkcontrols:SettingsCard.Resources>
                                             <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
                                         </tkcontrols:SettingsCard.Resources>
@@ -346,6 +347,7 @@
                                                 VerticalAlignment="Center"
                                                 Content="&#xE712;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Tag="{x:Bind}"
                                                 Style="{StaticResource SubtleButtonStyle}">
                                                 <Button.Flyout>
                                                     <MenuFlyout>
