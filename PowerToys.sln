@@ -830,6 +830,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Clipbo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.UI.ViewModels.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.UI.ViewModels.UnitTests\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj", "{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScreencastMode", "ScreencastMode", "{62C3DBA7-F3A9-46A2-9F69-B76512E6417B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScreencastModeModuleInterface", "src\modules\ScreencastMode\ScreencastModeModuleInterface\ScreencastModeModuleInterface.vcxproj", "{FF038541-2C59-4EE2-A52F-A2E94863D517}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -3016,6 +3020,14 @@ Global
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|ARM64.Build.0 = Release|ARM64
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|x64.ActiveCfg = Release|x64
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|x64.Build.0 = Release|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Debug|ARM64.ActiveCfg = Debug|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Debug|ARM64.Build.0 = Debug|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Debug|x64.ActiveCfg = Debug|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Debug|x64.Build.0 = Debug|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Release|ARM64.ActiveCfg = Release|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Release|ARM64.Build.0 = Release|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Release|x64.ActiveCfg = Release|x64
+		{FF038541-2C59-4EE2-A52F-A2E94863D517}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3345,6 +3357,8 @@ Global
 		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F} = {3DCCD936-D085-4869-A1DE-CA6A64152C94}
 		{4E0FCF69-B06B-D272-76BF-ED3A559B4EDA} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{62C3DBA7-F3A9-46A2-9F69-B76512E6417B} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{FF038541-2C59-4EE2-A52F-A2E94863D517} = {62C3DBA7-F3A9-46A2-9F69-B76512E6417B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
