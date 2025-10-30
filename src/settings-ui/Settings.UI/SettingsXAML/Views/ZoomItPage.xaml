@@ -76,9 +76,7 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                Name="ZoomItLiveZoomShortcutDraw"
-                                x:Uid="ZoomIt_LiveZoom_Shortcut_Draw">
+                            <tkcontrols:SettingsCard Name="ZoomItLiveZoomShortcutDraw" x:Uid="ZoomIt_LiveZoom_Shortcut_Draw">
                                 <controls:ShortcutControl
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay}"
@@ -123,9 +121,7 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                Name="ZoomItDemoTypeShortcutReset"
-                                x:Uid="ZoomIt_DemoType_Shortcut_Reset">
+                            <tkcontrols:SettingsCard Name="ZoomItDemoTypeShortcutReset" x:Uid="ZoomIt_DemoType_Shortcut_Reset">
                                 <controls:ShortcutControl
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKeyReset, Mode=OneWay}"
@@ -250,25 +246,19 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                Name="ZoomItRecordShortcutFullScreen"
-                                x:Uid="ZoomIt_Record_Shortcut_FullScreen">
+                            <tkcontrols:SettingsCard Name="ZoomItRecordShortcutFullScreen" x:Uid="ZoomIt_Record_Shortcut_FullScreen">
                                 <controls:ShortcutControl
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=OneWay}"
                                     IsEnabled="False" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard
-                                Name="ZoomItRecordShortcutCrop"
-                                x:Uid="ZoomIt_Record_Shortcut_Crop">
+                            <tkcontrols:SettingsCard Name="ZoomItRecordShortcutCrop" x:Uid="ZoomIt_Record_Shortcut_Crop">
                                 <controls:ShortcutControl
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKeyCrop, Mode=OneWay}"
                                     IsEnabled="False" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard
-                                Name="ZoomItRecordShortcutWindow"
-                                x:Uid="ZoomIt_Record_Shortcut_Window">
+                            <tkcontrols:SettingsCard Name="ZoomItRecordShortcutWindow" x:Uid="ZoomIt_Record_Shortcut_Window">
                                 <controls:ShortcutControl
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKeyWindow, Mode=OneWay}"
@@ -310,9 +300,7 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                Name="ZoomItSnipShortcutSave"
-                                x:Uid="ZoomIt_Snip_Shortcut_Save">
+                            <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave" x:Uid="ZoomIt_Snip_Shortcut_Save">
                                 <controls:ShortcutControl
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKeySave, Mode=OneWay}"
