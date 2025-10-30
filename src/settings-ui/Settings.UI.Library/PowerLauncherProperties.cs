@@ -94,6 +94,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("generate_thumbnails_from_files")]
         public bool GenerateThumbnailsFromFiles { get; set; }
 
+        [JsonPropertyName("hotkey_changed")]
+        public bool HotkeyChanged { get; set; } = false;
+
         [CmdConfigureIgnoreAttribute]
         public HotkeySettings DefaultOpenPowerLauncher => new HotkeySettings(false, false, true, false, 32);
 
