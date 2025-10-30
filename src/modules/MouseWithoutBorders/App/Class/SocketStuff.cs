@@ -242,7 +242,7 @@ namespace MouseWithoutBorders.Class
                 Logger.TelemetryLogTrace($"{nameof(SocketStuff)}: {e.Message}", SeverityLevel.Warning);
             }
 
-            Common.GetScreenConfig();
+            WinAPI.GetScreenConfig();
 
             if (firstRun && Common.RunOnScrSaverDesktop)
             {
@@ -305,7 +305,7 @@ namespace MouseWithoutBorders.Class
                             sleepSecs = 10;
 
                             // It is reasonable to give a try on restarting MwB processes in other sessions.
-                            if (restartCount++ < 5 && Common.IsMyDesktopActive() && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
+                            if (restartCount++ < 5 && WinAPI.IsMyDesktopActive() && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
                                 Logger.TelemetryLogTrace("Restarting the service dues to WSAEADDRINUSE.", SeverityLevel.Warning);
                                 Program.StartService();

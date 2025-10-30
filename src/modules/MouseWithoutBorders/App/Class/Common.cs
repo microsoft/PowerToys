@@ -315,7 +315,7 @@ namespace MouseWithoutBorders
                 if (!acquireMutex)
                 {
                     Process[] ps = Process.GetProcessesByName(Common.BinaryName);
-                    Logger.TelemetryLogTrace($"Balance: {socketMutexBalance}, Active: {IsMyDesktopActive()}, Sid/Console: {Process.GetCurrentProcess().SessionId}/{NativeMethods.WTSGetActiveConsoleSessionId()}, Desktop/Input: {GetMyDesktop()}/{GetInputDesktop()}, count: {ps?.Length}.", SeverityLevel.Warning);
+                    Logger.TelemetryLogTrace($"Balance: {socketMutexBalance}, Active: {WinAPI.IsMyDesktopActive()}, Sid/Console: {Process.GetCurrentProcess().SessionId}/{NativeMethods.WTSGetActiveConsoleSessionId()}, Desktop/Input: {WinAPI.GetMyDesktop()}/{WinAPI.GetInputDesktop()}, count: {ps?.Length}.", SeverityLevel.Warning);
                 }
 
                 Logger.LogDebug("SOCKET MUTEX ENDED.");
@@ -358,7 +358,7 @@ namespace MouseWithoutBorders
 
                     Logger.TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}, restarting the process.", SeverityLevel.Warning, true);
 
-                    string desktop = Common.GetMyDesktop();
+                    string desktop = WinAPI.GetMyDesktop();
                     MachineStuff.oneInstanceCheck?.Close();
                     _ = Process.Start(Application.ExecutablePath, desktop);
                     Logger.LogDebug($"Started on desktop {desktop}");
@@ -550,7 +550,7 @@ namespace MouseWithoutBorders
 
         internal static void SendAwakeBeat()
         {
-            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() &&
+            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive() &&
                 Setting.Values.BlockScreenSaver && lastRealInputEventCount != Event.RealInputEventCount)
             {
                 SendPackage(ID.ALL, PackageType.Awake);
@@ -568,7 +568,7 @@ namespace MouseWithoutBorders
         {
             if (lastInputEventCount == Event.InputEventCount)
             {
-                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive())
+                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive())
                 {
                     PokeMyself();
                 }
@@ -710,7 +710,7 @@ namespace MouseWithoutBorders
                 "\"" + Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
                 "\"",
                 "\"" + file + "\"",
-                GetInputDesktop(),
+                WinAPI.GetInputDesktop(),
                 1);
 
             // CreateNormalIntegrityProcess(Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +

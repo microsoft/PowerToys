@@ -127,14 +127,14 @@ internal static class InitAndCleanup
         bool dummy = Setting.Values.DrawMouseEx;
         Common.Is64bitOS = IntPtr.Size == 8;
         Common.tcpPort = Setting.Values.TcpPort;
-        Common.GetScreenConfig();
+        WinAPI.GetScreenConfig();
         Package.PackageSent = new PackageMonitor(0);
         Package.PackageReceived = new PackageMonitor(0);
         SetupMachineNameAndID();
         Encryption.InitEncryption();
         CreateHelperThreads();
 
-        SystemEvents.DisplaySettingsChanged += new EventHandler(Common.SystemEvents_DisplaySettingsChanged);
+        SystemEvents.DisplaySettingsChanged += new EventHandler(WinAPI.SystemEvents_DisplaySettingsChanged);
         NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
         SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeChanged);
         PleaseReopenSocket = 9;
@@ -266,7 +266,7 @@ internal static class InitAndCleanup
                 true);
         }
 
-        if (!Common.IsMyDesktopActive())
+        if (!WinAPI.IsMyDesktopActive())
         {
             PleaseReopenSocket = 0;
         }

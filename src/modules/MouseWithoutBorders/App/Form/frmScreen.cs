@@ -318,7 +318,7 @@ namespace MouseWithoutBorders
 
             try
             {
-                if (!Common.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+                if (!WinAPI.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
                 {
                     myDesktopNotActive = true;
 
@@ -348,7 +348,7 @@ namespace MouseWithoutBorders
                             Common.Hook?.ResetLastSwitchKeys();
                         });
 
-                        Common.CheckForDesktopSwitchEvent(true);
+                        WinAPI.CheckForDesktopSwitchEvent(true);
                     }
                 }
                 else
@@ -531,7 +531,7 @@ namespace MouseWithoutBorders
 #if SHOW_ON_WINLOGON
                     // if (Common.RunOnLogonDesktop) ShowMouseWithoutBordersUiOnWinLogonDesktop(false);
 #endif
-                    Common.CheckForDesktopSwitchEvent(true);
+                    WinAPI.CheckForDesktopSwitchEvent(true);
                     MachineStuff.UpdateClientSockets("helperTimer_Tick"); // Sockets may be closed by the remote host when both machines switch desktop at the same time.
                 }
 
@@ -582,7 +582,7 @@ namespace MouseWithoutBorders
 
                         int rv = 0;
 
-                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
+                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
                         {
                             Logger.TelemetryLogTrace($"{Helper.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
                         }

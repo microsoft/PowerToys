@@ -290,7 +290,7 @@ internal static class Helper
             return;
         }
 
-        if (!Common.IsMyDesktopActive())
+        if (!WinAPI.IsMyDesktopActive())
         {
             return;
         }
@@ -314,7 +314,7 @@ internal static class Helper
             _ = Launch.CreateProcessInInputDesktopSession(
                 $"\"{Path.GetDirectoryName(Application.ExecutablePath)}\\{HelperProcessName}.exe\"",
                 string.Empty,
-                Common.GetInputDesktop(),
+                WinAPI.GetInputDesktop(),
                 0);
 
             Clipboard.HasSwitchedMachineSinceLastCopy = true;

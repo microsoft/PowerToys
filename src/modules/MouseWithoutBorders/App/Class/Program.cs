@@ -143,7 +143,7 @@ namespace MouseWithoutBorders.Class
                         return;
                     }
 
-                    string myDesktop = Common.GetMyDesktop();
+                    string myDesktop = WinAPI.GetMyDesktop();
 
                     if (firstArg.Equals("winlogon", StringComparison.OrdinalIgnoreCase))
                     {
