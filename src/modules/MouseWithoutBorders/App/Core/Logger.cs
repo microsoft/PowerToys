@@ -121,52 +121,52 @@ internal static class Logger
     {
         string log;
 
-        if (!lastPackageSent.Equals(Common.PackageSent))
+        if (!lastPackageSent.Equals(Package.PackageSent))
         {
             log = string.Format(
                 CultureInfo.CurrentCulture,
                 "SENT:" + HeaderSENT,
-                Common.PackageSent.Heartbeat,
-                Common.PackageSent.Keyboard,
-                Common.PackageSent.Mouse,
-                Common.PackageSent.Hello,
-                Common.PackageSent.Matrix,
-                Common.PackageSent.ClipboardText,
-                Common.PackageSent.ClipboardImage,
-                Common.PackageSent.ByeBye,
-                Common.PackageSent.Clipboard,
-                Common.PackageSent.ClipboardDragDrop,
-                Common.PackageSent.ClipboardDragDropEnd,
-                Common.PackageSent.ExplorerDragDrop,
+                Package.PackageSent.Heartbeat,
+                Package.PackageSent.Keyboard,
+                Package.PackageSent.Mouse,
+                Package.PackageSent.Hello,
+                Package.PackageSent.Matrix,
+                Package.PackageSent.ClipboardText,
+                Package.PackageSent.ClipboardImage,
+                Package.PackageSent.ByeBye,
+                Package.PackageSent.Clipboard,
+                Package.PackageSent.ClipboardDragDrop,
+                Package.PackageSent.ClipboardDragDropEnd,
+                Package.PackageSent.ExplorerDragDrop,
                 Event.inputEventCount,
-                Common.PackageSent.Nil);
+                Package.PackageSent.Nil);
             Log(log);
-            lastPackageSent = Common.PackageSent; // Copy data
+            lastPackageSent = Package.PackageSent; // Copy data
         }
 
-        if (!lastPackageReceived.Equals(Common.PackageReceived))
+        if (!lastPackageReceived.Equals(Package.PackageReceived))
         {
             log = string.Format(
                 CultureInfo.CurrentCulture,
                 "RECEIVED:" + HeaderRECEIVED,
-                Common.PackageReceived.Heartbeat,
-                Common.PackageReceived.Keyboard,
-                Common.PackageReceived.Mouse,
-                Common.PackageReceived.Hello,
-                Common.PackageReceived.Matrix,
-                Common.PackageReceived.ClipboardText,
-                Common.PackageReceived.ClipboardImage,
-                Common.PackageReceived.ByeBye,
-                Common.PackageReceived.Clipboard,
-                Common.PackageReceived.ClipboardDragDrop,
-                Common.PackageReceived.ClipboardDragDropEnd,
-                Common.PackageReceived.ExplorerDragDrop,
+                Package.PackageReceived.Heartbeat,
+                Package.PackageReceived.Keyboard,
+                Package.PackageReceived.Mouse,
+                Package.PackageReceived.Hello,
+                Package.PackageReceived.Matrix,
+                Package.PackageReceived.ClipboardText,
+                Package.PackageReceived.ClipboardImage,
+                Package.PackageReceived.ByeBye,
+                Package.PackageReceived.Clipboard,
+                Package.PackageReceived.ClipboardDragDrop,
+                Package.PackageReceived.ClipboardDragDropEnd,
+                Package.PackageReceived.ExplorerDragDrop,
                 Event.invalidPackageCount,
-                Common.PackageReceived.Nil,
+                Package.PackageReceived.Nil,
                 Receiver.processedPackageCount,
                 Receiver.skippedPackageCount);
             Log(log);
-            lastPackageReceived = Common.PackageReceived;
+            lastPackageReceived = Package.PackageReceived;
         }
     }
 

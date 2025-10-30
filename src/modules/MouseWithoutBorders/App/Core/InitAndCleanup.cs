@@ -128,8 +128,8 @@ internal static class InitAndCleanup
         Common.Is64bitOS = IntPtr.Size == 8;
         Common.tcpPort = Setting.Values.TcpPort;
         Common.GetScreenConfig();
-        Common.PackageSent = new PackageMonitor(0);
-        Common.PackageReceived = new PackageMonitor(0);
+        Package.PackageSent = new PackageMonitor(0);
+        Package.PackageReceived = new PackageMonitor(0);
         SetupMachineNameAndID();
         Encryption.InitEncryption();
         CreateHelperThreads();

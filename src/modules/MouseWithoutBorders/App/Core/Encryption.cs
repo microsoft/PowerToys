@@ -174,8 +174,8 @@ internal static class Encryption
             return 0;
         }
 
-        byte[] bytes = new byte[Common.PACKAGE_SIZE];
-        for (int i = 0; i < Common.PACKAGE_SIZE; i++)
+        byte[] bytes = new byte[Package.PACKAGE_SIZE];
+        for (int i = 0; i < Package.PACKAGE_SIZE; i++)
         {
             if (i < st.Length)
             {

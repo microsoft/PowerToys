@@ -919,7 +919,7 @@ namespace MouseWithoutBorders
 
                 try
                 {
-                    data.Id = Interlocked.Increment(ref PackageID);
+                    data.Id = Interlocked.Increment(ref Package.PackageID);
 
                     bool updateClientSockets = false;
 
@@ -999,7 +999,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                PackageSent.Nil++;
+                Package.PackageSent.Nil++;
             }
         }
 
