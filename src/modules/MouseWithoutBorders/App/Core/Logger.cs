@@ -251,14 +251,18 @@ internal static class Logger
         {
             typeof(Clipboard),
             typeof(DragDrop),
+            typeof(Encryption),
             typeof(Event),
             typeof(InitAndCleanup),
             typeof(Helper),
             typeof(Launch),
             typeof(Logger),
             typeof(MachineStuff),
+            typeof(Package),
             typeof(Receiver),
             typeof(Service),
+            typeof(WinAPI),
+            typeof(WM),
         };
         foreach (var staticType in staticTypes)
         {
