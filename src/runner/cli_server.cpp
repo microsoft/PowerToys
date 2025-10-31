@@ -143,7 +143,7 @@ namespace
                 return pt::cli::CommandResult::Error(L"E_ARGS_INVALID", L"'module' argument is required.");
             }
 
-            auto moduleName = args.GetNamedString(L"module");
+            auto moduleName = std::wstring(args.GetNamedString(L"module").c_str());
             auto reflection = CommandRegistry::instance().snapshot(moduleName);
             if (!reflection.has_value())
             {
@@ -243,8 +243,8 @@ namespace
             }
 
             auto command = root.GetNamedObject(L"command");
-            auto module = command.GetNamedString(L"module", L"");
-            auto action = command.GetNamedString(L"action", L"");
+            const std::wstring module = std::wstring(command.GetNamedString(L"module", L"").c_str());
+            const std::wstring action = std::wstring(command.GetNamedString(L"action", L"").c_str());
 
             json::JsonObject args = json::JsonObject();
             if (command.HasKey(L"args"))
