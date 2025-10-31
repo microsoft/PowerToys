@@ -85,6 +85,7 @@ public partial class ShellViewModel : ObservableObject,
         _appHostService = appHostService;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
+        NullPage.HasBackButton = false;
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
 
         // Register to receive messages

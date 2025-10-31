@@ -560,7 +560,7 @@ public sealed partial class DockWindow : WindowEx,
         };
 
         // we also need to slide the anchor point a bit away from the dock
-        var paddingDips = 16;
+        var paddingDips = 8;
         var paddingPixels = paddingDips * scaleFactor;
         PInvoke.GetWindowRect(_hwnd, out var ourRect);
 

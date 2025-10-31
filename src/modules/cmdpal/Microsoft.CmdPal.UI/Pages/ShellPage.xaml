@@ -200,6 +200,10 @@
 
                 <!--  Back button  -->
                 <StackPanel Orientation="Horizontal">
+                    <!--
+                        This border is to hold a bit of padding we need when
+                        the back button is hidden
+                    -->
                     <Border Margin="20,0,0,0" Visibility="{x:Bind ViewModel.CurrentPage.HasBackButton, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     <Image
                         Width="20"
