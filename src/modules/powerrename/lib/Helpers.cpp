@@ -43,7 +43,7 @@ namespace
     }
 
     // Helper function: Get the replacement value for a pattern
-    // Returns the actual metadata value if available; if not, returns the pattern name itself
+    // Returns the actual metadata value if available; if not, returns the pattern name with $ prefix
     std::wstring GetPatternValue(
         const std::wstring& patternName,
         const PowerRenameLib::MetadataPatternMap& patterns)
@@ -56,9 +56,9 @@ namespace
             return it->second;
         }
 
-        // Return pattern name itself if value is unavailable
+        // Return pattern name with $ prefix if value is unavailable
         // This provides visual feedback that the field exists but has no data
-        return patternName;
+        return L"$" + patternName;
     }
 }
 
@@ -411,10 +411,10 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", (fileTime.wYear % 100));
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YY(?!Y)"), replaceTerm); // Negative lookahead prevents matching $YYY or $YYYY
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YY(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $YYY, $YYYY, or metadata patterns
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (fileTime.wYear % 10));
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y(?!Y)"), replaceTerm); // Negative lookahead prevents matching $YY or $YYYY
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $YY, $YYYY, or metadata patterns
 
         GetDateFormatEx(localeName, NULL, &fileTime, L"MMMM", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
@@ -427,10 +427,10 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MMM(?!M)"), replaceTerm); // Negative lookahead prevents matching $MMMM
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", fileTime.wMonth);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM(?!M)"), replaceTerm); // Negative lookahead prevents matching $MMM or $MMMM
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$MM(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $MMM, $MMMM, or metadata patterns
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", fileTime.wMonth);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M(?!M)"), replaceTerm); // Negative lookahead prevents matching $MM, $MMM, or $MMMM
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $MM, $MMM, $MMMM, or metadata patterns
 
         GetDateFormatEx(localeName, NULL, &fileTime, L"dddd", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
@@ -440,19 +440,19 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         GetDateFormatEx(localeName, NULL, &fileTime, L"ddd", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD(?!D)"), replaceTerm); // Negative lookahead prevents matching $DDDD
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DDD(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $DDDD or metadata patterns
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", fileTime.wDay);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DD(?!D)"), replaceTerm); // Negative lookahead prevents matching $DDD or $DDDD
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DD(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $DDD, $DDDD, or metadata patterns
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", fileTime.wDay);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D(?!D)"), replaceTerm); // Negative lookahead prevents matching $DD, $DDD, or $DDDD
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $DD, $DDD, $DDDD, or metadata patterns like $DATE_TAKEN_YYYY
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", hour12);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$HH(?!H)"), replaceTerm); // Negative lookahead prevents matching $HHH
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$HH(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $HHH or metadata patterns
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", hour12);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$H(?!H)"), replaceTerm); // Negative lookahead prevents matching $HH
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$H(?![A-Z])"), replaceTerm); // Negative lookahead prevents matching $HH or metadata patterns
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", (fileTime.wHour < 12) ? L"AM" : L"PM");
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$TT"), replaceTerm);

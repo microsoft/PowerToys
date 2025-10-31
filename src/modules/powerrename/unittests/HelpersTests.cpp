@@ -27,7 +27,7 @@ namespace HelpersTests
 
         TEST_METHOD(PatternWithoutValueShowsPatternName)
         {
-            // Test that patterns without values show the pattern name itself
+            // Test that patterns without values show the pattern name with $ prefix
             PowerRenameLib::MetadataPatternMap patterns;
             patterns[L"CAMERA_MAKE"] = L"Canon";
             // ISO is not in the map
@@ -36,12 +36,12 @@ namespace HelpersTests
             HRESULT hr = GetMetadataFileName(result, MAX_PATH, L"photo_$CAMERA_MAKE_$ISO", patterns);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"photo_Canon_ISO", result);
+            Assert::AreEqual(L"photo_Canon_$ISO", result);
         }
 
         TEST_METHOD(UnsupportedPatternShowsPatternName)
         {
-            // Test that patterns with "unsupported" value show the pattern name
+            // Test that patterns with "unsupported" value show the pattern name with $ prefix
             PowerRenameLib::MetadataPatternMap patterns;
             patterns[L"CAMERA_MAKE"] = L"Canon";
             patterns[L"ISO"] = L"unsupported";
@@ -50,12 +50,12 @@ namespace HelpersTests
             HRESULT hr = GetMetadataFileName(result, MAX_PATH, L"photo_$CAMERA_MAKE_$ISO", patterns);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"photo_Canon_ISO", result);
+            Assert::AreEqual(L"photo_Canon_$ISO", result);
         }
 
         TEST_METHOD(EmptyPatternShowsPatternName)
         {
-            // Test that patterns with empty value show the pattern name
+            // Test that patterns with empty value show the pattern name with $ prefix
             PowerRenameLib::MetadataPatternMap patterns;
             patterns[L"CAMERA_MAKE"] = L"Canon";
             patterns[L"ISO"] = L"";
@@ -64,7 +64,7 @@ namespace HelpersTests
             HRESULT hr = GetMetadataFileName(result, MAX_PATH, L"photo_$CAMERA_MAKE_$ISO", patterns);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"photo_Canon_ISO", result);
+            Assert::AreEqual(L"photo_Canon_$ISO", result);
         }
 
         TEST_METHOD(EscapedDollarSigns)
@@ -220,11 +220,11 @@ namespace HelpersTests
             patterns[L"LENS"] = L""; // Empty value
 
             wchar_t result[MAX_PATH] = { 0 };
-            HRESULT hr = GetMetadataFileName(result, MAX_PATH, 
+            HRESULT hr = GetMetadataFileName(result, MAX_PATH,
                 L"$$price_$CAMERA_MAKE_$$$ISO_$APERTURE_$LENS_$$end", patterns);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"$price_Canon_$ISO 400_f/2.8_LENS_$end", result);
+            Assert::AreEqual(L"$price_Canon_$ISO 400_f/2.8_$LENS_$end", result);
         }
 
         TEST_METHOD(AllEXIFPatterns)
@@ -411,8 +411,8 @@ namespace HelpersTests
             HRESULT hr = GetMetadataFileName(result, MAX_PATH, L"photo_$ISO_$CAMERA_MAKE", patterns);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            // Patterns should show as pattern names since they're valid but have no values
-            Assert::AreEqual(L"photo_ISO_CAMERA_MAKE", result);
+            // Patterns should show with $ prefix since they're valid but have no values
+            Assert::AreEqual(L"photo_$ISO_$CAMERA_MAKE", result);
         }
     };
 
