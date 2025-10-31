@@ -79,7 +79,7 @@ public:
 
     void LoadSettings();
 
-    HANDLE GetSettingsChangedEvent() const { return m_settingsChangedEvent; }
+    HANDLE GetSettingsChangedEvent() const;
 
 private:
     LightSwitchSettings();
