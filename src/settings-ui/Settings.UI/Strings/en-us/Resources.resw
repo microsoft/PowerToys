@@ -1772,7 +1772,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_floatWithout" xml:space="preserve">
     <value>float without leading zero</value>
   </data>
-  <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+   <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+    <value>The lightness (CIE), chromaticity A (CIE Lab) and chromaticity B (CIE Lab) values can be formatted to the following formats:</value>
+  </data>
+  <data name="Help_integer" xml:space="preserve">
+    <value>rounded to the nearest integer</value>
+  </data>
+  <data name="ColorFormatEditorHelpline4.Text" xml:space="preserve">
     <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
   </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
