@@ -68,11 +68,22 @@ namespace AdvancedPaste.Pages
                             if (item.Content.Contains(StandardDataFormats.Text))
                             {
                                 string text = await item.Content.GetTextAsync();
-                                items.Add(new ClipboardItem { Content = text, Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Content = text,
+                                    Format = ClipboardFormat.Text,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                             else if (item.Content.Contains(StandardDataFormats.Bitmap))
                             {
-                                items.Add(new ClipboardItem { Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Format = ClipboardFormat.Image,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                         }
                     }
@@ -187,10 +198,9 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ClipboardHistory_ItemClick(object sender, ItemClickEventArgs e)
+        private async void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
         {
-            var item = e.ClickedItem as ClipboardItem;
-            if (item is not null)
+            if (args.InvokedItem is ClipboardItem item)
             {
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))

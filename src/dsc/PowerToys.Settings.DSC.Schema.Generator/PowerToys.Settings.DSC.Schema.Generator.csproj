@@ -35,7 +35,7 @@
     </Target>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Platform)'=='ARM64'">
-      <Exec Command="&quot;$(MSBuildToolsPath)\msbuild.exe&quot; PowerToys.sln -p:Configuration=&quot;$(Configuration)&quot; -p:Platform=&quot;x64&quot; -verbosity:m -t:DSC\PowerToys_Settings_DSC_Schema_Generator" WorkingDirectory="..\..\..\" />
+        <Exec Command="&quot;$(MSBuildToolsPath)\msbuild.exe&quot; &quot;$(ProjectDir)..\..\..\PowerToys.sln&quot; -p:Configuration=&quot;$(Configuration)&quot; -p:Platform=&quot;x64&quot; -verbosity:m -t:DSC\PowerToys_Settings_DSC_Schema_Generator" />
     </Target>
 
 </Project>

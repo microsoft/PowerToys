@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Services.OpenAI;
 using AdvancedPaste.UnitTests.Mocks;
 using ManagedCommon;
@@ -79,7 +81,9 @@ public sealed class AIServiceBatchIntegrationTests
         Assert.IsTrue(results.Count <= inputs.Count);
         CollectionAssert.AreEqual(results.Select(result => result.ToInput()).ToList(), inputs.Take(results.Count).ToList());
 
+        #pragma warning disable IL2026, IL3050 // The tests rely on runtime JSON serialization for ad-hoc data files.
         async Task WriteResultsAsync() => await File.WriteAllTextAsync(resultsFile, JsonSerializer.Serialize(results, SerializerOptions));
+        #pragma warning restore IL2026, IL3050
 
         Logger.LogInfo($"Starting {nameof(TestGenerateBatchResults)}; Count={inputs.Count}, InCache={results.Count}");
 
@@ -101,8 +105,12 @@ public sealed class AIServiceBatchIntegrationTests
         await WriteResultsAsync();
     }
 
-    private static async Task<List<T>> GetDataListAsync<T>(string filePath) =>
-        File.Exists(filePath) ? JsonSerializer.Deserialize<List<T>>(await File.ReadAllTextAsync(filePath)) : [];
+    private static async Task<List<T>> GetDataListAsync<T>(string filePath)
+    {
+        #pragma warning disable IL2026, IL3050 // Tests only run locally and can depend on runtime JSON serialization.
+        return File.Exists(filePath) ? JsonSerializer.Deserialize<List<T>>(await File.ReadAllTextAsync(filePath)) : [];
+        #pragma warning restore IL2026, IL3050
+    }
 
     private static async Task<string> GetTextOutputAsync(BatchTestInput input, PasteFormats format)
     {
@@ -130,23 +138,35 @@ public sealed class AIServiceBatchIntegrationTests
 
     private static async Task<DataPackage> GetOutputDataPackageAsync(BatchTestInput batchTestInput, PasteFormats format)
     {
-        VaultCredentialsProvider credentialsProvider = new();
-        PromptModerationService promptModerationService = new(credentialsProvider);
+        var services = CreateServices();
         NoOpProgress progress = new();
-        CustomTextTransformService customTextTransformService = new(credentialsProvider, promptModerationService);
 
         switch (format)
         {
             case PasteFormats.CustomTextTransformation:
-                return DataPackageHelpers.CreateFromText(await customTextTransformService.TransformTextAsync(batchTestInput.Prompt, batchTestInput.Clipboard, CancellationToken.None, progress));
+                var transformResult = await services.CustomActionTransformService.TransformTextAsync(batchTestInput.Prompt, batchTestInput.Clipboard, CancellationToken.None, progress);
+                return DataPackageHelpers.CreateFromText(transformResult.Content ?? string.Empty);
 
             case PasteFormats.KernelQuery:
                 var clipboardData = DataPackageHelpers.CreateFromText(batchTestInput.Clipboard).GetView();
-                KernelService kernelService = new(new NoOpKernelQueryCacheService(), credentialsProvider, promptModerationService, customTextTransformService);
-                return await kernelService.TransformClipboardAsync(batchTestInput.Prompt, clipboardData, isSavedQuery: false, CancellationToken.None, progress);
+                return await services.KernelService.TransformClipboardAsync(batchTestInput.Prompt, clipboardData, isSavedQuery: false, CancellationToken.None, progress);
 
             default:
                 throw new InvalidOperationException($"Unexpected format {format}");
         }
     }
+
+    private static IntegrationTestServices CreateServices()
+    {
+        IntegrationTestUserSettings userSettings = new();
+        EnhancedVaultCredentialsProvider credentialsProvider = new(userSettings);
+        PromptModerationService promptModerationService = new(credentialsProvider);
+        PasteAIProviderFactory providerFactory = new();
+        ICustomActionTransformService customActionTransformService = new CustomActionTransformService(promptModerationService, providerFactory, credentialsProvider, userSettings);
+        IKernelService kernelService = new AdvancedAIKernelService(credentialsProvider, new NoOpKernelQueryCacheService(), promptModerationService, userSettings, customActionTransformService);
+
+        return new IntegrationTestServices(customActionTransformService, kernelService);
+    }
+
+    private readonly record struct IntegrationTestServices(ICustomActionTransformService CustomActionTransformService, IKernelService KernelService);
 }

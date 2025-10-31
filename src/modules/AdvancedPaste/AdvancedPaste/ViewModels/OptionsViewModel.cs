@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -22,6 +23,8 @@ using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -37,11 +40,19 @@ namespace AdvancedPaste.ViewModels
         private readonly DispatcherTimer _clipboardTimer;
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
-        private readonly IAICredentialsProvider _aiCredentialsProvider;
+        private readonly IAICredentialsProvider _credentialsProvider;
 
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
+        private string _currentClipboardHistoryId;
+        private DateTimeOffset? _currentClipboardTimestamp;
+        private ClipboardFormat _lastClipboardFormats = ClipboardFormat.None;
+        private bool _clipboardHistoryUnavailableLogged;
+
         public DataPackageView ClipboardData { get; set; }
+
+        [ObservableProperty]
+        private ClipboardItem _currentClipboardItem;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
@@ -79,11 +90,68 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsCustomAIServiceEnabled => IsAllowedByGPO && _aiCredentialsProvider.IsConfigured;
+        public bool IsCustomAIServiceEnabled
+        {
+            get
+            {
+                if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
+                {
+                    return false;
+                }
+
+                // We should handle the IsAIEnabled logic in settings, don't check again here.
+                // If setting says yes, and here should pass check, and if error happens, it happens.
+                return true;
+            }
+        }
 
         public bool IsCustomAIAvailable => IsCustomAIServiceEnabled && ClipboardHasDataForCustomAI;
 
-        public bool IsAdvancedAIEnabled => IsCustomAIServiceEnabled && _userSettings.IsAdvancedAIEnabled;
+        public bool IsAdvancedAIEnabled
+        {
+            get
+            {
+                if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
+                {
+                    return false;
+                }
+
+                if (!TryResolveAdvancedAIProvider(out _))
+                {
+                    return false;
+                }
+
+                return _credentialsProvider.IsConfigured();
+            }
+        }
+
+        public ObservableCollection<PasteAIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
+
+        public PasteAIProviderDefinition ActiveAIProvider => _userSettings?.PasteAIConfiguration?.ActiveProvider;
+
+        public string ActiveAIProviderTooltip
+        {
+            get
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                var provider = ActiveAIProvider;
+
+                if (provider is null)
+                {
+                    return resourceLoader.GetString("AIProviderButtonTooltipEmpty");
+                }
+
+                var format = resourceLoader.GetString("AIProviderButtonTooltipFormat");
+                var displayName = provider.DisplayName;
+
+                if (!string.IsNullOrEmpty(format))
+                {
+                    return string.Format(CultureInfo.CurrentCulture, format, displayName);
+                }
+
+                return displayName;
+            }
+        }
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
@@ -91,7 +159,10 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
-        private PasteFormats CustomAIFormat => _userSettings.IsAdvancedAIEnabled ? PasteFormats.KernelQuery : PasteFormats.CustomTextTransformation;
+        private PasteFormats CustomAIFormat =>
+            _userSettings.IsAIEnabled && TryResolveAdvancedAIProvider(out _)
+                ? PasteFormats.KernelQuery
+                : PasteFormats.CustomTextTransformation;
 
         private bool Visible
         {
@@ -110,9 +181,9 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider aiCredentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
         {
-            _aiCredentialsProvider = aiCredentialsProvider;
+            _credentialsProvider = credentialsProvider;
             _userSettings = userSettings;
             _pasteFormatExecutor = pasteFormatExecutor;
 
@@ -130,6 +201,7 @@ namespace AdvancedPaste.ViewModels
             _clipboardTimer.Start();
 
             RefreshPasteFormats();
+            UpdateAIProviderActiveFlags();
             _userSettings.Changed += UserSettings_Changed;
             PropertyChanged += (_, e) =>
             {
@@ -164,9 +236,14 @@ namespace AdvancedPaste.ViewModels
 
         private void UserSettings_Changed(object sender, EventArgs e)
         {
+            UpdateAIProviderActiveFlags();
+            OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
             OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+            OnPropertyChanged(nameof(AIProviders));
+            OnPropertyChanged(nameof(ActiveAIProvider));
+            OnPropertyChanged(nameof(ActiveAIProviderTooltip));
 
             EnqueueRefreshPasteFormats();
         }
@@ -191,6 +268,23 @@ namespace AdvancedPaste.ViewModels
 
         private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
             PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
+
+        private void UpdateAIProviderActiveFlags()
+        {
+            var providers = _userSettings?.PasteAIConfiguration?.Providers;
+            if (providers is not null)
+            {
+                var activeId = ActiveAIProvider?.Id;
+
+                foreach (var provider in providers)
+                {
+                    provider.IsActive = !string.IsNullOrEmpty(activeId) && string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            OnPropertyChanged(nameof(ActiveAIProvider));
+            OnPropertyChanged(nameof(ActiveAIProviderTooltip));
+        }
 
         private void RefreshPasteFormats()
         {
@@ -253,8 +347,96 @@ namespace AdvancedPaste.ViewModels
                 return;
             }
 
-            ClipboardData = Clipboard.GetContent();
-            AvailableClipboardFormats = await ClipboardData.GetAvailableFormatsAsync();
+            try
+            {
+                ClipboardData = Clipboard.GetContent();
+                AvailableClipboardFormats = ClipboardData != null ? await ClipboardData.GetAvailableFormatsAsync() : ClipboardFormat.None;
+            }
+            catch (Exception ex) when (ex is COMException or InvalidOperationException)
+            {
+                // Logger.LogDebug("Failed to read clipboard content", ex);
+                ClipboardData = null;
+                AvailableClipboardFormats = ClipboardFormat.None;
+            }
+
+            await UpdateClipboardPreviewAsync();
+        }
+
+        private async Task UpdateClipboardPreviewAsync()
+        {
+            if (ClipboardData is null || !ClipboardHasData)
+            {
+                ResetClipboardPreview();
+                _currentClipboardHistoryId = null;
+                _currentClipboardTimestamp = null;
+                _lastClipboardFormats = ClipboardFormat.None;
+                return;
+            }
+
+            var formatsChanged = AvailableClipboardFormats != _lastClipboardFormats;
+            _lastClipboardFormats = AvailableClipboardFormats;
+
+            var clipboardChanged = await UpdateClipboardTimestampAsync(formatsChanged);
+
+            // Create ClipboardItem directly from current clipboard data using helper
+            CurrentClipboardItem = await ClipboardItemHelper.CreateFromCurrentClipboardAsync(
+                ClipboardData,
+                AvailableClipboardFormats,
+                _currentClipboardTimestamp,
+                clipboardChanged ? null : CurrentClipboardItem?.Image);
+        }
+
+        private async Task<bool> UpdateClipboardTimestampAsync(bool formatsChanged)
+        {
+            bool clipboardChanged = formatsChanged;
+
+            if (Clipboard.IsHistoryEnabled())
+            {
+                try
+                {
+                    var historyItems = await Clipboard.GetHistoryItemsAsync();
+                    if (historyItems.Status == ClipboardHistoryItemsResultStatus.Success && historyItems.Items.Count > 0)
+                    {
+                        var latest = historyItems.Items[0];
+                        if (_currentClipboardHistoryId != latest.Id)
+                        {
+                            clipboardChanged = true;
+                            _currentClipboardHistoryId = latest.Id;
+                        }
+
+                        _currentClipboardTimestamp = latest.Timestamp;
+                        _clipboardHistoryUnavailableLogged = false;
+                        return clipboardChanged;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (!_clipboardHistoryUnavailableLogged)
+                    {
+                        Logger.LogDebug("Failed to access clipboard history timestamp", ex.Message);
+                        _clipboardHistoryUnavailableLogged = true;
+                    }
+                }
+            }
+
+            if (!_currentClipboardTimestamp.HasValue || clipboardChanged)
+            {
+                _currentClipboardTimestamp = DateTimeOffset.Now;
+                clipboardChanged = true;
+            }
+
+            return clipboardChanged;
+        }
+
+        private void ResetClipboardPreview()
+        {
+            // Clear to avoid leaks due to Garbage Collection not clearing the bitmap from memory
+            if (CurrentClipboardItem?.Image is not null)
+            {
+                CurrentClipboardItem.Image.ClearValue(BitmapImage.UriSourceProperty);
+            }
+
+            CurrentClipboardItem = null;
         }
 
         public async Task OnShowAsync()
@@ -270,7 +452,7 @@ namespace AdvancedPaste.ViewModels
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    GetMainWindow()?.FinishLoading(_aiCredentialsProvider.IsConfigured);
+                    GetMainWindow()?.FinishLoading(IsCustomAIServiceEnabled);
                     OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
                     OnPropertyChanged(nameof(CustomAIUnavailableErrorText));
                     OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
@@ -319,7 +501,7 @@ namespace AdvancedPaste.ViewModels
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIGpoDisabled");
                 }
 
-                if (!_aiCredentialsProvider.IsConfigured)
+                if (!IsCustomAIServiceEnabled)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAINotConfigured");
                 }
@@ -515,11 +697,82 @@ namespace AdvancedPaste.ViewModels
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
         }
 
+        private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider)
+        {
+            provider = null;
+
+            var configuration = _userSettings?.PasteAIConfiguration;
+            if (configuration is null)
+            {
+                return false;
+            }
+
+            var activeProvider = configuration.ActiveProvider;
+            if (IsAdvancedAIProvider(activeProvider))
+            {
+                provider = activeProvider;
+                return true;
+            }
+
+            if (activeProvider is not null)
+            {
+                return false;
+            }
+
+            var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedAIProvider);
+            if (fallback is not null)
+            {
+                provider = fallback;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsAdvancedAIProvider(PasteAIProviderDefinition provider)
+        {
+            return provider is not null && provider.EnableAdvancedAI && SupportsAdvancedAI(provider.ServiceTypeKind);
+        }
+
+        private static bool SupportsAdvancedAI(AIServiceType serviceType)
+        {
+            return serviceType is AIServiceType.OpenAI
+                or AIServiceType.AzureOpenAI;
+        }
+
         private bool UpdateOpenAIKey()
         {
             UpdateAllowedByGPO();
 
-            return IsAllowedByGPO && _aiCredentialsProvider.Refresh();
+            return _credentialsProvider.Refresh();
+        }
+
+        [RelayCommand]
+        private async Task SetActiveProviderAsync(PasteAIProviderDefinition provider)
+        {
+            if (provider is null || string.IsNullOrEmpty(provider.Id))
+            {
+                return;
+            }
+
+            if (string.Equals(ActiveAIProvider?.Id, provider.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            try
+            {
+                await _userSettings.SetActiveAIProviderAsync(provider.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to activate AI provider", ex);
+                return;
+            }
+
+            UpdateAIProviderActiveFlags();
+            OnPropertyChanged(nameof(AIProviders));
+            EnqueueRefreshPasteFormats();
         }
 
         public async Task CancelPasteActionAsync()

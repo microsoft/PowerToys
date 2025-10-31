@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Services.OpenAI;
 using AdvancedPaste.Telemetry;
 using AdvancedPaste.UnitTests.Mocks;
@@ -27,16 +29,19 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 public sealed class KernelServiceIntegrationTests : IDisposable
 {
     private const string StandardImageFile = "image_with_text_example.png";
-    private KernelService _kernelService;
+    private IKernelService _kernelService;
     private AdvancedPasteEventListener _eventListener;
 
     [TestInitialize]
     public void TestInitialize()
     {
-        VaultCredentialsProvider credentialsProvider = new();
+        IntegrationTestUserSettings userSettings = new();
+        EnhancedVaultCredentialsProvider credentialsProvider = new(userSettings);
         PromptModerationService promptModerationService = new(credentialsProvider);
+        PasteAIProviderFactory providerFactory = new();
+        CustomActionTransformService customActionTransformService = new(promptModerationService, providerFactory, credentialsProvider, userSettings);
 
-        _kernelService = new KernelService(new NoOpKernelQueryCacheService(), credentialsProvider, promptModerationService, new CustomTextTransformService(credentialsProvider, promptModerationService));
+        _kernelService = new AdvancedAIKernelService(credentialsProvider, new NoOpKernelQueryCacheService(), promptModerationService, userSettings, customActionTransformService);
         _eventListener = new();
     }
 
