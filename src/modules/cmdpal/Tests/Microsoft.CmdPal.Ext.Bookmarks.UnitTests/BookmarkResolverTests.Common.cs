@@ -110,7 +110,7 @@ public partial class BookmarkResolverTests
                 [
                     new PlaceholderClassificationCase(
                         Name: "Drive",
-                        Input: "C:",
+                        Input: "C:\\.",
                         ExpectSuccess: true,
                         ExpectedKind: CommandKind.Directory,
                         ExpectedTarget: "C:\\",

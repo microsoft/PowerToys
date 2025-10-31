@@ -5,6 +5,7 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using SamplePagesExtension.Pages;
+using SamplePagesExtension.Pages.IssueSpecificPages;
 
 namespace SamplePagesExtension;
 
@@ -106,6 +107,11 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Evil samples",
             Subtitle = "Samples designed to break the palette in many different evil ways",
+        },
+        new ListItem(new AllIssueSamplesIndexPage())
+        {
+            Title = "Issue-specific samples",
+            Subtitle = "Samples designed to reproduce specific issues",
         }
     ];
 

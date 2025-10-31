@@ -97,6 +97,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(null), PageContext);
     }
 
+    private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FiltersViewModel.Filters))
+        {
+            var filtersViewModel = sender as FiltersViewModel;
+            var hasFilters = filtersViewModel?.Filters.Length > 0;
+            HasFilters = hasFilters;
+            UpdateProperty(nameof(HasFilters));
+        }
+    }
+
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
@@ -586,8 +597,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
+        Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters = new(new(model.Filters), PageContext);
-        Filters.InitializeProperties();
+        Filters?.PropertyChanged += FiltersPropertyChanged;
+
+        Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
         FetchItems();
@@ -686,8 +700,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(Filters):
+                Filters?.PropertyChanged -= FiltersPropertyChanged;
                 Filters = new(new(model.Filters), PageContext);
-                Filters.InitializeProperties();
+                Filters?.PropertyChanged += FiltersPropertyChanged;
+                Filters?.InitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -757,6 +773,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             FilteredItems.Clear();
         }
 
+        Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters?.SafeCleanup();
 
         var model = _model.Unsafe;

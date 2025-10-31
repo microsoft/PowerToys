@@ -512,14 +512,6 @@ jobs:
       versionNumber: ${{ parameters.versionNumber }}
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
-  - template: steps-build-installer-vnext.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
-
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
   # - All .pdb files from any static libs .libs (which were only used during linking)

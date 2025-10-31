@@ -94,6 +94,7 @@
         <controls:TitleBar
             x:Name="AppTitleBar"
             AutoConfigureCustomTitleBar="True"
+            CompactStateBreakpoint="900"
             IsTabStop="False"
             PaneButtonClick="PaneToggleBtn_Click">
             <controls:TitleBar.Resources>

@@ -11,7 +11,7 @@
   <Target Name="GenerateSparsePackage" BeforeTargets="PrepareForBuild">
     <!-- Use NoSign only for CI builds to avoid certificate issues on hosted agents -->
     <PropertyGroup>
-  <NoSignParam Condition="'$(EffectiveCIBuild)' == 'true'">-NoSign</NoSignParam>
+      <NoSignParam Condition="'$(EffectiveCIBuild)' == 'true'">-NoSign</NoSignParam>
       <NoSignParam Condition="'$(EffectiveCIBuild)' != 'true'"></NoSignParam>
     </PropertyGroup>
     

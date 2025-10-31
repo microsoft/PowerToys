@@ -70,6 +70,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public bool HasSearchBox { get; protected set; } = true;
 
+    public bool HasFilters { get; protected set; }
+
     public IconInfoViewModel Icon { get; protected set; }
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)

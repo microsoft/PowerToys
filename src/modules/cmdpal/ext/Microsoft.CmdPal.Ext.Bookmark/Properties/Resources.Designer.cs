@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -178,6 +178,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enter URL or file path, you can use {placeholders}, e.g. https://www.bing.com/search?q={Query}.
+        /// </summary>
+        public static string bookmarks_form_bookmark_placeholder {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to URL or file path is required.
         /// </summary>
         public static string bookmarks_form_bookmark_required {
@@ -187,7 +196,44 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name.
+        ///   Looks up a localized string similar to You can add placeholders to bookmarks, and Command Palette will prompt you to enter their values when you open the bookmark.
+        ///A placeholder looks like this:.
+        /// </summary>
+        public static string bookmarks_form_hint_text1 {
+            get {
+                return ResourceManager.GetString("bookmarks_form_hint_text1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {placeholder}.
+        /// </summary>
+        public static string bookmarks_form_hint_text2 {
+            get {
+                return ResourceManager.GetString("bookmarks_form_hint_text2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to — for example:.
+        /// </summary>
+        public static string bookmarks_form_hint_text3 {
+            get {
+                return ResourceManager.GetString("bookmarks_form_hint_text3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://www.bing.com/search?q={Query}.
+        /// </summary>
+        public static string bookmarks_form_hint_text4 {
+            get {
+                return ResourceManager.GetString("bookmarks_form_hint_text4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name (optional).
         /// </summary>
         public static string bookmarks_form_name_label {
             get {
