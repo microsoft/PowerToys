@@ -847,21 +847,166 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             };
         }
 
-        private bool HasServiceLegalInfo(string serviceType) => TryGetServiceLegalInfo(serviceType, out _);
+        private bool HasServiceLegalInfo(string serviceType)
+        {
+            // First check AIServiceTypeRegistry for legal info
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (metadata.HasLegalInfo)
+            {
+                return true;
+            }
 
-        private string GetServiceLegalDescription(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.Description : string.Empty;
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out _);
+        }
 
-        private string GetServiceTermsLabel(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsLabel : string.Empty;
+        private string GetServiceLegalDescription(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (!string.IsNullOrWhiteSpace(metadata.LegalDescription))
+            {
+                // Check if it's a resource key (doesn't contain spaces, follows resource naming convention)
+                if (!metadata.LegalDescription.Contains(' ') && metadata.LegalDescription.Contains('_'))
+                {
+                    // Try to load from resources
+                    try
+                    {
+                        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                        var localizedText = resourceLoader.GetString(metadata.LegalDescription);
+                        if (!string.IsNullOrWhiteSpace(localizedText))
+                        {
+                            return localizedText;
+                        }
+                    }
+                    catch
+                    {
+                        // If resource loading fails, return the key itself as fallback
+                    }
+                }
 
-        private Uri GetServiceTermsUri(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsUri : null;
+                return metadata.LegalDescription;
+            }
 
-        private string GetServicePrivacyLabel(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyLabel : string.Empty;
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) ? info.Description : string.Empty;
+        }
 
-        private Uri GetServicePrivacyUri(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyUri : null;
+        private string GetServiceTermsLabel(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (!string.IsNullOrEmpty(metadata.TermsLabel))
+            {
+                // Check if it's a resource key (doesn't contain spaces, follows resource naming convention)
+                if (!metadata.TermsLabel.Contains(' ') && metadata.TermsLabel.Contains('_'))
+                {
+                    // Try to load from resources
+                    try
+                    {
+                        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                        var localizedText = resourceLoader.GetString(metadata.TermsLabel);
+                        if (!string.IsNullOrWhiteSpace(localizedText))
+                        {
+                            return localizedText;
+                        }
+                    }
+                    catch
+                    {
+                        // If resource loading fails, return the key itself as fallback
+                    }
+                }
 
-        private bool HasServiceTermsLink(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) && info.TermsUri is not null && !string.IsNullOrEmpty(info.TermsLabel);
+                return metadata.TermsLabel;
+            }
 
-        private bool HasServicePrivacyLink(string serviceType) => TryGetServiceLegalInfo(serviceType, out var info) && info.PrivacyUri is not null && !string.IsNullOrEmpty(info.PrivacyLabel);
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsLabel : string.Empty;
+        }
+
+        private Uri GetServiceTermsUri(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (metadata.TermsUri is not null)
+            {
+                return metadata.TermsUri;
+            }
+
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsUri : null;
+        }
+
+        private string GetServicePrivacyLabel(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (!string.IsNullOrEmpty(metadata.PrivacyLabel))
+            {
+                // Check if it's a resource key (doesn't contain spaces, follows resource naming convention)
+                if (!metadata.PrivacyLabel.Contains(' ') && metadata.PrivacyLabel.Contains('_'))
+                {
+                    // Try to load from resources
+                    try
+                    {
+                        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                        var localizedText = resourceLoader.GetString(metadata.PrivacyLabel);
+                        if (!string.IsNullOrWhiteSpace(localizedText))
+                        {
+                            return localizedText;
+                        }
+                    }
+                    catch
+                    {
+                        // If resource loading fails, return the key itself as fallback
+                    }
+                }
+
+                return metadata.PrivacyLabel;
+            }
+
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyLabel : string.Empty;
+        }
+
+        private Uri GetServicePrivacyUri(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (metadata.PrivacyUri is not null)
+            {
+                return metadata.PrivacyUri;
+            }
+
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyUri : null;
+        }
+
+        private bool HasServiceTermsLink(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (metadata.HasTermsLink)
+            {
+                return true;
+            }
+
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) && info.TermsUri is not null && !string.IsNullOrEmpty(info.TermsLabel);
+        }
+
+        private bool HasServicePrivacyLink(string serviceType)
+        {
+            // First check AIServiceTypeRegistry
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+            if (metadata.HasPrivacyLink)
+            {
+                return true;
+            }
+
+            // Fall back to legacy dictionary
+            return TryGetServiceLegalInfo(serviceType, out var info) && info.PrivacyUri is not null && !string.IsNullOrEmpty(info.PrivacyLabel);
+        }
 
         private Visibility GetServiceLegalVisibility(string serviceType) => HasServiceLegalInfo(serviceType) ? Visibility.Visible : Visibility.Collapsed;
 
