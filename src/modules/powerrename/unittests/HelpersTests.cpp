@@ -502,4 +502,279 @@ namespace HelpersTests
             Assert::AreEqual(L"cost_$123.45", result);
         }
     };
+
+    TEST_CLASS(GetDatedFileNameTests)
+    {
+    public:
+        // Helper to get a fixed test time for consistent testing
+        SYSTEMTIME GetTestTime()
+        {
+            SYSTEMTIME testTime = { 0 };
+            testTime.wYear = 2024;
+            testTime.wMonth = 3;      // March
+            testTime.wDay = 15;       // 15th
+            testTime.wHour = 14;      // 2 PM (24-hour format)
+            testTime.wMinute = 30;
+            testTime.wSecond = 45;
+            testTime.wMilliseconds = 123;
+            testTime.wDayOfWeek = 5;  // Friday (0=Sunday, 5=Friday)
+            return testTime;
+        }
+
+        // Category 1: Tests for invalid patterns with extra characters (verify negative lookahead prevents wrong matching)
+
+        TEST_METHOD(InvalidPattern_YYY_NotMatched)
+        {
+            // Test $YYY (3 Y's) is not a valid pattern and should remain unchanged
+            // Negative lookahead in $YY(?!Y) prevents matching $YYY
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYY", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_$YYY", result);  // $YYY is invalid, should remain unchanged
+        }
+
+        TEST_METHOD(InvalidPattern_DDD_NotPartiallyMatched)
+        {
+            // Test that $DDD (short weekday) is not confused with $DD (2-digit day)
+            // This verifies negative lookahead works correctly
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDD", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Fri", result);  // Should be "Fri", not "15D"
+        }
+
+        TEST_METHOD(InvalidPattern_MMM_NotPartiallyMatched)
+        {
+            // Test that $MMM (short month name) is not confused with $MM (2-digit month)
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$MMM", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Mar", result);  // Should be "Mar", not "03M"
+        }
+
+        TEST_METHOD(InvalidPattern_HHH_NotMatched)
+        {
+            // Test $HHH (3 H's) is not valid and negative lookahead prevents $HH from matching
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$HHH", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_$HHH", result);  // Should remain unchanged
+        }
+
+        TEST_METHOD(SeparatedPatterns_SingleY)
+        {
+            // Test multiple $Y with separators works correctly
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$Y-$Y-$Y", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_4-4-4", result);  // Each $Y outputs "4" (from 2024)
+        }
+
+        TEST_METHOD(SeparatedPatterns_SingleD)
+        {
+            // Test multiple $D with separators works correctly
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$D.$D.$D", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_15.15.15", result);  // Each $D outputs "15"
+        }
+
+        // Category 2: Tests for mixed length patterns (verify longer patterns don't get matched incorrectly)
+
+        TEST_METHOD(MixedLengthYear_QuadFollowedBySingle)
+        {
+            // Test $YYYY$Y - should be 2024 + 4
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYYY$Y", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_20244", result);
+        }
+
+        TEST_METHOD(MixedLengthDay_TripleFollowedBySingle)
+        {
+            // Test $DDD$D - should be "Fri" + "15"
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDD$D", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Fri15", result);
+        }
+
+        TEST_METHOD(MixedLengthDay_QuadFollowedByDouble)
+        {
+            // Test $DDDD$DD - should be "Friday" + "15"
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDDD$DD", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Friday15", result);
+        }
+
+        TEST_METHOD(MixedLengthMonth_TripleFollowedBySingle)
+        {
+            // Test $MMM$M - should be "Mar" + "3"
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$MMM$M", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Mar3", result);
+        }
+
+        // Category 3: Tests for boundary conditions (patterns at start, end, with special chars)
+
+        TEST_METHOD(PatternAtStart)
+        {
+            // Test pattern at the very start of filename
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"$YYYY$M$D", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"2024315", result);
+        }
+
+        TEST_METHOD(PatternAtEnd)
+        {
+            // Test pattern at the very end of filename
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$Y", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_4", result);
+        }
+
+        TEST_METHOD(PatternWithSpecialChars)
+        {
+            // Test patterns surrounded by special characters
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file-$Y.$Y-$M", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file-4.4-3", result);
+        }
+
+        TEST_METHOD(EmptyFileName)
+        {
+            // Test with empty input string - should return E_INVALIDARG
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"", testTime);
+
+            Assert::IsTrue(FAILED(hr));  // Empty string should fail
+            Assert::AreEqual(E_INVALIDARG, hr);
+        }
+
+        // Category 4: Tests to explicitly verify negative lookahead is working
+
+        TEST_METHOD(NegativeLookahead_YearNotMatchedInYYYY)
+        {
+            // Verify $Y doesn't match when part of $YYYY
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYYY", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_2024", result);  // Should be "2024", not "202Y"
+        }
+
+        TEST_METHOD(NegativeLookahead_MonthNotMatchedInMMM)
+        {
+            // Verify $M doesn't match when part of $MMM
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$MMM", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Mar", result);  // Should be "Mar", not "3ar"
+        }
+
+        TEST_METHOD(NegativeLookahead_DayNotMatchedInDDDD)
+        {
+            // Verify $D doesn't match when part of $DDDD
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDDD", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_Friday", result);  // Should be "Friday", not "15riday"
+        }
+
+        TEST_METHOD(NegativeLookahead_HourNotMatchedInHH)
+        {
+            // Verify $H doesn't match when part of $HH
+            // Note: $HH is 12-hour format, so 14:00 (2 PM) displays as "02"
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$HH", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_02", result);  // 14:00 in 12-hour format is "02 PM"
+        }
+
+        TEST_METHOD(NegativeLookahead_MillisecondNotMatchedInFFF)
+        {
+            // Verify $f doesn't match when part of $fff
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$fff", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_123", result);  // Should be "123", not "1ff"
+        }
+
+        // Category 5: Complex mixed scenarios
+
+        TEST_METHOD(ComplexMixedPattern_AllFormats)
+        {
+            // Test a complex realistic filename with mixed pattern lengths
+            // Note: Using $hh for 24-hour format instead of $HH (which is 12-hour)
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"Photo_$YYYY-$MM-$DD_$hh-$mm-$ss_$fff", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"Photo_2024-03-15_14-30-45_123", result);
+        }
+
+        TEST_METHOD(ComplexMixedPattern_WithSeparators)
+        {
+            // Test multiple patterns of different lengths with separators
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"$YYYY_$Y-$Y_$MM_$M", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"2024_4-4_03_3", result);
+        }
+
+        TEST_METHOD(ComplexMixedPattern_DayFormats)
+        {
+            // Test all day format variations in one string
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"$D-$DD-$DDD-$DDDD", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"15-15-Fri-Friday", result);
+        }
+    };
 }
