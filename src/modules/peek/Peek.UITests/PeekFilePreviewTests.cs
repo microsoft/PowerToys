@@ -35,6 +35,65 @@ public class PeekFilePreviewTests : UITestBase
     {
     }
 
+    static PeekFilePreviewTests()
+    {
+        FixSettingsFileBeforeTests();
+    }
+
+    private static void FixSettingsFileBeforeTests()
+    {
+        try
+        {
+            string targetDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft",
+                "PowerToys",
+                "Peek");
+
+            if (!Directory.Exists(targetDirectory))
+            {
+                Directory.CreateDirectory(targetDirectory);
+            }
+
+            string targetSettingsPath = Path.Combine(targetDirectory, "settings.json");
+
+            string settingsContent = @"{
+              ""name"": ""Peek"",
+              ""version"": ""1.0"",
+              ""properties"": {
+                ""ActivationShortcut"": {
+                  ""win"": false,
+                  ""ctrl"": true,
+                  ""alt"": false,
+                  ""shift"": false,
+                  ""code"": 32,
+                  ""key"": ""Space""
+                },
+                ""AlwaysRunNotElevated"": {
+                  ""value"": true
+                },
+                ""CloseAfterLosingFocus"": {
+                  ""value"": false
+                },
+                ""ConfirmFileDelete"": {
+                  ""value"": true
+                },
+                ""EnableSpaceToActivate"": {
+                  ""value"": false
+                }
+              }
+            }";
+
+            File.WriteAllText(targetSettingsPath, settingsContent);
+
+            Debug.WriteLine($"Successfully set Ctrl+Space shortcut as settings file to {targetSettingsPath}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"ERROR setting Ctrl+Space shortcut as settings file: {ex.Message}");
+        }
+    }
+
     [TestInitialize]
     public void TestInitialize()
     {
