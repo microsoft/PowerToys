@@ -121,7 +121,7 @@ public static class AIServiceTypeRegistry
             DisplayName = "Ollama",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Ollama.svg",
 
-            // Olllama provide online service, but we treat it as local model at first version since it can is known for local model.
+            // Ollama provide online service, but we treat it as local model at first version since it can is known for local model.
             IsOnlineService = false,
             IsLocalModel = true,
             LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",

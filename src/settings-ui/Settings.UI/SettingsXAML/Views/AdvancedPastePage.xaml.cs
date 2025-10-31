@@ -361,6 +361,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Update system prompt placeholder based on EnableAdvancedAI state
             UpdateSystemPromptPlaceholder();
+
+            // Disable Save button if GPO blocks this provider
+            if (PasteAIProviderConfigurationDialog is not null)
+            {
+                bool isAllowedByGPO = ViewModel?.IsServiceTypeAllowedByGPO(serviceKind) ?? true;
+
+                if (!isAllowedByGPO)
+                {
+                    // GPO blocks this provider, disable save button
+                    PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+                }
+                else if (isFoundryLocal)
+                {
+                    // For Foundry Local, UpdateFoundrySaveButtonState will handle button state
+                    // based on model selection status
+                }
+                else
+                {
+                    // GPO allows this provider, enable save button
+                    PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
+                }
+            }
         }
 
         private Task UpdateFoundryLocalUIAsync(bool refreshFoundry = false)
@@ -623,6 +645,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (!isFoundrySelected || ViewModel?.PasteAIProviderDraft is null)
             {
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = true;
+                return;
+            }
+
+            // Check GPO first
+            bool isAllowedByGPO = ViewModel?.IsServiceTypeAllowedByGPO(AIServiceType.FoundryLocal) ?? true;
+            if (!isAllowedByGPO)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
                 return;
             }
 
@@ -995,8 +1025,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             };
             menuFlyout.Items.Add(onlineHeader);
 
-            // Add online providers
-            foreach (var metadata in AIServiceTypeRegistry.GetOnlineServiceTypes())
+            // Add all online providers
+            var onlineProviders = AIServiceTypeRegistry.GetOnlineServiceTypes();
+
+            foreach (var metadata in onlineProviders)
             {
                 var menuItem = new MenuFlyoutItem
                 {
@@ -1004,6 +1036,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     Tag = metadata.ServiceType.ToConfigurationString(),
                     Icon = new ImageIcon { Source = new SvgImageSource(new Uri(metadata.IconPath)) },
                 };
+
                 menuItem.Click += ProviderMenuFlyoutItem_Click;
                 menuFlyout.Items.Add(menuItem);
             }
@@ -1019,8 +1052,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             };
             menuFlyout.Items.Add(localHeader);
 
-            // Add local providers
-            foreach (var metadata in AIServiceTypeRegistry.GetLocalServiceTypes())
+            // Add all local providers
+            var localProviders = AIServiceTypeRegistry.GetLocalServiceTypes();
+
+            foreach (var metadata in localProviders)
             {
                 var menuItem = new MenuFlyoutItem
                 {
@@ -1028,6 +1063,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     Tag = metadata.ServiceType.ToConfigurationString(),
                     Icon = new ImageIcon { Source = new SvgImageSource(new Uri(metadata.IconPath)) },
                 };
+
                 menuItem.Click += ProviderMenuFlyoutItem_Click;
                 menuFlyout.Items.Add(menuItem);
             }
@@ -1060,8 +1096,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PasteAIProviderConfigurationDialog.Title = $"{displayName} provider configuration";
             }
 
-            UpdatePasteAIUIVisibility();
             await UpdateFoundryLocalUIAsync(refreshFoundry: true);
+            UpdatePasteAIUIVisibility();
             RefreshDialogBindings();
 
             PasteAIApiKeyPasswordBox.Password = string.Empty;

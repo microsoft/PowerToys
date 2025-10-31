@@ -212,6 +212,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();
 
+        /// <summary>
+        /// Gets available AI providers filtered by GPO policies.
+        /// Only returns providers that are not explicitly disabled by GPO.
+        /// </summary>
+        public IEnumerable<AIServiceTypeMetadata> AvailableProvidersFilteredByGPO =>
+            AvailableProviders.Where(metadata => IsServiceTypeAllowedByGPO(metadata.ServiceType));
+
         public bool IsAIEnabled => _advancedPasteSettings.Properties.IsAIEnabled && !IsOnlineAIModelsDisallowedByGPO;
 
         private bool LegacyOpenAIKeyExists()
@@ -417,7 +424,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _pasteAIProviderDraft = value;
                     OnPropertyChanged(nameof(PasteAIProviderDraft));
+                    OnPropertyChanged(nameof(ShowPasteAIProviderGpoConfiguredInfoBar));
                 }
+            }
+        }
+
+        public bool ShowPasteAIProviderGpoConfiguredInfoBar
+        {
+            get
+            {
+                if (_pasteAIProviderDraft is null)
+                {
+                    return false;
+                }
+
+                var serviceType = _pasteAIProviderDraft.ServiceType.ToAIServiceType();
+                return !IsServiceTypeAllowedByGPO(serviceType);
             }
         }
 
@@ -543,6 +565,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AIServiceType.AmazonBedrock => "anthropic.claude-3-haiku",
                 _ => string.Empty,
             };
+        }
+
+        public bool IsServiceTypeAllowedByGPO(AIServiceType serviceType)
+        {
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+
+            // Check if this is an online service
+            if (metadata.IsOnlineService)
+            {
+                // For online services, first check the global online AI models GPO
+                if (_onlineAIModelsGpoRuleConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    // If global online AI is disabled, all online services are blocked
+                    return false;
+                }
+
+                // If global online AI is enabled or not configured, check individual endpoint GPO
+                var individualGpoRule = serviceType switch
+                {
+                    AIServiceType.OpenAI => GPOWrapper.GetAllowedAdvancedPasteOpenAIValue(),
+                    AIServiceType.AzureOpenAI => GPOWrapper.GetAllowedAdvancedPasteAzureOpenAIValue(),
+                    AIServiceType.AzureAIInference => GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue(),
+                    AIServiceType.Mistral => GPOWrapper.GetAllowedAdvancedPasteMistralValue(),
+                    AIServiceType.Google => GPOWrapper.GetAllowedAdvancedPasteGoogleValue(),
+                    AIServiceType.Anthropic => GPOWrapper.GetAllowedAdvancedPasteAnthropicValue(),
+                    _ => GpoRuleConfigured.Unavailable,
+                };
+
+                // If individual GPO is explicitly disabled, block it
+                return individualGpoRule != GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                // For local models, only check their individual GPO (not affected by online AI GPO)
+                var localGpoRule = serviceType switch
+                {
+                    AIServiceType.Ollama => GPOWrapper.GetAllowedAdvancedPasteOllamaValue(),
+                    AIServiceType.FoundryLocal => GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue(),
+                    _ => GpoRuleConfigured.Unavailable,
+                };
+
+                // If local model GPO is explicitly disabled, block it
+                return localGpoRule != GpoRuleConfigured.Disabled;
+            }
         }
 
         public void BeginEditPasteAIProvider(PasteAIProviderDefinition provider)

@@ -449,6 +449,18 @@
                     MinWidth="640"
                     Padding="16,0,16,16"
                     Spacing="16">
+                    <InfoBar
+                        x:Name="PasteAIProviderGpoInfoBar"
+                        x:Uid="GPO_SettingIsManaged"
+                        Margin="0,12,0,0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPasteAIProviderGpoConfiguredInfoBar, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPasteAIProviderGpoConfiguredInfoBar, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                     <StackPanel
                         Margin="0,12,0,0"
                         Orientation="Vertical"
