@@ -663,10 +663,13 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Custom actions</value>
   </data>
   <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
-    <value>Foundry Local runs AI models directly on your device. No data is sent to external services. You are responsible for ensuring your use of local models complies with their respective licenses and terms.</value>
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="AdvancedPaste_LocalModel_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
   </data>
   <data name="AdvancedPaste_OpenAI_LegalDescription" xml:space="preserve">
-    <value>Your API key connects directly to OpenAI services. By configuring this provider you agree to follow OpenAI usage policies and data handling rules.</value>
+    <value>Your API key connects directly to OpenAI services. By setting up this provider, you agree to comply with OpenAI's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_OpenAI_TermsLabel" xml:space="preserve">
     <value>Terms of Use</value>
@@ -675,7 +678,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Privacy Policy</value>
   </data>
   <data name="AdvancedPaste_AzureOpenAI_LegalDescription" xml:space="preserve">
-    <value>This connector routes requests to OpenAI models hosted on Microsoft Azure. Saving this configuration means you accept Microsoft terms and data protections.</value>
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_AzureOpenAI_TermsLabel" xml:space="preserve">
     <value>Microsoft Azure Terms of Service</value>
@@ -684,7 +687,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Microsoft Privacy Statement</value>
   </data>
   <data name="AdvancedPaste_AzureAIInference_LegalDescription" xml:space="preserve">
-    <value>Azure AI Inference is governed by Microsoft service and privacy commitments. Continuing indicates you accept Microsoft terms for this offering.</value>
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_AzureAIInference_TermsLabel" xml:space="preserve">
     <value>Microsoft Azure Terms of Service</value>
@@ -693,7 +696,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Microsoft Privacy Statement</value>
   </data>
   <data name="AdvancedPaste_Google_LegalDescription" xml:space="preserve">
-    <value>Connecting to Gemini requires a Google API key. Using this integration means you agree to Google's general terms and privacy policies.</value>
+    <value>Your API key connects directly to Google services. By setting up this provider, you agree to comply with Google's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_Google_TermsLabel" xml:space="preserve">
     <value>Google Terms of Service</value>
@@ -702,7 +705,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Google Privacy Policy</value>
   </data>
   <data name="AdvancedPaste_Anthropic_LegalDescription" xml:space="preserve">
-    <value>This integration accesses Anthropic Claude models. You are responsible for complying with Anthropic policies whenever you use this provider.</value>
+    <value>Your API key connects directly to Anthropic services. By setting up this provider, you agree to comply with Anthropic's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_Anthropic_TermsLabel" xml:space="preserve">
     <value>Anthropic Terms of Service</value>
@@ -711,7 +714,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Anthropic Privacy Policy</value>
   </data>
   <data name="AdvancedPaste_Mistral_LegalDescription" xml:space="preserve">
-    <value>You can connect with a personal Mistral API key. Configuring this provider indicates you accept Mistral's published legal terms.</value>
+    <value>Your API key connects directly to Mistral services. By setting up this provider, you agree to comply with Mistral's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_Mistral_TermsLabel" xml:space="preserve">
     <value>Mistral Terms of Use</value>
@@ -720,16 +723,13 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Mistral Privacy Policy</value>
   </data>
   <data name="AdvancedPaste_AmazonBedrock_LegalDescription" xml:space="preserve">
-    <value>AWS credentials let you invoke Amazon Bedrock models. Saving this setup confirms you will follow AWS service terms and privacy commitments.</value>
+    <value>Your API key connects directly to Amazon services. By setting up this provider, you agree to comply with Amazon's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_AmazonBedrock_TermsLabel" xml:space="preserve">
     <value>AWS Service Terms</value>
   </data>
   <data name="AdvancedPaste_AmazonBedrock_PrivacyLabel" xml:space="preserve">
     <value>AWS Privacy Notice</value>
-  </data>
-  <data name="AdvancedPaste_Ollama_LegalDescription" xml:space="preserve">
-    <value>Ollama usage, local or remote, is bound by its license and usage policies. Continuing means you accept Ollama's terms and privacy commitments.</value>
   </data>
   <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
     <value>Ollama Terms of Service</value>

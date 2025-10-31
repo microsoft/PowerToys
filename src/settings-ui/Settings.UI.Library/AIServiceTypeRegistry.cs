@@ -110,6 +110,7 @@ public static class AIServiceTypeRegistry
             ServiceType = AIServiceType.ML,
             DisplayName = "Windows ML",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg",
+            LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",
             IsAvailableInUI = false,
             IsOnlineService = false,
             IsLocalModel = true,
@@ -123,7 +124,7 @@ public static class AIServiceTypeRegistry
             // Olllama provide online service, but we treat it as local model at first version since it can is known for local model.
             IsOnlineService = false,
             IsLocalModel = true,
-            LegalDescription = "AdvancedPaste_Ollama_LegalDescription",
+            LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",
             TermsLabel = "AdvancedPaste_Ollama_TermsLabel",
             TermsUri = new Uri("https://ollama.com/terms"),
             PrivacyLabel = "AdvancedPaste_Ollama_PrivacyLabel",
@@ -133,6 +134,7 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.Onnx,
             DisplayName = "ONNX",
+            LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Onnx.svg",
             IsOnlineService = false,
             IsAvailableInUI = false,
