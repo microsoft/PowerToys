@@ -861,14 +861,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return string.Empty;
             }
 
-            // Check if it's a resource key (doesn't contain spaces, contains underscore)
-            if (!metadata.LegalDescription.Contains(' ') && metadata.LegalDescription.Contains('_'))
-            {
-                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                return resourceLoader.GetString(metadata.LegalDescription);
-            }
-
-            return metadata.LegalDescription;
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            return resourceLoader.GetString(metadata.LegalDescription);
         }
 
         private string GetServiceTermsLabel(string serviceType)
@@ -879,14 +873,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return string.Empty;
             }
 
-            // Check if it's a resource key (doesn't contain spaces, contains underscore)
-            if (!metadata.TermsLabel.Contains(' ') && metadata.TermsLabel.Contains('_'))
-            {
-                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                return resourceLoader.GetString(metadata.TermsLabel);
-            }
-
-            return metadata.TermsLabel;
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            return resourceLoader.GetString(metadata.TermsLabel);
         }
 
         private Uri GetServiceTermsUri(string serviceType)
@@ -903,14 +891,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return string.Empty;
             }
 
-            // Check if it's a resource key (doesn't contain spaces, contains underscore)
-            if (!metadata.PrivacyLabel.Contains(' ') && metadata.PrivacyLabel.Contains('_'))
-            {
-                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                return resourceLoader.GetString(metadata.PrivacyLabel);
-            }
-
-            return metadata.PrivacyLabel;
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            return resourceLoader.GetString(metadata.PrivacyLabel);
         }
 
         private Uri GetServicePrivacyUri(string serviceType)
