@@ -13,16 +13,19 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 
-public sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
+internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 {
     private const string _id = "com.microsoft.cmdpal.builtin.remotedesktop.fallback";
 
     // Cache the CompositeFormat for repeated use (CA1863)
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
+    private readonly RDPConnectionsManager _rdpConnectionsManager;
 
-    public FallbackRemoteDesktopItem()
+    public FallbackRemoteDesktopItem(RDPConnectionsManager rdpConnectionsManager)
     : base(new OpenRemoteDesktopCommand(string.Empty), Resources.remotedesktop_title)
     {
+        _rdpConnectionsManager = rdpConnectionsManager;
+
         Title = string.Empty;
         Subtitle = string.Empty;
         Icon = Icons.RDPIcon;
@@ -30,14 +33,21 @@ public sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        RDPConnections rdpConnections = RDPConnections.Create([]);
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Command = new OpenRemoteDesktopCommand(string.Empty);
+            return;
+        }
+
         List<ConnectionListItem> items = new();
 
-        rdpConnections.Reload(RDPConnections.GetRdpConnectionsFromRegistry());
+        _rdpConnectionsManager.Reload();
 
-        var connections = rdpConnections.FindConnections(query) ?? Enumerable.Empty<Scored<string>>();
+        var connections = _rdpConnectionsManager.FindConnections(query) ?? Enumerable.Empty<Scored<string>>();
 
-        items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnections.MapToResult));
+        items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
 
         if (items.Count > 0)
         {

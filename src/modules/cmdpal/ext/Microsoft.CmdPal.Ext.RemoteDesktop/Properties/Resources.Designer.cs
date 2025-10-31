@@ -97,6 +97,24 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A list of connections to include in the query results by default..
+        /// </summary>
+        public static string remotedesktop_settings_predefined_connections_description {
+            get {
+                return ResourceManager.GetString("remotedesktop_settings_predefined_connections_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Predefined connections.
+        /// </summary>
+        public static string remotedesktop_settings_predefined_connections_title {
+            get {
+                return ResourceManager.GetString("remotedesktop_settings_predefined_connections_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Establish Remote Desktop connections.
         /// </summary>
         public static string remotedesktop_subtitle {

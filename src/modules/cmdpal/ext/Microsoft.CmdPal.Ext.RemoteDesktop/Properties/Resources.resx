@@ -135,4 +135,10 @@
   <data name="remotedesktop_open_rdp" xml:space="preserve">
     <value>Open Remote Desktop Client</value>
   </data>
+  <data name="remotedesktop_settings_predefined_connections_title" xml:space="preserve">
+    <value>Predefined connections</value>
+  </data>
+  <data name="remotedesktop_settings_predefined_connections_description" xml:space="preserve">
+    <value>A list of connections to include in the query results by default.</value>
+  </data>
 </root>
