@@ -295,21 +295,30 @@ internal sealed class Window
     /// <returns>The state (none, app, ...) of the window</returns>
     internal WindowCloakState GetWindowCloakState()
     {
-        _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out var isCloakedState, sizeof(uint));
-
-        switch (isCloakedState)
+        try
         {
-            case (int)DwmWindowCloakStates.None:
-                return WindowCloakState.None;
-            case (int)DwmWindowCloakStates.CloakedApp:
-                return WindowCloakState.App;
-            case (int)DwmWindowCloakStates.CloakedShell:
-                return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
-            case (int)DwmWindowCloakStates.CloakedInherited:
-                return WindowCloakState.Inherited;
-            default:
-                return WindowCloakState.Unknown;
+            _ = NativeMethods.DwmGetWindowAttribute(Hwnd, (int)DwmWindowAttributes.Cloaked, out var isCloakedState, sizeof(uint));
+
+            switch (isCloakedState)
+            {
+                case (int)DwmWindowCloakStates.None:
+                    return WindowCloakState.None;
+                case (int)DwmWindowCloakStates.CloakedApp:
+                    return WindowCloakState.App;
+                case (int)DwmWindowCloakStates.CloakedShell:
+                    return WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.IsWindowCloakedByVirtualDesktopManager(hwnd, Desktop.Id) ? WindowCloakState.OtherDesktop : WindowCloakState.Shell;
+                case (int)DwmWindowCloakStates.CloakedInherited:
+                    return WindowCloakState.Inherited;
+                default:
+                    return WindowCloakState.Unknown;
+            }
         }
+        catch
+        {
+            // Log?
+        }
+
+        return WindowCloakState.Unknown;
     }
 
     /// <summary>

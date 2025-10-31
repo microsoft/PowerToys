@@ -128,8 +128,6 @@ internal sealed partial class NowDockBand : CommandItem
         Title = timeString;
         Subtitle = dateString;
 
-        //// TODO! This is a hack - we shouldn't need to set a Name on band items to get them to appear. We should be able to figure it out if there's a Icon OR HasText
-        // ((NoOpCommand)Command).Name = $"{Title}\n{Subtitle}";
         _copyDateCommand.Text = dateString;
         _copyTimeCommand.Text = timeString;
     }

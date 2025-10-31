@@ -16,7 +16,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, INotifyPropertyChanged
+public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>
 {
     private DockViewModel _viewModel;
 
@@ -104,6 +104,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
         // MainViewModel mainModel = (MainViewModel)DataContext;
         _viewModel = viewModel;
         InitializeComponent();
+        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
     }
 
     internal void UpdateSettings(DockSettings settings)
@@ -199,5 +200,13 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
         // We need to wait until our flyout is opened to try and toss focus
         // at its search box. The control isn't in the UI tree before that
         ContextControl.FocusSearchBox();
+    }
+
+    public void Receive(CloseContextMenuMessage message)
+    {
+        if (ContextMenuFlyout.IsOpen)
+        {
+            ContextMenuFlyout.Hide();
+        }
     }
 }
