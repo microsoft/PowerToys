@@ -9,25 +9,6 @@
           <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
         </RegistryKey>
       </Component>
-      <?if $(var.PerUser) = "true" ?>
-      <Component Id="powertoys_env_path_user" Bitness="always64">
-        <!-- Anchor registry for component key path -->
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="powertoys_env_path_user" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <!-- Append install folder to current user's PATH -->
-        <Environment Id="AddPowerToysToUserPath" Name="PATH" Action="set" Part="last" System="no" Value="[INSTALLFOLDER]" />
-      </Component>
-      <?else?>
-      <Component Id="powertoys_env_path_machine" Bitness="always64">
-        <!-- Anchor registry for component key path -->
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="powertoys_env_path_machine" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <!-- Append install folder to machine PATH -->
-        <Environment Id="AddPowerToysToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[INSTALLFOLDER]" />
-      </Component>
-      <?endif?>
       <Component Id="powertoys_toast_clsid" Bitness="always64">
         <RemoveFolder Id="Remove_powertoys_toast_clsid" On="uninstall" />
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
@@ -128,11 +109,6 @@
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="PowerToysStartMenuShortcut" />
       <ComponentRef Id="powertoys_per_machine_comp" />
-  <?if $(var.PerUser) = "true" ?>
-  <ComponentRef Id="powertoys_env_path_user" />
-  <?else?>
-  <ComponentRef Id="powertoys_env_path_machine" />
-  <?endif?>
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
