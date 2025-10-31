@@ -194,6 +194,159 @@ namespace ImageResizer.Properties {
                 return ResourceManager.GetString("Input_ShrinkOnly.Content", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Enable AI Super Resolution.
+        /// </summary>
+        public static string Input_EnableAiSuperResolution {
+            get {
+                return ResourceManager.GetString("Input_EnableAiSuperResolution", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Original size.
+        /// </summary>
+        public static string Input_AiOriginalSizeLabel {
+            get {
+                return ResourceManager.GetString("Input_AiOriginalSizeLabel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Enhanced size.
+        /// </summary>
+        public static string Input_AiEnhancedSizeLabel {
+            get {
+                return ResourceManager.GetString("Input_AiEnhancedSizeLabel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unavailable.
+        /// </summary>
+        public static string Input_AiUnknownSize {
+            get {
+                return ResourceManager.GetString("Input_AiUnknownSize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple files selected.
+        /// </summary>
+        public static string Input_AiMultipleFiles {
+            get {
+                return ResourceManager.GetString("Input_AiMultipleFiles", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0}×.
+        /// </summary>
+        public static string Input_AiScaleFormat {
+            get {
+                return ResourceManager.GetString("Input_AiScaleFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Upscale to {0} times the original size..
+        /// </summary>
+        public static string Input_AiScaleHelp {
+            get {
+                return ResourceManager.GetString("Input_AiScaleHelp", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Scale.
+        /// </summary>
+        public static string Input_AiScaleLabel {
+            get {
+                return ResourceManager.GetString("Input_AiScaleLabel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Current.
+        /// </summary>
+        public static string Input_AiCurrentLabel {
+            get {
+                return ResourceManager.GetString("Input_AiCurrentLabel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to New.
+        /// </summary>
+        public static string Input_AiNewLabel {
+            get {
+                return ResourceManager.GetString("Input_AiNewLabel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Checking AI model availability...
+        /// </summary>
+        public static string Input_AiModelChecking {
+            get {
+                return ResourceManager.GetString("Input_AiModelChecking", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AI model not downloaded. Click Download to get started.
+        /// </summary>
+        public static string Input_AiModelNotAvailable {
+            get {
+                return ResourceManager.GetString("Input_AiModelNotAvailable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AI feature is disabled by system settings.
+        /// </summary>
+        public static string Input_AiModelDisabledByUser {
+            get {
+                return ResourceManager.GetString("Input_AiModelDisabledByUser", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AI feature is not supported on this system.
+        /// </summary>
+        public static string Input_AiModelNotSupported {
+            get {
+                return ResourceManager.GetString("Input_AiModelNotSupported", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading AI model...
+        /// </summary>
+        public static string Input_AiModelDownloading {
+            get {
+                return ResourceManager.GetString("Input_AiModelDownloading", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to download AI model. Please try again.
+        /// </summary>
+        public static string Input_AiModelDownloadFailed {
+            get {
+                return ResourceManager.GetString("Input_AiModelDownloadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Download AI Model.
+        /// </summary>
+        public static string Input_AiModelDownloadButton {
+            get {
+                return ResourceManager.GetString("Input_AiModelDownloadButton", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Large.
