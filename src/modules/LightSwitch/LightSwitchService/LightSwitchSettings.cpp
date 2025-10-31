@@ -55,7 +55,7 @@ void LightSwitchSettings::InitFileWatcher()
                         std::this_thread::sleep_for(seconds(3));
 
                         auto elapsed = steady_clock::now() - m_lastChangeTime;
-                        if (elapsed >= seconds(3))
+                        if (elapsed >= seconds(1))
                             break;
                     }
 

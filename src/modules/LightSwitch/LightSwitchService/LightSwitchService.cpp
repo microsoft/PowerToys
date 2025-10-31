@@ -311,11 +311,16 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             int lightBoundary = (settings.lightTime + settings.sunrise_offset) % 1440;
             int darkBoundary = (settings.darkTime + settings.sunset_offset) % 1440;
 
+            SYSTEMTIME st;
+            GetLocalTime(&st);
+            nowMinutes = st.wHour * 60 + st.wMinute;
+
             bool crossedLight = false;
             bool crossedDark = false;
 
             if (prevMinutes != -1)
             {
+                // this means we are in a new day cycle
                 if (nowMinutes < prevMinutes)
                 {
                     crossedLight = (prevMinutes <= lightBoundary || nowMinutes >= lightBoundary);
@@ -374,6 +379,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             }
 
             // settings after any necessary updates.
+            LightSwitchSettings::instance().LoadSettings();
             const auto& currentSettings = LightSwitchSettings::instance().settings();
 
             wchar_t msg[160];
