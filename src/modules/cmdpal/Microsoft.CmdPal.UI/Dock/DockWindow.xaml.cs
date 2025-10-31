@@ -15,6 +15,7 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -29,8 +30,9 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
-public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsMessage>
+public sealed partial class DockWindow : WindowEx,
                                                  IRecipient<BringToTopMessage>,
+                                                 IRecipient<RequestShowPaletteAtMessage>,
     IRecipient<QuitMessage>,
     IDisposable
 {
@@ -80,9 +82,8 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
 
         this.Activated += DockWindow_Activated;
 
-        // this.Closed += DockWindow_Closed;
-        // WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
+        WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         _hwnd = GetWindowHandle(this);
@@ -511,6 +512,80 @@ public sealed partial class DockWindow : WindowEx, // , IRecipient<OpenSettingsM
         });
     }
 
+    void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() => RequestShowPaletteOnUiThread(message.PosDips));
+    }
+
+    private void RequestShowPaletteOnUiThread(Point posDips)
+    {
+        // pos is relative to our root. We need to convert to screen coords.
+        var rootPosDips = Root.TransformToVisual(null).TransformPoint(new Point(0, 0));
+        var screenPosDips = new Point(rootPosDips.X + posDips.X, rootPosDips.Y + posDips.Y);
+
+        var dpi = PInvoke.GetDpiForWindow(_hwnd);
+        var scaleFactor = dpi / 96.0;
+        var screenPosPixels = new Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
+
+        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+        var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+
+        // Now we're going to find the best position for the palette.
+
+        // We want to anchor the palette on the dock side.
+        // on the top:
+        //   - anchor to the top, left if we're on the left half of the screen
+        //   - anchor to the top, right if we're on the right half of the screen
+        // On the left:
+        //   - anchor to the top, left if we're on the top half of the screen
+        //   - anchor to the bottom, left if we're on the bottom half of the screen
+        // On the right:
+        //   - anchor to the top, right if we're on the top half of the screen
+        //   - anchor to the bottom, right if we're on the bottom half of the screen
+        // On the bottom:
+        //   - anchor to the bottom, left if we're on the left half of the screen
+        //   - anchor to the bottom, right if we're on the right half of the screen
+        var onTopHalf = screenPosPixels.Y < screenHeight / 2;
+        var onLeftHalf = screenPosPixels.X < screenWidth / 2;
+        var onRightHalf = !onLeftHalf;
+        var onBottomHalf = !onTopHalf;
+
+        var anchorPoint = _settings.Side switch
+        {
+            DockSide.Top => onLeftHalf ? AnchorPoint.TopLeft : AnchorPoint.TopRight,
+            DockSide.Bottom => onLeftHalf ? AnchorPoint.BottomLeft : AnchorPoint.BottomRight,
+            DockSide.Left => onTopHalf ? AnchorPoint.TopLeft : AnchorPoint.BottomLeft,
+            DockSide.Right => onTopHalf ? AnchorPoint.TopRight : AnchorPoint.BottomRight,
+            _ => AnchorPoint.TopLeft,
+        };
+
+        // we also need to slide the anchor point a bit away from the dock
+        var paddingDips = 16;
+        var paddingPixels = paddingDips * scaleFactor;
+        PInvoke.GetWindowRect(_hwnd, out var ourRect);
+
+        // Depending on the side we're on, we need to offset differently
+        switch (_settings.Side)
+        {
+            case DockSide.Top:
+                screenPosPixels.Y = ourRect.bottom + paddingPixels;
+                break;
+            case DockSide.Bottom:
+                screenPosPixels.Y = ourRect.top - paddingPixels;
+                break;
+            case DockSide.Left:
+                screenPosPixels.X = ourRect.right + paddingPixels;
+                break;
+            case DockSide.Right:
+                screenPosPixels.X = ourRect.left - paddingPixels;
+                break;
+        }
+
+        // Now that we know the anchor corner, and where to attempt to place it, we can
+        // ask the palette to show itself there.
+        WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
+    }
+
     public void Dispose() => viewModel.Dispose();
 }
 
@@ -588,4 +663,17 @@ internal static class ShowDesktop
 }
 
 internal sealed record BringToTopMessage(bool OnTop);
+
+internal sealed record RequestShowPaletteAtMessage(Point PosDips);
+
+internal sealed record ShowPaletteAtMessage(Point PosPixels, AnchorPoint Anchor);
+
+internal enum AnchorPoint
+{
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+}
+
 #pragma warning restore SA1402 // File may only contain a single type

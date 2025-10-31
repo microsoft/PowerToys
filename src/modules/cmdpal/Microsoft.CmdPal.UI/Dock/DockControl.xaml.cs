@@ -13,8 +13,11 @@ using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
+
+#pragma warning disable SA1402 // File may only contain a single type
 
 public sealed partial class DockControl : UserControl, INotifyPropertyChanged, IRecipient<CloseContextMenuMessage>
 {
@@ -183,7 +186,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 // TODO! stick the logic here to find the right place to open
                 // the window
-                WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(0));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
             }
 
             PerformCommandMessage m = new(command.Model);
@@ -210,3 +213,5 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         }
     }
 }
+
+#pragma warning restore SA1402 // File may only contain a single type

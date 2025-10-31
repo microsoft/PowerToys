@@ -3,12 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -64,7 +59,6 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         }
         else
         {
-            // Items.Add(new(_rootItem));
             DoOnUiThread(() =>
              {
                  var dockItem = new DockItemViewModel(_rootItem, _showLabels);
@@ -100,26 +94,6 @@ public partial class DockItemViewModel : CommandItemViewModel
         : base(item, errorContext)
     {
         _showLabel = showLabel;
-    }
-
-    [RelayCommand]
-    public void InvokePrimary()
-    {
-        try
-        {
-            var isPage = Command.Model.Unsafe is not IInvokableCommand invokable;
-            if (isPage)
-            {
-                WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(0));
-            }
-
-            PerformCommandMessage m = new(Command.Model);
-            WeakReferenceMessenger.Default.Send(m);
-        }
-        catch (COMException e)
-        {
-            Logger.LogError("Error invoking dock command", e);
-        }
     }
 }
 
