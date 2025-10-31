@@ -361,6 +361,7 @@ namespace Microsoft.CommandPalette.Extensions
     interface IFallbackCommandItem requires ICommandItem {
         IFallbackHandler FallbackHandler{ get; };
         String DisplayTitle { get; };
+        String Id { get; };
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]

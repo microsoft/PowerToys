@@ -25,8 +25,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
 
     private Func<string, bool> _suppressCallback;
 
+    private const string _id = "com.microsoft.cmdpal.builtin.indexer.fallback";
+
     public FallbackOpenFileItem()
-        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title, _id)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
@@ -118,9 +120,9 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 // Exit 4: We found more than one result. Make our command take
                 // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
-                Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
+                Title = Resources.Indexer_Title;
                 Icon = Icons.FileExplorerIcon;
-                Subtitle = Resources.Indexer_Subtitle;
+                Subtitle = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
                 Command = indexerPage;
 
                 return;

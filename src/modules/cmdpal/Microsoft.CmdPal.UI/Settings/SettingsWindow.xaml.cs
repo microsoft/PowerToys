@@ -10,7 +10,6 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -83,6 +82,7 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             "General" => typeof(GeneralPage),
             "Extensions" => typeof(ExtensionsPage),
+            "Fallbacks" => typeof(FallbacksPage),
             _ => null,
         };
         if (pageType is not null)

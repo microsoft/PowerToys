@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -27,9 +26,9 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
-            new FallbackCommandItem(quitCommand, displayTitle: Properties.Resources.builtin_quit_subtitle) { Subtitle = Properties.Resources.builtin_quit_subtitle },
+            new FallbackCommandItem(quitCommand, displayTitle: Properties.Resources.builtin_quit_subtitle, quitCommand.Id) { Subtitle = Properties.Resources.builtin_quit_subtitle },
             _fallbackReloadItem,
-            _fallbackLogItem,
+            _fallbackLogItem
         ];
 
     public BuiltInsCommandProvider()

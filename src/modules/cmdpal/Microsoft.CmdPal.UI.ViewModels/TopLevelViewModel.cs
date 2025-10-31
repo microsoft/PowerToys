@@ -4,11 +4,9 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -27,7 +25,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private readonly string _commandProviderId;
 
-    private string IdFromModel => _commandItemViewModel.Command.Id;
+    private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
+
+    private string _fallbackId = string.Empty;
 
     private string _generatedId = string.Empty;
 
@@ -41,7 +41,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     [ObservableProperty]
     public partial ObservableCollection<Tag> Tags { get; set; } = [];
 
-    public string Id => string.IsNullOrEmpty(IdFromModel) ? _generatedId : IdFromModel;
+    public string Id => string.IsNullOrWhiteSpace(IdFromModel) ? _generatedId : IdFromModel;
 
     public CommandPaletteHost ExtensionHost { get; private set; }
 
@@ -158,14 +158,20 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public bool IsEnabled
     {
-        get => _providerSettings.IsFallbackEnabled(this);
-        set
+        get
         {
-            if (value != IsEnabled)
+            if (IsFallback)
             {
-                _providerSettings.SetFallbackEnabled(this, value);
-                Save();
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                if (_settings.FallbackSettings.TryGetValue(_fallbackId, out var fallbackSettings))
+                {
+                    return fallbackSettings.IsEnabled;
+                }
+
+                return true;
+            }
+            else
+            {
+                return _providerSettings.IsEnabled;
             }
         }
     }
@@ -177,7 +183,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         string commandProviderId,
         SettingsModel settings,
         ProviderSettings providerSettings,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        ICommandItem? commandItem)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
@@ -187,6 +194,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         IsFallback = isFallback;
         ExtensionHost = extensionHost;
+        if (isFallback && commandItem is FallbackCommandItem fallback)
+        {
+            _fallbackId = fallback.Id;
+        }
 
         item.PropertyChanged += Item_PropertyChanged;
 

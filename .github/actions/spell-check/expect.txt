@@ -1185,6 +1185,7 @@ openas
 opencode
 OPENFILENAME
 opensource
+openurl
 openxmlformats
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE

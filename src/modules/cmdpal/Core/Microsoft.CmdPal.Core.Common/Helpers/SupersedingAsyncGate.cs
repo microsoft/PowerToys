@@ -2,10 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.CmdPal.Core.Common.Helpers;
 
 /// <summary>
@@ -36,24 +32,36 @@ public sealed partial class SupersedingAsyncGate : IDisposable
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
         TaskCompletionSource<bool> tcs;
+        var startWorker = false;
 
         lock (_lock)
         {
+            // Cancel the currently running iteration (if any) before replacing its TCS.
             _currentCancellationSource?.Cancel();
+
+            // Mark prior waiter as superseded. Fault (not cancel) so callers can distinguish.
             _currentTcs?.TrySetException(new OperationCanceledException("Superseded by newer call"));
 
-            tcs = new();
+            // IMPORTANT: RunContinuationsAsynchronously prevents continuations from running
+            // inside this lock, avoiding reentrancy / potential deadlocks.
+            tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
             _currentTcs = tcs;
             _callId++;
 
-            var shouldStartExecution = _executingTask is null;
-            if (shouldStartExecution)
+            if (_executingTask is null)
             {
-                _executingTask = Task.Run(ExecuteLoop, CancellationToken.None);
+                startWorker = true;
             }
         }
 
-        await using var ctr = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+        // Start worker outside lock to avoid holding lock while scheduling.
+        if (startWorker)
+        {
+            // Fire-and-forget loop; all state transitions guarded by _lock.
+            _executingTask = Task.Run(ExecuteLoop, cancellationToken);
+        }
+
+        using var ctr = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
         await tcs.Task;
     }
 

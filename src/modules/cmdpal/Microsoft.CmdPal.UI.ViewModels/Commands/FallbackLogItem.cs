@@ -13,8 +13,10 @@ internal sealed partial class FallbackLogItem : FallbackCommandItem
 {
     private readonly LogMessagesPage _logMessagesPage;
 
+    private const string _id = "com.microsoft.cmdpal.log";
+
     public FallbackLogItem()
-        : base(new LogMessagesPage() { Id = "com.microsoft.cmdpal.log" }, Resources.builtin_log_subtitle)
+        : base(new LogMessagesPage() { Id = _id }, Resources.builtin_log_subtitle, _id)
     {
         _logMessagesPage = (LogMessagesPage)Command!;
         Title = string.Empty;

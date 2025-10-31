@@ -28,7 +28,7 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionSubtext => IsEnabled ?
         HasFallbackCommands ?
-            $"{ExtensionName}, {TopLevelCommands.Count} commands, {FallbackCommands.Count} fallback commands" :
+            $"{ExtensionName}, {TopLevelCommands.Count} commands, {_provider.FallbackItems.Length} fallback commands" :
             $"{ExtensionName}, {TopLevelCommands.Count} commands" :
         Resources.builtin_disabled_extension;
 
@@ -144,30 +144,7 @@ public partial class ProviderSettingsViewModel(
         return [.. providersCommands];
     }
 
-    [field: AllowNull]
-    public List<TopLevelViewModel> FallbackCommands
-    {
-        get
-        {
-            if (field is null)
-            {
-                field = BuildFallbackViewModels();
-            }
-
-            return field;
-        }
-    }
-
     public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
-
-    private List<TopLevelViewModel> BuildFallbackViewModels()
-    {
-        var thisProvider = _provider;
-        var providersCommands = thisProvider.FallbackItems;
-
-        // Remember! This comes in on the UI thread!
-        return [.. providersCommands];
-    }
 
     private void Save() => SettingsModel.SaveSettings(_settings);
 

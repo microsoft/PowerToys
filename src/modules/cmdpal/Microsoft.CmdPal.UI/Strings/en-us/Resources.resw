@@ -475,6 +475,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
     <value>Navigated to {0} page</value>
   </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Header" xml:space="preserve">
+    <value>Include in the Global result</value>
+  </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
+    <value>Show results on queries without direct activation command</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Fallbacks.Content" xml:space="preserve">
+    <value>Fallbacks</value>
+  </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings (Ctrl+,)</value>
   </data>
