@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -140,13 +141,34 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
         var pos = e.GetPosition(null);
-
         var button = sender as Button;
         var item = button?.DataContext as DockItemViewModel;
 
         if (item is not null)
         {
             InvokeItem(item, pos);
+        }
+    }
+
+    private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    {
+        var pos = e.GetPosition(null);
+        var button = sender as Button;
+        var item = button?.DataContext as DockItemViewModel;
+        if (item is not null)
+        {
+            if (item.HasMoreCommands)
+            {
+                ContextControl.ViewModel.SelectedItem = item;
+                ContextMenuFlyout.ShowAt(
+                button,
+                new FlyoutShowOptions()
+                {
+                    ShowMode = FlyoutShowMode.Standard,
+                    Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                });
+                e.Handled = true;
+            }
         }
     }
 
@@ -170,5 +192,12 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged
         {
             Logger.LogError("Error invoking dock command", e);
         }
+    }
+
+    private void ContextMenuFlyout_Opened(object sender, object e)
+    {
+        // We need to wait until our flyout is opened to try and toss focus
+        // at its search box. The control isn't in the UI tree before that
+        ContextControl.FocusSearchBox();
     }
 }

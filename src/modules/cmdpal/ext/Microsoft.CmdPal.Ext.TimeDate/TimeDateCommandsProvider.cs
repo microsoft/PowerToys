@@ -67,9 +67,18 @@ public partial class TimeDateCommandsProvider : CommandProvider, IExtendedAttrib
 
 internal sealed partial class NowDockBand : CommandItem
 {
+    private CopyTextCommand _copyTimeCommand;
+    private CopyTextCommand _copyDateCommand;
+
     public NowDockBand()
     {
         Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockband" };
+        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = "Copy Time" };
+        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = "Copy Date" };
+        MoreCommands = [
+            new CommandContextItem(_copyTimeCommand),
+            new CommandContextItem(_copyDateCommand)
+        ];
         UpdateText();
 
         // Create a timer to update the time every minute
@@ -109,15 +118,20 @@ internal sealed partial class NowDockBand : CommandItem
         var dateExtended = false; // dateLongFormat ?? settings.DateWithWeekday;
         var dateTimeNow = DateTime.Now;
 
-        Title = dateTimeNow.ToString(
+        var timeString = dateTimeNow.ToString(
             TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended),
             CultureInfo.CurrentCulture);
-        Subtitle = dateTimeNow.ToString(
+        var dateString = dateTimeNow.ToString(
             TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended),
             CultureInfo.CurrentCulture);
 
-        // TODO! This is a hack - we shouldn't need to set a Name on band items to get them to appear. We should be able to figure it out if there's a Icon OR HasText
-        ((NoOpCommand)Command).Name = $"{Title}\n{Subtitle}";
+        Title = timeString;
+        Subtitle = dateString;
+
+        //// TODO! This is a hack - we shouldn't need to set a Name on band items to get them to appear. We should be able to figure it out if there's a Icon OR HasText
+        // ((NoOpCommand)Command).Name = $"{Title}\n{Subtitle}";
+        _copyDateCommand.Text = dateString;
+        _copyTimeCommand.Text = timeString;
     }
 }
 #pragma warning restore SA1402 // File may only contain a single type
