@@ -36,6 +36,7 @@ enum class ESettingsWindowNames
     NewPlus,
     CmdPal,
     ZoomIt,
+    PowerDisplay,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);
@@ -47,3 +48,6 @@ void close_settings_window();
 void open_oobe_window();
 void open_scoobe_window();
 void open_flyout();
+
+// PowerDisplay IPC support
+void send_powerdisplay_message_to_settings_ui(const wchar_t* message);

@@ -131,6 +131,10 @@ namespace CommonSharedConstants
     const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
 
+    // Path to the events used by PowerDisplay
+    const wchar_t SHOW_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-ShowEvent-d8a4e0e3-2c5b-4a1c-9e7f-8b3d6c1a2f4e";
+    const wchar_t TERMINATE_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
+
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";

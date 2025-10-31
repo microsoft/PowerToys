@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.OutGoingLanguageSettings);
         }
     }
 }
