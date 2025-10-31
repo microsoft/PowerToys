@@ -347,8 +347,8 @@
                                                 VerticalAlignment="Center"
                                                 Content="&#xE712;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Tag="{x:Bind}"
-                                                Style="{StaticResource SubtleButtonStyle}">
+                                                Style="{StaticResource SubtleButtonStyle}"
+                                                Tag="{x:Bind}">
                                                 <Button.Flyout>
                                                     <MenuFlyout>
                                                         <MenuFlyoutItem
