@@ -249,6 +249,7 @@
             Grid.Row="1"
             Margin="20,0,20,0"
             x:FieldModifier="public"
+            IsEnabled="{x:Bind ViewModel.IsCustomAIServiceEnabled, Mode=OneWay}"
             TabIndex="0">
             <controls:PromptBox.Footer>
                 <StackPanel Orientation="Horizontal">

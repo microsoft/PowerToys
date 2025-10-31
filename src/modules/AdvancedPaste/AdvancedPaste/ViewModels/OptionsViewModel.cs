@@ -69,6 +69,8 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
         [NotifyPropertyChangedFor(nameof(IsCustomAIServiceEnabled))]
         [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
+        [NotifyPropertyChangedFor(nameof(AllowedAIProviders))]
+        [NotifyPropertyChangedFor(nameof(ActiveAIProvider))]
         private bool _isAllowedByGPO;
 
         [ObservableProperty]
@@ -95,6 +97,12 @@ namespace AdvancedPaste.ViewModels
             get
             {
                 if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
+                {
+                    return false;
+                }
+
+                // Check if there are any allowed providers
+                if (!AllowedAIProviders.Any())
                 {
                     return false;
                 }
@@ -127,7 +135,33 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteAIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
 
-        public PasteAIProviderDefinition ActiveAIProvider => _userSettings?.PasteAIConfiguration?.ActiveProvider;
+        public IEnumerable<PasteAIProviderDefinition> AllowedAIProviders
+        {
+            get
+            {
+                var providers = AIProviders;
+                if (providers is null || providers.Count == 0)
+                {
+                    return Enumerable.Empty<PasteAIProviderDefinition>();
+                }
+
+                return providers.Where(IsProviderAllowedByGPO);
+            }
+        }
+
+        public PasteAIProviderDefinition ActiveAIProvider
+        {
+            get
+            {
+                var provider = _userSettings?.PasteAIConfiguration?.ActiveProvider;
+                if (provider is null || !IsProviderAllowedByGPO(provider))
+                {
+                    return null;
+                }
+
+                return provider;
+            }
+        }
 
         public string ActiveAIProviderTooltip
         {
@@ -230,7 +264,6 @@ namespace AdvancedPaste.ViewModels
             if (Visible)
             {
                 await ReadClipboardAsync();
-                UpdateAllowedByGPO();
             }
         }
 
@@ -242,6 +275,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
             OnPropertyChanged(nameof(AIProviders));
+            OnPropertyChanged(nameof(AllowedAIProviders));
             OnPropertyChanged(nameof(ActiveAIProvider));
             OnPropertyChanged(nameof(ActiveAIProviderTooltip));
 
@@ -695,6 +729,37 @@ namespace AdvancedPaste.ViewModels
         private void UpdateAllowedByGPO()
         {
             IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        }
+
+        private bool IsProviderAllowedByGPO(PasteAIProviderDefinition provider)
+        {
+            if (provider is null)
+            {
+                return false;
+            }
+
+            var serviceType = provider.ServiceType.ToAIServiceType();
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+
+            // Check global online AI GPO for online services
+            if (metadata.IsOnlineService && !IsAllowedByGPO)
+            {
+                return false;
+            }
+
+            // Check individual endpoint GPO
+            return serviceType switch
+            {
+                AIServiceType.OpenAI => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOpenAIValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.AzureOpenAI => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAzureOpenAIValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.AzureAIInference => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Mistral => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteMistralValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Google => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteGoogleValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Anthropic => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAnthropicValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Ollama => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOllamaValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.FoundryLocal => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                _ => true, // Allow unknown types by default
+            };
         }
 
         private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider)
