@@ -68,6 +68,7 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.FoundryLocal,
             DisplayName = "Foundry Local",
+            LegalDescription = "You're running local models directly on your device. Their behavior may vary or be unpredictable.",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg",
             IsOnlineService = false,
             IsLocalModel = true,
@@ -109,6 +110,7 @@ public static class AIServiceTypeRegistry
             ServiceType = AIServiceType.ML,
             DisplayName = "Windows ML",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg",
+            LegalDescription = "You're running local models directly on your device. Their behavior may vary or be unpredictable.",
             IsAvailableInUI = false,
             IsOnlineService = false,
             IsLocalModel = true,
@@ -122,7 +124,7 @@ public static class AIServiceTypeRegistry
             // Olllama provide online service, but we treat it as local model at first version since it can is known for local model.
             IsOnlineService = false,
             IsLocalModel = true,
-            LegalDescription = "Ollama usage, local or remote, is bound by its license and usage policies. Continuing means you accept Ollama's terms and privacy commitments.",
+            LegalDescription = "You're running local models directly on your device. Their behavior may vary or be unpredictable.",
             TermsLabel = "Ollama Terms of Service",
             TermsUri = new Uri("https://ollama.com/terms"),
             PrivacyLabel = "Ollama Privacy Policy",
@@ -132,6 +134,7 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.Onnx,
             DisplayName = "ONNX",
+            LegalDescription = "You're running local models directly on your device. Their behavior may vary or be unpredictable.",
             IconPath = "ms-appx:///Assets/Settings/Icons/Models/Onnx.svg",
             IsOnlineService = false,
             IsAvailableInUI = false,
