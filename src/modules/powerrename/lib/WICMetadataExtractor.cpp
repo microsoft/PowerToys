@@ -372,9 +372,10 @@ namespace
 
         return localTime;
     }
-// Global WIC factory management
+// Global WIC factory management with thread-safe access
     CComPtr<IWICImagingFactory> g_wicFactory;
     std::once_flag g_wicInitFlag;
+    std::mutex g_wicFactoryMutex;  // Protect access to g_wicFactory
 }
 
 WICMetadataExtractor::WICMetadataExtractor()
@@ -399,7 +400,7 @@ void WICMetadataExtractor::InitializeWIC()
             IID_IWICImagingFactory,
             reinterpret_cast<LPVOID*>(&g_wicFactory)
         );
-        
+
         if (FAILED(hr))
         {
             g_wicFactory = nullptr;
@@ -409,6 +410,7 @@ void WICMetadataExtractor::InitializeWIC()
 
 CComPtr<IWICImagingFactory> WICMetadataExtractor::GetWICFactory()
 {
+    std::lock_guard<std::mutex> lock(g_wicFactoryMutex);
     return g_wicFactory;
 }
 
@@ -429,24 +431,30 @@ bool WICMetadataExtractor::LoadEXIFMetadata(
 
     if (!PathFileExistsW(filePath.c_str()))
     {
+#ifdef _DEBUG
         std::wstring msg = L"[PowerRename] EXIF metadata extraction failed: File not found - " + filePath + L"\n";
         OutputDebugStringW(msg.c_str());
+#endif
         return false;
     }
 
     auto decoder = CreateDecoder(filePath);
     if (!decoder)
     {
+#ifdef _DEBUG
         std::wstring msg = L"[PowerRename] EXIF metadata extraction: Unsupported format or unable to create decoder - " + filePath + L"\n";
         OutputDebugStringW(msg.c_str());
+#endif
         return false;
     }
 
     CComPtr<IWICBitmapFrameDecode> frame;
     if (FAILED(decoder->GetFrame(0, &frame)))
     {
+#ifdef _DEBUG
         std::wstring msg = L"[PowerRename] EXIF metadata extraction failed: WIC decoder error - " + filePath + L"\n";
         OutputDebugStringW(msg.c_str());
+#endif
         return false;
     }
 
@@ -914,24 +922,30 @@ bool WICMetadataExtractor::LoadXMPMetadata(
 {
     if (!PathFileExistsW(filePath.c_str()))
     {
+#ifdef _DEBUG
         std::wstring msg = L"[PowerRename] XMP metadata extraction failed: File not found - " + filePath + L"\n";
         OutputDebugStringW(msg.c_str());
+#endif
         return false;
     }
 
     auto decoder = CreateDecoder(filePath);
     if (!decoder)
     {
+#ifdef _DEBUG
         std::wstring msg = L"[PowerRename] XMP metadata extraction: Unsupported format or unable to create decoder - " + filePath + L"\n";
         OutputDebugStringW(msg.c_str());
+#endif
         return false;
     }
 
     CComPtr<IWICBitmapFrameDecode> frame;
     if (FAILED(decoder->GetFrame(0, &frame)))
     {
+#ifdef _DEBUG
         std::wstring msg = L"[PowerRename] XMP metadata extraction failed: WIC decoder error - " + filePath + L"\n";
         OutputDebugStringW(msg.c_str());
+#endif
         return false;
     }
 
@@ -966,8 +980,10 @@ void WICMetadataExtractor::ExtractAllXMPFields(IWICMetadataQueryReader* reader, 
     
     // For dc:subject, we need to handle the array structure
     // Try to read individual elements
+    // XMP allows for large arrays, but we limit to a reasonable number to avoid performance issues
+    constexpr int MAX_XMP_SUBJECTS = 50;
     std::vector<std::wstring> subjects;
-    for (int i = 0; i < 10; ++i)  // Try up to 10 subjects
+    for (int i = 0; i < MAX_XMP_SUBJECTS; ++i)
     {
         std::wstring subjectPath = L"/xmp/dc:subject/{ulong=" + std::to_wstring(i) + L"}";
         auto subject = ReadString(reader, subjectPath);

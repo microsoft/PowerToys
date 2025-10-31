@@ -9,7 +9,7 @@ using namespace PowerRenameLib;
 
 namespace
 {
-    template <typename Metadata, typename Cache, typename Mutex, typename Loader>
+    template <typename Metadata, typename CacheEntry, typename Cache, typename Mutex, typename Loader>
     bool GetOrLoadInternal(const std::wstring& filePath,
         Metadata& outMetadata,
         Cache& cache,
@@ -21,8 +21,9 @@ namespace
             auto it = cache.find(filePath);
             if (it != cache.end())
             {
-                outMetadata = it->second;
-                return true;
+                // Return cached result (success or failure)
+                outMetadata = it->second.data;
+                return it->second.wasSuccessful;
             }
         }
 
@@ -34,31 +35,27 @@ namespace
 
         Metadata loaded{};
         const bool result = loader(loaded);
-        if (!result)
-        {
-            // Another thread might have succeeded while loader was running
-            std::shared_lock sharedLock(mutex);
-            auto existing = cache.find(filePath);
-            if (existing != cache.end())
-            {
-                outMetadata = existing->second;
-                return true;
-            }
 
-            return false;
-        }
-
+        // Cache the result (success or failure)
         {
             std::unique_lock uniqueLock(mutex);
-            auto [it, inserted] = cache.emplace(filePath, loaded);
-            if (!inserted)
+            // Check if another thread cached it while we were loading
+            auto it = cache.find(filePath);
+            if (it == cache.end())
             {
-                it->second = loaded;
+                // Not cached yet, insert our result
+                cache.emplace(filePath, CacheEntry{ result, loaded });
             }
-            outMetadata = it->second;
+            else
+            {
+                // Another thread cached it, use their result
+                outMetadata = it->second.data;
+                return it->second.wasSuccessful;
+            }
         }
 
-        return true;
+        outMetadata = loaded;
+        return result;
     }
 }
 
@@ -66,14 +63,14 @@ bool MetadataResultCache::GetOrLoadEXIF(const std::wstring& filePath,
     EXIFMetadata& outMetadata,
     const EXIFLoader& loader)
 {
-    return GetOrLoadInternal(filePath, outMetadata, exifCache, exifMutex, loader);
+    return GetOrLoadInternal<EXIFMetadata, CacheEntry<EXIFMetadata>>(filePath, outMetadata, exifCache, exifMutex, loader);
 }
 
 bool MetadataResultCache::GetOrLoadXMP(const std::wstring& filePath,
     XMPMetadata& outMetadata,
     const XMPLoader& loader)
 {
-    return GetOrLoadInternal(filePath, outMetadata, xmpCache, xmpMutex, loader);
+    return GetOrLoadInternal<XMPMetadata, CacheEntry<XMPMetadata>>(filePath, outMetadata, xmpCache, xmpMutex, loader);
 }
 
 void MetadataResultCache::ClearAll()

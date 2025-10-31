@@ -86,6 +86,13 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
+            // Use RAII-style scope guard to ensure handle is always closed
+            struct FileHandleCloser
+            {
+                HANDLE handle;
+                ~FileHandleCloser() { if (handle != INVALID_HANDLE_VALUE) CloseHandle(handle); }
+            } scopedHandle{ hFile };
+
             FILETIME FileTime;
             bool success = false;
 
@@ -121,8 +128,6 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
                     }
                 }
             }
-
-            CloseHandle(hFile);
         }
     }
     *time = m_time;

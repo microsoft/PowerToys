@@ -101,6 +101,9 @@ double MetadataFormatHelper::ParseSingleRational(const uint8_t* bytes, size_t of
     if (!bytes)
         return 0.0;
 
+    // Note: Callers are responsible for ensuring the buffer is large enough.
+    // This function assumes offset points to at least 8 bytes of valid data.
+    // All current callers perform cElems >= required_size checks before calling.
     const uint8_t* rationalBytes = bytes + offset;
 
     // Parse as little-endian uint32_t values
@@ -128,6 +131,9 @@ double MetadataFormatHelper::ParseSingleSRational(const uint8_t* bytes, size_t o
     if (!bytes)
         return 0.0;
 
+    // Note: Callers are responsible for ensuring the buffer is large enough.
+    // This function assumes offset points to at least 8 bytes of valid data.
+    // All current callers perform cElems >= required_size checks before calling.
     const uint8_t* rationalBytes = bytes + offset;
 
     // Parse as little-endian int32_t values (signed)

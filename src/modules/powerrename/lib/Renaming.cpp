@@ -45,17 +45,18 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     }
 
     // Check if metadata is used AND if this file type supports metadata
-    // Get file path early for metadata type checking
+    // Get file path early for metadata type checking and reuse later
     PWSTR filePath = nullptr;
     winrt::check_hresult(spItem->GetPath(&filePath));
-    
-    if (isMetadataUsed(replaceTerm, metadataType, filePath, isFolder))
+    std::wstring filePathStr(filePath);  // Copy once for reuse
+    CoTaskMemFree(filePath);  // Free immediately after copying
+
+    if (isMetadataUsed(replaceTerm, metadataType, filePathStr.c_str(), isFolder))
     {
         useMetadata = true;
     }
-    
+
     CoTaskMemFree(replaceTerm);
-    CoTaskMemFree(filePath);
     if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
         (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
         (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)) ||
@@ -111,13 +112,8 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     if (useMetadata)
     {
         // Extract metadata patterns from the file
-        // Note: filePath has already been obtained earlier for type checking
-        PWSTR filePathForExtraction = nullptr;
-        winrt::check_hresult(spItem->GetPath(&filePathForExtraction));
-        
-        std::wstring filePathStr(filePathForExtraction);
-        CoTaskMemFree(filePathForExtraction);
-        
+        // Note: filePathStr was already obtained and saved earlier for reuse
+
         // Get metadata type using the interface method
         PowerRenameLib::MetadataType metadataType;
         HRESULT hr = spRenameRegEx->GetMetadataType(&metadataType);

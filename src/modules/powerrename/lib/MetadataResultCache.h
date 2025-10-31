@@ -23,9 +23,17 @@ namespace PowerRenameLib
         void ClearAll();
 
     private:
+        // Wrapper to cache both success and failure states
+        template<typename T>
+        struct CacheEntry
+        {
+            bool wasSuccessful;
+            T data;
+        };
+
         mutable std::shared_mutex exifMutex;
         mutable std::shared_mutex xmpMutex;
-        std::unordered_map<std::wstring, EXIFMetadata> exifCache;
-        std::unordered_map<std::wstring, XMPMetadata> xmpCache;
+        std::unordered_map<std::wstring, CacheEntry<EXIFMetadata>> exifCache;
+        std::unordered_map<std::wstring, CacheEntry<XMPMetadata>> xmpCache;
     };
 }

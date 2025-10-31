@@ -27,7 +27,7 @@ namespace PowerRenameLib
         PropVariantValue(PropVariantValue&& other) noexcept
         {
             value = other.value;
-            other.value.vt = VT_EMPTY;
+            PropVariantInit(&other.value);  // Properly clear the moved-from object
         }
 
         PropVariantValue& operator=(PropVariantValue&& other) noexcept
@@ -36,7 +36,7 @@ namespace PowerRenameLib
             {
                 PropVariantClear(&value);
                 value = other.value;
-                other.value.vt = VT_EMPTY;
+                PropVariantInit(&other.value);  // Properly clear the moved-from object
             }
             return *this;
         }
