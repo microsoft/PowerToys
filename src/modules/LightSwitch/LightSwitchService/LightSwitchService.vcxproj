@@ -74,7 +74,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LightSwitchService.cpp" />
-    <ClCompile Include="LightSwitchServiceObserver.cpp" />
     <ClCompile Include="LightSwitchSettings.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
@@ -85,7 +84,6 @@
     <ResourceCompile Include="LightSwitchService.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LightSwitchServiceObserver.h" />
     <ClInclude Include="LightSwitchSettings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
