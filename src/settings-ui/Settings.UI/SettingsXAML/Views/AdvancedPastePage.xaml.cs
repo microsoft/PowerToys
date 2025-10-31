@@ -37,58 +37,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string AdvancedAISystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
         private const string SimpleAISystemPrompt = "You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content.";
 
-        private static readonly Dictionary<string, ServiceLegalInfo> ServiceLegalInformation = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["OpenAI"] = new ServiceLegalInfo(
-                "Your API key connects directly to OpenAI services. By configuring this provider you agree to follow OpenAI usage policies and data handling rules.",
-                "Terms of Use",
-                "https://openai.com/terms",
-                "Privacy Policy",
-                "https://openai.com/privacy"),
-            ["AzureOpenAI"] = new ServiceLegalInfo(
-                "This connector routes requests to OpenAI models hosted on Microsoft Azure. Saving this configuration means you accept Microsoft terms and data protections.",
-                "Microsoft Azure Terms of Service",
-                "https://azure.microsoft.com/support/legal/",
-                "Microsoft Privacy Statement",
-                "https://privacy.microsoft.com/privacystatement"),
-            ["AzureAIInference"] = new ServiceLegalInfo(
-                "Azure AI Inference is governed by Microsoft service and privacy commitments. Continuing indicates you accept Microsoft terms for this offering.",
-                "Microsoft Azure Terms of Service",
-                "https://azure.microsoft.com/support/legal/",
-                "Microsoft Privacy Statement",
-                "https://privacy.microsoft.com/privacystatement"),
-            ["Google"] = new ServiceLegalInfo(
-                "Connecting to Gemini requires a Google API key. Using this integration means you agree to Google's general terms and privacy policies.",
-                "Google Terms of Service",
-                "https://policies.google.com/terms",
-                "Google Privacy Policy",
-                "https://policies.google.com/privacy"),
-            ["Anthropic"] = new ServiceLegalInfo(
-                "This integration accesses Anthropic Claude models. You are responsible for complying with Anthropic policies whenever you use this provider.",
-                "Anthropic Terms of Service",
-                "https://www.anthropic.com/legal/terms-of-service",
-                "Anthropic Privacy Policy",
-                "https://www.anthropic.com/legal/privacy"),
-            ["Mistral"] = new ServiceLegalInfo(
-                "You can connect with a personal Mistral API key. Configuring this provider indicates you accept Mistral's published legal terms.",
-                "Mistral Terms of Use",
-                "https://mistral.ai/terms-of-service/",
-                "Mistral Privacy Policy",
-                "https://mistral.ai/privacy-policy/"),
-            ["AmazonBedrock"] = new ServiceLegalInfo(
-                "AWS credentials let you invoke Amazon Bedrock models. Saving this setup confirms you will follow AWS service terms and privacy commitments.",
-                "AWS Service Terms",
-                "https://aws.amazon.com/service-terms/",
-                "AWS Privacy Notice",
-                "https://aws.amazon.com/privacy/"),
-            ["Ollama"] = new ServiceLegalInfo(
-                "Ollama usage, local or remote, is bound by its license and usage policies. Continuing means you accept Ollama's terms and privacy commitments.",
-                "Ollama Terms of Service",
-                "https://ollama.com/terms",
-                "Ollama Privacy Policy",
-                "https://ollama.com/privacy"),
-        };
-
         private AdvancedPasteViewModel ViewModel { get; set; }
 
         public ICommand EnableAdvancedPasteAICommand => new RelayCommand(EnableAdvancedPasteAI);
@@ -901,163 +849,86 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private bool HasServiceLegalInfo(string serviceType)
         {
-            // First check AIServiceTypeRegistry for legal info
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (metadata.HasLegalInfo)
-            {
-                return true;
-            }
-
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out _);
+            return metadata.HasLegalInfo;
         }
 
         private string GetServiceLegalDescription(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (!string.IsNullOrWhiteSpace(metadata.LegalDescription))
+            if (string.IsNullOrWhiteSpace(metadata.LegalDescription))
             {
-                // Check if it's a resource key (doesn't contain spaces, follows resource naming convention)
-                if (!metadata.LegalDescription.Contains(' ') && metadata.LegalDescription.Contains('_'))
-                {
-                    // Try to load from resources
-                    try
-                    {
-                        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                        var localizedText = resourceLoader.GetString(metadata.LegalDescription);
-                        if (!string.IsNullOrWhiteSpace(localizedText))
-                        {
-                            return localizedText;
-                        }
-                    }
-                    catch
-                    {
-                        // If resource loading fails, return the key itself as fallback
-                    }
-                }
-
-                return metadata.LegalDescription;
+                return string.Empty;
             }
 
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) ? info.Description : string.Empty;
+            // Check if it's a resource key (doesn't contain spaces, contains underscore)
+            if (!metadata.LegalDescription.Contains(' ') && metadata.LegalDescription.Contains('_'))
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                return resourceLoader.GetString(metadata.LegalDescription);
+            }
+
+            return metadata.LegalDescription;
         }
 
         private string GetServiceTermsLabel(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (!string.IsNullOrEmpty(metadata.TermsLabel))
+            if (string.IsNullOrWhiteSpace(metadata.TermsLabel))
             {
-                // Check if it's a resource key (doesn't contain spaces, follows resource naming convention)
-                if (!metadata.TermsLabel.Contains(' ') && metadata.TermsLabel.Contains('_'))
-                {
-                    // Try to load from resources
-                    try
-                    {
-                        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                        var localizedText = resourceLoader.GetString(metadata.TermsLabel);
-                        if (!string.IsNullOrWhiteSpace(localizedText))
-                        {
-                            return localizedText;
-                        }
-                    }
-                    catch
-                    {
-                        // If resource loading fails, return the key itself as fallback
-                    }
-                }
-
-                return metadata.TermsLabel;
+                return string.Empty;
             }
 
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsLabel : string.Empty;
+            // Check if it's a resource key (doesn't contain spaces, contains underscore)
+            if (!metadata.TermsLabel.Contains(' ') && metadata.TermsLabel.Contains('_'))
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                return resourceLoader.GetString(metadata.TermsLabel);
+            }
+
+            return metadata.TermsLabel;
         }
 
         private Uri GetServiceTermsUri(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (metadata.TermsUri is not null)
-            {
-                return metadata.TermsUri;
-            }
-
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) ? info.TermsUri : null;
+            return metadata.TermsUri;
         }
 
         private string GetServicePrivacyLabel(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (!string.IsNullOrEmpty(metadata.PrivacyLabel))
+            if (string.IsNullOrWhiteSpace(metadata.PrivacyLabel))
             {
-                // Check if it's a resource key (doesn't contain spaces, follows resource naming convention)
-                if (!metadata.PrivacyLabel.Contains(' ') && metadata.PrivacyLabel.Contains('_'))
-                {
-                    // Try to load from resources
-                    try
-                    {
-                        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                        var localizedText = resourceLoader.GetString(metadata.PrivacyLabel);
-                        if (!string.IsNullOrWhiteSpace(localizedText))
-                        {
-                            return localizedText;
-                        }
-                    }
-                    catch
-                    {
-                        // If resource loading fails, return the key itself as fallback
-                    }
-                }
-
-                return metadata.PrivacyLabel;
+                return string.Empty;
             }
 
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyLabel : string.Empty;
+            // Check if it's a resource key (doesn't contain spaces, contains underscore)
+            if (!metadata.PrivacyLabel.Contains(' ') && metadata.PrivacyLabel.Contains('_'))
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                return resourceLoader.GetString(metadata.PrivacyLabel);
+            }
+
+            return metadata.PrivacyLabel;
         }
 
         private Uri GetServicePrivacyUri(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (metadata.PrivacyUri is not null)
-            {
-                return metadata.PrivacyUri;
-            }
-
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) ? info.PrivacyUri : null;
+            return metadata.PrivacyUri;
         }
 
         private bool HasServiceTermsLink(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (metadata.HasTermsLink)
-            {
-                return true;
-            }
-
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) && info.TermsUri is not null && !string.IsNullOrEmpty(info.TermsLabel);
+            return metadata.HasTermsLink;
         }
 
         private bool HasServicePrivacyLink(string serviceType)
         {
-            // First check AIServiceTypeRegistry
             var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
-            if (metadata.HasPrivacyLink)
-            {
-                return true;
-            }
-
-            // Fall back to legacy dictionary
-            return TryGetServiceLegalInfo(serviceType, out var info) && info.PrivacyUri is not null && !string.IsNullOrEmpty(info.PrivacyLabel);
+            return metadata.HasPrivacyLink;
         }
 
         private Visibility GetServiceLegalVisibility(string serviceType) => HasServiceLegalInfo(serviceType) ? Visibility.Visible : Visibility.Collapsed;
@@ -1065,16 +936,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private Visibility GetServiceTermsVisibility(string serviceType) => HasServiceTermsLink(serviceType) ? Visibility.Visible : Visibility.Collapsed;
 
         private Visibility GetServicePrivacyVisibility(string serviceType) => HasServicePrivacyLink(serviceType) ? Visibility.Visible : Visibility.Collapsed;
-
-        private static bool TryGetServiceLegalInfo(string serviceType, out ServiceLegalInfo info)
-        {
-            if (string.IsNullOrWhiteSpace(serviceType))
-            {
-                return ServiceLegalInformation.TryGetValue("OpenAI", out info);
-            }
-
-            return ServiceLegalInformation.TryGetValue(serviceType, out info);
-        }
 
         private void UpdateSystemPromptPlaceholder()
         {
@@ -1130,38 +991,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             _disposed = true;
             GC.SuppressFinalize(this);
-        }
-
-        private sealed class ServiceLegalInfo
-        {
-            public ServiceLegalInfo(string description, string termsLabel, string termsUri, string privacyLabel, string privacyUri)
-            {
-                Description = description ?? string.Empty;
-                TermsLabel = termsLabel ?? string.Empty;
-                TermsUri = CreateUriOrNull(termsUri);
-                PrivacyLabel = privacyLabel ?? string.Empty;
-                PrivacyUri = CreateUriOrNull(privacyUri);
-            }
-
-            public string Description { get; }
-
-            public string TermsLabel { get; }
-
-            public Uri TermsUri { get; }
-
-            public string PrivacyLabel { get; }
-
-            public Uri PrivacyUri { get; }
-
-            private static Uri CreateUriOrNull(string value)
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    return null;
-                }
-
-                return Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : null;
-            }
         }
 
         private void AddProviderMenuFlyout_Opening(object sender, object e)
