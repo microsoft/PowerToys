@@ -219,7 +219,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                    settings.lightTime + settings.sunrise_offset,
                    settings.darkTime + settings.sunset_offset,
                    settings);
-        Logger::trace(L"[LightSwitchService] Initialized g_lastUpdatedDay = {}", g_lastUpdatedDay);
     }
     else
     {
@@ -227,6 +226,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     }
 
     g_lastUpdatedDay = st.wDay;
+    Logger::info(L"[LightSwitchService] Initializing g_lastUpdatedDay to {}.", g_lastUpdatedDay);
     ULONGLONG lastSettingsReload = 0;
 
     for (;;)
@@ -302,6 +302,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         ULONGLONG nowTick = GetTickCount64();
         bool recentSettingsReload = (nowTick - lastSettingsReload < 5000);
 
+        Logger::info(L"[LightSwitchService] Current g_lastUpdatedDay value = {}.", g_lastUpdatedDay);
+
         if (g_lastUpdatedDay != -1)
         {
             bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
@@ -348,7 +350,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             }
             else
             {
-                Logger::debug(L"[LightSwitchService] Skipping external-change detection (schedule off, recent reload, or just enabled).");
+                Logger::info(L"[LightSwitchService] Skipping external-change detection (schedule off, recent reload, or just enabled).");
             }
         }
 

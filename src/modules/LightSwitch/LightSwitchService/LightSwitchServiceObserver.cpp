@@ -9,7 +9,6 @@ void ApplyThemeNow();
 void LightSwitchServiceObserver::SettingsUpdate(SettingId id)
 {
     Logger::info(L"[LightSwitchService] Setting changed: {}", static_cast<int>(id));
-    g_lastUpdatedDay = -1;
     ApplyThemeNow();
 }
 
