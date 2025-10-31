@@ -453,6 +453,8 @@ public sealed partial class MainWindow : WindowEx,
             // If the window was not cloaked, then leave it hidden.
             // Sure, it's not ideal, but at least it's not visible.
         }
+
+        WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
     }
 
     private bool Cloak()

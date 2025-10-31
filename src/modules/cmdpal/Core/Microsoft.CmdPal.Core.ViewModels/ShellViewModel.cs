@@ -14,7 +14,8 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
     IRecipient<PerformCommandMessage>,
-    IRecipient<HandleCommandResultMessage>
+    IRecipient<HandleCommandResultMessage>,
+    IRecipient<WindowHiddenMessage>
 {
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
@@ -66,8 +67,9 @@ public partial class ShellViewModel : ObservableObject,
     private IPage? _rootPage;
 
     private bool _isNested;
+    private bool _currentlyTransient;
 
-    public bool IsNested => _isNested;
+    public bool IsNested => _isNested && !_currentlyTransient;
 
     public PageViewModel NullPage { get; private set; }
 
@@ -88,6 +90,7 @@ public partial class ShellViewModel : ObservableObject,
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
+        WeakReferenceMessenger.Default.Register<WindowHiddenMessage>(this);
     }
 
     [RelayCommand]
@@ -246,7 +249,7 @@ public partial class ShellViewModel : ObservableObject,
 
         var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
 
-        _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
+        _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
 
         try
         {
@@ -256,6 +259,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
+                _currentlyTransient = message.TransientPage;
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
                 var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
@@ -264,6 +268,9 @@ public partial class ShellViewModel : ObservableObject,
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
+
+                pageViewModel.IsRootPage = isMainPage;
+                pageViewModel.HasBackButton = IsNested;
 
                 // Clear command bar, ViewModel initialization can already set new commands if it wants to
                 OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
@@ -284,7 +291,8 @@ public partial class ShellViewModel : ObservableObject,
                         _scheduler);
 
                 // While we're loading in the background, immediately move to the next page.
-                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation, navigationToken));
+                NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
+                WeakReferenceMessenger.Default.Send(msg);
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
@@ -433,6 +441,19 @@ public partial class ShellViewModel : ObservableObject,
     public void Receive(HandleCommandResultMessage message)
     {
         UnsafeHandleCommandResult(message.Result.Unsafe);
+    }
+
+    public void Receive(WindowHiddenMessage message)
+    {
+        // If the window was hidden while we had a transient page, we need to reset that state.
+        if (_currentlyTransient)
+        {
+            _currentlyTransient = false;
+
+            // navigate back to the main page without animation
+            GoHome(withAnimation: false, focusSearch: false);
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        }
     }
 
     private void OnUIThread(Action action)

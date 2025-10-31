@@ -98,7 +98,7 @@
         <Grid
             x:Name="IconRoot"
             Margin="3,0,-5,0"
-            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
+            Visibility="{x:Bind CurrentPageViewModel.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <Button
                 x:Name="StatusMessagesButton"
                 x:Uid="StatusMessagesButton"
@@ -135,7 +135,7 @@
             x:Uid="SettingsButton"
             Click="SettingsIcon_Clicked"
             Style="{StaticResource SubtleButtonStyle}"
-            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+            Visibility="{x:Bind CurrentPageViewModel.IsRootPage, Mode=OneWay}">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon
                     VerticalAlignment="Center"
@@ -154,7 +154,7 @@
             Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
             TextTrimming="CharacterEllipsis"
             TextWrapping="NoWrap"
-            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
+            Visibility="{x:Bind CurrentPageViewModel.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
         <StackPanel
             Grid.Column="2"
             Padding="0,0,4,0"

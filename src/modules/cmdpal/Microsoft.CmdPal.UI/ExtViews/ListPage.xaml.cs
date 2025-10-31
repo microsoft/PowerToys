@@ -336,7 +336,7 @@ public sealed partial class ListPage : Page,
 
         // Always reset the selected item when the top-level list page changes
         // its items
-        if (!sender.IsNested)
+        if (sender.IsRootPage)
         {
             ItemView.SelectedIndex = 0;
         }

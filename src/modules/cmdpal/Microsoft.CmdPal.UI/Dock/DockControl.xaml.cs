@@ -150,7 +150,16 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         if (item is not null)
         {
-            InvokeItem(item, pos);
+            // Use the center of the button as the point to open at. This is
+            // more reliable than using the tap position. This allows multiple
+            // clicks anywhere in the button to open the palette in a consistent
+            // location.
+            var buttonPos = button!.TransformToVisual(null).TransformPoint(new Point(0, 0));
+            var buttonCenter = new Point(
+                buttonPos.X + (button.ActualWidth / 2),
+                buttonPos.Y + (button.ActualHeight / 2));
+
+            InvokeItem(item, buttonCenter);
         }
     }
 
@@ -190,6 +199,8 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             }
 
             PerformCommandMessage m = new(command.Model);
+            m.WithAnimation = false;
+            m.TransientPage = true;
             WeakReferenceMessenger.Default.Send(m);
         }
         catch (COMException e)
