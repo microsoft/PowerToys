@@ -40,9 +40,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <PropertyGroup>
+    <PowerToysDotNetHost Condition="'$(Platform)' == 'ARM64'">$(ProgramFiles)\dotnet\arm64\dotnet.exe</PowerToysDotNetHost>
+    <PowerToysDotNetHost Condition="'$(Platform)' == 'x64'">$(ProgramFiles)\dotnet\x64\dotnet.exe</PowerToysDotNetHost>
+    <PowerToysDotNetHost Condition="'$(PowerToysDotNetHost)' == ''">dotnet</PowerToysDotNetHost>
+  </PropertyGroup>
+
   <!-- In debug mode, generate the DSC resource JSON files -->
-    <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+  <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <Message Text="Generating DSC resource JSON files inside ..." Importance="high" />
-    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)\&quot;" />
+    <Exec Command="&quot;$(PowerToysDotNetHost)&quot; &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)\&quot;" />
   </Target>
 </Project>
