@@ -76,6 +76,7 @@
     <ClCompile Include="LightSwitchService.cpp" />
     <ClCompile Include="LightSwitchServiceObserver.cpp" />
     <ClCompile Include="LightSwitchSettings.cpp" />
+    <ClCompile Include="RegistryObserver.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
     <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
@@ -87,6 +88,7 @@
   <ItemGroup>
     <ClInclude Include="LightSwitchServiceObserver.h" />
     <ClInclude Include="LightSwitchSettings.h" />
+    <ClInclude Include="RegistryObserver.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="ThemeHelper.h" />
