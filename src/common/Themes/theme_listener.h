@@ -23,8 +23,8 @@ public:
     }
 
     Theme AppTheme;
-    void ThemeListener::AddChangedHandler(THEME_HANDLE handle);
-    void ThemeListener::DelChangedHandler(THEME_HANDLE handle);
+    void AddChangedHandler(THEME_HANDLE handle);
+    void DelChangedHandler(THEME_HANDLE handle);
     void CheckTheme();
 
 private:

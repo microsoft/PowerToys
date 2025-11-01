@@ -45,7 +45,8 @@ HWND XamlBridge2::InitBridge()
     auto app = Microsoft::Toolkit::Win32::UI::XamlHost::XamlApplication({ Microsoft::UI::Xaml::XamlTypeInfo::XamlControlsXamlMetaDataProvider() });
 
     // Initialize the XAML framework
-    frameworkView.Initialize(*reinterpret_cast<wac::CoreApplicationView*>(&make<XamlBridgeCoreAppViewImpl>()));
+    auto coreAppView = winrt::make<XamlBridgeCoreAppViewImpl>();
+    frameworkView.Initialize(*static_cast<wac::CoreApplicationView*>(winrt::get_abi(coreAppView)));
     frameworkView.SetWindow(coreWindow);
 
     // Add the WinUI resources

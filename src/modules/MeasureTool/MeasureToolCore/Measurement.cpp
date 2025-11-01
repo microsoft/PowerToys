@@ -190,7 +190,7 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
         Measurement::Unit::Centimetre,
     };
     // We only use two units at most, it would be to long otherwise.
-    for each (Measurement::Unit unit in allUnits)
+    for (Measurement::Unit unit : allUnits)
     {
         if ((unit & units) == unit)
         {

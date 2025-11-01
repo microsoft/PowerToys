@@ -75,13 +75,13 @@ public:
     static ShortcutControl& AddNewShortcutControlRow(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, const Shortcut& originalKeys = Shortcut(), const KeyShortcutTextUnion& newKeys = Shortcut(), const std::wstring& targetAppName = L"");
 
     // Function to delete the shortcut control
-    static void ShortcutControl::DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int index);
+    static void DeleteShortcutControl(StackPanel& parent, std::vector<std::vector<std::unique_ptr<ShortcutControl>>>& keyboardRemapControlObjects, int index);
 
     // Function to get the shortcut type
     static ShortcutType GetShortcutType(const Controls::ComboBox& typeCombo);
 
     // Function to remove extra quotes from the start and end of the string (used where we will add them as needed later)
-    static std::wstring ShortcutControl::RemoveExtraQuotes(const std::wstring& str);
+    static std::wstring RemoveExtraQuotes(const std::wstring& str);
 
     // Function to return the stack panel element of the ShortcutControl. This is the externally visible UI element which can be used to add it to other layouts
     StackPanel GetShortcutControl();

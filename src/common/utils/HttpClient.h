@@ -21,39 +21,39 @@ namespace http
             headers.UserAgent().TryParseAdd(USER_AGENT);
         }
 
-        std::future<std::wstring> request(const winrt::Windows::Foundation::Uri& url)
+        std::wstring request(const winrt::Windows::Foundation::Uri& url)
         {
-            auto response = co_await m_client.GetAsync(url);
-            (void)response.EnsureSuccessStatusCode();
-            auto body = co_await response.Content().ReadAsStringAsync();
-            co_return std::wstring(body);
+            auto response = m_client.GetAsync(url).get();
+            response.EnsureSuccessStatusCode();
+            auto body = response.Content().ReadAsStringAsync().get();
+            return std::wstring(body);
         }
 
-        std::future<void> download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath)
+        void download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath)
         {
-            auto response = co_await m_client.GetAsync(url);
-            (void)response.EnsureSuccessStatusCode();
-            auto file_stream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
-            co_await response.Content().WriteToStreamAsync(file_stream);
+            auto response = m_client.GetAsync(url).get();
+            response.EnsureSuccessStatusCode();
+            auto file_stream = storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways).get();
+            response.Content().WriteToStreamAsync(file_stream).get();
             file_stream.Close();
         }
 
-        std::future<void> download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath, const std::function<void(float)>& progressUpdateCallback)
+        void download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath, const std::function<void(float)>& progressUpdateCallback)
         {
-            auto response = co_await m_client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
+            auto response = m_client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead).get();
             response.EnsureSuccessStatusCode();
 
             uint64_t totalBytes = response.Content().Headers().ContentLength().GetUInt64();
-            auto contentStream = co_await response.Content().ReadAsInputStreamAsync();
+            auto contentStream = response.Content().ReadAsInputStreamAsync().get();
 
             uint64_t totalBytesRead = 0;
             storage::Streams::Buffer buffer(8192);
-            auto fileStream = co_await storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways);
+            auto fileStream = storage::Streams::FileRandomAccessStream::OpenAsync(dstFilePath.c_str(), storage::FileAccessMode::ReadWrite, storage::StorageOpenOptions::AllowReadersAndWriters, storage::Streams::FileOpenDisposition::CreateAlways).get();
 
-            co_await contentStream.ReadAsync(buffer, buffer.Capacity(), storage::Streams::InputStreamOptions::None);
+            contentStream.ReadAsync(buffer, buffer.Capacity(), storage::Streams::InputStreamOptions::None).get();
             while (buffer.Length() > 0)
             {
-                co_await fileStream.WriteAsync(buffer);
+                fileStream.WriteAsync(buffer).get();
                 totalBytesRead += buffer.Length();
                 if (progressUpdateCallback)
                 {
@@ -61,7 +61,7 @@ namespace http
                     progressUpdateCallback(percentage);
                 }
 
-                co_await contentStream.ReadAsync(buffer, buffer.Capacity(), storage::Streams::InputStreamOptions::None);
+                contentStream.ReadAsync(buffer, buffer.Capacity(), storage::Streams::InputStreamOptions::None).get();
             }
 
             if (progressUpdateCallback)

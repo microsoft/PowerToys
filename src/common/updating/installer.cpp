@@ -20,27 +20,29 @@ namespace updating
 {
     std::future<bool> uninstall_previous_msix_version_async()
     {
-        winrt::Windows::Management::Deployment::PackageManager package_manager;
+        return std::async(std::launch::async, []() {
+            winrt::Windows::Management::Deployment::PackageManager package_manager;
 
-        try
-        {
-            auto packages = package_manager.FindPackagesForUser({}, MSIX_PACKAGE_NAME, MSIX_PACKAGE_PUBLISHER);
-            VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
-
-            for (auto package : packages)
+            try
             {
-                VersionHelper msix_version(package.Id().Version().Major, package.Id().Version().Minor, package.Id().Version().Revision);
+                auto packages = package_manager.FindPackagesForUser({}, MSIX_PACKAGE_NAME, MSIX_PACKAGE_PUBLISHER);
+                VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
 
-                if (msix_version < current_version)
+                for (auto package : packages)
                 {
-                    co_await package_manager.RemovePackageAsync(package.Id().FullName());
-                    co_return true;
+                    VersionHelper msix_version(package.Id().Version().Major, package.Id().Version().Minor, package.Id().Version().Revision);
+
+                    if (msix_version < current_version)
+                    {
+                        package_manager.RemovePackageAsync(package.Id().FullName()).get();
+                        return true;
+                    }
                 }
             }
-        }
-        catch (...)
-        {
-        }
-        co_return false;
+            catch (...)
+            {
+            }
+            return false;
+        });
     }
 }

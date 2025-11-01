@@ -98,13 +98,17 @@
       <DisableSpecificWarnings>4679;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
-      <ConformanceMode>false</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <BuildStlModules>false</BuildStlModules>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+    <BuildStlModules>false</BuildStlModules>
+    <!-- Use C++20 for test projects for modern features, latest for production -->
+    <LanguageStandard Condition="$(MSBuildProjectName.ToLower().Contains('test'))">stdcpp20</LanguageStandard>
+    <LanguageStandard Condition="!$(MSBuildProjectName.ToLower().Contains('test'))">stdcpplatest</LanguageStandard>
+      <!-- Disable strict coroutine mode for test projects -->
+      <UseStandardCoroutine Condition="!$(MSBuildProjectName.Contains('Test'))">true</UseStandardCoroutine>
+      <AdditionalOptions Condition="!$(MSBuildProjectName.Contains('Test'))">/await:strict %(AdditionalOptions)</AdditionalOptions>
       <!-- TODO: _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING for compatibility with VS 17.8. Check if we can remove. -->
-      <PreprocessorDefinitions>_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="!$(MSBuildProjectName.Contains('Test'))">_COROUTINE_ABI=2;_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(MSBuildProjectName.Contains('Test'))">_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- CLR + CFG are not compatible >:{ -->
       <ControlFlowGuard Condition="'$(CLRSupport)' == ''">Guard</ControlFlowGuard>
       <DebugInformationFormat Condition="'%(ControlFlowGuard)' == 'Guard'">ProgramDatabase</DebugInformationFormat>
@@ -151,7 +155,7 @@
 
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>

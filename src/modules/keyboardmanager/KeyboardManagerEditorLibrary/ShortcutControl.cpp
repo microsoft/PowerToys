@@ -721,7 +721,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
-    runProgramAlreadyRunningAction.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+    runProgramAlreadyRunningAction.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) mutable {
         uint32_t rowIndex;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
@@ -734,11 +734,11 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
 
         Shortcut tempShortcut;
-        CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
+        CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
-    runProgramElevationTypeCombo.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+    runProgramElevationTypeCombo.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) mutable {
         uint32_t rowIndex;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
@@ -750,11 +750,11 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
             return;
         }
         Shortcut tempShortcut;
-        CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
+        CreateNewTempShortcut(row, tempShortcut, rowIndex);
         ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });
 
-    runProgramStartWindow.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) {
+    runProgramStartWindow.SelectionChanged([parent, row](winrt::Windows::Foundation::IInspectable const&, SelectionChangedEventArgs const&) mutable {
         uint32_t rowIndex;
         if (!parent.Children().IndexOf(row, rowIndex))
         {
@@ -767,7 +767,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
         }
 
         Shortcut tempShortcut;
-        CreateNewTempShortcut(static_cast<StackPanel>(row), tempShortcut, rowIndex);
+        CreateNewTempShortcut(row, tempShortcut, rowIndex);
 
         ShortcutControl::shortcutRemapBuffer[rowIndex].mapping[1] = tempShortcut;
     });

@@ -97,7 +97,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         if (!grid)
             return;
 
-        auto& gridChildren = grid.Children();
+        auto gridChildren = grid.Children();
         if (!gridChildren)
             return;
 
