@@ -62,10 +62,18 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <!-- Only enable Native AOT for Release builds to avoid System.Private.CoreLib.dll version conflicts during development -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <PublishTrimmed>true</PublishTrimmed>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
+  <!-- For Debug builds, use standard JIT compilation -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
 </Project>

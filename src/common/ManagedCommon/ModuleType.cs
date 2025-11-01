@@ -12,6 +12,7 @@ namespace ManagedCommon
         ColorPicker,
         CmdPal,
         CropAndLock,
+        CursorWrap,
         EnvironmentVariables,
         FancyZones,
         FileLocksmith,
