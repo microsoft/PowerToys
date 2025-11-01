@@ -353,7 +353,7 @@
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Stretch" />
-                        <Setter Target="ContentGrid.Padding" Value="8,8,8,8" />
+                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -371,7 +371,7 @@
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Stretch" />
-                        <Setter Target="ContentGrid.Padding" Value="8,8,8,8" />
+                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
