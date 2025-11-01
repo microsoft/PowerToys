@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ using System.Windows.Input;
 
 using ImageResizer.Helpers;
 using ImageResizer.Models;
+using ImageResizer.Models.ResizeResults;
+using ImageResizer.Utilities;
 using ImageResizer.Views;
 
 namespace ImageResizer.ViewModels
@@ -66,21 +69,22 @@ namespace ImageResizer.ViewModels
         private void StartExecutingWork()
         {
             _stopwatch.Restart();
-            var errors = _batch.Process(
-                (completed, total) =>
-                {
-                    var progress = completed / total;
-                    Progress = progress;
-                    _mainViewModel.Progress = progress;
 
-                    TimeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
-                },
-                _cancellationTokenSource.Token);
+            var results = _batch.Process(
+              (completed, total) =>
+              {
+                  var progress = completed / total;
+                  Progress = progress;
+                  _mainViewModel.Progress = progress;
+                  TimeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
+              },
+              _cancellationTokenSource.Token);
 
-            if (errors.Any())
+            if (results.Any(r => r is not SuccessResult))
             {
                 _mainViewModel.Progress = 0;
-                _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
+                _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, results);
+                _mainView.ResizeForResults();
             }
             else
             {

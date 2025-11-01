@@ -13,7 +13,7 @@ using System.IO.Pipes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
 
 namespace ImageResizer.Models
@@ -22,9 +22,9 @@ namespace ImageResizer.Models
     {
         private readonly IFileSystem _fileSystem = new FileSystem();
 
-        public string DestinationDirectory { get; set; }
+        public virtual string DestinationDirectory { get; set; }
 
-        public ICollection<string> Files { get; } = new List<string>();
+        public virtual ICollection<string> Files { get; } = new List<string>();
 
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
         {
@@ -84,11 +84,11 @@ namespace ImageResizer.Models
             return batch;
         }
 
-        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
+        public IEnumerable<ResizeResult> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
         {
             double total = Files.Count;
-            var completed = 0;
-            var errors = new ConcurrentBag<ResizeError>();
+            int completed = 0;
+            ConcurrentBag<ResizeResult> results = [];
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
             //       APIs and a custom SynchronizationContext
@@ -101,24 +101,18 @@ namespace ImageResizer.Models
                 },
                 (file, state, i) =>
                 {
-                    try
-                    {
-                        Execute(file);
-                    }
-                    catch (Exception ex)
-                    {
-                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
-                    }
+                    var result = Execute(file);
+                    results.Add(result);
 
                     Interlocked.Increment(ref completed);
 
                     reportProgress(completed, total);
                 });
 
-            return errors;
+            return results;
         }
 
-        protected virtual void Execute(string file)
+        protected virtual ResizeResult Execute(string file)
             => new ResizeOperation(file, DestinationDirectory, Settings.Default).Execute();
     }
 }

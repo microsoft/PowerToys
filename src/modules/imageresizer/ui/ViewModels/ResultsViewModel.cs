@@ -5,29 +5,56 @@
 #pragma warning restore IDE0073
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 
 using ImageResizer.Helpers;
-using ImageResizer.Models;
+using ImageResizer.Models.ResizeResults;
+using ImageResizer.Properties;
 using ImageResizer.Views;
 
-namespace ImageResizer.ViewModels
+namespace ImageResizer.ViewModels;
+
+public class ResultsViewModel : Observable
 {
-    public class ResultsViewModel : Observable
+    private readonly IMainView _mainView;
+
+    /// <summary>
+    /// The full list of results from the resizing operation(s).
+    /// </summary>
+    private readonly List<ResizeResult> _allResults;
+
+    /// <summary>
+    /// Gets or sets the text displayed at the top of the page, indicating whether the page is
+    /// being shown because of errors or warnings/info.
+    /// </summary>
+    public string HeaderText { get; set; }
+
+    public IEnumerable<ResultDisplayModel> Errors =>
+        _allResults.OfType<ErrorResult>()
+            .Select(r => new ResultDisplayModel(r));
+
+    public IEnumerable<ResultDisplayModel> ReplaceWarnings =>
+        _allResults.OfType<FileReplaceFailedResult>()
+            .Select(r => new ResultDisplayModel(r));
+
+    public IEnumerable<ResultDisplayModel> RecycleFailedWarnings =>
+        _allResults.OfType<FileRecycleFailedResult>()
+            .Select(r => new ResultDisplayModel(r));
+
+    public ResultsViewModel(IMainView mainView, IEnumerable<ResizeResult> results)
     {
-        private readonly IMainView _mainView;
+        _mainView = mainView;
+        CloseCommand = new RelayCommand(Close);
 
-        public ResultsViewModel(IMainView mainView, IEnumerable<ResizeError> errors)
-        {
-            _mainView = mainView;
-            Errors = errors;
-            CloseCommand = new RelayCommand(Close);
-        }
+        _allResults = results.OrderBy(x => x.FilePath).ToList();
 
-        public IEnumerable<ResizeError> Errors { get; }
-
-        public ICommand CloseCommand { get; }
-
-        public void Close() => _mainView.Close();
+        HeaderText = Errors.Any()
+            ? Resources.Results_PageHeader_CompleteWithErrors
+            : Resources.Results_PageHeader_CompleteWithNotes;
     }
+
+    public ICommand CloseCommand { get; }
+
+    public void Close() => _mainView.Close();
 }
