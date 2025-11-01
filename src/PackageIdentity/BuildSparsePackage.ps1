@@ -12,8 +12,7 @@ Param(
 
     [switch]$Clean,
     [switch]$ForceCert,
-    [switch]$NoSign,
-    [switch]$CIBuild
+    [switch]$NoSign
 )
 
 # PowerToys sparse packaging helper.
@@ -23,7 +22,7 @@ Param(
 $ErrorActionPreference = 'Stop'
 
 $isCIBuild = $false
-if ($CIBuild.IsPresent) {
+if ($NoSign.IsPresent) {
     $isCIBuild = $true
 } elseif ($env:CIBuild) {
     $isCIBuild = $env:CIBuild -ieq 'true'
@@ -292,6 +291,7 @@ try {
     $essentialFiles = @(
         "AppxManifest.xml"
         "Images\*"
+        "Assets\*"
     )
     
     foreach ($filePattern in $essentialFiles) {
@@ -310,7 +310,11 @@ try {
             $sourceDir = $sourcePath.TrimEnd('\*')
             $targetDir = Join-Path $stagingDir (Split-Path $relativePath.TrimEnd('\*') -Parent)
             if (Test-Path $sourceDir) {
-                Copy-Item -Path "$sourceDir\*" -Destination $targetDir -Force -ErrorAction SilentlyContinue
+                $targetSubDir = Join-Path $stagingDir ($relativePath.TrimEnd('\*'))
+                if (-not (Test-Path $targetSubDir)) {
+                    New-Item -ItemType Directory -Path $targetSubDir -Force | Out-Null
+                }
+                Copy-Item -Path "$sourceDir\*" -Destination $targetSubDir -Force -ErrorAction SilentlyContinue
             }
         } else {
             # Copy single file
