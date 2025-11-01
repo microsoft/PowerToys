@@ -10,6 +10,7 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
         static com_array<winrt::PowerToys::FileLocksmithLib::Interop::ProcessResult> FindProcessesRecursive(array_view<hstring const> paths);
         static hstring PidToFullPath(uint32_t pid);
         static com_array<hstring> ReadPathsFromFile();
+        static com_array<hstring> ReadPathsFromPipe(hstring const& pipeName);
         static bool StartAsElevated(array_view<hstring const> paths);
         static bool SetDebugPrivilege();
         static bool IsProcessElevated();
