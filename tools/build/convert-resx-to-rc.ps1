@@ -88,8 +88,8 @@ Foreach-Object {
         $xmlDocument = [xml](Get-Content $_.FullName -ErrorAction:Stop)
     }
     catch {
-        Write-Host "Failed to load $($_.FullName)"
-        exit 0
+        Write-Error "Failed to load $($_.FullName): $_"
+        exit 1
     }
 
     # Get language code from file name
@@ -137,8 +137,8 @@ Foreach-Object {
         }
     }
     catch {
-        echo "Failed to read XML document."
-        exit 0
+        Write-Error "Failed to read XML document: $_"
+        exit 1
     }
 
     if ($newLinesForRCFile -ne "") {
@@ -160,8 +160,8 @@ Foreach-Object {
             $rcFileContent += (Get-Content $parentDirectory\$baseRCFileName -Raw)
         }
         catch {
-            echo "Failed to read base rc file."
-            exit 0
+            Write-Error "Failed to read base rc file '$baseRCFileName': $_"
+            exit 1
         }
         $rcFileUpdated = $true
     }
@@ -176,8 +176,8 @@ Foreach-Object {
             $headerFileContent += (Get-Content $parentDirectory\$baseHeaderFileName  -Raw)
         }
         catch {
-            echo "Failed to read base header file."
-            exit 0
+            Write-Error "Failed to read base header file '$baseHeaderFileName': $_"
+            exit 1
         }
         $headerFileContent += $newLinesForHeaderFile
         $headerFileUpdated = $true
@@ -194,8 +194,8 @@ try {
     }
 }
 catch {
-    echo "Failed to access generated header file."
-    exit 0
+    Write-Error "Failed to access generated header file '$generatedHeaderFileName': $_"
+    exit 1
 }
 
 # Write to rc file if the content has changed or if the file doesnt exist
@@ -208,6 +208,6 @@ try {
     }
 }
 catch {
-    echo "Failed to access generated rc file."
-    exit 0
+    Write-Error "Failed to access generated rc file '$generatedRCFileName': $_"
+    exit 1
 }
