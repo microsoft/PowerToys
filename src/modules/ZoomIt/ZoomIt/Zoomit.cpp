@@ -3441,6 +3441,30 @@ auto GetUniqueRecordingFilename()
 
 //----------------------------------------------------------------------------
 //
+// GetUniqueScreenshotFilename
+// 
+// Gets a unique file name for screenshot saves, using the current date and
+// time as a suffix. This reduces the chance that the user could overwrite an
+// existing file if they are saving multiple captures in the same folder, and
+// also ensures that ordering is correct when sorted by name.
+// 
+//----------------------------------------------------------------------------
+static std::wstring GetUniqueScreenshotFilename()
+{
+    auto const now = std::chrono::system_clock::now();
+    auto const in_time_t = std::chrono::system_clock::to_time_t( now );
+
+    std::tm buf{};
+    localtime_s( &buf, &in_time_t );
+
+    std::wstringstream ss;
+    ss << APPNAME << L" " << std::put_time(&buf, L"%Y-%m-%d %H%M%S") << L".png";
+
+    return ss.str();
+}
+
+//----------------------------------------------------------------------------
+//
 // StartRecordingAsync
 // 
 // Starts the screen recording.
@@ -6237,6 +6261,11 @@ LRESULT APIENTRY MainWndProc(
                         SRCCOPY|CAPTUREBLT );
 
             g_bSaveInProgress = true;
+
+            // Generate a unique filename for the screenshot.
+            std::wstring uniqueName = GetUniqueScreenshotFilename();
+            _tcscpy_s(filePath, _countof(filePath), uniqueName.c_str());
+
             memset( &openFileName, 0, sizeof(openFileName ));
             openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
             openFileName.hwndOwner         = hWnd;
@@ -6244,26 +6273,17 @@ LRESULT APIENTRY MainWndProc(
             openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
             openFileName.Flags				= OFN_LONGNAMES|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT;
             openFileName.lpstrTitle        = L"Save zoomed screen...";
-            openFileName.lpstrDefExt       = NULL; // "*.png";
+            openFileName.lpstrDefExt       = L"png";
             openFileName.nFilterIndex      = 1;
             openFileName.lpstrFilter       = L"Zoomed PNG\0*.png\0"
-                                             //"Zoomed BMP\0*.bmp\0"	
                                              "Actual size PNG\0*.png\0\0";
-                                             //"Actual size BMP\0*.bmp\0\0";
             openFileName.lpstrFile			= filePath;
             if( GetSaveFileName( &openFileName ) )
             {
-                TCHAR targetFilePath[MAX_PATH];
-                _tcscpy( targetFilePath, filePath );
-                if( !_tcsrchr( targetFilePath, '.' ) )
-                {
-                    _tcscat( targetFilePath, L".png" );
-                }
-
                 // Save image at screen size
                 if( openFileName.nFilterIndex == 1 )
                 {
-                    SavePng( targetFilePath, hInterimSaveBitmap );
+                    SavePng( filePath, hInterimSaveBitmap );
                 }
                 // Save image scaled down to actual size
                 else
@@ -6283,7 +6303,7 @@ LRESULT APIENTRY MainWndProc(
                                 copyWidth, copyHeight,
                                 SRCCOPY | CAPTUREBLT );
 				
-                    SavePng( targetFilePath, hSaveBitmap );
+                    SavePng( filePath, hSaveBitmap );
                 }
             }
             g_bSaveInProgress = false;
