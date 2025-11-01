@@ -1,0 +1,247 @@
+PackageName: +WindowsNT.Notepad
+Name: Notepad
+WindowFilter: "Notepad.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: File
+    Properties:
+      - Name: New tab
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - N
+      - Name: New window
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - N
+      - Name: Open
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - O
+      - Name: Save
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - S
+      - Name: Save As
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - S
+      - Name: Save all
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - S
+      - Name: Print
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - P
+      - Name: Close tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - W
+      - Name: Close window
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - W
+  - SectionName: Edit
+    Properties:
+      - Name: Undo
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Z
+      - Name: Redo
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Z
+      - Name: Cut
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - X
+      - Name: Copy
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+      - Name: Paste
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - V
+      - Name: Search with Bing
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - E
+      - Name: Find
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: Find next
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F3
+      - Name: Find previous
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F3
+      - Name: Replace
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - H
+      - Name: Go to
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - G
+      - Name: Select all
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - A
+      - Name: Time/Date
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F5
+  - SectionName: View
+    Properties:
+      - Name: Zoom in
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Plus
+      - Name: Zoom out
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Minus
+      - Name: Reset zoom
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - 0
+  - SectionName: Formatting
+    Properties:
+      - Name: Bold
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - B
+      - Name: Italic
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - I
+      - Name: Insert link
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - K
+      - Name: Clear formatting
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Space

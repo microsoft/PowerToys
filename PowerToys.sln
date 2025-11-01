@@ -42,7 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fancyzones", "fancyzones", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesLib", "src\modules\fancyzones\FancyZonesLib\FancyZonesLib.vcxproj", "{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZones.UnitTests", "src\modules\fancyzones\FancyZonesTests\UnitTests\UnitTests.vcxproj", "{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "src\modules\fancyzones\FancyZonesTests\UnitTests\UnitTests.vcxproj", "{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99} = {F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}
 	EndProjectSection
@@ -66,7 +66,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameLib", "src\modul
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameTest", "src\modules\powerrename\testapp\PowerRenameTest.vcxproj", "{A3935CF4-46C5-4A88-84D3-6B12E16E6BA2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRename.UnitTests", "src\modules\powerrename\unittests\PowerRenameLibUnitTests.vcxproj", "{2151F984-E006-4A9F-92EF-C6DDE3DC8413}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameLibUnitTests", "src\modules\powerrename\unittests\PowerRenameLibUnitTests.vcxproj", "{2151F984-E006-4A9F-92EF-C6DDE3DC8413}"
 	ProjectSection(ProjectDependencies) = postProject
 		{51920F1F-C28C-4ADF-8660-4238766796C2} = {51920F1F-C28C-4ADF-8660-4238766796C2}
 		{B25AC7A5-FB9F-4789-B392-D5C85E948670} = {B25AC7A5-FB9F-4789-B392-D5C85E948670}
@@ -316,13 +316,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngine", "sr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngineLibrary", "src\modules\keyboardmanager\KeyboardManagerEngineLibrary\KeyboardManagerEngineLibrary.vcxproj", "{E496B7FC-1E99-4BAB-849B-0E8367040B02}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManager.Engine.UnitTests", "src\modules\keyboardmanager\KeyboardManagerEngineTest\KeyboardManagerEngineTest.vcxproj", "{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEngineTest", "src\modules\keyboardmanager\KeyboardManagerEngineTest\KeyboardManagerEngineTest.vcxproj", "{7F4B3A60-BC27-45A7-8000-68B0B6EA7466}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditor", "src\modules\keyboardmanager\KeyboardManagerEditor\KeyboardManagerEditor.vcxproj", "{8DF78B53-200E-451F-9328-01EB907193AE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibrary", "src\modules\keyboardmanager\KeyboardManagerEditorLibrary\KeyboardManagerEditorLibrary.vcxproj", "{23D2070D-E4AD-4ADD-85A7-083D9C76AD49}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManager.Editor.UnitTests", "src\modules\keyboardmanager\KeyboardManagerEditorTest\KeyboardManagerEditorTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest", "src\modules\keyboardmanager\KeyboardManagerEditorTest\KeyboardManagerEditorTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "awake", "awake", "{127F38E0-40AA-4594-B955-5616BF206882}"
 EndProject
@@ -333,12 +333,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.csproj", "{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shortcutguide", "shortcutguide", "{106CBECA-0701-4FC3-838C-9DF816A19AE2}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterface", "src\modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.vcxproj", "{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide", "src\modules\ShortcutGuide\ShortcutGuide\ShortcutGuide.vcxproj", "{2EDB3EB4-FA92-4BFF-B2D8-566584837231}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesModuleInterface", "src\modules\fancyzones\FancyZonesModuleInterface\FancyZonesModuleInterface.vcxproj", "{48804216-2A0E-4168-A6D8-9CD068D14227}"
 EndProject
@@ -451,7 +445,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithExt", "src\mod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileLocksmithUI", "src\modules\FileLocksmith\FileLocksmithUI\FileLocksmithUI.csproj", "{E69B044A-2F8A-45AA-AD0B-256C59421807}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.FileLocksmithLib.Interop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithLibInterop", "src\modules\FileLocksmith\FileLocksmithLibInterop\FileLocksmithLibInterop.vcxproj", "{C604B37E-9D0E-4484-8778-E8B31B0E1B3A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPOWrapper", "src\common\GPOWrapper\GPOWrapper.vcxproj", "{E599C30B-9DC8-4E5A-BF27-93D4CCEDE788}"
 EndProject
@@ -459,7 +453,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GPOWrapperProjection", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Peek", "Peek", "{17B4FA70-001E-4D33-BBBB-0D142DBC2E20}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Peek", "src\modules\peek\peek\peek.vcxproj", "{A1425B53-3D61-4679-8623-E64A0D3D0A48}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "peek", "src\modules\peek\peek\peek.vcxproj", "{A1425B53-3D61-4679-8623-E64A0D3D0A48}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Peek.UI", "src\modules\peek\Peek.UI\Peek.UI.csproj", "{9D7A6DE0-7D27-424D-ABAE-41B2161F9A03}"
 EndProject
@@ -574,7 +568,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToys.Settings.DSC.Sche
 		{020A7474-3601-4160-A159-D7B70B77B15F} = {020A7474-3601-4160-A159-D7B70B77B15F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewPlus.ShellExtension", "src\modules\NewPlus\NewShellExtensionContextMenu\NewShellExtensionContextMenu.vcxproj", "{8ACB33D9-C95B-47D4-8363-9731EE0930A0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NewShellExtensionContextMenu", "src\modules\NewPlus\NewShellExtensionContextMenu\NewShellExtensionContextMenu.vcxproj", "{8ACB33D9-C95B-47D4-8363-9731EE0930A0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "New+", "New+", "{CA716AE6-FE5C-40AC-BB8F-2C87912687AC}"
 EndProject
@@ -703,7 +697,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.System
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CmdPalKeyboardService", "src\modules\cmdpal\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj", "{5F63C743-F6CE-4DBA-A200-2B3F8A14E8C2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRename.FuzzTests", "src\modules\powerrename\PowerRename.FuzzingTest\PowerRename.FuzzingTest.vcxproj", "{2694E2FB-DCD5-4BFF-A418-B6C3C7CE3B8E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRename.FuzzingTest", "src\modules\powerrename\PowerRename.FuzzingTest\PowerRename.FuzzingTest.vcxproj", "{2694E2FB-DCD5-4BFF-A418-B6C3C7CE3B8E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BgcodePreviewHandler", "src\modules\previewpane\BgcodePreviewHandler\BgcodePreviewHandler.csproj", "{9E0CBC06-F29A-4810-B93C-97D53863B95E}"
 EndProject
@@ -829,6 +823,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests.csproj", "{4E0FCF69-B06B-D272-76BF-ED3A559B4EDA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.UI.ViewModels.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.UI.ViewModels.UnitTests\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj", "{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShortcutGuide", "ShortcutGuide", "{17A43950-5FA1-47AC-A4E7-2E6E4A3C32D5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuide.CPPProject", "src\modules\ShortcutGuide\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj", "{C992FD2C-83B8-4941-9FC1-09730068D8EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortcutGuide.IndexYmlGenerator", "src\modules\ShortcutGuide\ShortcutGuide.IndexYmlGenerator\ShortcutGuide.IndexYmlGenerator.csproj", "{30F57201-9B54-5253-8033-8A28ECD3F1CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShortcutGuide.Ui", "src\modules\ShortcutGuide\ShortcutGuide.Ui\ShortcutGuide.Ui.csproj", "{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterface", "src\modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.vcxproj", "{E487304A-B1FB-4E6B-8E70-014051AF5B99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1470,22 +1474,6 @@ Global
 		{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}.Release|ARM64.Build.0 = Release|ARM64
 		{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}.Release|x64.ActiveCfg = Release|x64
 		{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}.Release|x64.Build.0 = Release|x64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Debug|ARM64.Build.0 = Debug|ARM64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Debug|x64.ActiveCfg = Debug|x64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Debug|x64.Build.0 = Debug|x64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|ARM64.ActiveCfg = Release|ARM64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|ARM64.Build.0 = Release|ARM64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|x64.ActiveCfg = Release|x64
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}.Release|x64.Build.0 = Release|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|ARM64.Build.0 = Debug|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.ActiveCfg = Debug|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Debug|x64.Build.0 = Debug|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|ARM64.ActiveCfg = Release|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|ARM64.Build.0 = Release|ARM64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.ActiveCfg = Release|x64
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231}.Release|x64.Build.0 = Release|x64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|ARM64.Build.0 = Debug|ARM64
 		{48804216-2A0E-4168-A6D8-9CD068D14227}.Debug|x64.ActiveCfg = Debug|x64
@@ -3016,6 +3004,38 @@ Global
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|ARM64.Build.0 = Release|ARM64
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|x64.ActiveCfg = Release|x64
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|x64.Build.0 = Release|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|x64.ActiveCfg = Debug|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Debug|x64.Build.0 = Debug|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|ARM64.Build.0 = Release|ARM64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|x64.ActiveCfg = Release|x64
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC}.Release|x64.Build.0 = Release|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|x64.ActiveCfg = Debug|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Debug|x64.Build.0 = Debug|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|ARM64.Build.0 = Release|ARM64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|x64.ActiveCfg = Release|x64
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE}.Release|x64.Build.0 = Release|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|ARM64.Build.0 = Debug|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|x64.ActiveCfg = Debug|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Debug|x64.Build.0 = Debug|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|ARM64.ActiveCfg = Release|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|ARM64.Build.0 = Release|ARM64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|x64.ActiveCfg = Release|x64
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D}.Release|x64.Build.0 = Release|x64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Debug|x64.ActiveCfg = Debug|x64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Debug|x64.Build.0 = Debug|x64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Release|ARM64.Build.0 = Release|ARM64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Release|x64.ActiveCfg = Release|x64
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3111,9 +3131,6 @@ Global
 		{D940E07F-532C-4FF3-883F-790DA014F19A} = {127F38E0-40AA-4594-B955-5616BF206882}
 		{BB23A474-5058-4F75-8FA3-5FE3DE53CDF4} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
 		{3E424AD2-19E5-4AE6-B833-F53963EB5FC1} = {B9617A31-0F0A-4397-851D-BF2FBEE32D7F}
-		{106CBECA-0701-4FC3-838C-9DF816A19AE2} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
-		{2D604C07-51FC-46BB-9EB7-75AECC7F5E81} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
-		{2EDB3EB4-FA92-4BFF-B2D8-566584837231} = {106CBECA-0701-4FC3-838C-9DF816A19AE2}
 		{48804216-2A0E-4168-A6D8-9CD068D14227} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
 		{FF1D7936-842A-4BBB-8BEA-E9FE796DE700} = {D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A} = {4AFC9975-2456-4C70-94A4-84073C1CED93}
@@ -3345,6 +3362,11 @@ Global
 		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F} = {3DCCD936-D085-4869-A1DE-CA6A64152C94}
 		{4E0FCF69-B06B-D272-76BF-ED3A559B4EDA} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{17A43950-5FA1-47AC-A4E7-2E6E4A3C32D5} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{C992FD2C-83B8-4941-9FC1-09730068D8EC} = {17A43950-5FA1-47AC-A4E7-2E6E4A3C32D5}
+		{30F57201-9B54-5253-8033-8A28ECD3F1CE} = {17A43950-5FA1-47AC-A4E7-2E6E4A3C32D5}
+		{D5BD72DD-B461-FDD4-FD7D-AF0B620AE75D} = {17A43950-5FA1-47AC-A4E7-2E6E4A3C32D5}
+		{E487304A-B1FB-4E6B-8E70-014051AF5B99} = {17A43950-5FA1-47AC-A4E7-2E6E4A3C32D5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
