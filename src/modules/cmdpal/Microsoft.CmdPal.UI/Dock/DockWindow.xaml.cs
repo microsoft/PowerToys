@@ -20,6 +20,7 @@ using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
@@ -115,7 +116,6 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
-
         UpdateSettings();
     }
 
@@ -592,11 +592,11 @@ public sealed partial class DockWindow : WindowEx,
 // Thank you to https://stackoverflow.com/a/35422795/1481137
 internal static class ShowDesktop
 {
-    private const uint WINEVENTOUTOFCONTEXT = 0u;
-    private const uint EVENTSYSTEMFOREGROUND = 3u;
-
     private const string WORKERW = "WorkerW";
     private const string PROGMAN = "Progman";
+
+    private static WINEVENTPROC? _hookProc;
+    private static IntPtr _hookHandle = IntPtr.Zero;
 
     public static void AddHook(Window window)
     {
@@ -607,9 +607,8 @@ internal static class ShowDesktop
 
         IsHooked = true;
 
-        // Delegate = new WinEventDelegate(WinEventHook);
-        // HookIntPtr = PInvoke.SetWinEventHook(EVENTSYSTEMFOREGROUND, EVENTSYSTEMFOREGROUND, null, Delegate, 0, 0, WINEVENTOUTOFCONTEXT);
-        Window = window;
+        _hookProc = (WINEVENTPROC)WinEventCallback;
+        _hookHandle = PInvoke.SetWinEventHook(PInvoke.EVENT_SYSTEM_FOREGROUND, PInvoke.EVENT_SYSTEM_FOREGROUND, HMODULE.Null, _hookProc, 0, 0, PInvoke.WINEVENT_OUTOFCONTEXT);
     }
 
     public static void RemoveHook()
@@ -621,45 +620,46 @@ internal static class ShowDesktop
 
         IsHooked = false;
 
-        // PInvoke.UnhookWinEvent(HookIntPtr.Value);
-        Delegate = null;
-        HookIntPtr = null;
-        Window = null;
+        PInvoke.UnhookWinEvent((HWINEVENTHOOK)_hookHandle);
+        _hookProc = null;
+        _hookHandle = IntPtr.Zero;
     }
 
-    // private static string GetWindowClass(HWND hwnd)
-    // {
-    //    StringBuilder sb = new(32);
-    //    PInvoke.GetClassName(hwnd, sb, sb.Capacity);
-    //    return sb.ToString();
-    // }
+    private static string GetWindowClass(HWND hwnd)
+    {
+        unsafe
+        {
+            fixed (char* c = new char[32])
+            {
+                _ = PInvoke.GetClassName(hwnd, (PWSTR)c, 32);
+                return new string(c);
+            }
+        }
+    }
+
     internal delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 
-    private static void WinEventHook(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+    private static void WinEventCallback(
+        HWINEVENTHOOK hWinEventHook,
+        uint eventType,
+        HWND hwnd,
+        int idObject,
+        int idChild,
+        uint dwEventThread,
+        uint dwmsEventTime)
     {
-        // if (eventType == EVENTSYSTEMFOREGROUND)
-        // {
-        //    var @class = GetWindowClass(hwnd);
-
-        // if (string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal))
-        //    {
-        //        Logger.LogDebug("ShowDesktop invoked. Bring us back");
-        //        WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(true));
-        //    }
-        //    else
-        //    {
-        //        // WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(false));
-        //    }
-        // }
+        if (eventType == PInvoke.EVENT_SYSTEM_FOREGROUND)
+        {
+            var @class = GetWindowClass(hwnd);
+            if (string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal))
+            {
+                Logger.LogDebug("ShowDesktop invoked. Bring us back");
+                WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(true));
+            }
+        }
     }
 
     public static bool IsHooked { get; private set; }
-
-    private static IntPtr? HookIntPtr { get; set; }
-
-    private static WinEventDelegate? Delegate { get; set; }
-
-    private static Window? Window { get; set; }
 }
 
 internal sealed record BringToTopMessage(bool OnTop);
