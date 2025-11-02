@@ -271,9 +271,12 @@ public sealed partial class DockWindow : WindowEx,
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
         PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
-        // TODO: investigate ABS_AUTOHIDE
-        // _appBarData.lParam = ABS_ALWAYSONTOP;
+        // TODO: investigate ABS_AUTOHIDE and autohide bars.
+        // I think it's something like this, but I don't totally know
+        // // _appBarData.lParam = ABS_ALWAYSONTOP;
+        // _appBarData.lParam = (LPARAM)(int)PInvoke.ABS_AUTOHIDE;
         // PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
+        // PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
 
         // Account for system borders when moving the window
         // Adjust position to account for window frame/border
