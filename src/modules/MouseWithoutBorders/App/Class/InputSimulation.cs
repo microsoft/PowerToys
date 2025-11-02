@@ -204,6 +204,9 @@ namespace MouseWithoutBorders.Class
                 case WM.WM_MOUSEWHEEL:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.WHEEL;
                     break;
+                case WM.WM_MOUSEHWHEEL:
+                    mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.HWHEEL;
+                    break;
                 case WM.WM_XBUTTONUP:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.XUP;
                     break;
