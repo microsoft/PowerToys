@@ -3458,7 +3458,7 @@ static std::wstring GetUniqueScreenshotFilename()
     localtime_s( &buf, &in_time_t );
 
     std::wstringstream ss;
-    ss << APPNAME << L" " << std::put_time(&buf, L"%Y-%m-%d %H%M%S") << L".png";
+    ss << APPNAME << L" " << std::put_time( &buf, L"%Y-%m-%d %H%M%S" ) << L".png";
 
     return ss.str();
 }
@@ -6264,7 +6264,7 @@ LRESULT APIENTRY MainWndProc(
 
             // Generate a unique filename for the screenshot.
             std::wstring uniqueName = GetUniqueScreenshotFilename();
-            _tcscpy_s(filePath, _countof(filePath), uniqueName.c_str());
+            _tcscpy_s( filePath, _countof(filePath), uniqueName.c_str() );
 
             memset( &openFileName, 0, sizeof(openFileName ));
             openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
