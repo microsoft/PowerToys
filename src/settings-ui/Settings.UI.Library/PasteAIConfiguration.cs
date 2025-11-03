@@ -21,14 +21,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _activeProviderId = string.Empty;
         private ObservableCollection<PasteAIProviderDefinition> _providers = new();
         private bool _useSharedCredentials = true;
-        private string _legacyServiceType = "OpenAI";
-        private string _legacyModelName = "gpt-3.5-turbo";
-        private string _legacyEndpointUrl = string.Empty;
-        private string _legacyApiVersion = string.Empty;
-        private string _legacyDeploymentName = string.Empty;
-        private string _legacyModelPath = string.Empty;
-        private string _legacySystemPrompt = string.Empty;
-        private bool _legacyModerationEnabled = true;
         private Dictionary<string, AIProviderConfigurationSnapshot> _legacyProviderConfigurations;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -52,71 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get => _useSharedCredentials;
             set => SetProperty(ref _useSharedCredentials, value);
-        }
-
-        // Legacy properties retained for migration. They will be cleared once converted to the new format.
-        [JsonPropertyName("service-type")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacyServiceType
-        {
-            get => _legacyServiceType;
-            set => _legacyServiceType = value;
-        }
-
-        [JsonPropertyName("model-name")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacyModelName
-        {
-            get => _legacyModelName;
-            set => _legacyModelName = value;
-        }
-
-        [JsonPropertyName("endpoint-url")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacyEndpointUrl
-        {
-            get => _legacyEndpointUrl;
-            set => _legacyEndpointUrl = value;
-        }
-
-        [JsonPropertyName("api-version")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacyApiVersion
-        {
-            get => _legacyApiVersion;
-            set => _legacyApiVersion = value;
-        }
-
-        [JsonPropertyName("deployment-name")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacyDeploymentName
-        {
-            get => _legacyDeploymentName;
-            set => _legacyDeploymentName = value;
-        }
-
-        [JsonPropertyName("model-path")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacyModelPath
-        {
-            get => _legacyModelPath;
-            set => _legacyModelPath = value;
-        }
-
-        [JsonPropertyName("system-prompt")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string LegacySystemPrompt
-        {
-            get => _legacySystemPrompt;
-            set => _legacySystemPrompt = value;
-        }
-
-        [JsonPropertyName("moderation-enabled")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public bool LegacyModerationEnabled
-        {
-            get => _legacyModerationEnabled;
-            set => _legacyModerationEnabled = value;
         }
 
         [JsonPropertyName("provider-configurations")]
