@@ -4363,7 +4363,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Alphabetically</value>
   </data>
   <data name="Dashboard_SortByStatus.Text" xml:space="preserve">
-    <value>Status</value>
+    <value>By status</value>
   </data>
   <data name="Dashboard_SortBy.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Sort utilities</value>
