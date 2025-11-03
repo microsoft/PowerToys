@@ -4,15 +4,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Windows.Input;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -28,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        // private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
@@ -46,6 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settings = moduleSettingsRepository.SettingsConfig;
             SendConfigMSG = ipcMSGCallBackFunc;
 
+            _enabledStateIsGPOConfigured = false;
+
             // initialize backing fields if needed (optional)
 
             // initialize backing fields if needed (optional)
@@ -53,17 +54,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue();
-            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _enabledStateIsGPOConfigured = true;
-                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                _isEnabled = GeneralSettingsConfig.Enabled.KeystrokeOverlay;
-            }
+            // _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue();
+            // if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            // {
+            //    // Get the enabled state from GPO.
+            //    _enabledStateIsGPOConfigured = true;
+            //    _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            // }
+            // else
+            // {
+            _isEnabled = GeneralSettingsConfig.Enabled.KeystrokeOverlay;
+
+            // }
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
