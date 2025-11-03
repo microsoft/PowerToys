@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Specialized;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -10,7 +11,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 
 public partial class LogMessagesPage : ListPage
 {
-    private readonly List<IListItem> _listItems = new();
+    private readonly List<IListItem> _listItems = [];
 
     public LogMessagesPage()
     {
@@ -22,7 +23,7 @@ public partial class LogMessagesPage : ListPage
 
     private void LogMessages_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
+        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
             foreach (var item in e.NewItems)
             {
@@ -31,7 +32,6 @@ public partial class LogMessagesPage : ListPage
                     var li = new ListItem(new NoOpCommand())
                     {
                         Title = logMessageViewModel.Message,
-                        Subtitle = logMessageViewModel.ExtensionPfn,
                     };
                     _listItems.Insert(0, li);
                 }

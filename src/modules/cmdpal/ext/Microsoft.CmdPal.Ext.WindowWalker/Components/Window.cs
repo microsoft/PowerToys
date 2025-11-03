@@ -163,7 +163,7 @@ internal sealed class Window
         {
             if (!NativeMethods.ShowWindow(Hwnd, ShowWindowCommand.Restore))
             {
-                // ShowWindow doesn't work if the process is running elevated: fallback to SendMessage
+                // ShowWindow doesn't work if the process is running elevated: fall back to SendMessage
                 _ = NativeMethods.SendMessage(Hwnd, Win32Constants.WM_SYSCOMMAND, Win32Constants.SC_RESTORE);
             }
         }
@@ -186,6 +186,62 @@ internal sealed class Window
     {
         Thread thread = new(new ThreadStart(CloseThisWindowHelper));
         thread.Start();
+    }
+
+    /// <summary>
+    /// Tries to get the window icon.
+    /// </summary>
+    /// <param name="icon">The window icon if found; otherwise, null.</param>
+    /// <returns>True if an icon was found; otherwise, false.</returns>
+    internal bool TryGetWindowIcon(out System.Drawing.Icon? icon)
+    {
+        icon = null;
+
+        if (hwnd == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        // Try WM_GETICON with SendMessageTimeout
+        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_BIG, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out var result) != 0 && result != 0)
+        {
+            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)result);
+            return true;
+        }
+
+        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        {
+            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)result);
+            return true;
+        }
+
+        if (NativeMethods.SendMessageTimeout(hwnd, Win32Constants.WM_GETICON, (UIntPtr)Win32Constants.ICON_SMALL2, IntPtr.Zero, Win32Constants.SMTO_ABORTIFHUNG, 100, out result) != 0 && result != 0)
+        {
+            icon = System.Drawing.Icon.FromHandle((IntPtr)result);
+            NativeMethods.DestroyIcon((IntPtr)result);
+            return true;
+        }
+
+        // Fallback to GetClassLongPtr
+        var iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICON);
+        if (iconHandle != IntPtr.Zero)
+        {
+            icon = System.Drawing.Icon.FromHandle(iconHandle);
+            NativeMethods.DestroyIcon((IntPtr)iconHandle);
+            return true;
+        }
+
+        iconHandle = NativeMethods.GetClassLongPtr(hwnd, Win32Constants.GCLP_HICONSM);
+        if (iconHandle != IntPtr.Zero)
+        {
+            icon = System.Drawing.Icon.FromHandle(iconHandle);
+            NativeMethods.DestroyIcon((IntPtr)iconHandle);
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -324,7 +380,7 @@ internal sealed class Window
 
             // Correct the process data if the window belongs to a uwp app hosted by 'ApplicationFrameHost.exe'
             // (This only works if the window isn't minimized. For minimized windows the required child window isn't assigned.)
-            if (string.Equals(_handlesToProcessCache[hWindow].Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
+            if (_handlesToProcessCache[hWindow].IsUwpAppFrameHost)
             {
                 new Task(() =>
                 {

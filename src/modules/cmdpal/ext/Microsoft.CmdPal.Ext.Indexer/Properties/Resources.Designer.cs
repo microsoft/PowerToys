@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Actions....
+        /// </summary>
+        internal static string Indexer_Command_Actions {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Browse.
         /// </summary>
         internal static string Indexer_Command_Browse {
@@ -84,6 +93,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Command_OpenFile {
             get {
                 return ResourceManager.GetString("Indexer_Command_OpenFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Windows Search settings.
+        /// </summary>
+        internal static string Indexer_Command_OpenIndexerSettings {
+            get {
+                return ResourceManager.GetString("Indexer_Command_OpenIndexerSettings", resourceCulture);
             }
         }
         
@@ -115,11 +133,29 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search all files.
+        /// </summary>
+        internal static string Indexer_Command_SearchAllFiles {
+            get {
+                return ResourceManager.GetString("Indexer_Command_SearchAllFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show in folder.
         /// </summary>
         internal static string Indexer_Command_ShowInFolder {
             get {
                 return ResourceManager.GetString("Indexer_Command_ShowInFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for &quot;{0}&quot; in files.
+        /// </summary>
+        internal static string Indexer_fallback_searchPage_title {
+            get {
+                return ResourceManager.GetString("Indexer_fallback_searchPage_title", resourceCulture);
             }
         }
         
@@ -142,6 +178,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Files and folders.
+        /// </summary>
+        internal static string Indexer_Filter_All {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files.
+        /// </summary>
+        internal static string Indexer_Filter_Files_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Files_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folders.
+        /// </summary>
+        internal static string Indexer_Filter_Folders_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Folders_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Find file from path.
         /// </summary>
         internal static string Indexer_Find_Path_fallback_display_title {
@@ -160,11 +223,75 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No items found.
+        /// </summary>
+        internal static string Indexer_NoResultsMessage {
+            get {
+                return ResourceManager.GetString("Indexer_NoResultsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing was found in the indexed locations.
+        ///You can try searching all files on this PC or adjust your indexing settings..
+        /// </summary>
+        internal static string Indexer_NoResultsMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_NoResultsMessageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory)..
+        /// </summary>
+        internal static string Indexer_NoSearchQueryMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_NoSearchQueryMessageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search for files and folders....
         /// </summary>
         internal static string Indexer_PlaceholderText {
             get {
                 return ResourceManager.GetString("Indexer_PlaceholderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Always on.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_AlwaysOn {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_AlwaysOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only when file path exist.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_FilePathExist {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_FilePathExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows file search results on the top-level search results.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_Mode {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Always off.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_Off {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
             }
         }
         

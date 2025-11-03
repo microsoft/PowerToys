@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
+using Windows.Win32;
+using Windows.Win32.UI.Shell;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -23,7 +24,7 @@ public class ShellLocalization
     /// </summary>
     /// <param name="path">Path to the shell item (e. g. shortcut 'File Explorer.lnk').</param>
     /// <returns>The localized name as string or <see cref="string.Empty"/>.</returns>
-    public string GetLocalizedName(string path)
+    public unsafe string GetLocalizedName(string path)
     {
         var lowerInvariantPath = path.ToLowerInvariant();
 
@@ -33,18 +34,29 @@ public class ShellLocalization
             return value;
         }
 
-        var shellItemType = ShellItemTypeConstants.ShellItemGuid;
-        var retCode = SHCreateItemFromParsingName(path, nint.Zero, ref shellItemType, out var shellItem);
-        if (retCode != 0)
+        void* shellItemPtrVoid = null;
+        try
+        {
+            var retCode = PInvoke.SHCreateItemFromParsingName(path, null, typeof(IShellItem).GUID, out shellItemPtrVoid).ThrowOnFailure();
+            using var shellItemHandle = new SafeComHandle((IntPtr)shellItemPtrVoid);
+            IShellItem* shellItemPtr = (IShellItem*)shellItemPtrVoid;
+
+            var hr = shellItemPtr->GetDisplayName(SIGDN.SIGDN_NORMALDISPLAY, out var filenamePtr);
+
+            var filename = ComFreeHelper.GetStringAndFree(hr, filenamePtr);
+
+            if (filename is null)
+            {
+                return string.Empty;
+            }
+
+            _ = _localizationCache.TryAdd(lowerInvariantPath, filename);
+            return filename;
+        }
+        catch (Exception)
         {
             return string.Empty;
         }
-
-        shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out var filename);
-
-        _ = _localizationCache.TryAdd(lowerInvariantPath, filename);
-
-        return filename;
     }
 
     /// <summary>

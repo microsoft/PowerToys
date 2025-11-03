@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -25,6 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HostsEncoding Encoding { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool NoLeadingSpaces { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool BackupHosts { get; set; }
 
         public string BackupPath { get; set; }
@@ -42,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            NoLeadingSpaces = false;
             BackupHosts = true;
             BackupPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\drivers\etc");
             DeleteBackupsMode = HostsDeleteBackupMode.Age;

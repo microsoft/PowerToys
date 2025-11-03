@@ -185,13 +185,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool AnimateZoom
         {
-            get => _zoomItSettings.Properties.AnimnateZoom.Value;
+            get => _zoomItSettings.Properties.AnimateZoom.Value;
             set
             {
-                if (_zoomItSettings.Properties.AnimnateZoom.Value != value)
+                if (_zoomItSettings.Properties.AnimateZoom.Value != value)
                 {
-                    _zoomItSettings.Properties.AnimnateZoom.Value = value;
+                    _zoomItSettings.Properties.AnimateZoom.Value = value;
                     OnPropertyChanged(nameof(AnimateZoom));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool SmoothImage
+        {
+            get => _zoomItSettings.Properties.SmoothImage.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SmoothImage.Value != value)
+                {
+                    _zoomItSettings.Properties.SmoothImage.Value = value;
+                    OnPropertyChanged(nameof(SmoothImage));
                     NotifySettingsChanged();
                 }
             }

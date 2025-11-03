@@ -5,6 +5,7 @@
 using System;
 using System.Text;
 using System.Threading;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
@@ -77,12 +78,15 @@ public static class DefaultBrowserInfo
             try
             {
                 var progId = GetRegistryValue(
-                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
-                    "ProgId");
+                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoiceLatest\ProgId",
+                    "ProgId")
+                    ?? GetRegistryValue(
+                        @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
+                        "ProgId");
                 var appName = GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}\Application", "ApplicationName")
                     ?? GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}", "FriendlyTypeName");
 
-                if (appName != null)
+                if (appName is not null)
                 {
                     // Handle indirect strings:
                     if (appName.StartsWith('@'))
@@ -170,6 +174,7 @@ public static class DefaultBrowserInfo
                 if (!_errorLogged)
                 {
                     // Log.Exception("Exception when retrieving browser path/name. Path and Name are set to use Microsoft Edge.", e, typeof(DefaultBrowserInfo));
+                    Logger.LogError("Exception when retrieving browser path/name. Path and Name are set to use Microsoft Edge.");
                     _errorLogged = true;
                 }
             }
@@ -186,17 +191,20 @@ public static class DefaultBrowserInfo
                 {
                     var buffer = stackalloc char[128];
                     var capacity = 128;
-                    void* reserved = null;
+                    var firstChar = str[0];
+                    var strPtr = &firstChar;
 
                     // S_OK == 0
-                    if (global::Windows.Win32.PInvoke.SHLoadIndirectString(
-                            str,
+                    fixed (char* pszSourceLocal = str)
+                    {
+                        if (global::Windows.Win32.PInvoke.SHLoadIndirectString(
+                            pszSourceLocal,
                             buffer,
                             (uint)capacity,
-                            ref reserved)
-                        == 0)
-                    {
-                        return new string(buffer);
+                            default) == 0)
+                        {
+                            return new string(buffer);
+                        }
                     }
                 }
 

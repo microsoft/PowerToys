@@ -13,6 +13,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/processApi.h>
 #include <common/utils/elevation.h>
+#include <common/utils/logger_helper.h>
 
 HINSTANCE g_hInst_MouseWithoutBorders = 0;
 
@@ -409,9 +410,12 @@ public:
     {
         app_name = L"MouseWithoutBorders";
         app_key = app_name;
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-        logFilePath.append(LogSettings::mouseWithoutBordersLogPath);
-        Logger::init(LogSettings::mouseWithoutBordersLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::mouseWithoutBordersLoggerName);
+
+        std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        oldLogPath.append("LogsModuleInterface");
+        LoggerHelpers::delete_old_log_folder(oldLogPath);
 
         try
         {
@@ -552,6 +556,61 @@ public:
         return m_enabled;
     }
 
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        constexpr size_t num_hotkeys = 4; // We have 4 hotkeys
+
+        if (hotkeys && buffer_size >= num_hotkeys)
+        {
+            PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(MODULE_NAME);
+
+            // Cache the raw JSON object to avoid multiple parsing
+            json::JsonObject root_json = values.get_raw_json();
+            json::JsonObject properties_json = root_json.GetNamedObject(L"properties", json::JsonObject{});
+
+            size_t hotkey_index = 0;
+
+            // Helper lambda to extract hotkey from JSON properties
+            auto extract_hotkey = [&](const wchar_t* property_name) -> Hotkey {
+                if (properties_json.HasKey(property_name))
+                {
+                    try
+                    {
+                        json::JsonObject hotkey_json = properties_json.GetNamedObject(property_name);
+
+                        // Extract hotkey properties directly from JSON
+                        bool win = hotkey_json.GetNamedBoolean(L"win", false);
+                        bool ctrl = hotkey_json.GetNamedBoolean(L"ctrl", false);
+                        bool alt = hotkey_json.GetNamedBoolean(L"alt", false);
+                        bool shift = hotkey_json.GetNamedBoolean(L"shift", false);
+                        unsigned char key = static_cast<unsigned char>(
+                            hotkey_json.GetNamedNumber(L"code", 0));
+
+                        return { win, ctrl, shift, alt, key };
+                    }
+                    catch (...)
+                    {
+                        // If parsing individual hotkey fails, use defaults
+                        return { false, false, false, false, 0 };
+                    }
+                }
+                else
+                {
+                    // Property doesn't exist, use defaults
+                    return { false, false, false, false, 0 };
+                }
+            };
+
+            // Extract all hotkeys using the optimized helper
+            hotkeys[hotkey_index++] = extract_hotkey(L"ToggleEasyMouseShortcut"); // [0] Toggle Easy Mouse
+            hotkeys[hotkey_index++] = extract_hotkey(L"LockMachineShortcut");     // [1] Lock Machine
+            hotkeys[hotkey_index++] = extract_hotkey(L"Switch2AllPCShortcut");    // [2] Switch to All PCs
+            hotkeys[hotkey_index++] = extract_hotkey(L"ReconnectShortcut");       // [3] Reconnect
+        }
+
+        return num_hotkeys;
+    }
+
     void launch_add_firewall_process()
     {
         Logger::trace(L"Starting Process to add firewall rule");
@@ -567,7 +626,7 @@ public:
         executable_args.append(L"\" & echo \"Adding an inbound firewall rule for PowerToys.MouseWithoutBorders.exe\"");
         executable_args.append(L" & netsh advfirewall firewall add rule name=\"PowerToys.MouseWithoutBorders\" dir=in action=allow program=\"");
         executable_args.append(executable_path);
-        executable_args.append(L"\" enable=yes remoteip=LocalSubnet profile=any protocol=tcp & pause\"");
+        executable_args.append(L"\" enable=yes remoteip=any profile=any protocol=tcp & pause\"");
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };

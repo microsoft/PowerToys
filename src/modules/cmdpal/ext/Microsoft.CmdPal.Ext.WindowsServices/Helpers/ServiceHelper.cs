@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsServices.Commands;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Helpers;
 
 public static class ServiceHelper
 {
-    public static IEnumerable<ListItem> Search(string search)
+    public static IEnumerable<ListItem> Search(string search, string filterId)
     {
         var services = ServiceController.GetServices().OrderBy(s => s.DisplayName);
         IEnumerable<ServiceController> serviceList = [];
@@ -43,10 +44,25 @@ public static class ServiceHelper
             serviceList = servicesStartsWith.Concat(servicesContains);
         }
 
+        switch (filterId)
+        {
+            case "running":
+                serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Running);
+                break;
+            case "stopped":
+                serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Stopped);
+                break;
+            case "paused":
+                serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Paused);
+                break;
+            case "all":
+                break;
+        }
+
         var result = serviceList.Select(s =>
         {
             var serviceResult = ServiceResult.CreateServiceController(s);
-            if (serviceResult == null)
+            if (serviceResult is null)
             {
                 return null;
             }
@@ -72,16 +88,16 @@ public static class ServiceHelper
                 ];
             }
 
-            IconInfo icon = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
+            IconInfo icon = Icons.PlayIcon;
             switch (s.Status)
             {
                 case ServiceControllerStatus.Stopped:
-                    icon = new("\U0001F534"); // unicode LARGE RED CIRCLE
+                    icon = Icons.StopIcon;
                     break;
                 case ServiceControllerStatus.Running:
                     break;
                 case ServiceControllerStatus.Paused:
-                    icon = new("\u23F8"); // unicode DOUBLE VERTICAL BAR, aka, "Pause"
+                    icon = Icons.PauseIcon;
                     break;
             }
 
@@ -97,7 +113,7 @@ public static class ServiceHelper
                 // ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
                 // IcoPath = icoPath,
             };
-        }).Where(s => s != null);
+        }).Where(s => s is not null);
 
         return result;
     }
@@ -147,12 +163,14 @@ public static class ServiceHelper
                 // TODO GH #108 We need to figure out some logging
                 // contextAPI.ShowNotification(GetLocalizedErrorMessage(action), serviceResult.DisplayName);
                 // Log.Error($"The command returned {exitCode}", MethodBase.GetCurrentMethod().DeclaringType);
+                Logger.LogError($"The command returned {exitCode}");
             }
         }
         catch (Win32Exception ex)
         {
             // TODO GH #108 We need to figure out some logging
             // Log.Error(ex.Message, MethodBase.GetCurrentMethod().DeclaringType);
+            Logger.LogError($"Failed to change service '{serviceResult.DisplayName}' status to {action}: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168, SA1005
@@ -173,6 +191,7 @@ public static class ServiceHelper
         catch (Exception ex)
         {
             // TODO GH #108 We need to figure out some logging
+            Logger.LogError($"Failed to open services.msc: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168, SA1005

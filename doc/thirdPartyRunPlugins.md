@@ -46,6 +46,11 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [QuickNotes](https://github.com/ruslanlap/CommunityPowerToysRunPlugin-QuickNotes) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and search notes directly from PowerToys Run. |
 | [Weather](https://github.com/ruslanlap/PowerToysRun-Weather) | [ruslanlap](https://github.com/ruslanlap) | Get real-time weather information directly from PowerToys Run. |
 | [Pomodoro](https://github.com/ruslanlap/PowerToysRun-Pomodoro) | [ruslanlap](https://github.com/ruslanlap) | Manage Pomodoro productivity sessions directly from PowerToys Run. |
+| [Definition](https://github.com/ruslanlap/PowerToysRun-Definition) | [ruslanlap](https://github.com/ruslanlap) | Lookup word definitions, phonetics, and synonyms directly in PowerToys Run. |
+| [Hotkeys](https://github.com/ruslanlap/PowerToysRun-Hotkeys) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and trigger custom keyboard shortcuts directly from PowerToys Run. |
+| [RandomGen](https://github.com/ruslanlap/PowerToysRun-RandomGen) | [ruslanlap](https://github.com/ruslanlap) | 🎲 Generate random data instantly with a single keystroke. Perfect for developers, testers, designers, and anyone who needs quick access to random data. Features include secure passwords, PINs, names, business data, dates, numbers, GUIDs, color codes, and more. Especially useful for designers who need random color codes and placeholder content. |
+| [Open With Cursor](https://github.com/VictorNoxx/PowerToys-Run-Cursor/) | [VictorNoxx](https://github.com/VictorNoxx) | Open Visual Studio, VS Code recents with Cursor AI |
+| [CheatSheets](https://github.com/ruslanlap/PowerToysRun-CheatSheets) | [ruslanlap](https://github.com/ruslanlap) | 📚 Find cheat sheets and command examples instantly from tldr pages, cheat.sh, and devhints.io. Features include favorites system, categories, offline mode, and smart caching. |
 
 ## Extending software plugins
 
@@ -68,3 +73,6 @@ Below are community created plugins that target a website or software.  They are
 | [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
 | [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |
 | [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
+| [Linear](https://github.com/vednig/powertoys-linear) | [vednig](https://github.com/vednig) | Create Linear Issues directly from Powertoys Run |
+| [PerplexitySearchShortcut](https://github.com/0x6f677548/PowerToys-Run-PerplexitySearchShortcut) | [0x6f677548](https://github.com/0x6f677548) | Search Perplexity |
+| [SpeedTest](https://github.com/ruslanlap/PowerToysRun-SpeedTest) | [ruslanlap](https://github.com/ruslanlap) | One-command internet speed tests with real-time results, modern UI, and shareable links. |

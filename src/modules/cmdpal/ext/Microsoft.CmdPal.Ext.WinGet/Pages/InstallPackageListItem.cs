@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
@@ -31,9 +32,18 @@ public partial class InstallPackageListItem : ListItem
     {
         _package = package;
 
-        var version = _package.DefaultInstallVersion;
+        PackageVersionInfo? version = null;
+        try
+        {
+            version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Could not get package version", e);
+        }
+
         var versionTagText = "Unknown";
-        if (version != null)
+        if (version is not null)
         {
             versionTagText = version.Version == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : version.Version;
         }
@@ -49,18 +59,34 @@ public partial class InstallPackageListItem : ListItem
 
     private Details? BuildDetails(PackageVersionInfo? version)
     {
-        var metadata = version?.GetCatalogPackageMetadata();
-        if (metadata != null)
+        CatalogPackageMetadata? metadata = null;
+        try
         {
-            if (metadata.Tags.Where(t => t.Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase)).Any())
+            metadata = version?.GetCatalogPackageMetadata();
+        }
+        catch (COMException ex)
+        {
+            Logger.LogWarning($"GetCatalogPackageMetadata error {ex.ErrorCode}");
+        }
+
+        if (metadata is not null)
+        {
+            for (var i = 0; i < metadata.Tags.Count; i++)
             {
-                if (_installCommand != null)
+                if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    _installCommand.SkipDependencies = true;
+                    if (_installCommand is not null)
+                    {
+                        _installCommand.SkipDependencies = true;
+                    }
+
+                    break;
                 }
             }
 
-            var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
+            var description = string.IsNullOrEmpty(metadata.Description) ?
+                metadata.ShortDescription :
+                metadata.Description;
             var detailsBody = $"""
 
 {description}
@@ -106,9 +132,11 @@ public partial class InstallPackageListItem : ListItem
             // These can be l o n g
             { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
-        var docs = metadata.Documentations.ToArray();
-        foreach (var item in docs)
+        var docs = metadata.Documentations;
+        var count = docs.Count;
+        for (var i = 0; i < count; i++)
         {
+            var item = docs[i];
             simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
         }
 
@@ -131,7 +159,7 @@ public partial class InstallPackageListItem : ListItem
             }
         }
 
-        if (metadata.Tags.Any())
+        if (metadata.Tags.Count > 0)
         {
             DetailsElement pair = new()
             {
@@ -146,28 +174,49 @@ public partial class InstallPackageListItem : ListItem
 
     private async void UpdatedInstalledStatus()
     {
-        var status = await _package.CheckInstalledStatusAsync();
-        var isInstalled = _package.InstalledVersion != null;
+        try
+        {
+            var status = await _package.CheckInstalledStatusAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            ExtensionHost.LogMessage($"[WinGet] UpdatedInstalledStatus throw exception: {ex.Message}");
+            Logger.LogError($"[WinGet] UpdatedInstalledStatus throw exception", ex);
+            return;
+        }
+
+        var isInstalled = _package.InstalledVersion is not null;
+
+        var installedState = isInstalled ?
+            (_package.IsUpdateAvailable ?
+                PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
+            PackageInstallCommandState.Install;
 
         // might be an uninstall command
-        InstallPackageCommand installCommand = new(_package, isInstalled);
+        InstallPackageCommand installCommand = new(_package, installedState);
 
         if (isInstalled)
         {
-            this.Icon = InstallPackageCommand.CompletedIcon;
+            this.Icon = installCommand.Icon;
             this.Command = new NoOpCommand();
             List<IContextItem> contextMenu = [];
             CommandContextItem uninstallContextItem = new(installCommand)
             {
                 IsCritical = true,
-                Icon = InstallPackageCommand.DeleteIcon,
+                Icon = Icons.DeleteIcon,
             };
 
-            if (WinGetStatics.AppSearchCallback != null)
+            if (WinGetStatics.AppSearchCallback is not null)
             {
                 var callback = WinGetStatics.AppSearchCallback;
-                var installedApp = callback(_package.DefaultInstallVersion == null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
-                if (installedApp != null)
+                var installedApp = callback(_package.DefaultInstallVersion is null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
+                if (installedApp is not null)
                 {
                     this.Command = installedApp.Command;
                     contextMenu = [.. installedApp.MoreCommands];
@@ -180,7 +229,7 @@ public partial class InstallPackageListItem : ListItem
         }
 
         // didn't find the app
-        _installCommand = new InstallPackageCommand(_package, isInstalled);
+        _installCommand = new InstallPackageCommand(_package, installedState);
         this.Command = _installCommand;
 
         Icon = _installCommand.Icon;
@@ -203,10 +252,10 @@ public partial class InstallPackageListItem : ListItem
             Stopwatch s = new();
             Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
             s.Start();
-            var refs = WinGetStatics.AvailableCatalogs.ToArray();
-
-            foreach (var catalog in refs)
+            var refs = WinGetStatics.AvailableCatalogs;
+            for (var i = 0; i < refs.Count; i++)
             {
+                var catalog = refs[i];
                 var operation = catalog.RefreshPackageCatalogAsync();
                 operation.Wait();
             }

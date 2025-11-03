@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,15 +18,19 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 
 internal sealed partial class ClipboardHistoryListPage : ListPage
 {
+    private readonly SettingsManager _settingsManager;
     private readonly ObservableCollection<ClipboardItem> clipboardHistory;
     private readonly string _defaultIconPath;
 
-    public ClipboardHistoryListPage()
+    public ClipboardHistoryListPage(SettingsManager settingsManager)
     {
+        ArgumentNullException.ThrowIfNull(settingsManager);
+
+        _settingsManager = settingsManager;
         clipboardHistory = [];
         _defaultIconPath = string.Empty;
-        Icon = new("\uF0E3"); // ClipboardList icon
-        Name = "Clipboard History";
+        Icon = Icons.ClipboardListIcon;
+        Name = Properties.Resources.clipboard_history_page_name;
         Id = "com.microsoft.cmdpal.clipboardHistory";
         ShowDetails = true;
 
@@ -54,7 +59,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         try
         {
             var allowClipboardHistory = Registry.GetValue(registryKey, "AllowClipboardHistory", null);
-            return allowClipboardHistory != null ? (int)allowClipboardHistory == 0 : false;
+            return allowClipboardHistory is not null ? (int)allowClipboardHistory == 0 : false;
         }
         catch (Exception)
         {
@@ -84,11 +89,11 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 if (item.Content.Contains(StandardDataFormats.Text))
                 {
                     var text = await item.Content.GetTextAsync();
-                    items.Add(new ClipboardItem { Content = text, Item = item });
+                    items.Add(new ClipboardItem { Settings = _settingsManager, Content = text, Item = item });
                 }
                 else if (item.Content.Contains(StandardDataFormats.Bitmap))
                 {
-                    items.Add(new ClipboardItem { Item = item });
+                    items.Add(new ClipboardItem { Settings = _settingsManager, Item = item });
                 }
             }
 
@@ -100,7 +105,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 {
                     var imageReceived = await item.Item.Content.GetBitmapAsync();
 
-                    if (imageReceived != null)
+                    if (imageReceived is not null)
                     {
                         item.ImageData = imageReceived;
                     }
@@ -113,7 +118,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         {
             // TODO GH #108 We need to figure out some logging
             // Logger.LogError("Loading clipboard history failed", ex);
-            ExtensionHost.ShowStatus(new StatusMessage() { Message = "Loading clipboard history failed", State = MessageState.Error }, StatusContext.Page);
+            ExtensionHost.ShowStatus(new StatusMessage() { Message = Properties.Resources.clipboard_failed_to_load, State = MessageState.Error }, StatusContext.Page);
             ExtensionHost.LogMessage(ex.ToString());
         }
     }
@@ -141,9 +146,9 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         for (var i = 0; i < clipboardHistory.Count; i++)
         {
             var item = clipboardHistory[i];
-            if (item != null)
+            if (item is not null)
             {
-                listItems.Add(item.ToListItem());
+                listItems.Add(new ClipboardListItem(item, _settingsManager));
             }
         }
 

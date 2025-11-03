@@ -1,0 +1,132 @@
+# Minimal UI Tests Build Template
+# This template only builds UI test projects and stages their test DLLs for consumption by test pipelines
+
+parameters:
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+  - name: condition
+    type: string
+    default: ''
+  - name: dependsOn
+    type: object
+    default: []
+  - name: pool
+    type: object
+    default: []
+  - name: variables
+    type: object
+    default: {}
+  - name: uiTestModules
+    type: object
+    default: []
+
+jobs:
+- job: BuildUITests
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ each platform in parameters.buildPlatforms }}:
+          ${{ config }}_${{ platform }}:
+            BuildConfiguration: ${{ config }}
+            BuildPlatform: ${{ platform }}
+  variables:
+    JobOutputDirectory: $(Build.ArtifactStagingDirectory)
+    LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
+    JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform)
+    ${{ insert }}: ${{ parameters.variables }}
+  displayName: Build UI Tests Only
+  timeoutInMinutes: 60
+  cancelTimeoutInMinutes: 1
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)
+      targetPath: $(Build.ArtifactStagingDirectory)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+    fetchTags: false
+    fetchDepth: 1
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '9.0'
+
+  - template: .\steps-restore-nuget.yml
+
+  - task: NuGetCommand@2
+    displayName: Restore solution-level NuGet packages
+    inputs:
+      command: restore
+      feedsToUse: config
+      configPath: nuget.config
+      restoreSolution: PowerToys.sln
+      restoreDirectory: '$(Build.SourcesDirectory)\packages'
+
+  # Build all UI test projects if no specific modules are specified
+  - ${{ if eq(length(parameters.uiTestModules), 0) }}:
+    - task: VSBuild@1
+      displayName: Build UI Test Projects
+      inputs:
+        solution: '**/*UITest*.csproj'
+        vsVersion: 17.0
+        msbuildArgs: >-
+          -restore
+          -graph
+          /p:RestorePackagesConfig=true
+          /p:BuildProjectReferences=true
+          /p:CIBuild=true
+          /bl:$(LogOutputDirectory)\build-all-uitests.binlog
+          $(NUGET_RESTORE_MSBUILD_ARGS)
+        platform: $(BuildPlatform)
+        configuration: $(BuildConfiguration)
+        msbuildArchitecture: x64
+        maximumCpuCount: true
+
+  # Build specific UI test modules
+  - ${{ if ne(length(parameters.uiTestModules), 0) }}:
+    - ${{ each module in parameters.uiTestModules }}:
+      - task: VSBuild@1
+        displayName: 'Build UI Test Module: ${{ module }}'
+        inputs:
+          solution: '**/*${{ module }}*.csproj'
+          vsVersion: 17.0
+          msbuildArgs: >-
+            -restore
+            -graph
+            /p:RestorePackagesConfig=true
+            /p:BuildProjectReferences=true
+            /p:CIBuild=true
+            /bl:$(LogOutputDirectory)\build-${{ module }}.binlog
+            $(NUGET_RESTORE_MSBUILD_ARGS)
+          platform: $(BuildPlatform)
+          configuration: $(BuildConfiguration)
+          msbuildArchitecture: x64
+          maximumCpuCount: true
+
+  # Stage test project outputs with directory structure
+  - task: CopyFiles@2
+    displayName: Stage UI Test Build Outputs
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: '**/$(BuildPlatform)/$(BuildConfiguration)/tests/**/*'
+      targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
+  - publish: $(JobOutputDirectory)
+    artifact: $(JobOutputArtifactName)
+    displayName: Publish UI Test artifacts
+    condition: always()

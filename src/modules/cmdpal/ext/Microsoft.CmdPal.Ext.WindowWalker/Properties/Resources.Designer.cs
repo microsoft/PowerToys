@@ -124,7 +124,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Info: Killing the Explorer process isn&apos;t possible..
+        ///   Looks up a localized string similar to Info: Ending the Explorer process isn&apos;t possible..
         /// </summary>
         public static string windowwalker_ExplorerInfoTitle {
             get {
@@ -133,7 +133,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kill process.
+        ///   Looks up a localized string similar to End task.
         /// </summary>
         public static string windowwalker_Kill {
             get {
@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your are going to kill the following process:.
+        ///   Looks up a localized string similar to The following process will be ended:.
         /// </summary>
         public static string windowwalker_KillMessage {
             get {
@@ -160,7 +160,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kill process confirmation.
+        ///   Looks up a localized string similar to End task confirmation.
         /// </summary>
         public static string windowwalker_KillMessageTitle {
             get {
@@ -183,6 +183,15 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         public static string windowwalker_name {
             get {
                 return ResourceManager.GetString("windowwalker_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No open windows found.
+        /// </summary>
+        public static string windowwalker_NoResultsMessage {
+            get {
+                return ResourceManager.GetString("windowwalker_NoResultsMessage", resourceCulture);
             }
         }
         
@@ -390,6 +399,24 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         public static string windowwalker_SettingTagPid {
             get {
                 return ResourceManager.GetString("windowwalker_SettingTagPid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use window icons.
+        /// </summary>
+        public static string windowwalker_SettingUseWindowIcon {
+            get {
+                return ResourceManager.GetString("windowwalker_SettingUseWindowIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the actual window icon instead of the process icon.
+        /// </summary>
+        public static string windowwalker_SettingUseWindowIcon_Description {
+            get {
+                return ResourceManager.GetString("windowwalker_SettingUseWindowIcon_Description", resourceCulture);
             }
         }
     }

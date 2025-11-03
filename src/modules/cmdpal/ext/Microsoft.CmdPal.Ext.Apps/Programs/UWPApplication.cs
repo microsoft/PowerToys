@@ -5,22 +5,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
+using Windows.System;
+using Windows.Win32;
+using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
+using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public class UWPApplication : IProgram
+public class UWPApplication : IUWPApplication
 {
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -69,55 +70,85 @@ public class UWPApplication : IProgram
         return Resources.packaged_application;
     }
 
-    public List<CommandContextItem> GetCommands()
+    public string GetAppIdentifier()
     {
-        List<CommandContextItem> commands = new List<CommandContextItem>();
+        // Use UserModelId for UWP apps as it's unique
+        return UserModelId;
+    }
+
+    public List<IContextItem> GetCommands()
+    {
+        List<IContextItem> commands = [];
 
         if (CanRunElevated)
         {
             commands.Add(
                 new CommandContextItem(
-                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true)));
+                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true))
+                {
+                    RequestedShortcut = KeyChords.RunAsAdministrator,
+                });
 
             // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
         }
 
         commands.Add(
             new CommandContextItem(
-                new OpenPathCommand(Location)
+                new CopyPathCommand(Location))
+            {
+                RequestedShortcut = KeyChords.CopyFilePath,
+            });
+
+        commands.Add(
+            new CommandContextItem(
+                new OpenFileCommand(Location)
                 {
-                    Name = Resources.open_containing_folder,
-                    Icon = new("\ue838"),
-                }));
+                    Icon = new("\uE838"),
+                    Name = Resources.open_location,
+                })
+            {
+                RequestedShortcut = KeyChords.OpenFileLocation,
+            });
 
         commands.Add(
         new CommandContextItem(
-            new OpenInConsoleCommand(Package.Location)));
+            new OpenInConsoleCommand(Package.Location))
+        {
+            RequestedShortcut = KeyChords.OpenInConsole,
+        });
+
+        commands.Add(
+            new CommandContextItem(
+                new UninstallApplicationConfirmation(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                IsCritical = true,
+            });
 
         return commands;
     }
 
-    public UWPApplication(IAppxManifestApplication manifestApp, UWP package)
+    internal unsafe UWPApplication(IAppxManifestApplication* manifestApp, UWP package)
     {
         ArgumentNullException.ThrowIfNull(manifestApp);
 
-        var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
-        UserModelId = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUserModelId);
+        var hr = manifestApp->GetAppUserModelId(out var tmpUserModelIdPtr);
+        UserModelId = ComFreeHelper.GetStringAndFree(hr, tmpUserModelIdPtr);
 
-        hr = manifestApp.GetAppUserModelId(out var tmpUniqueIdentifier);
-        UniqueIdentifier = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUniqueIdentifier);
+        manifestApp->GetAppUserModelId(out var tmpUniqueIdentifierPtr);
+        UniqueIdentifier = ComFreeHelper.GetStringAndFree(hr, tmpUniqueIdentifierPtr);
 
-        hr = manifestApp.GetStringValue("DisplayName", out var tmpDisplayName);
-        DisplayName = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpDisplayName);
+        manifestApp->GetStringValue("DisplayName", out var tmpDisplayNamePtr);
+        DisplayName = ComFreeHelper.GetStringAndFree(hr, tmpDisplayNamePtr);
 
-        hr = manifestApp.GetStringValue("Description", out var tmpDescription);
-        Description = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpDescription);
+        manifestApp->GetStringValue("Description", out var tmpDescriptionPtr);
+        Description = ComFreeHelper.GetStringAndFree(hr, tmpDescriptionPtr);
 
-        hr = manifestApp.GetStringValue("BackgroundColor", out var tmpBackgroundColor);
-        BackgroundColor = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpBackgroundColor);
+        manifestApp->GetStringValue("BackgroundColor", out var tmpBackgroundColorPtr);
+        BackgroundColor = ComFreeHelper.GetStringAndFree(hr, tmpBackgroundColorPtr);
 
-        hr = manifestApp.GetStringValue("EntryPoint", out var tmpEntryPoint);
-        EntryPoint = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpEntryPoint);
+        manifestApp->GetStringValue("EntryPoint", out var tmpEntryPointPtr);
+        EntryPoint = ComFreeHelper.GetStringAndFree(hr, tmpEntryPointPtr);
 
         Package = package ?? throw new ArgumentNullException(nameof(package));
 
@@ -156,8 +187,9 @@ public class UWPApplication : IProgram
                         return true;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogError(ex.Message);
                 }
             }
         }
@@ -165,7 +197,26 @@ public class UWPApplication : IProgram
         return false;
     }
 
-    internal string ResourceFromPri(string packageFullName, string resourceReference)
+    private static string TryLoadIndirectString(string source, Span<char> buffer, string errorContext)
+    {
+        try
+        {
+            PInvoke.SHLoadIndirectString(source, buffer).ThrowOnFailure();
+
+            var len = buffer.IndexOf('\0');
+            var loaded = len >= 0
+                ? buffer[..len].ToString()
+                : buffer.ToString();
+            return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Unable to load resource {source} : {errorContext} : {ex.Message}");
+            return string.Empty;
+        }
+    }
+
+    internal unsafe string ResourceFromPri(string packageFullName, string resourceReference)
     {
         const string prefix = "ms-resource:";
 
@@ -199,30 +250,18 @@ public class UWPApplication : IProgram
                 parsedFallback = prefix + "///" + key;
             }
 
-            var outBuffer = new StringBuilder(128);
+            Span<char> outBuffer = stackalloc char[1024];
             var source = $"@{{{packageFullName}? {parsed}}}";
-            var capacity = (uint)outBuffer.Capacity;
-            var hResult = SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
-            if (hResult != HRESULT.S_OK)
-            {
-                if (!string.IsNullOrEmpty(parsedFallback))
-                {
-                    var sourceFallback = $"@{{{packageFullName}? {parsedFallback}}}";
-                    hResult = SHLoadIndirectString(sourceFallback, outBuffer, capacity, IntPtr.Zero);
-                    if (hResult == HRESULT.S_OK)
-                    {
-                        var loaded = outBuffer.ToString();
-                        if (!string.IsNullOrEmpty(loaded))
-                        {
-                            return loaded;
-                        }
-                        else
-                        {
-                            return string.Empty;
-                        }
-                    }
-                }
 
+            var loaded = TryLoadIndirectString(source, outBuffer, resourceReference);
+
+            if (!string.IsNullOrEmpty(loaded))
+            {
+                return loaded;
+            }
+
+            if (string.IsNullOrEmpty(parsedFallback))
+            {
                 // https://github.com/Wox-launcher/Wox/issues/964
                 // known hresult 2147942522:
                 // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
@@ -231,18 +270,9 @@ public class UWPApplication : IProgram
                 // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
                 return string.Empty;
             }
-            else
-            {
-                var loaded = outBuffer.ToString();
-                if (!string.IsNullOrEmpty(loaded))
-                {
-                    return loaded;
-                }
-                else
-                {
-                    return string.Empty;
-                }
-            }
+
+            var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
+            return TryLoadIndirectString(sourceFallback, outBuffer, $"{resourceReference} (fallback)");
         }
         else
         {
@@ -257,13 +287,12 @@ public class UWPApplication : IProgram
             { PackageVersion.Windows8, "SmallLogo" },
         };
 
-    internal string LogoUriFromManifest(IAppxManifestApplication app)
+    internal unsafe string LogoUriFromManifest(IAppxManifestApplication* app)
     {
         if (_logoKeyFromVersion.TryGetValue(Package.Version, out var key))
         {
-            var hr = app.GetStringValue(key, out var logoUriFromApp);
-            _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUriFromApp);
-            return logoUriFromApp;
+            var hr = app->GetStringValue(key, out var logoUriFromAppPtr);
+            return ComFreeHelper.GetStringAndFree(hr, logoUriFromAppPtr);
         }
         else
         {
@@ -287,7 +316,7 @@ public class UWPApplication : IProgram
     private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -314,20 +343,27 @@ public class UWPApplication : IProgram
                 }
             }
 
-            var selectedIconPath = paths.FirstOrDefault(File.Exists);
-            if (!string.IsNullOrEmpty(selectedIconPath))
+            // By working from the highest resolution to the lowest, we make
+            // sure that we use the highest quality possible icon for the app.
+            //
+            // FirstOrDefault would result in us using the 1x scaled icon
+            // always, which is usually too small for our needs.
+            for (var i = paths.Count - 1; i >= 0; i--)
             {
-                LogoPath = selectedIconPath;
-                if (highContrast)
+                if (File.Exists(paths[i]))
                 {
-                    LogoType = LogoType.HighContrast;
-                }
-                else
-                {
-                    LogoType = LogoType.Colored;
-                }
+                    LogoPath = paths[i];
+                    if (highContrast)
+                    {
+                        LogoType = LogoType.HighContrast;
+                    }
+                    else
+                    {
+                        LogoType = LogoType.Colored;
+                    }
 
-                return true;
+                    return true;
+                }
             }
         }
 
@@ -337,13 +373,13 @@ public class UWPApplication : IProgram
     private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
             var paths = new List<string> { };
             const int appIconSize = 36;
-            var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
+            var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 };
             var pathFactorPairs = new Dictionary<string, int>();
 
             foreach (var factor in targetSizes)
@@ -368,7 +404,23 @@ public class UWPApplication : IProgram
                 }
             }
 
-            var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
+            // Sort paths by distance to desired app icon size
+            var selectedIconPath = string.Empty;
+            var closestDistance = int.MaxValue;
+
+            foreach (var p in paths)
+            {
+                if (File.Exists(p) && pathFactorPairs.TryGetValue(p, out var factor))
+                {
+                    var distance = Math.Abs(factor - appIconSize);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        selectedIconPath = p;
+                    }
+                }
+            }
+
             if (!string.IsNullOrEmpty(selectedIconPath))
             {
                 LogoPath = selectedIconPath;
@@ -462,7 +514,7 @@ public class UWPApplication : IProgram
         }
         else
         {
-            // for C:\Windows\MiracastView etc
+            // for C:\Windows\MiracastView, etc.
             path = Path.Combine(Package.Location, "Assets", uri);
         }
 
@@ -489,6 +541,25 @@ public class UWPApplication : IProgram
             LogoPath = string.Empty;
             LogoType = LogoType.Error;
         }
+    }
+
+    public AppItem ToAppItem()
+    {
+        var app = this;
+        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
+        var item = new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = UWPApplication.Type(),
+            IcoPath = iconPath,
+            DirPath = app.Location,
+            UserModelId = app.UserModelId,
+            IsPackaged = true,
+            Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
+        };
+        return item;
     }
 
     /*
@@ -531,7 +602,7 @@ public class UWPApplication : IProgram
 
             var group = new DrawingGroup();
             var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
-            if (converted != null)
+            if (converted is not null)
             {
                 var color = (Color)converted;
                 var brush = new SolidColorBrush(color);

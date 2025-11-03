@@ -140,4 +140,72 @@
   <data name="calculator_copy_command_name" xml:space="preserve">
     <value>Copy</value>
   </data>
+  <data name="calculator_calculation_failed_title" xml:space="preserve">
+    <value>Failed to calculate the input</value>
+  </data>
+  <data name="calculator_division_by_zero" xml:space="preserve">
+    <value>Expression contains division by zero</value>
+  </data>
+  <data name="calculator_expression_not_complete" xml:space="preserve">
+    <value>Expression wrong or incomplete</value>
+  </data>
+  <data name="calculator_not_a_number" xml:space="preserve">
+    <value>Calculation result is not a valid number (NaN)</value>
+  </data>
+  <data name="calculator_double_array_returned" xml:space="preserve">
+    <value>Unsupported use of square brackets</value>
+  </data>
+  <data name="calculator_settings_trig_unit_gradians" xml:space="preserve">
+    <value>Gradians</value>
+  </data>
+  <data name="calculator_settings_trig_unit_degrees" xml:space="preserve">
+    <value>Degrees</value>
+  </data>
+  <data name="calculator_settings_trig_unit_radians" xml:space="preserve">
+    <value>Radians</value>
+  </data>
+  <data name="calculator_settings_trig_unit_mode" xml:space="preserve">
+    <value>Trigonometry Unit</value>
+  </data>
+  <data name="calculator_settings_trig_unit_mode_description" xml:space="preserve">
+    <value>Specifies the angle unit to use for trigonometry operations</value>
+  </data>
+  <data name="calculator_settings_out_en_format" xml:space="preserve">
+    <value>Use English (United States) number format for output</value>
+  </data>
+  <data name="calculator_settings_out_en_format_description" xml:space="preserve">
+    <value>Ignores your system setting and returns numbers in the format '{0}'.</value>
+    <comment>{0} is a placeholder and will be replaced in code.</comment>
+  </data>
+  <data name="calculator_settings_in_en_format" xml:space="preserve">
+    <value>Use English (United States) number format for input</value>
+  </data>
+  <data name="calculator_settings_in_en_format_description" xml:space="preserve">
+    <value>Ignores your system setting and expects numbers in the format '{0}'.</value>
+    <comment>{0} is a placeholder and will be replaced in code.</comment>
+  </data>
+  <data name="calculator_settings_close_on_enter" xml:space="preserve">
+    <value>Close on Enter</value>
+  </data>
+  <data name="calculator_settings_close_on_enter_description" xml:space="preserve">
+    <value>Makes Copy and close the primary command</value>
+  </data>
+  <data name="calculator_settings_replace_input" xml:space="preserve">
+    <value>Replace input if query ends with '='</value>
+  </data>
+  <data name="calculator_settings_replace_input_description" xml:space="preserve">
+    <value>When using direct activation, appending '=' to the expression will replace the input with the calculated result (e.g. '=5*3-2=' will change the query to '=13').</value>
+  </data>
+  <data name="calculator_not_covert_to_decimal" xml:space="preserve">
+    <value>Result value was either too large or too small for a decimal number</value>
+  </data>
+  <data name="calculator_copy_hex" xml:space="preserve">
+    <value>Copy hexadecimal</value>
+  </data>
+  <data name="calculator_copy_binary" xml:space="preserve">
+    <value>Copy binary</value>
+  </data>
+  <data name="calculator_expression_empty" xml:space="preserve">
+    <value>Please enter an expression</value>
+  </data>
 </root>

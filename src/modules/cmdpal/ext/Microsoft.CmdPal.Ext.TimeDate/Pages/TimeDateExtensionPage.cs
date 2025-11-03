@@ -17,42 +17,46 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
     private readonly Lock _resultsLock = new();
 
     private IList<ListItem> _results = new List<ListItem>();
+    private bool _dataLoaded;
 
-    private bool initialized;
+    private ISettingsInterface _settingsManager;
 
-    private SettingsManager _settingsManager;
-
-    public TimeDateExtensionPage(SettingsManager settingsManager)
+    public TimeDateExtensionPage(ISettingsInterface settingsManager)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\TimeDate.svg");
+        Icon = Icons.TimeDateExtIcon;
         Title = Resources.Microsoft_plugin_timedate_main_page_title;
         Name = Resources.Microsoft_plugin_timedate_main_page_name;
         PlaceholderText = Resources.Microsoft_plugin_timedate_placeholder_text;
         Id = "com.microsoft.cmdpal.timedate";
         _settingsManager = settingsManager;
+        ShowDetails = true;
     }
 
     public override IListItem[] GetItems()
     {
-       if (!initialized)
+        ListItem[] results;
+        lock (_resultsLock)
         {
-            DoExecuteSearch(string.Empty);
+            if (_dataLoaded)
+            {
+                results = _results.ToArray();
+                _dataLoaded = false;
+                return results;
+            }
         }
 
-       lock (_resultsLock)
+        DoExecuteSearch(string.Empty);
+
+        lock (_resultsLock)
         {
-            ListItem[] results = _results.ToArray();
+            results = _results.ToArray();
+            _dataLoaded = false;
             return results;
         }
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        if (newSearch == oldSearch)
-        {
-            return;
-        }
-
         DoExecuteSearch(newSearch);
     }
 
@@ -83,8 +87,8 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
     {
         lock (_resultsLock)
         {
-            initialized = true;
             this._results = result;
+            _dataLoaded = true;
         }
 
         RaiseItemsChanged(this._results.Count);

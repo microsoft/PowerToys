@@ -5,41 +5,41 @@
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class ToastWindow : Window,
+public sealed partial class ToastWindow : WindowEx,
     IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
+    private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
     public ToastViewModel ViewModel { get; } = new();
-
-    private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
     public ToastWindow()
     {
         this.InitializeComponent();
         AppWindow.Hide();
-        AppWindow.IsShownInSwitchers = false;
         ExtendsContentIntoTitleBar = true;
         AppWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
         this.SetIcon();
         AppWindow.Title = RS_.GetString("ToastWindowTitle");
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+        _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         PInvoke.EnableWindow(_hwnd, false);
@@ -64,19 +64,7 @@ public sealed partial class ToastWindow : Window,
 
     private void PositionCentered()
     {
-        var intSize = new SizeInt32
-        {
-            Width = Convert.ToInt32(ToastText.ActualWidth),
-            Height = Convert.ToInt32(ToastText.ActualHeight),
-        };
-
-        var scaleAdjustment = GetScaleFactor(_hwnd);
-        var scaled = new SizeInt32
-        {
-            Width = (int)Math.Round(intSize.Width * scaleAdjustment),
-            Height = (int)Math.Round(intSize.Height * scaleAdjustment),
-        };
-        AppWindow.Resize(scaled);
+        this.SetWindowSize(ToastText.ActualWidth, ToastText.ActualHeight);
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
@@ -86,7 +74,7 @@ public sealed partial class ToastWindow : Window,
 
             var monitorHeight = displayArea.WorkArea.Height;
             var windowHeight = AppWindow.Size.Height;
-            centeredPosition.Y = monitorHeight - (windowHeight * 2);
+            centeredPosition.Y = monitorHeight - (windowHeight + 8); // Align with other shell toasts, like the volume indicator.
             AppWindow.Move(centeredPosition);
         }
     }

@@ -11,6 +11,7 @@
 
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
+#include <WorkspacesLib/WindowUtils.h>
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 
 #include "Generated Files/resource.h"
@@ -71,6 +72,8 @@ namespace SnapshotUtils
                 continue;
             }
 
+            Logger::info("Try to get window app:{}", reinterpret_cast<void*>(window));
+
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
@@ -118,9 +121,18 @@ namespace SnapshotUtils
             auto data = Utils::Apps::GetApp(processPath, pid, installedApps);
             if (!data.has_value() || data->name.empty())
             {
-                Logger::info(L"Installed app not found: {}", processPath);
+                Logger::info(L"Installed app not found:{},{}", reinterpret_cast<void*>(window), processPath);
                 continue;
             }
+
+            if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
+            {
+                // Only care about steam games if it has no thick frame to remain consistent with
+                // the behavior as before.
+                continue;
+            }
+
+            Logger::info(L"Found app for window:{},{}", reinterpret_cast<void*>(window), processPath);
 
             auto appData = data.value();
 
@@ -128,7 +140,7 @@ namespace SnapshotUtils
             bool isChrome = appData.IsChrome();
             if (isEdge || isChrome)
             {
-                auto windowAumid = pwaHelper.GetAUMIDFromWindow(window);
+                auto windowAumid = Utils::GetAUMIDFromWindow(window);
                 std::optional<std::wstring> pwaAppId{};
 
                 if (isEdge)
@@ -147,6 +159,8 @@ namespace SnapshotUtils
 
                     appData.pwaAppId = pwaAppId.value();
                     appData.name = pwaName + L" (" + appData.name + L")";
+                    // If it's pwa app, appUserModelId should be their own pwa id.
+                    appData.appUserModelId = windowAumid;
                 }
             }
 
@@ -174,6 +188,7 @@ namespace SnapshotUtils
                 .appUserModelId = appData.appUserModelId,
                 .pwaAppId = appData.pwaAppId,
                 .commandLineArgs = L"",
+                .version = L"1",
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = appData.canLaunchElevated,
                 .isMinimized = isMinimized,

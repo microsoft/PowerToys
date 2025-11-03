@@ -1,5 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="..\Common.ExtDependencies.props" />
+
   <PropertyGroup>
 	<Nullable>enable</Nullable>
     <RootNamespace>Microsoft.CmdPal.Ext.WindowWalker</RootNamespace>
@@ -11,7 +14,9 @@
     <None Remove="Assets\WindowWalker.svg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+  	<ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
+    <!-- WASDK, WebView2, CmdPal Toolkit references now included via Common.ExtDependencies.props -->
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

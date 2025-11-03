@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Controls;
-using Microsoft.CmdPal.UI.ViewModels;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -18,7 +18,7 @@ public static partial class IconCacheProvider
     public static async void SourceRequested(IconBox sender, SourceRequestedEventArgs args)
 #pragma warning restore IDE0060 // Remove unused parameter
     {
-        if (args.Key == null)
+        if (args.Key is null)
         {
             return;
         }

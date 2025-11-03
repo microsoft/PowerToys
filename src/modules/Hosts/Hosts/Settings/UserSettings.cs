@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -25,6 +25,8 @@ namespace Hosts.Settings
         public bool ShowStartupWarning { get; private set; }
 
         private bool _loopbackDuplicates;
+
+        public bool NoLeadingSpaces { get; private set; }
 
         public bool LoopbackDuplicates
         {
@@ -105,6 +107,7 @@ namespace Hosts.Settings
                             AdditionalLinesPosition = (HostsAdditionalLinesPosition)settings.Properties.AdditionalLinesPosition;
                             Encoding = (HostsEncoding)settings.Properties.Encoding;
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
+                            NoLeadingSpaces = settings.Properties.NoLeadingSpaces;
                             BackupHosts = settings.Properties.BackupHosts;
                             BackupPath = settings.Properties.BackupPath;
                             DeleteBackupsMode = (HostsDeleteBackupMode)settings.Properties.DeleteBackupsMode;

@@ -189,7 +189,7 @@
     <value>Fail to initialize plugins: {0}</value>
   </data>
   <data name="FailedToInitializePluginsTitle" xml:space="preserve">
-    <value>PowerToys Run - Plugin Initialization Error</value>
+    <value>PowerToys Run {0} - Plugin Initialization Error</value>
     <comment>Don't translate "PowerToys Run". This is a product name.</comment>
   </data>
   <data name="ContextMenuItemsAvailable" xml:space="preserve">

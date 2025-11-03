@@ -26,7 +26,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.ImageResizerExt</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -100,6 +100,7 @@
     <None Include="resource.base.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="ImageResizerExt_i.h" />
+    <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

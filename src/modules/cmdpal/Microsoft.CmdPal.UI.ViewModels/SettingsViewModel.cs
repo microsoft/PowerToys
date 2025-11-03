@@ -27,6 +27,27 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseLowLevelGlobalHotkey
+    {
+        get => _settings.UseLowLevelGlobalHotkey;
+        set
+        {
+            _settings.UseLowLevelGlobalHotkey = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+            Save();
+        }
+    }
+
+    public bool AllowExternalReload
+    {
+        get => _settings.AllowExternalReload;
+        set
+        {
+            _settings.AllowExternalReload = value;
+            Save();
+        }
+    }
+
     public bool ShowAppDetails
     {
         get => _settings.ShowAppDetails;
@@ -97,7 +118,29 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IgnoreShortcutWhenFullscreen
+    {
+        get => _settings.IgnoreShortcutWhenFullscreen;
+        set
+        {
+            _settings.IgnoreShortcutWhenFullscreen = value;
+            Save();
+        }
+    }
+
+    public bool DisableAnimations
+    {
+        get => _settings.DisableAnimations;
+        set
+        {
+            _settings.DisableAnimations = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
+
+    public SettingsExtensionsViewModel Extensions { get; }
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
     {
@@ -114,6 +157,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);
         }
+
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

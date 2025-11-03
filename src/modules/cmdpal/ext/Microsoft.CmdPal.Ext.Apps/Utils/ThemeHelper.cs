@@ -4,7 +4,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 
 using Microsoft.Win32;
 
@@ -32,7 +31,7 @@ public static class ThemeHelper
 
         // Retrieve the registry value, which is a DWORD (0 or 1)
         var registryValueObj = Registry.GetValue(registryKey, registryValue, null);
-        if (registryValueObj != null)
+        if (registryValueObj is not null)
         {
             // 0 = Dark mode, 1 = Light mode
             var isLightMode = Convert.ToBoolean((int)registryValueObj, CultureInfo.InvariantCulture);
@@ -56,15 +55,25 @@ public static class ThemeHelper
             return Theme.Light; // Default to light theme if missing
         }
 
-        var theme = themePath.Split('\\').Last().Split('.').First().ToLowerInvariant();
-
-        return theme switch
+        var splitThemePath = themePath.Split('\\');
+        if (splitThemePath.Length > 0)
         {
-            "hc1" => Theme.HighContrastOne,
-            "hc2" => Theme.HighContrastTwo,
-            "hcwhite" => Theme.HighContrastWhite,
-            "hcblack" => Theme.HighContrastBlack,
-            _ => Theme.Light,
-        };
+            var lastSegment = splitThemePath[splitThemePath.Length - 1];
+            var splitSegment = lastSegment.Split('.');
+            if (splitSegment.Length > 0)
+            {
+                var themeVariant = splitSegment[0].ToLowerInvariant();
+                return themeVariant switch
+                {
+                    "hc1" => Theme.HighContrastOne,
+                    "hc2" => Theme.HighContrastTwo,
+                    "hcwhite" => Theme.HighContrastWhite,
+                    "hcblack" => Theme.HighContrastBlack,
+                    _ => Theme.Light,
+                };
+            }
+        }
+
+        return Theme.Light;
     }
 }

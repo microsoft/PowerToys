@@ -146,6 +146,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _startup = GeneralSettingsConfig.Startup;
             }
 
+            _showSysTrayIcon = GeneralSettingsConfig.ShowSysTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -228,6 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private bool _showSysTrayIcon;
         private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
         private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
@@ -258,6 +260,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
         private bool _isNoNetwork;
+        private bool _isBugReportRunning;
 
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
@@ -354,6 +357,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Gets or sets a value indicating whether the PowerToys icon should be shown in the system tray.
+        public bool ShowSysTrayIcon
+        {
+            get
+            {
+                return _showSysTrayIcon;
+            }
+
+            set
+            {
+                if (_showSysTrayIcon != value)
+                {
+                    _showSysTrayIcon = value;
+                    GeneralSettingsConfig.ShowSysTrayIcon = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -928,6 +950,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _isNoNetwork;
+            }
+        }
+
+        public bool IsBugReportRunning
+        {
+            get
+            {
+                return _isBugReportRunning;
+            }
+
+            set
+            {
+                if (value != _isBugReportRunning)
+                {
+                    _isBugReportRunning = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 

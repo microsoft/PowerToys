@@ -9,16 +9,28 @@
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Page.Resources>
         <ResourceDictionary>
+            <tkcontrols:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
+                H3FontSize="12"
+                H3FontWeight="Normal" />
+            <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
+            <tkcontrols:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
+                ImageProvider="{StaticResource ImageProvider}"
+                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
@@ -35,43 +47,35 @@
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
-            <DataTemplate x:Key="FormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+            <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+            <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
-                    <toolkit:MarkdownTextBlock
-                        Background="Transparent"
-                        Header3FontSize="12"
-                        Header3FontWeight="Normal"
-                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Body, Mode=OneWay}" />
+                    <tkcontrols:MarkdownTextBlock
+                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Text="{x:Bind Body, Mode=OneWay}"
+                        UseEmphasisExtras="True"
+                        UsePipeTables="True" />
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid>
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
                 <Grid>
-                    <toolkit:MarkdownTextBlock
-                        Background="Transparent"
-                        Header3FontSize="12"
-                        Header3FontWeight="Normal"
-                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Body, Mode=OneWay}" />
+                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DefaultMarkdownConfig}" Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewmodels:ContentTreeViewModel">
+            <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewModels:ContentTreeViewModel">
                 <StackPanel
                     Margin="0,4,4,4"
                     Padding="12,8,8,8"
@@ -108,7 +112,7 @@
 
         </ResourceDictionary>
     </Page.Resources>
-    <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+    <Grid>
         <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
             <ItemsRepeater
                 VerticalAlignment="Stretch"

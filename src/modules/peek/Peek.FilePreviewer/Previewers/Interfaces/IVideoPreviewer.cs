@@ -9,5 +9,7 @@ namespace Peek.FilePreviewer.Previewers.Interfaces
     public interface IVideoPreviewer : IPreviewer, IPreviewTarget
     {
         public MediaSource? Preview { get; }
+
+        public string? MissingCodecName { get; }
     }
 }

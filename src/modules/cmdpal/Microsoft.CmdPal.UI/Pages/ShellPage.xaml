@@ -6,13 +6,17 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -23,12 +27,11 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
 
-            <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
+                CommandTemplate="{StaticResource DetailsCommandsTemplate}"
                 LinkTemplate="{StaticResource DetailsLinkTemplate}"
                 SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
                 TagTemplate="{StaticResource DetailsTagsTemplate}" />
@@ -38,9 +41,35 @@
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
 
-            <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
+            <Style
+                x:Key="DetailKeyTextBlockStyle"
+                BasedOn="{StaticResource CaptionTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style
+                x:Key="SeparatorKeyTextBlockStyle"
+                BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+            </Style>
+
+            <Style
+                x:Key="DetailValueTextBlockStyle"
+                BasedOn="{StaticResource BodyTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+            </Style>
+
+            <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
+                    AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
                     BackgroundColor="{x:Bind Background, Mode=OneWay}"
                     FontSize="12"
                     ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
@@ -49,48 +78,69 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
-            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
+            <DataTemplate x:Key="CommandTemplate" x:DataType="coreViewModels:CommandViewModel">
                 <StackPanel Orientation="Vertical">
+                    <Button
+                        Name="Command"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Click="Command_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <cpcontrols:IconBox
+                                Width="16"
+                                Height="16"
+                                Margin="0,3,8,0"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="coreViewModels:DetailsLinkViewModel">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Key, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords" />
-                    <TextBlock
-                        FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"
+                        Style="{StaticResource DetailValueTextBlockStyle}"
                         Text="{x:Bind Text, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords"
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
                         Padding="0"
-                        Content="{x:Bind Text, Mode=OneWay}"
-                        FontSize="12"
+                        Command="{x:Bind NavigateCommand, Mode=OneWay}"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
-                        Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                        Visibility="{x:Bind IsLink, Mode=OneWay}">
+                        <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
+                    </HyperlinkButton>
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
+                    <ItemsControl
+                        ItemTemplate="{StaticResource CommandTemplate}"
+                        ItemsSource="{x:Bind Commands, Mode=OneWay}"
+                        Visibility="{x:Bind HasCommands, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
                     <Border
-                        Margin="8,0,0,0"
-                        BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,0,0,0"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                         BorderThickness="0,0,0,2">
                         <TextBlock
-                            Margin="-8,0,0,8"
-                            FontWeight="SemiBold"
-                            IsTextSelectionEnabled="True"
+                            Margin="0,0,0,0"
+                            Style="{StaticResource SeparatorKeyTextBlockStyle}"
                             Text="{x:Bind Key, Mode=OneWay}"
-                            TextWrapping="WrapWholeWords" />
+                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}" />
                     </Border>
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
+            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="coreViewModels:DetailsTagsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
-                    <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Key, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords" />
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
                         ItemTemplate="{StaticResource TagTemplate}"
                         ItemsSource="{x:Bind Tags, Mode=OneWay}"
@@ -109,6 +159,15 @@
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
+            <tkcontrols:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
+                H3FontSize="12"
+                H3FontWeight="Normal" />
+            <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
+            <tkcontrols:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
+                ImageProvider="{StaticResource ImageProvider}"
+                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
         </ResourceDictionary>
     </Page.Resources>
 
@@ -127,12 +186,16 @@
 
             <!--  Back button and search box  -->
             <Grid
+                x:Name="TopBarGrid"
                 Padding="0,12,0,12"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
+                VerticalAlignment="Stretch"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <!--  Back button  -->
@@ -147,66 +210,82 @@
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.187" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0.5"
                                 To="1"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.240" />
+                                Duration="0:0:0.187" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1"
                                 To="0.5"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </Image>
                     <Button
                         x:Name="BackButton"
+                        x:Uid="BackButton"
                         Margin="4,0,4,0"
                         Padding="4"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Click="BackButton_Clicked"
                         Content="{ui:FontIcon Glyph=&#xE76B;,
                                               FontSize=14}"
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
-                        Tapped="BackButton_Tapped"
-                        ToolTipService.ToolTip="Back"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="0.5"
                                 To="1"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="16,0,0"
                                 To="0,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1"
                                 To="0.5"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="0,0,0"
                                 To="16,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </Button>
                     <cpcontrols:IconBox
@@ -223,29 +302,29 @@
                             <animations:OpacityAnimation
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.450" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="0.8"
                                 To="1"
-                                Duration="0:0:0.500" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="8,0,0"
                                 To="0,0,0"
-                                Duration="0:0:0.400" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="1"
                                 To="0.8"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="0,0,0"
                                 To="8,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </cpcontrols:IconBox>
                 </StackPanel>
@@ -261,6 +340,13 @@
                         </TransitionCollection>
                     </Grid.Transitions>
                 </Grid>
+                <!--  Filter: wrapped in a grid to enable RepositionThemeTransitions  -->
+                <Grid Grid.Column="2" HorizontalAlignment="Right">
+                    <cpcontrols:FiltersDropDown
+                        x:Name="FiltersDropDown"
+                        HorizontalAlignment="Right"
+                        CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+                </Grid>
             </Grid>
 
             <ProgressBar
@@ -272,21 +358,17 @@
                     <animations:OpacityAnimation
                         From="0"
                         To="1.0"
-                        Duration="0:0:0.340" />
+                        Duration="0:0:0.333" />
                 </animations:Implicit.ShowAnimations>
                 <animations:Implicit.HideAnimations>
                     <animations:OpacityAnimation
                         From="1.0"
                         To="0"
-                        Duration="0:0:0.340" />
+                        Duration="0:0:0.333" />
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
-            <Grid
-                x:Name="ContentGrid"
-                Grid.Row="1"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,1">
+            <Grid x:Name="ContentGrid" Grid.Row="1">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*" />
@@ -295,6 +377,9 @@
 
                 <Frame
                     Name="RootFrame"
+                    AutomationProperties.AutomationControlType="Pane"
+                    AutomationProperties.LandmarkType="Navigation"
+                    AutomationProperties.LiveSetting="Assertive"
                     IsNavigationStackEnabled="True"
                     Navigated="RootFrame_Navigated" />
 
@@ -313,57 +398,56 @@
                         <animations:OpacityAnimation
                             From="0"
                             To="1.0"
-                            Duration="0:0:0.270" />
+                            Duration="0:0:0.187" />
                         <animations:TranslationAnimation
                             From="24,0,0"
                             To="0,0,0"
-                            Duration="0:0:0.280" />
+                            Duration="0:0:0.187" />
                     </animations:Implicit.ShowAnimations>
                     <animations:Implicit.HideAnimations>
                         <animations:OpacityAnimation
                             From="1.0"
                             To="0"
-                            Duration="0:0:0.180" />
+                            Duration="0:0:0.187" />
                         <animations:TranslationAnimation
                             From="0,0,0"
                             To="24,0,0"
-                            Duration="0:0:0.220" />
+                            Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
-                    <Grid Margin="12">
+                    <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
-                            MinWidth="64"
-                            MinHeight="64"
-                            MaxHeight="96"
-                            HorizontalAlignment="Center"
+                            Width="64"
+                            Margin="0,0,16,16"
+                            HorizontalAlignment="Left"
+                            AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
                         <TextBlock
                             Grid.Row="1"
-                            HorizontalAlignment="Center"
-                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            FontSize="18"
+                            FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                        <toolkit:MarkdownTextBlock
+                        <tkcontrols:MarkdownTextBlock
                             Grid.Row="2"
-                            Margin="0,12,0,24"
+                            Margin="0,4,0,24"
                             Background="Transparent"
-                            Header3FontSize="12"
-                            Header3FontWeight="Normal"
-                            Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            IsTextSelectionEnabled="True"
-                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
+                            Config="{StaticResource DefaultMarkdownConfig}"
+                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                            UseEmphasisExtras="True"
+                            UsePipeTables="True" />
 
                         <ItemsRepeater
                             Grid.Row="3"
@@ -431,7 +515,11 @@
             </InfoBar>
         </StackPanel>
 
-        <Grid Grid.Row="1" Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}">
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 
@@ -445,6 +533,26 @@
                     <VisualState.Setters>
                         <Setter Target="DetailsContent.Visibility" Value="Visible" />
                         <Setter Target="DetailsColumn.Width" Value="2*" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup>
+                <!--
+                    Why disable it and make it transparent?
+                    To prevent the container from collapsing, ensuring the layout metrics remain unchanged.
+                -->
+                <VisualStateGroup.Transitions>
+                    <VisualTransition GeneratedDuration="0:0:0.187" To="SearchBarCollapsed" />
+                </VisualStateGroup.Transitions>
+                <VisualState x:Name="SearchBarVisible" />
+                <VisualState x:Name="SearchBarCollapsed">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind h:BindTransformers.Negate(ViewModel.IsSearchBoxVisible), Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SearchBox.IsEnabled" Value="False" />
+                        <Setter Target="SearchBox.Opacity" Value="0" />
+                        <Setter Target="TopBarGrid.BorderBrush" Value="Transparent" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

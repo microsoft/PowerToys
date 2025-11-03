@@ -152,7 +152,7 @@ namespace HostsUILib.Helpers
                         {
                             lineBuilder.Append('#').Append(' ');
                         }
-                        else if (anyDisabled)
+                        else if (anyDisabled && !_userSettings.NoLeadingSpaces)
                         {
                             lineBuilder.Append(' ').Append(' ');
                         }

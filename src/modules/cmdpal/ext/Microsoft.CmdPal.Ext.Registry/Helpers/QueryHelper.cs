@@ -55,7 +55,7 @@ internal static partial class QueryHelper
     /// <param name="query">The query that could contain parts</param>
     /// <param name="queryKey">The key part of the query</param>
     /// <param name="queryValueName">The value name part of the query</param>
-    /// <returns><see langword="true"/> when the query search for a key and a value name, otherwise <see langword="false"/></returns>
+    /// <returns><see langword="true"/> when the query search for a key and a value name; otherwise, <see langword="false"/></returns>
     internal static bool GetQueryParts(in string query, out string queryKey, out string queryValueName)
     {
         var sanitizedQuery = SanitizeQuery(query);

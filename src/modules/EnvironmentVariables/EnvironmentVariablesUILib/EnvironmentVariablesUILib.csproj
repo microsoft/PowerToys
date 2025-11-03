@@ -15,8 +15,6 @@
     <ProjectPriFileName>PowerToys.EnvironmentVariablesUILib.pri</ProjectPriFileName>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <IsPackable>true</IsPackable>
-    <!-- The default generated file path exceeds the length limit 260 on the build agent. Using a shorter path as a workaround. -->
-    <CompilerGeneratedFilesOutputPath>$(ProjectDir)obj\g</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -56,7 +54,4 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <Target Name="EnsureCompilerGeneratedFilesOutputPathExists" BeforeTargets="XamlPreCompile">
-    <MakeDir Directories="$(CompilerGeneratedFilesOutputPath)" />
-  </Target>
 </Project>

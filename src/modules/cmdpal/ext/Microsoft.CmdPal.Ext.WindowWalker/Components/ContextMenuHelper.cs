@@ -30,12 +30,13 @@ internal sealed class ContextMenuHelper
 
         // Hide menu if Explorer.exe is the shell process or the process name is ApplicationFrameHost.exe
         // In the first case we would crash the windows ui and in the second case we would kill the generic process for uwp apps.
-        if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
+        if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpAppFrameHost && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
             && !(windowData.Process.IsFullAccessDenied && SettingsManager.Instance.HideKillProcessOnElevatedProcesses))
         {
-            contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData))
+            contextMenu.Add(new CommandContextItem(new EndTaskCommand(windowData))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete, 0),
+                IsCritical = true,
             });
         }
 

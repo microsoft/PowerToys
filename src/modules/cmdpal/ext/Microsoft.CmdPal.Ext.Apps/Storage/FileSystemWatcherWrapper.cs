@@ -8,7 +8,7 @@ using System.IO;
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
 // File System Watcher Wrapper class which implements the IFileSystemWatcherWrapper interface
-public sealed class FileSystemWatcherWrapper : FileSystemWatcher, IFileSystemWatcherWrapper
+public sealed partial class FileSystemWatcherWrapper : FileSystemWatcher, IFileSystemWatcherWrapper
 {
     public FileSystemWatcherWrapper()
     {
@@ -19,7 +19,7 @@ public sealed class FileSystemWatcherWrapper : FileSystemWatcher, IFileSystemWat
         get => this.Filters;
         set
         {
-            if (value != null)
+            if (value is not null)
             {
                 foreach (var filter in value)
                 {

@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -20,18 +22,19 @@ internal static class AvailableResultsList
     /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
     /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
     /// <returns>List of results</returns>
-    internal static List<AvailableResult> GetList(bool isKeywordSearch, SettingsManager settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
+    internal static List<AvailableResult> GetList(bool isKeywordSearch, ISettingsInterface settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
     {
         var results = new List<AvailableResult>();
         var calendar = CultureInfo.CurrentCulture.Calendar;
 
         var timeExtended = timeLongFormat ?? settings.TimeWithSecond;
         var dateExtended = dateLongFormat ?? settings.DateWithWeekday;
-        var isSystemDateTime = timestamp == null;
+        var isSystemDateTime = timestamp is null;
         var dateTimeNow = timestamp ?? DateTime.Now;
         var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
         var firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(settings.FirstWeekOfYear);
         var firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(settings.FirstDayOfWeek);
+        var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
 
         results.AddRange(new[]
         {
@@ -58,17 +61,106 @@ internal static class AvailableResultsList
                 AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                 IconType = ResultIconType.DateTime,
             },
+            new AvailableResult()
+            {
+                Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
+                AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                IconType = ResultIconType.Date,
+            },
         });
 
-        if (isKeywordSearch || !settings.OnlyDateTimeNowGlobal)
+        if (isKeywordSearch)
         {
             // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
             var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
             var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-            var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
             var era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
+            // Custom formats
+            foreach (var f in settings.CustomFormats)
+            {
+                var formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var formatSyntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
+                var searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustom");
+                var dtObject = dateTimeNow;
+
+                // If Length = 0 then empty string.
+                if (formatParts.Length >= 1)
+                {
+                    try
+                    {
+                        // Verify and check input and update search tags
+                        if (formatParts.Length == 1)
+                        {
+                            throw new FormatException("Format syntax part after equal sign is missing.");
+                        }
+
+                        var containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatSyntax);
+                        if (formatSyntax.StartsWith("UTC:", StringComparison.InvariantCulture))
+                        {
+                            searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustomUtc");
+                            dtObject = dateTimeNowUtc;
+                        }
+
+                        // Get formatted date
+                        var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
+                        try
+                        {
+                            value = dtObject.ToString(value, CultureInfo.CurrentCulture);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (!containsCustomSyntax)
+                            {
+                                Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
+                                throw;
+                            }
+                            else
+                            {
+                                // Do not fail as we have custom format syntax. Instead fix backslashes.
+                                value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+                            }
+                        }
+
+                        // Add result
+                        results.Add(new AvailableResult()
+                        {
+                            Value = value,
+                            Label = formatParts[0],
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.DateTime,
+                        });
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        Logger.LogError($"ArgumentOutOfRangeException with format: {formatSyntax}. Error: {e.Message}");
+                        results.Add(new AvailableResult()
+                        {
+                            Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat,
+                            Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.Error,
+                            ErrorDetails = e.Message,
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogError($"Exception with format: {formatSyntax}. Error: {e.Message}");
+                        results.Add(new AvailableResult()
+                        {
+                            Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
+                            Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.Error,
+                            ErrorDetails = e.Message,
+                        });
+                    }
+                }
+            }
+
+            // Predefined formats
             results.AddRange(new[]
             {
                 new AvailableResult()
@@ -150,6 +242,13 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
+                    Value = DateTime.DaysInMonth(dateTimeNow.Year, dateTimeNow.Month).ToString(CultureInfo.CurrentCulture),
+                    Label = Resources.Microsoft_plugin_timedate_DaysInMonth,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
+                new AvailableResult()
+                {
                     Value = dateTimeNow.DayOfYear.ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_DayOfYear,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
@@ -159,13 +258,6 @@ internal static class AvailableResultsList
                 {
                     Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
-                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
-                    IconType = ResultIconType.Date,
-                },
-                new AvailableResult()
-                {
-                    Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
-                    Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },
@@ -199,6 +291,13 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
+                    Value = DateTime.IsLeapYear(dateTimeNow.Year) ? Resources.Microsoft_plugin_timedate_LeapYear : Resources.Microsoft_plugin_timedate_NoLeapYear,
+                    Label = Resources.Microsoft_plugin_timedate_LeapYear,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
+                new AvailableResult()
+                {
                     Value = era,
                     Label = Resources.Microsoft_plugin_timedate_Era,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagEra"),
@@ -218,13 +317,32 @@ internal static class AvailableResultsList
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },
-                new AvailableResult()
+            });
+
+            try
+            {
+                results.Add(new AvailableResult()
                 {
                     Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,
-                },
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unable to convert to Windows file time: {ex.Message}");
+                results.Add(new AvailableResult()
+                {
+                    Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,
+                    Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                    IconType = ResultIconType.Error,
+                });
+            }
+
+            results.AddRange(new[]
+            {
                 new AvailableResult()
                 {
                     Value = dateTimeNowUtc.ToString("u"),

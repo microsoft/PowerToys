@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
@@ -16,84 +16,133 @@ using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Pages;
 
-internal sealed partial class WebSearchListPage : DynamicListPage
+internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
 {
-    private readonly string _iconPath = string.Empty;
-    private readonly List<ListItem>? _historyItems;
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
+    private readonly Lock _sync = new();
     private static readonly CompositeFormat PluginInBrowserName = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_in_browser_name);
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
-    private List<ListItem> allItems;
+    private IListItem[] _allItems = [];
+    private List<ListItem> _historyItems = [];
 
-    public WebSearchListPage(SettingsManager settingsManager)
+    public WebSearchListPage(ISettingsInterface settingsManager)
     {
+        ArgumentNullException.ThrowIfNull(settingsManager);
+
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
-        PlaceholderText = Resources.plugin_description;
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
-        allItems = [new(new NoOpCommand())
-        {
-            Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png"),
-            Title = Properties.Resources.plugin_description,
-            Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-        }
-        ];
+        Icon = Icons.WebSearch;
         Id = "com.microsoft.cmdpal.websearch";
+
         _settingsManager = settingsManager;
-        _historyItems = _settingsManager.ShowHistory != Resources.history_none ? _settingsManager.LoadHistory() : null;
-        if (_historyItems != null)
+        _settingsManager.HistoryChanged += SettingsManagerOnHistoryChanged;
+
+        // It just looks viewer to have string twice on the page, and default placeholder is good enough
+        PlaceholderText = _allItems.Length > 0 ? Resources.plugin_description : string.Empty;
+
+        EmptyContent = new CommandItem(new NoOpCommand())
         {
-            allItems.AddRange(_historyItems);
+            Icon = Icon,
+            Title = Properties.Resources.plugin_description,
+            Subtitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
+        };
+
+        UpdateHistory();
+        RequeryAndUpdateItems(SearchText);
+    }
+
+    private void SettingsManagerOnHistoryChanged(object? sender, EventArgs e)
+    {
+        UpdateHistory();
+        RequeryAndUpdateItems(SearchText);
+    }
+
+    private void UpdateHistory()
+    {
+        List<ListItem> history = [];
+
+        if (_settingsManager.HistoryItemCount > 0)
+        {
+            var items = _settingsManager.HistoryItems;
+            for (var index = items.Count - 1; index >= 0; index--)
+            {
+                var historyItem = items[index];
+                history.Add(new ListItem(new SearchWebCommand(historyItem.SearchString, _settingsManager))
+                {
+                    Icon = Icons.History,
+                    Title = historyItem.SearchString,
+                    Subtitle = historyItem.Timestamp.ToString("g", CultureInfo.InvariantCulture),
+                });
+            }
+        }
+
+        lock (_sync)
+        {
+            _historyItems = history;
         }
     }
 
-    public List<ListItem> Query(string query)
+    private static IListItem[] Query(string query, List<ListItem> historySnapshot, ISettingsInterface settingsManager)
     {
         ArgumentNullException.ThrowIfNull(query);
-        IEnumerable<ListItem>? filteredHistoryItems = null;
 
-        if (_historyItems != null)
-        {
-            filteredHistoryItems = _settingsManager.ShowHistory != Resources.history_none ? ListHelpers.FilterList(_historyItems, query).OfType<ListItem>() : null;
-        }
+        var filteredHistoryItems = settingsManager.HistoryItemCount > 0
+            ? ListHelpers.FilterList(historySnapshot, query)
+            : [];
 
-        var results = new List<ListItem>();
+        var results = new List<IListItem>();
 
-        // empty query
-        if (string.IsNullOrEmpty(query))
-        {
-            results.Add(new ListItem(new SearchWebCommand(string.Empty, _settingsManager))
-            {
-                Title = Properties.Resources.plugin_description,
-                Subtitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-                Icon = new IconInfo(_iconPath),
-            });
-        }
-        else
+        if (!string.IsNullOrEmpty(query))
         {
             var searchTerm = query;
-            var result = new ListItem(new SearchWebCommand(searchTerm, _settingsManager))
+            var result = new ListItem(new SearchWebCommand(searchTerm, settingsManager))
             {
                 Title = searchTerm,
                 Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-                Icon = new IconInfo(_iconPath),
+                Icon = Icons.Search,
             };
             results.Add(result);
         }
 
-        if (filteredHistoryItems != null)
+        results.AddRange(filteredHistoryItems);
+
+        return [.. results];
+    }
+
+    private void RequeryAndUpdateItems(string search)
+    {
+        List<ListItem> historySnapshot;
+        lock (_sync)
         {
-            results.AddRange(filteredHistoryItems);
+            historySnapshot = _historyItems;
         }
 
-        return results;
+        var items = Query(search ?? string.Empty, historySnapshot, _settingsManager);
+
+        lock (_sync)
+        {
+            _allItems = items;
+        }
+
+        RaiseItemsChanged();
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        allItems = [.. Query(newSearch)];
-        RaiseItemsChanged(0);
+        RequeryAndUpdateItems(newSearch);
     }
 
-    public override IListItem[] GetItems() => [.. allItems];
+    public override IListItem[] GetItems()
+    {
+        lock (_sync)
+        {
+            return _allItems;
+        }
+    }
+
+    public void Dispose()
+    {
+        _settingsManager.HistoryChanged -= SettingsManagerOnHistoryChanged;
+        GC.SuppressFinalize(this);
+    }
 }

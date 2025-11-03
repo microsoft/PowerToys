@@ -172,10 +172,16 @@
   <data name="plugin_search_failed" xml:space="preserve">
     <value>Failed to open {0}.</value>
   </data>
-  <data name="plugin_show_history" xml:space="preserve">
+  <data name="plugin_history_item_count" xml:space="preserve">
     <value>Determines the number of history items to show from previous searches</value>
   </data>
   <data name="settings_page_name" xml:space="preserve">
     <value>Settings</value>
+  </data>
+  <data name="web_search_fallback_subtitle" xml:space="preserve">
+    <value>Search for "{0}"</value>
+  </data>
+  <data name="open_url_fallback_title" xml:space="preserve">
+    <value>Open URL</value>
   </data>
 </root>

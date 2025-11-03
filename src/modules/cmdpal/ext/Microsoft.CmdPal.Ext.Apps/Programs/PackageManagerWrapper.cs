@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Principal;
 using Windows.Management.Deployment;
 
@@ -22,13 +21,23 @@ public class PackageManagerWrapper : IPackageManager
     {
         var user = WindowsIdentity.GetCurrent().User;
 
-        if (user != null)
+        if (user is not null)
         {
             var pkgs = _packageManager.FindPackagesForUser(user.Value);
 
-            return pkgs.Select(PackageWrapper.GetWrapperFromPackage).Where(package => package != null);
+            ICollection<IPackage> packages = [];
+
+            foreach (var package in pkgs)
+            {
+                if (package is not null)
+                {
+                    packages.Add(PackageWrapper.GetWrapperFromPackage(package));
+                }
+            }
+
+            return packages;
         }
 
-        return Enumerable.Empty<IPackage>();
+        return [];
     }
 }

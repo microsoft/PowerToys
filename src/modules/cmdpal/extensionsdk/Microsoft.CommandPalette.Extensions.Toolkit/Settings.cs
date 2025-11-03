@@ -41,7 +41,7 @@ public sealed partial class Settings : ICommandSettings
             .Values
             .Where(s => s is ISettingsForm)
             .Select(s => s as ISettingsForm)
-            .Where(s => s != null)
+            .Where(s => s is not null)
             .Select(s => s!);
 
         var bodies = string.Join(",", settings
@@ -77,7 +77,7 @@ public sealed partial class Settings : ICommandSettings
             .Values
             .Where(s => s is ISettingsForm)
             .Select(s => s as ISettingsForm)
-            .Where(s => s != null)
+            .Where(s => s is not null)
             .Select(s => s!);
         var content = string.Join(",\n", settings.Select(s => s.ToState()));
         return $"{{\n{content}\n}}";
@@ -86,7 +86,7 @@ public sealed partial class Settings : ICommandSettings
     public void Update(string data)
     {
         var formInput = JsonNode.Parse(data)?.AsObject();
-        if (formInput == null)
+        if (formInput is null)
         {
             return;
         }
@@ -116,8 +116,12 @@ public sealed partial class Settings : ICommandSettings
         public SettingsContentPage(Settings settings)
         {
             _settings = settings;
-            Name = "Settings";
+            Name = Properties.Resources.Settings;
             Icon = new IconInfo("\uE713"); // Settings icon
+
+            // When our settings change, make sure to let CmdPal know to
+            // retrieve the new forms
+            _settings.SettingsChanged += (s, e) => RaiseItemsChanged();
         }
     }
 

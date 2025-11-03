@@ -384,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path the backup and restore location.
+        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path of the backup and restore location.
         /// </summary>
         /// <remarks>
         /// This will return a default location based on user documents if non is set.
@@ -653,11 +653,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error", lastBackupExists, "\n" + appBasePath);
                     }
 
-                    var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
-                    if (!dirExists)
+                    // Only create the backup directory if this is not a dry run
+                    if (!dryRun)
                     {
-                        Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
-                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
+                        var dirExists = TryCreateDirectory(settingsBackupAndRestoreDir);
+                        if (!dirExists)
+                        {
+                            Logger.LogError($"Failed to create dir {settingsBackupAndRestoreDir}");
+                            return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + settingsBackupAndRestoreDir);
+                        }
                     }
 
                     // get data needed for process
@@ -717,12 +721,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             var relativePath = currentFile.Value.Substring(appBasePath.Length + 1);
                             var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
-                            TryCreateDirectory(fullBackupDir);
-                            TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
-
                             Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}.");
                             if (!dryRun)
                             {
+                                TryCreateDirectory(fullBackupDir);
+                                TryCreateDirectory(Path.GetDirectoryName(backupFullPath));
                                 File.WriteAllText(backupFullPath, currentSettingsFileToBackup);
                             }
                         }
@@ -959,7 +962,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     if (item.Value.Contains("PowerToys_settings_", StringComparison.OrdinalIgnoreCase))
                     {
-                        // this is a temp backup and we want to clean based on the time it was created in the temp place, not the time the backup was made.
+                        // this is a temp backup and we want to clean based on the time it was created in the temp place, not the time that the backup was made.
                         var folderCreatedTime = new DirectoryInfo(item.Value).CreationTimeUtc;
 
                         if (folderCreatedTime > backupTime)

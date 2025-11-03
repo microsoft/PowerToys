@@ -372,4 +372,10 @@
   <data name="DeleteConfirmationDialog_DontWarnCheckbox.Content" xml:space="preserve">
     <value>Don't show this warning again</value>
   </data>
+  <data name="VideoMissingCodec_WarningMessage" xml:space="preserve">
+    <value>Your device doesn't support the {0} format. To play this file, install a codec that supports this format.</value>
+  </data>
+  <data name="VideoCodecStoreLink.Text" xml:space="preserve">
+    <value>Search in Microsoft Store</value>
+  </data>
 </root>

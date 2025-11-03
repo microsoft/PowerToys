@@ -75,6 +75,77 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <http://unlicense.org/>
 ```
 
+## Utility: Command Palette Built-in Extensions
+
+### Calculator
+
+#### exprtk
+
+We use the exprtk library (exprtk.hpp) to evaluate mathematical expressions.
+
+**Source**: [https://github.com/ArashPartow/exprtk](https://github.com/ArashPartow/exprtk)
+
+```
+MIT License
+
+Copyright (c) 1999-2024 Arash Partow
+
+https://www.partow.net/programming/exprtk/index.html
+
+Permission is hereby granted, free of charge, to any person  obtaining
+a  copy  of  this software  and  associated  documentation files  (the
+"Software"), to  deal in  the Software  without restriction, including
+without limitation the  rights to use,  copy, modify, merge,  publish,
+distribute, sublicense,  and/or sell  copies of  the Software,  and to
+permit persons to whom the Software is furnished to do so, subject  to
+the following conditions:
+
+The  above  copyright  notice  and  this  permission  notice  shall be
+included in all copies or substantial portions of the Software.
+
+THE  SOFTWARE  IS PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+EXPRESS OR  IMPLIED, INCLUDING  BUT NOT  LIMITED TO  THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS  OR COPYRIGHT HOLDERS BE LIABLE FOR  ANY
+CLAIM, DAMAGES OR OTHER LIABILITY,  WHETHER IN AN ACTION OF  CONTRACT,
+TORT OR  OTHERWISE, ARISING  FROM, OUT  OF OR  IN CONNECTION  WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+## Utility: PowerToys Run Built-in Extensions
+
+### Calculator
+
+#### Mages
+
+We use the Mages NuGet package for calculating the result of expression.
+
+**Source**: [https://github.com/FlorianRappl/Mages](https://github.com/FlorianRappl/Mages)
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2016 - 2025 Florian Rappl
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Utility: File Explorer Add-ins
 
 ### Monaco Editor
@@ -773,30 +844,25 @@ DEALINGS IN THE SOFTWARE.
 
 **Source**: https://github.com/kuba--/zip
 
-This is free and unencumbered software released into the public domain.
+All Rights Reserved.
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <http://unlicense.org/>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 ## Utility: Measure tool
 
@@ -1361,6 +1427,37 @@ EXHIBIT A -Mozilla Public License.
 
 ## Utility: Registry Preview
 
+### HexBox.WinUI
+
+We use HexBox.WinUI to show a preview of binary values.
+
+**Source**: https://github.com/hotkidfamily/HexBox.WinUI
+
+```
+MIT License
+
+Copyright (c) 2019 Filip Jeremic
+Copyright (c) 2024~2025 hotkidfamily@gmail.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ### Monaco Editor
 
 **Source**: https://github.com/Microsoft/monaco-editor
@@ -1391,92 +1488,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+
 ## NuGet Packages used by PowerToys
 
-- AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
-- AdaptiveCards.Rendering.WinUI3 2.1.0-beta
-- AdaptiveCards.Templating 2.0.2
-- Appium.WebDriver 4.4.5
-- Azure.AI.OpenAI 1.0.0-beta.17
-- CommunityToolkit.Common 8.4.0
-- CommunityToolkit.Mvvm 8.4.0
-- CommunityToolkit.WinUI.Animations 8.2.250129-preview2
-- CommunityToolkit.WinUI.Collections 8.2.250129-preview2
-- CommunityToolkit.WinUI.Controls.Primitives 8.2.250129-preview2
-- CommunityToolkit.WinUI.Controls.Segmented 8.2.250129-preview2
-- CommunityToolkit.WinUI.Controls.SettingsControls 8.2.250129-preview2
-- CommunityToolkit.WinUI.Controls.Sizers 8.2.250129-preview2
-- CommunityToolkit.WinUI.Converters 8.2.250129-preview2
-- CommunityToolkit.WinUI.Extensions 8.2.250129-preview2
-- CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
-- CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
-- ControlzEx 6.0.0
-- HelixToolkit 2.24.0
-- HelixToolkit.Core.Wpf 2.24.0
-- hyjiacan.pinyin4net 4.1.1
-- Interop.Microsoft.Office.Interop.OneNote 1.1.0.2
-- LazyCache 2.4.0
-- Mages 3.0.0
-- Markdig.Signed 0.34.0
-- MessagePack 3.1.3
-- Microsoft.Bcl.AsyncInterfaces 9.0.4
-- Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
-- Microsoft.Data.Sqlite 9.0.4
-- Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
-- Microsoft.DotNet.ILCompiler (A)
-- Microsoft.Extensions.DependencyInjection 9.0.4
-- Microsoft.Extensions.Hosting 9.0.4
-- Microsoft.Extensions.Hosting.WindowsServices 9.0.4
-- Microsoft.Extensions.Logging 9.0.4
-- Microsoft.Extensions.Logging.Abstractions 9.0.4
-- Microsoft.NET.ILLink.Tasks (A)
-- Microsoft.SemanticKernel 1.15.0
-- Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.2903.40
-- Microsoft.Win32.SystemEvents 9.0.4
-- Microsoft.Windows.Compatibility 9.0.4
-- Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.2.0
-- Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
-- Microsoft.WindowsAppSDK 1.6.250205002
-- Microsoft.WindowsPackageManager.ComInterop 1.10.120-preview
-- Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
-- Microsoft.Xaml.Behaviors.Wpf 1.1.39
-- ModernWpfUI 0.9.4
-- Moq 4.18.4
-- MSTest 3.8.3
-- NLog.Extensions.Logging 5.3.8
-- NLog.Schema 5.2.8
-- OpenAI 2.0.0
-- ReverseMarkdown 4.1.0
-- ScipBe.Common.Office.OneNote 3.0.1
-- SharpCompress 0.37.2
-- StreamJsonRpc 2.21.69
-- StyleCop.Analyzers 1.2.0-beta.556
-- System.CodeDom 9.0.4
-- System.CommandLine 2.0.0-beta4.22272.1
-- System.ComponentModel.Composition 9.0.4
-- System.Configuration.ConfigurationManager 9.0.4
-- System.Data.OleDb 9.0.4
-- System.Data.SqlClient 4.8.6
-- System.Diagnostics.EventLog 9.0.4
-- System.Diagnostics.PerformanceCounter 9.0.4
-- System.Drawing.Common 9.0.4
-- System.IO.Abstractions 22.0.13
-- System.IO.Abstractions.TestingHelpers 22.0.13
-- System.Management 9.0.4
-- System.Net.Http 4.3.4
-- System.Private.Uri 4.3.2
-- System.Reactive 6.0.1
-- System.Runtime.Caching 9.0.4
-- System.ServiceProcess.ServiceController 9.0.4
-- System.Text.Encoding.CodePages 9.0.4
-- System.Text.Json 9.0.4
-- System.Text.RegularExpressions 4.3.1
-- UnicodeInformation 2.6.0
-- UnitsNet 5.56.0
-- UTF.Unknown 2.5.1
-- WinUIEx 2.2.0
-- WPF-UI 3.0.5
-- WyHash 1.0.5
-
+- AdaptiveCards.ObjectModel.WinUI3
+- AdaptiveCards.Rendering.WinUI3
+- AdaptiveCards.Templating
+- Appium.WebDriver
+- Azure.AI.OpenAI
+- CoenM.ImageSharp.ImageHash
+- CommunityToolkit.Common
+- CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
+- CommunityToolkit.Mvvm
+- CommunityToolkit.WinUI.Animations
+- CommunityToolkit.WinUI.Collections
+- CommunityToolkit.WinUI.Controls.Primitives
+- CommunityToolkit.WinUI.Controls.Segmented
+- CommunityToolkit.WinUI.Controls.SettingsControls
+- CommunityToolkit.WinUI.Controls.Sizers
+- CommunityToolkit.WinUI.Converters
+- CommunityToolkit.WinUI.Extensions
+- CommunityToolkit.WinUI.UI.Controls.DataGrid
+- ControlzEx
+- HelixToolkit
+- HelixToolkit.Core.Wpf
+- hyjiacan.pinyin4net
+- Interop.Microsoft.Office.Interop.OneNote
+- LazyCache
+- Mages
+- Markdig.Signed
+- MessagePack
+- ModernWpfUI
+- Moq
+- MSTest
+- NJsonSchema
+- NLog
+- NLog.Extensions.Logging
+- NLog.Schema
+- OpenAI
+- ReverseMarkdown
+- ScipBe.Common.Office.OneNote
+- SharpCompress
+- SkiaSharp.Views.WinUI
+- StreamJsonRpc
+- StyleCop.Analyzers
+- UnicodeInformation
+- UnitsNet
+- UTF.Unknown
+- WinUIEx
+- WPF-UI
+- WyHash
