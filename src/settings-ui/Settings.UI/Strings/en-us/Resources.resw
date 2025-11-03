@@ -4360,7 +4360,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Sort utilities</value>
   </data>
   <data name="Dashboard_SortAlphabetical.Text" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>Alphabetically</value>
   </data>
   <data name="Dashboard_SortByStatus.Text" xml:space="preserve">
     <value>Status</value>
