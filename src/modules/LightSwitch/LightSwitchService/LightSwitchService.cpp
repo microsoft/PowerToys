@@ -258,7 +258,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         prevMode = settings.scheduleMode;
 
         ULONGLONG nowTick = GetTickCount64();
-        bool recentSettingsReload = (nowTick - lastSettingsReload < 5000);
+        bool recentSettingsReload = (nowTick - lastSettingsReload < 2000);
 
         Logger::debug(L"[LightSwitchService] Current g_lastUpdatedDay value = {}.", g_lastUpdatedDay);
 
@@ -280,7 +280,21 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             GetLocalTime(&st);
             int nowMinutes = st.wHour * 60 + st.wMinute;
 
-            bool shouldBeLight = (settings.lightTime < settings.darkTime) ? (nowMinutes >= settings.lightTime && nowMinutes < settings.darkTime) : (nowMinutes >= settings.lightTime || nowMinutes < settings.darkTime);
+            int lightBoundary = 0;
+            int darkBoundary = 0;
+
+            if (settings.scheduleMode == ScheduleMode::SunsetToSunrise)
+            {
+                lightBoundary = (settings.lightTime + settings.sunrise_offset) % 1440;
+                darkBoundary = (settings.darkTime + settings.sunset_offset) % 1440;
+            }
+            else
+            {
+                lightBoundary = settings.lightTime;
+                darkBoundary = settings.darkTime;
+            }
+
+            bool shouldBeLight = (lightBoundary < darkBoundary) ? (nowMinutes >= lightBoundary && nowMinutes < darkBoundary) : (nowMinutes >= lightBoundary || nowMinutes < darkBoundary);
 
             Logger::debug(L"[LightSwitchService] shouldBeLight = {}", shouldBeLight);
 
@@ -289,14 +303,38 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
             if (systemMismatch || appsMismatch)
             {
-                Logger::info(L"[LightSwitchService] External {} theme change detected, enabling manual override.",
-                              systemMismatch && appsMismatch ? L"system/app" :
-                              systemMismatch                 ? L"system" :
-                                                              L"app");
-                SetEvent(hManualOverride);
-                skipRest = true;
+              // Make sure this is not because we crossed a boundary
+              bool crossedBoundary = false;
+              if (prevMinutes != -1)
+              {
+                  if (nowMinutes < prevMinutes)
+                  {
+                      // wrapped around midnight
+                      crossedBoundary = (prevMinutes <= lightBoundary || nowMinutes >= lightBoundary) ||
+                                        (prevMinutes <= darkBoundary || nowMinutes >= darkBoundary);
+                  }
+                  else
+                  {
+                      crossedBoundary = (prevMinutes < lightBoundary && nowMinutes >= lightBoundary) ||
+                                        (prevMinutes < darkBoundary && nowMinutes >= darkBoundary);
+                  }
+              }
+
+              if (crossedBoundary)
+              {
+                  Logger::info(L"[LightSwitchService] Missed boundary detected. Applying theme instead of triggering manual override.");
+                  LightSwitchSettings::instance().ApplyThemeIfNecessary();
+              }
+              else
+              {
+                  Logger::info(L"[LightSwitchService] External {} theme change detected, enabling manual override.",
+                               systemMismatch && appsMismatch ? L"system/app" :
+                               systemMismatch                 ? L"system" :
+                                                                L"app");
+                  SetEvent(hManualOverride);
+                  skipRest = true;
+              }
             }
-            
         }
         else
         {
