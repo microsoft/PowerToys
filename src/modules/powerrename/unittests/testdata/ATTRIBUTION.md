@@ -8,15 +8,15 @@ This directory contains test image files used for PowerRename metadata extractio
 
 **License:** [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/)
 
-- `exif_test.jpg` - Uploaded by [Carlseibert](https://commons.wikimedia.org/wiki/File%3AMetadata_test_file_-_includes_data_in_IIM%2C_XMP%2C_and_Exif.jpg?utm_source=chatgpt.com) on Wikimedia Commons
-- `xmp_test.jpg` - Uploaded by [Carlseibert](https://commons.wikimedia.org/wiki/File%3AMetadata_test_file_-_includes_data_in_IIM%2C_XMP%2C_and_Exif.jpg?utm_source=chatgpt.com) on Wikimedia Commons
+- `exif_test.jpg` - Uploaded by [Carlseibert](https://commons.wikimedia.org/wiki/File%3AMetadata_test_file_-_includes_data_in_IIM%2C_XMP%2C_and_Exif.jpg) on Wikimedia Commons
+- `xmp_test.jpg` - Uploaded by [Carlseibert](https://commons.wikimedia.org/wiki/File%3AMetadata_test_file_-_includes_data_in_IIM%2C_XMP%2C_and_Exif.jpg) on Wikimedia Commons
 
 ### Files from Edward Steven
 
 **License:** [Creative Commons Attribution-ShareAlike 2.0 Generic (CC BY-SA 2.0)](https://creativecommons.org/licenses/by-sa/2.0/)
 
-- `exif_test_2.jpg` - Uploaded by Edward Steven on Wikimedia Commons [link](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg?utm_source=chatgpt.com)
-- `xmp_test_2.jpg` - Uploaded by Edward Steven on Wikimedia Commons [link](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg?utm_source=chatgpt.com)
+- `exif_test_2.jpg` - Uploaded by Edward Steven on Wikimedia Commons [link](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg)
+- `xmp_test_2.jpg` - Uploaded by Edward Steven on Wikimedia Commons [link](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg)
 
 ## Acknowledgments
 
