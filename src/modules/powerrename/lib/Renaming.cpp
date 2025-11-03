@@ -285,6 +285,3 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     return wouldRename;
 }
-
-
-
