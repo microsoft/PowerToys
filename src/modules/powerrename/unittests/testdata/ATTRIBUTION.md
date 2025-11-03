@@ -15,8 +15,8 @@ This directory contains test image files used for PowerRename metadata extractio
 
 **License:** [Creative Commons Attribution-ShareAlike 2.0 Generic (CC BY-SA 2.0)](https://creativecommons.org/licenses/by-sa/2.0/)
 
-- `exif_test_2.jpg` - Uploaded by Edward Steven on Wikimedia Commons [link](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg)
-- `xmp_test_2.jpg` - Uploaded by Edward Steven on Wikimedia Commons [link](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg)
+- `exif_test_2.jpg` - Uploaded by [Edward Steven](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg) on Wikimedia Commons
+- `xmp_test_2.jpg` - Uploaded by [Edward Steven](https://commons.wikimedia.org/wiki/File%3AAreca_hutchinsoniana.jpg) on Wikimedia Commons
 
 ## Acknowledgments
 
