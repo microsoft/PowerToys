@@ -4366,7 +4366,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Status</value>
   </data>
   <data name="Dashboard_SortBy.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Sort by</value>
+    <value>Sort</value>
   </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
