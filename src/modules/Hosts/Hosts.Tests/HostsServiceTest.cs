@@ -298,7 +298,7 @@ namespace Hosts.Tests
             var fs = new CustomMockFileSystem();
             var settings = new Mock<IUserSettings>();
             settings.Setup(s => s.NoLeadingSpaces).Returns(true);
-            var svc = new HostsService(fs, settings.Object, _elevationHelper.Object);
+            var svc = new HostsService(fs, settings.Object, _elevationHelper.Object, _backupManager.Object);
             fs.AddFile(svc.HostsFilePath, new MockFileData(content));
 
             var data = await svc.ReadAsync();
