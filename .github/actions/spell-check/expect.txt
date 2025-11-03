@@ -2,8 +2,8 @@ AAAAs
 abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
-ABOUTBOX
 ABORTIFHUNG
+ABOUTBOX
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -94,11 +94,11 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
-ATX
 ATRIOX
+ATX
 aumid
-authenticode
 Authenticode
+authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -112,10 +112,10 @@ AValid
 AWAYMODE
 azcliversion
 azman
+backticks
 bbwe
 BCIE
 bck
-backticks
 BESTEFFORT
 bezelled
 bhid
@@ -143,8 +143,8 @@ bmi
 BNumber
 BODGY
 BOklab
-Bootstrappers
 BOOTSTRAPPERINSTALLFOLDER
+Bootstrappers
 BOTTOMALIGN
 boxmodel
 BPBF
@@ -197,7 +197,6 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
-CIBUILD
 cidl
 CIELCh
 cim
@@ -252,7 +251,6 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
-coreclr
 constexpr
 contentdialog
 contentfiles
@@ -264,6 +262,7 @@ copiedcolorrepresentation
 coppied
 copyable
 COPYPEN
+coreclr
 COREWINDOW
 Corpor
 cotaskmem
@@ -272,9 +271,9 @@ countof
 covrun
 cpcontrols
 cph
-cppcoreguidelines
 cplusplus
 CPower
+cppcoreguidelines
 cpptools
 cppvsdbg
 cppwinrt
@@ -389,7 +388,6 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
-djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -449,8 +447,8 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
-ekus
 eku
+ekus
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -574,13 +572,13 @@ gdi
 gdiplus
 GDIPVER
 GDISCALED
+geolocator
 GETCLIENTAREAANIMATION
 GETCURSEL
 GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
-geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -590,8 +588,8 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
-gitmodules
 GHND
+gitmodules
 GMEM
 GNumber
 gpedit
@@ -601,6 +599,7 @@ gpp
 gpu
 gradians
 Gridcustomlayout
+Groq
 GSM
 gtm
 guiddata
@@ -711,7 +710,6 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
 IDCANCEL
@@ -770,7 +768,6 @@ INSTALLFOLDERTOPREVIOUSINSTALLFOLDER
 INSTALLLOCATION
 INSTALLMESSAGE
 INSTALLPROPERTY
-installscopeperuser
 INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
@@ -826,15 +823,14 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
-ksa
 kvp
 Kybd
 LARGEICON
 lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
-LCh
 lbl
+LCh
 lcid
 LCIDTo
 lcl
@@ -850,10 +846,10 @@ LExit
 lhwnd
 LIBFUZZER
 LIBID
+lightswitch
 LIMITSIZE
 LIMITTEXT
 lindex
-lightswitch
 linkid
 LINKOVERLAY
 LINQTo
@@ -864,6 +860,7 @@ LLKH
 llkhf
 LMEM
 LMENU
+lng
 LOADFROMFILE
 LOBYTE
 localappdata
@@ -873,16 +870,14 @@ LOCATIONCHANGE
 LOCKTYPE
 LOGFONT
 LOGFONTW
-logon
 LOGMSG
+logon
 LOGPIXELSX
 LOGPIXELSY
-lng
 lon
 longdate
 LONGNAMES
 lowlevel
-lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -916,6 +911,7 @@ lpv
 LPW
 lpwcx
 lpwndpl
+lquadrant
 LReader
 LRESULT
 LSTATUS
@@ -1010,9 +1006,6 @@ mousepointer
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
-muxx
-muxxc
-muxxh
 MRM
 MRT
 mru
@@ -1045,6 +1038,9 @@ MTND
 MULTIPLEUSE
 multizone
 muxc
+muxx
+muxxc
+muxxh
 MVPs
 mvvm
 MVVMTK
@@ -1162,8 +1158,8 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
-nullref
 nullonfailure
+nullref
 numberbox
 nwc
 ocr
@@ -1385,8 +1381,8 @@ quickaccent
 QUNS
 RAII
 RAlt
-RAquadrant
 randi
+RAquadrant
 rasterization
 Rasterize
 RAWINPUTDEVICE
@@ -1413,9 +1409,7 @@ regfile
 REGISTERCLASSFAILED
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
-registryroot
 regkey
-regroot
 regsvr
 REINSTALLMODE
 releaseblog
@@ -1468,7 +1462,6 @@ rstringalpha
 rstringdigit
 rtb
 RTLREADING
-rtm
 runas
 rundll
 rungameid
@@ -1524,8 +1517,8 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
-settingscard
 SETTINGCHANGE
+settingscard
 SETTINGSCHANGED
 settingsheader
 settingshotkeycontrol
@@ -1681,7 +1674,6 @@ sublang
 SUBMODULEUPDATE
 subresource
 Superbar
-suntimes
 sut
 svchost
 SVGIn
@@ -1715,7 +1707,6 @@ SYSTEMMODAL
 SYSTEMTIME
 TARG
 TARGETAPPHEADER
-TARGETDIR
 targetentrypoint
 TARGETHEADER
 targetver
@@ -1745,10 +1736,10 @@ textextractor
 TEXTINCLUDE
 tfopen
 tgz
+THEMECHANGED
 themeresources
 THH
 THICKFRAME
-THEMECHANGED
 THISCOMPONENT
 throughs
 TILEDWINDOW
@@ -2058,8 +2049,8 @@ YPels
 YPos
 YResolution
 YSpeed
-YTimer
 YStr
+YTimer
 YVIRTUALSCREEN
 ZEROINIT
 zonability
