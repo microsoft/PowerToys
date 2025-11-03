@@ -60,6 +60,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Hosts: return generalSettingsConfig.Enabled.Hosts;
                 case ModuleType.ImageResizer: return generalSettingsConfig.Enabled.ImageResizer;
                 case ModuleType.KeyboardManager: return generalSettingsConfig.Enabled.KeyboardManager;
+                case ModuleType.KeystrokeOverlay: return generalSettingsConfig.Enabled.KeystrokeOverlay;
                 case ModuleType.MouseHighlighter: return generalSettingsConfig.Enabled.MouseHighlighter;
                 case ModuleType.MouseJump: return generalSettingsConfig.Enabled.MouseJump;
                 case ModuleType.MousePointerCrosshairs: return generalSettingsConfig.Enabled.MousePointerCrosshairs;
@@ -97,6 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
                 case ModuleType.ImageResizer: generalSettingsConfig.Enabled.ImageResizer = isEnabled; break;
                 case ModuleType.KeyboardManager: generalSettingsConfig.Enabled.KeyboardManager = isEnabled; break;
+                case ModuleType.KeystrokeOverlay: generalSettingsConfig.Enabled.KeystrokeOverlay = isEnabled; break;
                 case ModuleType.MouseHighlighter: generalSettingsConfig.Enabled.MouseHighlighter = isEnabled; break;
                 case ModuleType.MouseJump: generalSettingsConfig.Enabled.MouseJump = isEnabled; break;
                 case ModuleType.MousePointerCrosshairs: generalSettingsConfig.Enabled.MousePointerCrosshairs = isEnabled; break;
@@ -132,6 +134,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Hosts: return GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
                 case ModuleType.ImageResizer: return GPOWrapper.GetConfiguredImageResizerEnabledValue();
                 case ModuleType.KeyboardManager: return GPOWrapper.GetConfiguredKeyboardManagerEnabledValue();
+                case ModuleType.KeystrokeOverlay: return GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue();
                 case ModuleType.MouseHighlighter: return GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
                 case ModuleType.MouseJump: return GPOWrapper.GetConfiguredMouseJumpEnabledValue();
                 case ModuleType.MousePointerCrosshairs: return GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();
@@ -169,6 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.Hosts => typeof(HostsPage),
                 ModuleType.ImageResizer => typeof(ImageResizerPage),
                 ModuleType.KeyboardManager => typeof(KeyboardManagerPage),
+                ModuleType.KeystrokeOverlay => typeof(KeystrokeOverlayPage),
                 ModuleType.MouseHighlighter => typeof(MouseUtilsPage),
                 ModuleType.MouseJump => typeof(MouseUtilsPage),
                 ModuleType.MousePointerCrosshairs => typeof(MouseUtilsPage),

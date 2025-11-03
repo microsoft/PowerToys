@@ -532,7 +532,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool keystrokeOverlay;
 
-        [JsonPropertyName("ZoomIt")]
+        [JsonPropertyName("KeystrokeOverlay")]
         public bool KeystrokeOverlay
         {
             get => keystrokeOverlay;
