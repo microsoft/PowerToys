@@ -117,17 +117,8 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
-    try
-    {
-        winrt::init_apartment(winrt::apartment_type::single_threaded);
-    }
-    catch (winrt::hresult_error const& e)
-    {
-        if (e.code() != RPC_E_CHANGED_MODE)
-        {
-            throw;
-        }
-    }
+    // WinUI3 framework automatically initializes COM as STA on the main thread
+    // No manual initialization needed for WIC operations
 
     LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
 
@@ -249,7 +240,6 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         }
 #else
 #define BUFSIZE 4096 * 4
-
         BOOL bSuccess;
         WCHAR chBuf[BUFSIZE];
         DWORD dwRead;
