@@ -39,20 +39,6 @@ namespace HelpersTests
             Assert::AreEqual(L"photo_Canon_$ISO", result);
         }
 
-        TEST_METHOD(UnsupportedPatternShowsPatternName)
-        {
-            // Test that patterns with "unsupported" value show the pattern name with $ prefix
-            PowerRenameLib::MetadataPatternMap patterns;
-            patterns[L"CAMERA_MAKE"] = L"Canon";
-            patterns[L"ISO"] = L"unsupported";
-
-            wchar_t result[MAX_PATH] = { 0 };
-            HRESULT hr = GetMetadataFileName(result, MAX_PATH, L"photo_$CAMERA_MAKE_$ISO", patterns);
-
-            Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"photo_Canon_$ISO", result);
-        }
-
         TEST_METHOD(EmptyPatternShowsPatternName)
         {
             // Test that patterns with empty value show the pattern name with $ prefix

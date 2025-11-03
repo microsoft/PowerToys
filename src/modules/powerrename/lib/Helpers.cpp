@@ -50,8 +50,8 @@ namespace
     {
         auto it = patterns.find(patternName);
 
-        // Return actual value if found and valid (non-empty and not "unsupported")
-        if (it != patterns.end() && !it->second.empty() && it->second != L"unsupported")
+        // Return actual value if found and valid (non-empty)
+        if (it != patterns.end() && !it->second.empty())
         {
             return it->second;
         }
