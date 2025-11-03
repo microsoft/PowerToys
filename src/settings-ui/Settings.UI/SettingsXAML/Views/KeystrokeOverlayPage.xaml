@@ -77,13 +77,6 @@
                                     IsAlphaEnabled="True" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard Name="TextOpacity" x:Uid="KeystrokeOverlay_TextOpacity">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100"
-                                    Minimum="0"
-                                    Value="{x:Bind ViewModel.TextOpacity, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
