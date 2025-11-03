@@ -4357,7 +4357,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Home</value>
   </data>
   <data name="Dashboard_SortBy_ToolTip.Text" xml:space="preserve">
-    <value>Sort items</value>
+    <value>Sort utilities</value>
   </data>
   <data name="Dashboard_SortAlphabetical.Text" xml:space="preserve">
     <value>Alphabetical</value>
