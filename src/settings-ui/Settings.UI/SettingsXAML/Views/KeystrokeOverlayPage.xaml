@@ -53,44 +53,64 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="KeystrokeOverlay_Appearance" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+
+                    <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="2"
+                            Minimum="8"
+                            Maximum="128"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
                     <tkcontrols:SettingsExpander
                         Name="KeystrokeOverlay_TextAppearance"
                         x:Uid="KeystrokeOverlay_TextAppearance"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
                         IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="2"
-                                    Minimum="8"
-                                    Maximum="128"
-                                    SmallChange="1"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard Name="TextColor" x:Uid="KeystrokeOverlay_TextColor">
-                                <controls:ColorPickerButton
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    SelectedColor="{x:Bind ViewModel.TextColorColor, Mode=TwoWay}"
-                                    IsAlphaEnabled="True" />
-                            </tkcontrols:SettingsCard>
-
-                        </tkcontrols:SettingsExpander.Items>
+                        <Rectangle Height="50" Width="50">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{x:Bind TextColorPicker.Color, Mode=OneWay}"/>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <tkcontrols:SettingsExpander.Content>
+                            <ColorPicker x:Name="TextColorPicker"
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SelectedColor="{x:Bind ViewModel.TextColorColor, Mode=TwoWay}"
+                                Orientation="Horizontal"
+                                IsAlphaEnabled="True"
+                                IsColorPreviewVisible="True"
+                                IsHexInputVisible="True"
+                                IsColorSliderVisible="True"
+                                IsColorChannelTextInputVisible="True"
+                            />
+                        </tkcontrols:SettingsExpander.Content>
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
-                        Name="KeystrokeOverlay_BackgroundColor"
-                        x:Uid="KeystrokeOverlay_BackgroundColor"
+                        Name="KeystrokeOverlay_BackgroundAppearance"
+                        x:Uid="KeystrokeOverlay_BackgroundAppearance"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
                         IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <controls:ColorPickerButton
+                        <Rectangle Height="50" Width="50">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{x:Bind BackgroundColorPicker.Color, Mode=OneWay}"/>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <tkcontrols:SettingsExpander.Content>
+                            <ColorPicker x:Name="BackgroundColorPicker"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 SelectedColor="{x:Bind ViewModel.BackgroundColorColor, Mode=TwoWay}"
-                                IsAlphaEnabled="True" />
-                        </tkcontrols:SettingsExpander.Items>
+                                Orientation="Horizontal"
+                                IsAlphaEnabled="True"
+                                IsColorPreviewVisible="True"
+                                IsHexInputVisible="True"
+                                IsColorSliderVisible="True"
+                                IsColorChannelTextInputVisible="True"
+                            />
+                        </tkcontrols:SettingsExpander.Content>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>

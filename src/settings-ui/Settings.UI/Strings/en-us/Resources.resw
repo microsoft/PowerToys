@@ -5532,11 +5532,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="KeystrokeOverlay_TextSize.Header" xml:space="preserve">
     <value>Size</value>
   </data>
-  <data name="KeystrokeOverlay_TextColor.Header" xml:space="preserve">
-    <value>Text Color</value>
+  <data name="KeystrokeOverlay_TextAppearance.Header" xml:space="preserve">
+    <value>Text Color and Opacity</value>
   </data>
-  <data name="KeystrokeOverlay_BackgroundColor.Header" xml:space="preserve">
-    <value>Background Color</value>
+  <data name="KeystrokeOverlay_BackgroundAppearance.Header" xml:space="preserve">
+    <value>Background Color and Opacity</value>
   </data>
   <data name="LearnMore_KeystrokeOverlay.Text" xml:space="preserve">
     <value>Learn more about Keystroke Overlay</value>
