@@ -19,12 +19,12 @@
                     <tkcontrols:SettingsCard
                         Name="KeystrokeOverlayEnable"
                         x:Uid="KeystrokeOverlay_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeystrokeOverlay.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                       HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
+                        <ToggleSwitch x:Uid="KeystrokeOverlay_ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="KeystrokeOverlay_Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="SwitchMonitorHotkeyCard" x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchMonitorHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
@@ -32,8 +32,8 @@
                     <tkcontrols:SettingsCard Name="DraggableOverlay" x:Uid="KeystrokeOverlay_DraggableOverlay">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsDraggableOverlayEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                   
-                    <tkcontrols:SettingsCard Name="DisplayMode" x:Uid="KeystrokeOverlay_DisplayMode">
+
+                    <tkcontrols:SettingsCard Name="DisplayMode" x:Uid="KeystrokeOverlay_DisplayMode" HeaderIcon="{ui:FontIcon Glyph=&#xE8B9;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DisplayMode, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_LastFiveKeystrokes" />
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_SingleCharactersOnly" />
@@ -52,47 +52,53 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Appearance" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize">
-                        <NumberBox
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            LargeChange="2"
-                            Minimum="8"
-                            Maximum="128"
-                            SmallChange="1"
-                            SpinButtonPlacementMode="Compact"
-                            Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                <controls:SettingsGroup x:Uid="KeystrokeOverlay_Appearance" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="KeystrokeOverlay_TextAppearance"
+                        x:Uid="KeystrokeOverlay_TextAppearance"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="2"
+                                    Minimum="8"
+                                    Maximum="128"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="TextColor" x:Uid="KeystrokeOverlay_TextColor">
-                        <controls:ColorPickerButton
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SelectedColor="{x:Bind ViewModel.TextColorColor, Mode=TwoWay}"
-                            IsAlphaEnabled="False" />
-                    </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="TextColor" x:Uid="KeystrokeOverlay_TextColor">
+                                <controls:ColorPickerButton
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    SelectedColor="{x:Bind ViewModel.TextColorColor, Mode=TwoWay}"
+                                    IsAlphaEnabled="True" />
+                            </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="TextOpacity" x:Uid="KeystrokeOverlay_TextOpacity">
-                        <Slider
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            Maximum="100"
-                            Minimum="0"
-                            Value="{x:Bind ViewModel.TextOpacity, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="TextOpacity" x:Uid="KeystrokeOverlay_TextOpacity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Value="{x:Bind ViewModel.TextOpacity, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard Name="BackgroundColor" x:Uid="KeystrokeOverlay_BackgroundColor">
-                        <controls:ColorPickerButton
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            SelectedColor="{x:Bind ViewModel.BackgroundColorColor, Mode=TwoWay}"
-                            IsAlphaEnabled="False" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard Name="BackgroundOpacity" x:Uid="KeystrokeOverlay_BackgroundOpacity">
-                        <Slider
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            Maximum="100"
-                            Minimum="0"
-                            Value="{x:Bind ViewModel.BackgroundOpacity, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander
+                        Name="KeystrokeOverlay_BackgroundColor"
+                        x:Uid="KeystrokeOverlay_BackgroundColor"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <controls:ColorPickerButton
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                SelectedColor="{x:Bind ViewModel.BackgroundColorColor, Mode=TwoWay}"
+                                IsAlphaEnabled="True" />
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
