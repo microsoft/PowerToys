@@ -63,6 +63,7 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
                         </ComboBox>
                     </controls:SettingsCard>
 

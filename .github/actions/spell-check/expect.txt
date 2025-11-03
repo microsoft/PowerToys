@@ -97,6 +97,7 @@ atl
 ATX
 ATRIOX
 aumid
+authenticode
 Authenticode
 AUTOBUDDY
 AUTOCHECKBOX
@@ -142,6 +143,7 @@ bmi
 BNumber
 BODGY
 BOklab
+Bootstrappers
 BOOTSTRAPPERINSTALLFOLDER
 BOTTOMALIGN
 boxmodel
@@ -516,6 +518,7 @@ FARPROC
 fdx
 fesf
 FFFF
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -750,7 +753,7 @@ INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
-Inlines
+inlines
 INPC
 inproc
 INPUTHARDWARE
@@ -1029,6 +1032,7 @@ msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIRESTARTMANAGERCONTROL
+MSIs
 msixbundle
 MSIXCA
 MSLLHOOKSTRUCT

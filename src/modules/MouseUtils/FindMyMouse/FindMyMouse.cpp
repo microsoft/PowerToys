@@ -189,7 +189,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         return false;
     }
 
-    DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
+    DWORD exStyle = WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
     HWND created = CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this);
     if (!created)
     {
