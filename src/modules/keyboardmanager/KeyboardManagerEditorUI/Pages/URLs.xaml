@@ -41,7 +41,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="236" />
+                    <ColumnDefinition Width="348" />
                     <ColumnDefinition Width="236" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="84" />
@@ -80,8 +80,8 @@
                         <DataTemplate x:DataType="helper:URLShortcut">
                             <Grid Height="48">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="232" />
-                                    <ColumnDefinition Width="238" />
+                                    <ColumnDefinition Width="348" />
+                                    <ColumnDefinition Width="476" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="84" />
                                 </Grid.ColumnDefinitions>
@@ -115,13 +115,23 @@
                                     Grid.Column="1"
                                     Margin="-12,0,0,0"
                                     Content="{x:Bind URL}" />
-                                <ToggleSwitch
+                                <Button
                                     Grid.ColumnSpan="4"
-                                    Margin="0,0,-112,0"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4"
                                     HorizontalAlignment="Right"
-                                    IsOn="True"
-                                    OffContent=""
-                                    OnContent="" />
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Delete URL shortcut"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="DeleteButton_Click"
+                                    ToolTipService.ToolTip="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DeleteTooltip')}">
+                                        <FontIcon
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        FontSize="16"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xE74D;" />
+                                </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -136,30 +146,12 @@
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
             PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogPrimary')}"
             SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogSecondary')}">
-            <StackPanel
-                Width="320"
-                Height="264"
-                Orientation="Vertical">
-                <TextBlock Margin="0,12,0,8" Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Shortcut')}" />
-                <ToggleButton
-                    x:Name="OriginalToggleBtn"
-                    Padding="0,24,0,24"
-                    HorizontalAlignment="Stretch"
-                    Style="{StaticResource CustomShortcutToggleButtonStyle}">
-                    <ToggleButton.Content>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <controls:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_WinLeft')}" Style="{StaticResource DefaultKeyVisualStyle}" />
-                            <controls:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_B')}" Style="{StaticResource DefaultKeyVisualStyle}" />
-                        </StackPanel>
-                    </ToggleButton.Content>
-                </ToggleButton>
-                <TextBox
-                    Margin="0,24,0,0"
-                    Header="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_UrlHeader')}"
-                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_UrlVal')}" />
-            </StackPanel>
+            <Grid>
+                <controls:UrlPageInputControl x:Name="UrlShortcutControl"/>
+            </Grid>
         </ContentDialog>
     </Grid>
 </Page>

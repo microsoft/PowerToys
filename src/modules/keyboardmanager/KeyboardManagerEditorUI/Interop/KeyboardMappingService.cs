@@ -197,7 +197,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return false;
             }
 
-            if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri && !string.IsNullOrEmpty(shortcutKeyMapping.UriToOpen))
+            if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri && string.IsNullOrEmpty(shortcutKeyMapping.UriToOpen))
             {
                 return false;
             }

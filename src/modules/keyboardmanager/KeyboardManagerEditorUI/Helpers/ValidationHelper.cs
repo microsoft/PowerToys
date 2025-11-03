@@ -133,7 +133,7 @@ namespace KeyboardManagerEditorUI.Helpers
         }
 
         // Temporary program shorctut validation
-        public static ValidationErrorType ValidateProgramMapping(
+        public static ValidationErrorType ValidateProgramOrUrlMapping(
             List<string> originalKeys,
             bool isAppSpecific,
             string appName,

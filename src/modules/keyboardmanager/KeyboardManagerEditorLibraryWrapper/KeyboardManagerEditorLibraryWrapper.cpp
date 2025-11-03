@@ -516,13 +516,13 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                           const wchar_t* originalKeys,
                           const wchar_t* targetKeys,
                           const wchar_t* targetApp,
-                          int operationType = 0, 
-                          const wchar_t* appPathOrUri = nullptr,
-                          const wchar_t* args = nullptr,
-                          const wchar_t* startDirectory = nullptr,
-                          int elevation = 0,
-                          int ifRunningAction = 0,
-                          int visibility = 0)
+                          int operationType, 
+                          const wchar_t* appPathOrUri,
+                          const wchar_t* args,
+                          const wchar_t* startDirectory,
+                          int elevation,
+                          int ifRunningAction,
+                          int visibility)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
@@ -541,11 +541,16 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             }
             if (startDirectory)
             {
-                std::get<Shortcut>(targetShortcut).runProgramStartInDir == std::wstring(startDirectory);
+                std::get<Shortcut>(targetShortcut).runProgramStartInDir = std::wstring(startDirectory);
             }
             std::get<Shortcut>(targetShortcut).elevationLevel = static_cast<Shortcut::ElevationLevel>(elevation);
             std::get<Shortcut>(targetShortcut).alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(ifRunningAction);
             std::get<Shortcut>(targetShortcut).startWindowType = static_cast<Shortcut::StartWindowType>(visibility);
+            std::get<Shortcut>(targetShortcut).operationType = static_cast<Shortcut::OperationType>(operationType);
+            break;
+        case 2:
+            targetShortcut = Shortcut(targetKeys);
+            std::get<Shortcut>(targetShortcut).uriToOpen = std::wstring(appPathOrUri);
             std::get<Shortcut>(targetShortcut).operationType = static_cast<Shortcut::OperationType>(operationType);
             break;
         case 3:

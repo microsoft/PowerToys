@@ -63,7 +63,13 @@ extern "C"
                                                 const wchar_t* originalKeys,
                                                 const wchar_t* targetKeys,
                                                 const wchar_t* targetApp,
-                                                int operationType);
+                                                int operationType,
+                                                const wchar_t* appPathOrUri = nullptr,
+                                                const wchar_t* args = nullptr,
+                                                const wchar_t* startDirectory = nullptr,
+                                                int elevation = 0,
+                                                int ifRunningAction = 0,
+                                                int visibility = 0);
 
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);

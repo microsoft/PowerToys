@@ -40,7 +40,7 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="236" />
+                    <ColumnDefinition Width="348" />
                     <ColumnDefinition Width="236" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="84" />
@@ -79,8 +79,8 @@
                         <DataTemplate x:DataType="helper:ProgramShortcut">
                             <Grid Height="48">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="232" />
-                                    <ColumnDefinition Width="238" />
+                                    <ColumnDefinition Width="348" />
+                                    <ColumnDefinition Width="476" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="84" />
                                 </Grid.ColumnDefinitions>
@@ -128,13 +128,23 @@
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
                                 </StackPanel>
-                                <ToggleSwitch
+                                <Button
                                     Grid.ColumnSpan="4"
-                                    Margin="0,0,-112,0"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4"
                                     HorizontalAlignment="Right"
-                                    IsOn="True"
-                                    OffContent=""
-                                    OnContent="" />
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Delete program shortcut"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="DeleteButton_Click"
+                                    ToolTipService.ToolTip="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DeleteTooltip')}">
+                                    <FontIcon
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        FontSize="16"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xE74D;" />
+                                </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -148,6 +158,7 @@
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
             PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogPrimary')}"
             SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogSecondary')}">
             <Grid>

@@ -56,6 +56,9 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Controls\UrlPageInputControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Styles\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

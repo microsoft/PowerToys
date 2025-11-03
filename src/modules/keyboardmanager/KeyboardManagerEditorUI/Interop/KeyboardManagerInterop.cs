@@ -80,7 +80,7 @@ namespace KeyboardManagerEditorUI.Interop
             [MarshalAs(UnmanagedType.LPWStr)] string targetKeys,
             [MarshalAs(UnmanagedType.LPWStr)] string targetApp,
             int operationType = 0,
-            [MarshalAs(UnmanagedType.LPWStr)] string? appPathOrUri = null,
+            [MarshalAs(UnmanagedType.LPWStr)] string appPathOrUri = "",
             [MarshalAs(UnmanagedType.LPWStr)] string? args = null,
             [MarshalAs(UnmanagedType.LPWStr)] string? startDirectory = null,
             int elevation = 0,

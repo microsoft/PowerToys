@@ -69,8 +69,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             Shortcuts.Clear();
 
-            // Load shortcut-to-text mappings
-            foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapText))
+            foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RunProgram))
             {
                 string[] originalKeyCodes = mapping.OriginalKeys.Split(';');
                 var originalKeyNames = new List<string>();
@@ -133,7 +132,7 @@ namespace KeyboardManagerEditorUI.Pages
             ProgramAlreadyRunningAction programAlreadyRunningAction = AppShortcutControl.GetIfRunningAction();
 
             // Validate inputs
-            ValidationErrorType errorType = ValidationHelper.ValidateProgramMapping(keys, false, string.Empty, _mappingService);
+            ValidationErrorType errorType = ValidationHelper.ValidateProgramOrUrlMapping(keys, false, string.Empty, _mappingService);
 
             if (errorType != ValidationErrorType.NoError)
             {
@@ -174,7 +173,9 @@ namespace KeyboardManagerEditorUI.Pages
                 // {
                 ShortcutKeyMapping shortcutKeyMapping = new ShortcutKeyMapping()
                 {
+                    OperationType = ShortcutOperationType.RunProgram,
                     OriginalKeys = originalKeysString,
+                    TargetKeys = originalKeysString,
                     ProgramPath = programPath,
                     ProgramArgs = programArgs,
                     IfRunningAction = programAlreadyRunningAction,
@@ -199,7 +200,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_mappingService == null || !(sender is Button button) || !(button.DataContext is TextMapping mapping))
+            if (_mappingService == null || !(sender is Button button) || !(button.DataContext is ProgramShortcut shortcut))
             {
                 return;
             }
@@ -207,10 +208,10 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 bool deleted = false;
-                if (mapping.Keys.Count == 1)
+                if (shortcut.Shortcut.Count == 1)
                 {
                     // Single key mapping
-                    int originalKey = _mappingService.GetKeyCodeFromName(mapping.Keys[0]);
+                    int originalKey = _mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]);
                     if (originalKey != 0)
                     {
                         deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
@@ -219,15 +220,15 @@ namespace KeyboardManagerEditorUI.Pages
                 else
                 {
                     // Shortcut mapping
-                    string originalKeys = string.Join(";", mapping.Keys.Select(k => _mappingService.GetKeyCodeFromName(k)));
-                    deleted = _mappingService.DeleteShortcutMapping(originalKeys, mapping.IsAllApps ? string.Empty : mapping.AppName);
+                    string originalKeys = string.Join(";", shortcut.Shortcut.Select(k => _mappingService.GetKeyCodeFromName(k)));
+                    deleted = _mappingService.DeleteShortcutMapping(originalKeys);
                 }
 
                 if (deleted)
                 {
                     _mappingService.SaveSettings();
-
-                    // TextMappings.Remove(mapping);
+                    Shortcuts.Remove(shortcut);
+                    LoadProgramShrotcuts();
                 }
             }
             catch (Exception ex)
