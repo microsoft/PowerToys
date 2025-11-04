@@ -15,7 +15,7 @@ namespace Peek.UI.Models
 
         public override bool Matches(string? path)
         {
-            return Path == path;
+            return string.Equals(Path, path, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
