@@ -5496,12 +5496,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_ThemeSwitchingSettingsGroup.Header" xml:space="preserve">
     <value>Theme Switching</value>
   </data>
-  <data name="LightSwitch_EnableThemeSwitching_Header.Text" xml:space="preserve">
-    <value>Enable theme switching</value>
-  </data>
-  <data name="LightSwitch_EnableThemeSwitching_Description.Text" xml:space="preserve">
-    <value>Allow Light Switch to swap theme files when the color mode changes</value>
-  </data>
   <data name="LightSwitch_LightThemePath.Header" xml:space="preserve">
     <value>Light theme file path</value>
   </data>
@@ -5523,5 +5517,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="LightSwitch_EnableThemeSwitching_Toggle.OffContent" xml:space="preserve">
     <value>Off</value>
+  </data>
+  <data name="LightSwitch_EnableThemeSwitching.Header" xml:space="preserve">
+    <value>Enable theme switching</value>
+  </data>
+  <data name="LightSwitch_EnableThemeSwitching.Description" xml:space="preserve">
+    <value>Allow Light Switch to swap theme files when the color mode changes</value>
   </data>
 </root>
