@@ -12,9 +12,6 @@ namespace LanguageModelProvider.FoundryLocal;
     WriteIndented = false)]
 [JsonSerializable(typeof(FoundryCatalogModel))]
 [JsonSerializable(typeof(List<FoundryCatalogModel>))]
-[JsonSerializable(typeof(FoundryDownloadResult))]
-[JsonSerializable(typeof(FoundryModelDownload))]
-[JsonSerializable(typeof(FoundryDownloadBody))]
 internal sealed partial class FoundryJsonContext : JsonSerializerContext
 {
 }
