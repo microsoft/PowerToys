@@ -17,15 +17,18 @@ internal sealed class FoundryClient
 
             var manager = new FoundryLocalManager();
 
-            // Use our own service start logic instead of SDK's StartServiceAsync
-            // SDK uses UseShellExecute=false which may have issues finding foundry.exe
-            if (!await EnsureFoundryServiceStarted(manager).ConfigureAwait(false))
+            // Check if service is already running
+            if (manager.IsServiceRunning)
             {
-                Logger.LogError("[FoundryClient] Failed to start Foundry Local service");
-                return null;
+                Logger.LogInfo("[FoundryClient] Foundry service is already running");
+                return new FoundryClient(manager);
             }
 
-            Logger.LogInfo("[FoundryClient] Foundry Local service is running");
+            // Start the service using SDK's method
+            Logger.LogInfo("[FoundryClient] Starting Foundry service using manager.StartServiceAsync()");
+            await manager.StartServiceAsync().ConfigureAwait(false);
+
+            Logger.LogInfo("[FoundryClient] Foundry service started successfully");
             return new FoundryClient(manager);
         }
         catch (Exception ex)
@@ -37,56 +40,6 @@ internal sealed class FoundryClient
             }
 
             return null;
-        }
-    }
-
-    private static async Task<bool> EnsureFoundryServiceStarted(FoundryLocalManager manager)
-    {
-        try
-        {
-            // Check if service is already running
-            if (manager.IsServiceRunning)
-            {
-                Logger.LogInfo("[FoundryClient] Foundry service is already running");
-                return true;
-            }
-
-            Logger.LogInfo("[FoundryClient] Starting foundry service with UseShellExecute=true");
-
-            // Start foundry service using UseShellExecute=true
-            // This ensures proper PATH resolution for App Execution Aliases
-            using var process = new System.Diagnostics.Process();
-            process.StartInfo.FileName = "foundry";
-            process.StartInfo.Arguments = "service start";
-            process.StartInfo.UseShellExecute = true; // Critical: ensures proper PATH search
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-
-            process.Start();
-
-            Logger.LogInfo("[FoundryClient] Foundry service start command executed, polling for readiness");
-
-            // Poll service status up to 3 times with 1 second intervals
-            for (int attempt = 1; attempt <= 3; attempt++)
-            {
-                await Task.Delay(1000).ConfigureAwait(false);
-
-                if (manager.IsServiceRunning)
-                {
-                    Logger.LogInfo($"[FoundryClient] Foundry service started successfully (attempt {attempt}/3)");
-                    return true;
-                }
-
-                Logger.LogInfo($"[FoundryClient] Service not ready yet (attempt {attempt}/3)");
-            }
-
-            Logger.LogError("[FoundryClient] Foundry service failed to start after 3 attempts");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[FoundryClient] Failed to start foundry service: {ex.Message}");
-            return false;
         }
     }
 
@@ -250,58 +203,6 @@ internal sealed class FoundryClient
         {
             Logger.LogError($"[FoundryClient] EnsureModelLoaded exception: {ex.Message}");
             return false;
-        }
-    }
-
-    public async Task<FoundryDownloadResult> DownloadModel(FoundryCatalogModel model, IProgress<float>? progress, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            Logger.LogInfo($"[FoundryClient] Downloading model: {model.Name}");
-            var models = await ListCachedModels().ConfigureAwait(false);
-
-            if (models.Any(m => m.Name == model.Name))
-            {
-                Logger.LogInfo($"[FoundryClient] Model already downloaded: {model.Name}");
-                return new(true, "Model already downloaded");
-            }
-
-            // Use the SDK's download with progress
-            // CA2016: The cancellationToken is properly forwarded via WithCancellation extension method
-#pragma warning disable CA2016
-            await foreach (var downloadProgress in _foundryManager.DownloadModelWithProgressAsync(model.Name).WithCancellation(cancellationToken).ConfigureAwait(false))
-#pragma warning restore CA2016
-            {
-                if (downloadProgress.Percentage >= 0 && downloadProgress.Percentage <= 100)
-                {
-                    progress?.Report((float)(downloadProgress.Percentage / 100));
-                }
-
-                if (downloadProgress.IsCompleted)
-                {
-                    Logger.LogInfo($"[FoundryClient] Download completed: {model.Name}");
-                    return new FoundryDownloadResult(true, "Download completed successfully");
-                }
-
-                if (!string.IsNullOrEmpty(downloadProgress.ErrorMessage))
-                {
-                    Logger.LogError($"[FoundryClient] Download error: {downloadProgress.ErrorMessage}");
-                    return new FoundryDownloadResult(false, downloadProgress.ErrorMessage);
-                }
-            }
-
-            Logger.LogInfo($"[FoundryClient] Download completed: {model.Name}");
-            return new FoundryDownloadResult(true, "Download completed successfully");
-        }
-        catch (OperationCanceledException)
-        {
-            Logger.LogInfo($"[FoundryClient] Download cancelled: {model.Name}");
-            return new FoundryDownloadResult(false, "Download was cancelled");
-        }
-        catch (Exception e)
-        {
-            Logger.LogError($"[FoundryClient] Download exception: {e.Message}");
-            return new FoundryDownloadResult(false, e.Message);
         }
     }
 }

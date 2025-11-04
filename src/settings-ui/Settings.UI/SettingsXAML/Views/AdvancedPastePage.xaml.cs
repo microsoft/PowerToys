@@ -467,9 +467,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 var cachedModels = cachedModelsEnumerable?.ToList() ?? new List<ModelDetails>();
-                var catalogModels = provider.GetAllModelsInCatalog()?.ToList() ?? new List<ModelDetails>();
 
-                UpdateFoundryCollections(cachedModels, catalogModels);
+                UpdateFoundryCollections(cachedModels, []);
                 ShowFoundryAvailableState();
                 RestoreFoundrySelection(cachedModels);
             }

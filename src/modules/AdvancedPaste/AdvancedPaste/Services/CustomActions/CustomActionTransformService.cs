@@ -11,8 +11,10 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Settings;
+using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -88,6 +90,10 @@ namespace AdvancedPaste.Services.CustomActions
 
                 var usage = request.Usage;
                 var content = providerContent ?? string.Empty;
+
+                // Log endpoint usage
+                var endpointEvent = new AdvancedPasteEndpointUsageEvent(providerConfig.ProviderType);
+                PowerToysTelemetry.Log.WriteEvent(endpointEvent);
 
                 Logger.LogDebug($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} complete; ModelName={providerConfig.Model ?? string.Empty}, PromptTokens={usage.PromptTokens}, CompletionTokens={usage.CompletionTokens}");
 

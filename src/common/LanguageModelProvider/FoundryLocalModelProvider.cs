@@ -13,7 +13,6 @@ namespace LanguageModelProvider;
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
     private IEnumerable<ModelDetails>? _downloadedModels;
-    private IEnumerable<ModelDetails>? _catalogModels;
     private FoundryClient? _foundryManager;
     private string? _serviceUrl;
 
@@ -130,32 +129,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         return _downloadedModels ?? [];
     }
 
-    public IEnumerable<ModelDetails> GetAllModelsInCatalog()
-    {
-        Logger.LogInfo($"[FoundryLocal] Returning {_catalogModels?.Count() ?? 0} catalog models");
-        return _catalogModels ?? [];
-    }
-
-    public async Task<bool> DownloadModel(ModelDetails modelDetails, IProgress<float>? progress, CancellationToken cancellationToken = default)
-    {
-        if (_foundryManager == null)
-        {
-            Logger.LogError("[FoundryLocal] Cannot download model: manager is null");
-            return false;
-        }
-
-        if (modelDetails.ProviderModelDetails is not FoundryCatalogModel model)
-        {
-            Logger.LogError("[FoundryLocal] Cannot download model: invalid model details type");
-            return false;
-        }
-
-        Logger.LogInfo($"[FoundryLocal] Starting download for model: {model.Name}");
-        var result = await _foundryManager.DownloadModel(model, progress, cancellationToken);
-        Logger.LogInfo($"[FoundryLocal] Download result: {result.Success}, error: {result.ErrorMessage ?? "none"}");
-        return result.Success;
-    }
-
     private void Reset()
     {
         _downloadedModels = null;
@@ -181,32 +154,10 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         _serviceUrl ??= await _foundryManager.GetServiceUrl();
         Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
 
-        if (_catalogModels == null || !_catalogModels.Any())
-        {
-            Logger.LogInfo("[FoundryLocal] Loading catalog models");
-            _catalogModels = (await _foundryManager.ListCatalogModels()).Select(ToModelDetails).ToArray();
-            Logger.LogInfo($"[FoundryLocal] Loaded {_catalogModels.Count()} catalog models");
-        }
-
         var cachedModels = await _foundryManager.ListCachedModels();
         Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
 
         List<ModelDetails> downloadedModels = [];
-
-        foreach (var model in _catalogModels)
-        {
-            var cachedModel = cachedModels.FirstOrDefault(m => m.Name == model.Name);
-
-            if (cachedModel != default)
-            {
-                // Use the actual model Name (ModelId), not the alias (Id)
-                model.Id = $"fl-{model.Name}";
-                model.Url = $"{UrlPrefix}{cachedModel.Name}";
-                Logger.LogInfo($"[FoundryLocal] Adding cached model: {model.Name}, URL: {model.Url}");
-                downloadedModels.Add(model);
-                cachedModels.Remove(cachedModel);
-            }
-        }
 
         foreach (var model in cachedModels)
         {
@@ -225,22 +176,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         _downloadedModels = downloadedModels;
         Logger.LogInfo($"[FoundryLocal] Initialization complete. Total downloaded models: {downloadedModels.Count}");
-    }
-
-    private ModelDetails ToModelDetails(FoundryCatalogModel model)
-    {
-        return new ModelDetails
-        {
-            Id = $"fl-{model.Name}",
-            Name = model.Name,
-            Url = $"{UrlPrefix}{model.Name}",
-            Description = $"{model.Alias} running locally with Foundry Local",
-            HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
-            Size = model.FileSizeMb * 1024 * 1024,
-            SupportedOnQualcomm = true,
-            License = model.License?.ToLowerInvariant() ?? string.Empty,
-            ProviderModelDetails = model,
-        };
     }
 
     public async Task<bool> IsAvailable()

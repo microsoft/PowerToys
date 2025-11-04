@@ -188,6 +188,12 @@ public abstract class KernelServiceBase(
     {
         AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage.PromptTokens, usage.CompletionTokens, AdvancedAIModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
         PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+
+        // Log endpoint usage
+        var runtimeConfig = GetRuntimeConfiguration();
+        var endpointEvent = new AdvancedPasteEndpointUsageEvent(runtimeConfig.ServiceType);
+        PowerToysTelemetry.Log.WriteEvent(endpointEvent);
+
         var logEvent = new AIServiceFormatEvent(telemetryEvent);
         Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {logEvent.ToJsonString()}");
     }
