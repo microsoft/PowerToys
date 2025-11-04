@@ -86,12 +86,15 @@ namespace ImageResizer.Services
             }
         }
 
-        public BitmapSource ApplySuperResolution(BitmapSource source, int scale, AiSuperResolutionContext context)
+        public BitmapSource ApplySuperResolution(BitmapSource source, int scale, string filePath)
         {
             if (source == null)
             {
                 return source;
             }
+
+            // Note: filePath parameter reserved for future use (e.g., logging, caching)
+            // Currently not used by the ImageScaler API
 
             // Check if ImageScaler is initialized
             // If not, return original image (AI not enabled or initialization failed)

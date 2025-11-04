@@ -52,7 +52,6 @@ namespace ImageResizer.Properties
         private CustomSize _customSize;
         private AiSize _aiSize;
         private bool _useAiSuperResolution;
-        private int _aiSuperResolutionScale;
         private bool _isAiArchitectureSupported;
 
         public Settings()
@@ -76,11 +75,10 @@ namespace ImageResizer.Properties
             KeepDateModified = false;
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
-            AiSize = new AiSize(2);
+            AiSize = new AiSize(2);  // Initialize with default scale of 2
             _isAiArchitectureSupported = CheckAiArchitectureSupport();
             AllSizes = new AllSizesCollection(this);
             UseAiSuperResolution = false;
-            AiSuperResolutionScale = 2;
         }
 
         /// <summary>
@@ -145,12 +143,6 @@ namespace ImageResizer.Properties
                 }
                 else
                 {
-                    // Sync AiSize.Scale with persisted AiSuperResolutionScale
-                    if (AiSize.Scale != AiSuperResolutionScale)
-                    {
-                        AiSize.Scale = AiSuperResolutionScale;
-                    }
-
                     return AiSize;
                 }
             }
@@ -510,23 +502,6 @@ namespace ImageResizer.Properties
         }
 
         [JsonConverter(typeof(WrappedJsonValueConverter))]
-        [JsonPropertyName("imageresizer_aiSuperResolutionScale")]
-        public int AiSuperResolutionScale
-        {
-            get => _aiSuperResolutionScale;
-            set
-            {
-                if (value < 1 || value > 8)
-                {
-                    value = 2;
-                }
-
-                _aiSuperResolutionScale = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_customSize")]
         public CustomSize CustomSize
         {
@@ -618,9 +593,6 @@ namespace ImageResizer.Properties
                 AiSize = jsonSettings.AiSize ?? new AiSize(2);
                 SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
                 UseAiSuperResolution = jsonSettings.UseAiSuperResolution;
-                AiSuperResolutionScale = jsonSettings.AiSuperResolutionScale is >= 1 and <= 8
-                    ? jsonSettings.AiSuperResolutionScale
-                    : 2;
 
                 if (jsonSettings.Sizes.Count > 0)
                 {

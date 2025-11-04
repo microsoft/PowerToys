@@ -14,7 +14,7 @@ namespace ImageResizer.Services
         {
         }
 
-        public BitmapSource ApplySuperResolution(BitmapSource source, int scale, AiSuperResolutionContext context)
+        public BitmapSource ApplySuperResolution(BitmapSource source, int scale, string filePath)
         {
             return source;
         }

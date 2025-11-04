@@ -8,6 +8,6 @@ namespace ImageResizer.Services
 {
     public interface IAISuperResolutionService
     {
-        BitmapSource ApplySuperResolution(BitmapSource source, int scale, AiSuperResolutionContext context);
+        BitmapSource ApplySuperResolution(BitmapSource source, int scale, string filePath);
     }
 }

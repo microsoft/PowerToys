@@ -102,36 +102,13 @@ namespace ImageResizer.ViewModels
 
         public int AiSuperResolutionScale
         {
-            get
-            {
-                if (Settings?.SelectedSize is AiSize aiSize)
-                {
-                    return aiSize.Scale;
-                }
-
-                return Settings?.AiSuperResolutionScale ?? 1;
-            }
-
+            get => Settings?.AiSize?.Scale ?? DefaultAiScale;
             set
             {
-                if (Settings == null)
+                if (Settings?.AiSize != null && Settings.AiSize.Scale != value)
                 {
-                    return;
-                }
-
-                // Update AiSize.Scale if AI size is selected
-                if (Settings.SelectedSize is AiSize aiSize)
-                {
-                    if (aiSize.Scale != value)
-                    {
-                        aiSize.Scale = value;
-                    }
-                }
-
-                // Always sync to Settings.AiSuperResolutionScale for persistence
-                if (Settings.AiSuperResolutionScale != value)
-                {
-                    Settings.AiSuperResolutionScale = value;
+                    Settings.AiSize.Scale = value;
+                    OnPropertyChanged(nameof(AiSuperResolutionScale));
                 }
             }
         }
@@ -152,37 +129,10 @@ namespace ImageResizer.ViewModels
             private set => Set(ref _newResolutionDescription, value);
         }
 
-        /// <summary>
-        /// Gets a value indicating whether AI feature is available on this system.
-        /// True if the system supports AI (ARM64, not disabled by policy, etc.).
-        /// This does NOT check if the model is downloaded or if the user enabled it.
-        /// </summary>
-        public bool IsAiFeatureAvailable =>
-            _aiFeatureState != AiFeatureState.NotSupported &&
-            _aiFeatureState != AiFeatureState.Unknown;
-
-        /// <summary>
-        /// Gets a value indicating whether the user has enabled AI feature.
-        /// True if AI is available AND user checked the UseAiSuperResolution setting.
-        /// This does NOT check if the model is downloaded.
-        /// </summary>
-        public bool IsAiFeatureEnabled =>
-            IsAiFeatureAvailable &&
-            Settings?.UseAiSuperResolution == true;
-
-        /// <summary>
-        /// Gets a value indicating whether AI feature is fully ready to use.
-        /// True if AI is enabled AND the model is downloaded and ready.
-        /// This is the final check before actually using AI for transformation.
-        /// </summary>
-        public bool IsAiFeatureReady =>
-            IsAiFeatureEnabled &&
-            _aiFeatureState == AiFeatureState.Ready;
-
         // ==================== UI State Properties ====================
 
-        // Show AI size descriptions only when AI is enabled and not multiple files
-        public bool ShowAiSizeDescriptions => IsAiFeatureEnabled && !_hasMultipleFiles;
+        // Show AI size descriptions only when AI size is selected and not multiple files
+        public bool ShowAiSizeDescriptions => Settings?.SelectedSize is AiSize && !_hasMultipleFiles;
 
         // Helper property: Is model currently being downloaded?
         public bool IsModelDownloading => _aiFeatureState == AiFeatureState.ModelDownloading;
@@ -282,9 +232,10 @@ namespace ImageResizer.ViewModels
                 case nameof(Settings.UseAiSuperResolution):
                     if (Settings.UseAiSuperResolution)
                     {
-                        if (Settings.AiSuperResolutionScale != DefaultAiScale)
+                        // Reset to default scale when enabling AI
+                        if (Settings.AiSize.Scale != DefaultAiScale)
                         {
-                            Settings.AiSuperResolutionScale = DefaultAiScale;
+                            Settings.AiSize.Scale = DefaultAiScale;
                         }
 
                         // User enabled AI - check if it's supported and available
@@ -298,8 +249,6 @@ namespace ImageResizer.ViewModels
                     }
 
                     EnsureAiScaleWithinRange();
-                    OnPropertyChanged(nameof(IsAiFeatureEnabled));
-                    OnPropertyChanged(nameof(IsAiFeatureReady));
                     OnPropertyChanged(nameof(ShowAiSizeDescriptions));
                     OnPropertyChanged(nameof(ShowModelDownloadPrompt));
                     OnPropertyChanged(nameof(ShowAiControls));
@@ -317,22 +266,10 @@ namespace ImageResizer.ViewModels
 
                     break;
 
-                case nameof(Settings.AiSuperResolutionScale):
-                    EnsureAiScaleWithinRange();
-                    OnPropertyChanged(nameof(AiScaleDisplay));
-                    OnPropertyChanged(nameof(AiScaleDescription));
-                    OnPropertyChanged(nameof(AiSuperResolutionScale));
-                    UpdateAiDetails();
-                    break;
-
                 case nameof(Settings.SelectedSizeIndex):
                 case nameof(Settings.SelectedSize):
                     // Notify UI state properties that depend on SelectedSize
-                    OnPropertyChanged(nameof(ShowModelDownloadPrompt));
-                    OnPropertyChanged(nameof(ShowAiControls));
-                    OnPropertyChanged(nameof(CanResize));
-                    OnPropertyChanged(nameof(ShowAiSizeDescriptions));
-
+                    NotifyAiStateChanged();
                     UpdateAiDetails();
 
                     // Trigger CanExecuteChanged for ResizeCommand
@@ -347,10 +284,10 @@ namespace ImageResizer.ViewModels
 
         private void EnsureAiScaleWithinRange()
         {
-            if (Settings != null)
+            if (Settings?.AiSize != null)
             {
-                Settings.AiSuperResolutionScale = Math.Clamp(
-                    Settings.AiSuperResolutionScale,
+                Settings.AiSize.Scale = Math.Clamp(
+                    Settings.AiSize.Scale,
                     MinAiScale,
                     MaxAiScale);
             }
@@ -358,8 +295,8 @@ namespace ImageResizer.ViewModels
 
         private void UpdateAiDetails()
         {
-            // Clear AI details if AI not enabled
-            if (Settings == null || !IsAiFeatureEnabled)
+            // Clear AI details if AI size not selected
+            if (Settings == null || Settings.SelectedSize is not AiSize)
             {
                 CurrentResolutionDescription = string.Empty;
                 NewResolutionDescription = string.Empty;
@@ -383,7 +320,7 @@ namespace ImageResizer.ViewModels
                 : Resources.Input_AiUnknownSize;
             CurrentResolutionDescription = FormatLabeledSize(Resources.Input_AiCurrentLabel, currentValue);
 
-            var scale = Settings.AiSuperResolutionScale;
+            var scale = Settings.AiSize.Scale;
             var newValue = hasConcreteSize
                 ? FormatDimensions((long)_originalWidth!.Value * scale, (long)_originalHeight!.Value * scale)
                 : Resources.Input_AiUnknownSize;
@@ -504,14 +441,14 @@ namespace ImageResizer.ViewModels
             ModelStatusMessage = statusMessage;
 
             // Notify UI of all related property changes
-            NotifyAiPropertiesChanged();
+            NotifyAiStateChanged();
         }
 
-        private void NotifyAiPropertiesChanged()
+        /// <summary>
+        /// Notifies UI when AI state changes (model availability, download status).
+        /// </summary>
+        private void NotifyAiStateChanged()
         {
-            OnPropertyChanged(nameof(IsAiFeatureAvailable));
-            OnPropertyChanged(nameof(IsAiFeatureEnabled));
-            OnPropertyChanged(nameof(IsAiFeatureReady));
             OnPropertyChanged(nameof(IsModelDownloading));
             OnPropertyChanged(nameof(ShowModelDownloadPrompt));
             OnPropertyChanged(nameof(ShowAiControls));
@@ -523,6 +460,17 @@ namespace ImageResizer.ViewModels
             {
                 resizeCommand.OnCanExecuteChanged();
             }
+        }
+
+        /// <summary>
+        /// Notifies UI when AI scale changes (slider value).
+        /// </summary>
+        private void NotifyAiScaleChanged()
+        {
+            OnPropertyChanged(nameof(AiSuperResolutionScale));
+            OnPropertyChanged(nameof(AiScaleDisplay));
+            OnPropertyChanged(nameof(AiScaleDescription));
+            UpdateAiDetails();
         }
 
         private async Task InitializeAiServiceAsync()

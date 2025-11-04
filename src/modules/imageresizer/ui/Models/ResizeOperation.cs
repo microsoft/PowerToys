@@ -228,10 +228,9 @@ namespace ImageResizer.Models
 
         private BitmapSource TransformWithAi(BitmapSource source)
         {
-            var scaleFactor = _settings.AiSuperResolutionScale;
+            var scaleFactor = _settings.AiSize.Scale;
 
-            var context = new AiSuperResolutionContext(_file);
-            var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, context) ?? source;
+            var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, _file) ?? source;
 
             // If the AI implementation already returned the desired scale, use it as-is.
             var expectedWidth = source.PixelWidth * (double)scaleFactor;
@@ -354,7 +353,7 @@ namespace ImageResizer.Models
 
             // Remove directory characters from the size's name.
             string sizeNameSanitized = _settings.SelectedSize is AiSize
-                ? AiSuperResolutionFormatter.FormatScaleName(_settings.AiSuperResolutionScale)
+                ? AiSuperResolutionFormatter.FormatScaleName(_settings.AiSize.Scale)
                 : _settings.SelectedSize.Name;
             sizeNameSanitized = sizeNameSanitized
                 .Replace('\\', '_')
