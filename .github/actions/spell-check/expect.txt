@@ -171,9 +171,12 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
+Carlseibert
 Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
@@ -279,6 +282,7 @@ cpptools
 cppvsdbg
 cppwinrt
 createdump
+creativecommons
 CREATEPROCESS
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -341,6 +345,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+dfx
 Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -514,6 +519,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
 fdx
 fesf
@@ -697,6 +703,7 @@ HTCLIENT
 hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
+hutchinsoniana
 HVal
 HValue
 Hvci
@@ -718,7 +725,9 @@ IDCANCEL
 IDD
 idk
 idl
+IIM
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -735,6 +744,7 @@ Ijwhost
 ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
+IPTC
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
@@ -874,6 +884,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+lon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
@@ -965,6 +976,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 Metadatas
+metadatamatters
 metafile
 mfc
 Mgmt
@@ -1124,6 +1136,7 @@ NONCLIENTMETRICSW
 NONELEVATED
 nonspace
 nonstd
+nullrefs
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
@@ -1280,6 +1293,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1482,6 +1496,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samsung
 sancov
 SAVEFAILED
 scanled
@@ -1844,6 +1859,7 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
+utm
 UType
 uuidv
 uwp
@@ -1933,6 +1949,7 @@ wgpocpl
 WHEREID
 wic
 wifi
+wikimedia
 wikipedia
 WIL
 winapi
@@ -2027,7 +2044,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 xdf
 XDocument
 XElement
@@ -2045,6 +2064,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2052,6 +2072,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels
