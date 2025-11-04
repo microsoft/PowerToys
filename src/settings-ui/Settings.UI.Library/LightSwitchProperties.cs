@@ -17,6 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string DefaultLatitude = "0.0";
         public const string DefaultLongitude = "0.0";
         public const string DefaultScheduleMode = "Off";
+        public const bool DefaultUseThemeSwitching = false;
+        public const string DefaultLightThemePath = "";
+        public const string DefaultDarkThemePath = "";
         public static readonly HotkeySettings DefaultToggleThemeHotkey = new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Win+Shift+D
 
         public LightSwitchProperties()
@@ -30,6 +33,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SunriseOffset = new IntProperty(DefaultSunriseOffset);
             SunsetOffset = new IntProperty(DefaultSunsetOffset);
             ScheduleMode = new StringProperty(DefaultScheduleMode);
+            UseThemeSwitching = new BoolProperty(DefaultUseThemeSwitching);
+            LightThemePath = new StringProperty(DefaultLightThemePath);
+            DarkThemePath = new StringProperty(DefaultDarkThemePath);
             ToggleThemeHotkey = new KeyboardKeysProperty(DefaultToggleThemeHotkey);
         }
 
@@ -59,6 +65,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("scheduleMode")]
         public StringProperty ScheduleMode { get; set; }
+
+        [JsonPropertyName("use_theme_switching")]
+        public BoolProperty UseThemeSwitching { get; set; }
+
+        [JsonPropertyName("light_theme_path")]
+        public StringProperty LightThemePath { get; set; }
+
+        [JsonPropertyName("dark_theme_path")]
+        public StringProperty DarkThemePath { get; set; }
 
         [JsonPropertyName("toggle-theme-hotkey")]
         public KeyboardKeysProperty ToggleThemeHotkey { get; set; }

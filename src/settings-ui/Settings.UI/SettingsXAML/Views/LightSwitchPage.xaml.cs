@@ -21,7 +21,7 @@ using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
-using Windows.Services.Maps;
+using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -295,6 +295,55 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // CityAutoSuggestBox.Text = $"{location.City}, {location.Country}";
                 LocationDialog.IsPrimaryButtonEnabled = true;
                 LocationResultPanel.Visibility = Visibility.Visible;
+            }
+        }
+
+        private async void ThemeFilePickerButton_Click(object sender, RoutedEventArgs e)
+        {
+            string themesFolderPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows", "Themes");
+
+            if (!Directory.Exists(themesFolderPath))
+            {
+                Directory.CreateDirectory(themesFolderPath);
+            }
+
+            Environment.CurrentDirectory = themesFolderPath;
+
+            var picker = new FileOpenPicker();
+
+            var window = new Window();
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            // Configure picker
+            picker.FileTypeFilter.Add(".theme");
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+
+            // Let the user pick a file
+            var file = await picker.PickSingleFileAsync();
+
+            if (file != null)
+            {
+                string themeType = (sender as Button).Tag?.ToString();
+                if (themeType == "Light")
+                {
+                    ViewModel.LightThemePath = file.Path;
+                }
+                else if (themeType == "Dark")
+                {
+                    ViewModel.DarkThemePath = file.Path;
+                }
+            }
+        }
+
+        private void ThemeSwitchToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggle)
+            {
+                ViewModel.UseThemeSwitching = toggle.IsOn;
+                EnableThemeSwitchingExpander.IsExpanded = toggle.IsOn;
             }
         }
 
