@@ -139,6 +139,10 @@ jobs:
     - output: pipelineArtifact
       artifactName: $(JobOutputArtifactName)
       targetPath: $(Build.ArtifactStagingDirectory)
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
+      targetPath: $(LogOutputDirectory)
+      condition: or(failed(), canceled())
   steps:
   - checkout: self
     clean: true
@@ -375,7 +379,7 @@ jobs:
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
     displayName: HACK Copy core WebView2 ARM64 dll to output directory
-    condition: eq(variables['BuildPlatform'],'arm64')
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
       contents: packages/Microsoft.Web.WebView2.1.0.2903.40/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
       targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
@@ -414,11 +418,11 @@ jobs:
       inputs:
         testResultsFormat: VSTest
         testResultsFiles: '**/*.trx'
-      condition: ne(variables['BuildPlatform'],'arm64')
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
     # Native dlls
     - task: VSTest@2
-      condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
       displayName: 'Native Tests'
       inputs:
         platform: '$(BuildPlatform)'
