@@ -2,7 +2,7 @@
 
 First of all, thank you for wanting to contribute to PowerToys. The work we do would not be possible with out the support of community supporters like you.
 
-This guide documents the process of building a new PowerToys utility from scratch—including architecture decisions, integration steps, and common pitfalls. It is designed to capture real-world lessons learned from developing modules like **LightSwitch**.
+This guide documents the process of building a new PowerToys utility from scratch, including architecture decisions, integration steps, and common pitfalls. It is designed to capture real-world lessons learned from developing modules like **LightSwitch**.
 
 ---
 
