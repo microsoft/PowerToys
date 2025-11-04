@@ -9,8 +9,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -258,6 +258,9 @@ public partial class TopLevelCommandManager : ObservableObject,
         extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
 
         IsLoading = false;
+
+        // Send on the current thread; receivers should marshal to UI if needed
+        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
 
         return true;
     }

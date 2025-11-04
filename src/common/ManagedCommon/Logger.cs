@@ -19,10 +19,22 @@ namespace ManagedCommon
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
         private static readonly string Info = "Info";
+#if DEBUG
         private static readonly string Debug = "Debug";
+#endif
         private static readonly string TraceFlag = "Trace";
 
         private static readonly string Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "Unknown";
+
+        /// <summary>
+        /// Gets the path to the log directory for the current version of the app.
+        /// </summary>
+        public static string CurrentVersionLogDirectoryPath { get; private set; }
+
+        /// <summary>
+        /// Gets the path to the log directory for the app.
+        /// </summary>
+        public static string AppLogDirectoryPath { get; private set; }
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -31,6 +43,29 @@ namespace ManagedCommon
         /// <param name="applicationLogPath">The path to the log files folder.</param>
         /// <param name="isLocalLow">If the process using Logger is a low-privilege process.</param>
         public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
+        {
+            string versionedPath = LogDirectoryPath(applicationLogPath, isLocalLow);
+            string basePath = Path.GetDirectoryName(versionedPath);
+
+            if (!Directory.Exists(versionedPath))
+            {
+                Directory.CreateDirectory(versionedPath);
+            }
+
+            AppLogDirectoryPath = basePath;
+            CurrentVersionLogDirectoryPath = versionedPath;
+
+            var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
+
+            Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
+
+            Trace.AutoFlush = true;
+
+            // Clean up old version log folders
+            Task.Run(() => DeleteOldVersionLogFolders(basePath, versionedPath));
+        }
+
+        public static string LogDirectoryPath(string applicationLogPath, bool isLocalLow = false)
         {
             string basePath;
             if (isLocalLow)
@@ -43,20 +78,7 @@ namespace ManagedCommon
             }
 
             string versionedPath = Path.Combine(basePath, Version);
-
-            if (!Directory.Exists(versionedPath))
-            {
-                Directory.CreateDirectory(versionedPath);
-            }
-
-            var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
-
-            Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
-
-            Trace.AutoFlush = true;
-
-            // Clean up old version log folders
-            Task.Run(() => DeleteOldVersionLogFolders(basePath, versionedPath));
+            return versionedPath;
         }
 
         /// <summary>
@@ -115,13 +137,13 @@ namespace ManagedCommon
             {
                 var exMessage =
                     message + Environment.NewLine +
-                    ex.GetType() + ": " + ex.Message + Environment.NewLine;
+                    ex.GetType() + " (" + ex.HResult + "): " + ex.Message + Environment.NewLine;
 
                 if (ex.InnerException != null)
                 {
                     exMessage +=
                         "Inner exception: " + Environment.NewLine +
-                        ex.InnerException.GetType() + ": " + ex.InnerException.Message + Environment.NewLine;
+                        ex.InnerException.GetType() + " (" + ex.InnerException.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
                 }
 
                 exMessage +=
@@ -144,7 +166,9 @@ namespace ManagedCommon
 
         public static void LogDebug(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
+#if DEBUG
             Log(message, Debug, memberName, sourceFilePath, sourceLineNumber);
+#endif
         }
 
         public static void LogTrace([System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)

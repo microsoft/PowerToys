@@ -118,7 +118,7 @@ namespace MouseWithoutBorders.Class
                         if (shouldReopenSockets)
                         {
                             SocketStuff.InvalidKeyFound = false;
-                            Common.ReopenSocketDueToReadError = true;
+                            InitAndCleanup.ReopenSocketDueToReadError = true;
                             Common.ReopenSockets(true);
                         }
 
@@ -410,6 +410,44 @@ namespace MouseWithoutBorders.Class
                 lock (_loadingSettingsLock)
                 {
                     _properties.BlockMouseAtScreenCorners = value;
+                }
+            }
+        }
+
+        internal bool DisableEasyMouseWhenForegroundWindowIsFullscreen
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.DisableEasyMouseWhenForegroundWindowIsFullscreen = value;
+                }
+            }
+        }
+
+        internal HashSet<string> EasyMouseFullscreenSwitchBlockExcludedApps
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value;
                 }
             }
         }
@@ -1017,8 +1055,13 @@ namespace MouseWithoutBorders.Class
 
                     if (machineId == 0)
                     {
-                        _properties.MachineID.Value = Common.Ran.Next();
-                        machineId = _properties.MachineID.Value;
+                        var newMachineId = Common.Ran.Next();
+                        _properties.MachineID.Value = newMachineId;
+                        machineId = newMachineId;
+                        if (!PauseInstantSaving)
+                        {
+                            SaveSettings();
+                        }
                     }
                 }
 
@@ -1030,6 +1073,11 @@ namespace MouseWithoutBorders.Class
                 lock (_loadingSettingsLock)
                 {
                     _properties.MachineID.Value = value;
+                    machineId = value;
+                    if (!PauseInstantSaving)
+                    {
+                        SaveSettings();
+                    }
                 }
             }
         }

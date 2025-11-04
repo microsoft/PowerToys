@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Views;
@@ -32,9 +33,21 @@ public sealed partial class SearchBar : UserControl,
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
 
+    // Inline text suggestions
+    // In 0.4-0.5 we would replace the text of the search box with the TextToSuggest
+    // This was really cool for navigating paths in run and pretty much nowhere else.
+    // We'll have to try another approach, but for now, the code is still testable.
+    // You can test this by setting the CMDPAL_ENABLE_SUGGESTION_SELECTION env var to 1
     private bool _inSuggestion;
+
+    private bool InSuggestion => _inSuggestion && IsTextToSuggestEnabled;
+
     private string? _lastText;
+
     private string? _deletedSuggestion;
+
+    // 0.6+ suggestions
+    private string? _textToSuggest;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -109,26 +122,11 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-        if (ctrlPressed && e.Key == VirtualKey.Enter)
+        var ctrlPressed = (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
+        if (ctrlPressed && e.Key == VirtualKey.I)
         {
-            // ctrl+enter
-            WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Enter)
-        {
-            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-            e.Handled = true;
-        }
-        else if (ctrlPressed && e.Key == VirtualKey.K)
-        {
-            // ctrl+k
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
+            // Today you learned that Ctrl+I in a TextBox will insert a tab
+            // We don't want that, so we'll suppress it, this way it can be used for other purposes
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Escape)
@@ -189,7 +187,23 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Right)
         {
-            if (_inSuggestion)
+            // Check if the "replace search text with suggestion" feature from 0.4-0.5 is enabled.
+            // If it isn't, then only use the suggestion when the caret is at the end of the input.
+            if (!IsTextToSuggestEnabled)
+            {
+                if (_textToSuggest != null &&
+                    FilterBox.SelectionStart == FilterBox.Text.Length)
+                {
+                    FilterBox.Text = _textToSuggest;
+                    FilterBox.Select(_textToSuggest.Length, 0);
+                    e.Handled = true;
+                }
+
+                return;
+            }
+
+            // Here, we're using the "replace search text with suggestion" feature.
+            if (InSuggestion)
             {
                 _inSuggestion = false;
                 _lastText = null;
@@ -202,8 +216,18 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.PageDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageUp)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+            e.Handled = true;
+        }
 
-        if (_inSuggestion)
+        if (InSuggestion)
         {
             if (
                  e.Key == VirtualKey.Back ||
@@ -246,22 +270,6 @@ public sealed partial class SearchBar : UserControl,
             _inSuggestion = false;
             _lastText = null;
         }
-
-        if (!e.Handled)
-        {
-            var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-            var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-                InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-
-            // The CommandBar is responsible for handling all the item keybindings,
-            // since the bound context item may need to then show another
-            // context menu
-            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-            WeakReferenceMessenger.Default.Send(msg);
-            e.Handled = msg.Handled;
-        }
     }
 
     private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
@@ -289,7 +297,7 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        if (_inSuggestion)
+        if (InSuggestion)
         {
             // Logger.LogInfo($"-- skipping, in suggestion --");
             return;
@@ -311,7 +319,7 @@ public sealed partial class SearchBar : UserControl,
 
     private void DoFilterBoxUpdate()
     {
-        if (_inSuggestion)
+        if (InSuggestion)
         {
             // Logger.LogInfo($"--- skipping ---");
             return;
@@ -363,6 +371,12 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(UpdateSuggestionMessage message)
     {
+        if (!IsTextToSuggestEnabled)
+        {
+            _textToSuggest = message.TextToSuggest;
+            return;
+        }
+
         var suggestion = message.TextToSuggest;
 
         _queue.TryEnqueue(new(() =>
@@ -451,5 +465,16 @@ public sealed partial class SearchBar : UserControl,
                 FilterBox.Select(matchedChars, suggestion.Length - matchedChars);
             }
         }));
+    }
+
+    private static bool IsTextToSuggestEnabled => _textToSuggestEnabled.Value;
+
+    private static Lazy<bool> _textToSuggestEnabled = new(() => QueryTextToSuggestEnabled());
+
+    private static bool QueryTextToSuggestEnabled()
+    {
+        var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_SUGGESTION_SELECTION");
+        return !string.IsNullOrEmpty(env) &&
+           (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
     }
 }

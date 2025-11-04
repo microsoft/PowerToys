@@ -11,11 +11,13 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Controls/TitleBar/TitleBar.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Controls/Timeline/TimelineStyles.xaml" />
 
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
@@ -49,8 +51,12 @@
                 TrueValue="Collapsed" />
             <tkconverters:StringFormatConverter x:Key="StringFormatConverter" />
             <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <tkconverters:EmptyObjectToObjectConverter
+                x:Key="EmptyObjectToObjectConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
             <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
-
+            <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
             <x:Double x:Key="SettingsCardSpacing">2</x:Double>
 
             <!--  Overrides  -->
