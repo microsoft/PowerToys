@@ -4,9 +4,7 @@
 
 using System;
 using System.IO;
-using System.IO.Pipes;
 using System.Threading;
-using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -41,10 +39,8 @@ namespace Peek.UI
 
         private MainWindow? Window { get; set; }
 
-        private CancellationTokenSource _appCts = new CancellationTokenSource();
         private bool _disposed;
         private SelectedItem? _selectedItem;
-        private EventWaitHandle? _peekWaitHandle;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -109,6 +105,7 @@ namespace Peek.UI
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
             {
+                // Check if the last argument is a PowerToys Runner PID
                 if (int.TryParse(cmdArgs[^1], out int powerToysRunnerPid))
                 {
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
@@ -116,6 +113,21 @@ namespace Peek.UI
                         EtwTrace?.Dispose();
                         Environment.Exit(0);
                     });
+                }
+                else
+                {
+                    // Command line argument is a file path - activate Peek with that file
+                    string filePath = cmdArgs[^1];
+                    if (File.Exists(filePath) || Directory.Exists(filePath))
+                    {
+                        _selectedItem = new SelectedItemByPath(filePath);
+                        OnShowPeek();
+                        return;
+                    }
+                    else
+                    {
+                        Logger.LogError($"Command line argument is not a valid file or directory: {filePath}");
+                    }
                 }
             }
 
@@ -126,8 +138,6 @@ namespace Peek.UI
                 EtwTrace?.Dispose();
                 Environment.Exit(0);
             });
-
-            Task.Run(() => ListenPipeLoop(_appCts.Token));
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -161,37 +171,6 @@ namespace Peek.UI
             _selectedItem = null;
         }
 
-        private async Task ListenPipeLoop(CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                using (var server = new NamedPipeServerStream("PeekPipe", PipeDirection.In))
-                {
-                    await server.WaitForConnectionAsync(token);
-
-                    using (var reader = new StreamReader(server))
-                    {
-                        var path = await reader.ReadLineAsync(token);
-                        if (!string.IsNullOrWhiteSpace(path))
-                        {
-                            // Validate that the file or directory exists before proceeding
-                            if (File.Exists(path) || Directory.Exists(path))
-                            {
-                                _peekWaitHandle ??= EventWaitHandle.OpenExisting(Constants.ShowPeekEvent());
-
-                                _selectedItem = new SelectedItemByPath(path);
-                                _peekWaitHandle.Set();
-                            }
-                            else
-                            {
-                                Logger.LogError($"CLI requested file or directory does not exist: {path}");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -199,9 +178,6 @@ namespace Peek.UI
                 if (disposing)
                 {
                     // dispose managed state (managed objects)
-                    _peekWaitHandle?.Dispose();
-                    _appCts.Cancel();
-                    _appCts.Dispose();
                 }
 
                 // free unmanaged resources (unmanaged objects) and override finalizer
