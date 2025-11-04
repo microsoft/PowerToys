@@ -25,6 +25,10 @@ namespace ImageResizer.ViewModels
 {
     public class InputViewModel : Observable
     {
+        private const int DefaultAiScale = 2;
+        private const int MinAiScale = 1;
+        private const int MaxAiScale = 8;
+
         private static WinAiSuperResolutionService _aiSuperResolutionService;
 
         private readonly ResizeBatch _batch;
@@ -86,22 +90,8 @@ namespace ImageResizer.ViewModels
             EnterKeyPressedCommand = new RelayCommand<KeyPressParams>(HandleEnterKeyPress);
             DownloadModelCommand = new RelayCommand(async () => await DownloadModelAsync());
 
-            // Check AI availability on startup if user had enabled it previously
-            // CheckModelAvailabilityAsync will determine if AI is actually supported on this system
-            if (settings?.UseAiSuperResolution == true)
-            {
-                // Set initial checking state
-                _aiFeatureState = AiFeatureState.Unknown;
-                ModelStatusMessage = Resources.Input_AiModelChecking;
-
-                // Start async check - this will update state and UI
-                _ = CheckModelAvailabilityAsync();
-            }
-            else
-            {
-                // Ensure initial UI state is properly notified
-                NotifyAiPropertiesChanged();
-            }
+            // Initialize AI support state - this checks architecture support and model availability
+            _ = InitializeAiSupportAsync();
         }
 
         public Settings Settings { get; }
@@ -112,15 +102,37 @@ namespace ImageResizer.ViewModels
 
         public int AiSuperResolutionScale
         {
-            get => Settings?.AiSuperResolutionScale ?? 1;
+            get
+            {
+                if (Settings?.SelectedSize is AiSize aiSize)
+                {
+                    return aiSize.Scale;
+                }
+
+                return Settings?.AiSuperResolutionScale ?? 1;
+            }
+
             set
             {
-                if (Settings == null || value == Settings.AiSuperResolutionScale)
+                if (Settings == null)
                 {
                     return;
                 }
 
-                Settings.AiSuperResolutionScale = value;
+                // Update AiSize.Scale if AI size is selected
+                if (Settings.SelectedSize is AiSize aiSize)
+                {
+                    if (aiSize.Scale != value)
+                    {
+                        aiSize.Scale = value;
+                    }
+                }
+
+                // Always sync to Settings.AiSuperResolutionScale for persistence
+                if (Settings.AiSuperResolutionScale != value)
+                {
+                    Settings.AiSuperResolutionScale = value;
+                }
             }
         }
 
@@ -187,29 +199,15 @@ namespace ImageResizer.ViewModels
             private set => Set(ref _modelDownloadProgress, value);
         }
 
-        // Only show AI checkbox if the system supports AI features
-        public bool ShowEnableAiCheckBox => IsAiFeatureAvailable;
-
-        // Show download prompt when: AI is enabled but model is not ready (including downloading)
+        // Show download prompt when: AI size is selected and model is not ready (including downloading)
         public bool ShowModelDownloadPrompt =>
-            IsAiFeatureEnabled &&
+            Settings?.SelectedSize is AiSize &&
             (_aiFeatureState == AiFeatureState.ModelNotReady || _aiFeatureState == AiFeatureState.ModelDownloading);
 
-        // Show AI controls only when: AI is fully ready
-        public bool ShowAiControls => IsAiFeatureReady;
-
-        // Show traditional size selector when: not showing AI controls and not showing download prompt
-        public bool ShowTraditionalSizeSelector
-        {
-            get
-            {
-                var result = !ShowAiControls && !ShowModelDownloadPrompt;
-
-                // Debug: log the calculation
-                System.Diagnostics.Debug.WriteLine($"ShowTraditionalSizeSelector: {result} (ShowAiControls={ShowAiControls}, ShowModelDownloadPrompt={ShowModelDownloadPrompt}, _aiFeatureState={_aiFeatureState})");
-                return result;
-            }
-        }
+        // Show AI controls when: AI size is selected and model is ready
+        public bool ShowAiControls =>
+            Settings?.SelectedSize is AiSize &&
+            _aiFeatureState == AiFeatureState.Ready;
 
         /// <summary>
         /// Gets a value indicating whether the resize operation can proceed.
@@ -225,19 +223,13 @@ namespace ImageResizer.ViewModels
         {
             get
             {
-                // Special case: If state is Unknown and user enabled AI, wait for check to complete
-                if (_aiFeatureState == AiFeatureState.Unknown && Settings?.UseAiSuperResolution == true)
+                // If AI size is selected, check if AI is fully ready
+                if (Settings?.SelectedSize is AiSize)
                 {
-                    return false;
+                    return _aiFeatureState == AiFeatureState.Ready;
                 }
 
-                // If user enabled AI (and state is known), we must wait until the model is ready
-                if (IsAiFeatureEnabled)
-                {
-                    return IsAiFeatureReady;
-                }
-
-                // If AI is not enabled (either not available or user didn't check it), we can always resize
+                // Non-AI resize can always proceed
                 return true;
             }
         }
@@ -290,9 +282,9 @@ namespace ImageResizer.ViewModels
                 case nameof(Settings.UseAiSuperResolution):
                     if (Settings.UseAiSuperResolution)
                     {
-                        if (Settings.AiSuperResolutionScale != 2)
+                        if (Settings.AiSuperResolutionScale != DefaultAiScale)
                         {
-                            Settings.AiSuperResolutionScale = 2;
+                            Settings.AiSuperResolutionScale = DefaultAiScale;
                         }
 
                         // User enabled AI - check if it's supported and available
@@ -311,7 +303,6 @@ namespace ImageResizer.ViewModels
                     OnPropertyChanged(nameof(ShowAiSizeDescriptions));
                     OnPropertyChanged(nameof(ShowModelDownloadPrompt));
                     OnPropertyChanged(nameof(ShowAiControls));
-                    OnPropertyChanged(nameof(ShowTraditionalSizeSelector));
                     OnPropertyChanged(nameof(AiScaleDisplay));
                     OnPropertyChanged(nameof(AiScaleDescription));
                     OnPropertyChanged(nameof(AiSuperResolutionScale));
@@ -336,9 +327,18 @@ namespace ImageResizer.ViewModels
 
                 case nameof(Settings.SelectedSizeIndex):
                 case nameof(Settings.SelectedSize):
-                    if (!Settings.UseAiSuperResolution)
+                    // Notify UI state properties that depend on SelectedSize
+                    OnPropertyChanged(nameof(ShowModelDownloadPrompt));
+                    OnPropertyChanged(nameof(ShowAiControls));
+                    OnPropertyChanged(nameof(CanResize));
+                    OnPropertyChanged(nameof(ShowAiSizeDescriptions));
+
+                    UpdateAiDetails();
+
+                    // Trigger CanExecuteChanged for ResizeCommand
+                    if (ResizeCommand is RelayCommand cmd)
                     {
-                        UpdateAiDetails();
+                        cmd.OnCanExecuteChanged();
                     }
 
                     break;
@@ -347,14 +347,12 @@ namespace ImageResizer.ViewModels
 
         private void EnsureAiScaleWithinRange()
         {
-            if (Settings == null)
+            if (Settings != null)
             {
-                return;
-            }
-
-            if (Settings.AiSuperResolutionScale < 1 || Settings.AiSuperResolutionScale > 8)
-            {
-                Settings.AiSuperResolutionScale = 2;
+                Settings.AiSuperResolutionScale = Math.Clamp(
+                    Settings.AiSuperResolutionScale,
+                    MinAiScale,
+                    MaxAiScale);
             }
         }
 
@@ -427,18 +425,9 @@ namespace ImageResizer.ViewModels
                     _originalHeight = frame.PixelHeight;
                 }
             }
-            catch (IOException)
-            {
-                _originalWidth = null;
-                _originalHeight = null;
-            }
-            catch (NotSupportedException)
-            {
-                _originalWidth = null;
-                _originalHeight = null;
-            }
             catch (Exception)
             {
+                // Failed to load image dimensions - clear values
                 _originalWidth = null;
                 _originalHeight = null;
             }
@@ -448,23 +437,36 @@ namespace ImageResizer.ViewModels
             }
         }
 
+        /// <summary>
+        /// Initializes AI support state based on system architecture.
+        /// If architecture doesn't support AI, sets state to NotSupported.
+        /// If architecture supports AI, checks model availability.
+        /// </summary>
+        private async Task InitializeAiSupportAsync()
+        {
+            if (Settings?.IsAiArchitectureSupported != true)
+            {
+                // Architecture doesn't support AI - set to NotSupported immediately
+                SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
+                return;
+            }
+
+            // Architecture supports AI - check if model is available
+            _aiFeatureState = AiFeatureState.Unknown;
+            ModelStatusMessage = Resources.Input_AiModelChecking;
+            await CheckModelAvailabilityAsync();
+        }
+
         private async Task CheckModelAvailabilityAsync()
         {
             try
             {
-                // Step 1: Check system architecture - AI features require ARM64
-                var architecture = RuntimeInformation.ProcessArchitecture;
-                if (architecture != Architecture.Arm64)
-                {
-                    SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
-                    return;
-                }
-
-                // Step 2: Check Windows AI service state
+                // Check Windows AI service state
+                // Architecture check is now done in Settings.IsAiArchitectureSupported
                 // Following the pattern from sample project (Sample.xaml.cs:31-52)
                 var readyState = WinAiSuperResolutionService.GetModelReadyState();
 
-                // Step 3: Map AI service state to our internal state
+                // Map AI service state to our internal state
                 switch (readyState)
                 {
                     case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
@@ -511,10 +513,8 @@ namespace ImageResizer.ViewModels
             OnPropertyChanged(nameof(IsAiFeatureEnabled));
             OnPropertyChanged(nameof(IsAiFeatureReady));
             OnPropertyChanged(nameof(IsModelDownloading));
-            OnPropertyChanged(nameof(ShowEnableAiCheckBox));
             OnPropertyChanged(nameof(ShowModelDownloadPrompt));
             OnPropertyChanged(nameof(ShowAiControls));
-            OnPropertyChanged(nameof(ShowTraditionalSizeSelector));
             OnPropertyChanged(nameof(ShowAiSizeDescriptions));
             OnPropertyChanged(nameof(CanResize));
 

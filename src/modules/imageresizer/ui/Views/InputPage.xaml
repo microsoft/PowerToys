@@ -30,21 +30,16 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="16">
-            <!-- Traditional Size Selector: Only show when not in AI mode -->
-            <Grid 
+            <ComboBox
+                Name="SizeComboBox"
+                Height="64"
                 HorizontalAlignment="Stretch"
-                Visibility="{Binding ShowTraditionalSizeSelector, Converter={StaticResource BoolValueConverter}}">
-
-                <ComboBox
-                    Name="SizeComboBox"
-                    Height="64"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
-                    AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
-                    AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
-                    ItemsSource="{Binding Settings.AllSizes}"
-                    SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}">
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
+                AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
+                ItemsSource="{Binding Settings.AllSizes}"
+                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}">
             <ComboBox.ItemContainerStyle>
                 <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
                     <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
@@ -85,83 +80,91 @@
                         <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                     </Grid>
                 </DataTemplate>
+
+                <DataTemplate DataType="{x:Type m:AiSize}">
+                    <Grid VerticalAlignment="Center">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                    </Grid>
+                </DataTemplate>
             </ComboBox.Resources>
-                </ComboBox>
-            </Grid>
+            </ComboBox>
 
-            <!--  AI Model Download Prompt  -->
-            <StackPanel Margin="0,8,0,0">
-                <StackPanel.Style>
-                    <Style TargetType="StackPanel">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ShowModelDownloadPrompt}" Value="True">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </StackPanel.Style>
+            <!--  AI Configuration Panel  -->
+            <Grid Margin="0,8,0,0" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedItem, Converter={StaticResource AiSizeToVisibilityConverter}}">
+                <!--  AI Model Download Prompt  -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowModelDownloadPrompt}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
 
-                <ui:InfoBar
-                    IsOpen="True"
-                    IsClosable="False"
-                    Severity="Informational"
-                    Message="{Binding ModelStatusMessage}" />
+                    <ui:InfoBar
+                        IsOpen="True"
+                        IsClosable="False"
+                        Severity="Informational"
+                        Message="{Binding ModelStatusMessage}" />
 
-                <ui:Button
-                    Margin="0,8,0,0"
-                    HorizontalAlignment="Stretch"
-                    Appearance="Primary"
-                    Command="{Binding DownloadModelCommand}"
-                    Content="{x:Static p:Resources.Input_AiModelDownloadButton}"
-                    Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}, ConverterParameter=Inverted}" />
-
-                <StackPanel
-                    Margin="0,8,0,0"
-                    Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}}">
-                    <ui:ProgressRing IsIndeterminate="True" />
-                    <TextBlock
+                    <ui:Button
                         Margin="0,8,0,0"
-                        HorizontalAlignment="Center"
-                        Text="{Binding ModelStatusMessage}" />
+                        HorizontalAlignment="Stretch"
+                        Appearance="Primary"
+                        Command="{Binding DownloadModelCommand}"
+                        Content="{x:Static p:Resources.Input_AiModelDownloadButton}"
+                        Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}, ConverterParameter=Inverted}" />
+
+                    <StackPanel
+                        Margin="0,8,0,0"
+                        Visibility="{Binding IsModelDownloading, Converter={StaticResource BoolValueConverter}}">
+                        <ui:ProgressRing IsIndeterminate="True" />
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Text="{Binding ModelStatusMessage}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
 
-            <!--  AI Scale Controls  -->
-            <StackPanel Margin="0,8,0,0">
-                <StackPanel.Style>
-                    <Style TargetType="StackPanel">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ShowAiControls}" Value="True">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </StackPanel.Style>
+                <!--  AI Scale Controls  -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowAiControls}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
 
-                <TextBlock
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
-                    Text="{Binding AiScaleDescription}" />
-                <Slider
-                    Margin="0,8,0,0"
-                    Minimum="1"
-                    Maximum="8"
-                    TickFrequency="1"
-                    IsSnapToTickEnabled="True"
-                    IsSelectionRangeEnabled="False"
-                    TickPlacement="BottomRight"
-                    Ticks="1,2,3,4,5,6,7,8"
-                    Value="{Binding AiSuperResolutionScale, Mode=TwoWay}"
-                    AutomationProperties.Name="{x:Static p:Resources.Input_AiScaleLabel}" />
+                    <TextBlock
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{Binding AiScaleDescription}" />
+                    <Slider
+                        Margin="0,8,0,0"
+                        Minimum="1"
+                        Maximum="8"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="True"
+                        IsSelectionRangeEnabled="False"
+                        TickPlacement="BottomRight"
+                        Ticks="1,2,3,4,5,6,7,8"
+                        Value="{Binding AiSuperResolutionScale, Mode=TwoWay}"
+                        AutomationProperties.Name="{x:Static p:Resources.Input_AiScaleLabel}" />
 
-                <StackPanel
-                    Margin="0,8,0,0"
-                    Visibility="{Binding ShowAiSizeDescriptions, Converter={StaticResource BoolValueConverter}}">
-                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{Binding CurrentResolutionDescription}" />
-                    <TextBlock Margin="0,4,0,0" Style="{StaticResource BodyTextBlockStyle}" Text="{Binding NewResolutionDescription}" />
+                    <StackPanel
+                        Margin="0,8,0,0"
+                        Visibility="{Binding ShowAiSizeDescriptions, Converter={StaticResource BoolValueConverter}}">
+                        <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{Binding CurrentResolutionDescription}" />
+                        <TextBlock Margin="0,4,0,0" Style="{StaticResource BodyTextBlockStyle}" Text="{Binding NewResolutionDescription}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
+            </Grid>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -305,15 +308,6 @@
                 Grid.Row="1"
                 Margin="16"
                 Orientation="Vertical">
-                <CheckBox 
-                    AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" 
-                    IsChecked="{Binding Settings.UseAiSuperResolution}"
-                    Visibility="{Binding ShowEnableAiCheckBox, Converter={StaticResource BoolValueConverter}}">
-                    <CheckBox.Content>
-                        <AccessText Text="{x:Static p:Resources.Input_EnableAiSuperResolution}" TextWrapping="Wrap" />
-                    </CheckBox.Content>
-                </CheckBox>
-
                 <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />

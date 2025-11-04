@@ -205,6 +205,15 @@ namespace ImageResizer.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to AI Super Resolution.
+        /// </summary>
+        public static string Input_AiSuperResolution {
+            get {
+                return ResourceManager.GetString("Input_AiSuperResolution", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Original size.
         /// </summary>
         public static string Input_AiOriginalSizeLabel {

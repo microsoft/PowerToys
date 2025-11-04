@@ -171,7 +171,7 @@ namespace ImageResizer.Models
 
         private BitmapSource Transform(BitmapSource source)
         {
-            if (_settings.UseAiSuperResolution)
+            if (_settings.SelectedSize is AiSize)
             {
                 return TransformWithAi(source);
             }
@@ -228,7 +228,7 @@ namespace ImageResizer.Models
 
         private BitmapSource TransformWithAi(BitmapSource source)
         {
-            var scaleFactor = Math.Max(2, _settings.AiSuperResolutionScale);
+            var scaleFactor = _settings.AiSuperResolutionScale;
 
             var context = new AiSuperResolutionContext(_file);
             var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, context) ?? source;
@@ -353,7 +353,7 @@ namespace ImageResizer.Models
             }
 
             // Remove directory characters from the size's name.
-            string sizeNameSanitized = _settings.UseAiSuperResolution
+            string sizeNameSanitized = _settings.SelectedSize is AiSize
                 ? AiSuperResolutionFormatter.FormatScaleName(_settings.AiSuperResolutionScale)
                 : _settings.SelectedSize.Name;
             sizeNameSanitized = sizeNameSanitized
@@ -361,8 +361,8 @@ namespace ImageResizer.Models
                 .Replace('/', '_');
 
             // Using CurrentCulture since this is user facing
-            var selectedWidth = _settings.UseAiSuperResolution ? encoder.Frames[0].PixelWidth : _settings.SelectedSize.Width;
-            var selectedHeight = _settings.UseAiSuperResolution ? encoder.Frames[0].PixelHeight : _settings.SelectedSize.Height;
+            var selectedWidth = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelWidth : _settings.SelectedSize.Width;
+            var selectedHeight = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelHeight : _settings.SelectedSize.Height;
             var fileName = string.Format(
                 CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,

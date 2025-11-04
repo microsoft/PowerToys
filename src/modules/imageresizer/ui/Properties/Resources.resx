@@ -299,6 +299,9 @@
   <data name="Input_EnableAiSuperResolution" xml:space="preserve">
     <value>Enable AI Super Resolution</value>
   </data>
+  <data name="Input_AiSuperResolution" xml:space="preserve">
+    <value>AI Super Resolution</value>
+  </data>
   <data name="Input_AiUnknownSize" xml:space="preserve">
     <value>Unavailable</value>
   </data>
