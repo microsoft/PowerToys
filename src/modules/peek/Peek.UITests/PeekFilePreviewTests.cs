@@ -44,43 +44,6 @@ public class PeekFilePreviewTests : UITestBase
     {
         try
         {
-            // Shutdown OneDrive to prevent file conflicts during tests
-            try
-            {
-                string oneDrivePath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Microsoft",
-                    "OneDrive",
-                    "OneDrive.exe");
-
-                if (File.Exists(oneDrivePath))
-                {
-                    var startInfo = new ProcessStartInfo
-                    {
-                        FileName = oneDrivePath,
-                        Arguments = "/shutdown",
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    };
-
-                    using (var process = Process.Start(startInfo))
-                    {
-                        // Wait briefly for OneDrive to shut down
-                        Thread.Sleep(2000);
-                    }
-
-                    Debug.WriteLine("Successfully shut down OneDrive process");
-                }
-                else
-                {
-                    Debug.WriteLine($"OneDrive.exe not found at {oneDrivePath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"WARNING: Failed to shutdown OneDrive: {ex.Message}");
-            }
-
             string targetDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Microsoft",
