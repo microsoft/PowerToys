@@ -51,7 +51,6 @@ namespace ImageResizer.Properties
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
         private AiSize _aiSize;
-        private bool _useAiSuperResolution;
         private bool _isAiArchitectureSupported;
 
         public Settings()
@@ -78,7 +77,6 @@ namespace ImageResizer.Properties
             AiSize = new AiSize(2);  // Initialize with default scale of 2
             _isAiArchitectureSupported = CheckAiArchitectureSupport();
             AllSizes = new AllSizesCollection(this);
-            UseAiSuperResolution = false;
         }
 
         /// <summary>
@@ -490,18 +488,6 @@ namespace ImageResizer.Properties
         }
 
         [JsonConverter(typeof(WrappedJsonValueConverter))]
-        [JsonPropertyName("imageresizer_useAiSuperResolution")]
-        public bool UseAiSuperResolution
-        {
-            get => _useAiSuperResolution;
-            set
-            {
-                _useAiSuperResolution = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_customSize")]
         public CustomSize CustomSize
         {
@@ -592,7 +578,6 @@ namespace ImageResizer.Properties
                 CustomSize = jsonSettings.CustomSize;
                 AiSize = jsonSettings.AiSize ?? new AiSize(2);
                 SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-                UseAiSuperResolution = jsonSettings.UseAiSuperResolution;
 
                 if (jsonSettings.Sizes.Count > 0)
                 {

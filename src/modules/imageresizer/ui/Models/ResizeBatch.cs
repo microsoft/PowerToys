@@ -33,6 +33,12 @@ namespace ImageResizer.Models
             _aiSuperResolutionService = service;
         }
 
+        public static void DisposeAiSuperResolutionService()
+        {
+            _aiSuperResolutionService?.Dispose();
+            _aiSuperResolutionService = null;
+        }
+
         public static ResizeBatch FromCommandLine(TextReader standardInput, string[] args)
         {
             var batch = new ResizeBatch();

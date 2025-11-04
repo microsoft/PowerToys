@@ -19,6 +19,7 @@ namespace ImageResizer.Services
     {
         private readonly object _lock = new object();
         private ImageScaler _imageScaler;
+        private bool _disposed;
 
         public WinAiSuperResolutionService()
         {
@@ -40,11 +41,23 @@ namespace ImageResizer.Services
             }
         }
 
-        public static async Task<AIFeatureReadyResult> EnsureModelReadyAsync()
+        public static async Task<AIFeatureReadyResult> EnsureModelReadyAsync(IProgress<double> progress = null)
         {
             try
             {
-                return await ImageScaler.EnsureReadyAsync();
+                var operation = ImageScaler.EnsureReadyAsync();
+
+                // Register progress handler if provided
+                if (progress != null)
+                {
+                    operation.Progress = (asyncInfo, progressValue) =>
+                    {
+                        // progressValue is a double representing completion percentage (0.0 to 1.0 or 0 to 100)
+                        progress.Report(progressValue);
+                    };
+                }
+
+                return await operation;
             }
             catch (Exception)
             {
@@ -55,12 +68,26 @@ namespace ImageResizer.Services
         /// <summary>
         /// Initialize the ImageScaler instance. Must be called on UI thread after model is ready.
         /// Following the pattern from sample project.
+        /// Thread-safe with double-checked locking pattern.
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
+            // First check without lock (performance optimization)
             if (_imageScaler != null)
             {
                 return true; // Already initialized
+            }
+
+            lock (_lock)
+            {
+                // Double-check inside lock to prevent race condition
+                if (_imageScaler != null)
+                {
+                    return true;
+                }
+
+                // Note: We cannot await inside a lock, so we need to restructure
+                // We'll set a flag and perform the async work outside the lock
             }
 
             try
@@ -75,20 +102,35 @@ namespace ImageResizer.Services
 
                 // Create ImageScaler instance (only if state is Ready)
                 // This must be called on UI thread in an async method
-                _imageScaler = await ImageScaler.CreateAsync();
+                var newImageScaler = await ImageScaler.CreateAsync();
+
+                // Lock to safely assign the instance
+                lock (_lock)
+                {
+                    // Check again in case another thread initialized while we were awaiting
+                    if (_imageScaler == null)
+                    {
+                        _imageScaler = newImageScaler;
+                    }
+                }
+
                 return _imageScaler != null;
             }
             catch (Exception)
             {
                 // Failed to create ImageScaler
-                _imageScaler = null;
+                lock (_lock)
+                {
+                    _imageScaler = null;
+                }
+
                 return false;
             }
         }
 
         public BitmapSource ApplySuperResolution(BitmapSource source, int scale, string filePath)
         {
-            if (source == null)
+            if (source == null || _disposed)
             {
                 return source;
             }
@@ -239,6 +281,31 @@ namespace ImageResizer.Services
         private interface IMemoryBufferByteAccess
         {
             unsafe void GetBuffer(out byte* buffer, out uint capacity);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            lock (_lock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                if (_imageScaler != null)
+                {
+                    // ImageScaler implements IDisposable
+                    (_imageScaler as IDisposable)?.Dispose();
+                    _imageScaler = null;
+                }
+
+                _disposed = true;
+            }
         }
     }
 }

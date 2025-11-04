@@ -196,15 +196,6 @@ namespace ImageResizer.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Enable AI Super Resolution.
-        /// </summary>
-        public static string Input_EnableAiSuperResolution {
-            get {
-                return ResourceManager.GetString("Input_EnableAiSuperResolution", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to AI Super Resolution.
         /// </summary>
         public static string Input_AiSuperResolution {
@@ -356,7 +347,34 @@ namespace ImageResizer.Properties {
                 return ResourceManager.GetString("Input_AiModelDownloadButton", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to AI super resolution processing failed: {0}.
+        /// </summary>
+        public static string Error_AiProcessingFailed {
+            get {
+                return ResourceManager.GetString("Error_AiProcessingFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to convert image format for AI processing..
+        /// </summary>
+        public static string Error_AiConversionFailed {
+            get {
+                return ResourceManager.GetString("Error_AiConversionFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to AI scaling operation failed..
+        /// </summary>
+        public static string Error_AiScalingFailed {
+            get {
+                return ResourceManager.GetString("Error_AiScalingFailed", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Large.
         /// </summary>

@@ -18,5 +18,10 @@ namespace ImageResizer.Services
         {
             return source;
         }
+
+        public void Dispose()
+        {
+            // No resources to dispose in no-op implementation
+        }
     }
 }

@@ -229,43 +229,6 @@ namespace ImageResizer.ViewModels
         {
             switch (e.PropertyName)
             {
-                case nameof(Settings.UseAiSuperResolution):
-                    if (Settings.UseAiSuperResolution)
-                    {
-                        // Reset to default scale when enabling AI
-                        if (Settings.AiSize.Scale != DefaultAiScale)
-                        {
-                            Settings.AiSize.Scale = DefaultAiScale;
-                        }
-
-                        // User enabled AI - check if it's supported and available
-                        _aiFeatureState = AiFeatureState.Unknown;
-                        ModelStatusMessage = Resources.Input_AiModelChecking;
-                        _ = CheckModelAvailabilityAsync();
-                    }
-                    else if (Settings.Sizes.Count > 0 && Settings.SelectedSizeIndex != 0)
-                    {
-                        Settings.SelectedSizeIndex = 0;
-                    }
-
-                    EnsureAiScaleWithinRange();
-                    OnPropertyChanged(nameof(ShowAiSizeDescriptions));
-                    OnPropertyChanged(nameof(ShowModelDownloadPrompt));
-                    OnPropertyChanged(nameof(ShowAiControls));
-                    OnPropertyChanged(nameof(AiScaleDisplay));
-                    OnPropertyChanged(nameof(AiScaleDescription));
-                    OnPropertyChanged(nameof(AiSuperResolutionScale));
-                    OnPropertyChanged(nameof(CanResize));
-                    UpdateAiDetails();
-
-                    // Trigger CanExecuteChanged for ResizeCommand when AI setting changes
-                    if (ResizeCommand is RelayCommand resizeCommand)
-                    {
-                        resizeCommand.OnCanExecuteChanged();
-                    }
-
-                    break;
-
                 case nameof(Settings.SelectedSizeIndex):
                 case nameof(Settings.SelectedSize):
                     // Notify UI state properties that depend on SelectedSize
@@ -512,14 +475,22 @@ namespace ImageResizer.ViewModels
                 SetAiState(AiFeatureState.ModelDownloading, Resources.Input_AiModelDownloading);
                 ModelDownloadProgress = 0;
 
+                // Create progress reporter to update UI
+                var progress = new Progress<double>(value =>
+                {
+                    // progressValue could be 0-1 or 0-100, normalize to 0-100
+                    ModelDownloadProgress = value > 1 ? value : value * 100;
+                });
+
                 // Call EnsureReadyAsync to download and prepare the AI model
                 // This is safe because we only show download button when state is ModelNotReady
                 // Following sample project pattern (Sample.xaml.cs:36)
-                var result = await WinAiSuperResolutionService.EnsureModelReadyAsync();
+                var result = await WinAiSuperResolutionService.EnsureModelReadyAsync(progress);
 
                 if (result?.Status == Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
                 {
                     // Model successfully downloaded and ready
+                    ModelDownloadProgress = 100;
                     SetAiState(AiFeatureState.Ready, string.Empty);
 
                     // Initialize the AI service for actual use
@@ -538,7 +509,11 @@ namespace ImageResizer.ViewModels
             }
             finally
             {
-                ModelDownloadProgress = 0;
+                // Reset progress only if download failed
+                if (_aiFeatureState != AiFeatureState.Ready)
+                {
+                    ModelDownloadProgress = 0;
+                }
             }
         }
     }

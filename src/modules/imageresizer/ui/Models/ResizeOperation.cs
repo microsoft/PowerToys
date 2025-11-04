@@ -10,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -33,6 +34,9 @@ namespace ImageResizer.Models
         private readonly string _destinationDirectory;
         private readonly Settings _settings;
         private readonly IAISuperResolutionService _aiSuperResolutionService;
+
+        // Cache CompositeFormat for AI error message formatting (CA1863)
+        private static readonly CompositeFormat _aiErrorFormat = CompositeFormat.Parse(Resources.Error_AiProcessingFailed);
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
@@ -228,22 +232,43 @@ namespace ImageResizer.Models
 
         private BitmapSource TransformWithAi(BitmapSource source)
         {
-            var scaleFactor = _settings.AiSize.Scale;
-
-            var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, _file) ?? source;
-
-            // If the AI implementation already returned the desired scale, use it as-is.
-            var expectedWidth = source.PixelWidth * (double)scaleFactor;
-            var expectedHeight = source.PixelHeight * (double)scaleFactor;
-            if (aiResult.PixelWidth >= expectedWidth && aiResult.PixelHeight >= expectedHeight)
+            try
             {
-                return aiResult;
+                var scaleFactor = _settings.AiSize.Scale;
+
+                if (_aiSuperResolutionService == null)
+                {
+                    throw new InvalidOperationException(Properties.Resources.Error_AiScalingFailed);
+                }
+
+                var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, _file);
+
+                // If AI processing failed (returned null or same instance), throw exception
+                if (aiResult == null)
+                {
+                    throw new InvalidOperationException(Properties.Resources.Error_AiConversionFailed);
+                }
+
+                // If the AI implementation already returned the desired scale, use it as-is.
+                var expectedWidth = source.PixelWidth * (double)scaleFactor;
+                var expectedHeight = source.PixelHeight * (double)scaleFactor;
+                if (aiResult.PixelWidth >= expectedWidth && aiResult.PixelHeight >= expectedHeight)
+                {
+                    return aiResult;
+                }
+
+                var scaleX = expectedWidth / aiResult.PixelWidth;
+                var scaleY = expectedHeight / aiResult.PixelHeight;
+
+                return new TransformedBitmap(aiResult, new ScaleTransform(scaleX, scaleY));
             }
-
-            var scaleX = expectedWidth / aiResult.PixelWidth;
-            var scaleY = expectedHeight / aiResult.PixelHeight;
-
-            return new TransformedBitmap(aiResult, new ScaleTransform(scaleX, scaleY));
+            catch (Exception ex)
+            {
+                // Wrap the exception with a localized message
+                // This will be caught by ResizeBatch.Process() and displayed to the user
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, _aiErrorFormat, ex.Message);
+                throw new InvalidOperationException(errorMessage, ex);
+            }
         }
 
         /// <summary>

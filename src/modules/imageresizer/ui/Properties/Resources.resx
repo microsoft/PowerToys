@@ -296,9 +296,6 @@
   <data name="Input_ShrinkOnly.Content" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>
   </data>
-  <data name="Input_EnableAiSuperResolution" xml:space="preserve">
-    <value>Enable AI Super Resolution</value>
-  </data>
   <data name="Input_AiSuperResolution" xml:space="preserve">
     <value>AI Super Resolution</value>
   </data>
@@ -337,5 +334,14 @@
   </data>
   <data name="Input_AiModelDownloadButton" xml:space="preserve">
     <value>Download AI Model</value>
+  </data>
+  <data name="Error_AiProcessingFailed" xml:space="preserve">
+    <value>AI super resolution processing failed: {0}</value>
+  </data>
+  <data name="Error_AiConversionFailed" xml:space="preserve">
+    <value>Failed to convert image format for AI processing.</value>
+  </data>
+  <data name="Error_AiScalingFailed" xml:space="preserve">
+    <value>AI scaling operation failed.</value>
   </data>
 </root>
