@@ -2,7 +2,7 @@
 
 First of all, thank you for wanting to contribute to PowerToys. The work we do would not be possible with out the support of community supporters like you.
 
-This guide documents the process of building a new PowerToys utility from scratch, including architecture decisions, integration steps, and common pitfalls. It is designed to capture real-world lessons learned from developing modules like **LightSwitch**.
+This guide documents the process of building a new PowerToys utility from scratch, including architecture decisions, integration steps, and common pitfalls.
 
 ---
 
@@ -112,13 +112,12 @@ virtual bool on_hotkey(size_t hotkeyId) override
 
 ### Notes
 * Keep module logic isolated under `/modules/<YourModule>`
-* Use shared utilities from `/common/` instead of cross-module dependencies
+* Use shared utilities from [`common`](https://github.com/microsoft/PowerToys/tree/main/src/common) instead of cross-module dependencies
 * init/set/get config use preset functions to access the settings. Check out the [`settings_objects.h`](https://github.com/microsoft/PowerToys/blob/main/src/common/SettingsAPI/settings_helpers.h) in `src\common\SettingsAPI`
-* You are able to reuse common functions from the [`common`](https://github.com/microsoft/PowerToys/tree/main/src/common) folder.
 
 ---
 ## 3. Bootstrapping Your Module
-1. Use the [template](https://github.com/microsoft/PowerToys/tree/main/tools/project_template) to get the module interface starter code.
+1. Use the [template](https://github.com/microsoft/PowerToys/tree/main/tools/project_template) to generate the module interface starter code.
 2. Update all projects and namespaces with your module name.
 3. Update GUIDs in `.vcxproj` and solution files.
 4. Update the functions mentioned in the above section with your custom logic.
@@ -159,7 +158,7 @@ auto& settings = ModuleSettings::instance().settings();
 These come from the `ModuleSettings.h` file that lives with the Service. You can copy this from another module (e.g., Light Switch) and adjust to fit your needs.
 
 If your module has a visual interface:
-* Use **WinUI 3** Desktop templates
+* Use **WinUI 3** Desktop templates when setting up your project
 * Use [Windows design best practices](https://learn.microsoft.com/en-us/windows/apps/design/basics/)
 * Use the [WinUI 3 Gallery](https://apps.microsoft.com/detail/9p3jfpwwdzrc) for help with visual components and more guidance
 
@@ -201,7 +200,7 @@ public ModuleSettings()
 ```
 > Note: in the above example we use `.Content` to target the content of the Combobox. This can change per UI element (e.g., `.Text`, `.Header`, etc.)
 
-> **Reminder:** Manual edits in external editors (VS Code, Notepad++) do **not** trigger the settings watcher. Only changes written through PowerToys trigger reloads.
+> **Reminder:** Manual edits in external editors (VS Code, Notepad) do **not** trigger the settings watcher. Only changes written through PowerToys trigger reloads.
 
 ---
 
