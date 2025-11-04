@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <!-- Generate the DSC resource JSON files for both Debug and Release builds -->
-  <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build">
+  <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <Message Text="Generating DSC resource JSON files to DSCv3 subfolder..." Importance="high" />
     <MakeDir Directories="$(TargetDir)DSCv3" />
     <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCv3&quot;" />
