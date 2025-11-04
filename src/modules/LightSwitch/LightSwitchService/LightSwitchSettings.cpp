@@ -39,6 +39,7 @@ void LightSwitchSettings::InitFileWatcher()
             GetSettingsFileName(),
             [this]() {
                 Logger::info(L"[LightSwitchSettings] Settings file changed, signaling event.");
+                LoadSettings();
                 SetEvent(m_settingsChangedEvent);
             });
     }
@@ -63,6 +64,11 @@ void LightSwitchSettings::NotifyObservers(SettingId id) const
             observer->SettingsUpdate(id);
         }
     }
+}
+
+HANDLE LightSwitchSettings::GetSettingsChangedEvent() const
+{
+    return m_settingsChangedEvent;
 }
 
 void LightSwitchSettings::LoadSettings()
