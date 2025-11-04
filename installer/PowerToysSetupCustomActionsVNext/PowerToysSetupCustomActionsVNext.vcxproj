@@ -34,12 +34,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup\</OutDir>
-    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
-    <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
-    <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
-    <NormalizedPerUserValue>false</NormalizedPerUserValue>
-    <NormalizedPerUserValue Condition=" '$(PerUser)' == 'true' ">true</NormalizedPerUserValue>
+    <OutDir>$(Platform)\$(Configuration)\SetupShared\</OutDir>
+    <IntDir>$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\SetupShared\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <LinkIncremental>true</LinkIncremental>
@@ -79,8 +75,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs.bk""""
-      if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
-      if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
+      call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
     </PreBuildEvent>
