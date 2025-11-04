@@ -1538,3 +1538,4 @@ SOFTWARE.
 - WinUIEx
 - WPF-UI
 - WyHash
+- YamlDotNet
