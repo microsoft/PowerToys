@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeystrokeOverlayProperties()
         {
             IsEnabled = new BoolProperty(true);
-            SwitchMonitorHotkey = new HotkeySettings(false, true, false, false, '0'); // Ctrl+0
+            SwitchMonitorHotkey = DefaultSwitchMonitorHotkey;
             IsDraggableOverlayEnabled = new BoolProperty(true);
             DisplayMode = new IntProperty(0);
             OverlayTimeout = new IntProperty(3000);
