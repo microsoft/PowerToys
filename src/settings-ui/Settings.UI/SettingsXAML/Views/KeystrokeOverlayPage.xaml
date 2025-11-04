@@ -28,8 +28,8 @@
                     <tkcontrols:SettingsCard Name="SwitchMonitorHotkeyCard" x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchMonitorHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    
-                    <tkcontrols:SettingsCard Name="DraggableOverlay" x:Uid="KeystrokeOverlay_DraggableOverlay">
+
+                    <tkcontrols:SettingsCard Name="DraggableOverlay" x:Uid="KeystrokeOverlay_DraggableOverlay" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsDraggableOverlayEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
@@ -41,7 +41,7 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                    
-                    <tkcontrols:SettingsCard Name="OverlayTimeout" x:Uid="KeystrokeOverlay_OverlayTimeout">
+                    <tkcontrols:SettingsCard Name="OverlayTimeout" x:Uid="KeystrokeOverlay_OverlayTimeout" HeaderIcon="{ui:FontIcon Glyph=&#xE823;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"
@@ -54,7 +54,7 @@
 
                 <controls:SettingsGroup x:Uid="KeystrokeOverlay_Appearance" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize">
+                    <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="2"
@@ -68,39 +68,57 @@
                     <tkcontrols:SettingsExpander
                         Name="KeystrokeOverlay_TextAppearance"
                         x:Uid="KeystrokeOverlay_TextAppearance"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8D3;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Content>
-                            <ColorPicker x:Name="TextColorPicker"
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                SelectedColor="{x:Bind ViewModel.TextColorWithAlpha, Mode=TwoWay}"
-                                Orientation="Horizontal"
-                                IsAlphaEnabled="True"
-                                IsColorPreviewVisible="True"
-                                IsHexInputVisible="True"
-                                IsColorSliderVisible="True"
-                                IsColorChannelTextInputVisible="True"
-                            />
+                            <Rectangle Height="25" Width="100">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                </Rectangle.Fill>
+                            </Rectangle>
                         </tkcontrols:SettingsExpander.Content>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <ColorPicker x:Name="TextColorPicker"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=TwoWay}"
+                                    Orientation="Horizontal"
+                                    IsAlphaEnabled="True"
+                                    IsColorPreviewVisible="True"
+                                    IsHexInputVisible="True"
+                                    IsColorSliderVisible="True"
+                                    IsColorChannelTextInputVisible="True"
+                                />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
                         Name="KeystrokeOverlay_BackgroundAppearance"
                         x:Uid="KeystrokeOverlay_BackgroundAppearance"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE97C;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Content>
-                            <ColorPicker x:Name="BackgroundColorPicker"
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                SelectedColor="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
-                                Orientation="Horizontal"
-                                IsAlphaEnabled="True"
-                                IsColorPreviewVisible="True"
-                                IsHexInputVisible="True"
-                                IsColorSliderVisible="True"
-                                IsColorChannelTextInputVisible="True"
-                            />
+                            <Rectangle Height="25" Width="100">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                </Rectangle.Fill>
+                            </Rectangle>
                         </tkcontrols:SettingsExpander.Content>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <ColorPicker x:Name="BackgroundColorPicker"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
+                                    Orientation="Horizontal"
+                                    IsAlphaEnabled="True"
+                                    IsColorPreviewVisible="True"
+                                    IsHexInputVisible="True"
+                                    IsColorSliderVisible="True"
+                                    IsColorChannelTextInputVisible="True"
+                                />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
