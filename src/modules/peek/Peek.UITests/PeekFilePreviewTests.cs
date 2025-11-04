@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
@@ -44,20 +45,21 @@ public class PeekFilePreviewTests : UITestBase
     {
         try
         {
-            string targetDirectory = Path.Combine(
+            // Fix Peek module settings
+            string peekDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Microsoft",
                 "PowerToys",
                 "Peek");
 
-            if (!Directory.Exists(targetDirectory))
+            if (!Directory.Exists(peekDirectory))
             {
-                Directory.CreateDirectory(targetDirectory);
+                Directory.CreateDirectory(peekDirectory);
             }
 
-            string targetSettingsPath = Path.Combine(targetDirectory, "settings.json");
+            string peekSettingsPath = Path.Combine(peekDirectory, "settings.json");
 
-            string settingsContent = @"{
+            string peekSettingsContent = @"{
               ""name"": ""Peek"",
               ""version"": ""1.0"",
               ""properties"": {
@@ -84,13 +86,66 @@ public class PeekFilePreviewTests : UITestBase
               }
             }";
 
-            File.WriteAllText(targetSettingsPath, settingsContent);
+            File.WriteAllText(peekSettingsPath, peekSettingsContent);
 
-            Debug.WriteLine($"Successfully set Ctrl+Space shortcut as settings file to {targetSettingsPath}");
+            Debug.WriteLine($"Successfully set Ctrl+Space shortcut as settings file to {peekSettingsPath}");
+
+            // Fix global PowerToys settings
+            string globalSettingsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft",
+                "PowerToys",
+                "settings.json");
+
+            if (File.Exists(globalSettingsPath))
+            {
+                string globalSettingsJson = File.ReadAllText(globalSettingsPath);
+                using var doc = JsonDocument.Parse(globalSettingsJson);
+                var root = doc.RootElement;
+
+                // Create a dictionary to hold the modified settings
+                var modifiedSettings = new Dictionary<string, object>();
+
+                // Copy all existing properties
+                foreach (var property in root.EnumerateObject())
+                {
+                    if (property.Name == "enabled")
+                    {
+                        // Modify the enabled property to disable all modules except Peek
+                        var enabledModules = new Dictionary<string, bool>();
+                        foreach (var module in property.Value.EnumerateObject())
+                        {
+                            // Set Peek to true, all others to false
+                            enabledModules[module.Name] = module.Name == "Peek";
+                        }
+
+                        modifiedSettings[property.Name] = enabledModules;
+                    }
+                    else
+                    {
+                        // Copy other properties as-is
+                        object? deserializedValue = JsonSerializer.Deserialize<object>(property.Value.GetRawText());
+                        if (deserializedValue != null)
+                        {
+                            modifiedSettings[property.Name] = deserializedValue;
+                        }
+                    }
+                }
+
+                // Serialize and save the modified settings
+                string modifiedJson = JsonSerializer.Serialize(modifiedSettings);
+                File.WriteAllText(globalSettingsPath, modifiedJson);
+
+                Debug.WriteLine($"Successfully updated global settings file at {globalSettingsPath} - disabled all modules except Peek");
+            }
+            else
+            {
+                Debug.WriteLine($"Global settings file not found at {globalSettingsPath}");
+            }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ERROR setting Ctrl+Space shortcut as settings file: {ex.Message}");
+            Debug.WriteLine($"ERROR in FixSettingsFileBeforeTests: {ex.Message}");
         }
     }
 
