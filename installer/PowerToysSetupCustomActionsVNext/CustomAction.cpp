@@ -1672,14 +1672,16 @@ UINT __stdcall SetBundleInstallLocationCA(MSIHANDLE hInstall)
                 
                 if (_wcsicmp(regUpgradeCode.c_str(), bundleUpgradeCode.c_str()) == 0)
                 {
-                    // Found matching Bundle, set InstallLocation
+                    // Found matching Bundle, set InstallLocation to DSCv3 subfolder for DSC v3 resource discovery
+                    std::wstring dscv3Location = installationFolder + L"DSCv3";
+                    
                     LONG setResult = RegSetValueExW(productKey, L"InstallLocation", 0, REG_SZ,
-                                 reinterpret_cast<const BYTE*>(installationFolder.c_str()),
-                                 static_cast<DWORD>((installationFolder.length() + 1) * sizeof(wchar_t)));
+                                 reinterpret_cast<const BYTE*>(dscv3Location.c_str()),
+                                 static_cast<DWORD>((dscv3Location.length() + 1) * sizeof(wchar_t)));
                     
                     if (setResult == ERROR_SUCCESS)
                     {
-                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: InstallLocation set successfully");
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: InstallLocation set to DSCv3 subfolder successfully");
                     }
                     else
                     {
