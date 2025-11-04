@@ -810,6 +810,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             string apiKey = PasteAIApiKeyPasswordBox.Password;
             string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
             string endpoint = (draft.EndpointUrl ?? string.Empty).Trim();
+            if (endpoint == string.Empty)
+            {
+                endpoint = GetEndpointPlaceholder(draft.ServiceTypeKind);
+            }
 
             if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
             {
