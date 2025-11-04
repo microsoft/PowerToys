@@ -15,24 +15,14 @@ internal sealed class FoundryClient
         {
             Logger.LogInfo("[FoundryClient] Creating Foundry Local client");
 
-            // Workaround for SDK issue: FoundryLocalManager.StartServiceAsync() uses UseShellExecute=false
-            // which cannot handle Windows App Execution Aliases (foundry.exe in WindowsApps)
-            // Pre-start the service using UseShellExecute=true
-            await EnsureFoundryServiceStarted().ConfigureAwait(false);
-
             var manager = new FoundryLocalManager();
 
-            // Check if service is running
-            if (!manager.IsServiceRunning)
+            // Use our own service start logic instead of SDK's StartServiceAsync
+            // SDK uses UseShellExecute=false which may have issues finding foundry.exe
+            if (!await EnsureFoundryServiceStarted(manager).ConfigureAwait(false))
             {
-                Logger.LogInfo("[FoundryClient] Service not running, attempting to start via SDK");
-                await manager.StartServiceAsync().ConfigureAwait(false);
-
-                if (!manager.IsServiceRunning)
-                {
-                    Logger.LogError("[FoundryClient] Failed to start Foundry Local service");
-                    return null;
-                }
+                Logger.LogError("[FoundryClient] Failed to start Foundry Local service");
+                return null;
             }
 
             Logger.LogInfo("[FoundryClient] Foundry Local service is running");
@@ -50,30 +40,53 @@ internal sealed class FoundryClient
         }
     }
 
-    private static async Task EnsureFoundryServiceStarted()
+    private static async Task<bool> EnsureFoundryServiceStarted(FoundryLocalManager manager)
     {
         try
         {
-            Logger.LogInfo("[FoundryClient] Pre-starting foundry service with UseShellExecute=true");
+            // Check if service is already running
+            if (manager.IsServiceRunning)
+            {
+                Logger.LogInfo("[FoundryClient] Foundry service is already running");
+                return true;
+            }
 
+            Logger.LogInfo("[FoundryClient] Starting foundry service with UseShellExecute=true");
+
+            // Start foundry service using UseShellExecute=true
+            // This ensures proper PATH resolution for App Execution Aliases
             using var process = new System.Diagnostics.Process();
             process.StartInfo.FileName = "foundry";
             process.StartInfo.Arguments = "service start";
-            process.StartInfo.UseShellExecute = true; // Critical: allows App Execution Alias to work
+            process.StartInfo.UseShellExecute = true; // Critical: ensures proper PATH search
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
 
             process.Start();
 
-            // Give the service a moment to start, but don't wait for completion
-            // as the service runs in the background
-            await Task.Delay(2000).ConfigureAwait(false);
+            Logger.LogInfo("[FoundryClient] Foundry service start command executed, polling for readiness");
 
-            Logger.LogInfo("[FoundryClient] Foundry service start command completed");
+            // Poll service status up to 3 times with 1 second intervals
+            for (int attempt = 1; attempt <= 3; attempt++)
+            {
+                await Task.Delay(1000).ConfigureAwait(false);
+
+                if (manager.IsServiceRunning)
+                {
+                    Logger.LogInfo($"[FoundryClient] Foundry service started successfully (attempt {attempt}/3)");
+                    return true;
+                }
+
+                Logger.LogInfo($"[FoundryClient] Service not ready yet (attempt {attempt}/3)");
+            }
+
+            Logger.LogError("[FoundryClient] Foundry service failed to start after 3 attempts");
+            return false;
         }
         catch (Exception ex)
         {
-            Logger.LogWarning($"[FoundryClient] Failed to pre-start foundry service: {ex.Message}");
+            Logger.LogError($"[FoundryClient] Failed to start foundry service: {ex.Message}");
+            return false;
         }
     }
 
