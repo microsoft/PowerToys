@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -33,7 +34,8 @@ namespace Microsoft.PowerToys.UITest
 
             try
             {
-                string globalSettingsPath = GetGlobalSettingsPath();
+                string localAppData = Helper.LocalApplicationDataFolder();
+                string globalSettingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "settings.json");
 
                 if (!File.Exists(globalSettingsPath))
                 {
@@ -86,20 +88,6 @@ namespace Microsoft.PowerToys.UITest
                 Debug.WriteLine($"ERROR in ConfigureGlobalModuleSettings: {ex.Message}");
                 throw new InvalidOperationException($"Failed to configure global module settings: {ex.Message}", ex);
             }
-        }
-
-        /// <summary>
-        /// Gets the path to the global PowerToys settings file.
-        /// </summary>
-        /// <returns>Full path to the settings.json file.</returns>
-        private static string GetGlobalSettingsPath()
-        {
-            string powerToysSettingsDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft",
-                "PowerToys");
-
-            return Path.Combine(powerToysSettingsDirectory, "settings.json");
         }
     }
 }
