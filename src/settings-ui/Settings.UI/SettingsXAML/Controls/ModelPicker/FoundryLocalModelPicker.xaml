@@ -158,7 +158,14 @@
                     TextWrapping="Wrap">
                     <Run Text="Start the Foundry Local service before returning to PowerToys." />
                 </TextBlock>
-                <HyperlinkButton Content="Follow the Foundry Local CLI guide" NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/reference/reference-cli" />
+                <HyperlinkButton Content="Follow the Foundry Local CLI guide" NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/get-started" />
+                <TextBlock
+                    x:Uid="FoundryLocal_RestartRequiredNote"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="Note: After installing the Foundry Local CLI, restart PowerToys to use it."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
             </StackPanel>
         </Grid>
 
