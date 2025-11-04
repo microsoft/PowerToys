@@ -70,15 +70,10 @@
                         x:Uid="KeystrokeOverlay_TextAppearance"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
                         IsExpanded="True">
-                        <Rectangle Height="50" Width="50">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="{x:Bind TextColorPicker.Color, Mode=OneWay}"/>
-                            </Rectangle.Fill>
-                        </Rectangle>
                         <tkcontrols:SettingsExpander.Content>
                             <ColorPicker x:Name="TextColorPicker"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                SelectedColor="{x:Bind ViewModel.TextColorColor, Mode=TwoWay}"
+                                SelectedColor="{x:Bind ViewModel.TextColorWithAlpha, Mode=TwoWay}"
                                 Orientation="Horizontal"
                                 IsAlphaEnabled="True"
                                 IsColorPreviewVisible="True"
@@ -94,15 +89,10 @@
                         x:Uid="KeystrokeOverlay_BackgroundAppearance"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
                         IsExpanded="True">
-                        <Rectangle Height="50" Width="50">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="{x:Bind BackgroundColorPicker.Color, Mode=OneWay}"/>
-                            </Rectangle.Fill>
-                        </Rectangle>
                         <tkcontrols:SettingsExpander.Content>
                             <ColorPicker x:Name="BackgroundColorPicker"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                SelectedColor="{x:Bind ViewModel.BackgroundColorColor, Mode=TwoWay}"
+                                SelectedColor="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
                                 Orientation="Horizontal"
                                 IsAlphaEnabled="True"
                                 IsColorPreviewVisible="True"

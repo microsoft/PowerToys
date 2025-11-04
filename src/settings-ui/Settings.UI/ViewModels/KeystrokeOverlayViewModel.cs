@@ -47,9 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _enabledStateIsGPOConfigured = false;
 
-            // initialize backing fields if needed (optional)
-
-            // initialize backing fields if needed (optional)
+            InitializeEnabledValue();
         }
 
         private void InitializeEnabledValue()
@@ -173,7 +171,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // Backing int color values (RGB stored as int in settings)
+        /* Color and Opacity Settings */
+
+        public Color TextColorWithAlpha
+        {
+            get
+            {
+                Color color = IntToColor(_settings.Properties.TextColor.Value);
+                byte alpha = (byte)(_settings.Properties.TextOpacity.Value * 2.55);
+                return Color.FromArgb(alpha, color.R, color.G, color.B);
+            }
+
+            set
+            {
+                int newColorRGB = ColorToInt(value);
+                int newOpacity = (int)(value.A * 2.55);
+
+                bool changed = false;
+
+                if (_settings.Properties.TextColor.Value != newColorRGB)
+                {
+                    _settings.Properties.TextColor.Value = newColorRGB;
+                    OnPropertyChanged(nameof(TextColor));
+                    changed = true;
+                }
+
+                if (_settings.Properties.TextOpacity.Value != newOpacity)
+                {
+                    _settings.Properties.TextOpacity.Value = newOpacity;
+                    OnPropertyChanged(nameof(TextOpacity));
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    NotifySettingsChanged();
+                    OnPropertyChanged(nameof(TextColorWithAlpha));
+                }
+            }
+        }
+
         public int TextColor
         {
             get => _settings.Properties.TextColor.Value;
@@ -183,21 +220,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.TextColor.Value = value;
                     NotifySettingsChanged();
-                    OnPropertyChanged(nameof(TextColorColor));
-                }
-            }
-        }
-
-        public int BackgroundColor
-        {
-            get => _settings.Properties.BackgroundColor.Value;
-            set
-            {
-                if (_settings.Properties.BackgroundColor.Value != value)
-                {
-                    _settings.Properties.BackgroundColor.Value = value;
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(BackgroundColorColor));
+                    OnPropertyChanged(nameof(TextColorWithAlpha));
                 }
             }
         }
@@ -211,6 +234,60 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.TextOpacity.Value = value;
                     NotifySettingsChanged();
+                    OnPropertyChanged(nameof(TextOpacity));
+                    OnPropertyChanged(nameof(TextColorWithAlpha));
+                }
+            }
+        }
+
+        public Color BackgroundColorWithAlpha
+        {
+            get
+            {
+                Color color = IntToColor(_settings.Properties.BackgroundColor.Value);
+                byte alpha = (byte)(_settings.Properties.BackgroundOpacity.Value * 2.55);
+                return Color.FromArgb(alpha, color.R, color.G, color.B);
+            }
+
+            set
+            {
+                int newColorRGB = ColorToInt(value);
+                int newOpacity = (int)(value.A * 2.55);
+
+                bool changed = false;
+
+                if (_settings.Properties.BackgroundColor.Value != newColorRGB)
+                {
+                    _settings.Properties.BackgroundColor.Value = newColorRGB;
+                    OnPropertyChanged(nameof(BackgroundColor));
+                    changed = true;
+                }
+
+                if (_settings.Properties.BackgroundOpacity.Value != newOpacity)
+                {
+                    _settings.Properties.BackgroundOpacity.Value = newOpacity;
+                    OnPropertyChanged(nameof(BackgroundOpacity));
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    NotifySettingsChanged();
+                    OnPropertyChanged(nameof(BackgroundColorWithAlpha));
+                }
+            }
+        }
+
+        public int BackgroundColor
+        {
+            get => _settings.Properties.BackgroundColor.Value;
+            set
+            {
+                if (_settings.Properties.BackgroundColor.Value != value)
+                {
+                    _settings.Properties.BackgroundColor.Value = value;
+                    NotifySettingsChanged();
+                    OnPropertyChanged(nameof(BackgroundColorWithAlpha));
                 }
             }
         }
@@ -224,37 +301,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.BackgroundOpacity.Value = value;
                     NotifySettingsChanged();
-                }
-            }
-        }
-
-        // Color typed properties for binding to ColorPickerButton (Windows.UI.Color)
-        public Color TextColorColor
-        {
-            get => IntToColor(_settings.Properties.TextColor.Value);
-            set
-            {
-                int intVal = ColorToInt(value);
-                if (_settings.Properties.TextColor.Value != intVal)
-                {
-                    _settings.Properties.TextColor.Value = intVal;
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(TextColorColor));
-                }
-            }
-        }
-
-        public Color BackgroundColorColor
-        {
-            get => IntToColor(_settings.Properties.BackgroundColor.Value);
-            set
-            {
-                int intVal = ColorToInt(value);
-                if (_settings.Properties.BackgroundColor.Value != intVal)
-                {
-                    _settings.Properties.BackgroundColor.Value = intVal;
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(BackgroundColorColor));
+                    OnPropertyChanged(nameof(BackgroundOpacity));
+                    OnPropertyChanged(nameof(BackgroundColorWithAlpha));
                 }
             }
         }
@@ -271,6 +319,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             return (c.R << 16) | (c.G << 8) | c.B;
         }
+
+        /* Notify Settings Changed */
 
         private void NotifySettingsChanged([CallerMemberName] string propertyName = null)
         {
