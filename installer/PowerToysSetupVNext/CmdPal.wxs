@@ -31,7 +31,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Id="Microsoft.VCLibs.x64.14.00.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.appx" />
+        <File Id="Microsoft.VCLibs.x64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
       </Component>
     </DirectoryRef>
     <?else?>
@@ -40,7 +40,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Id="Microsoft.VCLibs.ARM64.14.00.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.appx" />
+        <File Id="Microsoft.VCLibs.ARM64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.Desktop.appx" />
       </Component>
     </DirectoryRef>
     <?endif?>
