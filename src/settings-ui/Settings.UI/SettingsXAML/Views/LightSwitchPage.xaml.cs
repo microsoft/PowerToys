@@ -89,11 +89,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.InitializeScheduleMode();
         }
 
-        private async Task GetGeoLocation()
+        private async void GetGeoLocation_Click(object sender, RoutedEventArgs e)
         {
             SyncButton.IsEnabled = false;
             SyncLoader.IsActive = true;
             SyncLoader.Visibility = Visibility.Visible;
+            LocationResultPanel.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -142,6 +143,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
+            }
+        }
+
+        private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            // Try to parse the current values
+            if (double.TryParse(ViewModel.Latitude, out double lat) &&
+                double.TryParse(ViewModel.Longitude, out double lon))
+            {
+                // Optional: Validate ranges
+                if (lat < -90 || lat > 90 || lon < -180 || lon > 180)
+                {
+                    return;
+                }
+
+                // Update sunrise/sunset times whenever both values are valid
+                SunTimes result = SunCalc.CalculateSunriseSunset(
+                    lat,
+                    lon,
+                    DateTime.Now.Year,
+                    DateTime.Now.Month,
+                    DateTime.Now.Day);
+
+                ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+                ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+                ViewModel.Latitude = lat.ToString(CultureInfo.InvariantCulture);
+                ViewModel.Longitude = lon.ToString(CultureInfo.InvariantCulture);
+
+                LocationResultPanel.Visibility = Visibility.Visible;
             }
         }
 
@@ -315,11 +345,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     TimelineCard.Visibility = Visibility.Collapsed;
                     break;
             }
-        }
-
-        private async void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            await GetGeoLocation();
         }
 
         private void SunriseModeChartState()
