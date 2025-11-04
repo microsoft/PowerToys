@@ -5530,7 +5530,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Time before overlay key disappears</value>
   </data>
   <data name="KeystrokeOverlay_TextSize.Header" xml:space="preserve">
-    <value>Size</value>
+    <value>Text Size</value>
   </data>
   <data name="KeystrokeOverlay_TextAppearance.Header" xml:space="preserve">
     <value>Text Color and Opacity</value>
@@ -5552,11 +5552,5 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="KeystrokeOverlay.ModuleDescription" xml:space="preserve">
     <value>Sample Description for now</value>
-  </data>
-  <data name="KeystrokeOverlay_TextAppearance.Header" xml:space="preserve">
-    <value>Text Appearance</value>
-  </data>
-  <data name="KeystrokeOverlay_BackgroundAppearance.Header" xml:space="preserve">
-    <value>Background Appearance</value>
   </data>
 </root>

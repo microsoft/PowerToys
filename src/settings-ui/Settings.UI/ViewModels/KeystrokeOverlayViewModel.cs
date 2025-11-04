@@ -185,7 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 int newColorRGB = ColorToInt(value);
-                int newOpacity = (int)(value.A * 2.55);
+                int newOpacity = (int)(value.A / 2.55);
 
                 bool changed = false;
 
@@ -220,7 +220,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.TextColor.Value = value;
                     NotifySettingsChanged();
-                    OnPropertyChanged(nameof(TextColorWithAlpha));
                 }
             }
         }
@@ -235,7 +234,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _settings.Properties.TextOpacity.Value = value;
                     NotifySettingsChanged();
                     OnPropertyChanged(nameof(TextOpacity));
-                    OnPropertyChanged(nameof(TextColorWithAlpha));
                 }
             }
         }
@@ -252,7 +250,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 int newColorRGB = ColorToInt(value);
-                int newOpacity = (int)(value.A * 2.55);
+                int newOpacity = (int)(value.A / 2.55);
 
                 bool changed = false;
 
@@ -287,7 +285,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _settings.Properties.BackgroundColor.Value = value;
                     NotifySettingsChanged();
-                    OnPropertyChanged(nameof(BackgroundColorWithAlpha));
                 }
             }
         }
@@ -302,7 +299,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _settings.Properties.BackgroundOpacity.Value = value;
                     NotifySettingsChanged();
                     OnPropertyChanged(nameof(BackgroundOpacity));
-                    OnPropertyChanged(nameof(BackgroundColorWithAlpha));
                 }
             }
         }
