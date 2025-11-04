@@ -5327,16 +5327,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Select a location</value>
   </data>
   <data name="LightSwitch_LocationDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Select</value>
+    <value>Save</value>
   </data>
   <data name="LightSwitch_LocationDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="LightSwitch_GetCurrentLocation.Text" xml:space="preserve">
-    <value>Get current location</value>
-  </data>
   <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
-    <value>To calculate the sunrise and sunset, Light Switch needs a location.</value>
+    <value>Enter your location manually or detect it automatically so Light Switch can calculate accurate sunrise and sunset times.</value>
   </data>
   <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5344,8 +5341,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_SunsetText.Text" xml:space="preserve">
     <value>Sunset</value>
   </data>
-  <data name="LightSwitch_LocationTooltip.Text" xml:space="preserve">
-    <value>Location</value>
+	  <data name="LightSwitch_LatitudeBox.Header" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+	  <data name="LightSwitch_LongitudeBox.Header" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="LightSwitch_FindLocation.Text" xml:space="preserve">
+    <value>Detect location</value>
+  </data>
+	<data name="LightSwitch_FindLocationAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Detect location</value>
   </data>
   <data name="LightSwitch_SunriseTooltip.Text" xml:space="preserve">
     <value>Sunrise</value>
