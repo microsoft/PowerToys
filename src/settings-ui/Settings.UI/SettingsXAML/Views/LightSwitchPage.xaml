@@ -242,7 +242,7 @@
                                 </AutoSuggestBox.ItemTemplate>
                             </AutoSuggestBox>-->
 
-                                
+
 
                                 <Grid
                                     Grid.Row="1"
@@ -255,19 +255,19 @@
                                     </Grid.ColumnDefinitions>
                                     <NumberBox
                                         x:Uid="LightSwitch_LatitudeBox"
-                                        PlaceholderText="52"
-                                        Minimum="-90"
                                         Maximum="90"
-                                        ValueChanged="LatLonBox_ValueChanged"
-                                        Text="{x:Bind ViewModel.Latitude, Mode=TwoWay}" />
+                                        Minimum="-90"
+                                        PlaceholderText="52"
+                                        Text="{x:Bind ViewModel.Latitude, Mode=TwoWay}"
+                                        ValueChanged="LatLonBox_ValueChanged" />
                                     <NumberBox
                                         x:Uid="LightSwitch_LongitudeBox"
                                         Grid.Column="1"
-                                        PlaceholderText="6"
-                                        Minimum="-180"
                                         Maximum="180"
-                                        ValueChanged="LatLonBox_ValueChanged"
-                                        Text="{x:Bind ViewModel.Longitude, Mode=TwoWay}" />
+                                        Minimum="-180"
+                                        PlaceholderText="6"
+                                        Text="{x:Bind ViewModel.Longitude, Mode=TwoWay}"
+                                        ValueChanged="LatLonBox_ValueChanged" />
                                     <Button
                                         x:Name="SyncButton"
                                         x:Uid="LightSwitch_FindLocationAutomation"
@@ -275,23 +275,23 @@
                                         Margin="4,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Bottom"
-                                        Click="GetGeoLocation_Click"
-                                        AutomationProperties.AutomationId="SyncLocationButton_LightSwitch">
+                                        AutomationProperties.AutomationId="SyncLocationButton_LightSwitch"
+                                        Click="GetGeoLocation_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <FontIcon FontSize="16" Glyph="&#xECAF;" />
                                             <TextBlock x:Uid="LightSwitch_FindLocation" />
                                         </StackPanel>
                                     </Button>
                                 </Grid>
-                <ProgressRing
-    x:Name="SyncLoader"
-    Grid.Row="2"
-    Width="40"
-    Height="40"
-    VerticalAlignment="Center"
-    IsActive="False"
-    Visibility="Collapsed" />
-                <Grid
+                                <ProgressRing
+                                    x:Name="SyncLoader"
+                                    Grid.Row="2"
+                                    Width="40"
+                                    Height="40"
+                                    VerticalAlignment="Center"
+                                    IsActive="False"
+                                    Visibility="Collapsed" />
+                                <Grid
                                     x:Name="LocationResultPanel"
                                     Grid.Row="2"
                                     VerticalAlignment="Bottom"
