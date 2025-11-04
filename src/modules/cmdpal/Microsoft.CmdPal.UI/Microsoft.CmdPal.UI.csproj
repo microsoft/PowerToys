@@ -15,7 +15,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <WinUISDKReferences>true</WinUISDKReferences>
 
     <Version>$(CmdPalVersion)</Version>
 
@@ -38,7 +37,7 @@
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+  <PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
     <AppxBundle>Never</AppxBundle>
     <AppxPackageTestDir>$(OutputPath)\AppPackages\Microsoft.CmdPal.UI_$(Version)_Test\</AppxPackageTestDir>
@@ -110,6 +109,10 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
   </ItemGroup>
 
   <ItemGroup>
