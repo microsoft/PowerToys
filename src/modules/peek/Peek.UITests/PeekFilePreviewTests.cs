@@ -41,107 +41,61 @@ public class PeekFilePreviewTests : UITestBase
         FixSettingsFileBeforeTests();
     }
 
+    private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
+
     private static void FixSettingsFileBeforeTests()
     {
         try
         {
-            // Fix Peek module settings
-            string peekDirectory = Path.Combine(
+            // Common base path for PowerToys settings
+            string powerToysSettingsDirectory = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Microsoft",
-                "PowerToys",
-                "Peek");
+                "PowerToys");
 
-            if (!Directory.Exists(peekDirectory))
-            {
-                Directory.CreateDirectory(peekDirectory);
-            }
-
+            // Fix Peek module settings
+            string peekDirectory = Path.Combine(powerToysSettingsDirectory, "Peek");
             string peekSettingsPath = Path.Combine(peekDirectory, "settings.json");
 
-            string peekSettingsContent = @"{
-              ""name"": ""Peek"",
-              ""version"": ""1.0"",
-              ""properties"": {
-                ""ActivationShortcut"": {
-                  ""win"": false,
-                  ""ctrl"": true,
-                  ""alt"": false,
-                  ""shift"": false,
-                  ""code"": 32,
-                  ""key"": ""Space""
-                },
-                ""AlwaysRunNotElevated"": {
-                  ""value"": true
-                },
-                ""CloseAfterLosingFocus"": {
-                  ""value"": false
-                },
-                ""ConfirmFileDelete"": {
-                  ""value"": true
-                },
-                ""EnableSpaceToActivate"": {
-                  ""value"": false
-                }
-              }
-            }";
+            // Read existing Peek settings
+            string existingPeekJson = File.ReadAllText(peekSettingsPath);
+            using var peekDoc = JsonDocument.Parse(existingPeekJson);
+            var peekSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(existingPeekJson)
+                               ?? throw new InvalidOperationException("Failed to deserialize Peek settings");
 
-            File.WriteAllText(peekSettingsPath, peekSettingsContent);
+            // Get properties section
+            var propertiesElement = (JsonElement)peekSettings["properties"];
+            var properties = JsonSerializer.Deserialize<Dictionary<string, object>>(propertiesElement.GetRawText())
+                             ?? throw new InvalidOperationException("Failed to deserialize properties");
 
-            Debug.WriteLine($"Successfully set Ctrl+Space shortcut as settings file to {peekSettingsPath}");
-
-            // Fix global PowerToys settings
-            string globalSettingsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft",
-                "PowerToys",
-                "settings.json");
-
-            if (File.Exists(globalSettingsPath))
+            // Update only the required properties: ActivationShortcut and EnableSpaceToActivate
+            properties["ActivationShortcut"] = new Dictionary<string, object>
             {
-                string globalSettingsJson = File.ReadAllText(globalSettingsPath);
-                using var doc = JsonDocument.Parse(globalSettingsJson);
-                var root = doc.RootElement;
+                { "win", false },
+                { "ctrl", true },
+                { "alt", false },
+                { "shift", false },
+                { "code", 32 },
+                { "key", "Space" },
+            };
 
-                // Create a dictionary to hold the modified settings
-                var modifiedSettings = new Dictionary<string, object>();
-
-                // Copy all existing properties
-                foreach (var property in root.EnumerateObject())
-                {
-                    if (property.Name == "enabled")
-                    {
-                        // Modify the enabled property to disable all modules except Peek
-                        var enabledModules = new Dictionary<string, bool>();
-                        foreach (var module in property.Value.EnumerateObject())
-                        {
-                            // Set Peek to true, all others to false
-                            enabledModules[module.Name] = module.Name == "Peek";
-                        }
-
-                        modifiedSettings[property.Name] = enabledModules;
-                    }
-                    else
-                    {
-                        // Copy other properties as-is
-                        object? deserializedValue = JsonSerializer.Deserialize<object>(property.Value.GetRawText());
-                        if (deserializedValue != null)
-                        {
-                            modifiedSettings[property.Name] = deserializedValue;
-                        }
-                    }
-                }
-
-                // Serialize and save the modified settings
-                string modifiedJson = JsonSerializer.Serialize(modifiedSettings);
-                File.WriteAllText(globalSettingsPath, modifiedJson);
-
-                Debug.WriteLine($"Successfully updated global settings file at {globalSettingsPath} - disabled all modules except Peek");
-            }
-            else
+            properties["EnableSpaceToActivate"] = new Dictionary<string, object>
             {
-                Debug.WriteLine($"Global settings file not found at {globalSettingsPath}");
-            }
+                { "value", false },
+            };
+
+            peekSettings["properties"] = properties;
+
+            // Serialize and save Peek settings
+            string peekSettingsJson = JsonSerializer.Serialize(peekSettings, IndentedJsonOptions);
+            File.WriteAllText(peekSettingsPath, peekSettingsJson);
+
+            Debug.WriteLine($"Successfully set Ctrl+Space shortcut in settings file at {peekSettingsPath}");
+
+            // Disable all modules except Peek in global settings
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Peek");
+
+            Debug.WriteLine("Successfully updated global settings - disabled all modules except Peek");
         }
         catch (Exception ex)
         {
