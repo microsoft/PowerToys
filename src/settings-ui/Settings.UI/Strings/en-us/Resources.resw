@@ -5524,7 +5524,4 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_EnableThemeSwitching_Toggle.OffContent" xml:space="preserve">
     <value>Off</value>
   </data>
-  <data name="LightSwitch_EnableThemeSwitching_LearnMoreLink.Content" xml:space="preserve">
-    <value>Click here to learn more about setting up Windows themes.</value>
-  </data>
 </root>

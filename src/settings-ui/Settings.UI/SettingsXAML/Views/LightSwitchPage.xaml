@@ -182,10 +182,6 @@
                       <TextBlock x:Uid="LightSwitch_EnableThemeSwitching_Header" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="14" />
                       <StackPanel>
                         <TextBlock x:Uid="LightSwitch_EnableThemeSwitching_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" />
-                        <HyperlinkButton x:Uid="LightSwitch_EnableThemeSwitching_LearnMoreLink"
-                                         NavigateUri="ms-settings:themes"
-                                         Foreground="{ThemeResource HyperlinkTextButtonForegroundBrush}"
-                                         FontSize="12" />
                       </StackPanel>
                     </StackPanel>
                     <ToggleSwitch x:Name="ThemeSwitchToggle"
@@ -212,7 +208,7 @@
         TextWrapping="Wrap">
         <ToolTipService.ToolTip>
             <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=lightPathTextBlock, Mode=OneWay}">
-                <TextBlock Text="{x:Bind ViewModel.LightThemePath, Mode=TwoWay}" />
+                <TextBlock Text="{x:Bind ViewModel.LightThemePath, Mode=TwoWay}" TextWrapping="Wrap" FontSize="12"/>
             </ToolTip>
         </ToolTipService.ToolTip>
     </TextBlock>
@@ -246,7 +242,7 @@
     TextWrapping="Wrap">
     <ToolTipService.ToolTip>
         <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=darkPathTextBlock, Mode=OneWay}">
-            <TextBlock Text="{x:Bind ViewModel.DarkThemePath, Mode=TwoWay}" />
+            <TextBlock Text="{x:Bind ViewModel.DarkThemePath, Mode=TwoWay}" TextWrapping="Wrap" FontSize="12"/>
         </ToolTip>
     </ToolTipService.ToolTip>
 </TextBlock>
