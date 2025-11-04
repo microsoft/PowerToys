@@ -266,6 +266,26 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - task: VSBuild@1
+    displayName: Generate DSC artifacts for ARM64
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
+    inputs:
+      solution: PowerToys.sln
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore
+        /p:Configuration=$(BuildConfiguration)
+        /p:Platform=x64
+        /t:DSC\PowerToys_Settings_DSC_Schema_Generator
+        /bl:$(LogOutputDirectory)\build-dsc-generator.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
+      platform: x64
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
   # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
   - task: VSBuild@1
     displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
