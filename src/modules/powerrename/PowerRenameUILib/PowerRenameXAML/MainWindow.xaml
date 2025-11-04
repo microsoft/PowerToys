@@ -330,6 +330,8 @@
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="28" />
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="28" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <TextBlock x:Uid="DateTimeCheatSheet_Title" FontWeight="SemiBold" />
                                     <ListView
@@ -421,6 +423,48 @@
                                         IsItemClickEnabled="True"
                                         ItemClick="DateTimeItemClick"
                                         ItemsSource="{x:Bind RandomizerShortcuts}"
+                                        SelectionMode="None">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="local:PatternSnippet">
+                                                <Grid Margin="-10,0,0,0" ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border
+                                                        Padding="8"
+                                                        HorizontalAlignment="Left"
+                                                        Background="{ThemeResource ButtonBackground}"
+                                                        BorderBrush="{ThemeResource ButtonBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4">
+                                                        <TextBlock
+                                                            FontFamily="Consolas"
+                                                            Foreground="{ThemeResource ButtonForeground}"
+                                                            Text="{x:Bind Code}" />
+                                                    </Border>
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{x:Bind Description}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <!--  Media Metadata  -->
+                                    <TextBlock
+                                        x:Uid="MetadataCheatSheet_Title"
+                                        Grid.Row="6"
+                                        Margin="0,10,0,0"
+                                        FontWeight="SemiBold" />
+                                    <ListView
+                                        Grid.Row="7"
+                                        Margin="-4,12,0,0"
+                                        IsItemClickEnabled="True"
+                                        ItemClick="MetadataItemClick"
+                                        ItemsSource="{x:Bind MetadataShortcuts}"
                                         SelectionMode="None">
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="local:PatternSnippet">
@@ -560,31 +604,61 @@
                         FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                 </StackPanel>
 
-                <TextBlock
-                    x:Name="FileTimeLabel"
-                    x:Uid="TextBlock_FileTime"
-                    Margin="0,16,0,8"
-                    FontSize="12"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Grid Margin="0,16,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel
-                    Grid.Row="2"
-                    Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="4">
+                    <!--  File Time Section  -->
+                    <TextBlock
+                        x:Name="FileTimeLabel"
+                        x:Uid="TextBlock_FileTime"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Margin="0,0,0,8"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
                     <ComboBox
                         x:Name="comboBox_fileTimeParts"
                         Grid.Row="1"
                         Grid.Column="0"
-                        Width="200"
                         HorizontalAlignment="Stretch"
-                        AutomationProperties.LabeledBy="{Binding ElementName=FileDateLabel}"
+                        AutomationProperties.LabeledBy="{Binding ElementName=FileTimeLabel}"
                         SelectedIndex="0">
                         <ComboBoxItem x:Uid="FileTimeParts_CreationTime" />
                         <ComboBoxItem x:Uid="FileTimeParts_ModificationTime" />
                         <ComboBoxItem x:Uid="FileTimeParts_AccessTime" />
                     </ComboBox>
-                </StackPanel>
+
+                    <!--  Metadata Source Section  -->
+                    <TextBlock
+                        x:Name="MetadataSourceLabel"
+                        x:Uid="TextBlock_MetadataSource"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Margin="0,0,0,8"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                    <ComboBox
+                        x:Name="comboBox_metadataSource"
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.LabeledBy="{Binding ElementName=MetadataSourceLabel}"
+                        SelectedIndex="0"
+                        SelectionChanged="MetadataSourceComboBox_SelectionChanged">
+                        <ComboBoxItem x:Uid="MetadataSource_EXIF" />
+                        <ComboBoxItem x:Uid="MetadataSource_XMP" />
+                    </ComboBox>
+                </Grid>
 
             </StackPanel>
 
