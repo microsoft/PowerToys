@@ -19,10 +19,21 @@ using System.Threading;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Models;
+using ImageResizer.Services;
 using ManagedCommon;
 
 namespace ImageResizer.Properties
 {
+    /// <summary>
+    /// Represents the availability state of AI Super Resolution feature.
+    /// </summary>
+    public enum AiAvailabilityState
+    {
+        NotSupported,      // System doesn't support AI (architecture issue or policy disabled)
+        ModelNotReady,     // AI supported but model not downloaded
+        Ready,             // AI fully ready to use
+    }
+
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
@@ -51,7 +62,7 @@ namespace ImageResizer.Properties
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
         private AiSize _aiSize;
-        private bool _isAiArchitectureSupported;
+        private AiAvailabilityState _aiAvailabilityState;
 
         public Settings()
         {
@@ -75,17 +86,51 @@ namespace ImageResizer.Properties
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
             AiSize = new AiSize(2);  // Initialize with default scale of 2
-            _isAiArchitectureSupported = CheckAiArchitectureSupport();
+            _aiAvailabilityState = CheckAiAvailability();
             AllSizes = new AllSizesCollection(this);
         }
 
         /// <summary>
-        /// Checks if the current architecture supports AI Super Resolution.
-        /// AI Super Resolution requires ARM64 architecture.
+        /// Centralized function to check AI Super Resolution availability.
+        /// Performs architecture check and model availability check synchronously.
         /// </summary>
-        private static bool CheckAiArchitectureSupport()
+        /// <returns>The availability state of AI Super Resolution.</returns>
+        private static AiAvailabilityState CheckAiAvailability()
         {
-            return System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
+            try
+            {
+                bool isArchitectureSupported = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
+
+                if (!isArchitectureSupported)
+                {
+                    return AiAvailabilityState.NotSupported;
+                }
+
+                // Check Windows AI service model ready state
+                var readyState = WinAiSuperResolutionService.GetModelReadyState();
+
+                // Map AI service state to our availability state
+                switch (readyState)
+                {
+                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
+                        // AI is fully supported and model is ready
+                        return AiAvailabilityState.Ready;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
+                        // AI is supported but model needs to be downloaded
+                        return AiAvailabilityState.ModelNotReady;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
+                    default:
+                        // User disabled AI features or unknown state
+                        return AiAvailabilityState.NotSupported;
+                }
+            }
+            catch (Exception)
+            {
+                // Failed to check AI state - treat as not supported
+                return AiAvailabilityState.NotSupported;
+            }
         }
 
         /// <summary>
@@ -96,7 +141,7 @@ namespace ImageResizer.Properties
         private void ValidateSelectedSizeIndex()
         {
             var maxIndex = Sizes.Count + 1;
-            if (!_isAiArchitectureSupported)
+            if (_aiAvailabilityState == AiAvailabilityState.NotSupported)
             {
                 maxIndex = Sizes.Count; // Only up to CustomSize
             }
@@ -108,7 +153,10 @@ namespace ImageResizer.Properties
         }
 
         [JsonIgnore]
-        public bool IsAiArchitectureSupported => _isAiArchitectureSupported;
+        public AiAvailabilityState AiAvailabilityState => _aiAvailabilityState;
+
+        [JsonIgnore]
+        public bool IsAiArchitectureSupported => _aiAvailabilityState != AiAvailabilityState.NotSupported;
 
         [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }
@@ -256,7 +304,7 @@ namespace ImageResizer.Properties
             public event PropertyChangedEventHandler PropertyChanged;
 
             public int Count
-                => _sizes.Count + 1 + (_settings.IsAiArchitectureSupported ? 1 : 0);
+                => _sizes.Count + 1 + (_settings.AiAvailabilityState != AiAvailabilityState.NotSupported ? 1 : 0);
 
             public ResizeSize this[int index]
             {
@@ -270,7 +318,7 @@ namespace ImageResizer.Properties
                     {
                         return _customSize;
                     }
-                    else if (_settings.IsAiArchitectureSupported && index == _sizes.Count + 1)
+                    else if (_settings.AiAvailabilityState != AiAvailabilityState.NotSupported && index == _sizes.Count + 1)
                     {
                         return _aiSize;
                     }

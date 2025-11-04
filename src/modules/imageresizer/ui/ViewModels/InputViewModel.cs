@@ -81,6 +81,13 @@ namespace ImageResizer.ViewModels
             if (settings != null)
             {
                 settings.CustomSize.PropertyChanged += (sender, e) => settings.SelectedSize = (CustomSize)sender;
+                settings.AiSize.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(AiSize.Scale))
+                    {
+                        NotifyAiScaleChanged();
+                    }
+                };
                 settings.PropertyChanged += HandleSettingsPropertyChanged;
             }
 
@@ -108,7 +115,7 @@ namespace ImageResizer.ViewModels
                 if (Settings?.AiSize != null && Settings.AiSize.Scale != value)
                 {
                     Settings.AiSize.Scale = value;
-                    OnPropertyChanged(nameof(AiSuperResolutionScale));
+                    NotifyAiScaleChanged();
                 }
             }
         }
@@ -338,63 +345,36 @@ namespace ImageResizer.ViewModels
         }
 
         /// <summary>
-        /// Initializes AI support state based on system architecture.
-        /// If architecture doesn't support AI, sets state to NotSupported.
-        /// If architecture supports AI, checks model availability.
+        /// Initializes AI support state based on Settings availability check.
+        /// The centralized AI check has already been performed in Settings.
         /// </summary>
         private async Task InitializeAiSupportAsync()
         {
-            if (Settings?.IsAiArchitectureSupported != true)
+            if (Settings == null)
             {
-                // Architecture doesn't support AI - set to NotSupported immediately
                 SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
                 return;
             }
 
-            // Architecture supports AI - check if model is available
-            _aiFeatureState = AiFeatureState.Unknown;
-            ModelStatusMessage = Resources.Input_AiModelChecking;
-            await CheckModelAvailabilityAsync();
-        }
-
-        private async Task CheckModelAvailabilityAsync()
-        {
-            try
+            // Use the centralized AI availability state from Settings
+            switch (Settings.AiAvailabilityState)
             {
-                // Check Windows AI service state
-                // Architecture check is now done in Settings.IsAiArchitectureSupported
-                // Following the pattern from sample project (Sample.xaml.cs:31-52)
-                var readyState = WinAiSuperResolutionService.GetModelReadyState();
+                case Properties.AiAvailabilityState.Ready:
+                    // AI is fully ready - initialize the service
+                    SetAiState(AiFeatureState.Ready, string.Empty);
+                    await InitializeAiServiceAsync();
+                    break;
 
-                // Map AI service state to our internal state
-                switch (readyState)
-                {
-                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
-                        // AI is fully supported and model is ready
-                        SetAiState(AiFeatureState.Ready, string.Empty);
-                        await InitializeAiServiceAsync();
-                        break;
+                case Properties.AiAvailabilityState.ModelNotReady:
+                    // AI supported but model needs to be downloaded
+                    SetAiState(AiFeatureState.ModelNotReady, Resources.Input_AiModelNotAvailable);
+                    break;
 
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
-                        // AI is supported but model needs to be downloaded
-                        SetAiState(AiFeatureState.ModelNotReady, Resources.Input_AiModelNotAvailable);
-                        break;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
-                        // User disabled AI features in system settings
-                        SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelDisabledByUser);
-                        break;
-
-                    default:
-                        // AI not supported on this system or unknown state
-                        SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
-                        break;
-                }
-            }
-            catch (Exception)
-            {
-                // Failed to check AI state - treat as not supported
-                SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
+                case Properties.AiAvailabilityState.NotSupported:
+                default:
+                    // AI not supported
+                    SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
+                    break;
             }
         }
 

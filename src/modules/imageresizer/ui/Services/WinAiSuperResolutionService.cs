@@ -92,16 +92,9 @@ namespace ImageResizer.Services
 
             try
             {
-                // Check state before creating instance (following sample project pattern)
-                var readyState = GetModelReadyState();
-                if (readyState != AIFeatureReadyState.Ready)
-                {
-                    // Model not ready, don't attempt to create
-                    return false;
-                }
-
-                // Create ImageScaler instance (only if state is Ready)
+                // Create ImageScaler instance
                 // This must be called on UI thread in an async method
+                // Note: Caller (InputViewModel) has already verified Ready state via Settings.CheckAiAvailability()
                 var newImageScaler = await ImageScaler.CreateAsync();
 
                 // Lock to safely assign the instance
