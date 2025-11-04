@@ -93,6 +93,11 @@ namespace HostsUILib.Helpers
 
         private IEnumerable<IFileInfo> GetAll()
         {
+            if (!_fileSystem.Directory.Exists(_userSettings.BackupPath))
+            {
+                return [];
+            }
+
             return _fileSystem.Directory.GetFiles(_userSettings.BackupPath, $"*{BackupSuffix}*").Select(_fileSystem.FileInfo.New);
         }
 
