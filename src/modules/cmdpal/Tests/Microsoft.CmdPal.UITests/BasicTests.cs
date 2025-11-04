@@ -49,8 +49,8 @@ public class BasicTests : CommandPaletteTestBase
     {
         SetSearchBox("time and date");
 
-        var searchFileItem = this.Find<NavigationViewItem>("Time and Date");
-        Assert.AreEqual(searchFileItem.Name, "Time and Date");
+        var searchFileItem = this.Find<NavigationViewItem>("Time and date");
+        Assert.AreEqual(searchFileItem.Name, "Time and date");
         searchFileItem.DoubleClick();
 
         SetTimeAndDaterExtensionSearchBox("year");
