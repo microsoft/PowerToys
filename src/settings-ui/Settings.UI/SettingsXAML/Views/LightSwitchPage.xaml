@@ -221,7 +221,7 @@
         FontFamily="{ThemeResource SymbolThemeFontFamily}">
                         <ToolTipService.ToolTip>
                           <ToolTip>
-                            <TextBlock x:Uid="LightSwitch_LightThemeButtonSelectLocation" />
+                            <TextBlock x:Uid="LightSwitch_ThemeButtonSelectLocation" />
                           </ToolTip>
                         </ToolTipService.ToolTip>
                       </Button>
@@ -255,7 +255,7 @@
     FontFamily="{ThemeResource SymbolThemeFontFamily}">
                         <ToolTipService.ToolTip>
                           <ToolTip>
-                            <TextBlock x:Uid="LightSwitch_LightThemeButtonSelectLocation" />
+                            <TextBlock x:Uid="LightSwitch_ThemeButtonSelectLocation" />
                           </ToolTip>
                         </ToolTipService.ToolTip>
                       </Button>

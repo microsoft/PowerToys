@@ -5516,7 +5516,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>Link the file you want to use while you are in dark mode</comment>
   </data>
   <data name="LightSwitch_ThemeButtonSelectLocation.Text" xml:space="preserve">
-    <value>Select folder</value>
+    <value>Select file</value>
   </data>
   <data name="LightSwitch_EnableThemeSwitching_Toggle.OnContent" xml:space="preserve">
     <value>On</value>
