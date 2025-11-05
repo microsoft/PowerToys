@@ -144,6 +144,29 @@ public partial class ProviderSettingsViewModel(
         return [.. providersCommands];
     }
 
+    [field: AllowNull]
+    public List<TopLevelViewModel> FallbackCommands
+    {
+        get
+        {
+            if (field is null)
+            {
+                field = BuildFallbackViewModels();
+            }
+
+            return field;
+        }
+    }
+
+    private List<TopLevelViewModel> BuildFallbackViewModels()
+    {
+        var thisProvider = _provider;
+        var providersCommands = thisProvider.FallbackItems;
+
+        // Remember! This comes in on the UI thread!
+        return [.. providersCommands];
+    }
+
     public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
 
     private void Save() => SettingsModel.SaveSettings(_settings);

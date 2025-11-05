@@ -82,7 +82,6 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             "General" => typeof(GeneralPage),
             "Extensions" => typeof(ExtensionsPage),
-            "Fallbacks" => typeof(FallbacksPage),
             _ => null,
         };
         if (pageType is not null)

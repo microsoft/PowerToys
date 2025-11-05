@@ -431,8 +431,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
     <value>Last Position</value>
     <comment>Reopen the window where it was last closed</comment>
-  </data> 
-  <data name="TrayMenu_Settings" xml:space="preserve">  
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
   <data name="TrayMenu_Close" xml:space="preserve">
@@ -481,9 +481,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
     <value>Show results on queries without direct activation command</value>
   </data>
-  <data name="Settings_GeneralPage_NavigationViewItem_Fallbacks.Content" xml:space="preserve">
-    <value>Fallbacks</value>
-  </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings (Ctrl+,)</value>
   </data>
@@ -502,28 +499,28 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
     <value>Reloading extensions..</value>
   </data>
-	<data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
     <value>Discover more extensions</value>
   </data>
-	<data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
     <value>Find more extensions on the Microsoft Store or WinGet.</value>
   </data>
-	<data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
     <value>Learn how to create your own extensions</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Find extensions on the Microsoft Store</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Microsoft Store</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Find extensions on WinGet</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Microsoft Store</value>
   </data>
-	<data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
     <value>Search extensions</value>
   </data>
 </root>
