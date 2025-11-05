@@ -258,7 +258,6 @@
                                         x:Uid="LightSwitch_LatitudeBox"
                                         Maximum="90"
                                         Minimum="-90"
-                                        PlaceholderText="52"
                                         Text="{x:Bind ViewModel.Latitude, Mode=TwoWay}"
                                         ValueChanged="LatLonBox_ValueChanged" />
                                     <NumberBox
@@ -267,7 +266,6 @@
                                         Grid.Column="1"
                                         Maximum="180"
                                         Minimum="-180"
-                                        PlaceholderText="6"
                                         Text="{x:Bind ViewModel.Longitude, Mode=TwoWay}"
                                         ValueChanged="LatLonBox_ValueChanged" />
                                     <Button

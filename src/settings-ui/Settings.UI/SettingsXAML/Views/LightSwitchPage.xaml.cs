@@ -157,6 +157,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             double lat = (double)LatitudeBox.Value;
             double lon = (double)LongitudeBox.Value;
 
+            double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double currentLat);
+            double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double currentLon);
+
+            // If the new values are the same as the current ones (within tolerance), do nothing
+            if (Math.Abs(lat - currentLat) < 0.0001 && Math.Abs(lon - currentLon) < 0.0001)
+            {
+                return;
+            }
+
             // Optional: Validate ranges
             if (lat < -90 || lat > 90 || lon < -180 || lon > 180)
             {
