@@ -154,30 +154,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            // Try to parse the current values
-            if (double.TryParse(ViewModel.Latitude, out double lat) &&
-                double.TryParse(ViewModel.Longitude, out double lon))
+            double lat = (double)LatitudeBox.Value;
+            double lon = (double)LongitudeBox.Value;
+
+            // Optional: Validate ranges
+            if (lat < -90 || lat > 90 || lon < -180 || lon > 180)
             {
-                // Optional: Validate ranges
-                if (lat < -90 || lat > 90 || lon < -180 || lon > 180)
-                {
-                    return;
-                }
+                return;
+            }
 
-                // Update sunrise/sunset times whenever both values are valid
-                SunTimes result = SunCalc.CalculateSunriseSunset(
-                    lat,
-                    lon,
-                    DateTime.Now.Year,
-                    DateTime.Now.Month,
-                    DateTime.Now.Day);
+            // Update sunrise/sunset times whenever both values are valid
+            SunTimes result = SunCalc.CalculateSunriseSunset(
+                lat,
+                lon,
+                DateTime.Now.Year,
+                DateTime.Now.Month,
+                DateTime.Now.Day);
 
-                ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-                ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
-                ViewModel.Latitude = lat.ToString(CultureInfo.InvariantCulture);
-                ViewModel.Longitude = lon.ToString(CultureInfo.InvariantCulture);
+            ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+            ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+            ViewModel.Latitude = lat.ToString(CultureInfo.InvariantCulture);
+            ViewModel.Longitude = lon.ToString(CultureInfo.InvariantCulture);
 
-                LocationResultPanel.Visibility = Visibility.Visible;
+            LocationResultPanel.Visibility = Visibility.Visible;
+
+            if (LocationDialog != null)
+            {
+                LocationDialog.IsPrimaryButtonEnabled = true;
             }
         }
 
