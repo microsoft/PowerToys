@@ -5,7 +5,6 @@
         {
           "MatchedPath": [
             "*.resources.dll",
-
             "WinUI3Apps\\Assets\\Settings\\Scripts\\*.ps1",
 
             "PowerToys.ActionRunner.exe",
@@ -27,6 +26,7 @@
             "PowerToys.GPOWrapper.dll",
             "PowerToys.GPOWrapperProjection.dll",
             "PowerToys.AllExperiments.dll",
+            "LanguageModelProvider.dll",
 
             "Common.Search.dll",
 
@@ -181,6 +181,7 @@
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.MouseJumpUI.dll",
             "PowerToys.MouseJumpUI.exe",
+            "PowerToys.CursorWrap.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
@@ -346,6 +347,8 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
+                "Microsoft.SemanticKernel.Connectors.Ollama.dll",
+                "OllamaSharp.dll",
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
