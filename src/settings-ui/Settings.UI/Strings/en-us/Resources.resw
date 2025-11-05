@@ -2695,7 +2695,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
-  </data>	
+  </data>
 
   <!-- CursorWrap Module -->
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
@@ -2707,7 +2707,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
-	
+
   <!-- Activation Shortcut -->
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -2718,10 +2718,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
   </data>
-	
+
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
-  </data>	
+  </data>
 
   <!-- Auto-activate -->
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
@@ -2729,8 +2729,8 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
     <value>Automatically activate on utility startup</value>
-  </data>	
-	
+  </data>
+
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -5494,16 +5494,16 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_SunsetText.Text" xml:space="preserve">
     <value>Sunset</value>
   </data>
-	  <data name="LightSwitch_LatitudeBox.Header" xml:space="preserve">
+  <data name="LightSwitch_LatitudeBox.Header" xml:space="preserve">
     <value>Latitude</value>
   </data>
-	  <data name="LightSwitch_LongitudeBox.Header" xml:space="preserve">
+  <data name="LightSwitch_LongitudeBox.Header" xml:space="preserve">
     <value>Longitude</value>
   </data>
   <data name="LightSwitch_FindLocation.Text" xml:space="preserve">
     <value>Detect location</value>
   </data>
-	<data name="LightSwitch_FindLocationAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="LightSwitch_FindLocationAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Detect location</value>
   </data>
   <data name="LightSwitch_SunriseTooltip.Text" xml:space="preserve">

@@ -7,8 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -141,6 +139,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
+                SyncLoader.Visibility = Visibility.Collapsed;
+                LocationResultPanel.Visibility = Visibility.Collapsed;
                 LatitudeBox.IsEnabled = true;
                 LongitudeBox.IsEnabled = true;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
