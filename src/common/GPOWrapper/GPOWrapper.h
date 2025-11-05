@@ -54,6 +54,14 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOpenAIValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteAzureOpenAIValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteAzureAIInferenceValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteMistralValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteGoogleValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteAnthropicValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOllamaValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteFoundryLocalValue();
         static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
         static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();

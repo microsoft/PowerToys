@@ -20,6 +20,12 @@
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
 	<ItemGroup>
+		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
+		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
+		<None Remove="Assets\Settings\Icons\Models\Onnx.svg" />
+		<None Remove="Assets\Settings\Icons\Models\OpenAI.dark.svg" />
+		<None Remove="Assets\Settings\Icons\Models\OpenAI.light.svg" />
+		<None Remove="Assets\Settings\Icons\Models\WindowsML.svg" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
 		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
@@ -51,6 +57,13 @@
 		<Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
 		<Content Include="Assets\Settings\StoreLogo.png" />
 		<Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- AI Model Provider Icons - SVG files -->
+		<Content Include="Assets\Settings\Icons\Models\*.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -105,6 +118,7 @@
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 	</ItemGroup>

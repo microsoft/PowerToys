@@ -10,9 +10,11 @@ using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace AdvancedPaste.Controls
 {
@@ -42,6 +44,18 @@ namespace AdvancedPaste.Controls
         {
             get => GetValue(FooterProperty);
             set => SetValue(FooterProperty, value);
+        }
+
+        public static readonly DependencyProperty ModelSelectorProperty = DependencyProperty.Register(
+            nameof(ModelSelector),
+            typeof(object),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: null));
+
+        public object ModelSelector
+        {
+            get => GetValue(ModelSelectorProperty);
+            set => SetValue(ModelSelectorProperty, value);
         }
 
         public PromptBox()
@@ -110,6 +124,20 @@ namespace AdvancedPaste.Controls
         internal void IsLoading(bool loading)
         {
             Loader.IsLoading = loading;
+        }
+
+        private async void AIProviderListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (AIProviderListView.SelectedItem is PasteAIProviderDefinition provider)
+            {
+                if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
+                {
+                    await ViewModel.SetActiveProviderCommand.ExecuteAsync(provider);
+                }
+
+                var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
+                flyout?.Hide();
+            }
         }
     }
 }
