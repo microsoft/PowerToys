@@ -252,7 +252,9 @@ namespace ImageResizer.Models
                 // If the AI implementation already returned the desired scale, use it as-is.
                 var expectedWidth = source.PixelWidth * (double)scaleFactor;
                 var expectedHeight = source.PixelHeight * (double)scaleFactor;
-                if (aiResult.PixelWidth >= expectedWidth && aiResult.PixelHeight >= expectedHeight)
+                int roundedExpectedWidth = (int)Math.Round(expectedWidth);
+                int roundedExpectedHeight = (int)Math.Round(expectedHeight);
+                if (aiResult.PixelWidth >= roundedExpectedWidth && aiResult.PixelHeight >= roundedExpectedHeight)
                 {
                     return aiResult;
                 }
