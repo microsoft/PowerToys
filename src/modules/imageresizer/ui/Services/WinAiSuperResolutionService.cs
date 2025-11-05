@@ -23,6 +23,7 @@ namespace ImageResizer.Services
         private bool _disposed;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="WinAiSuperResolutionService"/> class.
         /// Private constructor. Use CreateAsync() factory method to create instances.
         /// </summary>
         private WinAiSuperResolutionService(ImageScaler imageScaler)

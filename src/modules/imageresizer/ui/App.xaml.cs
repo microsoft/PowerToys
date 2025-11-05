@@ -96,13 +96,6 @@ namespace ImageResizer
         {
             try
             {
-                bool isArchitectureSupported = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
-
-                if (!isArchitectureSupported)
-                {
-                    return AiAvailabilityState.NotSupported;
-                }
-
                 // Check Windows AI service model ready state
                 var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
 
@@ -116,6 +109,7 @@ namespace ImageResizer
                         return AiAvailabilityState.ModelNotReady;
 
                     case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
                     default:
                         return AiAvailabilityState.NotSupported;
                 }
