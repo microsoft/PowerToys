@@ -33,6 +33,7 @@ public sealed partial class MainWindow : WindowEx
     private const int DefaultHeight = 480;
     private const int DwmWaCloak = 13;
     private const int GwlStyle = -16;
+    private const int GwlExStyle = -20;
     private const int SwHide = 0;
     private const int SwShow = 5;
     private const int SwShowNoActivate = 8;
@@ -45,6 +46,7 @@ public sealed partial class MainWindow : WindowEx
     private const long WsSysmenu = 0x00080000L;
     private const long WsMinimizeBox = 0x00020000L;
     private const long WsMaximizeBox = 0x00010000L;
+    private const long WsExToolWindow = 0x00000080L;
     private static readonly IntPtr HwndTopmost = new(-1);
     private static readonly IntPtr HwndBottom = new(1);
 
@@ -58,6 +60,7 @@ public sealed partial class MainWindow : WindowEx
         Title = "PowerToys Quick Access (Preview)";
 
         CustomizeWindowChrome();
+        HideFromTaskbar();
         HideWindow();
         InitializeEventListeners();
         Closed += OnClosed;
@@ -132,7 +135,7 @@ public sealed partial class MainWindow : WindowEx
             UncloakWindow();
             ShowWindowNative(_hwnd, SwShow);
             SetWindowPosNative(_hwnd, HwndTopmost, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpShowWindow);
-            SetForegroundWindowNative(_hwnd);
+            BringToForeground(_hwnd);
         }
 
         Activate();
@@ -192,6 +195,16 @@ public sealed partial class MainWindow : WindowEx
         }
     }
 
+    private void HideFromTaskbar()
+    {
+        if (_appWindow == null)
+        {
+            return;
+        }
+
+        _appWindow.IsShownInSwitchers = false;
+    }
+
     private bool CloakWindow()
     {
         if (_hwnd == IntPtr.Zero)
@@ -246,8 +259,49 @@ public sealed partial class MainWindow : WindowEx
     [DllImport("user32.dll", EntryPoint = "SetForegroundWindow", SetLastError = true)]
     private static extern bool SetForegroundWindowNative(IntPtr hWnd);
 
+    [DllImport("user32.dll", EntryPoint = "GetForegroundWindow", SetLastError = true)]
+    private static extern IntPtr GetForegroundWindowNative();
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowThreadProcessId", SetLastError = true)]
+    private static extern uint GetWindowThreadProcessIdNative(IntPtr hWnd, IntPtr lpdwProcessId);
+
+    [DllImport("user32.dll", EntryPoint = "AttachThreadInput", SetLastError = true)]
+    private static extern bool AttachThreadInputNative(uint idAttach, uint idAttachTo, bool fAttach);
+
     [DllImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttribute", SetLastError = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    private static void BringToForeground(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        SetForegroundWindowNative(hwnd);
+
+        var foreground = GetForegroundWindowNative();
+        if (foreground == hwnd)
+        {
+            return;
+        }
+
+        var windowThread = GetWindowThreadProcessIdNative(hwnd, IntPtr.Zero);
+        var foregroundThread = foreground != IntPtr.Zero ? GetWindowThreadProcessIdNative(foreground, IntPtr.Zero) : 0;
+
+        if (windowThread != 0 && foregroundThread != 0 && windowThread != foregroundThread)
+        {
+            if (AttachThreadInputNative(windowThread, foregroundThread, true))
+            {
+                SetForegroundWindowNative(hwnd);
+                AttachThreadInputNative(windowThread, foregroundThread, false);
+            }
+        }
+        else
+        {
+            SetForegroundWindowNative(hwnd);
+        }
+    }
 
     private void EnsureListenerInfrastructure()
     {
@@ -396,24 +450,39 @@ public sealed partial class MainWindow : WindowEx
             return;
         }
 
+        var windowAttributesChanged = false;
+
         var stylePtr = GetWindowLongPtrNative(_hwnd, GwlStyle);
-        var lastError = Marshal.GetLastWin32Error();
-        if (stylePtr == nint.Zero && lastError != 0)
+        var styleError = Marshal.GetLastWin32Error();
+        if (!(stylePtr == nint.Zero && styleError != 0))
         {
-            return;
+            var styleValue = (long)stylePtr;
+            var newStyleValue = styleValue & ~(WsSysmenu | WsMinimizeBox | WsMaximizeBox);
+
+            if (newStyleValue != styleValue)
+            {
+                SetWindowLongPtrNative(_hwnd, GwlStyle, (nint)newStyleValue);
+                windowAttributesChanged = true;
+            }
         }
 
-        var styleValue = (long)stylePtr;
-        var newStyleValue = styleValue & ~(WsSysmenu | WsMinimizeBox | WsMaximizeBox);
-
-        if (newStyleValue == styleValue)
+        var exStylePtr = GetWindowLongPtrNative(_hwnd, GwlExStyle);
+        var exStyleError = Marshal.GetLastWin32Error();
+        if (!(exStylePtr == nint.Zero && exStyleError != 0))
         {
-            return;
+            var exStyleValue = (long)exStylePtr;
+            var newExStyleValue = exStyleValue | WsExToolWindow;
+            if (newExStyleValue != exStyleValue)
+            {
+                SetWindowLongPtrNative(_hwnd, GwlExStyle, (nint)newExStyleValue);
+                windowAttributesChanged = true;
+            }
         }
 
-        SetWindowLongPtrNative(_hwnd, GwlStyle, (nint)newStyleValue);
-
-        // Apply the new chrome immediately so caption buttons disappear right away.
-        SetWindowPosNative(_hwnd, IntPtr.Zero, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZorder | SwpNoActivate | SwpFrameChanged);
+        if (windowAttributesChanged)
+        {
+            // Apply the new chrome immediately so caption buttons disappear right away and the tool-window flag takes effect.
+            SetWindowPosNative(_hwnd, IntPtr.Zero, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZorder | SwpNoActivate | SwpFrameChanged);
+        }
     }
 }
