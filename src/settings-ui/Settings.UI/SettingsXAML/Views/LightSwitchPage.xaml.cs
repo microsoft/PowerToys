@@ -310,6 +310,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     VisualStateManager.GoToState(this, "SunsetToSunriseState", true);
                     SunriseModeChartState();
                     break;
+                case "FollowNightLight":
+                    VisualStateManager.GoToState(this, "FollowNightLightState", true);
+                    TimelineCard.Visibility = Visibility.Collapsed;
+                    break;
                 default:
                     VisualStateManager.GoToState(this, "OffState", true);
                     TimelineCard.Visibility = Visibility.Collapsed;

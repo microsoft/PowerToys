@@ -42,6 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "Off",
                 "FixedHours",
                 "SunsetToSunrise",
+                "FollowNightLight",
             };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;

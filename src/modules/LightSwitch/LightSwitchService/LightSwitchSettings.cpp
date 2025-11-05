@@ -260,10 +260,19 @@ void LightSwitchSettings::ApplyThemeIfNecessary()
     int nowMinutes = st.wHour * 60 + st.wMinute;
 
     bool shouldBeLight = false;
-    if (m_settings.lightTime < m_settings.darkTime)
+    if (m_settings.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        bool nightLightOn = IsNightLightEnabled();
+        shouldBeLight = !nightLightOn; // night light on means use dark theme
+    }
+    else if (m_settings.lightTime < m_settings.darkTime)
+    {
         shouldBeLight = (nowMinutes >= m_settings.lightTime && nowMinutes < m_settings.darkTime);
+    }
     else
+    {
         shouldBeLight = (nowMinutes >= m_settings.lightTime || nowMinutes < m_settings.darkTime);
+    }
 
     bool isSystemCurrentlyLight = GetCurrentSystemTheme();
     bool isAppsCurrentlyLight = GetCurrentAppsTheme();

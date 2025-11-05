@@ -11,6 +11,7 @@
 #include <logger/logger_settings.h>
 #include <logger/logger.h>
 #include <utils/logger_helper.h>
+#include <LightSwitchModuleInterface/RegistryObserver.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
@@ -164,6 +165,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     LightSwitchSettings::instance().InitFileWatcher();
 
+    static std::unique_ptr<RegistryObserver> g_nightLightWatcher;
+
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
     LightSwitchSettings::instance().LoadSettings();
@@ -254,7 +257,62 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             continue;
         }
 
+        if (prevMode == ScheduleMode::FollowNightLight && settings.scheduleMode != ScheduleMode::FollowNightLight)
+        {
+            Logger::info(L"[LightSwitchService] Exiting FollowNightLight mode – destroying registry watcher.");
+            g_nightLightWatcher.reset();
+        }
+
+        if (settings.scheduleMode == ScheduleMode::FollowNightLight)
+        {
+            if (!g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Entering FollowNightLight mode – starting registry watcher.");
+
+                g_nightLightWatcher = std::make_unique<RegistryObserver>(
+                    HKEY_CURRENT_USER,
+                    L"Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate",
+                    []() {
+                        bool nightLightOn = IsNightLightEnabled();
+                        Logger::info(L"[LightSwitchService] Night Light state changed -> {}", nightLightOn ? L"ON" : L"OFF");
+                        LightSwitchSettings::instance().ApplyThemeIfNecessary();
+                    });
+
+                // Apply current state immediately
+                LightSwitchSettings::instance().ApplyThemeIfNecessary();
+            }
+
+            HANDLE waitsFollow[3];
+            DWORD countFollow = 0;
+            waitsFollow[countFollow++] = g_ServiceStopEvent;
+            if (hParent)
+                waitsFollow[countFollow++] = hParent;
+            waitsFollow[countFollow++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
+
+            DWORD wait = WaitForMultipleObjects(countFollow, waitsFollow, FALSE, INFINITE);
+
+            if (wait == WAIT_OBJECT_0)
+            {
+                Logger::info(L"[LightSwitchService] Stop event triggered – exiting FollowNightLight mode.");
+                break;
+            }
+            if (hParent && wait == WAIT_OBJECT_0 + 1)
+            {
+                Logger::info(L"[LightSwitchService] Parent process exited – stopping service.");
+                break;
+            }
+
+            continue;
+        }
+        else if (g_nightLightWatcher)
+        {
+            // Clean up watcher if mode was switched away
+            Logger::info(L"[LightSwitchService] Schedule mode changed – cleaning up Night Light watcher.");
+            g_nightLightWatcher.reset();
+        }
+
         bool scheduleJustEnabled = (prevMode == ScheduleMode::Off && settings.scheduleMode != ScheduleMode::Off);
+
         prevMode = settings.scheduleMode;
 
         ULONGLONG nowTick = GetTickCount64();

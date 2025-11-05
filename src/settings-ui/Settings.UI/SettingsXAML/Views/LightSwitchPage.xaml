@@ -68,6 +68,10 @@
                                     x:Uid="LightSwitch_ModeSunsetToSunrise"
                                     AutomationProperties.AutomationId="SunCBItem_LightSwitch"
                                     Tag="SunsetToSunrise" />
+                                <ComboBoxItem
+                                    x:Uid="LightSwitch_ModeFollowNightLight"
+                                    AutomationProperties.AutomationId="FollowNightLightCBItem_LightSwitch"
+                                    Tag="FollowNightLight" />
                             </ComboBox>
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
@@ -155,7 +159,28 @@
                                         IsOpen="True"
                                         Severity="Informational" />
                                 </tkcontrols:SettingsCard>
-                            </tkcontrols:SettingsExpander.Items>
+                <tkcontrols:SettingsCard
+                                    x:Name="FollowNightLightCard"
+                                    Padding="0"
+                                    HorizontalContentAlignment="Stretch"
+                                    Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                    ContentAlignment="Vertical"
+                                    Visibility="Collapsed">
+                  <InfoBar
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        IsClosable="False"
+                                        IsOpen="True"
+                                        Severity="Informational">
+                    <TextBlock>
+                                        <Run x:Uid="LightSwitch_FollowNightLightCardMessage" />
+                                        <Hyperlink NavigateUri="ms-settings:nightlight">
+                                            <Run x:Uid="LightSwitch_NightLightSettingsButton" />
+                                        </Hyperlink>
+                    </TextBlock>
+                  </InfoBar>
+                </tkcontrols:SettingsCard>
+              </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                         <InfoBar
                             x:Name="LocationWarningBar"
@@ -338,24 +363,36 @@
                 <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_LightSwitch" />
             </controls:SettingsPageControl.PrimaryLinks>
         </controls:SettingsPageControl>
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="ScheduleModeStates">
-                <VisualState x:Name="OffState" />
-                <VisualState x:Name="SunsetToSunriseState">
-                    <VisualState.Setters>
-                        <Setter Target="SunLocation_Card.Visibility" Value="Visible" />
-                        <Setter Target="SunOffset_Card.Visibility" Value="Visible" />
-                        <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="ManualState">
-                    <VisualState.Setters>
-                        <Setter Target="Fixed_TurnOnCard.Visibility" Value="Visible" />
-                        <Setter Target="Fixed_TurnOffCard.Visibility" Value="Visible" />
-                        <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-    </Grid>
+    <VisualStateManager.VisualStateGroups>
+      <VisualStateGroup x:Name="ScheduleModeStates">
+        <VisualState x:Name="OffState" />
+        <VisualState x:Name="SunsetToSunriseState">
+          <VisualState.Setters>
+            <Setter Target="SunLocation_Card.Visibility" Value="Visible" />
+            <Setter Target="SunOffset_Card.Visibility" Value="Visible" />
+            <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+            <Setter Target="FollowNightLightCard.Visibility" Value="Collapsed" />
+          </VisualState.Setters>
+        </VisualState>
+
+        <VisualState x:Name="ManualState">
+          <VisualState.Setters>
+            <Setter Target="Fixed_TurnOnCard.Visibility" Value="Visible" />
+            <Setter Target="Fixed_TurnOffCard.Visibility" Value="Visible" />
+            <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+            <Setter Target="FollowNightLightCard.Visibility" Value="Collapsed" />
+          </VisualState.Setters>
+        </VisualState>
+
+        <VisualState x:Name="FollowNightLightState">
+          <VisualState.Setters>
+            <Setter Target="Fixed_TurnOnCard.Visibility" Value="Collapsed" />
+            <Setter Target="Fixed_TurnOffCard.Visibility" Value="Collapsed" />
+            <Setter Target="NoScheduleCard.Visibility" Value="Collapsed" />
+            <Setter Target="FollowNightLightCard.Visibility" Value="Visible" />
+          </VisualState.Setters>
+        </VisualState>
+      </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
+  </Grid>
 </Page>
