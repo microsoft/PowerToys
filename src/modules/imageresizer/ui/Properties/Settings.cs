@@ -107,15 +107,6 @@ namespace ImageResizer.Properties
             }
         }
 
-        /// <summary>
-        /// Gets the AI availability state from App's cached value (checked at startup).
-        /// </summary>
-        [JsonIgnore]
-        public AiAvailabilityState AiAvailabilityState => ImageResizer.App.AiAvailabilityState;
-
-        [JsonIgnore]
-        public bool IsAiArchitectureSupported => ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported;
-
         [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }
 
@@ -262,7 +253,7 @@ namespace ImageResizer.Properties
             public event PropertyChangedEventHandler PropertyChanged;
 
             public int Count
-                => _sizes.Count + 1 + (_settings.AiAvailabilityState != AiAvailabilityState.NotSupported ? 1 : 0);
+                => _sizes.Count + 1 + (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported ? 1 : 0);
 
             public ResizeSize this[int index]
             {
@@ -276,7 +267,7 @@ namespace ImageResizer.Properties
                     {
                         return _customSize;
                     }
-                    else if (_settings.AiAvailabilityState != AiAvailabilityState.NotSupported && index == _sizes.Count + 1)
+                    else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && index == _sizes.Count + 1)
                     {
                         return _aiSize;
                     }
