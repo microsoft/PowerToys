@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -37,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly IFileSystem _fileSystem;
         private readonly IFileSystemWatcher _fileSystemWatcher;
         private readonly DispatcherQueue _dispatcherQueue;
+        private bool _suppressViewModelUpdates;
+        private bool _suppressLatLonChange;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
@@ -114,16 +117,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
-
-                SunTimes result = SunCalc.CalculateSunriseSunset(
-                    latitude,
-                    longitude,
-                    DateTime.Now.Year,
-                    DateTime.Now.Month,
-                    DateTime.Now.Day);
-
-                ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-                ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
                 ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
                 ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
 
@@ -132,6 +125,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 // CityAutoSuggestBox.Text = string.Empty;
                 ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+
+                _suppressLatLonChange = false;
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
@@ -154,39 +149,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            double lat = (double)LatitudeBox.Value;
-            double lon = (double)LongitudeBox.Value;
-
-            double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double currentLat);
-            double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double currentLon);
-
-            // If the new values are the same as the current ones (within tolerance), do nothing
-            if (Math.Abs(lat - currentLat) < 0.0001 && Math.Abs(lon - currentLon) < 0.0001)
+            if (_suppressLatLonChange)
             {
                 return;
             }
 
-            // Optional: Validate ranges
-            if (lat < -90 || lat > 90 || lon < -180 || lon > 180)
+            double latitude = LatitudeBox.Value;
+            double longitude = LongitudeBox.Value;
+
+            if (double.IsNaN(latitude) || double.IsNaN(longitude))
             {
                 return;
             }
 
-            // Update sunrise/sunset times whenever both values are valid
-            SunTimes result = SunCalc.CalculateSunriseSunset(
-                lat,
-                lon,
-                DateTime.Now.Year,
-                DateTime.Now.Month,
-                DateTime.Now.Day);
+            double viewModelLatitude = double.TryParse(ViewModel.Latitude, out var lat) ? lat : 0.0;
+            double viewModelLongitude = double.TryParse(ViewModel.Longitude, out var lon) ? lon : 0.0;
 
-            ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-            ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
-            ViewModel.Latitude = lat.ToString(CultureInfo.InvariantCulture);
-            ViewModel.Longitude = lon.ToString(CultureInfo.InvariantCulture);
+            if (latitude == viewModelLatitude && longitude == viewModelLongitude)
+            {
+                return;
+            }
+
+            ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
+            ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
+            ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
 
             LocationResultPanel.Visibility = Visibility.Visible;
-
             if (LocationDialog != null)
             {
                 LocationDialog.IsPrimaryButtonEnabled = true;
@@ -209,6 +197,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (_suppressViewModelUpdates)
+            {
+                return;
+            }
+
             if (e.PropertyName == "IsEnabled")
             {
                 if (ViewModel.IsEnabled != _generalSettingsRepository.SettingsConfig.Enabled.LightSwitch)
@@ -289,8 +282,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
+                _suppressViewModelUpdates = true;
+
                 _moduleSettingsRepository.ReloadSettings();
                 LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
+
+                _suppressViewModelUpdates = false;
             });
         }
 
