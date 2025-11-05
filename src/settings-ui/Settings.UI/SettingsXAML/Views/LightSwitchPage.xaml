@@ -163,110 +163,6 @@
                             IsOpen="True"
                             Severity="Informational"
                             Visibility="Collapsed" />
-                        <controls:SettingsGroup x:Uid="LightSwitch_ThemeSwitchingSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                            <tkcontrols:SettingsExpander
-                                x:Name="EnableThemeSwitchingExpander"
-                                x:Uid="LightSwitch_EnableThemeSwitching"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                HorizontalContentAlignment="Stretch"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xEF1F;}"
-                                IsExpanded="False">
-                                <tkcontrols:SettingsExpander.Content>
-                                    <ToggleSwitch
-                                        x:Name="ThemeSwitchToggle"
-                                        x:Uid="LightSwitch_EnableThemeSwitching_Toggle"
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        IsOn="{x:Bind ViewModel.UseThemeSwitching, Mode=TwoWay}"
-                                        Toggled="ThemeSwitchToggle_Toggled" />
-                                </tkcontrols:SettingsExpander.Content>
-                                <tkcontrols:SettingsExpander.Items>
-                                    <tkcontrols:SettingsCard
-                                        x:Uid="LightSwitch_LightThemePath"
-                                        HorizontalContentAlignment="Stretch"
-                                        ContentAlignment="Right"
-                                        IsEnabled="{x:Bind ViewModel.UseThemeSwitching, Mode=TwoWay}">
-                                        <Grid ColumnSpacing="8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                x:Name="lightPathTextBlock"
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                IsTextSelectionEnabled="True"
-                                                Text="{x:Bind ViewModel.LightThemePath, Mode=TwoWay}"
-                                                TextWrapping="Wrap">
-                                                <ToolTipService.ToolTip>
-                                                    <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=lightPathTextBlock, Mode=OneWay}">
-                                                        <TextBlock
-                                                            FontSize="12"
-                                                            Text="{x:Bind ViewModel.LightThemePath, Mode=TwoWay}"
-                                                            TextWrapping="Wrap" />
-                                                    </ToolTip>
-                                                </ToolTipService.ToolTip>
-                                            </TextBlock>
-                                            <Button
-                                                x:Uid="LightSwitch_ThemeButtonSelectFolder"
-                                                Grid.Column="1"
-                                                Click="ThemeFilePickerButton_Click"
-                                                Content="&#xe8da;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Tag="Light">
-                                                <ToolTipService.ToolTip>
-                                                    <ToolTip>
-                                                        <TextBlock x:Uid="LightSwitch_ThemeButtonSelectLocation" />
-                                                    </ToolTip>
-                                                </ToolTipService.ToolTip>
-                                            </Button>
-                                        </Grid>
-                                    </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard
-                                        x:Uid="LightSwitch_DarkThemePath"
-                                        HorizontalContentAlignment="Stretch"
-                                        ContentAlignment="Right"
-                                        IsEnabled="{x:Bind ViewModel.UseThemeSwitching, Mode=TwoWay}">
-                                        <Grid ColumnSpacing="8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                x:Name="darkPathTextBlock"
-                                                VerticalAlignment="Center"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                IsTextSelectionEnabled="True"
-                                                Text="{x:Bind ViewModel.DarkThemePath, Mode=TwoWay}"
-                                                TextWrapping="Wrap">
-                                                <ToolTipService.ToolTip>
-                                                    <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=darkPathTextBlock, Mode=OneWay}">
-                                                        <TextBlock
-                                                            FontSize="12"
-                                                            Text="{x:Bind ViewModel.DarkThemePath, Mode=TwoWay}"
-                                                            TextWrapping="Wrap" />
-                                                    </ToolTip>
-                                                </ToolTipService.ToolTip>
-                                            </TextBlock>
-                                            <Button
-                                                x:Uid="LightSwitch_ThemeButtonSelectFolder"
-                                                Grid.Column="1"
-                                                Click="ThemeFilePickerButton_Click"
-                                                Content="&#xe8da;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Tag="Dark">
-                                                <ToolTipService.ToolTip>
-                                                    <ToolTip>
-                                                        <TextBlock x:Uid="LightSwitch_ThemeButtonSelectLocation" />
-                                                    </ToolTip>
-                                                </ToolTipService.ToolTip>
-                                            </Button>
-                                        </Grid>
-                                    </tkcontrols:SettingsCard>
-                                </tkcontrols:SettingsExpander.Items>
-                            </tkcontrols:SettingsExpander>
-                        </controls:SettingsGroup>
                         <controls:SettingsGroup x:Uid="LightSwitch_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsExpander
                                 x:Uid="LightSwitch_ApplyDarkModeExpander"
@@ -284,6 +180,99 @@
                                             x:Uid="LightSwitch_AppsCheckbox"
                                             AutomationProperties.AutomationId="ChangeAppsCheckbox_LightSwitch"
                                             IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
+
+                            <tkcontrols:SettingsExpander
+                                x:Name="EnableThemeSwitchingExpander"
+                                x:Uid="LightSwitch_EnableThemeSwitching"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE771;}">
+                                <tkcontrols:SettingsExpander.Description>
+                                    <TextBlock>
+                                        <Run x:Uid="LightSwitch_EnableThemeSwitchingDescription" />
+                                        <Hyperlink NavigateUri="ms-settings:themes">
+                                            <Run x:Uid="LightSwitch_EnableThemeSwitching_LearnMoreLink" />
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </tkcontrols:SettingsExpander.Description>
+                                <tkcontrols:SettingsExpander.Content>
+                                    <ToggleSwitch
+                                        x:Name="ThemeSwitchToggle"
+                                        x:Uid="LightSwitch_EnableThemeSwitching_Toggle"
+                                        IsOn="{x:Bind ViewModel.UseThemeSwitching, Mode=TwoWay}"
+                                        Toggled="ThemeSwitchToggle_Toggled" />
+                                </tkcontrols:SettingsExpander.Content>
+                                <tkcontrols:SettingsExpander.Items>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_LightThemePath" IsEnabled="{x:Bind ViewModel.UseThemeSwitching, Mode=TwoWay}">
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                x:Name="lightPathTextBlock"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                IsTextSelectionEnabled="True"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ViewModel.LightThemePath, Mode=TwoWay}"
+                                                TextWrapping="Wrap">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=lightPathTextBlock, Mode=OneWay}">
+                                                        <TextBlock Text="{x:Bind ViewModel.LightThemePath, Mode=TwoWay}" TextWrapping="Wrap" />
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </TextBlock>
+                                            <Button
+                                                x:Uid="LightSwitch_ThemeButtonSelectFolder"
+                                                Grid.Column="1"
+                                                Click="ThemeFilePickerButton_Click"
+                                                Content="{ui:FontIcon Glyph=&#xe8da;,
+                                                                      FontSize=12}"
+                                                Tag="Light">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip>
+                                                        <TextBlock x:Uid="LightSwitch_ThemeButtonSelectLocation" />
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+                                        </Grid>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="LightSwitch_DarkThemePath" IsEnabled="{x:Bind ViewModel.UseThemeSwitching, Mode=TwoWay}">
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                x:Name="darkPathTextBlock"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                IsTextSelectionEnabled="True"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ViewModel.DarkThemePath, Mode=TwoWay}"
+                                                TextWrapping="Wrap">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=darkPathTextBlock, Mode=OneWay}">
+                                                        <TextBlock Text="{x:Bind ViewModel.DarkThemePath, Mode=TwoWay}" TextWrapping="Wrap" />
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </TextBlock>
+                                            <Button
+                                                x:Uid="LightSwitch_ThemeButtonSelectFolder"
+                                                Grid.Column="1"
+                                                Click="ThemeFilePickerButton_Click"
+                                                Content="{ui:FontIcon Glyph=&#xe8da;,
+                                                                      FontSize=12}"
+                                                Tag="Dark">
+                                                <ToolTipService.ToolTip>
+                                                    <ToolTip>
+                                                        <TextBlock x:Uid="LightSwitch_ThemeButtonSelectLocation" />
+                                                    </ToolTip>
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+                                        </Grid>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
@@ -435,7 +424,6 @@
                             </Grid>
                         </ContentDialog>
                     </controls:SettingsGroup>
-
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
             <controls:SettingsPageControl.PrimaryLinks>

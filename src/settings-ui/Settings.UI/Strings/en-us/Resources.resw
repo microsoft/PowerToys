@@ -5493,21 +5493,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
-  <data name="LightSwitch_ThemeSwitchingSettingsGroup.Header" xml:space="preserve">
-    <value>Theme Switching</value>
-  </data>
   <data name="LightSwitch_LightThemePath.Header" xml:space="preserve">
-    <value>Light theme file path</value>
-  </data>
-  <data name="LightSwitch_LightThemePath.Description" xml:space="preserve">
-    <value>Link the file you want to use while you are in light mode</value>
+    <value>Theme while in light mode</value>
   </data>
   <data name="LightSwitch_DarkThemePath.Header" xml:space="preserve">
-    <value>Dark theme file path</value>
-  </data>
-  <data name="LightSwitch_DarkThemePath.Description" xml:space="preserve">
-    <value>Link the file you want to use while you are in dark mode</value>
-    <comment>Link the file you want to use while you are in dark mode</comment>
+    <value>Theme while in dark mode</value>
   </data>
   <data name="LightSwitch_ThemeButtonSelectLocation.Text" xml:space="preserve">
     <value>Select file</value>
@@ -5519,9 +5509,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Off</value>
   </data>
   <data name="LightSwitch_EnableThemeSwitching.Header" xml:space="preserve">
-    <value>Enable theme switching</value>
+    <value>Switch Windows theme</value>
   </data>
-  <data name="LightSwitch_EnableThemeSwitching.Description" xml:space="preserve">
-    <value>Allow Light Switch to swap theme files when the color mode changes</value>
+  <data name="LightSwitch_EnableThemeSwitchingDescription.Text" xml:space="preserve">
+    <value>Allow Light Switch to swap themes when the color mode changes.</value>
   </data>
+	<data name="LightSwitch_EnableThemeSwitching_LearnMoreLink.Text" xml:space="preserve">
+    <value>Create and personalize Windows themes</value>
+  </data>	
 </root>
