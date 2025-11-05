@@ -94,8 +94,10 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+ATX
 ATRIOX
 aumid
+authenticode
 Authenticode
 AUTOBUDDY
 AUTOCHECKBOX
@@ -113,6 +115,7 @@ azman
 bbwe
 BCIE
 bck
+backticks
 BESTEFFORT
 bezelled
 bhid
@@ -140,6 +143,7 @@ bmi
 BNumber
 BODGY
 BOklab
+Bootstrappers
 BOOTSTRAPPERINSTALLFOLDER
 BOTTOMALIGN
 boxmodel
@@ -167,9 +171,12 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
+Carlseibert
 Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
@@ -193,6 +200,7 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
@@ -267,12 +275,14 @@ countof
 covrun
 cpcontrols
 cph
+cppcoreguidelines
 cplusplus
 CPower
 cpptools
 cppvsdbg
 cppwinrt
 createdump
+creativecommons
 CREATEPROCESS
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -335,6 +345,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+dfx
 Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -369,7 +380,7 @@ devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
 digicert
 DINORMAL
@@ -383,6 +394,7 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
+djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -443,6 +455,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+eku
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -506,9 +519,12 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
+fdx
 fesf
 FFFF
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -635,6 +651,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
@@ -686,6 +703,7 @@ HTCLIENT
 hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
+hutchinsoniana
 HVal
 HValue
 Hvci
@@ -707,7 +725,9 @@ IDCANCEL
 IDD
 idk
 idl
+IIM
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -724,6 +744,7 @@ Ijwhost
 ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
+IPTC
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
@@ -742,7 +763,7 @@ INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
-Inlines
+inlines
 INPC
 inproc
 INPUTHARDWARE
@@ -815,6 +836,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+ksa
 kvp
 Kybd
 LARGEICON
@@ -862,6 +884,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+lon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
@@ -921,6 +944,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -952,6 +976,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 Metadatas
+metadatamatters
 metafile
 mfc
 Mgmt
@@ -1019,6 +1044,7 @@ msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIRESTARTMANAGERCONTROL
+MSIs
 msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
@@ -1110,6 +1136,7 @@ NONCLIENTMETRICSW
 NONELEVATED
 nonspace
 nonstd
+nullrefs
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
@@ -1148,6 +1175,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 numberbox
 nwc
@@ -1252,6 +1280,7 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 pkgfamily
+PKI
 plib
 ploc
 ploca
@@ -1264,6 +1293,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1466,6 +1496,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samsung
 sancov
 SAVEFAILED
 scanled
@@ -1693,6 +1724,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
@@ -1827,6 +1859,7 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
+utm
 UType
 uuidv
 uwp
@@ -1916,6 +1949,7 @@ wgpocpl
 WHEREID
 wic
 wifi
+wikimedia
 wikipedia
 WIL
 winapi
@@ -1979,7 +2013,7 @@ WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
-Worktree
+worktree
 wox
 wparam
 wpf
@@ -2010,7 +2044,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 xdf
 XDocument
 XElement
@@ -2028,6 +2064,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2035,6 +2072,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels

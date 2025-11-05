@@ -37,22 +37,20 @@
                     <!--  'Activation' section  -->
 
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
-
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard">
-                                <ToggleSwitch IsOn="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptControls:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard" IsChecked="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptControls:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
-                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                     </controls:SettingsCard>
@@ -65,6 +63,7 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
                         </ComboBox>
                     </controls:SettingsCard>
 
