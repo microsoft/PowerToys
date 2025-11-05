@@ -38,18 +38,9 @@ namespace ImageResizer.ViewModels
         private int? _originalHeight;
         private string _currentResolutionDescription;
         private string _newResolutionDescription;
-        private AiFeatureState _aiFeatureState = AiFeatureState.Unknown;
+        private bool _isDownloadingModel;
         private string _modelStatusMessage;
         private double _modelDownloadProgress;
-
-        public enum AiFeatureState
-        {
-            Unknown,           // Initial state, not yet checked
-            NotSupported,      // System doesn't support AI (non-ARM64 or policy disabled)
-            ModelNotReady,     // AI supported but model not downloaded
-            ModelDownloading,  // Model is being downloaded
-            Ready,             // AI fully ready to use
-        }
 
         public enum Dimension
         {
@@ -140,7 +131,7 @@ namespace ImageResizer.ViewModels
         public bool ShowAiSizeDescriptions => Settings?.SelectedSize is AiSize && !_hasMultipleFiles;
 
         // Helper property: Is model currently being downloaded?
-        public bool IsModelDownloading => _aiFeatureState == AiFeatureState.ModelDownloading;
+        public bool IsModelDownloading => _isDownloadingModel;
 
         public string ModelStatusMessage
         {
@@ -157,31 +148,26 @@ namespace ImageResizer.ViewModels
         // Show download prompt when: AI size is selected and model is not ready (including downloading)
         public bool ShowModelDownloadPrompt =>
             Settings?.SelectedSize is AiSize &&
-            (_aiFeatureState == AiFeatureState.ModelNotReady || _aiFeatureState == AiFeatureState.ModelDownloading);
+            (App.AiAvailabilityState == Properties.AiAvailabilityState.ModelNotReady || _isDownloadingModel);
 
-        // Show AI controls when: AI size is selected and model is ready
+        // Show AI controls when: AI size is selected and AI is ready
         public bool ShowAiControls =>
             Settings?.SelectedSize is AiSize &&
-            _aiFeatureState == AiFeatureState.Ready;
+            App.AiAvailabilityState == Properties.AiAvailabilityState.Ready;
 
         /// <summary>
         /// Gets a value indicating whether the resize operation can proceed.
-        /// Returns true in these cases:
-        /// 1. AI is not supported on the system (NotSupported) - proceed with normal resize.
-        /// 2. AI is available but user hasn't enabled it - proceed with normal resize.
-        /// 3. AI is enabled by user AND model is ready - proceed with AI resize.
-        /// Returns false when:
-        /// - AI state is Unknown AND user enabled it - wait for state check to complete.
-        /// - AI is enabled by user BUT model is not ready (ModelNotReady or ModelDownloading).
+        /// For AI resize: only enabled when AI is fully ready.
+        /// For non-AI resize: always enabled.
         /// </summary>
         public bool CanResize
         {
             get
             {
-                // If AI size is selected, check if AI is fully ready
+                // If AI size is selected, only allow resize when AI is fully ready
                 if (Settings?.SelectedSize is AiSize)
                 {
-                    return _aiFeatureState == AiFeatureState.Ready;
+                    return App.AiAvailabilityState == Properties.AiAvailabilityState.Ready;
                 }
 
                 // Non-AI resize can always proceed
@@ -344,38 +330,39 @@ namespace ImageResizer.ViewModels
 
         /// <summary>
         /// Initializes AI UI state based on App's cached availability state.
-        /// Note: AI service initialization happens at app startup in App.OnStartup().
+        /// Subscribe to state change event to update UI when background initialization completes.
         /// </summary>
         private void InitializeAiState()
         {
-            // Use App's cached AI availability state (checked at startup)
-            switch (App.AiAvailabilityState)
-            {
-                case Properties.AiAvailabilityState.Ready:
-                    // AI service already initialized at app startup
-                    SetAiState(AiFeatureState.Ready, string.Empty);
-                    break;
+            // Subscribe to initialization completion event to refresh UI
+            App.AiInitializationCompleted += OnAiInitializationCompleted;
 
-                case Properties.AiAvailabilityState.ModelNotReady:
-                    // AI supported but model needs to be downloaded
-                    SetAiState(AiFeatureState.ModelNotReady, Resources.Input_AiModelNotAvailable);
-                    break;
-
-                case Properties.AiAvailabilityState.NotSupported:
-                default:
-                    // AI not supported on this system
-                    SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
-                    break;
-            }
+            // Set initial status message based on current state
+            UpdateStatusMessage();
         }
 
-        private void SetAiState(AiFeatureState newState, string statusMessage)
+        /// <summary>
+        /// Handles AI initialization completion event from App.
+        /// Refreshes UI when background initialization finishes.
+        /// </summary>
+        private void OnAiInitializationCompleted(object sender, Properties.AiAvailabilityState finalState)
         {
-            _aiFeatureState = newState;
-            ModelStatusMessage = statusMessage;
-
-            // Notify UI of all related property changes
+            UpdateStatusMessage();
             NotifyAiStateChanged();
+        }
+
+        /// <summary>
+        /// Updates status message based on current App availability state.
+        /// </summary>
+        private void UpdateStatusMessage()
+        {
+            ModelStatusMessage = App.AiAvailabilityState switch
+            {
+                Properties.AiAvailabilityState.Ready => string.Empty,
+                Properties.AiAvailabilityState.ModelNotReady => Resources.Input_AiModelNotAvailable,
+                Properties.AiAvailabilityState.NotSupported => Resources.Input_AiModelNotSupported,
+                _ => string.Empty,
+            };
         }
 
         /// <summary>
@@ -411,9 +398,11 @@ namespace ImageResizer.ViewModels
         {
             try
             {
-                // Set state to downloading
-                SetAiState(AiFeatureState.ModelDownloading, Resources.Input_AiModelDownloading);
+                // Set downloading flag and show progress
+                _isDownloadingModel = true;
+                ModelStatusMessage = Resources.Input_AiModelDownloading;
                 ModelDownloadProgress = 0;
+                NotifyAiStateChanged();
 
                 // Create progress reporter to update UI
                 var progress = new Progress<double>(value =>
@@ -423,8 +412,6 @@ namespace ImageResizer.ViewModels
                 });
 
                 // Call EnsureReadyAsync to download and prepare the AI model
-                // This is safe because we only show download button when state is ModelNotReady
-                // Following sample project pattern (Sample.xaml.cs:36)
                 var result = await WinAiSuperResolutionService.EnsureModelReadyAsync(progress);
 
                 if (result?.Status == Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
@@ -434,8 +421,7 @@ namespace ImageResizer.ViewModels
 
                     // Update App's cached state
                     App.AiAvailabilityState = Properties.AiAvailabilityState.Ready;
-
-                    SetAiState(AiFeatureState.Ready, string.Empty);
+                    UpdateStatusMessage();
 
                     // Initialize the AI service now that model is ready
                     var aiService = await WinAiSuperResolutionService.CreateAsync();
@@ -443,22 +429,27 @@ namespace ImageResizer.ViewModels
                 }
                 else
                 {
-                    // Download failed - revert to not ready state
-                    SetAiState(AiFeatureState.ModelNotReady, Resources.Input_AiModelDownloadFailed);
+                    // Download failed
+                    ModelStatusMessage = Resources.Input_AiModelDownloadFailed;
                 }
             }
             catch (Exception)
             {
-                // Exception during download - revert to not ready state
-                SetAiState(AiFeatureState.ModelNotReady, Resources.Input_AiModelDownloadFailed);
+                // Exception during download
+                ModelStatusMessage = Resources.Input_AiModelDownloadFailed;
             }
             finally
             {
-                // Reset progress only if download failed
-                if (_aiFeatureState != AiFeatureState.Ready)
+                // Clear downloading flag
+                _isDownloadingModel = false;
+
+                // Reset progress if not successful
+                if (App.AiAvailabilityState != Properties.AiAvailabilityState.Ready)
                 {
                     ModelDownloadProgress = 0;
                 }
+
+                NotifyAiStateChanged();
             }
         }
     }
