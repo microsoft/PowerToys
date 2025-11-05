@@ -22,8 +22,6 @@ namespace HostsUILib.Helpers
 
         Task<bool> PingAsync(string address);
 
-        void CleanupBackup();
-
         void OpenHostsFile();
 
         void RemoveReadOnlyAttribute();
