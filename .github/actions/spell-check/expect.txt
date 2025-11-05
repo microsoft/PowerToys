@@ -22,6 +22,7 @@ ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
+adjacents
 ADMINS
 adml
 admx
@@ -34,6 +35,7 @@ AFX
 AGGREGATABLE
 AHK
 AHybrid
+AIUI
 akv
 ALarger
 ALIGNRIGHT
@@ -45,6 +47,7 @@ Allmodule
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
+amazonbedrock
 AModifier
 amr
 ANDSCANS
@@ -112,6 +115,9 @@ AValid
 AWAYMODE
 azcliversion
 azman
+azureaiinference
+azureinference
+azureopenai
 bbwe
 BCIE
 bck
@@ -204,6 +210,7 @@ CIBUILD
 cidl
 CIELCh
 cim
+claude
 CImage
 cla
 CLASSDC
@@ -236,6 +243,7 @@ CODENAME
 codereview
 Codespaces
 Coen
+cognitiveservices
 COINIT
 colid
 colorconv
@@ -250,6 +258,7 @@ cominterop
 commandnotfound
 commandpalette
 compmgmt
+COMPOSITIONDISABLED
 COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
@@ -306,6 +315,8 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
+CURSORWRAP
+CursorWrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -420,6 +431,7 @@ DROPFILES
 DSTINVERT
 DString
 DSVG
+dto
 DTo
 DUMMYUNIONNAME
 dutil
@@ -551,6 +563,7 @@ FIXEDSYS
 flac
 flyouts
 FMask
+foundrylocal
 fmtid
 FOF
 FOFX
@@ -615,6 +628,8 @@ GValue
 gwl
 GWLP
 GWLSTYLE
+googleai
+googlegemini
 hangeul
 Hanzi
 Hardlines
@@ -677,6 +692,7 @@ hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
+huggingface
 HORZRES
 HORZSIZE
 Hostbackdropbrush
@@ -1140,6 +1156,7 @@ nullrefs
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
+NPU
 NOREDIRECTIONBITMAP
 NOREDRAW
 NOREMOVE
@@ -1199,6 +1216,9 @@ opencode
 OPENFILENAME
 opensource
 openxmlformats
+ollama
+Olllama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1388,6 +1408,8 @@ pwsz
 pwtd
 QDC
 qit
+QNN
+Qualcomm
 QITAB
 QITABENT
 qoi
@@ -1936,6 +1958,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WCT
+WCRAPI
 WDA
 wdm
 wdp
@@ -1979,6 +2002,8 @@ WINL
 winlogon
 winmd
 WINNT
+windowsml
+winml
 winres
 winrt
 winsdk
