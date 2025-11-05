@@ -87,6 +87,14 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredQoiPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiPreviewEnabledValue()) << std::endl;
     report << "getConfiguredQoiThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredQoiThumbnailsEnabledValue()) << std::endl;
     report << "getAllowedAdvancedPasteOnlineAIModelsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue()) << std::endl;
+    report << "getAllowedAdvancedPasteOpenAIValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOpenAIValue()) << std::endl;
+    report << "getAllowedAdvancedPasteAzureOpenAIValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteAzureOpenAIValue()) << std::endl;
+    report << "getAllowedAdvancedPasteAzureAIInferenceValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteAzureAIInferenceValue()) << std::endl;
+    report << "getAllowedAdvancedPasteMistralValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteMistralValue()) << std::endl;
+    report << "getAllowedAdvancedPasteGoogleValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteGoogleValue()) << std::endl;
+    report << "getAllowedAdvancedPasteAnthropicValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteAnthropicValue()) << std::endl;
+    report << "getAllowedAdvancedPasteOllamaValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOllamaValue()) << std::endl;
+    report << "getAllowedAdvancedPasteFoundryLocalValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteFoundryLocalValue()) << std::endl;
     report << "getConfiguredMwbClipboardSharingEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbClipboardSharingEnabledValue()) << std::endl;
     report << "getConfiguredMwbFileTransferEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbFileTransferEnabledValue()) << std::endl;
     report << "getConfiguredMwbUseOriginalUserInterfaceValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbUseOriginalUserInterfaceValue()) << std::endl;
