@@ -1,4 +1,4 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
@@ -15,9 +15,11 @@
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
-static int g_lastUpdatedDay = -1;
+extern int g_lastUpdatedDay = -1;
 static ScheduleMode prevMode = ScheduleMode::Off;
 static std::wstring prevLat, prevLon;
+static int prevMinutes = -1;
+static bool lastOverrideStatus = false;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
@@ -148,7 +150,6 @@ static void update_sun_times(auto& settings)
         std::wstring wmsg(e.what(), e.what() + strlen(e.what()));
         Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
     }
-    
 }
 
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
@@ -161,136 +162,73 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     Logger::info(L"[LightSwitchService] Worker thread starting...");
     Logger::info(L"[LightSwitchService] Parent PID: {}", parentPid);
 
-    // Initialize settings system
     LightSwitchSettings::instance().InitFileWatcher();
 
-    // Open the manual override event created by the module interface
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
-    auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
-        bool isLightActive = false;
-
-        if (lightMinutes < darkMinutes)
-        {
-            // Normal case: sunrise < sunset
-            isLightActive = (nowMinutes >= lightMinutes && nowMinutes < darkMinutes);
-        }
-        else
-        {
-            // Wraparound case: e.g. light at 21:00, dark at 06:00
-            isLightActive = (nowMinutes >= lightMinutes || nowMinutes < darkMinutes);
-        }
-
-        bool isSystemCurrentlyLight = GetCurrentSystemTheme();
-        bool isAppsCurrentlyLight = GetCurrentAppsTheme();
-
-        if (isLightActive)
-        {
-            if (settings.changeSystem && !isSystemCurrentlyLight)
-            {
-                SetSystemTheme(true);
-                Logger::info(L"[LightSwitchService] Changing system theme to light mode.");
-            }
-            if (settings.changeApps && !isAppsCurrentlyLight)
-            {
-                SetAppsTheme(true);
-                Logger::info(L"[LightSwitchService] Changing apps theme to light mode.");
-            }
-        }
-        else
-        {
-            if (settings.changeSystem && isSystemCurrentlyLight)
-            {
-                SetSystemTheme(false);
-                Logger::info(L"[LightSwitchService] Changing system theme to dark mode.");
-            }
-            if (settings.changeApps && isAppsCurrentlyLight)
-            {
-                SetAppsTheme(false);
-                Logger::info(L"[LightSwitchService] Changing apps theme to dark mode.");
-            }
-        }
-    };
-
-    // --- Initial settings load ---
     LightSwitchSettings::instance().LoadSettings();
     auto& settings = LightSwitchSettings::instance().settings();
 
-    // --- Initial theme application (if schedule enabled) ---
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    int nowMinutes = st.wHour * 60 + st.wMinute;
+
+    // Handle initial theme application if necessary
     if (settings.scheduleMode != ScheduleMode::Off)
     {
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        int nowMinutes = st.wHour * 60 + st.wMinute;
-        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
+        Logger::info(L"[LightSwitchService] Schedule mode is set to {}. Applying theme if necessary.", settings.scheduleMode);
+        LightSwitchSettings::instance().ApplyThemeIfNecessary();
     }
     else
     {
-        Logger::info(L"[LightSwitchService] Schedule mode is OFF - ticker suspended, waiting for manual action or mode change.");
+        Logger::info(L"[LightSwitchService] Schedule mode is set to Off.");
     }
 
-    // --- Main loop ---
+    g_lastUpdatedDay = st.wDay;
+    Logger::info(L"[LightSwitchService] Initializing g_lastUpdatedDay to {}.", g_lastUpdatedDay);
+    ULONGLONG lastSettingsReload = 0;
+
+    // ticker loop
     for (;;)
     {
         HANDLE waits[2] = { g_ServiceStopEvent, hParent };
         DWORD count = hParent ? 2 : 1;
+        bool skipRest = false;
 
-        LightSwitchSettings::instance().LoadSettings();
         const auto& settings = LightSwitchSettings::instance().settings();
 
-        // Check for changes in schedule mode or coordinates
-        bool modeChangedToSunset = (prevMode != settings.scheduleMode &&
-                                    settings.scheduleMode == ScheduleMode::SunsetToSunrise);
-        bool coordsChanged = (prevLat != settings.latitude || prevLon != settings.longitude);
-
-        if ((modeChangedToSunset || coordsChanged) && settings.scheduleMode == ScheduleMode::SunsetToSunrise)
-        {
-            Logger::info(L"[LightSwitchService] Mode or coordinates changed, recalculating sun times.");
-            update_sun_times(settings);
-            SYSTEMTIME st;
-            GetLocalTime(&st);
-            g_lastUpdatedDay = st.wDay;
-            prevMode = settings.scheduleMode;
-            prevLat = settings.latitude;
-            prevLon = settings.longitude;
-        }
-
-        // If schedule is off, idle but keep watching settings and manual override
+        // If the mode is set to Off, suspend the scheduler and avoid extra work
         if (settings.scheduleMode == ScheduleMode::Off)
         {
-            Logger::info(L"[LightSwitchService] Schedule mode OFF - suspending scheduler but keeping service alive.");
+            Logger::info(L"[LightSwitchService] Schedule mode is OFF - suspending scheduler but keeping service alive.");
 
             if (!hManualOverride)
-            {
                 hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
-            }
 
-            HANDLE waits[4];
-            DWORD count = 0;
-            waits[count++] = g_ServiceStopEvent;
+            HANDLE waitsOff[4];
+            DWORD countOff = 0;
+            waitsOff[countOff++] = g_ServiceStopEvent;
             if (hParent)
-                waits[count++] = hParent;
+                waitsOff[countOff++] = hParent;
             if (hManualOverride)
-                waits[count++] = hManualOverride;
-            waits[count++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
+                waitsOff[countOff++] = hManualOverride;
+            waitsOff[countOff++] = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
             for (;;)
             {
-                DWORD wait = WaitForMultipleObjects(count, waits, FALSE, INFINITE);
+                DWORD wait = WaitForMultipleObjects(countOff, waitsOff, FALSE, INFINITE);
 
-                // --- Handle exit signals ---
-                if (wait == WAIT_OBJECT_0) // stop event
+                if (wait == WAIT_OBJECT_0)
                 {
                     Logger::info(L"[LightSwitchService] Stop event triggered - exiting worker loop.");
-                    break;
+                    goto cleanup;
                 }
                 if (hParent && wait == WAIT_OBJECT_0 + 1)
                 {
                     Logger::info(L"[LightSwitchService] Parent exited - stopping service.");
-                    break;
+                    goto cleanup;
                 }
 
-                // --- Manual override triggered ---
                 if (wait == WAIT_OBJECT_0 + (hParent ? 2 : 1))
                 {
                     Logger::info(L"[LightSwitchService] Manual override received while schedule OFF.");
@@ -298,15 +236,12 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                     continue;
                 }
 
-                // --- Settings file changed ---
                 if (wait == WAIT_OBJECT_0 + (hParent ? 3 : 2))
                 {
                     Logger::trace(L"[LightSwitchService] Settings change event triggered, reloading settings...");
-
                     ResetEvent(LightSwitchSettings::instance().GetSettingsChangedEvent());
-
-                    LightSwitchSettings::instance().LoadSettings();
                     const auto& newSettings = LightSwitchSettings::instance().settings();
+                    lastSettingsReload = GetTickCount64();
 
                     if (newSettings.scheduleMode != ScheduleMode::Off)
                     {
@@ -315,67 +250,199 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                     }
                 }
             }
+
+            continue;
         }
 
+        bool scheduleJustEnabled = (prevMode == ScheduleMode::Off && settings.scheduleMode != ScheduleMode::Off);
+        prevMode = settings.scheduleMode;
 
-        // --- When schedule is active, run once per minute ---
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        int nowMinutes = st.wHour * 60 + st.wMinute;
+        ULONGLONG nowTick = GetTickCount64();
+        bool recentSettingsReload = (nowTick - lastSettingsReload < 2000);
 
-        // Refresh suntimes at day boundary
-        if ((g_lastUpdatedDay != st.wDay) && (settings.scheduleMode == ScheduleMode::SunsetToSunrise))
+        Logger::debug(L"[LightSwitchService] Current g_lastUpdatedDay value = {}.", g_lastUpdatedDay);
+
+        // Manual Override Detection Logic
+        bool manualOverrideActive = (hManualOverride && WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
+
+        if (manualOverrideActive != lastOverrideStatus)
         {
-            update_sun_times(settings);
-            g_lastUpdatedDay = st.wDay;
-            Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
+            Logger::debug(L"[LightSwitchService] Manual override active = {}", manualOverrideActive);
+            lastOverrideStatus = manualOverrideActive;
         }
 
-        // Have to do this again in case settings got updated in the refresh suntimes chunk
-        LightSwitchSettings::instance().LoadSettings();
-        const auto& currentSettings = LightSwitchSettings::instance().settings();
-
-        wchar_t msg[160];
-        swprintf_s(msg,
-                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d | mode=%d",
-                   st.wHour,
-                   st.wMinute,
-                   currentSettings.lightTime / 60,
-                   currentSettings.lightTime % 60,
-                   currentSettings.darkTime / 60,
-                   currentSettings.darkTime % 60,
-                   static_cast<int>(currentSettings.scheduleMode));
-        Logger::info(msg);
-
-        // --- Manual override check ---
-        bool manualOverrideActive = false;
-        if (hManualOverride)
+        if (settings.scheduleMode != ScheduleMode::Off && !recentSettingsReload && !scheduleJustEnabled && !manualOverrideActive)
         {
-            manualOverrideActive = (WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
-        }
+            bool currentSystemTheme = GetCurrentSystemTheme();
+            bool currentAppsTheme = GetCurrentAppsTheme();
 
-        if (manualOverrideActive)
-        {
-            if (nowMinutes == (currentSettings.lightTime + currentSettings.sunrise_offset) % 1440 ||
-                nowMinutes == (currentSettings.darkTime + currentSettings.sunset_offset) % 1440)
+            SYSTEMTIME st;
+            GetLocalTime(&st);
+            int nowMinutes = st.wHour * 60 + st.wMinute;
+
+            int lightBoundary = 0;
+            int darkBoundary = 0;
+
+            if (settings.scheduleMode == ScheduleMode::SunsetToSunrise)
             {
-                ResetEvent(hManualOverride);
-                Logger::info(L"[LightSwitchService] Manual override cleared at boundary");
+                lightBoundary = (settings.lightTime + settings.sunrise_offset) % 1440;
+                darkBoundary = (settings.darkTime + settings.sunset_offset) % 1440;
             }
             else
             {
-                Logger::info(L"[LightSwitchService] Skipping schedule due to manual override");
-                goto sleep_until_next_minute;
+                lightBoundary = settings.lightTime;
+                darkBoundary = settings.darkTime;
+            }
+
+            bool shouldBeLight = (lightBoundary < darkBoundary) ? (nowMinutes >= lightBoundary && nowMinutes < darkBoundary) : (nowMinutes >= lightBoundary || nowMinutes < darkBoundary);
+
+            Logger::debug(L"[LightSwitchService] shouldBeLight = {}", shouldBeLight);
+
+            bool systemMismatch = settings.changeSystem && (currentSystemTheme != shouldBeLight);
+            bool appsMismatch = settings.changeApps && (currentAppsTheme != shouldBeLight);
+
+            if (systemMismatch || appsMismatch)
+            {
+              // Make sure this is not because we crossed a boundary
+              bool crossedBoundary = false;
+              if (prevMinutes != -1)
+              {
+                  if (nowMinutes < prevMinutes)
+                  {
+                      // wrapped around midnight
+                      crossedBoundary = (prevMinutes <= lightBoundary || nowMinutes >= lightBoundary) ||
+                                        (prevMinutes <= darkBoundary || nowMinutes >= darkBoundary);
+                  }
+                  else
+                  {
+                      crossedBoundary = (prevMinutes < lightBoundary && nowMinutes >= lightBoundary) ||
+                                        (prevMinutes < darkBoundary && nowMinutes >= darkBoundary);
+                  }
+              }
+
+              if (crossedBoundary)
+              {
+                  Logger::info(L"[LightSwitchService] Missed boundary detected. Applying theme instead of triggering manual override.");
+                  LightSwitchSettings::instance().ApplyThemeIfNecessary();
+              }
+              else
+              {
+                  Logger::info(L"[LightSwitchService] External {} theme change detected, enabling manual override.",
+                               systemMismatch && appsMismatch ? L"system/app" :
+                               systemMismatch                 ? L"system" :
+                                                                L"app");
+                  SetEvent(hManualOverride);
+                  skipRest = true;
+              }
+            }
+        }
+        else
+        {
+            Logger::debug(L"[LightSwitchService] Skipping external-change detection (schedule off, recent reload, or just enabled).");
+        }
+        
+        if (hManualOverride)
+            manualOverrideActive = (WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
+
+        if (manualOverrideActive)
+        {
+            int lightBoundary = (settings.lightTime + settings.sunrise_offset) % 1440;
+            int darkBoundary = (settings.darkTime + settings.sunset_offset) % 1440;
+
+            SYSTEMTIME st;
+            GetLocalTime(&st);
+            nowMinutes = st.wHour * 60 + st.wMinute;
+
+            bool crossedLight = false;
+            bool crossedDark = false;
+
+            if (prevMinutes != -1)
+            {
+                // this means we are in a new day cycle
+                if (nowMinutes < prevMinutes)
+                {
+                    crossedLight = (prevMinutes <= lightBoundary || nowMinutes >= lightBoundary);
+                    crossedDark = (prevMinutes <= darkBoundary || nowMinutes >= darkBoundary);
+                }
+                else
+                {
+                    crossedLight = (prevMinutes < lightBoundary && nowMinutes >= lightBoundary);
+                    crossedDark = (prevMinutes < darkBoundary && nowMinutes >= darkBoundary);
+                }
+            }
+
+            if (crossedLight || crossedDark)
+            {
+                ResetEvent(hManualOverride);
+                Logger::info(L"[LightSwitchService] Manual override cleared after crossing schedule boundary.");
+            }
+            else
+            {
+                Logger::debug(L"[LightSwitchService] Skipping schedule due to manual override");
+                skipRest = true;
             }
         }
 
-        applyTheme(nowMinutes, currentSettings.lightTime + currentSettings.sunrise_offset, currentSettings.darkTime + currentSettings.sunset_offset, currentSettings);
+        // Apply theme if nothing has made us skip
+        if (!skipRest)
+        {
+            // Next two conditionals check for any updates necessary to the sun times.
+            bool modeChangedToSunset = (prevMode != settings.scheduleMode &&
+                                        settings.scheduleMode == ScheduleMode::SunsetToSunrise);
+            bool coordsChanged = (prevLat != settings.latitude || prevLon != settings.longitude);
 
-    sleep_until_next_minute:
+            if ((modeChangedToSunset || coordsChanged) && settings.scheduleMode == ScheduleMode::SunsetToSunrise)
+            {
+                SYSTEMTIME st;
+                GetLocalTime(&st);
+
+                Logger::info(L"[LightSwitchService] Mode or coordinates changed, recalculating sun times.");
+                update_sun_times(settings);
+                g_lastUpdatedDay = st.wDay;
+                prevMode = settings.scheduleMode;
+                prevLat = settings.latitude;
+                prevLon = settings.longitude;
+            }
+
+            SYSTEMTIME st;
+            GetLocalTime(&st);
+            int nowMinutes = st.wHour * 60 + st.wMinute;
+
+            if ((g_lastUpdatedDay != st.wDay) && (settings.scheduleMode == ScheduleMode::SunsetToSunrise))
+            {
+                update_sun_times(settings);
+                g_lastUpdatedDay = st.wDay;
+                prevMinutes = -1;
+                Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
+            }
+
+            // settings after any necessary updates.
+            LightSwitchSettings::instance().LoadSettings();
+            const auto& currentSettings = LightSwitchSettings::instance().settings();
+
+            wchar_t msg[160];
+            swprintf_s(msg,
+                       L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d | mode=%s",
+                       st.wHour,
+                       st.wMinute,
+                       currentSettings.lightTime / 60,
+                       currentSettings.lightTime % 60,
+                       currentSettings.darkTime / 60,
+                       currentSettings.darkTime % 60,
+                       ToString(currentSettings.scheduleMode).c_str());
+            Logger::info(msg);
+
+            LightSwitchSettings::instance().ApplyThemeIfNecessary();
+        }
+
+        // ─── Wait For Next Minute Tick Or Stop Event ────────────────────────────────
+        SYSTEMTIME st;
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
         if (msToNextMinute < 50)
             msToNextMinute = 50;
+
+       prevMinutes = nowMinutes;
 
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
         if (wait == WAIT_OBJECT_0)
@@ -390,6 +457,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         }
     }
 
+cleanup:
     if (hManualOverride)
         CloseHandle(hManualOverride);
     if (hParent)
@@ -397,7 +465,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     return 0;
 }
-
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
