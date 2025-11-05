@@ -324,12 +324,12 @@ public partial class PowerAccent : IDisposable
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
         double primaryDPI = Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
-        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / primaryDPI;
+        Rect screen = new(activeDisplay.Location, activeDisplay.Size);
         Position position = _settingService.Position;
 
         /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
 
-        return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
+        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi) / activeDisplay.Dpi;
     }
 
     public Position GetToolbarPosition()
