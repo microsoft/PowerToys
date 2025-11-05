@@ -14,12 +14,10 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
 internal sealed class RDPConnectionsManager
 {
-    private readonly ISettingsInterface _settingsManager;
+    private readonly SettingsManager _settingsManager;
     private readonly List<string> _connections = [];
 
-    private static char[] stringSplitOptions = ['\r', '\n'];
-
-    public RDPConnectionsManager(ISettingsInterface settingsManager)
+    public RDPConnectionsManager(SettingsManager settingsManager)
     {
         _settingsManager = settingsManager;
 
@@ -31,18 +29,8 @@ internal sealed class RDPConnectionsManager
         _connections.Clear();
 
         var rdpConnections = GetRdpConnectionsFromRegistry();
-        string[] predefinedConnections = [];
 
-        var predefinedSetting = _settingsManager.PredefinedConnections;
-
-        if (!string.IsNullOrWhiteSpace(predefinedSetting))
-        {
-            predefinedConnections = predefinedSetting
-                .Split(stringSplitOptions, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToArray();
-        }
+        var predefinedConnections = _settingsManager.PredefinedConnections;
 
         HashSet<string> newConnections = [.. rdpConnections];
         newConnections.UnionWith(predefinedConnections);

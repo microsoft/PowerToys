@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 
@@ -19,12 +20,12 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 
     // Cache the CompositeFormat for repeated use (CA1863)
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
-    private readonly RDPConnectionsManager _rdpConnectionsManager;
+    private readonly ServiceProvider _serviceProvider;
 
-    public FallbackRemoteDesktopItem(RDPConnectionsManager rdpConnectionsManager)
+    public FallbackRemoteDesktopItem(ServiceProvider serviceProvider)
     : base(new OpenRemoteDesktopCommand(string.Empty), Resources.remotedesktop_title)
     {
-        _rdpConnectionsManager = rdpConnectionsManager;
+        _serviceProvider = serviceProvider;
 
         Title = string.Empty;
         Subtitle = string.Empty;
@@ -43,9 +44,10 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 
         List<ConnectionListItem> items = new();
 
-        _rdpConnectionsManager.Reload();
+        var rdpConnectionManager = _serviceProvider.GetRequiredService<RDPConnectionsManager>();
+        rdpConnectionManager.Reload();
 
-        var connections = _rdpConnectionsManager.FindConnections(query) ?? Enumerable.Empty<Scored<string>>();
+        var connections = rdpConnectionManager.FindConnections(query) ?? Enumerable.Empty<Scored<string>>();
 
         items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
 

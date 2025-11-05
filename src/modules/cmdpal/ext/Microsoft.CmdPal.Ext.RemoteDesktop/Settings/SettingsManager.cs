@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -10,7 +12,10 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 
 public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
-    private static readonly string _namespace = "remotedesktop";
+    // Line break character used in WinUI3 TextBox and TextBlock.
+    private const char TEXTBOXNEWLINE = '\r';
+
+    private static readonly string _namespace = "com.microsoft.cmdpal.builtin.remotedesktop";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
@@ -20,7 +25,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.remotedesktop_settings_predefined_connections_description,
         string.Empty);
 
-    public string PredefinedConnections => _predefinedConnections.Value ?? string.Empty;
+    public List<string> PredefinedConnections => _predefinedConnections.Value.Split(TEXTBOXNEWLINE).ToList();
 
     public bool RunAsAdministrator { get; set; }
 
@@ -38,15 +43,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         FilePath = SettingsJsonPath();
 
         _predefinedConnections.Multiline = true;
+        _predefinedConnections.Placeholder = "test";
         Settings.Add(_predefinedConnections);
 
         // Load settings from file upon initialization
         LoadSettings();
 
-        Settings.SettingsChanged += (s, a) =>
-        {
-            this.SaveSettings();
-            this.LoadSettings();
-        };
+        Settings.SettingsChanged += (s, a) => this.SaveSettings();
     }
 }

@@ -10,27 +10,22 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 
 internal sealed partial class RemoteDesktopListPage : DynamicListPage
 {
-    private readonly SettingsManager _settingsManager;
-    private readonly RDPConnectionsManager _rdpConnectionManager;
+    private readonly ServiceProvider _serviceProvider;
     private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);
 
-    private readonly List<ConnectionListItem> _items = new();
-
-    public RemoteDesktopListPage(RDPConnectionsManager rdpConnectionsManager, ISettingsInterface settingsManager)
+    public RemoteDesktopListPage(ServiceProvider serviceProvider)
     {
-        _settingsManager = (SettingsManager)settingsManager;
-        _rdpConnectionManager = rdpConnectionsManager;
-
         Icon = Icons.RDPIcon;
         Name = Resources.remotedesktop_title;
         Id = "com.microsoft.cmdpal.builtin.remotedesktop";
 
-        LoadConnections();
+        _serviceProvider = serviceProvider;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -40,42 +35,36 @@ internal sealed partial class RemoteDesktopListPage : DynamicListPage
             return;
         }
 
-        UpdateConnections(newSearch);
         RaiseItemsChanged();
     }
 
-    public override IListItem[] GetItems() => _items.ToArray();
-
-    private void LoadConnections()
+    public override IListItem[] GetItems()
     {
-        _items.Clear();
-        var connections = _rdpConnectionManager.FindConnections(string.Empty) ?? Enumerable.Empty<Scored<string>>();
+        List<ConnectionListItem> items = new();
 
-        _items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
+        var rdpConnectionManager = _serviceProvider.GetRequiredService<RDPConnectionsManager>();
+        rdpConnectionManager.Reload();
 
-        _items.Add(_openRdpCommandListItem);
-    }
+        var connections = rdpConnectionManager.FindConnections(SearchText) ?? Enumerable.Empty<Scored<string>>();
 
-    private void UpdateConnections(string query)
-    {
-        _items.Clear();
+        items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
 
-        _rdpConnectionManager.Reload();
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            items.Insert(0, _openRdpCommandListItem);
+        }
 
-        var connections = _rdpConnectionManager.FindConnections(query) ?? Enumerable.Empty<Scored<string>>();
-
-        _items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
-
-        _items.Add(_openRdpCommandListItem);
+        return items.ToArray();
     }
 
     public ICommandItem ToCommandItem()
     {
+        var settingsManager = _serviceProvider.GetRequiredService<SettingsManager>();
         return new CommandItem(this)
         {
             Subtitle = Resources.remotedesktop_subtitle,
             MoreCommands = [
-                new CommandContextItem(_settingsManager.Settings.SettingsPage),
+                new CommandContextItem(settingsManager.Settings.SettingsPage),
             ],
         };
     }

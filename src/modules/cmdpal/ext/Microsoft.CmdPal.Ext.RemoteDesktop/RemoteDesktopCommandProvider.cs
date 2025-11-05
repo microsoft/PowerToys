@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop;
 
@@ -22,11 +23,13 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
         DisplayName = Resources.remotedesktop_title;
         Icon = Icons.RDPIcon;
 
-        SettingsManager settingsManager = new();
-        RDPConnectionsManager rdpConnectionsManager = new(settingsManager);
+        ServiceCollection services = new();
+        services.AddSingleton<SettingsManager>();
+        services.AddSingleton<RDPConnectionsManager>();
+        var serviceProvider = services.BuildServiceProvider();
 
-        listPage = new RemoteDesktopListPage(rdpConnectionsManager, settingsManager);
-        fallback = new FallbackRemoteDesktopItem(rdpConnectionsManager);
+        listPage = new RemoteDesktopListPage(serviceProvider);
+        fallback = new FallbackRemoteDesktopItem(serviceProvider);
     }
 
     public override ICommandItem[] TopLevelCommands() => [listPage.ToCommandItem()];
