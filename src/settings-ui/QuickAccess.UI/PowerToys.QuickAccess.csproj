@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
+    <AssemblyName>PowerToys.QuickAccess</AssemblyName>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+      <EnableDefaultPageItems>false</EnableDefaultPageItems>
+      <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+    <Page Include="MainWindow.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="WinUIEx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+</Project>

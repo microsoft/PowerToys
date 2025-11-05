@@ -66,6 +66,7 @@
     </ClCompile>
     <ClCompile Include="powertoy_module.cpp" />
     <ClCompile Include="main.cpp" />
+  <ClCompile Include="quick_access_host.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="centralized_kb_hook.cpp" />
     <ClCompile Include="settings_telemetry.cpp" />
@@ -80,6 +81,7 @@
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="bug_report.h" />
     <ClInclude Include="centralized_hotkeys.h" />
+  <ClInclude Include="quick_access_host.h" />
     <ClInclude Include="general_settings.h" />
     <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />

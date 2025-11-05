@@ -5,6 +5,7 @@
 #include "general_settings.h"
 #include "centralized_hotkeys.h"
 #include "centralized_kb_hook.h"
+#include "quick_access_host.h"
 #include <Windows.h>
 
 #include <common/utils/resources.h>
@@ -71,7 +72,8 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
 
 void open_quick_access_flyout_window(const POINT flyout_position)
 {
-    open_settings_window(std::nullopt, true, flyout_position);
+    UNREFERENCED_PARAMETER(flyout_position);
+    QuickAccessHost::show();
 }
 
 void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
