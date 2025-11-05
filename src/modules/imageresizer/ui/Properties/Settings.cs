@@ -20,6 +20,7 @@ using System.Windows.Media.Imaging;
 
 using ImageResizer.Models;
 using ImageResizer.Services;
+using ImageResizer.ViewModels;
 using ManagedCommon;
 
 namespace ImageResizer.Properties
@@ -624,7 +625,7 @@ namespace ImageResizer.Properties
                 KeepDateModified = jsonSettings.KeepDateModified;
                 FallbackEncoder = jsonSettings.FallbackEncoder;
                 CustomSize = jsonSettings.CustomSize;
-                AiSize = jsonSettings.AiSize ?? new AiSize(2);
+                AiSize = jsonSettings.AiSize ?? new AiSize(InputViewModel.DefaultAiScale);
                 SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
 
                 if (jsonSettings.Sizes.Count > 0)

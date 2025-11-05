@@ -25,7 +25,7 @@ namespace ImageResizer.ViewModels
 {
     public class InputViewModel : Observable
     {
-        private const int DefaultAiScale = 2;
+        public const int DefaultAiScale = 2;
         private const int MinAiScale = 1;
         private const int MaxAiScale = 8;
 
