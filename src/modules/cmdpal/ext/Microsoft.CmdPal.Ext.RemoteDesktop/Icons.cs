@@ -6,7 +6,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop;
 
-internal sealed class Icons
+internal static class Icons
 {
     internal static IconInfo RDPIcon { get; } = IconHelpers.FromRelativePath("Assets\\RemoteDesktop.svg");
 }
