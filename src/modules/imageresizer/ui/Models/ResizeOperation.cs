@@ -16,7 +16,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Extensions;
-using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using ImageResizer.Services;
 using ImageResizer.Utilities;
@@ -234,35 +233,17 @@ namespace ImageResizer.Models
         {
             try
             {
-                var scaleFactor = _settings.AiSize.Scale;
+                var result = _aiSuperResolutionService.ApplySuperResolution(
+                    source,
+                    _settings.AiSize.Scale,
+                    _file);
 
-                if (_aiSuperResolutionService == null)
-                {
-                    throw new InvalidOperationException(Properties.Resources.Error_AiScalingFailed);
-                }
-
-                var aiResult = _aiSuperResolutionService.ApplySuperResolution(source, scaleFactor, _file);
-
-                // If AI processing failed (returned null or same instance), throw exception
-                if (aiResult == null)
+                if (result == null)
                 {
                     throw new InvalidOperationException(Properties.Resources.Error_AiConversionFailed);
                 }
 
-                // If the AI implementation already returned the desired scale, use it as-is.
-                var expectedWidth = source.PixelWidth * (double)scaleFactor;
-                var expectedHeight = source.PixelHeight * (double)scaleFactor;
-                int roundedExpectedWidth = (int)Math.Round(expectedWidth);
-                int roundedExpectedHeight = (int)Math.Round(expectedHeight);
-                if (aiResult.PixelWidth >= roundedExpectedWidth && aiResult.PixelHeight >= roundedExpectedHeight)
-                {
-                    return aiResult;
-                }
-
-                var scaleX = expectedWidth / aiResult.PixelWidth;
-                var scaleY = expectedHeight / aiResult.PixelHeight;
-
-                return new TransformedBitmap(aiResult, new ScaleTransform(scaleX, scaleY));
+                return result;
             }
             catch (Exception ex)
             {
@@ -379,10 +360,7 @@ namespace ImageResizer.Models
             }
 
             // Remove directory characters from the size's name.
-            string sizeNameSanitized = _settings.SelectedSize is AiSize
-                ? AiSuperResolutionFormatter.FormatScaleName(_settings.AiSize.Scale)
-                : _settings.SelectedSize.Name;
-            sizeNameSanitized = sizeNameSanitized
+            string sizeNameSanitized = _settings.SelectedSize.Name
                 .Replace('\\', '_')
                 .Replace('/', '_');
 

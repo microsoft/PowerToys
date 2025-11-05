@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -17,14 +18,38 @@ namespace ImageResizer.Services
 {
     public sealed class WinAiSuperResolutionService : IAISuperResolutionService
     {
-        private readonly object _lock = new object();
-        private ImageScaler _imageScaler;
+        private readonly ImageScaler _imageScaler;
+        private readonly object _usageLock = new object();
         private bool _disposed;
 
-        public WinAiSuperResolutionService()
+        /// <summary>
+        /// Private constructor. Use CreateAsync() factory method to create instances.
+        /// </summary>
+        private WinAiSuperResolutionService(ImageScaler imageScaler)
         {
-            // ImageScaler will be created by calling InitializeAsync()
-            // This must be done on UI thread after checking model state
+            _imageScaler = imageScaler ?? throw new ArgumentNullException(nameof(imageScaler));
+        }
+
+        /// <summary>
+        /// Async factory method to create and initialize WinAiSuperResolutionService.
+        /// Returns null if initialization fails.
+        /// </summary>
+        public static async Task<WinAiSuperResolutionService> CreateAsync()
+        {
+            try
+            {
+                var imageScaler = await ImageScaler.CreateAsync();
+                if (imageScaler == null)
+                {
+                    return null;
+                }
+
+                return new WinAiSuperResolutionService(imageScaler);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static AIFeatureReadyState GetModelReadyState()
@@ -65,62 +90,6 @@ namespace ImageResizer.Services
             }
         }
 
-        /// <summary>
-        /// Initialize the ImageScaler instance. Must be called on UI thread after model is ready.
-        /// Following the pattern from sample project.
-        /// Thread-safe with double-checked locking pattern.
-        /// </summary>
-        public async Task<bool> InitializeAsync()
-        {
-            // First check without lock (performance optimization)
-            if (_imageScaler != null)
-            {
-                return true; // Already initialized
-            }
-
-            lock (_lock)
-            {
-                // Double-check inside lock to prevent race condition
-                if (_imageScaler != null)
-                {
-                    return true;
-                }
-
-                // Note: We cannot await inside a lock, so we release the lock,
-                // perform the async work, then reacquire the lock to assign the result.
-            }
-
-            try
-            {
-                // Create ImageScaler instance
-                // This must be called on UI thread in an async method
-                // Note: Caller (InputViewModel) has already verified Ready state via Settings.CheckAiAvailability()
-                var newImageScaler = await ImageScaler.CreateAsync();
-
-                // Lock to safely assign the instance
-                lock (_lock)
-                {
-                    // Check again in case another thread initialized while we were awaiting
-                    if (_imageScaler == null)
-                    {
-                        _imageScaler = newImageScaler;
-                    }
-                }
-
-                return _imageScaler != null;
-            }
-            catch (Exception)
-            {
-                // Failed to create ImageScaler
-                lock (_lock)
-                {
-                    _imageScaler = null;
-                }
-
-                return false;
-            }
-        }
-
         public BitmapSource ApplySuperResolution(BitmapSource source, int scale, string filePath)
         {
             if (source == null || _disposed)
@@ -130,14 +99,6 @@ namespace ImageResizer.Services
 
             // Note: filePath parameter reserved for future use (e.g., logging, caching)
             // Currently not used by the ImageScaler API
-
-            // Check if ImageScaler is initialized
-            // If not, return original image (AI not enabled or initialization failed)
-            if (_imageScaler == null)
-            {
-                return source;
-            }
-
             try
             {
                 // Convert WPF BitmapSource to WinRT SoftwareBitmap
@@ -152,13 +113,12 @@ namespace ImageResizer.Services
                 var newHeight = softwareBitmap.PixelHeight * scale;
 
                 // Apply super resolution with thread-safe access
-                // Lock protects concurrent access from Parallel.ForEach threads
+                // _usageLock protects concurrent access from Parallel.ForEach threads
                 SoftwareBitmap scaledBitmap;
-                lock (_lock)
+                lock (_usageLock)
                 {
-                    if (_imageScaler == null)
+                    if (_disposed)
                     {
-                        // Double-check in case it was disposed
                         return source;
                     }
 
@@ -283,19 +243,15 @@ namespace ImageResizer.Services
                 return;
             }
 
-            lock (_lock)
+            lock (_usageLock)
             {
                 if (_disposed)
                 {
                     return;
                 }
 
-                if (_imageScaler != null)
-                {
-                    // ImageScaler implements IDisposable
-                    (_imageScaler as IDisposable)?.Dispose();
-                    _imageScaler = null;
-                }
+                // ImageScaler implements IDisposable
+                (_imageScaler as IDisposable)?.Dispose();
 
                 _disposed = true;
             }

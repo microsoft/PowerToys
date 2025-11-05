@@ -63,7 +63,6 @@ namespace ImageResizer.Properties
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
         private AiSize _aiSize;
-        private AiAvailabilityState _aiAvailabilityState;
 
         public Settings()
         {
@@ -87,51 +86,7 @@ namespace ImageResizer.Properties
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
             AiSize = new AiSize(2);  // Initialize with default scale of 2
-            _aiAvailabilityState = CheckAiAvailability();
             AllSizes = new AllSizesCollection(this);
-        }
-
-        /// <summary>
-        /// Centralized function to check AI Super Resolution availability.
-        /// Performs architecture check and model availability check synchronously.
-        /// </summary>
-        /// <returns>The availability state of AI Super Resolution.</returns>
-        private static AiAvailabilityState CheckAiAvailability()
-        {
-            try
-            {
-                bool isArchitectureSupported = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
-
-                if (!isArchitectureSupported)
-                {
-                    return AiAvailabilityState.NotSupported;
-                }
-
-                // Check Windows AI service model ready state
-                var readyState = WinAiSuperResolutionService.GetModelReadyState();
-
-                // Map AI service state to our availability state
-                switch (readyState)
-                {
-                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
-                        // AI is fully supported and model is ready
-                        return AiAvailabilityState.Ready;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
-                        // AI is supported but model needs to be downloaded
-                        return AiAvailabilityState.ModelNotReady;
-
-                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
-                    default:
-                        // User disabled AI features or unknown state
-                        return AiAvailabilityState.NotSupported;
-                }
-            }
-            catch (Exception)
-            {
-                // Failed to check AI state - treat as not supported
-                return AiAvailabilityState.NotSupported;
-            }
         }
 
         /// <summary>
@@ -142,11 +97,9 @@ namespace ImageResizer.Properties
         private void ValidateSelectedSizeIndex()
         {
             // Index structure: 0 to Sizes.Count-1 (regular), Sizes.Count (CustomSize), Sizes.Count+1 (AiSize)
-            var maxIndex = Sizes.Count + 1; // Allow up to AiSize when AI is supported
-            if (_aiAvailabilityState == AiAvailabilityState.NotSupported)
-            {
-                maxIndex = Sizes.Count; // Only up to CustomSize when AI is not supported
-            }
+            var maxIndex = AiAvailabilityState == AiAvailabilityState.NotSupported
+                ? Sizes.Count // CustomSize only
+                : Sizes.Count + 1; // CustomSize + AiSize
 
             if (_selectedSizeIndex > maxIndex)
             {
@@ -154,11 +107,14 @@ namespace ImageResizer.Properties
             }
         }
 
+        /// <summary>
+        /// Gets the AI availability state from App's cached value (checked at startup).
+        /// </summary>
         [JsonIgnore]
-        public AiAvailabilityState AiAvailabilityState => _aiAvailabilityState;
+        public AiAvailabilityState AiAvailabilityState => ImageResizer.App.AiAvailabilityState;
 
         [JsonIgnore]
-        public bool IsAiArchitectureSupported => _aiAvailabilityState != AiAvailabilityState.NotSupported;
+        public bool IsAiArchitectureSupported => ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported;
 
         [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }

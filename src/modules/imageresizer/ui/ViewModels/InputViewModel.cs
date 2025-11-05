@@ -29,8 +29,6 @@ namespace ImageResizer.ViewModels
         private const int MinAiScale = 1;
         private const int MaxAiScale = 8;
 
-        private static WinAiSuperResolutionService _aiSuperResolutionService;
-
         private readonly ResizeBatch _batch;
         private readonly MainViewModel _mainViewModel;
         private readonly IMainView _mainView;
@@ -97,8 +95,8 @@ namespace ImageResizer.ViewModels
             EnterKeyPressedCommand = new RelayCommand<KeyPressParams>(HandleEnterKeyPress);
             DownloadModelCommand = new RelayCommand(async () => await DownloadModelAsync());
 
-            // Initialize AI support state - this checks architecture support and model availability
-            _ = InitializeAiSupportAsync();
+            // Initialize AI UI state based on Settings availability
+            InitializeAiState();
         }
 
         public Settings Settings { get; }
@@ -120,7 +118,7 @@ namespace ImageResizer.ViewModels
             }
         }
 
-        public string AiScaleDisplay => AiSuperResolutionFormatter.FormatScaleName(AiSuperResolutionScale);
+        public string AiScaleDisplay => Settings?.AiSize?.ScaleDisplay ?? string.Empty;
 
         public string AiScaleDescription => FormatLabeledSize(Resources.Input_AiScaleLabel, AiScaleDisplay);
 
@@ -345,24 +343,17 @@ namespace ImageResizer.ViewModels
         }
 
         /// <summary>
-        /// Initializes AI support state based on Settings availability check.
-        /// The centralized AI check has already been performed in Settings.
+        /// Initializes AI UI state based on App's cached availability state.
+        /// Note: AI service initialization happens at app startup in App.OnStartup().
         /// </summary>
-        private async Task InitializeAiSupportAsync()
+        private void InitializeAiState()
         {
-            if (Settings == null)
-            {
-                SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
-                return;
-            }
-
-            // Use the centralized AI availability state from Settings
-            switch (Settings.AiAvailabilityState)
+            // Use App's cached AI availability state (checked at startup)
+            switch (App.AiAvailabilityState)
             {
                 case Properties.AiAvailabilityState.Ready:
-                    // AI is fully ready - initialize the service
+                    // AI service already initialized at app startup
                     SetAiState(AiFeatureState.Ready, string.Empty);
-                    await InitializeAiServiceAsync();
                     break;
 
                 case Properties.AiAvailabilityState.ModelNotReady:
@@ -372,7 +363,7 @@ namespace ImageResizer.ViewModels
 
                 case Properties.AiAvailabilityState.NotSupported:
                 default:
-                    // AI not supported
+                    // AI not supported on this system
                     SetAiState(AiFeatureState.NotSupported, Resources.Input_AiModelNotSupported);
                     break;
             }
@@ -416,37 +407,6 @@ namespace ImageResizer.ViewModels
             UpdateAiDetails();
         }
 
-        private async Task InitializeAiServiceAsync()
-        {
-            try
-            {
-                // Create service instance if not already created
-                if (_aiSuperResolutionService == null)
-                {
-                    _aiSuperResolutionService = new WinAiSuperResolutionService();
-                }
-
-                // Initialize ImageScaler on UI thread (async method)
-                var success = await _aiSuperResolutionService.InitializeAsync();
-
-                if (success)
-                {
-                    // Set the initialized service to ResizeBatch
-                    ResizeBatch.SetAiSuperResolutionService(_aiSuperResolutionService);
-                }
-                else
-                {
-                    // Failed to initialize, use NoOp service
-                    ResizeBatch.SetAiSuperResolutionService(NoOpAiSuperResolutionService.Instance);
-                }
-            }
-            catch (Exception)
-            {
-                // Failed to initialize, use NoOp service
-                ResizeBatch.SetAiSuperResolutionService(NoOpAiSuperResolutionService.Instance);
-            }
-        }
-
         private async Task DownloadModelAsync()
         {
             try
@@ -471,10 +431,15 @@ namespace ImageResizer.ViewModels
                 {
                     // Model successfully downloaded and ready
                     ModelDownloadProgress = 100;
+
+                    // Update App's cached state
+                    App.AiAvailabilityState = Properties.AiAvailabilityState.Ready;
+
                     SetAiState(AiFeatureState.Ready, string.Empty);
 
-                    // Initialize the AI service for actual use
-                    await InitializeAiServiceAsync();
+                    // Initialize the AI service now that model is ready
+                    var aiService = await WinAiSuperResolutionService.CreateAsync();
+                    ResizeBatch.SetAiSuperResolutionService(aiService ?? (Services.IAISuperResolutionService)NoOpAiSuperResolutionService.Instance);
                 }
                 else
                 {

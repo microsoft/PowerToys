@@ -21,6 +21,12 @@ namespace ImageResizer
     {
         private const string LogSubFolder = "\\ImageResizer\\Logs";
 
+        /// <summary>
+        /// Gets cached AI availability state, checked at app startup.
+        /// Can be updated after model download completes.
+        /// </summary>
+        public static AiAvailabilityState AiAvailabilityState { get; internal set; }
+
         static App()
         {
             try
@@ -49,7 +55,7 @@ namespace ImageResizer
             Console.InputEncoding = Encoding.Unicode;
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             // Fix for .net 3.1.19 making Image Resizer not adapt to DPI changes.
             NativeMethods.SetProcessDPIAware();
@@ -64,6 +70,13 @@ namespace ImageResizer
                 return;
             }
 
+            // Check AI availability at startup (not relying on cached settings)
+            AiAvailabilityState = CheckAiAvailability();
+            Logger.LogInfo($"AI availability checked at startup: {AiAvailabilityState}");
+
+            // Initialize AI service early if supported
+            await InitializeAiServiceAsync();
+
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
 
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)
@@ -73,6 +86,83 @@ namespace ImageResizer
 
             // Temporary workaround for issue #1273
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
+        }
+
+        /// <summary>
+        /// Check AI Super Resolution availability on this system.
+        /// Performs architecture check and model availability check.
+        /// </summary>
+        private static AiAvailabilityState CheckAiAvailability()
+        {
+            try
+            {
+                bool isArchitectureSupported = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
+
+                if (!isArchitectureSupported)
+                {
+                    return AiAvailabilityState.NotSupported;
+                }
+
+                // Check Windows AI service model ready state
+                var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
+
+                // Map AI service state to our availability state
+                switch (readyState)
+                {
+                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
+                        return AiAvailabilityState.Ready;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
+                        return AiAvailabilityState.ModelNotReady;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
+                    default:
+                        return AiAvailabilityState.NotSupported;
+                }
+            }
+            catch (Exception)
+            {
+                return AiAvailabilityState.NotSupported;
+            }
+        }
+
+        /// <summary>
+        /// Initialize AI Super Resolution service at application startup.
+        /// This ensures the service is ready before the UI is shown.
+        /// </summary>
+        private static async System.Threading.Tasks.Task InitializeAiServiceAsync()
+        {
+            // Check if AI is supported on this system (use cached state from OnStartup)
+            if (AiAvailabilityState != AiAvailabilityState.Ready)
+            {
+                // AI not supported or model not ready - use NoOp service
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                return;
+            }
+
+            try
+            {
+                // Create and initialize AI service using async factory
+                var aiService = await Services.WinAiSuperResolutionService.CreateAsync();
+
+                if (aiService != null)
+                {
+                    ResizeBatch.SetAiSuperResolutionService(aiService);
+                    Logger.LogInfo("AI Super Resolution service initialized successfully.");
+                }
+                else
+                {
+                    // Initialization failed - fallback to NoOp
+                    ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                    Logger.LogWarning("AI Super Resolution service initialization failed. Using fallback.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error and use NoOp service as fallback
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                Logger.LogError($"Exception during AI service initialization: {ex.Message}");
+            }
         }
 
         public void Dispose()
