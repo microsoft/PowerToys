@@ -91,6 +91,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void GetGeoLocation_Click(object sender, RoutedEventArgs e)
         {
+            LatitudeBox.IsEnabled = false;
+            LongitudeBox.IsEnabled = false;
             SyncButton.IsEnabled = false;
             SyncLoader.IsActive = true;
             SyncLoader.Visibility = Visibility.Visible;
@@ -136,12 +138,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SyncLoader.IsActive = false;
                 SyncLoader.Visibility = Visibility.Collapsed;
                 LocationDialog.IsPrimaryButtonEnabled = true;
+                LatitudeBox.IsEnabled = true;
+                LongitudeBox.IsEnabled = true;
                 LocationResultPanel.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
+                LatitudeBox.IsEnabled = true;
+                LongitudeBox.IsEnabled = true;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
             }
         }

@@ -255,6 +255,7 @@
                                     </Grid.ColumnDefinitions>
                                     <NumberBox
                                         x:Uid="LightSwitch_LatitudeBox"
+                                        x:Name="LatitudeBox"
                                         Maximum="90"
                                         Minimum="-90"
                                         PlaceholderText="52"
@@ -262,6 +263,7 @@
                                         ValueChanged="LatLonBox_ValueChanged" />
                                     <NumberBox
                                         x:Uid="LightSwitch_LongitudeBox"
+                                        x:Name="LongitudeBox"
                                         Grid.Column="1"
                                         Maximum="180"
                                         Minimum="-180"
