@@ -41,9 +41,9 @@ namespace ImageResizer
                     System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
                 }
             }
-            catch (CultureNotFoundException)
+            catch (CultureNotFoundException ex)
             {
-                Logger.LogWarning("CultureNotFoundException while setting UI culture.");
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
             Console.InputEncoding = Encoding.Unicode;
