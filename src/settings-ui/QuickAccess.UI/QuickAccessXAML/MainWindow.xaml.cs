@@ -10,10 +10,11 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : WindowEx
 {
     private readonly QuickAccessLaunchContext _launchContext;
     private readonly DispatcherQueue _dispatcherQueue;

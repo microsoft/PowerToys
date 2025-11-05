@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\Common.SelfContained.props" />
 
@@ -21,8 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml" />
-    <Page Include="MainWindow.xaml" />
+    <ApplicationDefinition Include="QuickAccessXaml\App.xaml" />
+    <Page Include="QuickAccessXaml\MainWindow.xaml" />
+    <Page Include="QuickAccessXaml\Pages\MainPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>

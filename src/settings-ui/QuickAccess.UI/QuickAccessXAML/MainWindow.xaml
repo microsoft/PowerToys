@@ -1,0 +1,21 @@
+<winuiEx:WindowEx
+    x:Class="Microsoft.PowerToys.QuickAccess.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiEx="using:WinUIEx"
+    xmlns:pages="using:Microsoft.PowerToys.QuickAccess.Pages"
+    Width="420"
+    Height="188"
+    MinWidth="420"
+    MinHeight="188"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    mc:Ignorable="d"
+    Title="PowerToys Quick Access (Preview)">
+
+    <pages:MainPage x:Name="MainPage"/>
+</winuiEx:WindowEx>
