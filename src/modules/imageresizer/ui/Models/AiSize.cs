@@ -15,13 +15,6 @@ namespace ImageResizer.Models
         private static readonly CompositeFormat ScaleFormat = CompositeFormat.Parse(Resources.Input_AiScaleFormat);
         private int _scale = 2;
 
-        [JsonIgnore]
-        public override string Name
-        {
-            get => Resources.Input_AiSuperResolution;
-            set { /* no-op */ }
-        }
-
         /// <summary>
         /// Gets the formatted scale display string (e.g., "2×").
         /// </summary>

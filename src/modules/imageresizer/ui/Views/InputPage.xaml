@@ -85,15 +85,30 @@
                     </DataTemplate>
 
                     <DataTemplate DataType="{x:Type m:AiSize}">
-                        <Grid VerticalAlignment="Center">
-                            <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                        </Grid>
+                        <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                            <TextBlock FontWeight="SemiBold" Text="{x:Static p:Resources.Input_AiSuperResolution}" />
+                            <TextBlock Text="{x:Static p:Resources.Input_AiSuperResolutionDescription}" />
+                        </StackPanel>
                     </DataTemplate>
                 </ComboBox.Resources>
             </ComboBox>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border
+                Grid.RowSpan="5"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0" />
 
             <!--  AI Configuration Panel  -->
-            <Grid Margin="0,8,0,0">
+            <Grid Margin="16">
                 <!--  AI Model Download Prompt  -->
                 <StackPanel>
                     <StackPanel.Style>
@@ -143,7 +158,11 @@
                         </Style>
                     </StackPanel.Style>
 
-                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding AiScaleDescription}" />
+                    <Grid>
+                        <TextBlock Text="{x:Static p:Resources.Input_AiCurrentLabel}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding AiScaleDisplay}" />
+                    </Grid>
+
                     <Slider
                         Margin="0,8,0,0"
                         AutomationProperties.Name="{x:Static p:Resources.Input_AiScaleLabel}"
@@ -156,30 +175,21 @@
                         Ticks="1,2,3,4,5,6,7,8"
                         Value="{Binding AiSuperResolutionScale, Mode=TwoWay}" />
 
-                    <StackPanel Margin="0,8,0,0" Visibility="{Binding ShowAiSizeDescriptions, Converter={StaticResource BoolValueConverter}}">
-                        <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{Binding CurrentResolutionDescription}" />
-                        <TextBlock
-                            Margin="0,4,0,0"
-                            Style="{StaticResource BodyTextBlockStyle}"
-                            Text="{Binding NewResolutionDescription}" />
+                    <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowAiSizeDescriptions, Converter={StaticResource BoolValueConverter}}">
+                        <Grid>
+                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{x:Static p:Resources.Input_AiCurrentLabel}" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="{Binding CurrentResolutionDescription}" />
+                        </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <TextBlock Text="{x:Static p:Resources.Input_AiNewLabel}" />
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding NewResolutionDescription}" />
+                        </Grid>
                     </StackPanel>
                 </StackPanel>
             </Grid>
-        </StackPanel>
-
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Border
-                Grid.RowSpan="5"
-                Background="{DynamicResource LayerFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0" />
 
             <!--  "Custom" input matrix  -->
             <Grid Margin="16" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue, Converter={StaticResource SizeTypeToVisibilityConverter}}">

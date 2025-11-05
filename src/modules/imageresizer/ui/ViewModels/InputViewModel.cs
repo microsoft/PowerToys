@@ -111,8 +111,6 @@ namespace ImageResizer.ViewModels
 
         public string AiScaleDisplay => Settings?.AiSize?.ScaleDisplay ?? string.Empty;
 
-        public string AiScaleDescription => FormatLabeledSize(Resources.Input_AiScaleLabel, AiScaleDisplay);
-
         public string CurrentResolutionDescription
         {
             get => _currentResolutionDescription;
@@ -269,26 +267,19 @@ namespace ImageResizer.ViewModels
             EnsureOriginalDimensionsLoaded();
 
             var hasConcreteSize = _originalWidth.HasValue && _originalHeight.HasValue;
-            var currentValue = hasConcreteSize
+            CurrentResolutionDescription = hasConcreteSize
                 ? FormatDimensions(_originalWidth!.Value, _originalHeight!.Value)
                 : Resources.Input_AiUnknownSize;
-            CurrentResolutionDescription = FormatLabeledSize(Resources.Input_AiCurrentLabel, currentValue);
 
             var scale = Settings.AiSize.Scale;
-            var newValue = hasConcreteSize
+            NewResolutionDescription = hasConcreteSize
                 ? FormatDimensions((long)_originalWidth!.Value * scale, (long)_originalHeight!.Value * scale)
                 : Resources.Input_AiUnknownSize;
-            NewResolutionDescription = FormatLabeledSize(Resources.Input_AiNewLabel, newValue);
         }
 
         private static string FormatDimensions(long width, long height)
         {
             return string.Format(CultureInfo.CurrentCulture, "{0} × {1}", width, height);
-        }
-
-        private static string FormatLabeledSize(string label, string value)
-        {
-            return string.Format(CultureInfo.CurrentCulture, "{0}: {1}", label, value);
         }
 
         private void EnsureOriginalDimensionsLoaded()
@@ -390,7 +381,6 @@ namespace ImageResizer.ViewModels
         {
             OnPropertyChanged(nameof(AiSuperResolutionScale));
             OnPropertyChanged(nameof(AiScaleDisplay));
-            OnPropertyChanged(nameof(AiScaleDescription));
             UpdateAiDetails();
         }
 
