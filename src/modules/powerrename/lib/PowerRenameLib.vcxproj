@@ -16,19 +16,24 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <DepsPath>$(ProjectDir)..\..\..\..\deps</DepsPath>
   </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>windowscodecs.lib;propsys.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Enumerating.h" />
@@ -47,6 +52,12 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="MetadataTypes.h" />
+    <ClInclude Include="PropVariantValue.h" />
+  <ClInclude Include="WICMetadataExtractor.h" />
+  <ClInclude Include="MetadataPatternExtractor.h" />
+  <ClInclude Include="MetadataFormatHelper.h" />
+  <ClInclude Include="MetadataResultCache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enumerating.cpp" />
@@ -64,6 +75,10 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
+  <ClCompile Include="WICMetadataExtractor.cpp" />
+  <ClCompile Include="MetadataPatternExtractor.cpp" />
+  <ClCompile Include="MetadataFormatHelper.cpp" />
+  <ClCompile Include="MetadataResultCache.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

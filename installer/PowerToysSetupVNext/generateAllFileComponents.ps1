@@ -1,9 +1,7 @@
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
-    [string]$platform,
-    [Parameter(Mandatory = $False, Position = 2)]
-    [string]$installscopeperuser = "false"
+    [string]$platform
 )
 
 Function Generate-FileList() {
@@ -77,9 +75,7 @@ Function Generate-FileComponents() {
         [Parameter(Mandatory = $True, Position = 1)]
         [string]$fileListName,
         [Parameter(Mandatory = $True, Position = 2)]
-        [string]$wxsFilePath,
-        [Parameter(Mandatory = $True, Position = 3)]
-        [string]$regroot
+        [string]$wxsFilePath
     )
 
     $wxsFile = Get-Content $wxsFilePath;
@@ -100,7 +96,7 @@ Function Generate-FileComponents() {
     $componentDefs +=
     @"
             <Component Id="$($componentId)" Guid="$((New-Guid).ToString().ToUpper())">
-              <RegistryKey Root="$($regroot)" Key="Software\Classes\powertoys\components">
+              <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
                 <RegistryValue Type="string" Name="$($componentId)" Value="" KeyPath="yes"/>
               </RegistryKey>`r`n
 "@
@@ -134,194 +130,188 @@ if ($platform -ceq "arm64") {
     $platform = "ARM64"
 }
 
-if ($installscopeperuser -eq "true") {
-    $registryroot = "HKCU"
-} else {
-    $registryroot = "HKLM"
-}
-
 #BaseApplications
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
-Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
-Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
 Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\AdvancedPaste"
-Generate-FileComponents -fileListName "AdvancedPasteAssetsFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "AdvancedPasteAssetsFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs
 
 #AwakeFiles
 Generate-FileList -fileDepsJson "" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Awake"
-Generate-FileComponents -fileListName "AwakeImagesFiles" -wxsFilePath $PSScriptRoot\Awake.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "AwakeImagesFiles" -wxsFilePath $PSScriptRoot\Awake.wxs
 
 #ColorPicker
 Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ColorPicker"
-Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSScriptRoot\ColorPicker.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSScriptRoot\ColorPicker.wxs
 
 #Environment Variables
 Generate-FileList -fileDepsJson "" -fileListName EnvironmentVariablesAssetsFiles -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\EnvironmentVariables"
-Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs
 
 #FileExplorerAdd-ons
 Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerMonacoAssetsFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Monaco"
 Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerCustomLanguagesFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Monaco\customLanguages"
-Generate-FileComponents -fileListName "MonacoPreviewHandlerMonacoAssetsFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "MonacoPreviewHandlerCustomLanguagesFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "MonacoPreviewHandlerMonacoAssetsFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
+Generate-FileComponents -fileListName "MonacoPreviewHandlerCustomLanguagesFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
 
 #FileLocksmith
 Generate-FileList -fileDepsJson "" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\FileLocksmith"
-Generate-FileComponents -fileListName "FileLocksmithAssetsFiles" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "FileLocksmithAssetsFiles" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs
 
 #Hosts
 Generate-FileList -fileDepsJson "" -fileListName HostsAssetsFiles -wxsFilePath $PSScriptRoot\Hosts.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Hosts"
-Generate-FileComponents -fileListName "HostsAssetsFiles" -wxsFilePath $PSScriptRoot\Hosts.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "HostsAssetsFiles" -wxsFilePath $PSScriptRoot\Hosts.wxs
 
 #ImageResizer
 Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ImageResizer"
-Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs
 
 # Light Switch Service
 Generate-FileList -fileDepsJson "" -fileListName LightSwitchFiles -wxsFilePath $PSScriptRoot\LightSwitch.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\LightSwitchService"
-Generate-FileComponents -fileListName "LightSwitchFiles" -wxsFilePath $PSScriptRoot\LightSwitch.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "LightSwitchFiles" -wxsFilePath $PSScriptRoot\LightSwitch.wxs
 
 #New+
 Generate-FileList -fileDepsJson "" -fileListName NewPlusAssetsFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\NewPlus"
-Generate-FileComponents -fileListName "NewPlusAssetsFiles" -wxsFilePath $PSScriptRoot\NewPlus.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "NewPlusAssetsFiles" -wxsFilePath $PSScriptRoot\NewPlus.wxs
 
 #Peek
 Generate-FileList -fileDepsJson "" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Peek\"
-Generate-FileComponents -fileListName "PeekAssetsFiles" -wxsFilePath $PSScriptRoot\Peek.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "PeekAssetsFiles" -wxsFilePath $PSScriptRoot\Peek.wxs
 
 #PowerRename
 Generate-FileList -fileDepsJson "" -fileListName PowerRenameAssetsFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerRename\"
-Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\PowerRename.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\PowerRename.wxs
 
 #RegistryPreview
 Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RegistryPreview\"
-Generate-FileComponents -fileListName "RegistryPreviewAssetsFiles" -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "RegistryPreviewAssetsFiles" -wxsFilePath $PSScriptRoot\RegistryPreview.wxs
 
 #Run
 Generate-FileList -fileDepsJson "" -fileListName launcherImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\PowerLauncher"
-Generate-FileComponents -fileListName "launcherImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "launcherImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ## Plugins
 ###Calculator
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Calculator\Microsoft.PowerToys.Run.Plugin.Calculator.deps.json" -fileListName calcComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName calcImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Calculator\Images"
-Generate-FileComponents -fileListName "calcComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "calcImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "calcComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "calcImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Folder
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Folder\Microsoft.Plugin.Folder.deps.json" -fileListName FolderComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName FolderImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Folder\Images"
-Generate-FileComponents -fileListName "FolderComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "FolderImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "FolderComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "FolderImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Program
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Program\Microsoft.Plugin.Program.deps.json" -fileListName ProgramComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName ProgramImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Program\Images"
-Generate-FileComponents -fileListName "ProgramComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "ProgramImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ProgramComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "ProgramImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Shell
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Shell\Microsoft.Plugin.Shell.deps.json" -fileListName ShellComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName ShellImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Shell\Images"
-Generate-FileComponents -fileListName "ShellComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "ShellImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ShellComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "ShellImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Indexer
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Indexer\Microsoft.Plugin.Indexer.deps.json" -fileListName IndexerComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName IndexerImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Indexer\Images"
-Generate-FileComponents -fileListName "IndexerComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "IndexerImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "IndexerComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "IndexerImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###UnitConverter
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\UnitConverter\Community.PowerToys.Run.Plugin.UnitConverter.deps.json" -fileListName UnitConvCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName UnitConvImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\UnitConverter\Images"
-Generate-FileComponents -fileListName "UnitConvCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "UnitConvImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "UnitConvCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "UnitConvImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###WebSearch
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WebSearch\Community.PowerToys.Run.Plugin.WebSearch.deps.json" -fileListName WebSrchCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName WebSrchImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WebSearch\Images"
-Generate-FileComponents -fileListName "WebSrchCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "WebSrchImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "WebSrchCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "WebSrchImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###History
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\History\Microsoft.PowerToys.Run.Plugin.History.deps.json" -fileListName HistoryPluginComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName HistoryPluginImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\History\Images"
-Generate-FileComponents -fileListName "HistoryPluginComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "HistoryPluginImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "HistoryPluginComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "HistoryPluginImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Uri
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Uri\Microsoft.Plugin.Uri.deps.json" -fileListName UriComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName UriImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Uri\Images"
-Generate-FileComponents -fileListName "UriComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "UriImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "UriComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "UriImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###VSCodeWorkspaces
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\VSCodeWorkspaces\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" -fileListName VSCWrkCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName VSCWrkImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\VSCodeWorkspaces\Images"
-Generate-FileComponents -fileListName "VSCWrkCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "VSCWrkImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "VSCWrkCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "VSCWrkImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###WindowWalker
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WindowWalker\Microsoft.Plugin.WindowWalker.deps.json" -fileListName WindowWlkrCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName WindowWlkrImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WindowWalker\Images"
-Generate-FileComponents -fileListName "WindowWlkrCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "WindowWlkrImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "WindowWlkrCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "WindowWlkrImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###OneNote
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\OneNote\Microsoft.PowerToys.Run.Plugin.OneNote.deps.json" -fileListName OneNoteComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName OneNoteImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\OneNote\Images"
-Generate-FileComponents -fileListName "OneNoteComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "OneNoteImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "OneNoteComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "OneNoteImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Registry
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Registry\Microsoft.PowerToys.Run.Plugin.Registry.deps.json" -fileListName RegistryComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName RegistryImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Registry\Images"
-Generate-FileComponents -fileListName "RegistryComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "RegistryImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "RegistryComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "RegistryImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###Service
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Service\Microsoft.PowerToys.Run.Plugin.Service.deps.json" -fileListName ServiceComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName ServiceImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\Service\Images"
-Generate-FileComponents -fileListName "ServiceComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "ServiceImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ServiceComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "ServiceImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###System
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\System\Microsoft.PowerToys.Run.Plugin.System.deps.json" -fileListName SystemComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName SystemImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\System\Images"
-Generate-FileComponents -fileListName "SystemComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "SystemImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "SystemComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "SystemImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###TimeDate
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\TimeDate\Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json" -fileListName TimeDateComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName TimeDateImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\TimeDate\Images"
-Generate-FileComponents -fileListName "TimeDateComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "TimeDateImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "TimeDateComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "TimeDateImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###WindowsSettings
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json" -fileListName WinSetCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName WinSetImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WindowsSettings\Images"
-Generate-FileComponents -fileListName "WinSetCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "WinSetImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "WinSetCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "WinSetImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###WindowsTerminal
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WindowsTerminal\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json" -fileListName WinTermCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName WinTermImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WindowsTerminal\Images"
-Generate-FileComponents -fileListName "WinTermCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "WinTermImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "WinTermCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "WinTermImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###PowerToys
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\PowerToys\Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json" -fileListName PowerToysCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName PowerToysImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\PowerToys\Images"
-Generate-FileComponents -fileListName "PowerToysCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "PowerToysImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "PowerToysCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "PowerToysImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###ValueGenerator
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\ValueGenerator\Community.PowerToys.Run.Plugin.ValueGenerator.deps.json" -fileListName ValueGeneratorCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName ValueGeneratorImagesCmpFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\ValueGenerator\Images"
-Generate-FileComponents -fileListName "ValueGeneratorCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ValueGeneratorCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ## Plugins
 
 #ShortcutGuide
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideSvgFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ShortcutGuide\"
-Generate-FileComponents -fileListName "ShortcutGuideSvgFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ShortcutGuideSvgFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
 
 #Settings
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\OOBE\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsFluentIconsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\"
-Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
-Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
+Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
+Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
+Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
 Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
-Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
