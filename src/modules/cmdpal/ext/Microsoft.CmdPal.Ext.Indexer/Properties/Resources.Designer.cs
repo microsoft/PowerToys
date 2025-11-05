@@ -296,15 +296,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search files on this device.
-        /// </summary>
-        internal static string Indexer_Subtitle {
-            get {
-                return ResourceManager.GetString("Indexer_Subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Search files.
         /// </summary>
         internal static string Indexer_Title {
