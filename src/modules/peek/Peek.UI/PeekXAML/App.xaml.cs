@@ -41,6 +41,7 @@ namespace Peek.UI
 
         private bool _disposed;
         private SelectedItem? _selectedItem;
+        private bool _launchedFromCli;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -58,22 +59,22 @@ namespace Peek.UI
             InitializeComponent();
             Logger.InitializeLogger("\\Peek\\Logs");
 
-            Host = Microsoft.Extensions.Hosting.Host.
-            CreateDefaultBuilder().
-            UseContentRoot(AppContext.BaseDirectory).
-            ConfigureServices((context, services) =>
-            {
-                // Core Services
-                services.AddTransient<NeighboringItemsQuery>();
-                services.AddSingleton<IUserSettings, UserSettings>();
-                services.AddSingleton<IPreviewSettings, PreviewSettings>();
+            Host = Microsoft.Extensions.Hosting.Host
+                .CreateDefaultBuilder()
+                .UseContentRoot(AppContext.BaseDirectory)
+                .ConfigureServices((context, services) =>
+                {
+                    // Core Services
+                    services.AddTransient<NeighboringItemsQuery>();
+                    services.AddSingleton<IUserSettings, UserSettings>();
+                    services.AddSingleton<IPreviewSettings, PreviewSettings>();
 
-                // Views and ViewModels
-                services.AddTransient<TitleBar>();
-                services.AddTransient<FilePreview>();
-                services.AddTransient<MainWindowViewModel>();
-            }).
-            Build();
+                    // Views and ViewModels
+                    services.AddTransient<TitleBar>();
+                    services.AddTransient<FilePreview>();
+                    services.AddTransient<MainWindowViewModel>();
+                })
+                .Build();
 
             UnhandledException += App_UnhandledException;
         }
@@ -121,6 +122,7 @@ namespace Peek.UI
                     if (File.Exists(filePath) || Directory.Exists(filePath))
                     {
                         _selectedItem = new SelectedItemByPath(filePath);
+                        _launchedFromCli = true;
                         OnShowPeek();
                         return;
                     }
@@ -167,7 +169,8 @@ namespace Peek.UI
                 Window = new MainWindow();
             }
 
-            Window.Toggle(firstActivation, _selectedItem);
+            Window.Toggle(firstActivation, _selectedItem, _launchedFromCli);
+            _launchedFromCli = false;
             _selectedItem = null;
         }
 

@@ -39,6 +39,7 @@ namespace Peek.UI
         /// dialog is open at a time.
         /// </summary>
         private bool _isDeleteInProgress;
+        private bool _exitAfterClose;
 
         public MainWindow()
         {
@@ -117,8 +118,13 @@ namespace Peek.UI
         /// <summary>
         /// Toggling the window visibility and querying files when necessary.
         /// </summary>
-        public void Toggle(bool firstActivation, SelectedItem selectedItem)
+        public void Toggle(bool firstActivation, SelectedItem selectedItem, bool exitAfterClose)
         {
+            if (exitAfterClose)
+            {
+                _exitAfterClose = true;
+            }
+
             if (firstActivation)
             {
                 Activate();
@@ -208,6 +214,11 @@ namespace Peek.UI
             this.Content.KeyUp -= Content_KeyUp;
 
             ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
+
+            if (_exitAfterClose)
+            {
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>
