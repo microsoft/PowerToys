@@ -20,24 +20,11 @@
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Remove="Assets\Settings\Icons\Models\Anthropic.png" />
-		<None Remove="Assets\Settings\Icons\Models\Azure.png" />
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
-		<None Remove="Assets\Settings\Icons\Models\AzureAI.png" />
-		<None Remove="Assets\Settings\Icons\Models\Bedrock.png" />
-		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.png" />
 		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
-		<None Remove="Assets\Settings\Icons\Models\Gemini.png" />
-		<None Remove="Assets\Settings\Icons\Models\HuggingFace.png" />
-		<None Remove="Assets\Settings\Icons\Models\Mistral.png" />
-		<None Remove="Assets\Settings\Icons\Models\Ollama.png" />
-		<None Remove="Assets\Settings\Icons\Models\Onnx.png" />
 		<None Remove="Assets\Settings\Icons\Models\Onnx.svg" />
-		<None Remove="Assets\Settings\Icons\Models\OpenAI.dark.png" />
 		<None Remove="Assets\Settings\Icons\Models\OpenAI.dark.svg" />
-		<None Remove="Assets\Settings\Icons\Models\OpenAI.light.png" />
 		<None Remove="Assets\Settings\Icons\Models\OpenAI.light.svg" />
-		<None Remove="Assets\Settings\Icons\Models\WindowsML.png" />
 		<None Remove="Assets\Settings\Icons\Models\WindowsML.svg" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
@@ -75,10 +62,6 @@
 	<ItemGroup>
 		<!-- AI Model Provider Icons - SVG files -->
 		<Content Include="Assets\Settings\Icons\Models\*.svg">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<!-- AI Model Provider Icons - PNG files -->
-		<Content Include="Assets\Settings\Icons\Models\*.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
