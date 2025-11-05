@@ -43,7 +43,6 @@ public class SettingsManager : JsonSettingsManager
         FilePath = SettingsJsonPath();
 
         _predefinedConnections.Multiline = true;
-        _predefinedConnections.Placeholder = "test";
         Settings.Add(_predefinedConnections);
 
         // Load settings from file upon initialization

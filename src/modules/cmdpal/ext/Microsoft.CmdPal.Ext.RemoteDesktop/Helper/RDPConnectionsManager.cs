@@ -30,7 +30,8 @@ internal sealed class RDPConnectionsManager
 
         var rdpConnections = GetRdpConnectionsFromRegistry();
 
-        var predefinedConnections = _settingsManager.PredefinedConnections;
+        var predefinedConnections = _settingsManager.PredefinedConnections
+                                                    .Where(w => !string.IsNullOrWhiteSpace(w));
 
         HashSet<string> newConnections = [.. rdpConnections];
         newConnections.UnionWith(predefinedConnections);
