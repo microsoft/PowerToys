@@ -15,9 +15,9 @@
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
                     <!--  Improved disabled state: keep readable but clearly disabled  -->
-                    <Setter Property="Foreground" Value="#AAAAAA" />
-                    <Setter Property="Background" Value="#3A3A3A" />
-                    <Setter Property="BorderBrush" Value="#555555" />
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                    <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" />
                     <Setter Property="Opacity" Value="0.75" />
                 </Trigger>
             </Style.Triggers>
