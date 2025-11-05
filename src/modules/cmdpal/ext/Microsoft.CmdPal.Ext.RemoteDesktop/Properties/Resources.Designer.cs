@@ -79,7 +79,7 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect to {0} via Remote Desktop Client.
+        ///   Looks up a localized string similar to Connect to {0}.
         /// </summary>
         public static string remotedesktop_open_host {
             get {

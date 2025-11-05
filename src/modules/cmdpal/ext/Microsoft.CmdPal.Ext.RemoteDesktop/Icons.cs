@@ -8,5 +8,5 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop;
 
 internal sealed class Icons
 {
-    internal static IconInfo RDPIcon => new("\uE703"); // Connect icon
+    internal static IconInfo RDPIcon { get; } = IconHelpers.FromRelativePath("Assets\\RemoteDesktop.svg");
 }

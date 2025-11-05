@@ -127,7 +127,7 @@
     <value>Open</value>
   </data>
   <data name="remotedesktop_open_host" xml:space="preserve">
-    <value>Connect to {0} via Remote Desktop Client</value>
+    <value>Connect to {0}</value>
   </data>
   <data name="remotedesktop_command_connect" xml:space="preserve">
     <value>Connect</value>
