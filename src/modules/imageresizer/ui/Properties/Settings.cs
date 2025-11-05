@@ -97,7 +97,7 @@ namespace ImageResizer.Properties
         private void ValidateSelectedSizeIndex()
         {
             // Index structure: 0 to Sizes.Count-1 (regular), Sizes.Count (CustomSize), Sizes.Count+1 (AiSize)
-            var maxIndex = AiAvailabilityState == AiAvailabilityState.NotSupported
+            var maxIndex = ImageResizer.App.AiAvailabilityState == AiAvailabilityState.NotSupported
                 ? Sizes.Count // CustomSize only
                 : Sizes.Count + 1; // CustomSize + AiSize
 
