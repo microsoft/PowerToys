@@ -252,10 +252,6 @@
     <value>Current Time; Now</value>
     <comment>Don't change order</comment>
   </data>
-  <data name="Microsoft_plugin_timedate_Search_ConjunctionList" xml:space="preserve">
-    <value>for; and; nor; but; or; so</value>
-    <comment>List of conjunctions. We don't add 'yet' because this can be a synonym of 'now' which might be problematic on localized searches.</comment>
-  </data>
   <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
     <value>Second</value>
   </data>

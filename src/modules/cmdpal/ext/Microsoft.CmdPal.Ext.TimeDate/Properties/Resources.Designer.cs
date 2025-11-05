@@ -502,15 +502,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to for; and; nor; but; or; so.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_Search_ConjunctionList {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_Search_ConjunctionList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Date and time; Time and Date; Custom format.
         /// </summary>
         public static string Microsoft_plugin_timedate_SearchTagCustom {
