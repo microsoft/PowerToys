@@ -1517,7 +1517,6 @@ SOFTWARE.
 - Mages
 - Markdig.Signed
 - MessagePack
-- ModelContextProtocol
 - ModernWpfUI
 - Moq
 - MSTest
