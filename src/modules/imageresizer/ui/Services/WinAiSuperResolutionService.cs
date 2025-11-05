@@ -86,8 +86,8 @@ namespace ImageResizer.Services
                     return true;
                 }
 
-                // Note: We cannot await inside a lock, so we need to restructure
-                // We'll set a flag and perform the async work outside the lock
+                // Note: We cannot await inside a lock, so we release the lock,
+                // perform the async work, then reacquire the lock to assign the result.
             }
 
             try
