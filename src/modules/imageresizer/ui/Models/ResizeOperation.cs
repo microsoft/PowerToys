@@ -360,7 +360,11 @@ namespace ImageResizer.Models
             }
 
             // Remove directory characters from the size's name.
-            string sizeNameSanitized = _settings.SelectedSize.Name
+            // For AI Size, use the scale display (e.g., "2×") instead of the full name
+            string sizeName = _settings.SelectedSize is AiSize aiSize
+                ? aiSize.ScaleDisplay
+                : _settings.SelectedSize.Name;
+            string sizeNameSanitized = sizeName
                 .Replace('\\', '_')
                 .Replace('/', '_');
 
