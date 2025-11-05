@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DashboardSortOrder DashboardSortOrder
         {
-            get => _dashboardSortOrder;
+            get => generalSettingsConfig.DashboardSortOrder;
             set
             {
                 if (Set(ref _dashboardSortOrder, value))
