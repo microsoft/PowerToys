@@ -10,6 +10,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 
   <PropertyGroup>
