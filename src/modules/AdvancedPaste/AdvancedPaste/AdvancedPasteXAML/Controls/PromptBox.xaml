@@ -741,7 +741,7 @@
             x:Name="LoadingText"
             x:Uid="LoadingText"
             Grid.Row="1"
-            Margin="0,4,0,0"
+            Margin="4,4,0,0"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Style="{StaticResource CaptionTextBlockStyle}"
             Visibility="Collapsed">
