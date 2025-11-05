@@ -9,21 +9,28 @@ Param(
 )
 
 $ErrorActionPreference = 'Stop'
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$buildOutputDir = Join-Path $scriptDir "..\..\$Platform\$Configuration"
+
+# Find build output directory with DSCModules subfolder
+$buildOutputDir = Join-Path $scriptDir "..\..\$Platform\$Configuration\DSCModules"
 
 if (-not (Test-Path $buildOutputDir)) {
     Write-Error "Build output directory not found: '$buildOutputDir'"
     exit 1
 }
 
+# Find all DSC manifest JSON files
 $dscFiles = Get-ChildItem -Path $buildOutputDir -Filter "microsoft.powertoys.*.settings.dsc.resource.json" -File
 
 if (-not $dscFiles) {
     Write-Warning "No DSC manifest files found in '$buildOutputDir'"
+    # Create empty component group
     $wxsContent = @"
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
   <?include `$(sys.CURRENTDIR)\Common.wxi?>
+
   <Fragment>
     <ComponentGroup Id="DscResourcesComponentGroup">
     </ComponentGroup>
@@ -36,27 +43,32 @@ if (-not $dscFiles) {
 
 Write-Host "Found $($dscFiles.Count) DSC manifest file(s)"
 
+# Generate WiX fragment
 $wxsContent = @"
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
   <?include `$(sys.CURRENTDIR)\Common.wxi?>
+
   <Fragment>
     <DirectoryRef Id="DSCModulesReferenceFolder">
 "@
 
 $componentRefs = @()
+
 foreach ($file in $dscFiles) {
     $componentId = "DscResource_" + ($file.BaseName -replace '[^A-Za-z0-9_]', '_')
     $fileId = $componentId + "_File"
     $guid = [System.Guid]::NewGuid().ToString().ToUpper()
+    
     $componentRefs += $componentId
     
     $wxsContent += @"
 
-      <Component Id="$componentId" Guid="{$guid}">
+      <Component Id="$componentId" Guid="{$guid}" Directory="DSCModulesReferenceFolder">
         <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="$componentId" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="$fileId" Source="`$(var.BinDir)$($file.Name)" Vital="no"/>
+        <File Id="$fileId" Source="`$(var.BinDir)DSCModules\$($file.Name)" Vital="no"/>
       </Component>
 "@
 }
@@ -65,6 +77,7 @@ $wxsContent += @"
 
     </DirectoryRef>
   </Fragment>
+
   <Fragment>
     <ComponentGroup Id="DscResourcesComponentGroup">
 "@
@@ -83,5 +96,7 @@ $wxsContent += @"
 </Wix>
 "@
 
+# Write the WiX file
 Set-Content -Path $dscWxsFile -Value $wxsContent
+
 Write-Host "Generated DSC resources WiX fragment: '$dscWxsFile'"

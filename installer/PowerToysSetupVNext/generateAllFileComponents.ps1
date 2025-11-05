@@ -316,6 +316,6 @@ Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wx
 Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
 Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 
-#DSC Resources - JSON manifest files in DSCv3 subfolder
-Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCv3\"
+#DSC Resources - JSON manifest files in DSCModules subfolder
+Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"
 Generate-FileComponents -fileListName "DscJsonFiles" -wxsFilePath $PSScriptRoot\DscResources.wxs

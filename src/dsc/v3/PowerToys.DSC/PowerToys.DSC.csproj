@@ -40,10 +40,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <!-- Generate the DSC resource JSON files for both Debug and Release builds -->
-  <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-    <Message Text="Generating DSC resource JSON files to DSCv3 subfolder..." Importance="high" />
-    <MakeDir Directories="$(TargetDir)DSCv3" />
-    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCv3&quot;" />
+  <!-- Generate the DSC resource JSON files to DSCModules subfolder -->
+  <!-- Skip generation in CI/CD builds (CIBuild=true) to avoid unnecessary work during pipeline -->
+  <Target Name="GenerateDscResourceJsonFiles" AfterTargets="Build" Condition="'$(CIBuild)' != 'true'">
+    <Message Text="Generating DSC resource JSON files to DSCModules subfolder..." Importance="high" />
+    <MakeDir Directories="$(TargetDir)DSCModules" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" />
   </Target>
 </Project>

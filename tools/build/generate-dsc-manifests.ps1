@@ -93,10 +93,10 @@ if (-not (Test-Path $outputDir)) {
     New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
 }
 
-# DSC v3 manifests go to DSCv3 subfolder
-$dscOutputDir = Join-Path $outputDir 'DSCv3'
+# DSC v3 manifests go to DSCModules subfolder
+$dscOutputDir = Join-Path $outputDir 'DSCModules'
 if (-not (Test-Path $dscOutputDir)) {
-    Write-Host "Creating DSCv3 subfolder at '$dscOutputDir'."
+    Write-Host "Creating DSCModules subfolder at '$dscOutputDir'."
     New-Item -Path $dscOutputDir -ItemType Directory -Force | Out-Null
 }
 

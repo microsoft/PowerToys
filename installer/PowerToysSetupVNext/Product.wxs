@@ -279,7 +279,6 @@
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
           </Directory>
           <Directory Id="DSCModulesReferenceFolder" Name="DSCModules" />
-          <Directory Id="DSCv3Folder" Name="DSCv3" />
           <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
               <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
                 <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
