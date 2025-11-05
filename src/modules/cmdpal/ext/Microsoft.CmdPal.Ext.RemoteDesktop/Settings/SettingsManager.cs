@@ -25,7 +25,7 @@ public class SettingsManager : JsonSettingsManager
         Resources.remotedesktop_settings_predefined_connections_description,
         string.Empty);
 
-    public List<string> PredefinedConnections => _predefinedConnections.Value.Split(TEXTBOXNEWLINE).ToList();
+    public List<string> PredefinedConnections => _predefinedConnections.Value?.Split(TEXTBOXNEWLINE).ToList() ?? [];
 
     public bool RunAsAdministrator { get; set; }
 
