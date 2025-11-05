@@ -14,7 +14,6 @@
             </ResourceDictionary.MergedDictionaries>
 
             <v:SizeTypeToVisibilityConverter x:Key="SizeTypeToVisibilityConverter" />
-            <v:AiSizeToVisibilityConverter x:Key="AiSizeToVisibilityConverter" />
             <v:SizeTypeToHelpTextConverter x:Key="SizeTypeToHelpTextConverter" />
             <v:EnumValueConverter x:Key="EnumValueConverter" />
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter" />

@@ -93,7 +93,7 @@
             </ComboBox>
 
             <!--  AI Configuration Panel  -->
-            <Grid Margin="0,8,0,0" Visibility="{Binding ElementName=SizeComboBox, Path=SelectedItem, Converter={StaticResource AiSizeToVisibilityConverter}}">
+            <Grid Margin="0,8,0,0">
                 <!--  AI Model Download Prompt  -->
                 <StackPanel>
                     <StackPanel.Style>
