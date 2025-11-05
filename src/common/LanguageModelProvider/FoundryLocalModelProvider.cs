@@ -20,13 +20,9 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public string Name => "FoundryLocal";
 
-    public HardwareAccelerator ModelHardwareAccelerator => HardwareAccelerator.FOUNDRYLOCAL;
-
     public string ProviderDescription => "The model will run locally via Foundry Local";
 
     public string UrlPrefix => "fl://";
-
-    public string Icon => $"fl{AppUtils.GetThemeAssetSuffix()}.svg";
 
     public IChatClient? GetIChatClient(string url)
     {

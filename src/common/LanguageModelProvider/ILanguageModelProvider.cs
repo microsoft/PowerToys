@@ -12,10 +12,6 @@ public interface ILanguageModelProvider
 
     string UrlPrefix { get; }
 
-    string Icon { get; }
-
-    HardwareAccelerator ModelHardwareAccelerator { get; }
-
     string ProviderDescription { get; }
 
     Task<IEnumerable<ModelDetails>> GetModelsAsync(bool ignoreCached = false, CancellationToken cancelationToken = default);
