@@ -54,6 +54,7 @@ body:
     - Workspaces
     - Welcome / PowerToys Tour window
     - ZoomIt
+    - Keystroke Overlay
   validations:
     required: true
 - type: input

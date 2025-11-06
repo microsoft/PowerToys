@@ -1033,6 +1033,9 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
+### Keystroke Overlay
+<!-- TODO: Fill out table -->
+
 <!-- back up of table
 
 <table style="width:100%">

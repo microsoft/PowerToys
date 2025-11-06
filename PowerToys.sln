@@ -680,6 +680,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZoomItModuleInterface", "sr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZoomItSettingsInterop", "src\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj", "{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}"
 EndProject
+TODO: keystroke overlay
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.TimeDate", "src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.TimeDate\Microsoft.CmdPal.Ext.TimeDate.csproj", "{DCC6BD67-17BB-47AA-B507-FB0FE43A7449}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITestAutomation", "src\common\UITestAutomation\UITestAutomation.csproj", "{A558C25D-2007-498E-8B6F-43405AFAE9E2}"

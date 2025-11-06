@@ -18,6 +18,7 @@
   <?define RegistryPreviewProjectName="RegistryPreview"?>
   <?define PeekProjectName="Peek"?>
   <?define WorkspacesProjectName="Workspaces"?>
+  <?define KeystrokeOverlayProjectName="KeystrokeOverlay"?>
   
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>

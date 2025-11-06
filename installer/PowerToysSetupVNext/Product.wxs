@@ -61,6 +61,7 @@
       <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
       <ComponentGroupRef Id="NewPlusComponentGroup" />
       <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
+      <ComponentGroupRef Id="KeystrokeOverlayComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="DscResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />

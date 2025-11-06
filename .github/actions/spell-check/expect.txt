@@ -817,6 +817,7 @@ KEYIMAGE
 keynum
 keyremaps
 keyring
+keystrokeoverlay
 keyvault
 KILLFOCUS
 killrunner

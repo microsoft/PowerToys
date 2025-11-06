@@ -198,6 +198,10 @@ Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSS
 Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RegistryPreview\"
 Generate-FileComponents -fileListName "RegistryPreviewAssetsFiles" -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -regroot $registryroot
 
+#KeystrokeOverlay
+Generate-FileList -fileDepsJson "" -fileListName KeystrokeOverlayAssetsFiles -wxsFilePath $PSScriptRoot\KeystrokeOverlay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\KeystrokeOverlay\"
+Generate-FileComponents -fileListName "KeystrokeOverlayAssetsFiles" -wxsFilePath $PSScriptRoot\KeystrokeOverlay.wxs -regroot $registryroot
+
 #Run
 Generate-FileList -fileDepsJson "" -fileListName launcherImagesComponentFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\PowerLauncher"
 Generate-FileComponents -fileListName "launcherImagesComponentFiles" -wxsFilePath $PSScriptRoot\Run.wxs -regroot $registryroot

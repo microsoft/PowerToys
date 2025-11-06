@@ -130,6 +130,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
     <Compile Include="Workspaces.wxs" />
+    <Compile Include="KeystrokeOverlay.wxs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />

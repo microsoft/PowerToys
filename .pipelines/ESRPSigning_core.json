@@ -224,6 +224,9 @@
             "PowerToys.ZoomItModuleInterface.dll",
             "PowerToys.ZoomItSettingsInterop.dll",
 
+            "WinUI3Apps\\PowerToys.KeystrokeOverlay.exe",
+            "WinUI3Apps\\PowerToys.KeystrokeOverlayModuleInterface.dll",
+
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
 
