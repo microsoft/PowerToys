@@ -111,15 +111,14 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
- - **NEW:** The **Cursor Wrap** utility lets your mouse pointer move seamlessly from one edge of the screen to the opposite edge, supporting up to nine monitors.
  - Advanced Paste now supports multiple AI providers instead of being limited to a single OpenAI provider, with a new settings page for easy configuration.
+ - **NEW:** The **Cursor Wrap** utility lets your mouse pointer move seamlessly from one edge of the screen to the opposite edge, supporting up to nine monitors.
  - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
  - Light Switch improvements include an Off mode, better override detection, immediate schedule updates, and the "New" badge has been removed now that the feature is established.
  - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
  - Peek can now be activated from the command line or through a named pipe for integration with scripts and other tools.
  - Mouse Without Borders gained horizontal scrolling support for smoother navigation across devices.
  - Hosts File Editor now lets you configure backup retention settings.
- - Find My Mouse no longer changes the cursor to hourglass or steals focus, and uses a fully transparent overlay.
 
 ### Advanced Paste
  - Advanced Paste now lets you connect to multiple AI providers instead of being limited to a single OpenAI provider. A new settings page makes it easy to add, remove and select AI services when converting clipboard content (e.g., summarizing or translating text). ([#42374](https://github.com/microsoft/PowerToys/pull/42374)). Thanks [@shuaiyuanxx](https://github.com/shuaiyuanxx).
@@ -169,22 +168,16 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Find My Mouse
  - Activating Find My Mouse no longer makes the cursor change to the busy (hourglass) icon or steals focus from your active application. ([#42795](https://github.com/microsoft/PowerToys/pull/42795)). Thanks [@vanzue](https://github.com/vanzue).
- - The spotlight overlay used by Find My Mouse is now fully transparent, preventing it from interfering with the look of your desktop. ([#42865](https://github.com/microsoft/PowerToys/pull/42865)). Thanks [@vanzue](https://github.com/vanzue).
 
 ### Hosts File Editor
  - You can now choose how many backups of the hosts file to keep and how long to keep them, instead of relying on hard-coded backup settings. ([#37778](https://github.com/microsoft/PowerToys/pull/37778)). Thanks [@davidegiacometti](https://github.com/davidegiacometti).
 
-### Image Resizer
- - Shared sparse package identity: internal packaging change for improved consistency without user-visible impact.
-
 ### Light Switch
  - The Light Switch shortcut now works reliably and updates its setting correctly in the UI. ([#42340](https://github.com/microsoft/PowerToys/pull/42340)). Thanks [@shuaiyuanxx](https://github.com/shuaiyuanxx).
- - The Light Switch utility is marked with a "New" badge in the settings dashboard to draw attention to the feature. ([#42351](https://github.com/microsoft/PowerToys/pull/42351)). Thanks [@vanzue](https://github.com/vanzue).
  - Light Switch now includes an **Off** option that disables automatic theme switching while still allowing manual toggles. The module is disabled by default on fresh installs and resets the accent colour when switching back to light mode. It also prevents schedule changes from overriding manual selections and includes several stability fixes. ([#42434](https://github.com/microsoft/PowerToys/pull/42434)). Thanks [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee).
  - When you change your location or switch between schedules (e.g., from sunset/sunrise to specific times), sunrise and sunset times are recalculated immediately and log messages correctly reference dark mode. ([#42774](https://github.com/microsoft/PowerToys/pull/42774)). Thanks [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee).
  - Light Switch treats changes made in Windows Settings as manual overrides. When you change the scheduled time, it now takes effect immediately rather than waiting for the next cycle. ([#42882](https://github.com/microsoft/PowerToys/pull/42882)). Thanks [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee).
  - Manual overrides are now cleared even if the schedule boundary is crossed while you were offline. This prevents the theme from staying incorrectly set. ([#43072](https://github.com/microsoft/PowerToys/pull/43072)). Thanks [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee).
- - Removed the "new" badge from the Light Switch utility now that the feature is established. ([#43300](https://github.com/microsoft/PowerToys/pull/43300)). Thanks [@vanzue](https://github.com/vanzue).
  - The Light Switch internals were refactored for easier maintenance and to ensure consistent state across manual overrides and scheduled changes. There are no significant user-visible changes. ([#43159](https://github.com/microsoft/PowerToys/pull/43159)). Thanks [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee).
 
 ### Mouse Pointer Crosshairs
@@ -207,7 +200,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Added automated UI tests for the Text Extractor. These improvements increase reliability but do not change the user experience. ([#41947](https://github.com/microsoft/PowerToys/pull/41947)). Thanks leileizhang.
 
 ### General improvements and infrastructure
- - Spelling corrections and shortcut control visual tweaks for high-resolution displays.
  - Build and installer updates: migrated to WiX v5, reduced redundant file copies, zipped group policies, updated installer hashes, unified machine/user installer creation.
  - Bug report generator fix: corrected malformed XML tags.
  - Updated PR prompts and Copilot guidance for contributors.
