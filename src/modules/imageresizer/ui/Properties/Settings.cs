@@ -136,9 +136,14 @@ namespace ImageResizer.Properties
                 {
                     return CustomSize;
                 }
-                else
+                else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && SelectedSizeIndex == Sizes.Count + 1)
                 {
                     return AiSize;
+                }
+                else
+                {
+                    // Fallback to CustomSize when index is out of range or AI is not available
+                    return CustomSize;
                 }
             }
 
