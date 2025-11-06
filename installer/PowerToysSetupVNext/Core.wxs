@@ -117,11 +117,6 @@
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="PowerToysStartMenuShortcut" />
       <ComponentRef Id="powertoys_per_machine_comp" />
-  <?if $(var.PerUser) = "true" ?>
-  <ComponentRef Id="powertoys_env_path_user" />
-  <?else?>
-  <ComponentRef Id="powertoys_env_path_machine" />
-  <?endif?>
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />

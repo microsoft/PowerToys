@@ -2695,12 +2695,47 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
+  </data>	
+
+  <!-- CursorWrap Module -->
+  <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
+    <value>Enable CursorWrap</value>
   </data>
+  <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
+    <value>CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
+    <value>Wrap the mouse cursor between monitor edges</value>
+  </data>
+	
+  <!-- Activation Shortcut -->
+  <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Description.Text" xml:space="preserve">
+    <value>Hotkey to toggle cursor wrapping on/off</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
+    <value>Set shortcut</value>
+  </data>
+	
+  <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
+    <value>Disable wrapping while dragging</value>
+  </data>	
+
+  <!-- Auto-activate -->
+  <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
+    <value>Auto-activate on startup</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>	
+	
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
@@ -2999,7 +3034,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
     <value>Crosshairs orientation</value>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
@@ -4462,6 +4497,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Home</value>
   </data>
+  <data name="Dashboard_SortBy_ToolTip.Text" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
+  <data name="Dashboard_SortAlphabetical.Text" xml:space="preserve">
+    <value>Alphabetically</value>
+  </data>
+  <data name="Dashboard_SortByStatus.Text" xml:space="preserve">
+    <value>By status</value>
+  </data>
+  <data name="Dashboard_SortBy.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
   </data>
@@ -4770,7 +4817,7 @@ Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or s
   </data>
   <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
     <value>Smooth zoomed image</value>
-  </data>  
+  </data>
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
     <value>Specify the initial level of magnification when zooming in</value>
   </data>
@@ -5598,5 +5645,49 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
+  </data>
+  <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Hosts_Backup.Header" xml:space="preserve">
+    <value>Backup hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup.Description" xml:space="preserve">
+    <value>Automatically create a backup of the hosts file when you save for the first time in a session</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup_Location.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="Hosts_Delete_Backup.Header" xml:space="preserve">
+    <value>Automatically delete backups</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Header" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Description" xml:space="preserve">
+    <value>Set the number of backups to keep. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Description" xml:space="preserve">
+    <value>Set the number of days to keep backups. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_CountBased.Content" xml:space="preserve">
+    <value>Based on count</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_AgeAndCountBased.Content" xml:space="preserve">
+    <value>Based on age and count</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Age_Description" xml:space="preserve">
+    <value>Set an optional number of backups to always keep despite their age</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Header" xml:space="preserve">
+    <value>Backup count</value>
   </data>
 </root>

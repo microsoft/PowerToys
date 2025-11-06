@@ -70,7 +70,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to On all Desktops.
+        ///   Looks up a localized string similar to On all desktops.
         /// </summary>
         public static string VirtualDesktopHelper_AllDesktops {
             get {
@@ -196,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not Responding.
+        ///   Looks up a localized string similar to Not responding.
         /// </summary>
         public static string windowwalker_NotResponding {
             get {

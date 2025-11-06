@@ -273,6 +273,44 @@
 
                 <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
+                <controls:SettingsGroup x:Uid="MouseUtils_CursorWrap" AutomationProperties.AutomationId="MouseUtils_CursorWrapTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableCursorWrap"
+                            x:Uid="MouseUtils_Enable_CursorWrap"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorWrap.png}"
+                            IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorWrapSettingsExpander"
+                        x:Uid="MouseUtils_CursorWrap_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.CursorWrapActivationShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.CursorWrapAutoActivate, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="CursorWrapAppearanceBehavior"
+                        x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_CursorWrapAppearanceBehaviorId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}"
+                        IsExpanded="False">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_CursorWrap_DisableWrapDuringDrag" IsChecked="{x:Bind ViewModel.CursorWrapDisableWrapDuringDrag, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
@@ -285,7 +323,6 @@
                                 IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
-
                     <tkcontrols:SettingsExpander
                         Name="MouseUtilsMousePointerCrosshairsActivationShortcut"
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"

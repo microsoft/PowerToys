@@ -35,6 +35,31 @@ namespace
         ensure_ignored_conflict_properties_shape(obj);
         return obj;
     }
+
+    DashboardSortOrder parse_dashboard_sort_order(const json::JsonObject& obj, DashboardSortOrder fallback)
+    {
+        if (json::has(obj, L"dashboard_sort_order", json::JsonValueType::Number))
+        {
+            const auto raw_value = static_cast<int>(obj.GetNamedNumber(L"dashboard_sort_order", static_cast<double>(static_cast<int>(fallback))));
+            return raw_value == static_cast<int>(DashboardSortOrder::ByStatus) ? DashboardSortOrder::ByStatus : DashboardSortOrder::Alphabetical;
+        }
+
+        if (json::has(obj, L"dashboard_sort_order", json::JsonValueType::String))
+        {
+            const auto raw = obj.GetNamedString(L"dashboard_sort_order");
+            if (raw == L"ByStatus")
+            {
+                return DashboardSortOrder::ByStatus;
+            }
+
+            if (raw == L"Alphabetical")
+            {
+                return DashboardSortOrder::Alphabetical;
+            }
+        }
+
+        return fallback;
+    }
 }
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
@@ -46,6 +71,7 @@ static bool download_updates_automatically = true;
 static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
 static bool enable_warnings_elevated_apps = true;
+static DashboardSortOrder dashboard_sort_order = DashboardSortOrder::Alphabetical;
 static json::JsonObject ignored_conflict_properties = create_default_ignored_conflict_properties();
 
 json::JsonObject GeneralSettings::to_json()
@@ -75,6 +101,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
     result.SetNamedValue(L"show_whats_new_after_updates", json::value(showWhatsNewAfterUpdates));
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
+    result.SetNamedValue(L"dashboard_sort_order", json::value(static_cast<int>(dashboardSortOrder)));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"enable_warnings_elevated_apps", json::value(enableWarningsElevatedApps));
     result.SetNamedValue(L"theme", json::value(theme));
@@ -99,6 +126,7 @@ json::JsonObject load_general_settings()
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+    dashboard_sort_order = parse_dashboard_sort_order(loaded, dashboard_sort_order);
 
     if (json::has(loaded, L"ignored_conflict_properties", json::JsonValueType::Object))
     {
@@ -128,6 +156,7 @@ GeneralSettings get_general_settings()
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .showWhatsNewAfterUpdates = show_whats_new_after_updates,
         .enableExperimentation = enable_experimentation,
+    .dashboardSortOrder = dashboard_sort_order,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version(),
@@ -159,6 +188,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     show_whats_new_after_updates = general_configs.GetNamedBoolean(L"show_whats_new_after_updates", true);
 
     enable_experimentation = general_configs.GetNamedBoolean(L"enable_experimentation", true);
+    dashboard_sort_order = parse_dashboard_sort_order(general_configs, dashboard_sort_order);
 
     // apply_general_settings is called by the runner's WinMain, so we can just force the run at startup gpo rule here.
     auto gpo_run_as_startup = powertoys_gpo::getConfiguredRunAtStartupValue();

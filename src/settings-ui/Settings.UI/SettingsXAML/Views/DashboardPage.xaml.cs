@@ -66,5 +66,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             App.GetOobeWindow().Activate();
         }
+
+        private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
+        }
+
+        private void SortByStatus_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
+        }
     }
 }
