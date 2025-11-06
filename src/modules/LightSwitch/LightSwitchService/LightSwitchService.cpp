@@ -11,7 +11,7 @@
 #include <logger/logger_settings.h>
 #include <logger/logger.h>
 #include <utils/logger_helper.h>
-#include <LightSwitchModuleInterface/RegistryObserver.h>
+#include <RegistryObserver.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;

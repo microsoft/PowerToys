@@ -263,7 +263,7 @@ void LightSwitchSettings::ApplyThemeIfNecessary()
     if (m_settings.scheduleMode == ScheduleMode::FollowNightLight)
     {
         bool nightLightOn = IsNightLightEnabled();
-        shouldBeLight = !nightLightOn; // night light on means use dark theme
+        shouldBeLight = !nightLightOn; // night light on = use dark theme; night light off = use light theme
     }
     else if (m_settings.lightTime < m_settings.darkTime)
     {

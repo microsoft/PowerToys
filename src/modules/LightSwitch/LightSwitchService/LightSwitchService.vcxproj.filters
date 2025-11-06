@@ -33,7 +33,7 @@
     <ClCompile Include="WinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LightSwitchModuleInterface\RegistryObserver.cpp">
+    <ClCompile Include="RegistryObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="WinHookEventIDs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LightSwitchModuleInterface\RegistryObserver.h">
+    <ClInclude Include="RegistryObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

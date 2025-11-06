@@ -173,7 +173,7 @@ public:
             { { L"Off", L"Disable the schedule" },
               { L"FixedHours", L"Set hours manually" },
               { L"SunsetToSunrise", L"Use sunrise/sunset times" },
-              { L"FollowNightLight", L"Use night light times" }
+              { L"FollowNightLight", L"Follow Windows Night Light state" }
           });
 
         // Integer spinners
