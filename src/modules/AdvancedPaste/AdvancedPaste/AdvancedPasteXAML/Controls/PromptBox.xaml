@@ -542,7 +542,10 @@
                             Source="{x:Bind ViewModel.ActiveAIProvider?.ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}" />
                     </DropDownButton.Content>
                     <DropDownButton.Flyout>
-                        <Flyout Placement="Bottom" ShouldConstrainToRootBounds="False" Opened="AIProviderFlyout_Opened">
+                        <Flyout
+                            Opened="AIProviderFlyout_Opened"
+                            Placement="Bottom"
+                            ShouldConstrainToRootBounds="False">
                             <Grid
                                 Width="386"
                                 Margin="-4"
