@@ -349,7 +349,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time and Date.
+        ///   Looks up a localized string similar to Time and date.
         /// </summary>
         public static string Microsoft_plugin_timedate_main_page_title {
             get {
@@ -448,7 +448,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides time and date values in different formats.
+        ///   Looks up a localized string similar to Show time and date values in different formats.
         /// </summary>
         public static string Microsoft_plugin_timedate_plugin_description {
             get {
@@ -484,7 +484,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time and Date.
+        ///   Looks up a localized string similar to Time and date.
         /// </summary>
         public static string Microsoft_plugin_timedate_plugin_name {
             get {
@@ -498,15 +498,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_Rfc1123 {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Rfc1123", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to "for; and; nor; but; or; so".
-        /// </summary>
-        public static string Microsoft_plugin_timedate_Search_ConjunctionList {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_Search_ConjunctionList", resourceCulture);
             }
         }
         

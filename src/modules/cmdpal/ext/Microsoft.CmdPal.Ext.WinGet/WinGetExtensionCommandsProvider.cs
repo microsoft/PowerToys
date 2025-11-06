@@ -27,7 +27,6 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
             new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
          {
             Title = Properties.Resources.winget_install_extensions_title,
-            Subtitle = Properties.Resources.winget_install_extensions_subtitle,
          },
 
         new ListItem(

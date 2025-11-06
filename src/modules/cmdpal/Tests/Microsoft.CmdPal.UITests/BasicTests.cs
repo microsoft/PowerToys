@@ -49,8 +49,8 @@ public class BasicTests : CommandPaletteTestBase
     {
         SetSearchBox("time and date");
 
-        var searchFileItem = this.Find<NavigationViewItem>("Time and Date");
-        Assert.AreEqual(searchFileItem.Name, "Time and Date");
+        var searchFileItem = this.Find<NavigationViewItem>("Time and date");
+        Assert.AreEqual(searchFileItem.Name, "Time and date");
         searchFileItem.DoubleClick();
 
         SetTimeAndDaterExtensionSearchBox("year");
@@ -63,8 +63,8 @@ public class BasicTests : CommandPaletteTestBase
     {
         SetSearchBox("Windows Terminal");
 
-        var searchFileItem = this.Find<NavigationViewItem>("Open Windows Terminal Profiles");
-        Assert.AreEqual(searchFileItem.Name, "Open Windows Terminal Profiles");
+        var searchFileItem = this.Find<NavigationViewItem>("Open Windows Terminal profiles");
+        Assert.AreEqual(searchFileItem.Name, "Open Windows Terminal profiles");
         searchFileItem.DoubleClick();
 
         // SetSearchBox("PowerShell");
@@ -74,10 +74,10 @@ public class BasicTests : CommandPaletteTestBase
     [TestMethod]
     public void BasicWindowsSettingsTest()
     {
-        SetSearchBox("Windows Settings");
+        SetSearchBox("Windows settings");
 
-        var searchFileItem = this.Find<NavigationViewItem>("Windows Settings");
-        Assert.AreEqual(searchFileItem.Name, "Windows Settings");
+        var searchFileItem = this.Find<NavigationViewItem>("Windows settings");
+        Assert.AreEqual(searchFileItem.Name, "Windows settings");
         searchFileItem.DoubleClick();
 
         SetSearchBox("power");
