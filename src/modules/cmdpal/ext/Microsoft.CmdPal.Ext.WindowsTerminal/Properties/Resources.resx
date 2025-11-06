@@ -156,7 +156,7 @@
     <value>Settings</value>
   </data>
   <data name="list_item_title" xml:space="preserve">
-    <value>Open Windows Terminal Profiles</value>
+    <value>Open Windows Terminal profiles</value>
   </data>
   <data name="preferred_channel" xml:space="preserve">
     <value>Preferred channel</value>

@@ -97,7 +97,7 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Windows Terminal Profiles.
+        ///   Looks up a localized string similar to Open Windows Terminal profiles.
         /// </summary>
         internal static string list_item_title {
             get {
