@@ -92,6 +92,7 @@
     <ClInclude Include="..\NewShellExtensionContextMenu\template_folder.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\template_item.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\trace.h" />
+    <ClInclude Include="..\NewShellExtensionContextMenu\Helpers.h" />
     <ClInclude Include="dll_main.h" />
     <ClInclude Include="Generated Files\resource.h" />
     <ClInclude Include="pch.h" />
@@ -99,7 +100,7 @@
     <ClInclude Include="shell_context_menu_win10.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp" />
+    <ClCompile Include="..\NewShellExtensionContextMenu\Helpers.cpp" />
     <ClCompile Include="..\NewShellExtensionContextMenu\new_utilities.cpp" />
     <ClCompile Include="..\NewShellExtensionContextMenu\powertoys_module.cpp" />
     <ClCompile Include="..\NewShellExtensionContextMenu\settings.cpp" />

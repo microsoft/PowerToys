@@ -35,7 +35,7 @@
                         AutomationProperties.HelpText="{x:Bind Name, Mode=OneWay}"
                         AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneWay}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="26" />
+                            <ColumnDefinition Width="48" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -52,6 +52,7 @@
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             x:Phase="1"
+                            Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind Name, Mode=OneWay}" />
                         <TextBlock
                             Grid.Column="2"
@@ -74,7 +75,7 @@
                         AutomationProperties.AccessibilityView="Raw"
                         Opacity="0.5">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="26" />
+                            <ColumnDefinition Width="48" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -87,6 +88,7 @@
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             x:Phase="1"
+                            Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind Name, Mode=OneWay}" />
                     </Grid>
                 </DataTemplate>
@@ -143,68 +145,159 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <Grid
+            Margin="8,0,8,16"
+            Padding="4"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="20"
+            Visibility="{x:Bind ViewModel.ClipboardHasData, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <controls:ClipboardHistoryItemPreviewControl Height="48" ClipboardItem="{x:Bind ViewModel.CurrentClipboardItem, Mode=OneWay}" />
+            <Button
+                x:Uid="ClipboardHistoryButton"
+                Grid.Column="1"
+                Margin="0,0,4,0"
+                VerticalAlignment="Center"
+                IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
+                Style="{StaticResource SubtleButtonStyle}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="ClipboardHistoryButtonToolTip" />
+                </ToolTipService.ToolTip>
+                <FontIcon
+                    Margin="0,0,0,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="16"
+                    Glyph="&#xE81C;" />
+                <Button.Flyout>
+                    <Flyout
+                        FlyoutPresenterStyle="{StaticResource PaddingLessFlyoutPresenterStyle}"
+                        Placement="Right"
+                        ShouldConstrainToRootBounds="False">
+                        <ItemsView
+                            Width="320"
+                            Margin="8,8,8,0"
+                            IsItemInvokedEnabled="True"
+                            ItemInvoked="ClipboardHistory_ItemInvoked"
+                            ItemsSource="{x:Bind clipboardHistory, Mode=OneWay}"
+                            SelectionMode="None">
+                            <ItemsView.Layout>
+                                <StackLayout Orientation="Vertical" Spacing="8" />
+                            </ItemsView.Layout>
+                            <ItemsView.Transitions />
+                            <ItemsView.ItemTemplate>
+                                <DataTemplate x:DataType="local:ClipboardItem">
+                                    <ItemContainer
+                                        AutomationProperties.Name="{x:Bind Description, Mode=OneWay}"
+                                        CornerRadius="16"
+                                        ToolTipService.ToolTip="{x:Bind Content}">
+                                        <Grid
+                                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            ColumnSpacing="8"
+                                            CornerRadius="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" MaxWidth="240" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <controls:ClipboardHistoryItemPreviewControl
+                                                Height="64"
+                                                x:Phase="0"
+                                                ClipboardItem="{x:Bind}" />
+                                            <Button
+                                                x:Name="ClipboardHistoryItemMoreOptionsButton"
+                                                x:Uid="ClipboardHistoryItemMoreOptionsButton"
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+                                                <Button.Content>
+                                                    <FontIcon FontSize="16" Glyph="&#xe712;" />
+                                                </Button.Content>
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                            x:Uid="ClipboardHistoryItemDeleteButton"
+                                                            Click="ClipboardHistoryItemDeleteButton_Click"
+                                                            CommandParameter="{x:Bind (local:ClipboardItem)}"
+                                                            Icon="Delete" />
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </Grid>
+                                    </ItemContainer>
+                                </DataTemplate>
+                            </ItemsView.ItemTemplate>
+                        </ItemsView>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
         <controls:PromptBox
             x:Name="CustomFormatTextBox"
             x:Uid="CustomFormatTextBox"
-            Margin="8,4,8,0"
+            Grid.Row="1"
+            Margin="20,0,20,0"
             x:FieldModifier="public"
+            IsEnabled="{x:Bind ViewModel.IsCustomAIServiceEnabled, Mode=OneWay}"
             TabIndex="0">
             <controls:PromptBox.Footer>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
+                        x:Uid="AIMistakeNote"
                         Margin="0,0,2,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Run x:Uid="AIMistakeNote" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </TextBlock>
-                    <TextBlock
-                        Margin="4,0,2,0"
-                        HorizontalAlignment="Left"
+                        FontSize="10"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button
+                        Padding="0"
                         VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Hyperlink
-                            x:Name="TermsHyperlink"
-                            NavigateUri="https://openai.com/policies/terms-of-use"
-                            TabIndex="3">
-                            <Run x:Uid="TermsLink" />
-                        </Hyperlink>
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="https://openai.com/policies/terms-of-use" />
-                        </ToolTipService.ToolTip>
-                    </TextBlock>
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        ToolTipService.ToolTip="">
-                        <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
-                    </TextBlock>
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
-                            <Run x:Uid="PrivacyLink" />
-                        </Hyperlink>
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="https://openai.com/policies/privacy-policy" />
-                        </ToolTipService.ToolTip>
-                    </TextBlock>
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <FontIcon FontSize="12" Glyph="&#xE946;" />
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Spacing="8">
+                                    <TextBlock TextWrapping="Wrap">
+                                        <Run x:Uid="AIMistakeNote" /><LineBreak /><Run
+                                            FontSize="12"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="You are using a custom endpoint. Verify all answers." />
+                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <HyperlinkButton
+                                            x:Name="TermsHyperlink"
+                                            x:Uid="TermsLink"
+                                            Padding="0"
+                                            FontSize="12"
+                                            NavigateUri="{x:Bind ViewModel.TermsLinkUri, Mode=OneWay}"
+                                            Visibility="{x:Bind ViewModel.HasTermsLink, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <HyperlinkButton
+                                            x:Name="PrivacyHyperLink"
+                                            x:Uid="PrivacyLink"
+                                            Padding="0"
+                                            FontSize="12"
+                                            NavigateUri="{x:Bind ViewModel.PrivacyLinkUri, Mode=OneWay}"
+                                            Visibility="{x:Bind ViewModel.HasPrivacyLink, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>
-        <Grid
-            Grid.Row="2"
-            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0"
-            RowSpacing="4">
+        <Grid Grid.Row="2" RowSpacing="4">
             <Grid.RowDefinitions>
                 <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
                 <RowDefinition Height="Auto" />
@@ -225,7 +318,6 @@
                 ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
                 TabIndex="1" />
-
             <Rectangle
                 Grid.Row="1"
                 Height="1"
@@ -246,117 +338,6 @@
                 ScrollViewer.VerticalScrollMode="Auto"
                 SelectionMode="None"
                 TabIndex="2" />
-
-            <Rectangle
-                Grid.Row="3"
-                Height="1"
-                HorizontalAlignment="Stretch"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-            <Button
-                Grid.Row="4"
-                Height="32"
-                Margin="4,0,4,4"
-                Padding="{StaticResource ButtonPadding}"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                VerticalContentAlignment="Stretch"
-                AutomationProperties.LabeledBy="{x:Bind ClipboardHistoryButton}"
-                IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
-                Style="{StaticResource SubtleButtonStyle}">
-                <Grid
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <FontIcon
-                        Margin="0,0,0,0"
-                        VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontSize="16"
-                        Glyph="&#xE81C;" />
-                    <TextBlock
-                        x:Name="ClipboardHistoryButton"
-                        x:Uid="ClipboardHistoryButton"
-                        Grid.Column="1"
-                        VerticalAlignment="Center" />
-                    <FontIcon
-                        Grid.Column="2"
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Glyph="&#xE974;" />
-                </Grid>
-                <Button.Flyout>
-                    <Flyout
-                        FlyoutPresenterStyle="{StaticResource PaddingLessFlyoutPresenterStyle}"
-                        Placement="Right"
-                        ShouldConstrainToRootBounds="False">
-
-                        <ListView
-                            Width="320"
-                            IsItemClickEnabled="True"
-                            ItemClick="ClipboardHistory_ItemClick"
-                            ItemsSource="{x:Bind clipboardHistory, Mode=OneWay}"
-                            SelectionMode="None">
-                            <ListView.Transitions />
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="local:ClipboardItem">
-                                    <Grid
-                                        Height="40"
-                                        HorizontalAlignment="Stretch"
-                                        AutomationProperties.Name="{x:Bind Description, Mode=OneWay}"
-                                        ColumnSpacing="8"
-                                        ToolTipService.ToolTip="{x:Bind Content}">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" MaxWidth="240" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Image
-                                            Grid.Column="0"
-                                            HorizontalAlignment="Left"
-                                            x:Phase="2"
-                                            Source="{x:Bind Image}"
-                                            Visibility="Visible" />
-                                        <TextBlock
-                                            Grid.Column="0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Center"
-                                            x:Phase="1"
-                                            Text="{x:Bind Content}"
-                                            TextTrimming="CharacterEllipsis"
-                                            Visibility="Visible" />
-                                        <Button
-                                            x:Name="ClipboardHistoryItemMoreOptionsButton"
-                                            x:Uid="ClipboardHistoryItemMoreOptionsButton"
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Style="{StaticResource SubtleButtonStyle}">
-                                            <Button.Content>
-                                                <FontIcon FontSize="16" Glyph="&#xe712;" />
-                                            </Button.Content>
-                                            <Button.Flyout>
-                                                <MenuFlyout>
-                                                    <MenuFlyoutItem
-                                                        x:Uid="ClipboardHistoryItemDeleteButton"
-                                                        Click="ClipboardHistoryItemDeleteButton_Click"
-                                                        CommandParameter="{x:Bind (local:ClipboardItem)}"
-                                                        Icon="Delete" />
-                                                </MenuFlyout>
-                                            </Button.Flyout>
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
-
         </Grid>
     </Grid>
 </Page>
