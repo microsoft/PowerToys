@@ -275,6 +275,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                     []() {
                         bool nightLightOn = IsNightLightEnabled();
                         Logger::info(L"[LightSwitchService] Night Light state changed -> {}", nightLightOn ? L"ON" : L"OFF");
+                        LightSwitchSettings::instance().LoadSettings();
                         LightSwitchSettings::instance().ApplyThemeIfNecessary();
                     });
 
