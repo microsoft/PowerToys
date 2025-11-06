@@ -41,7 +41,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             // Assert
             Assert.IsNotNull(provider);
             Assert.IsNotNull(provider.DisplayName);
-            Assert.AreEqual("DateTime", provider.Id);
+            Assert.AreEqual("com.microsoft.cmdpal.builtin.datetime", provider.Id);
             Assert.IsNotNull(provider.Icon);
             Assert.IsNotNull(provider.Settings);
         }
