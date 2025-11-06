@@ -193,8 +193,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
             if (isPage)
             {
-                // TODO! stick the logic here to find the right place to open
-                // the window
                 WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
             }
 

@@ -76,6 +76,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         this.InitializeComponent();
 
+        _dockWindow = new DockWindow();
+
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
@@ -103,7 +105,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
 
-        _dockWindow = new DockWindow();
         _dockWindow.Show();
     }
 

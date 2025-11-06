@@ -6,8 +6,10 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -24,6 +26,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
+    private readonly DockViewModel? _dockViewModel;
 
     private readonly string _commandProviderId;
 
@@ -62,22 +65,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
 
-    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands
-                                                    .Select(item =>
-                                                    {
-                                                        if (item is ISeparatorContextItem)
-                                                        {
-                                                            return item as IContextItem;
-                                                        }
-                                                        else if (item is CommandContextItemViewModel commandItem)
-                                                        {
-                                                            return commandItem.Model.Unsafe;
-                                                        }
-                                                        else
-                                                        {
-                                                            return null;
-                                                        }
-                                                    }).ToArray();
+    IContextItem?[] ICommandItem.MoreCommands => BuildContextMenu();
 
     ////// IListItem
     ITag[] IListItem.Tags => Tags.ToArray();
@@ -190,9 +178,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         item.PropertyChanged += Item_PropertyChanged;
 
-        // UpdateAlias();
-        // UpdateHotkey();
-        // UpdateTags();
+        _dockViewModel = serviceProvider.GetService<DockViewModel>();
     }
 
     internal void InitializeProperties()
@@ -393,5 +379,48 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     public override string ToString()
     {
         return $"{nameof(TopLevelViewModel)}: {Id} ({Title}) - display: {DisplayTitle} - fallback: {IsFallback} - enabled: {IsEnabled}";
+    }
+
+    private IContextItem?[] BuildContextMenu()
+    {
+        List<IContextItem?> contextItems = new();
+
+        foreach (var item in _commandItemViewModel.MoreCommands)
+        {
+            if (item is ISeparatorContextItem)
+            {
+                contextItems.Add(item as IContextItem);
+            }
+            else if (item is CommandContextItemViewModel commandItem)
+            {
+                contextItems.Add(commandItem.Model.Unsafe);
+            }
+        }
+
+        if (_dockViewModel is not null)
+        {
+            // Add a separator
+            contextItems.Add(new Separator());
+
+            // Now we need to add the dock commands.
+            // these are implemented by asking the dock VM, to
+            // * create a new band command item in the builtins
+            // * assigning this command's ID into that command
+            // * then adding _that_ command (from the builtins) to the dock settings model
+        }
+
+        return contextItems.ToArray();
+    }
+
+    internal ICommandItem ToDockBandItem(bool showLabels)
+    {
+        var item = new WrappedDockItem(this);
+
+        // if (!showLabels)
+        // {
+        //     item.Title = string.Empty;
+        //     item.Subtitle = string.Empty;
+        // }
+        return item;
     }
 }
