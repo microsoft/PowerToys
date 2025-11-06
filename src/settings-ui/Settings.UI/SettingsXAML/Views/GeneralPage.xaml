@@ -438,7 +438,10 @@
                             AutomationProperties.Name="{Binding ElementName=GeneralPageEnableDataDiagnostics, Path=Header}"
                             IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Name="GeneralPageEnableViewDiagnosticData" x:Uid="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
+                            <tkcontrols:SettingsCard
+                                x:Name="GeneralPageEnableViewDiagnosticData"
+                                x:Uid="GeneralPage_EnableViewDiagnosticData"
+                                IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
                                 <ToggleSwitch
                                     x:Uid="ToggleSwitch"
                                     AutomationProperties.Name="{Binding ElementName=GeneralPageEnableViewDiagnosticData, Path=Header}"
