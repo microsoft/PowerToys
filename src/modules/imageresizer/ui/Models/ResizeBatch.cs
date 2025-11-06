@@ -89,6 +89,10 @@ namespace ImageResizer.Models
             double total = Files.Count;
             int completed = 0;
             var errors = new ConcurrentBag<ResizeError>();
+
+            // NOTE: Settings.Default is captured once before parallel processing.
+            // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
+            // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
             var settings = Settings.Default;
 
             // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
