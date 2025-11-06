@@ -9,6 +9,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.UITest
@@ -34,53 +36,60 @@ namespace Microsoft.PowerToys.UITest
 
             try
             {
-                string localAppData = Helper.LocalApplicationDataFolder();
-                string globalSettingsPath = Path.Combine(localAppData, "Microsoft", "PowerToys", "settings.json");
+                var settingsUtils = new SettingsUtils();
 
-                if (!File.Exists(globalSettingsPath))
+                // Get settings or create default if they don't exist
+                GeneralSettings settings;
+                try
                 {
-                    throw new InvalidOperationException($"Global settings file not found at {globalSettingsPath}");
+                    settings = settingsUtils.GetSettingsOrDefault<GeneralSettings>();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to load settings, creating defaults: {ex.Message}");
+                    settings = new GeneralSettings();
                 }
 
-                string globalSettingsJson = File.ReadAllText(globalSettingsPath);
-                using var doc = JsonDocument.Parse(globalSettingsJson);
-                var root = doc.RootElement;
+                // Convert settings to JSON string
+                string settingsJson = settings.ToJsonString();
 
-                // Create a dictionary to hold the modified settings
-                var modifiedSettings = new Dictionary<string, object>();
-
-                // Copy all existing properties
-                foreach (var property in root.EnumerateObject())
+                // Deserialize to JsonDocument to manipulate the Enabled modules
+                using (JsonDocument doc = JsonDocument.Parse(settingsJson))
                 {
-                    if (property.Name == "enabled")
+                    var options = new JsonSerializerOptions { WriteIndented = true };
+                    var root = doc.RootElement.Clone();
+
+                    // Get the enabled modules object
+                    if (root.TryGetProperty("enabled", out var enabledElement))
                     {
-                        // Modify the enabled property to enable only specified modules
+                        // Create a dictionary of module properties with their enable states
                         var enabledModules = new Dictionary<string, bool>();
-                        foreach (var module in property.Value.EnumerateObject())
+
+                        // Iterate through all properties in the enabled object
+                        foreach (var property in enabledElement.EnumerateObject())
                         {
-                            // Set module to true if in modulesToEnable array, otherwise false
-                            enabledModules[module.Name] = modulesToEnable.Contains(module.Name, StringComparer.OrdinalIgnoreCase);
+                            string moduleName = property.Name;
+
+                            // Check if this module should be enabled
+                            bool shouldEnable = Array.Exists(modulesToEnable, m => string.Equals(m, moduleName, StringComparison.Ordinal));
+                            enabledModules[moduleName] = shouldEnable;
                         }
 
-                        modifiedSettings[property.Name] = enabledModules;
-                    }
-                    else
-                    {
-                        // Copy other properties as-is
-                        object? deserializedValue = JsonSerializer.Deserialize<object>(property.Value.GetRawText());
-                        if (deserializedValue != null)
+                        // Rebuild the settings with updated enabled modules
+                        var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(settingsJson);
+                        if (settingsDict != null)
                         {
-                            modifiedSettings[property.Name] = deserializedValue;
+                            settingsDict["enabled"] = enabledModules;
+                            settingsJson = JsonSerializer.Serialize(settingsDict, IndentedJsonOptions);
                         }
                     }
                 }
 
-                // Serialize and save the modified settings
-                string modifiedJson = JsonSerializer.Serialize(modifiedSettings, IndentedJsonOptions);
-                File.WriteAllText(globalSettingsPath, modifiedJson);
+                // Save the modified settings
+                settingsUtils.SaveSettings(settingsJson);
 
                 string enabledList = modulesToEnable.Length > 0 ? string.Join(", ", modulesToEnable) : "none";
-                Debug.WriteLine($"Successfully updated global settings at {globalSettingsPath}");
+                Debug.WriteLine($"Successfully updated global settings");
                 Debug.WriteLine($"Enabled modules: {enabledList}");
             }
             catch (Exception ex)
