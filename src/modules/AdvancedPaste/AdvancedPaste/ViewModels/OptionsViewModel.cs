@@ -71,6 +71,11 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
         [NotifyPropertyChangedFor(nameof(AllowedAIProviders))]
         [NotifyPropertyChangedFor(nameof(ActiveAIProvider))]
+        [NotifyPropertyChangedFor(nameof(ActiveAIProviderTooltip))]
+        [NotifyPropertyChangedFor(nameof(TermsLinkUri))]
+        [NotifyPropertyChangedFor(nameof(PrivacyLinkUri))]
+        [NotifyPropertyChangedFor(nameof(HasTermsLink))]
+        [NotifyPropertyChangedFor(nameof(HasPrivacyLink))]
         private bool _isAllowedByGPO;
 
         [ObservableProperty]
@@ -187,6 +192,35 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
+        private AIServiceTypeMetadata GetActiveProviderMetadata()
+        {
+            var provider = ActiveAIProvider ?? AllowedAIProviders.FirstOrDefault();
+            var serviceType = provider?.ServiceTypeKind ?? AIServiceType.OpenAI;
+            return AIServiceTypeRegistry.GetMetadata(serviceType);
+        }
+
+        public Uri TermsLinkUri
+        {
+            get
+            {
+                var metadata = GetActiveProviderMetadata();
+                return metadata.HasTermsLink ? metadata.TermsUri : null;
+            }
+        }
+
+        public Uri PrivacyLinkUri
+        {
+            get
+            {
+                var metadata = GetActiveProviderMetadata();
+                return metadata.HasPrivacyLink ? metadata.PrivacyUri : null;
+            }
+        }
+
+        public bool HasTermsLink => GetActiveProviderMetadata().HasTermsLink;
+
+        public bool HasPrivacyLink => GetActiveProviderMetadata().HasPrivacyLink;
+
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
@@ -276,8 +310,6 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(AllowedAIProviders));
-            OnPropertyChanged(nameof(ActiveAIProvider));
-            OnPropertyChanged(nameof(ActiveAIProviderTooltip));
 
             EnqueueRefreshPasteFormats();
         }
@@ -316,8 +348,17 @@ namespace AdvancedPaste.ViewModels
                 }
             }
 
+            NotifyActiveProviderChanged();
+        }
+
+        private void NotifyActiveProviderChanged()
+        {
             OnPropertyChanged(nameof(ActiveAIProvider));
             OnPropertyChanged(nameof(ActiveAIProviderTooltip));
+            OnPropertyChanged(nameof(TermsLinkUri));
+            OnPropertyChanged(nameof(PrivacyLinkUri));
+            OnPropertyChanged(nameof(HasTermsLink));
+            OnPropertyChanged(nameof(HasPrivacyLink));
         }
 
         private void RefreshPasteFormats()

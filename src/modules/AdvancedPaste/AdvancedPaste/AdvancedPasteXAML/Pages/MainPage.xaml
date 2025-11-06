@@ -280,13 +280,15 @@
                                             x:Uid="TermsLink"
                                             Padding="0"
                                             FontSize="12"
-                                            NavigateUri="https://openai.com/policies/terms-of-use" />
+                                            NavigateUri="{x:Bind ViewModel.TermsLinkUri, Mode=OneWay}"
+                                            Visibility="{x:Bind ViewModel.HasTermsLink, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                         <HyperlinkButton
                                             x:Name="PrivacyHyperLink"
                                             x:Uid="PrivacyLink"
                                             Padding="0"
                                             FontSize="12"
-                                            NavigateUri="https://openai.com/policies/privacy-policy" />
+                                            NavigateUri="{x:Bind ViewModel.PrivacyLinkUri, Mode=OneWay}"
+                                            Visibility="{x:Bind ViewModel.HasPrivacyLink, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
                                 </StackPanel>
                             </Flyout>

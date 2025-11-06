@@ -36,9 +36,9 @@ public static class AIServiceTypeRegistry
             IsOnlineService = true,
             LegalDescription = "AdvancedPaste_Anthropic_LegalDescription",
             TermsLabel = "AdvancedPaste_Anthropic_TermsLabel",
-            TermsUri = new Uri("https://www.anthropic.com/legal/terms-of-service"),
+            TermsUri = new Uri("https://privacy.claude.com/en/collections/10672567-policies-terms-of-service"),
             PrivacyLabel = "AdvancedPaste_Anthropic_PrivacyLabel",
-            PrivacyUri = new Uri("https://www.anthropic.com/legal/privacy"),
+            PrivacyUri = new Uri("https://privacy.claude.com/en/"),
         },
         [AIServiceType.AzureAIInference] = new AIServiceTypeMetadata
         {
@@ -81,9 +81,9 @@ public static class AIServiceTypeRegistry
             IsOnlineService = true,
             LegalDescription = "AdvancedPaste_Google_LegalDescription",
             TermsLabel = "AdvancedPaste_Google_TermsLabel",
-            TermsUri = new Uri("https://policies.google.com/terms"),
+            TermsUri = new Uri("https://ai.google.dev/gemini-api/terms"),
             PrivacyLabel = "AdvancedPaste_Google_PrivacyLabel",
-            PrivacyUri = new Uri("https://policies.google.com/privacy"),
+            PrivacyUri = new Uri("https://support.google.com/gemini/answer/13594961"),
         },
         [AIServiceType.HuggingFace] = new AIServiceTypeMetadata
         {
@@ -126,9 +126,9 @@ public static class AIServiceTypeRegistry
             IsLocalModel = true,
             LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",
             TermsLabel = "AdvancedPaste_Ollama_TermsLabel",
-            TermsUri = new Uri("https://ollama.com/terms"),
+            TermsUri = new Uri("https://ollama.org/terms"),
             PrivacyLabel = "AdvancedPaste_Ollama_PrivacyLabel",
-            PrivacyUri = new Uri("https://ollama.com/privacy"),
+            PrivacyUri = new Uri("https://ollama.org/privacy"),
         },
         [AIServiceType.Onnx] = new AIServiceTypeMetadata
         {
