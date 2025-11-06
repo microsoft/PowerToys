@@ -11,8 +11,10 @@ using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -36,6 +38,19 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             {
                 field = value;
                 PropertyChanged?.Invoke(this, new(nameof(ItemsOrientation)));
+            }
+        }
+    }
+
+    public DockSide DockSide
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                PropertyChanged?.Invoke(this, new(nameof(DockSide)));
             }
         }
     }
@@ -112,6 +127,8 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
     internal void UpdateSettings(DockSettings settings)
     {
+        DockSide = settings.Side;
+
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
 
         // _viewModel.UpdateSettings(); // TODO!
@@ -129,6 +146,11 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         IconSize = DockSettingsToViews.IconSizeForSize(settings.DockIconsSize);
         TitleTextFontSize = DockSettingsToViews.TitleTextFontSizeForSize(settings.DockSize);
         TitleTextMaxWidth = DockSettingsToViews.TitleTextMaxWidthForSize(settings.DockSize);
+
+        if (settings.Backdrop == DockBackdrop.Transparent)
+        {
+            RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
+        }
     }
 
     [RelayCommand]

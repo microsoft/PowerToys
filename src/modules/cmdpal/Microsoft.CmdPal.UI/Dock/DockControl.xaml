@@ -35,7 +35,6 @@
             <DataTemplate x:Key="CommandButtonTemplate" x:DataType="coreVm:CommandViewModel">
                 <Button MaxHeight="32" Padding="4">
                     <!--  TODO! Command="{x:Bind InvokeCommand, Mode=OneWay}"  -->
-
                     <Grid
                         AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                         Background="Transparent"
@@ -82,20 +81,16 @@
                                 TextTrimming="WordEllipsis"
                                 TextWrapping="NoWrap" />
                         </StackPanel>
-
                     </Grid>
-
-
                 </Button>
             </DataTemplate>
 
             <DataTemplate x:Key="DeskbandTemplate" x:DataType="dockVm:DockItemViewModel">
                 <Button
-                    Padding="2"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
+                    VerticalAlignment="Stretch"
                     DataContext="{x:Bind}"
                     RightTapped="BandItem_RightTapped"
+                    Style="{StaticResource TaskBarButtonStyle}"
                     Tapped="BandItem_Tapped"
                     ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
 
@@ -199,18 +194,14 @@
             </DataTemplate>
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-
                 <ItemsRepeater
                     HorizontalAlignment="Center"
                     ItemTemplate="{StaticResource DeskbandTemplate}"
                     ItemsSource="{x:Bind Items, Mode=OneWay}"
                     Layout="{StaticResource ItemsOrientation}">
-
-
                     <ItemsRepeater.Transitions>
                         <TransitionCollection />
                     </ItemsRepeater.Transitions>
-
                 </ItemsRepeater>
             </DataTemplate>
 
@@ -238,62 +229,49 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid x:Name="RootGrid" Margin="16,0,16,0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition x:Name="SearchColumn" Width="Auto" />
-            <ColumnDefinition x:Name="EndColumn" Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*" />
-            <RowDefinition x:Name="SearchRow" Height="Auto" />
-            <RowDefinition x:Name="EndRow" Height="Auto" />
-        </Grid.RowDefinitions>
+    <Grid
+        x:Name="RootGrid"
+        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+        BorderThickness="0,0,0,1">
+        <Grid x:Name="ContentGrid" Padding="0,5,0,3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition x:Name="SearchColumn" Width="Auto" />
+                <ColumnDefinition x:Name="EndColumn" Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*" />
+                <RowDefinition x:Name="SearchRow" Height="Auto" />
+                <RowDefinition x:Name="EndRow" Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!--  EXPERIMENT: Try to add a shadow to the bottom. I didn't love how it actually turned out.  -->
-        <Rectangle
-            Grid.ColumnSpan="3"
-            Margin="-16,0"
-            Visibility="Collapsed">
-            <Rectangle.Fill>
-                <LinearGradientBrush MappingMode="RelativeToBoundingBox" Opacity="1" StartPoint=".5,1" EndPoint=".5,0.55">
-                    <LinearGradientBrush.GradientStops>
-                        <GradientStop Offset="0" Color="#60000000" />
-                        <GradientStop Offset="1" Color="#0000" />
-                    </LinearGradientBrush.GradientStops>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
+            <ScrollViewer
+                x:Name="StartItemsView"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalScrollBarVisibility="Hidden"
+                HorizontalScrollMode="Enabled"
+                VerticalScrollBarVisibility="Auto"
+                VerticalScrollMode="Disabled">
+                <ItemsRepeater
+                    x:Name="StartItemsRepeater"
+                    HorizontalAlignment="Left"
+                    ItemTemplate="{StaticResource DockBandTemplate}"
+                    ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
+                    Layout="{StaticResource ItemsOrientation}">
 
-        <ScrollViewer
-            x:Name="StartItemsView"
-            Grid.Column="0"
-            HorizontalAlignment="Stretch"
-            HorizontalScrollBarVisibility="Hidden"
-            HorizontalScrollMode="Enabled"
-            VerticalScrollBarVisibility="Auto"
-            VerticalScrollMode="Disabled">
-
-            <ItemsRepeater
-                x:Name="StartItemsRepeater"
-                HorizontalAlignment="Left"
-                ItemTemplate="{StaticResource DockBandTemplate}"
-                ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
-                Layout="{StaticResource ItemsOrientation}">
-
-                <!--<ItemsRepeater.Layout>
+                    <!--<ItemsRepeater.Layout>
                     <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
                 </ItemsRepeater.Layout>-->
 
-                <ItemsRepeater.Transitions>
-                    <TransitionCollection />
-                </ItemsRepeater.Transitions>
+                    <ItemsRepeater.Transitions>
+                        <TransitionCollection />
+                    </ItemsRepeater.Transitions>
+                </ItemsRepeater>
+            </ScrollViewer>
 
-            </ItemsRepeater>
-
-        </ScrollViewer>
-
-        <!--<Button
+            <!--<Button
             x:Name="SearchButton"
             Grid.Column="1"
             Height="24"
@@ -309,68 +287,95 @@
             <TextBlock HorizontalAlignment="Left" Foreground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}">Search...</TextBlock>
         </Button>-->
 
-        <ItemsRepeater
-            x:Name="EndItemsRepeater"
-            Grid.Column="2"
-            ItemTemplate="{StaticResource DockBandTemplate}"
-            ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
-            Layout="{StaticResource ItemsOrientation}">
-
-            <!--<ItemsRepeater.Layout>
+            <ItemsRepeater
+                x:Name="EndItemsRepeater"
+                Grid.Column="2"
+                ItemTemplate="{StaticResource DockBandTemplate}"
+                ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
+                Layout="{StaticResource ItemsOrientation}">
+                <!--<ItemsRepeater.Layout>
                 <StackLayout Orientation="{x:Bind ItemsOrientation}" Spacing="4" />
             </ItemsRepeater.Layout>-->
-
-            <ItemsRepeater.Transitions>
-                <TransitionCollection />
-            </ItemsRepeater.Transitions>
-
-        </ItemsRepeater>
-
+                <ItemsRepeater.Transitions>
+                    <TransitionCollection />
+                </ItemsRepeater.Transitions>
+            </ItemsRepeater>
+        </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="DockOrientation">
-                <VisualState x:Name="DockOnTopBottom">
+                <VisualState x:Name="DockOnTop">
                     <VisualState.StateTriggers>
-                        <ui:IsEqualStateTrigger Value="{x:Bind ItemsOrientation, Mode=OneWay}" To="Horizontal" />
+                        <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
                         <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
-
-
                         <Setter Target="EndItemsRepeater.(Grid.Row)" Value="0" />
                         <Setter Target="EndItemsRepeater.(Grid.Column)" Value="3" />
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Right" />
-
-                        <Setter Target="RootGrid.Margin" Value="16,0,16,0" />
-
+                        <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
+                        <Setter Target="RootGrid.BorderThickness" Value="0,0,0,1" />
                     </VisualState.Setters>
                 </VisualState>
-                <VisualState x:Name="DockOnLeftRight">
+                <VisualState x:Name="DockOnBottom">
                     <VisualState.StateTriggers>
-                        <ui:IsEqualStateTrigger Value="{x:Bind ItemsOrientation, Mode=OneWay}" To="Vertical" />
+                        <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="0" />
+                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Right" />
+                        <Setter Target="ContentGrid.Margin" Value="8,0,8,0" />
+                        <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="DockOnLeft">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Left" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
                         <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
                         <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
-
-
                         <Setter Target="EndItemsRepeater.(Grid.Row)" Value="3" />
                         <Setter Target="EndItemsRepeater.(Grid.Column)" Value="0" />
                         <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
                         <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
-                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Left" />
-
-                        <Setter Target="RootGrid.Margin" Value="8,8,8,8" />
+                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="DockOnRight">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Right" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StartItemsView.(Grid.Row)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.Column)" Value="0" />
+                        <Setter Target="StartItemsView.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="StartItemsView.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.Row)" Value="3" />
+                        <Setter Target="EndItemsRepeater.(Grid.Column)" Value="0" />
+                        <Setter Target="EndItemsRepeater.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndItemsRepeater.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndItemsRepeater.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
-
 </UserControl>
