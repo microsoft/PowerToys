@@ -180,6 +180,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
+    public SettingsExtensionsViewModel Extensions { get; }
+
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
     {
         _settings = settings;
@@ -195,6 +197,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);
         }
+
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

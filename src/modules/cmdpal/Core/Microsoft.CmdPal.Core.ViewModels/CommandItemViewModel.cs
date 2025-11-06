@@ -314,6 +314,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 Command.PropertyChanged -= Command_PropertyChanged;
                 Command = new(model.Command, PageContext);
                 Command.InitializeProperties();
+                Command.PropertyChanged += Command_PropertyChanged;
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.

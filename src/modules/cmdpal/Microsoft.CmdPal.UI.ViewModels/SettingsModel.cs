@@ -54,6 +54,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool DisableAnimations { get; set; } = true;
 
+    public WindowPosition? LastWindowPosition { get; set; }
+
     public bool EnableDock { get; set; }
 
     public DockSettings DockSettings { get; set; } = new();
@@ -195,6 +197,7 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(bool))]
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
+[JsonSerializable(typeof(WindowPosition))]
 [JsonSerializable(typeof(AppStateModel))]
 [JsonSerializable(typeof(RecentCommandsManager))]
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
@@ -212,4 +215,5 @@ public enum MonitorBehavior
     ToPrimary = 1,
     ToFocusedWindow = 2,
     InPlace = 3,
+    ToLast = 4,
 }

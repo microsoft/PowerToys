@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// <summary>
 /// Built-in Provider for a top-level command which can quit the application. Invokes the <see cref="QuitCommand"/>, which sends a <see cref="QuitMessage"/>.
 /// </summary>
-public partial class BuiltInsCommandProvider : CommandProvider, IExtendedAttributesProvider
+public sealed partial class BuiltInsCommandProvider : CommandProvider, IExtendedAttributesProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitCommand quitCommand = new();
@@ -25,7 +25,7 @@ public partial class BuiltInsCommandProvider : CommandProvider, IExtendedAttribu
 
     public override ICommandItem[] TopLevelCommands() =>
         [
-            new CommandItem(openSettings) { Subtitle = Properties.Resources.builtin_open_settings_subtitle },
+            new CommandItem(openSettings) { },
             new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = Properties.Resources.builtin_new_extension_subtitle },
         ];
 
@@ -38,7 +38,7 @@ public partial class BuiltInsCommandProvider : CommandProvider, IExtendedAttribu
 
     public BuiltInsCommandProvider(AppStateModel appState, TopLevelCommandManager tlcManager)
     {
-        Id = "Core";
+        Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
 

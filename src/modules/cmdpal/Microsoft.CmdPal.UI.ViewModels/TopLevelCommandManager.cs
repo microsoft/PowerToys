@@ -278,6 +278,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         IsLoading = false;
 
+        // Send on the current thread; receivers should marshal to UI if needed
+        WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+
         return true;
     }
 

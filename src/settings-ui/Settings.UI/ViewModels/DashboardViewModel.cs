@@ -62,6 +62,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private DashboardSortOrder _dashboardSortOrder = DashboardSortOrder.Alphabetical;
+
+        public DashboardSortOrder DashboardSortOrder
+        {
+            get => generalSettingsConfig.DashboardSortOrder;
+            set
+            {
+                if (Set(ref _dashboardSortOrder, value))
+                {
+                    generalSettingsConfig.DashboardSortOrder = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+                    RefreshModuleList();
+                }
+            }
+        }
+
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
@@ -73,14 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
 
+            // Initialize dashboard sort order from settings
+            _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
+
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
-            {
-                AddDashboardListItem(moduleType);
-            }
-
+            RefreshModuleList();
             GetShortcutModules();
         }
 
@@ -113,21 +129,39 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
-        private void AddDashboardListItem(ModuleType moduleType)
+        private void RefreshModuleList()
         {
-            GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
-            var newItem = new DashboardListItem()
+            AllModules.Clear();
+
+            var moduleItems = new List<DashboardListItem>();
+
+            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
-                Tag = moduleType,
-                Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                DashboardModuleItems = GetModuleItems(moduleType),
+                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+                var newItem = new DashboardListItem()
+                {
+                    Tag = moduleType,
+                    Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                    IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
+                    IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
+                    Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                    DashboardModuleItems = GetModuleItems(moduleType),
+                };
+                newItem.EnabledChangedCallback = EnabledChangedOnUI;
+                moduleItems.Add(newItem);
+            }
+
+            // Sort based on current sort order
+            var sortedItems = DashboardSortOrder switch
+            {
+                DashboardSortOrder.ByStatus => moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
+                _ => moduleItems.OrderBy(x => x.Label), // Default alphabetical
             };
 
-            AllModules.Add(newItem);
-            newItem.EnabledChangedCallback = EnabledChangedOnUI;
+            foreach (var item in sortedItems)
+            {
+                AllModules.Add(item);
+            }
         }
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
@@ -149,6 +183,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
+                RefreshModuleList();
                 GetShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));

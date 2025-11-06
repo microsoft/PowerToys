@@ -60,6 +60,11 @@ GetWindowLong
 SetWindowLong
 WINDOW_EX_STYLE
 
+CreateWindowEx
+WNDCLASSEXW
+RegisterClassEx
+GetStockObject
+GetModuleHandle
 
 MoveWindow
 GetSystemMetrics
