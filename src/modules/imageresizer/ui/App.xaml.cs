@@ -97,7 +97,6 @@ namespace ImageResizer
             // TODO: Add command-line parameters that can be used in lieu of the input page (issue #14)
             var mainWindow = new MainWindow(new MainViewModel(batch, Settings.Default));
             mainWindow.Show();
-            Logger.LogInfo("MainWindow shown (unpackaged or activation fallback path).");
 
             // Temporary workaround for issue #1273
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
@@ -163,15 +162,15 @@ namespace ImageResizer
                 }
                 else
                 {
-                    // Initialization failed - fallback to NoOp
+                    // Initialization failed - use default NoOp service
                     ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
-                    Logger.LogWarning("AI Super Resolution service initialization failed. Using fallback.");
+                    Logger.LogWarning("AI Super Resolution service initialization failed. Using default service.");
                     finalState = AiAvailabilityState.NotSupported;
                 }
             }
             catch (Exception ex)
             {
-                // Log error and use NoOp service as fallback
+                // Log error and use default NoOp service
                 ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
                 Logger.LogError($"Exception during AI service initialization: {ex.Message}");
                 finalState = AiAvailabilityState.NotSupported;
