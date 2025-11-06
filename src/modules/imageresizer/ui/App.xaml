@@ -18,11 +18,12 @@
             <v:EnumValueConverter x:Key="EnumValueConverter" />
             <v:AutoDoubleConverter x:Key="AutoDoubleConverter" />
             <v:BoolValueConverter x:Key="BoolValueConverter" />
-            <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter" />
             <v:EnumToIntConverter x:Key="EnumToIntConverter" />
             <v:AccessTextToTextConverter x:Key="AccessTextToTextConverter" />
             <v:NumberBoxValueConverter x:Key="NumberBoxValueConverter" />
             <v:ZeroToEmptyStringNumberFormatter x:Key="ZeroToEmptyStringNumberFormatter" />
+            <v:TypeOfResultConverter x:Key="TypeOfResultConverter" />
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

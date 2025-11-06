@@ -4,28 +4,176 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:p="clr-namespace:ImageResizer.Properties">
 
-    <StackPanel>
+    <UserControl.Resources>
+        <Style x:Key="ResultsSectionBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8,4,0,4" />
+        </Style>
+
+        <DataTemplate x:Key="ResultTemplate">
+            <StackPanel Margin="6">
+                <TextBlock
+                    Margin="0,0,0,4"
+                    AutomationProperties.Name="{x:Static p:Resources.Results_FilePath_AccessibilityText}"
+                    FontWeight="SemiBold"
+                    Text="{Binding FilePath}"
+                    TextTrimming="CharacterEllipsis"
+                    ToolTip="{Binding FilePath}" />
+                <TextBlock
+                    AutomationProperties.Name="{x:Static p:Resources.Results_ErrorMessage_AccessibilityText}"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Text="{Binding ResultMessage}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <!--  Header  -->
+            <RowDefinition Height="Auto" />
+            <!--  Main scrollable content  -->
+            <RowDefinition Height="*" />
+            <!--  Bottom button bar  -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
         <TextBlock
-            Margin="12,12,12,0"
-            FontSize="16"
-            Text="{x:Static p:Resources.Results_MainInstruction}" />
-        <ScrollViewer HorizontalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
-            <ItemsControl Margin="12,4,12,0" ItemsSource="{Binding Errors}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="ResizeError">
-                        <StackPanel>
-                            <TextBlock
-                                Margin="0,8,0,0"
-                                FontWeight="Bold"
-                                Text="{Binding File}" />
-                            <TextBlock Text="{Binding Error}" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            Grid.Row="0"
+            Margin="16,16,16,8"
+            AutomationProperties.HeadingLevel="Level1"
+            Style="{StaticResource SubtitleTextBlockStyle}"
+            Text="{Binding HeaderText}" />
+
+        <ScrollViewer
+            Grid.Row="1"
+            Padding="16,0"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!--  Resize operation errors.  -->
+                <StackPanel Margin="0,8,0,8" Visibility="{Binding ElementName=ErrorItems, Path=HasItems, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        AutomationProperties.HeadingLevel="Level2"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Static p:Resources.Results_Errors_SectionHeader}"
+                        TextWrapping="Wrap" />
+                    <ItemsControl
+                        Name="ErrorItems"
+                        AutomationProperties.ItemType="{x:Static p:Resources.Results_ErrorItemType_AccessibilityText}"
+                        AutomationProperties.Name="{x:Static p:Resources.Results_Errors_SectionHeader}"
+                        ItemsSource="{Binding Errors}">
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleDescription}" />
+                                <Setter Property="AutomationProperties.ItemType" Value="{Binding AccessibleType}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <Border Style="{StaticResource ResultsSectionBorderStyle}">
+                                    <ItemsPresenter />
+                                </Border>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemTemplate>
+                            <StaticResource ResourceKey="ResultTemplate" />
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!--  Warnings for when the original file could not be replaced with the resized file.  -->
+                <StackPanel Margin="0,8,0,8" Visibility="{Binding ElementName=ReplaceFailedItems, Path=HasItems, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        AutomationProperties.HeadingLevel="Level2"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Static p:Resources.Results_ReplaceFailed_SectionHeader}"
+                        TextWrapping="Wrap" />
+                    <ItemsControl
+                        Name="ReplaceFailedItems"
+                        AutomationProperties.ItemType="{x:Static p:Resources.Results_WarningItemType_AccessibilityText}"
+                        AutomationProperties.Name="{x:Static p:Resources.Results_ReplaceFailed_SectionHeader}"
+                        ItemsSource="{Binding ReplaceWarnings}">
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleDescription}" />
+                                <Setter Property="AutomationProperties.ItemType" Value="{Binding AccessibleType}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <Border Style="{StaticResource ResultsSectionBorderStyle}">
+                                    <ItemsPresenter />
+                                </Border>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="6">
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        AutomationProperties.Name="{x:Static p:Resources.Results_OriginalFilePath_AccessibilityText}"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding FilePath}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTip="{Binding FilePath}" />
+                                    <TextBlock
+                                        Margin="0,0,0,4"
+                                        LineStackingStrategy="BlockLineHeight"
+                                        Style="{StaticResource BodyTextBlockStyle}">
+                                        <Run Text="{x:Static p:Resources.Results_ResizedAs_Label}" />
+                                        <Run FontWeight="SemiBold" Text="{Binding DestinationFileName, Mode=OneWay}" />
+                                    </TextBlock>
+                                    <TextBlock
+                                        Style="{StaticResource BodyTextBlockStyle}"
+                                        Text="{Binding ResultMessage}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!--  Warnings for when the backup file for a replace operation could not be sent to the Recycle Bin.  -->
+                <StackPanel Margin="0,8,0,8" Visibility="{Binding ElementName=RecycleFailedItems, Path=HasItems, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        AutomationProperties.HeadingLevel="Level2"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Static p:Resources.Results_RecycleFailed_SectionHeader}"
+                        TextWrapping="Wrap" />
+                    <ItemsControl
+                        Name="RecycleFailedItems"
+                        AutomationProperties.ItemType="{x:Static p:Resources.Results_WarningItemType_AccessibilityText}"
+                        AutomationProperties.Name="{x:Static p:Resources.Results_RecycleFailed_SectionHeader}"
+                        ItemsSource="{Binding RecycleFailedWarnings}">
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleDescription}" />
+                                <Setter Property="AutomationProperties.ItemType" Value="{Binding AccessibleType}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.Template>
+                            <ControlTemplate>
+                                <Border Style="{StaticResource ResultsSectionBorderStyle}">
+                                    <ItemsPresenter />
+                                </Border>
+                            </ControlTemplate>
+                        </ItemsControl.Template>
+                        <ItemsControl.ItemTemplate>
+                            <StaticResource ResourceKey="ResultTemplate" />
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
         </ScrollViewer>
 
         <Border
+            Grid.Row="2"
             Margin="0,12,0,0"
             Padding="12,12"
             Background="{DynamicResource LayerFillColorDefaultBrush}"
@@ -34,11 +182,12 @@
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button
                     MinWidth="76"
+                    AutomationProperties.Name="{x:Static p:Resources.Results_Close}"
                     Command="{Binding CloseCommand}"
                     Content="{x:Static p:Resources.Results_Close}"
                     IsCancel="True"
                     IsDefault="True" />
             </StackPanel>
         </Border>
-    </StackPanel>
+    </Grid>
 </UserControl>
