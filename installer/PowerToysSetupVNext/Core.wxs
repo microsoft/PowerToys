@@ -121,6 +121,11 @@
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="DesktopShortcut" />
+      <?if $(var.PerUser) = "true" ?>
+      <ComponentRef Id="powertoys_env_path_user" />
+      <?else?>
+      <ComponentRef Id="powertoys_env_path_machine" />
+      <?endif?>
       <?if $(var.PerUser) = "false" ?>
       <ComponentRef Id="PowerToysDSC" />
       <?endif?>
