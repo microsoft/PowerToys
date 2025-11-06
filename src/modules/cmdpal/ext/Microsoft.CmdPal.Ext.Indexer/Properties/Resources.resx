@@ -171,9 +171,6 @@
   <data name="Indexer_Settings_FallbackCommand_FilePathExist" xml:space="preserve">
     <value>Only when file path exist</value>
   </data>
-  <data name="Indexer_Subtitle" xml:space="preserve">
-    <value>Search files on this device</value>
-  </data>
   <data name="Indexer_Title" xml:space="preserve">
     <value>Search files</value>
   </data>
