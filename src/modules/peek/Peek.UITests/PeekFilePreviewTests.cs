@@ -47,30 +47,8 @@ public class PeekFilePreviewTests : UITestBase
     {
         try
         {
-            // Common base path for PowerToys settings
-            string powerToysSettingsDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft",
-                "PowerToys");
-
-            // Fix Peek module settings
-            string peekDirectory = Path.Combine(powerToysSettingsDirectory, "Peek");
-            string peekSettingsPath = Path.Combine(peekDirectory, "settings.json");
-
-            // Ensure directory exists
-            Directory.CreateDirectory(peekDirectory);
-
-            // Check if file exists and is not empty
-            string existingPeekJson = string.Empty;
-            if (File.Exists(peekSettingsPath))
-            {
-                existingPeekJson = File.ReadAllText(peekSettingsPath);
-            }
-
-            // If file doesn't exist or is empty, create default settings
-            if (string.IsNullOrWhiteSpace(existingPeekJson))
-            {
-                string peekSettingsContent = @"{
+            // Default Peek settings
+            string peekSettingsContent = @"{
                   ""name"": ""Peek"",
                   ""version"": ""1.0"",
                   ""properties"": {
@@ -96,50 +74,60 @@ public class PeekFilePreviewTests : UITestBase
                     }
                   }
                 }";
-                File.WriteAllText(peekSettingsPath, peekSettingsContent);
-                Debug.WriteLine($"Created default Peek settings file at {peekSettingsPath}");
-            }
-            else
-            {
-                // Parse and update existing settings
-                using var peekDoc = JsonDocument.Parse(existingPeekJson);
-                var peekSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(existingPeekJson)
-                                   ?? throw new InvalidOperationException("Failed to deserialize Peek settings");
 
-                // Get properties section
-                var propertiesElement = (JsonElement)peekSettings["properties"];
-                var properties = JsonSerializer.Deserialize<Dictionary<string, object>>(propertiesElement.GetRawText())
-                                 ?? throw new InvalidOperationException("Failed to deserialize properties");
-
-                // Update only the required properties: ActivationShortcut and EnableSpaceToActivate
-                properties["ActivationShortcut"] = new Dictionary<string, object>
+            // Update Peek module settings
+            SettingsConfigHelper.UpdateModuleSettings(
+                "Peek",
+                peekSettingsContent,
+                (settings) =>
                 {
-                    { "win", false },
-                    { "ctrl", true },
-                    { "alt", false },
-                    { "shift", false },
-                    { "code", 32 },
-                    { "key", "Space" },
-                };
+                    // Get or ensure properties section exists
+                    Dictionary<string, object> properties;
 
-                properties["EnableSpaceToActivate"] = new Dictionary<string, object>
-                {
-                    { "value", false },
-                };
+                    if (settings.TryGetValue("properties", out var propertiesObj))
+                    {
+                        if (propertiesObj is Dictionary<string, object> dict)
+                        {
+                            properties = dict;
+                        }
+                        else if (propertiesObj is JsonElement jsonElem)
+                        {
+                            properties = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonElem.GetRawText())
+                                        ?? throw new InvalidOperationException("Failed to deserialize properties");
+                        }
+                        else
+                        {
+                            properties = new Dictionary<string, object>();
+                        }
+                    }
+                    else
+                    {
+                        properties = new Dictionary<string, object>();
+                    }
 
-                peekSettings["properties"] = properties;
+                    // Update the required properties
+                    properties["ActivationShortcut"] = new Dictionary<string, object>
+                    {
+                        { "win", false },
+                        { "ctrl", true },
+                        { "alt", false },
+                        { "shift", false },
+                        { "code", 32 },
+                        { "key", "Space" },
+                    };
 
-                // Serialize and save Peek settings
-                string peekSettingsJson = JsonSerializer.Serialize(peekSettings, IndentedJsonOptions);
-                File.WriteAllText(peekSettingsPath, peekSettingsJson);
+                    properties["EnableSpaceToActivate"] = new Dictionary<string, object>
+                    {
+                        { "value", false },
+                    };
 
-                Debug.WriteLine($"Successfully updated Ctrl+Space shortcut in settings file at {peekSettingsPath}");
-            }
+                    settings["properties"] = properties;
+                });
 
             // Disable all modules except Peek in global settings
             SettingsConfigHelper.ConfigureGlobalModuleSettings("Peek");
 
-            Debug.WriteLine("Successfully updated global settings - disabled all modules except Peek");
+            Debug.WriteLine("Successfully updated all settings - Peek shortcut configured and all modules except Peek disabled");
         }
         catch (Exception ex)
         {
