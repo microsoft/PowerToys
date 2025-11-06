@@ -84,7 +84,7 @@ internal sealed partial class GlobalErrorHandler
                 message = "Command Palette has encountered a fatal error and must close.";
                 caption = "Command Palette - Fatal error";
             }
-            
+
             PInvoke.MessageBox(
                 HWND.Null,
                 message,
