@@ -189,6 +189,29 @@ ClassRegistry	reg( _T("Software\\Sysinternals\\") APPNAME );
 
 ComputerGraphicsInit	g_GraphicsInit;
 
+// The result of saving a screenshot or recording.
+struct SaveDialogResult {
+    std::filesystem::path path;
+    UINT filterIndex;   // 1-based index of the user-selected file type filter.
+};
+
+// The logical options for how a screenshot should be saved.
+enum class ScreenshotSaveOption {
+    Zoomed,     // Zoomed-in image at screen resolution.
+    ActualSize  // 1:1 pixel size image, before stretching.
+};
+
+// Couples the screenshot save option with its dialog display info.
+struct ScreenshotFilterSpec {
+    ScreenshotSaveOption option;
+    COMDLG_FILTERSPEC spec;
+};
+
+// Screenshot save dialog filters.
+static const std::vector<ScreenshotFilterSpec> g_ScreenshotFilters = {
+    { ScreenshotSaveOption::Zoomed,     { L"Zoomed image (*.png)",      L"*.png" } },
+    { ScreenshotSaveOption::ActualSize, { L"Actual size image (*.png)", L"*.png" } }
+};
 
 //----------------------------------------------------------------------------
 //
@@ -1388,12 +1411,12 @@ HBITMAP LoadImageFile( PTCHAR Filename )
 // Use gdi+ to save a PNG.
 //
 //----------------------------------------------------------------------------
-DWORD SavePng( PTCHAR Filename, HBITMAP hBitmap )
+DWORD SavePng( const std::filesystem::path& filePath, HBITMAP hBitmap )
 {
     Gdiplus::Bitmap		bitmap( hBitmap, NULL );
     CLSID pngClsid;
     GetEncoderClsid(L"image/png", &pngClsid);
-    if( bitmap.Save( Filename, &pngClsid, NULL )) {
+    if( bitmap.Save( filePath.c_str(), &pngClsid, NULL ) ) {
 
         return GetLastError();
     }
@@ -3411,6 +3434,101 @@ void StopRecording()
     }
 }
 
+//----------------------------------------------------------------------------
+//
+// GetScreenshotFilterSpecs
+//
+// Helper which builds the Save dialog's filter specs on first use and returns
+// a const reference to them.
+//
+//----------------------------------------------------------------------------
+static const std::vector<COMDLG_FILTERSPEC>& GetScreenshotFilterSpecs()
+{
+    static std::vector<COMDLG_FILTERSPEC> specs = [] {
+        std::vector<COMDLG_FILTERSPEC> generatedSpecs;
+        generatedSpecs.reserve(g_ScreenshotFilters.size());
+
+        for (const auto& entry : g_ScreenshotFilters)
+            generatedSpecs.push_back(entry.spec);
+
+        return generatedSpecs;
+    }();
+
+    return specs;
+}
+
+//----------------------------------------------------------------------------
+//
+// ShowSaveDialog
+//
+// Displays a Save dialog and obtains the result (as a SaveDialogResult). If
+// the user cancels the dialog, nullopt is returned.
+//
+//----------------------------------------------------------------------------
+[[nodiscard]]
+static std::optional<SaveDialogResult> ShowSaveDialog(
+    HWND hWndOwner,
+    const std::wstring& title,
+    const std::wstring& defaultFileName,
+    const std::vector<COMDLG_FILTERSPEC>& fileTypes,
+    const std::wstring& defaultExtension )
+{
+    try
+    {
+        auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
+
+        // Set common options.
+        FILEOPENDIALOGOPTIONS options;
+        if ( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
+        {
+            saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
+        }
+
+        // Set title and default items.
+        saveDialog->SetTitle( title.c_str() );
+        saveDialog->SetFileTypes( static_cast<UINT>( fileTypes.size() ), fileTypes.data() );
+        saveDialog->SetDefaultExtension( defaultExtension.c_str() );
+        saveDialog->SetFileName( defaultFileName.c_str() );
+
+        // Try to set the default folder to the user's Videos or Pictures folder.
+        wil::com_ptr<IShellItem> defaultFolderItem;
+        KNOWNFOLDERID folderId = ( defaultExtension == L"mp4" ) ? FOLDERID_Videos : FOLDERID_Pictures;
+        if( SUCCEEDED( SHGetKnownFolderItem( folderId, KF_FLAG_DEFAULT, nullptr, IID_PPV_ARGS( defaultFolderItem.put() ) ) ) )
+        {
+            saveDialog->SetDefaultFolder( defaultFolderItem.get() );
+        }
+
+        // Show the dialog.
+        const HRESULT hr = saveDialog->Show( hWndOwner );
+
+        if( hr == HRESULT_FROM_WIN32( ERROR_CANCELLED ) )
+        {
+            return std::nullopt;
+        }
+
+        THROW_IF_FAILED( hr );
+
+        // Get the result.
+        wil::com_ptr<IShellItem> shellItem;
+        THROW_IF_FAILED( saveDialog->GetResult( shellItem.put() ) );
+
+        wil::unique_cotaskmem_string filePath;
+        THROW_IF_FAILED( shellItem->GetDisplayName( SIGDN_FILESYSPATH, filePath.put() ) );
+
+        UINT filterIndex = 0;
+        THROW_IF_FAILED( saveDialog->GetFileTypeIndex( &filterIndex ) );
+
+        return SaveDialogResult
+        {
+            std::filesystem::path( filePath.get() ),
+            filterIndex
+        };
+    }
+    catch( const wil::ResultException& error )
+    {
+        throw winrt::hresult_error( error.GetErrorCode(), winrt::to_hstring( error.what() ) );
+    }
+}
 
 //----------------------------------------------------------------------------
 //
@@ -3448,38 +3566,41 @@ auto GetUniqueRecordingFilename()
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
 {
+    // Create a temporary file to record to initially.
     auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
     auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync( tempFolderPath );
     auto appFolder = co_await tempFolder.CreateFolderAsync( L"ZoomIt", winrt::CreationCollisionOption::OpenIfExists );
     auto file = co_await appFolder.CreateFileAsync( L"zoomit.mp4", winrt::CreationCollisionOption::ReplaceExisting );
 
-    // Get the device
+    // Get the D3D device for recording.
     auto d3dDevice = util::CreateD3D11Device();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
 
-    // Get the active MONITOR capture device
-    HMONITOR hMon = NULL;
-    POINT cursorPos = { 0, 0 }; 
-    if( pMonitorFromPoint )	{
-
-        GetCursorPos( &cursorPos );
-        hMon = pMonitorFromPoint( cursorPos, MONITOR_DEFAULTTONEAREST );
+    // Determine which screen or window to capture.
+    winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{ nullptr };
+    if( hWndRecord ) {
+        item = util::CreateCaptureItemForWindow( hWndRecord );
+    }
+    else {
+        HMONITOR hMon = NULL;
+        POINT cursorPos = { 0, 0 };
+        if ( pMonitorFromPoint )
+        {
+            GetCursorPos( &cursorPos );
+            hMon = pMonitorFromPoint( cursorPos, MONITOR_DEFAULTTONEAREST );
+        }
+        item = util::CreateCaptureItemForMonitor( hMon );
     }
 
-    winrt::Windows::Graphics::Capture::GraphicsCaptureItem item{ nullptr };
-    if( hWndRecord ) 
-        item = util::CreateCaptureItemForWindow( hWndRecord );
-    else
-        item = util::CreateCaptureItemForMonitor( hMon );
-
+    // Create and start the recording session.
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
     g_RecordingSession = VideoRecordingSession::Create(
                                     g_RecordDevice,
                                     item,
                                     *rcCrop,
                                     g_RecordFrameRate,
-                                    g_CaptureAudio, 
+                                    g_CaptureAudio,
                                     stream );
 
     if( g_hWndLiveZoom != NULL )
@@ -3487,80 +3608,66 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
     co_await g_RecordingSession->StartAsync();
 
-    // g_RecordingSession isn't null if we're aborting a recording
+    // After recording is finished, g_RecordingSession will be null. If it's
+    // not null, it means the recording was aborted early.
     if( g_RecordingSession == nullptr ) {
 
         g_bSaveInProgress = true;
-
         SendMessage( g_hWndMain, WM_USER_SAVE_CURSOR, 0, 0 );
 
-        winrt::StorageFile destFile = nullptr;
-        HRESULT hr = S_OK;
-        try {
-            auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
-            FILEOPENDIALOGOPTIONS options;
-            if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
-                saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+        if( g_RecordingSaveLocation.empty() ) {
+            // If we haven't saved before, build a default path in the Videos
+            // folder.
             wil::com_ptr<IShellItem> videosItem;
-            if( SUCCEEDED ( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_IShellItem, (void**) videosItem.put() ) ) )
-                saveDialog->SetDefaultFolder( videosItem.get() );
-            saveDialog->SetDefaultExtension( L".mp4" );
-            COMDLG_FILTERSPEC fileTypes[] = {
-                { L"MP4 Video", L"*.mp4" }
-            };
-            saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
-
-            if( g_RecordingSaveLocation.size() == 0) {
-
-                wil::com_ptr<IShellItem> shellItem;
+            if( SUCCEEDED( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_IShellItem, (void**) videosItem.put() ) ) ) {
                 wil::unique_cotaskmem_string folderPath;
-                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put())))
-                    g_RecordingSaveLocation = folderPath.get();
-                g_RecordingSaveLocation = std::filesystem::path{ g_RecordingSaveLocation } /= DEFAULT_RECORDING_FILE;
+                if( SUCCEEDED( videosItem->GetDisplayName( SIGDN_FILESYSPATH, folderPath.put() ) ) ) {
+                    g_RecordingSaveLocation = std::filesystem::path{ folderPath.get() } / DEFAULT_RECORDING_FILE;
+                }
             }
-            auto suggestedName = GetUniqueRecordingFilename();
-            saveDialog->SetFileName( suggestedName.c_str() );
+        }
 
-            THROW_IF_FAILED( saveDialog->Show( hWnd ) );
-            wil::com_ptr<IShellItem> shellItem;
-            THROW_IF_FAILED(saveDialog->GetResult(shellItem.put()));
-            wil::unique_cotaskmem_string filePath;
-            THROW_IF_FAILED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, filePath.put()));
-            auto path = std::filesystem::path( filePath.get() );
+        const auto suggestedName = GetUniqueRecordingFilename();
+        const std::vector<COMDLG_FILTERSPEC> fileTypes = {
+            { L"ZoomIt recording (*.mp4)", L"*.mp4" }
+        };
+
+        const auto dialogResult = ShowSaveDialog( hWnd, L"Save Recording", suggestedName, fileTypes, L"mp4" );
+
+        winrt::StorageFile destFile = nullptr;
+        if( dialogResult.has_value() ) {
+            const auto path = dialogResult->path;
 
             winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync( path.parent_path().c_str() ) };
             destFile = co_await folder.CreateFileAsync( path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting );
         }
-        catch( const wil::ResultException& error ) {
 
-            hr = error.GetErrorCode();
-        }
         if( destFile == nullptr ) {
-
-            if (stream) {
+            // User cancelled the dialog. Clean up the temporary file.
+            if( stream ) {
                 stream.Close();
                 stream = nullptr;
             }
             co_await file.DeleteAsync();
         }
         else {
-
+            // Move the temp file.
             co_await file.MoveAndReplaceAsync( destFile );
-            g_RecordingSaveLocation = file.Path();
-            SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+
+            // Remember the save location for next time.
+            g_RecordingSaveLocation = dialogResult->path.wstring();
+
+            // Update the clipboard with the new path.
+            SaveToClipboard( g_RecordingSaveLocation.c_str(), hWnd );
         }
         g_bSaveInProgress = false;
-
         SendMessage( g_hWndMain, WM_USER_RESTORE_CURSOR, 0, 0 );
         if( hWnd == g_hWndMain )
             RestoreForeground();
-
-        if( FAILED( hr ) )
-            throw winrt::hresult_error( hr );
     }
     else {
-
-        if (stream) {
+        // The recording was aborted before completion. Clean up.
+        if( stream ) {
             stream.Close();
             stream = nullptr;
         }
@@ -3571,17 +3678,13 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
     PostMessage( g_hWndMain, WM_USER_STOP_RECORDING, 0, 0 );
 
-    // Suppress the error from canceling the save dialog
-    if( error.code() == HRESULT_FROM_WIN32( ERROR_CANCELLED ))
-        co_return;
+    if( g_RecordToggle == FALSE ) {
 
-    if (g_RecordToggle == FALSE) {
-
-        MessageBox(g_hWndMain, L"Recording cancelled before started", APPNAME, MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+        MessageBox( g_hWndMain, L"Recording cancelled before it could start.", APPNAME, MB_OK | MB_ICONERROR | MB_SYSTEMMODAL );
     }
     else {
 
-        ErrorDialogString(g_hWndMain, L"Error starting recording", error.message().c_str());
+        ErrorDialogString( g_hWndMain, L"An error occurred during recording or saving.", error.message().c_str() );
     }
 }
 
@@ -3751,8 +3854,6 @@ LRESULT APIENTRY MainWndProc(
     HWND			hWndRecord;
     int				x, y, delta;
     HMENU			hPopupMenu;
-    OPENFILENAME	openFileName;
-    static TCHAR	filePath[MAX_PATH] = {L"zoomit"};
     NOTIFYICONDATA	tNotifyIconData;
 
     const auto drawAllRightJustifiedLines = [&rc]( long lineHeight, bool doPop = false ) {
@@ -6237,53 +6338,48 @@ LRESULT APIENTRY MainWndProc(
                         SRCCOPY|CAPTUREBLT );
 
             g_bSaveInProgress = true;
-            memset( &openFileName, 0, sizeof(openFileName ));
-            openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
-            openFileName.hwndOwner         = hWnd;
-            openFileName.hInstance         = static_cast<HINSTANCE>(g_hInstance);
-            openFileName.nMaxFile          = sizeof(filePath)/sizeof(filePath[0]);
-            openFileName.Flags				= OFN_LONGNAMES|OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT;
-            openFileName.lpstrTitle        = L"Save zoomed screen...";
-            openFileName.lpstrDefExt       = NULL; // "*.png";
-            openFileName.nFilterIndex      = 1;
-            openFileName.lpstrFilter       = L"Zoomed PNG\0*.png\0"
-                                             //"Zoomed BMP\0*.bmp\0"	
-                                             "Actual size PNG\0*.png\0\0";
-                                             //"Actual size BMP\0*.bmp\0\0";
-            openFileName.lpstrFile			= filePath;
-            if( GetSaveFileName( &openFileName ) )
+
+            const auto& fileTypes = GetScreenshotFilterSpecs();
+            const auto dialogResult = ShowSaveDialog( hWnd, L"Save Zoomed Screen", L"ZoomIt.png", fileTypes, L"png" );
+
+            if( dialogResult.has_value() )
             {
-                TCHAR targetFilePath[MAX_PATH];
-                _tcscpy( targetFilePath, filePath );
-                if( !_tcsrchr( targetFilePath, '.' ) )
-                {
-                    _tcscat( targetFilePath, L".png" );
-                }
+                const auto targetFilePath = dialogResult->path;
+                const UINT filterIndex = dialogResult->filterIndex;   // 1-based
+                if( filterIndex < 1 || filterIndex > g_ScreenshotFilters.size() )
+                    break;
 
-                // Save image at screen size
-                if( openFileName.nFilterIndex == 1 )
-                {
-                    SavePng( targetFilePath, hInterimSaveBitmap );
-                }
-                // Save image scaled down to actual size
-                else
-                {
-                    int saveWidth = static_cast<int>( copyWidth / zoomLevel );
-                    int saveHeight = static_cast<int>( copyHeight / zoomLevel );
+                const ScreenshotSaveOption option = g_ScreenshotFilters[ filterIndex - 1 ].option;
 
-                    hSaveBitmap = CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
-                    SelectObject( hSaveDc, hSaveBitmap );
+                switch (option)
+                {
+                    case ScreenshotSaveOption::Zoomed:
+                        // Save image at screen size (zoomed).
+                        SavePng(targetFilePath, hInterimSaveBitmap);
+                        break;
 
-                    StretchBlt( hSaveDc,
-                                0, 0,
-                                saveWidth, saveHeight,
-                                hInterimSaveDc,
-                                0,
-                                0,
-                                copyWidth, copyHeight,
-                                SRCCOPY | CAPTUREBLT );
-				
-                    SavePng( targetFilePath, hSaveBitmap );
+                    case ScreenshotSaveOption::ActualSize:
+                        // Save image scaled down to actual size.
+                        int saveWidth = static_cast<int>(copyWidth / zoomLevel);
+                        int saveHeight = static_cast<int>(copyHeight / zoomLevel);
+
+                        hSaveBitmap = CreateCompatibleBitmap(hdcScreen, saveWidth, saveHeight);
+                        SelectObject(hSaveDc, hSaveBitmap);
+
+                        StretchBlt(hSaveDc,
+                                   0,
+                                   0,
+                                   saveWidth,
+                                   saveHeight,
+                                   hInterimSaveDc,
+                                   0,
+                                   0,
+                                   copyWidth,
+                                   copyHeight,
+                                   SRCCOPY | CAPTUREBLT);
+
+                        SavePng( targetFilePath, hSaveBitmap );
+                        break;
                 }
             }
             g_bSaveInProgress = false;
