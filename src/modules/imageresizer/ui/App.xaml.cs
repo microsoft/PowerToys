@@ -81,7 +81,16 @@ namespace ImageResizer
             AiAvailabilityState = CheckAiAvailability();
             Logger.LogInfo($"AI availability checked at startup: {AiAvailabilityState}");
 
-            ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+            // If AI is potentially available, start background initialization (non-blocking)
+            if (AiAvailabilityState == AiAvailabilityState.Ready)
+            {
+                _ = InitializeAiServiceAsync(); // Fire and forget - don't block UI
+            }
+            else
+            {
+                // AI not available - set NoOp service immediately
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+            }
 
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
 
@@ -100,7 +109,37 @@ namespace ImageResizer
         /// </summary>
         private static AiAvailabilityState CheckAiAvailability()
         {
-            return AiAvailabilityState.Ready;
+            try
+            {
+                // First check if the platform is ARM64 - AI Super Resolution only works on ARM64
+                if (RuntimeInformation.ProcessArchitecture != Architecture.Arm64)
+                {
+                    return AiAvailabilityState.NotSupported;
+                }
+
+                // Check Windows AI service model ready state
+                // it's so slow, why?
+                var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
+
+                // Map AI service state to our availability state
+                switch (readyState)
+                {
+                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
+                        return AiAvailabilityState.Ready;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
+                        return AiAvailabilityState.ModelNotReady;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
+                    default:
+                        return AiAvailabilityState.NotSupported;
+                }
+            }
+            catch (Exception)
+            {
+                return AiAvailabilityState.NotSupported;
+            }
         }
 
         /// <summary>
