@@ -10,11 +10,11 @@
 
 <h3 align="center">
   <a href="#-installation">Installation</a>
-  <span> . </span>
+  <span> · </span>
   <a href="https://aka.ms/powertoys-docs">Documentation</a>
-  <span> . </span>
+  <span> · </span>
   <a href="https://aka.ms/powertoys-releaseblog">Blog</a>
-  <span> . </span>
+  <span> · </span>
   <a href="#-whats-new">Release notes</a>
 </h3>
 <br/><br/>
