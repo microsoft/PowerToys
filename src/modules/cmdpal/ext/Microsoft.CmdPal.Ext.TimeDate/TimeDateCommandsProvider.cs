@@ -12,7 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
-public partial class TimeDateCommandsProvider : CommandProvider
+public sealed partial class TimeDateCommandsProvider : CommandProvider
 {
     private readonly CommandItem _command;
     private static readonly SettingsManager _settingsManager = new SettingsManager();
@@ -23,7 +23,7 @@ public partial class TimeDateCommandsProvider : CommandProvider
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
-        Id = "DateTime";
+        Id = "com.microsoft.cmdpal.builtin.datetime";
         _command = new CommandItem(_timeDateExtensionPage)
         {
             Icon = _timeDateExtensionPage.Icon,

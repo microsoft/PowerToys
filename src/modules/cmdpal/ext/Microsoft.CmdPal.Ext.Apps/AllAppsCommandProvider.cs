@@ -35,7 +35,6 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         _listItem = new(_page)
         {
-            Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
 
