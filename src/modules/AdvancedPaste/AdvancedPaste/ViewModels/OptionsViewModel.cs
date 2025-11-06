@@ -311,6 +311,8 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(AllowedAIProviders));
 
+            NotifyActiveProviderChanged();
+
             EnqueueRefreshPasteFormats();
         }
 
@@ -878,6 +880,7 @@ namespace AdvancedPaste.ViewModels
 
             UpdateAIProviderActiveFlags();
             OnPropertyChanged(nameof(AIProviders));
+            NotifyActiveProviderChanged();
             EnqueueRefreshPasteFormats();
         }
 
