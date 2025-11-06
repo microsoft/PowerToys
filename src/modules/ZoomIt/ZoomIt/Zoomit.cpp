@@ -6366,17 +6366,13 @@ LRESULT APIENTRY MainWndProc(
                         hSaveBitmap = CreateCompatibleBitmap(hdcScreen, saveWidth, saveHeight);
                         SelectObject(hSaveDc, hSaveBitmap);
 
-                        StretchBlt(hSaveDc,
-                                   0,
-                                   0,
-                                   saveWidth,
-                                   saveHeight,
-                                   hInterimSaveDc,
-                                   0,
-                                   0,
-                                   copyWidth,
-                                   copyHeight,
-                                   SRCCOPY | CAPTUREBLT);
+                        StretchBlt( hSaveDc,
+                                    0, 0,
+                                    saveWidth, saveHeight,
+                                    hInterimSaveDc,
+                                    0, 0,
+                                    copyWidth, copyHeight,
+                                    SRCCOPY | CAPTUREBLT );
 
                         SavePng( targetFilePath, hSaveBitmap );
                         break;

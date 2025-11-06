@@ -836,6 +836,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+KNOWNFOLDERID
 ksa
 kvp
 Kybd
