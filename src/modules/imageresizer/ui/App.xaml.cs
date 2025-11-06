@@ -6,9 +6,9 @@
 
 using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
@@ -20,8 +20,32 @@ namespace ImageResizer
 {
     public partial class App : Application, IDisposable
     {
+        private const string LogSubFolder = "\\ImageResizer\\Logs";
+
+        /// <summary>
+        /// Gets cached AI availability state, checked at app startup.
+        /// Can be updated after model download completes or background initialization.
+        /// </summary>
+        public static AiAvailabilityState AiAvailabilityState { get; internal set; }
+
+        /// <summary>
+        /// Event fired when AI initialization completes in background.
+        /// Allows UI to refresh state when initialization finishes.
+        /// </summary>
+        public static event EventHandler<AiAvailabilityState> AiInitializationCompleted;
+
         static App()
         {
+            try
+            {
+                // Initialize logger early (mirroring PowerOCR pattern)
+                Logger.InitializeLogger(LogSubFolder);
+            }
+            catch
+            {
+                /* swallow logger init issues silently */
+            }
+
             try
             {
                 string appLanguage = LanguageHelper.LoadLanguage();
@@ -30,9 +54,9 @@ namespace ImageResizer
                     System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
                 }
             }
-            catch (CultureNotFoundException)
+            catch (CultureNotFoundException ex)
             {
-                // error
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
             Console.InputEncoding = Encoding.Unicode;
@@ -48,8 +72,24 @@ namespace ImageResizer
                 /* TODO: Add logs to ImageResizer.
                  * Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
                  */
+                Logger.LogWarning("GPO policy disables ImageResizer. Exiting.");
                 Environment.Exit(0); // Current.Exit won't work until there's a window opened.
                 return;
+            }
+
+            // Check AI availability at startup (not relying on cached settings)
+            AiAvailabilityState = CheckAiAvailability();
+            Logger.LogInfo($"AI availability checked at startup: {AiAvailabilityState}");
+
+            // If AI is potentially available, start background initialization (non-blocking)
+            if (AiAvailabilityState == AiAvailabilityState.Ready)
+            {
+                _ = InitializeAiServiceAsync(); // Fire and forget - don't block UI
+            }
+            else
+            {
+                // AI not available - set NoOp service immediately
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
             }
 
             var batch = ResizeBatch.FromCommandLine(Console.In, e?.Args);
@@ -62,9 +102,90 @@ namespace ImageResizer
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
         }
 
+        /// <summary>
+        /// Check AI Super Resolution availability on this system.
+        /// Performs architecture check and model availability check.
+        /// </summary>
+        private static AiAvailabilityState CheckAiAvailability()
+        {
+            try
+            {
+                // First check if the platform is ARM64 - AI Super Resolution only works on ARM64
+                if (RuntimeInformation.ProcessArchitecture != Architecture.Arm64)
+                {
+                    return AiAvailabilityState.NotSupported;
+                }
+
+                // Check Windows AI service model ready state
+                // it's so slow, why?
+                var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
+
+                // Map AI service state to our availability state
+                switch (readyState)
+                {
+                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
+                        return AiAvailabilityState.Ready;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
+                        return AiAvailabilityState.ModelNotReady;
+
+                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
+                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
+                    default:
+                        return AiAvailabilityState.NotSupported;
+                }
+            }
+            catch (Exception)
+            {
+                return AiAvailabilityState.NotSupported;
+            }
+        }
+
+        /// <summary>
+        /// Initialize AI Super Resolution service asynchronously in background.
+        /// Runs without blocking UI startup - state change event notifies completion.
+        /// </summary>
+        private static async System.Threading.Tasks.Task InitializeAiServiceAsync()
+        {
+            AiAvailabilityState finalState;
+
+            try
+            {
+                // Create and initialize AI service using async factory
+                var aiService = await Services.WinAiSuperResolutionService.CreateAsync();
+
+                if (aiService != null)
+                {
+                    ResizeBatch.SetAiSuperResolutionService(aiService);
+                    Logger.LogInfo("AI Super Resolution service initialized successfully.");
+                    finalState = AiAvailabilityState.Ready;
+                }
+                else
+                {
+                    // Initialization failed - use default NoOp service
+                    ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                    Logger.LogWarning("AI Super Resolution service initialization failed. Using default service.");
+                    finalState = AiAvailabilityState.NotSupported;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error and use default NoOp service
+                ResizeBatch.SetAiSuperResolutionService(Services.NoOpAiSuperResolutionService.Instance);
+                Logger.LogError($"Exception during AI service initialization: {ex.Message}");
+                finalState = AiAvailabilityState.NotSupported;
+            }
+
+            // Update cached state and notify listeners
+            AiAvailabilityState = finalState;
+            AiInitializationCompleted?.Invoke(null, finalState);
+        }
+
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            // Dispose AI Super Resolution service
+            ResizeBatch.DisposeAiSuperResolutionService();
+
             GC.SuppressFinalize(this);
         }
     }
