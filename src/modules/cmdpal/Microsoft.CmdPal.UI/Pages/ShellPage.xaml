@@ -497,13 +497,13 @@
 
         <!--
             Horrifying: You may ask yourself - why is there a Background on this InfoBar?
-
+            
             Well, as it turns out, the Informational InfoBar has a transparent
             background. It just cannot be bothered. So, we need to manually give
             it one to actually obscure the text beneath it. And you can't just give
             the InfoBar itself a Background, because then the other Severity's
             won't get colorized.
-
+            
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
