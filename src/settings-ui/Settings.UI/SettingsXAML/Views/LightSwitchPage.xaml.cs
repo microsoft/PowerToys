@@ -38,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly DispatcherQueue _dispatcherQueue;
         private bool _suppressViewModelUpdates;
         private bool _suppressLatLonChange = true;
+        private bool _latLoaded;
+        private bool _lonLoaded;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
@@ -174,6 +176,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
             ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
 
+            var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+            // Temporarily display these preview times
+            ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+            ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+
+            // Show the panel with these values
             LocationResultPanel.Visibility = Visibility.Visible;
             if (LocationDialog != null)
             {
@@ -183,16 +192,39 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void LocationDialog_PrimaryButtonClick(object sender, ContentDialogButtonClickEventArgs args)
         {
-            if (ViewModel.ScheduleMode == "SunriseToSunsetUser")
+            /* if (ViewModel.ScheduleMode == "SunriseToSunsetUser")
             {
                 ViewModel.SyncButtonInformation = ViewModel.SelectedCity.City;
             }
             else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
             {
                 ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
-            }
+            } */
 
             SunriseModeChartState();
+        }
+
+        private void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        {
+            LatitudeBox.Loaded += LatLonBox_Loaded;
+            LongitudeBox.Loaded += LatLonBox_Loaded;
+        }
+
+        private void LatLonBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender as NumberBox == LatitudeBox)
+            {
+                _latLoaded = true;
+            }
+            else if (sender as NumberBox == LongitudeBox)
+            {
+                _lonLoaded = true;
+            }
+
+            if (_latLoaded && _lonLoaded)
+            {
+                _suppressLatLonChange = false;
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
