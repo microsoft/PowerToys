@@ -127,6 +127,9 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### Awake
  - The Awake countdown timer now stays accurate over long periods and no longer stops after ~50 days. The module uses a single timer to prevent drift and correctly handles long countdowns without prematurely finishing. ([#41684](https://github.com/microsoft/PowerToys/pull/41684)). Thanks Dave Rayment.
 
+### Awake
+ - Fixed Awake context menu positioning. The fix removed the conversion of the mouse cursor from screen to client‑window coordinates, instead using the raw screen coordinates returned by GetCursorPos; the context menu now appears at the correct screen position. #41009 Thanks [@lzandman](https://github.com/lzandman)
+
 ### Command Palette
  - The search field in context menus now matches the look of the Command Palette, with a smoke backdrop and better padding. ([#42081](https://github.com/microsoft/PowerToys/pull/42081)). 
 
