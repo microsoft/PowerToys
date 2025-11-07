@@ -477,12 +477,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         {
             Logger.LogDebug($"PinToDockCommand.Invoke: {_topLevelViewModel.Id}");
 
-            var bandSettings = new JsonCommandBand()
-            {
-                Id = _topLevelViewModel.Id,
-            };
-            _appStateModel.TopLevelCommandBands.Add(bandSettings);
-            AppStateModel.SaveState(_appStateModel);
+            _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
             _settings.DockSettings.StartBands.Add(new DockBandSettings()
             {
                 Id = _topLevelViewModel.Id,

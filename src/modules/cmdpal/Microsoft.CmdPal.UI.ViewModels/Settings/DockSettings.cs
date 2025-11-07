@@ -18,6 +18,8 @@ public class DockSettings
 
     public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
 
+    public List<string> PinnedCommands { get; set; } = [];
+
     public List<DockBandSettings> StartBands { get; set; } = [];
 
     public List<DockBandSettings> EndBands { get; set; } = [];

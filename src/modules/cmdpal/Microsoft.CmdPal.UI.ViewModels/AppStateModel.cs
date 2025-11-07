@@ -14,8 +14,6 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-#pragma warning disable SA1402 // File may only contain a single type
-
 public partial class AppStateModel : ObservableObject
 {
     [JsonIgnore]
@@ -30,8 +28,6 @@ public partial class AppStateModel : ObservableObject
     public RecentCommandsManager RecentCommands { get; set; } = new();
 
     public List<string> RunHistory { get; set; } = [];
-
-    public List<JsonCommandBand> TopLevelCommandBands { get; set; } = [];
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -173,12 +169,3 @@ public partial class AppStateModel : ObservableObject
         return Path.Combine(directory, "state.json");
     }
 }
-
-public class JsonCommandBand
-{
-    public string Id { get; set; } = string.Empty;
-
-    public bool ShowLabels { get; set; } = true;
-}
-
-#pragma warning restore SA1402 // File may only contain a single type

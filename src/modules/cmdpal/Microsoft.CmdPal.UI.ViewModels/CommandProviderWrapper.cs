@@ -243,9 +243,9 @@ public sealed class CommandProviderWrapper
 
             foreach (var c in TopLevelItems)
             {
-                foreach (var json in state.TopLevelCommandBands)
+                foreach (var pinnedId in settings.DockSettings.PinnedCommands)
                 {
-                    if (json.Id == c.Id)
+                    if (pinnedId == c.Id)
                     {
                         var bandModel = c.ToDockBandItem();
                         var bandVm = make(bandModel, false);
