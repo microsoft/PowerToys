@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly IFileSystemWatcher _fileSystemWatcher;
         private readonly DispatcherQueue _dispatcherQueue;
         private bool _suppressViewModelUpdates;
-        private bool _suppressLatLonChange;
+        private bool _suppressLatLonChange = true;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
