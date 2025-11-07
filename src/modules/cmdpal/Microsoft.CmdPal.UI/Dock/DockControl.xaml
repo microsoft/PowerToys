@@ -233,7 +233,7 @@
         x:Name="RootGrid"
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1">
-        <Grid x:Name="ContentGrid" Padding="0,5,0,3">
+        <Grid x:Name="ContentGrid" Padding="0,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition x:Name="SearchColumn" Width="Auto" />
