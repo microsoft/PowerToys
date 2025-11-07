@@ -19,8 +19,6 @@ SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
 extern int g_lastUpdatedDay = -1;
 static ScheduleMode prevMode = ScheduleMode::Off;
-static std::wstring prevLat = L"0";
-static std::wstring  prevLon = L"0";
 static int prevMinutes = -1;
 static bool lastOverrideStatus = false;
 
@@ -153,7 +151,7 @@ void ApplyTheme(bool shouldBeLight)
     }
 }
 
-static void DetectAndHandleExternalThemeChange(LightSwitchStateManager stateManager)
+static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateManager)
 {
     const auto& s = LightSwitchSettings::settings();
     if (s.scheduleMode == ScheduleMode::Off)

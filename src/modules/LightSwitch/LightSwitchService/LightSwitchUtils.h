@@ -4,18 +4,17 @@
 constexpr bool ShouldBeLight(int nowMinutes, int lightTime, int darkTime)
 {
     // Normalize values into [0, 1439]
-    lightTime = (lightTime % 1440 + 1440) % 1440;
-    darkTime = (darkTime % 1440 + 1440) % 1440;
-    nowMinutes = (nowMinutes % 1440 + 1440) % 1440;
+    int normalizedLightTime = (lightTime % 1440 + 1440) % 1440;
+    int normalizedDarkTime = (darkTime % 1440 + 1440) % 1440;
+    int normalizedNowMinutes = (nowMinutes % 1440 + 1440) % 1440;
 
     // Case 1: Normal range, e.g. light mode comes before dark mode in the same day
-    if (lightTime < darkTime)
-        return nowMinutes >= lightTime && nowMinutes < darkTime;
+    if (normalizedLightTime < normalizedDarkTime)
+        return normalizedNowMinutes >= normalizedLightTime && normalizedNowMinutes < normalizedDarkTime;
 
     // Case 2: Wrap-around range, e.g. light mode starts in the evening and dark mode starts in the morning
-    return nowMinutes >= lightTime || nowMinutes < darkTime;
+    return normalizedNowMinutes >= normalizedLightTime || normalizedNowMinutes < normalizedDarkTime;
 }
-
 
 inline int GetNowMinutes()
 {

@@ -61,7 +61,7 @@ bool LightSwitchStateManager::CoordinatesAreValid(const std::wstring& lat, const
     {
         double latVal = std::stod(lat);
         double lonVal = std::stod(lon);
-        return !(latVal == 0 && lonVal == 0);
+        return !(latVal == 0 && lonVal == 0) && (latVal >= -90.0 && latVal <= 90.0) && (lonVal >= -180.0 && lonVal <= 180.0);
     }
     catch (...)
     {
@@ -93,7 +93,8 @@ static std::pair<int, int> update_sun_times(auto& settings)
     }
     catch (const std::exception& e)
     {
-        std::wstring wmsg(e.what(), e.what() + strlen(e.what()));
+        std::string msg = e.what();
+        std::wstring wmsg(msg.begin(), msg.end());
         Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
     }
 

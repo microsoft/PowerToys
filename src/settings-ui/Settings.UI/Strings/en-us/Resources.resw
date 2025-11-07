@@ -2696,8 +2696,6 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-
-  <!-- CursorWrap Module -->
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
     <value>Enable CursorWrap</value>
   </data>
@@ -2707,8 +2705,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
-
-  <!-- Activation Shortcut -->
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
@@ -2718,19 +2714,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
   </data>
-
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
   </data>
-
-  <!-- Auto-activate -->
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
     <value>Auto-activate on startup</value>
   </data>
   <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
     <value>Automatically activate on utility startup</value>
   </data>
-
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -5486,7 +5478,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Cancel</value>
   </data>
   <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
-    <value>Enter your location manually or detect it automatically so Light Switch can calculate accurate sunrise and sunset times.</value>
+    <value>Detect your location automatically or enter it manually to calculate sunrise and sunset times.</value>
   </data>
   <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5588,7 +5580,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ShortcutConflictControl_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut conflicts</value>
-  </data>	
+  </data>
   <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
     <value>No conflicts found</value>
   </data>
@@ -5698,5 +5690,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Hosts_Backup_CountInput_Header" xml:space="preserve">
     <value>Backup count</value>
+  </data>
+  <data name="LightSwitch_SetLocationButton.Content" xml:space="preserve">
+    <value>Set Location</value>
   </data>
 </root>

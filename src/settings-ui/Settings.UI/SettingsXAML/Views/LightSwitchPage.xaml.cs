@@ -167,7 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             double viewModelLatitude = double.TryParse(ViewModel.Latitude, out var lat) ? lat : 0.0;
             double viewModelLongitude = double.TryParse(ViewModel.Longitude, out var lon) ? lon : 0.0;
 
-            if (latitude == viewModelLatitude && longitude == viewModelLongitude)
+            if (Math.Abs(latitude - viewModelLatitude) < 0.0001 && Math.Abs(longitude - viewModelLongitude) < 0.0001)
             {
                 return;
             }
@@ -210,13 +210,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             LongitudeBox.Loaded += LatLonBox_Loaded;
         }
 
+        private void LocationDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        {
+            LatitudeBox.Loaded -= LatLonBox_Loaded;
+            LongitudeBox.Loaded -= LatLonBox_Loaded;
+        }
+
         private void LatLonBox_Loaded(object sender, RoutedEventArgs e)
         {
-            if (sender as NumberBox == LatitudeBox)
+            if (sender is NumberBox box && box == LatitudeBox)
             {
                 _latLoaded = true;
             }
-            else if (sender as NumberBox == LongitudeBox)
+            else if (sender is NumberBox box2 && box2 == LongitudeBox)
             {
                 _lonLoaded = true;
             }
