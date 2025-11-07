@@ -160,7 +160,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adapter Details.
+        ///   Looks up a localized string similar to Adapter details.
         /// </summary>
         public static string Microsoft_plugin_ext_adapter_details {
             get {
@@ -169,7 +169,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connection Details.
+        ///   Looks up a localized string similar to Connection details.
         /// </summary>
         public static string Microsoft_plugin_ext_connection_details {
             get {
@@ -187,7 +187,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open System Command.
+        ///   Looks up a localized string similar to Open system command.
         /// </summary>
         public static string Microsoft_plugin_ext_fallback_display_title {
             get {
@@ -205,7 +205,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System Commands.
+        ///   Looks up a localized string similar to System commands.
         /// </summary>
         public static string Microsoft_plugin_ext_system_page_name {
             get {
@@ -214,7 +214,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows System Commands.
+        ///   Looks up a localized string similar to Windows system commands.
         /// </summary>
         public static string Microsoft_plugin_ext_system_page_title {
             get {
@@ -628,7 +628,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are about to restart this computer, are you sure?.
+        ///   Looks up a localized string similar to You are about to restart this computer. Are you sure?.
         /// </summary>
         public static string Microsoft_plugin_sys_restart_computer_confirmation {
             get {
@@ -790,7 +790,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DNS Suffix.
+        ///   Looks up a localized string similar to DNS suffix.
         /// </summary>
         public static string Microsoft_plugin_sys_Suffix {
             get {
@@ -817,7 +817,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UEFI Firmware Settings.
+        ///   Looks up a localized string similar to UEFI firmware settings.
         /// </summary>
         public static string Microsoft_plugin_sys_uefi {
             get {
@@ -826,7 +826,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are about to reboot this computer into UEFI Firmware Settings menu, are you sure?.
+        ///   Looks up a localized string similar to You are about to reboot this computer into UEFI firmware settings menu, are you sure?.
         /// </summary>
         public static string Microsoft_plugin_sys_uefi_confirmation {
             get {
@@ -835,7 +835,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reboot computer into UEFI Firmware Settings (Requires administrative permissions.).
+        ///   Looks up a localized string similar to Reboot computer into UEFI firmware Settings (requires administrative permissions.).
         /// </summary>
         public static string Microsoft_plugin_sys_uefi_description {
             get {

@@ -428,6 +428,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
   </data>
+  <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
+    <value>Last Position</value>
+    <comment>Reopen the window where it was last closed</comment>
+  </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
@@ -470,5 +474,53 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
     <value>Navigated to {0} page</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings (Ctrl+,)</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Primary.Text" xml:space="preserve">
+    <value>No extensions found</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Secondary.Text" xml:space="preserve">
+    <value>Try a different search term</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Reload extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
+    <value>Reloading extensions..</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+    <value>Discover more extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+    <value>Find more extensions on the Microsoft Store or WinGet.</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
+    <value>Learn how to create your own extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on the Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on WinGet</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Search extensions</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
+    <value>Command Palette has encountered a fatal error and must close.</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
+    <value>Command Palette - Fatal error</value>
   </data>
 </root>

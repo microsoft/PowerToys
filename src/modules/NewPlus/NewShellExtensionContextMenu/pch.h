@@ -3,6 +3,7 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #define NOMCX
 #define NOHELP
 #define NOCOMM
@@ -13,6 +14,7 @@
 #include <shellapi.h>
 #include <Windows.h>
 #include <shlobj.h>
+#include <algorithm>
 #include <vector>
 #include <system_error>
 #include <memory>

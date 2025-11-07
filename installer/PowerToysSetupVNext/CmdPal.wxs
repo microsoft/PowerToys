@@ -4,6 +4,13 @@
   <Fragment>
     <DirectoryRef Id="WinUI3AppsInstallFolder">
       <Directory Id="CmdPalInstallFolder" Name="CmdPal">
+        <Directory Id="CmdPalDepsInstallFolder" Name="Dependencies">
+        <?if $(sys.BUILDARCH) = x64 ?>
+          <Directory Id="CmdPalDepsX64InstallFolder" Name="x64" />
+        <?else?>
+          <Directory Id="CmdPalDepsArm64InstallFolder" Name="arm64" />
+        <?endif?>
+        </Directory>
       </Directory>
     </DirectoryRef>
     <DirectoryRef Id="CmdPalInstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test">
@@ -18,14 +25,40 @@
         <?endif?>
       </Component>
     </DirectoryRef>
+    <?if $(sys.BUILDARCH) = x64 ?>
+    <DirectoryRef Id="CmdPalDepsX64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\x64">
+      <Component Id="Module_CmdPal_Deps" Guid="C2790FC4-0665-4462-947A-D942A2AABFF0" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="Microsoft.VCLibs.x64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
+      </Component>
+    </DirectoryRef>
+    <?else?>
+    <DirectoryRef Id="CmdPalDepsArm64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\arm64">
+      <Component Id="Module_CmdPal_Deps" Guid="C2790FC4-0665-4462-947A-D942A2AABFF0" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="Microsoft.VCLibs.ARM64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.Desktop.appx" />
+      </Component>
+    </DirectoryRef>
+    <?endif?>
     <ComponentGroup Id="CmdPalComponentGroup">
       <Component Id="RemoveCmdPalFolder" Guid="2DF90C08-CC75-4245-A14E-B82904636C53" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveCmdPalFolder" Value="" KeyPath="yes" />
         </RegistryKey>
         <RemoveFolder Id="RemoveCmdPalInstallDirFolder" Directory="CmdPalInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveCmdPalDepsInstallDirFolder" Directory="CmdPalDepsInstallFolder" On="uninstall" />
+    <?if $(sys.BUILDARCH) = x64 ?>
+        <RemoveFolder Id="RemoveCmdPalDepsX64InstallDirFolder" Directory="CmdPalDepsX64InstallFolder" On="uninstall" />
+    <?else?>
+        <RemoveFolder Id="RemoveCmdPalDepsArm64InstallDirFolder" Directory="CmdPalDepsArm64InstallFolder" On="uninstall" />
+    <?endif?>
       </Component>
       <ComponentRef Id="Module_CmdPal" />
+      <ComponentRef Id="Module_CmdPal_Deps" />
     </ComponentGroup>
   </Fragment>
 </Wix>
