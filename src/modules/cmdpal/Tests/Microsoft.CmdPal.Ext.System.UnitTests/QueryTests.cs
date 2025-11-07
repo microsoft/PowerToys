@@ -25,7 +25,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("hibernate", "Hibernate")]
     [DataRow("open recycle", "Open Recycle Bin")]
     [DataRow("empty recycle", "Empty Recycle Bin")]
-    [DataRow("uefi", "UEFI Firmware Settings")]
+    [DataRow("uefi", "UEFI firmware settings")]
     public void TopLevelPageQueryTest(string input, string matchedTitle)
     {
         var settings = new Settings();
@@ -143,6 +143,6 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(result);
         var firstItem = result.FirstOrDefault();
         var firstItemIsUefiCommand = firstItem?.Title.Contains("UEFI", StringComparison.OrdinalIgnoreCase) ?? false;
-        Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI Firmware Settings' but got '{firstItem?.Title}'");
+        Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI firmware settings' but got '{firstItem?.Title}'");
     }
 }

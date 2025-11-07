@@ -7,34 +7,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AdvancedPaste.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:settings="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="PromptBoxControl"
     mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Default">
-                    <Color x:Key="AccentGradientColor">#65C8F2</Color>
-                    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Offset="0.0" Color="#98EFFE" />
-                        <GradientStop Offset="0.25" Color="#48B1E9" />
-                        <GradientStop Offset="1.0" Color="{StaticResource AccentGradientColor}" />
-                    </LinearGradientBrush>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Light">
-                    <Color x:Key="AccentGradientColor">#005FB8</Color>
-                    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Offset="0.0" Color="#4992C7" />
-                        <GradientStop Offset="0.25" Color="#1353A0" />
-                        <GradientStop Offset="1.0" Color="{StaticResource AccentGradientColor}" />
-                    </LinearGradientBrush>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="HighContrast">
-                    <Color x:Key="AccentGradientColor">#48B1E9</Color>
-                    <SolidColorBrush x:Key="AccentGradientBrush" Color="{StaticResource AccentGradientColor}" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
 
+            <LinearGradientBrush x:Name="IntelligentUnderlineGradient" StartPoint="0,0.5" EndPoint="1,0.5">
+                <GradientStop Offset="0.0" Color="#FF0078D4" />
+                <GradientStop Offset="0.42" Color="#FF464FEB" />
+                <GradientStop Offset="0.87" Color="#FFD660FF" />
+                <GradientStop Offset="1.0" Color="#FFFEA874" />
+            </LinearGradientBrush>
+            <x:Double x:Key="ModelSelectorButtonWidth">44</x:Double>
             <Style x:Key="CustomTextBoxStyle" TargetType="TextBox">
                 <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
                 <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
@@ -155,6 +142,7 @@
                                     Foreground="{ThemeResource TextControlHeaderForeground}"
                                     TextWrapping="Wrap"
                                     Visibility="Collapsed" />
+
                                 <Border
                                     x:Name="BorderElement"
                                     Grid.Row="1"
@@ -168,48 +156,32 @@
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     Control.IsTemplateFocusTarget="True"
                                     CornerRadius="{TemplateBinding CornerRadius}" />
-                                <Viewbox
+                                <Rectangle
+                                    x:Name="FocusHighlighter"
                                     Grid.Row="1"
-                                    Width="16"
-                                    Height="16"
-                                    Margin="8,0,0,0">
-                                    <StackPanel
-                                        Margin="0"
-                                        Padding="0"
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch">
-                                        <ProgressRing
-                                            Width="30"
-                                            Height="30"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            IsActive="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                            IsIndeterminate="{Binding DataContext.HasIndeterminateTransformProgress, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                            Maximum="100"
-                                            Minimum="0"
-                                            Visibility="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"
-                                            Value="{Binding DataContext.TransformProgress, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
-
-                                        <StackPanel
-                                            Margin="0"
-                                            Padding="0"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            Visibility="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                                            <Image
-                                                x:Name="AIGlyphImage"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                Source="/Assets/AdvancedPaste/SemanticKernel.svg"
-                                                Visibility="{Binding DataContext.IsAdvancedAIEnabled, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                            <PathIcon
-                                                x:Name="AIGlyph"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Visibility="{Binding DataContext.IsAdvancedAIEnabled, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Viewbox>
+                                    Grid.RowSpan="1"
+                                    Grid.ColumnSpan="4"
+                                    Height="2"
+                                    Margin="12,0,12,0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Bottom"
+                                    Fill="{StaticResource IntelligentUnderlineGradient}"
+                                    RadiusX="1"
+                                    RadiusY="1"
+                                    Visibility="Collapsed" />
+                                <Grid Grid.Row="1" Width="{StaticResource ModelSelectorButtonWidth}">
+                                    <ProgressRing
+                                        Width="20"
+                                        Height="20"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IsActive="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        IsIndeterminate="{Binding DataContext.HasIndeterminateTransformProgress, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Visibility="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        Value="{Binding DataContext.TransformProgress, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                                </Grid>
                                 <ScrollViewer
                                     x:Name="ContentElement"
                                     Grid.Row="1"
@@ -279,12 +251,6 @@
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="AIGlyph" Storyboard.TargetProperty="Foreground">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
-                                                </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="AIGlyphImage" Storyboard.TargetProperty="Opacity">
-                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0.4" />
-                                                </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
                                                 </ObjectAnimationUsingKeyFrames>
@@ -314,7 +280,10 @@
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocused}" />
                                                 </ObjectAnimationUsingKeyFrames>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="FocusHighlighter" Storyboard.TargetProperty="Visibility">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <LinearGradientBrush MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
@@ -331,7 +300,7 @@
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderThemeThicknessFocused}" />
-                                                </ObjectAnimationUsingKeyFrames>
+                                                </ObjectAnimationUsingKeyFrames>-->
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
                                                 </ObjectAnimationUsingKeyFrames>
@@ -364,6 +333,8 @@
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+            <converters:CountToInvertedVisibilityConverter x:Key="CountToInvertedVisibilityConverter" />
+            <converters:ServiceTypeToIconConverter x:Key="ServiceTypeToIconConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PromptBoxGrid" Loaded="Grid_Loaded">
@@ -374,18 +345,19 @@
         <local:AnimatedContentControl
             x:Name="Loader"
             MinHeight="48"
-            CornerRadius="8">
+            CornerRadius="16">
             <Grid>
                 <TextBox
                     x:Name="InputTxtBox"
                     HorizontalAlignment="Stretch"
                     x:FieldModifier="public"
+                    CornerRadius="16"
                     DataContext="{x:Bind ViewModel}"
                     IsEnabled="{x:Bind ViewModel.ClipboardHasData, Mode=OneWay}"
                     KeyDown="InputTxtBox_KeyDown"
                     PlaceholderText="{x:Bind ViewModel.InputTxtBoxPlaceholderText, Mode=OneWay}"
                     Style="{StaticResource CustomTextBoxStyle}"
-                    TabIndex="0"
+                    TabIndex="1"
                     Text="{x:Bind ViewModel.Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="InputTxtBoxTooltip" />
@@ -545,6 +517,139 @@
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
                 </TextBox>
+                <DropDownButton
+                    x:Name="AIProviderButton"
+                    x:Uid="AIProviderButton"
+                    MinWidth="{StaticResource ModelSelectorButtonWidth}"
+                    Margin="1,1,0,2"
+                    Padding="0,0,4,0"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,1,0"
+                    CornerRadius="16,0,0,16"
+                    Style="{StaticResource SubtleDropDownButtonStyle}"
+                    TabIndex="0"
+                    Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock Text="{x:Bind ViewModel.ActiveAIProviderTooltip, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                    </ToolTipService.ToolTip>
+                    <DropDownButton.Content>
+                        <Image
+                            x:Name="AIProviderIcon"
+                            Width="16"
+                            Height="16"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Source="{x:Bind ViewModel.ActiveAIProvider?.ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}" />
+                    </DropDownButton.Content>
+                    <DropDownButton.Flyout>
+                        <Flyout
+                            Opened="AIProviderFlyout_Opened"
+                            Placement="Bottom"
+                            ShouldConstrainToRootBounds="False">
+                            <Grid
+                                Width="386"
+                                Margin="-4"
+                                RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    x:Uid="AIProvidersFlyoutHeader"
+                                    Grid.Row="0"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <ListView
+                                    x:Name="AIProviderListView"
+                                    Grid.Row="1"
+                                    MaxHeight="320"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                                    ItemsSource="{x:Bind ViewModel.AIProviders, Mode=OneWay}"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                    ScrollViewer.VerticalScrollMode="Auto"
+                                    SelectedItem="{x:Bind ViewModel.ActiveAIProvider, Mode=OneWay}"
+                                    SelectionChanged="AIProviderListView_SelectionChanged"
+                                    SelectionMode="Single"
+                                    Visibility="{x:Bind ViewModel.AIProviders.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                                    <ListView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Vertical" Spacing="2" />
+                                        </ItemsPanelTemplate>
+                                    </ListView.ItemsPanel>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="settings:PasteAIProviderDefinition">
+                                            <Grid Padding="0,8,0,8" ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Image
+                                                    Width="20"
+                                                    Height="20"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    Source="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}" />
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="2">
+                                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                                        Text="{x:Bind ServiceType, Mode=OneWay}" />
+                                                </StackPanel>
+                                                <Border
+                                                    Grid.Column="2"
+                                                    Padding="2,0,2,0"
+                                                    VerticalAlignment="Center"
+                                                    BorderBrush="{ThemeResource ControlStrokeColorSecondary}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Visibility="{x:Bind IsLocalModel, Mode=OneWay}">
+                                                    <TextBlock
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="10"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="Local" />
+                                                </Border>
+                                                <!--<Border
+                                                    Grid.Column="2"
+                                                    Padding="2,0,2,0"
+                                                    VerticalAlignment="Center"
+                                                    BorderBrush="{ThemeResource TertiaryButtonBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Visibility="{x:Bind EnableAdvanceAI}">
+                                                    <TextBlock
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="10"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="ADVANCED" />
+                                                </Border>-->
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <TextBlock
+                                    x:Uid="AIProvidersEmptyText"
+                                    Grid.Row="1"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    TextWrapping="WrapWholeWords"
+                                    Visibility="{x:Bind ViewModel.AIProviders.Count, Mode=OneWay, Converter={StaticResource CountToInvertedVisibilityConverter}}" />
+                                <HyperlinkButton
+                                    x:Uid="AIProvidersManageButtonContent"
+                                    Grid.Row="2"
+                                    HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.OpenSettingsCommand, Mode=OneWay}" />
+                            </Grid>
+                        </Flyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
                 <Grid
                     Width="32"
                     Height="32"
@@ -562,10 +667,9 @@
                         Command="{x:Bind GenerateCustomAICommand}"
                         Content="{ui:FontIcon Glyph=&#xE724;,
                                               FontSize=16}"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         IsEnabled="{x:Bind ViewModel.IsCustomAIAvailable, Mode=OneWay}"
                         Style="{StaticResource SubtleButtonStyle}"
-                        TabIndex="1"
+                        TabIndex="2"
                         Visibility="{x:Bind ViewModel.Query.Length, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                         <ToolTipService.ToolTip>
                             <TextBlock x:Uid="SendBtnToolTip" TextWrapping="WrapWholeWords" />
@@ -640,8 +744,8 @@
             x:Name="LoadingText"
             x:Uid="LoadingText"
             Grid.Row="1"
-            FontWeight="SemiBold"
-            Foreground="{ThemeResource AccentGradientBrush}"
+            Margin="4,4,0,0"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Style="{StaticResource CaptionTextBlockStyle}"
             Visibility="Collapsed">
             <animations:Implicit.ShowAnimations>
