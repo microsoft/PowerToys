@@ -19,7 +19,7 @@
     <Page.Resources>
         <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
-  </Page.Resources>
+    </Page.Resources>
     <Grid>
         <controls:SettingsPageControl
             x:Uid="LightSwitch"
@@ -201,10 +201,10 @@
                         <ContentDialog
                             x:Name="LocationDialog"
                             x:Uid="LightSwitch_LocationDialog"
+                            Closed="LocationDialog_Closed"
                             IsPrimaryButtonEnabled="False"
                             IsSecondaryButtonEnabled="True"
                             Opened="LocationDialog_Opened"
-                            Closed="LocationDialog_Closed"
                             PrimaryButtonClick="LocationDialog_PrimaryButtonClick"
                             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
                             <Grid RowSpacing="16">
@@ -259,16 +259,16 @@
                                         x:Uid="LightSwitch_LatitudeBox"
                                         Maximum="90"
                                         Minimum="-90"
-                                        Value="{x:Bind ViewModel.Latitude, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}"
-                                        ValueChanged="LatLonBox_ValueChanged" />
+                                        ValueChanged="LatLonBox_ValueChanged"
+                                        Value="{x:Bind ViewModel.Latitude, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}" />
                                     <NumberBox
                                         x:Name="LongitudeBox"
                                         x:Uid="LightSwitch_LongitudeBox"
                                         Grid.Column="1"
                                         Maximum="180"
                                         Minimum="-180"
-                                        Value="{x:Bind ViewModel.Longitude, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}"
-                                        ValueChanged="LatLonBox_ValueChanged" />
+                                        ValueChanged="LatLonBox_ValueChanged"
+                                        Value="{x:Bind ViewModel.Longitude, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}" />
                                     <Button
                                         x:Name="SyncButton"
                                         x:Uid="LightSwitch_FindLocationAutomation"
