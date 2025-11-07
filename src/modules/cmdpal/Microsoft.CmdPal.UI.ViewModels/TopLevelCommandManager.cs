@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -139,6 +139,9 @@ public partial class TopLevelCommandManager : ObservableObject,
                     bands.Add(item);
                 }
 
+                var commandsCount = commands.Count;
+                var bandsCount = bands.Count;
+                Logger.LogDebug($"{commandProvider.ProviderId}: Loaded {commandsCount} commands, {bandsCount} bands");
                 return new TopLevelObjectSets(commands, bands);
             },
             CancellationToken.None,
@@ -241,6 +244,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
+            DockBands.Clear();
         }
 
         await LoadBuiltinsAsync();
@@ -301,6 +305,8 @@ public partial class TopLevelCommandManager : ObservableObject,
         var timer = new Stopwatch();
         timer.Start();
 
+        // var appState = _serviceProvider.GetService<AppStateModel>()!;
+
         // Start all extensions in parallel
         var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
@@ -321,11 +327,25 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             foreach (var providerObjects in commandSets)
             {
+                var commandsCount = providerObjects.Commands?.Count() ?? 0;
+                var bandsCount = providerObjects.DockBands?.Count() ?? 0;
+                Logger.LogDebug($"(some provider) Loaded {commandsCount} commands and {bandsCount} bands");
+
                 if (providerObjects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
                     foreach (var c in commands)
                     {
                         TopLevelCommands.Add(c);
+
+                        // if (appState.TopLevelCommandBands.Where(bandSettings => bandSettings.Id == c.Id).FirstOrDefault() is JsonCommandBand b)
+                        // {
+                        //    if (c.ToDockBandItem(showLabels: false) is ICommandItem bandItem)
+                        //    {
+                        //        var topLevelBand = new TopLevelViewModel(new(new(bandItem)))
+                        //    }
+                        //
+                        //    DockBands.Add((TopLevelViewModel)bandItem);
+                        // }
                     }
                 }
 

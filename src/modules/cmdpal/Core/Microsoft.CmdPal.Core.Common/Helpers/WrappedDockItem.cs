@@ -18,17 +18,19 @@ public partial class WrappedDockItem : CommandItem
         Command = new WrappedDockList(command);
     }
 
-    public WrappedDockItem(ICommandItem item)
+    public WrappedDockItem(ICommandItem item, string id)
     {
-        Command = new WrappedDockList(item);
+        Command = new WrappedDockList(item, id);
     }
 }
 
 public partial class WrappedDockList : ListPage
 {
-    public override string Name => "TODO!";
+    public override string Name => _command.Name;
 
-    public override string Id => _command.Id; // + "__DockBand";
+    private string _id;
+
+    public override string Id => _id;
 
     private ICommand _command;
     private IListItem[] _items;
@@ -38,9 +40,10 @@ public partial class WrappedDockList : ListPage
         _command = command;
         _items = new IListItem[] { new ListItem(command) };
         Name = _command.Name;
+        _id = _command.Id; // + "__DockBand";
     }
 
-    public WrappedDockList(ICommandItem item)
+    public WrappedDockList(ICommandItem item, string id)
     {
         _command = item.Command;
 
@@ -51,6 +54,7 @@ public partial class WrappedDockList : ListPage
             new ListItem(_command) { Title = item.Title, Subtitle = item.Subtitle, Icon = item.Icon },
         };
         Name = _command.Name;
+        _id = string.IsNullOrEmpty(id) ? _command.Id : id;
     }
 
     public override IListItem[] GetItems()

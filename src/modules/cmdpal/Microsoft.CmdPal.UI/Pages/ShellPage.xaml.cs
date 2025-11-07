@@ -79,8 +79,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         this.InitializeComponent();
 
-        _dockWindow = new DockWindow();
-
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
@@ -108,6 +106,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
 
+        _dockWindow = new DockWindow();
         _dockWindow.Show();
     }
 
@@ -649,15 +648,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             default:
-            {
-                // The CommandBar is responsible for handling all the item keybindings,
-                // since the bound context item may need to then show another
-                // context menu
-                TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-                WeakReferenceMessenger.Default.Send(msg);
-                e.Handled = msg.Handled;
-                break;
-            }
+                {
+                    // The CommandBar is responsible for handling all the item keybindings,
+                    // since the bound context item may need to then show another
+                    // context menu
+                    TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                    WeakReferenceMessenger.Default.Send(msg);
+                    e.Handled = msg.Handled;
+                    break;
+                }
         }
     }
 
@@ -713,7 +712,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
-        
+
         _dockWindow?.Dispose();
     }
 }

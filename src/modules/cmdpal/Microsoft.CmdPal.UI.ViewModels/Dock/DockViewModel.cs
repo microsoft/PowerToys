@@ -10,7 +10,6 @@ using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Dispatching;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
@@ -21,8 +20,10 @@ public sealed partial class DockViewModel : IDisposable,
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
     private DockSettings _settings;
-    private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
+
+    // private DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    // private DispatcherQueue _updateWindowsQueue = DispatcherQueueController.CreateOnDedicatedThread().DispatcherQueue;
+    public TaskScheduler Scheduler { get; }
 
     public ObservableCollection<DockBandViewModel> StartItems { get; } = new();
 
@@ -81,7 +82,7 @@ public sealed partial class DockViewModel : IDisposable,
         var beforeCount = target.Count;
         var afterCount = newBands.Count;
 
-        _dispatcherQueue.TryEnqueue(() =>
+        DoOnUiThread(() =>
         {
             ListHelpers.InPlaceUpdateList(target, newBands, out var removed);
             var isStartBand = target == StartItems;
@@ -107,12 +108,19 @@ public sealed partial class DockViewModel : IDisposable,
         return band;
     }
 
-    public TaskScheduler Scheduler { get; }
-
     public void ShowException(Exception ex, string? extensionHint = null)
     {
         var extensionText = extensionHint ?? "<unknown>";
         CoreLogger.LogError($"Error in extension {extensionText}", ex);
+    }
+
+    private void DoOnUiThread(Action action)
+    {
+        Task.Factory.StartNew(
+            action,
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            Scheduler);
     }
 }
 

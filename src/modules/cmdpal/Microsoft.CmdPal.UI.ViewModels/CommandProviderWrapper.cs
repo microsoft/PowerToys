@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -144,7 +144,7 @@ public sealed class CommandProviderWrapper
 
         ICommandItem[]? commands = null;
         IFallbackCommandItem[]? fallbacks = null;
-        ICommandItem[]? dockBands = null;
+        ICommandItem[] dockBands = []; // do not initialize me to null
 
         try
         {
@@ -207,6 +207,7 @@ public sealed class CommandProviderWrapper
     private void InitializeCommands(TopLevelObjects objects, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
 
         Func<ICommandItem?, bool, TopLevelViewModel> make = (ICommandItem? i, bool fallback) =>
@@ -233,9 +234,36 @@ public sealed class CommandProviderWrapper
 
         if (objects.DockBands is not null)
         {
-            DockBandItems = objects.DockBands
-                .Select(c => make(c, false))
-                .ToArray();
+            List<TopLevelViewModel> bands = new();
+            foreach (var b in objects.DockBands)
+            {
+                var bandVm = make(b, false);
+                bands.Add(bandVm);
+            }
+
+            foreach (var c in TopLevelItems)
+            {
+                foreach (var json in state.TopLevelCommandBands)
+                {
+                    if (json.Id == c.Id)
+                    {
+                        var bandModel = c.ToDockBandItem(showLabels: false);
+                        var bandVm = make(bandModel, false);
+                        bands.Add(bandVm);
+                        break;
+                    }
+                }
+
+                // var matches = state.TopLevelCommandBands.Where(bandSettings => bandSettings.Id == c.Id);
+                // if (state.TopLevelCommandBands.Where(bandSettings => bandSettings.Id == c.Id).FirstOrDefault() is JsonCommandBand b)
+                // {
+                //    var bandModel = c.ToDockBandItem(showLabels: false);
+                //    var bandVm = make(bandModel, false);
+                //    bands.Add(bandVm);
+                // }
+            }
+
+            DockBandItems = bands.ToArray();
         }
     }
 
