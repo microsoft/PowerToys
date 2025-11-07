@@ -131,66 +131,66 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Fixed Awake context menu positioning. The fix removed the conversion of the mouse cursor from screen to client‑window coordinates, instead using the raw screen coordinates returned by GetCursorPos; the context menu now appears at the correct screen position. #41009 Thanks [@lzandman](https://github.com/lzandman)
 
 ### Command Palette
- - The search field in context menus now matches the look of the Command Palette, with a smoke backdrop and better padding. ([#42081](https://github.com/microsoft/PowerToys/pull/42081)). 
+- The search field in context menus now matches the look of the Command Palette, with a smoke backdrop and improved padding. ([#42081](https://github.com/microsoft/PowerToys/pull/42081))
 
- - Items such as the calculator or Run dialog appear more quickly because the Command Palette updates "special" fall-back entries separately from other suggestions. ([#42289](https://github.com/microsoft/PowerToys/pull/42289)). Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Window Walker now reevaluates processes when a window's backing process changes, so UWP apps no longer show as "not responding" and the correct app type is displayed. ([#42317](https://github.com/microsoft/PowerToys/pull/42317)). Thanks [@jiripolasek](https://github.com/jiripolasek).
- - When you navigate away from a page in the Command Palette, its data model is cleaned up and the command bar is reset. This prevents leftover state from interfering with other pages. ([#42293](https://github.com/microsoft/PowerToys/pull/42293)). Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Items in the Command Palette's clipboard history now show useful metadata. For example, image items display dimensions, text file entries show file names and sizes, web-link entries include page titles, and regular text entries show word counts. ([#42188](https://github.com/microsoft/PowerToys/pull/42188)). Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Fixed a rare crash in the Windows Terminal extension when the `LOCALAPPDATA` environment variable was missing. The code now retrieves the Local Application Data folder via a reliable API instead. ([#42326](https://github.com/microsoft/PowerToys/pull/42326)).
- - The Command Palette settings page has been reorganized: activation key options are grouped under an expander and extension settings are framed for better readability. ([#42303](https://github.com/microsoft/PowerToys/pull/42303)).
- - If a window changes its style (for example, becoming a tool window), the Command Palette now refreshes its cached data so the window no longer remains stuck in the taskbar. ([#42405](https://github.com/microsoft/PowerToys/pull/42405)). Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Fixed crashes on pages that use filters (e.g., Windows Terminal profiles or Services) when the app is trimmed/AOT compiled by adjusting the binding mechanism. ([#42467](https://github.com/microsoft/PowerToys/pull/42467)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Fallback items such as math calculations or the Run command now appear in results more quickly. ([#42289](https://github.com/microsoft/PowerToys/pull/42289)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Corrected a logging bug so that exception messages are properly recorded rather than logged as placeholder text, improving troubleshooting. ([#42460](https://github.com/microsoft/PowerToys/pull/42460)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Ensures the command bar updates correctly after navigating to another page and commands are displayed correctly. ([#42293](https://github.com/microsoft/PowerToys/pull/42293)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Engineering change: resolved numerous build warnings in Command Palette projects; no user-visible impact. ([#42584](https://github.com/microsoft/PowerToys/pull/42584)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- The Command Palette settings page has been reorganized. Activation-key options are grouped under an expander and extension settings are framed for improved readability. ([#42303](https://github.com/microsoft/PowerToys/pull/42303))
 
- - In the system commands list, the `:red_circle:` placeholder is replaced with an actual red-circle emoji, ensuring the correct icon shows in the UI. ([#42666](https://github.com/microsoft/PowerToys/pull/42666)). Thanks Sam Rueby.
+- When you modify a command, its alias, hotkey, and tags now update in the top-level list, keeping the displayed information in sync. ([#42806](https://github.com/microsoft/PowerToys/pull/42806)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Window Walker now shows the actual icon of each window instead of using the process icon, leading to better recognition of PWAs and Python GUIs. ([#42316](https://github.com/microsoft/PowerToys/pull/42316)). Thanks Lee Won Jun.
+- Press `Ctrl + ,` to open Command Palette settings from anywhere. ([#42787](https://github.com/microsoft/PowerToys/pull/42787)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Bookmarks created before version 0.95 are now migrated correctly, so custom aliases and hotkeys are preserved after upgrading. ([#42814](https://github.com/microsoft/PowerToys/pull/42814)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- You can use `Page Up` and `Page Down` to navigate the list while focus is in the search box. ([#41886](https://github.com/microsoft/PowerToys/pull/41886)) — Thanks [@samrueby](https://github.com/samrueby).
 
- - When you modify a command, its alias, hotkey and tags now update in the top-level list so the displayed information stays in sync. ([#42806](https://github.com/microsoft/PowerToys/pull/42806)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Fixed an issue where the search box could disappear when navigating pages. ([#42783](https://github.com/microsoft/PowerToys/pull/42783)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Search results feel more responsive because typed input is now handled via a task queue rather than complex cancellation tokens. ([#42356](https://github.com/microsoft/PowerToys/pull/42356)).
+- Ensured search text is selected when *Go home when activated* and *Highlight search on activate* are both enabled. ([#42937](https://github.com/microsoft/PowerToys/pull/42937)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Press **Ctrl + ,** to open the Command Palette settings from anywhere. ([#42787](https://github.com/microsoft/PowerToys/pull/42787)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Fixed an issue where Command Palette window occasionally appeared on the taskbar under certain Windows settings. ([#42902](https://github.com/microsoft/PowerToys/pull/42902)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Fixed an issue where the search box might disappear when navigating pages; asynchronous operations are cancelled correctly and the search box defaults to visible. ([#42783](https://github.com/microsoft/PowerToys/pull/42783)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Ensures that labels and icons of list items and menu items update when they change. ([#42982](https://github.com/microsoft/PowerToys/pull/42982)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - File search now includes filter buttons to show *all items*, *files only*, or *folders only*. Selecting a filter adds `kind:folders` or `kind:not folders` to the query to limit results. ([#42141](https://github.com/microsoft/PowerToys/pull/42141)).
+- Fixed visibility of list filters when navigating to a content page. ([#42828](https://github.com/microsoft/PowerToys/pull/42828)) — Thanks [@DevLGuilherme](https://github.com/DevLGuilherme).
 
- - When activating `Go home` from within the Command Palette, the existing search text is automatically selected if the "highlight search on activate" option is enabled, making it easy to start typing a new query. ([#42937](https://github.com/microsoft/PowerToys/pull/42937)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Added search to the extension list and a link to extensions on the Microsoft Store. ([#41453](https://github.com/microsoft/PowerToys/pull/41453)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - When a command is replaced, its view model continues to listen for property changes, ensuring the UI updates correctly. ([#42982](https://github.com/microsoft/PowerToys/pull/42982)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Added options to open the Command Palette window at its last position or re-center it. ([#38943](https://github.com/microsoft/PowerToys/pull/38943))
 
- - CmdPal's search bar now accepts page up/down keyboard strokes. ([#41886](https://github.com/microsoft/PowerToys/pull/41886)). Thanks Sam Rueby.
+- The Command Palette now remembers its window size after restarting. ([#38943](https://github.com/microsoft/PowerToys/pull/38943))
 
- - CmdPal: Add hidden window as owner for tool windows. ([#42902](https://github.com/microsoft/PowerToys/pull/42902)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Added a global error handler that logs fatal errors and provides feedback when unexpected failures force Command Palette to close. ([#41392](https://github.com/microsoft/PowerToys/pull/41392)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - CmdPal: Add hints about bookmark placeholders to the Add/Edit Bookmark form. ([#42793](https://github.com/microsoft/PowerToys/pull/42793)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Fixed forms and extension settings not showing on some machines due to a missing VC++ runtime. ([#43255](https://github.com/microsoft/PowerToys/pull/43255))
 
- - [CmdPal] Fix filters visibility on non-ListPage. ([#42828](https://github.com/microsoft/PowerToys/pull/42828)). Thanks [@DevLGuilherme](https://github.com/DevLGuilherme).
+- Restored ranking of fallback commands for built-in extensions (Sleep, Shutdown, Windows settings, Web search, etc.). ([#43321](https://github.com/microsoft/PowerToys/pull/43321)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - CmdPal: Extension list search. ([#41453](https://github.com/microsoft/PowerToys/pull/41453)). Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Improved and unified labels and texts across the application. ([#43269](https://github.com/microsoft/PowerToys/pull/43269))
 
- - [CmdPal] Added recenter window support. ([#38943](https://github.com/microsoft/PowerToys/pull/38943)).
- 
- - Tests: do not use *relative drive letter*. ([#43135](https://github.com/microsoft/PowerToys/pull/43135)).
+- Maintainance: Resolved numerous build warnings in Command Palette projects; no user-visible impact. ([#42584](https://github.com/microsoft/PowerToys/pull/42584)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - CmdPal: Add a micro global error handler. ([#41392](https://github.com/microsoft/PowerToys/pull/41392)). Thanks [@jiripolasek](https://github.com/jiripolasek).
- 
- - Cmdpal: Bring vcruntime in cmdpal. ([#43255](https://github.com/microsoft/PowerToys/pull/43255)). 
+- Maintainance: Fixed a logging issue so exception messages are properly recorded instead of placeholder text, improving troubleshooting. ([#42460](https://github.com/microsoft/PowerToys/pull/42460)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - CmdPal: Treat System command provider as special. ([#43321](https://github.com/microsoft/PowerToys/pull/43321)). Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - [CmdPal] Extension string updates. ([#43269](https://github.com/microsoft/PowerToys/pull/43269)).
+### Command Palette Extensions
 
- - Add back NuGet config file accidentally deleted by AdvancedPaste PR. ([#43312](https://github.com/microsoft/PowerToys/pull/43312)).
+- Bookmarks: Added hints about bookmark placeholders to the Add/Edit Bookmark form. ([#42793](https://github.com/microsoft/PowerToys/pull/42793)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Bookmarks: Improved migration of bookmarks from older versions and fixed an issue where aliases or keyboard shortcuts could be lost after restart. ([#42814](https://github.com/microsoft/PowerToys/pull/42814)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
 
- - Improved Command Palette crash error message, This change localizes the error dialog and avoids blank message boxes. Thanks [@jiripolasek](https://github.com/jiripolasek)
+- Clipboard history: Items shown in Command Palette’s clipboard history now include helpful metadata. For example, image items show dimensions, text files show names and sizes, web links include page titles, and text entries display word counts. ([#42188](https://github.com/microsoft/PowerToys/pull/42188)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
+
+- File search: Added filter buttons to show *all items*, *files only*, or *folders only*. Selecting a filter adds `kind:folders` or `kind:not folders` to narrow results. ([#42141](https://github.com/microsoft/PowerToys/pull/42141))
+
+- System commands: Replaced the `:red_circle:` placeholder with an actual red-circle emoji so the correct icon appears in the UI. ([#42666](https://github.com/microsoft/PowerToys/pull/42666)) — Thanks [@samrueby](https://github.com/samrueby).
+
+- WinGet: Search performance feels more responsive because typed input is now processed via a task queue rather than complex cancellation tokens. ([#42356](https://github.com/microsoft/PowerToys/pull/42356))
+
+- Window Walker: UWP apps no longer show a “not responding” label when suspended. ([#42317](https://github.com/microsoft/PowerToys/pull/42317)) — Thanks [@jiripolasek](https://github.com/jiripolasek).
+- Window Walker: Now displays the actual icon of each window rather than using the process icon, improving recognition of PWAs and Python GUIs. ([#42316](https://github.com/microsoft/PowerToys/pull/42316)) — Thanks [@Lee-WonJun](https://github.com/Lee-WonJun).
+
+- Windows Terminal: Fixed a rare crash in the Windows Terminal extension when the `LOCALAPPDATA` environment variable was missing. The path is now retrieved via a reliable API. ([#42326](https://github.com/microsoft/PowerToys/pull/42326))
 
 ### Cursor Wrap
  - A new Cursor Wrap module lets your mouse pointer move seamlessly from one edge of the screen to the opposite edge. It supports up to nine monitors and can wrap across the top, bottom, left and right edges. ([#41826](https://github.com/microsoft/PowerToys/pull/41826)). Thanks Mike Hall.
