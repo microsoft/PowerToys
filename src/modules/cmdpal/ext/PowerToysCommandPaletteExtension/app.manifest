@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0" name="PowerToysCommandPaletteExtension.app"/>
+  <msix xmlns="urn:schemas-microsoft-com:msix.v1"
+        packageName="Microsoft.PowerToys.SparseApp"
+        applicationId="CmdPalExt.PowerToys"
+        publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+</assembly>
