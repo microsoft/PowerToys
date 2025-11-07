@@ -16,6 +16,7 @@ LightSwitchStateManager::LightSwitchStateManager()
 // Called when settings.json changes
 void LightSwitchStateManager::OnSettingsChanged()
 {
+    std::lock_guard<std::mutex> lock(_stateMutex);
     Logger::info(L"[LightSwitchStateManager] Settings changed event received");
 
     // If manual override was active, clear it so new settings take effect
@@ -28,10 +29,10 @@ void LightSwitchStateManager::OnSettingsChanged()
     EvaluateAndApplyIfNeeded();
 }
 
-
 // Called once per minute
 void LightSwitchStateManager::OnTick(int currentMinutes)
 {
+    std::lock_guard<std::mutex> lock(_stateMutex);
     Logger::debug(L"[LightSwitchStateManager] Tick received: {}", currentMinutes);
     EvaluateAndApplyIfNeeded();
 }
@@ -39,6 +40,7 @@ void LightSwitchStateManager::OnTick(int currentMinutes)
 // Called when manual override is triggered
 void LightSwitchStateManager::OnManualOverride()
 {
+    std::lock_guard<std::mutex> lock(_stateMutex);
     Logger::info(L"[LightSwitchStateManager] Manual override triggered");
     _state.isManualOverride = !_state.isManualOverride;
 
