@@ -217,6 +217,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     int nowMinutes = st.wHour * 60 + st.wMinute;
 
     Logger::info(L"[LightSwitchService] Initialized at {:02d}:{:02d}.", st.wHour, st.wMinute);
+    stateManager.SyncInitialThemeState();
     stateManager.OnTick(nowMinutes);
 
     // ────────────────────────────────────────────────────────────────

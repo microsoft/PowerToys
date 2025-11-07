@@ -7,7 +7,8 @@ struct LightSwitchState
 {
     ScheduleMode lastAppliedMode = ScheduleMode::Off;
     bool isManualOverride = false;
-    bool isLightThemeActive = false;
+    bool isSystemLightActive = false;
+    bool isAppsLightActive = false;
     int lastEvaluatedDay = -1;
     int lastTickMinutes = -1;
 
@@ -30,6 +31,9 @@ public:
 
     // Called when manual override is toggled (via shortcut or system change).
     void OnManualOverride();
+
+    // Initial sync at startup to align internal state with system theme
+    void SyncInitialThemeState();
 
     // Accessor for current state (optional, for debugging or telemetry)
     const LightSwitchState& GetState() const { return _state; }
