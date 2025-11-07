@@ -9,4 +9,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 internal sealed class Icons
 {
     internal static IconInfo PinIcon => new("\uE718"); // Pin icon
+
+    internal static IconInfo UnpinIcon => new("\uE77A"); // Unpin icon
 }

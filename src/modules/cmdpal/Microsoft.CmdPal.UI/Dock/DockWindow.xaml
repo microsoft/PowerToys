@@ -12,6 +12,7 @@
     xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:winuiex="using:WinUIEx"
     Title="PowerDock"
+    Closed="DockWindow_Closed"
     mc:Ignorable="d">
 
     <Grid

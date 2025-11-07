@@ -398,27 +398,27 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             }
         }
 
-        if (_dockViewModel is not null)
+        var dockEnabled = _settings.EnableDock;
+        if (dockEnabled && _dockViewModel is not null)
         {
             // Add a separator
             contextItems.Add(new Separator());
 
-            // Now we need to add the dock commands. these are implemented by
-            // asking the dock VM, to
-            // * create a new band command item in appstate,
-            //   - And we also need to... reload the commands? Not that though.
-            //     That's destructive (terminates processes).
-            //   - We need to somehow have the TopLevelCommandManager
-            //     re-evaluate the commands for a given provider. That's gross.
-            // * assigning this command's ID into that command
-            // * then adding _that_ command (from the builtins) to the dock
-            //   settings model
-            contextItems.Add(
-                new PinToDockContextItem(
-                    this,
-                    _dockViewModel,
-                    _settings,
-                    _serviceProvider.GetService<TopLevelCommandManager>()!));
+            var inStartBands = _settings.DockSettings.StartBands.Any(band => band.Id == this.Id);
+            var inEndBands = _settings.DockSettings.EndBands.Any(band => band.Id == this.Id);
+            var alreadyPinned = (inStartBands || inEndBands) &&
+                                _settings.DockSettings.PinnedCommands.Contains(this.Id);
+
+            var pinCommand = new PinToDockCommand(
+                this,
+                !alreadyPinned,
+                _dockViewModel,
+                _settings,
+                _serviceProvider.GetService<TopLevelCommandManager>()!);
+
+            var contextItem = new CommandContextItem(pinCommand);
+
+            contextItems.Add(contextItem);
         }
 
         return contextItems.ToArray();
@@ -443,38 +443,21 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             _serviceProvider);
     }
 
-    private sealed partial class PinToDockContextItem : CommandContextItem
-    {
-        private readonly TopLevelViewModel _topLevelViewModel;
-        private readonly DockViewModel _dockViewModel;
-        private readonly SettingsModel _settings;
-
-        public override IIconInfo Icon => Icons.PinIcon;
-
-        public PinToDockContextItem(
-            TopLevelViewModel topLevelViewModel,
-            DockViewModel dockViewModel,
-            SettingsModel settings,
-            TopLevelCommandManager topLevelCommandManager)
-            : base(new PinToDockCommand(topLevelViewModel, dockViewModel, settings, topLevelCommandManager))
-        {
-            _topLevelViewModel = topLevelViewModel;
-            _dockViewModel = dockViewModel;
-            _settings = settings;
-
-            Title = "Pin to Dock";
-        }
-    }
-
     private sealed partial class PinToDockCommand : InvokableCommand
     {
         private readonly TopLevelViewModel _topLevelViewModel;
         private readonly DockViewModel _dockViewModel;
         private readonly SettingsModel _settings;
         private readonly TopLevelCommandManager _topLevelCommandManager;
+        private readonly bool _pin;
+
+        public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
+
+        public override string Name => _pin ? "Pin to dock" : "Unpin from dock"; // TODO! loc
 
         public PinToDockCommand(
             TopLevelViewModel topLevelViewModel,
+            bool pin,
             DockViewModel dockViewModel,
             SettingsModel settings,
             TopLevelCommandManager topLevelCommandManager)
@@ -483,47 +466,65 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             _dockViewModel = dockViewModel;
             _settings = settings;
             _topLevelCommandManager = topLevelCommandManager;
+            _pin = pin;
         }
 
         public override CommandResult Invoke()
         {
-            Logger.LogDebug($"PinToDockCommand.Invoke: {_topLevelViewModel.Id}");
+            Logger.LogDebug($"PinToDockCommand.Invoke({_pin}): {_topLevelViewModel.Id}");
+            if (_pin)
+            {
+                PinToDock();
+            }
+            else
+            {
+                UnpinFromDock();
+            }
 
+            // Notify that the MoreCommands have changed, so the context menu updates
+            _topLevelViewModel.PropChanged?.Invoke(
+                _topLevelViewModel,
+                new PropChangedEventArgs(nameof(ICommandItem.MoreCommands)));
+            return CommandResult.GoHome();
+        }
+
+        private void PinToDock()
+        {
             // TODO! Deal with "the command ID is already pinned in PinnedCommands but not in one of StartBands/EndBands"
-            _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
+            if (!_settings.DockSettings.PinnedCommands.Contains(_topLevelViewModel.Id))
+            {
+                _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
+            }
+
             _settings.DockSettings.StartBands.Add(new DockBandSettings()
             {
                 Id = _topLevelViewModel.Id,
                 ShowLabels = true,
             });
 
-            // MIKE TODO!
-            //
-            // SaveSettings will raise a settings changed event, which the
-            // DockViewModel will listen to, and re-setup its bands. BUT, we
-            // haven't actually loaded the band into the TLCM's list of bands
-            // yet! So pinning something like clipboard history will briefly
-            // list all history items, _then_ reload to just the wrapped item.
-            //
-            // Instead, we need a single message for "add this band to the TLCM
-            // and settings". not sure the best way to do that right now.
-            //
-            // * The "top level" bands are created in
-            //   CommandProviderWrapper.InitializeCommands.
-            // * That method takes in all the TLC's, fallbacks, and bands from
-            //   the provider, creates TLVMs for them, and then also builds
-            //   TLVM's for wrapped bands in the settings.
-            // * We'd need to add a method to TLCM to "add this band", which
-            //   would clone the current TLVM into a new one...
-            // SettingsModel.SaveSettings(_settings);
-
-            // // TODO! temporary: send a reload message, so that we have
-            // // everything repopulated
-            // WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+            // Create a new band VM from our current TLVM. This will allow us to
+            // update the bands in the CommandProviderWrapper and the TLCM,
+            // without forcing a whole reload
             var bandVm = _topLevelViewModel.CloneAsBand();
             _topLevelCommandManager.PinDockBand(bandVm);
+
+            // TODO! do we need to save the settings here? Kinda, right? Is that too aggressive?
+            _topLevelViewModel.Save();
+
+            // // Surgically just update the dock view model
+            // _dockViewModel.UpdateSettings(_settings.DockSettings);
+        }
+
+        private void UnpinFromDock()
+        {
+            _settings.DockSettings.PinnedCommands.Remove(_topLevelViewModel.Id);
+            _settings.DockSettings.StartBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
+            _settings.DockSettings.EndBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
+
+            // _topLevelCommandManager.UnpinDockBand(_topLevelViewModel.Id);
+
+            // Surgically just update the dock view model
             _dockViewModel.UpdateSettings(_settings.DockSettings);
-            return CommandResult.GoHome();
         }
     }
 }

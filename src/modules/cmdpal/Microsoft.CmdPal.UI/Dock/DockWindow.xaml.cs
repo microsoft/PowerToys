@@ -204,6 +204,16 @@ public sealed partial class DockWindow : WindowEx,
         _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
+    private void DisposeAcrylic()
+    {
+        if (_acrylicController is not null)
+        {
+            _acrylicController.Dispose();
+            _acrylicController = null!;
+            _configurationSource = null!;
+        }
+    }
+
     private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
     {
         var feContent = content as FrameworkElement;
@@ -511,6 +521,7 @@ public sealed partial class DockWindow : WindowEx,
         DispatcherQueue.TryEnqueue(() =>
         {
             DestroyAppBar(_hwnd);
+
             this.Close();
         });
     }
@@ -589,7 +600,19 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
     }
 
-    public void Dispose() => viewModel.Dispose();
+    public void Dispose()
+    {
+        DisposeAcrylic();
+        viewModel.Dispose();
+    }
+
+    private void DockWindow_Closed(object sender, WindowEventArgs args)
+    {
+        var serviceProvider = App.Current.Services;
+        var settings = serviceProvider.GetService<SettingsModel>();
+        settings?.SettingsChanged -= SettingsChangedHandler;
+        DisposeAcrylic();
+    }
 }
 
 // Thank you to https://stackoverflow.com/a/35422795/1481137
