@@ -182,6 +182,8 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
+        List<TopLevelViewModel> newBands = [.. sender.DockBandItems];
+
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
         // TopLevelCommands to get modified while we're working on it. Otherwise, we might
         // out clone would be stale at the end of this method.
@@ -198,6 +200,13 @@ public partial class TopLevelCommandManager : ObservableObject,
             clone.InsertRange(startIndex, newItems);
 
             ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+
+            // same idea for DockBands
+            List<TopLevelViewModel> dockClone = [.. DockBands];
+            var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
+            dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
+            dockClone.InsertRange(dockStartIndex, newBands);
+            ListHelpers.InPlaceUpdateList(DockBands, dockClone);
         }
 
         return;
@@ -482,6 +491,41 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
                    || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+        }
+    }
+
+    internal void PinDockBand(TopLevelViewModel bandVm)
+    {
+        lock (DockBands)
+        {
+            foreach (var existing in DockBands)
+            {
+                if (existing.Id == bandVm.Id)
+                {
+                    // already pinned
+                    Logger.LogDebug($"Dock band '{bandVm.Id}' is already pinned.");
+                    return;
+                }
+            }
+
+            Logger.LogDebug($"Attempting to pin dock band '{bandVm.Id}' from provider '{bandVm.CommandProviderId}'.");
+            var providerId = bandVm.CommandProviderId;
+            var foundProvider = false;
+            foreach (var provider in CommandProviders)
+            {
+                if (provider.Id == providerId)
+                {
+                    Logger.LogDebug($"Found provider '{providerId}' to pin dock band '{bandVm.Id}'.");
+                    provider.PinDockBand(bandVm);
+                    foundProvider = true;
+                    break;
+                }
+            }
+
+            if (!foundProvider)
+            {
+                Logger.LogWarning($"Could not find provider '{providerId}' to pin dock band '{bandVm.Id}'.");
+            }
         }
     }
 

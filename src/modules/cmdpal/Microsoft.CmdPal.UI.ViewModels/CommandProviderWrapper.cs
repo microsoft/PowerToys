@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 
 using Windows.Foundation;
@@ -289,4 +290,17 @@ public sealed class CommandProviderWrapper
         // In handling this, a call will be made to `LoadTopLevelCommands` to
         // retrieve the new items.
         this.CommandsChanged?.Invoke(this, args);
+
+    internal void PinDockBand(TopLevelViewModel bandVm)
+    {
+        Logger.LogDebug($"CommandProviderWrapper.PinDockBand: {ProviderId} - {bandVm.Id}");
+
+        // var settings = ExtensionHost.ServiceProvider.GetService<SettingsModel>()!;
+        // settings.DockSettings.PinnedCommands.Add(bandVm.Id);
+        // SettingsModel.SaveSettings(settings);
+        var bands = this.DockBandItems.ToList();
+        bands.Add(bandVm);
+        this.DockBandItems = bands.ToArray();
+        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs());
+    }
 }
