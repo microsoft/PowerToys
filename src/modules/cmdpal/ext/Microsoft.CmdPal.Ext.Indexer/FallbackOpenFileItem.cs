@@ -120,7 +120,6 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
                 Icon = Icons.FileExplorerIcon;
-                Subtitle = Resources.Indexer_Subtitle;
                 Command = indexerPage;
 
                 return;

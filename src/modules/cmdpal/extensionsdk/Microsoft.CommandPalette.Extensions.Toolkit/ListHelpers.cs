@@ -19,17 +19,17 @@ public partial class ListHelpers
             return 0;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        var nameMatchScore = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Title);
 
         // var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        var descriptionMatchScore = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Subtitle);
 
         // var executableNameMatch = StringMatcher.FuzzySearch(query, ExePath);
         // var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
         // var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
         // var locLnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableNameLocalized);
         // var score = new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, executableNameMatch.Score }.Max();
-        return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
+        return new[] { nameMatchScore, (descriptionMatchScore - 4) / 2, 0 }.Max();
     }
 
     public static IEnumerable<IListItem> FilterList(IEnumerable<IListItem> items, string query)
@@ -44,12 +44,17 @@ public partial class ListHelpers
 
     public static IEnumerable<T> FilterList<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
     {
+        return FilterListWithScores<T>(items, query, scoreFunction)
+                .Select(score => score.Item);
+    }
+
+    public static IEnumerable<Scored<T>> FilterListWithScores<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
+    {
         var scores = items
             .Select(li => new Scored<T>() { Item = li, Score = scoreFunction(query, li) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
-        return scores
-            .Select(score => score.Item);
+        return scores;
     }
 
     /// <summary>

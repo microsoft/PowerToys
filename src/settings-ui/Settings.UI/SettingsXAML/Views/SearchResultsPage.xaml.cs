@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -32,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (e.Parameter is SearchResultsNavigationParams searchParams)
             {
                 ViewModel.SetSearchResults(searchParams.Query, searchParams.Results);
-                PageControl.ModuleDescription = string.Empty;
+                PageControl.ModuleDescription = $"{ResourceLoaderInstance.ResourceLoader.GetString("Search_ResultsFor")} '{searchParams.Query}'";
             }
         }
 
@@ -43,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is CommunityToolkit.WinUI.Controls.SettingsCard card && card.DataContext is SettingEntry tagEntry)
+            if (sender is SettingsCard card && card.DataContext is SettingEntry tagEntry)
             {
                 NavigateToModule(tagEntry);
             }
@@ -51,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is CommunityToolkit.WinUI.Controls.SettingsCard card && card.DataContext is SettingEntry tagEntry)
+            if (sender is SettingsCard card && card.DataContext is SettingEntry tagEntry)
             {
                 NavigateToSetting(tagEntry);
             }

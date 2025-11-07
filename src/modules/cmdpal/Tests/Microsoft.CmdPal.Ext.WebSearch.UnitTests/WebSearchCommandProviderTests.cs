@@ -16,7 +16,7 @@ public class WebSearchCommandProviderTests
         var provider = new WebSearchCommandsProvider();
 
         // Assert
-        Assert.AreEqual("WebSearch", provider.Id);
+        Assert.AreEqual("com.microsoft.cmdpal.builtin.websearch", provider.Id);
     }
 
     [TestMethod]

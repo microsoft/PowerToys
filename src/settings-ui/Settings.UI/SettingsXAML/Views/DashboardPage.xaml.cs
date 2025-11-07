@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Dashboard Settings Page.
     /// </summary>
-    public sealed partial class DashboardPage : NavigatablePage, IRefreshablePage
+    public sealed partial class DashboardPage : NavigablePage, IRefreshablePage
     {
         /// <summary>
         /// Gets or sets view model.
@@ -65,6 +65,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             App.GetOobeWindow().Activate();
+        }
+
+        private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
+        }
+
+        private void SortByStatus_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
         }
     }
 }

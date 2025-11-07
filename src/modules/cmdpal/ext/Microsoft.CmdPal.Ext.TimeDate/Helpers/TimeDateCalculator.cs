@@ -18,11 +18,6 @@ public sealed partial class TimeDateCalculator
     private const string InputDelimiter = "::";
 
     /// <summary>
-    /// A list of conjunctions that we ignore on search
-    /// </summary>
-    private static readonly string[] _conjunctionList = Resources.Microsoft_plugin_timedate_Search_ConjunctionList.Split("; ");
-
-    /// <summary>
     /// Searches for results
     /// </summary>
     /// <param name="query">Search query object</param>
@@ -79,16 +74,22 @@ public sealed partial class TimeDateCalculator
         }
         else
         {
+            List<(int Score, AvailableResult Item)> itemScores = [];
+
             // Generate filtered list of results
             foreach (var f in availableFormats)
             {
                 var score = f.Score(query, f.Label, f.AlternativeSearchTag);
-
                 if (score > 0)
                 {
-                    results.Add(f.ToListItem());
+                    itemScores.Add((score, f));
                 }
             }
+
+            results = itemScores
+                        .OrderByDescending(s => s.Score)
+                        .Select(s => s.Item.ToListItem())
+                        .ToList();
         }
 
         if (results.Count == 0)

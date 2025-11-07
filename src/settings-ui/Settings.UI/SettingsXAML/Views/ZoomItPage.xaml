@@ -1,4 +1,4 @@
-﻿<local:NavigatablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ZoomItPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,10 +12,10 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <local:NavigatablePage.Resources>
+    <local:NavigablePage.Resources>
         <converters:ZoomItInitialZoomConverter x:Key="ZoomItInitialZoomConverter" />
         <converters:ZoomItTypeSpeedSliderConverter x:Key="ZoomItTypeSpeedSliderConverter" />
-    </local:NavigatablePage.Resources>
+    </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl
         x:Uid="ZoomIt"
@@ -30,23 +30,15 @@
                     IsOpen="True"
                     IsTabStop="True"
                     Severity="Warning" />
-                <tkcontrols:SettingsCard
-                    Name="ZoomItEnableToggleControlHeaderText"
-                    x:Uid="ZoomIt_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItEnableToggleControlHeaderText"
+                        x:Uid="ZoomIt_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="ZoomItToggleShowTrayIcon" x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
@@ -61,6 +53,9 @@
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItToggleAnimateZoom" x:Uid="ZoomIt_Toggle_AnimateZoom">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSmoothZoomedImage" x:Uid="ZoomIt_Toggle_SmoothZoomedImage">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SmoothImage, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItSliderInitialMagnification" x:Uid="ZoomIt_Slider_InitialMagnification">
                         <Slider
@@ -275,4 +270,4 @@
             <controls:PageLink Link="https://learn.microsoft.com/en-us/sysinternals/downloads/zoomit" Text="Sysinternals Zoomit by Mark Russinovich, Alex Mihaiuc, John Stephens" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
-</local:NavigatablePage>
+</local:NavigablePage>

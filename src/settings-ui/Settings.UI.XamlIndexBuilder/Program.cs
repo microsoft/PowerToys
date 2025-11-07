@@ -19,6 +19,13 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
             "ShellPage.xaml",
         };
 
+        // Hardcoded panel-to-page mapping (temporary until generic panel host mapping is needed)
+        // Key: panel file base name (without .xaml), Value: owning page base name
+        private static readonly Dictionary<string, string> PanelPageMapping = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "MouseJumpPanel", "MouseUtilsPage" },
+        };
+
         private static JsonSerializerOptions serializeOption = new()
         {
             WriteIndented = true,
@@ -33,32 +40,117 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
                 Environment.Exit(1);
             }
 
-            string xamlDirectory = args[0];
+            string xamlRootDirectory = args[0];
             string outputFile = args[1];
 
-            if (!Directory.Exists(xamlDirectory))
+            if (!Directory.Exists(xamlRootDirectory))
             {
-                Debug.WriteLine($"Error: Directory '{xamlDirectory}' does not exist.");
+                Debug.WriteLine($"Error: Directory '{xamlRootDirectory}' does not exist.");
                 Environment.Exit(1);
             }
 
             try
             {
                 var searchableElements = new List<SettingEntry>();
-                var xamlFiles = Directory.GetFiles(xamlDirectory, "*.xaml", SearchOption.AllDirectories);
+                var processedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var xamlFile in xamlFiles)
+                void ScanDirectory(string root)
                 {
-                    var fileName = Path.GetFileName(xamlFile);
-                    if (ExcludedXamlFiles.Contains(fileName))
+                    if (!Directory.Exists(root))
                     {
-                        // Skip ShellPage.xaml as it contains many elements not relevant for search
-                        continue;
+                        return;
                     }
 
-                    Debug.WriteLine($"Processing: {fileName}");
-                    var elements = ExtractSearchableElements(xamlFile);
-                    searchableElements.AddRange(elements);
+                    Debug.WriteLine($"[XamlIndexBuilder] Scanning root: {root}");
+                    var xamlFilesLocal = Directory.GetFiles(root, "*.xaml", SearchOption.AllDirectories);
+                    foreach (var xamlFile in xamlFilesLocal)
+                    {
+                        var fullPath = Path.GetFullPath(xamlFile);
+                        if (processedFiles.Contains(fullPath))
+                        {
+                            continue; // already handled (can happen if overlapping directories)
+                        }
+
+                        var fileName = Path.GetFileName(xamlFile);
+                        if (ExcludedXamlFiles.Contains(fileName))
+                        {
+                            continue; // explicitly excluded
+                        }
+
+                        Debug.WriteLine($"Processing: {fileName}");
+                        var elements = ExtractSearchableElements(xamlFile);
+
+                        // Apply hardcoded panel mapping override
+                        var baseName = Path.GetFileNameWithoutExtension(xamlFile);
+                        if (PanelPageMapping.TryGetValue(baseName, out var hostPage))
+                        {
+                            for (int i = 0; i < elements.Count; i++)
+                            {
+                                var entry = elements[i];
+                                entry.PageTypeName = hostPage;
+                                elements[i] = entry;
+                            }
+                        }
+
+                        searchableElements.AddRange(elements);
+                        processedFiles.Add(fullPath);
+                    }
+                }
+
+                // Scan well-known subdirectories under the provided root
+                var subDirs = new[] { "Views", "Panels" };
+                foreach (var sub in subDirs)
+                {
+                    ScanDirectory(Path.Combine(xamlRootDirectory, sub));
+                }
+
+                // Fallback: also scan root directly (in case some XAML lives at root level)
+                ScanDirectory(xamlRootDirectory);
+
+                // -----------------------------------------------------------------------------
+                // Explicit include section: add specific XAML files that we always want indexed
+                // even if future logic excludes them or they live outside typical scan patterns.
+                // Add future files to the ExplicitExtraXamlFiles array below.
+                // -----------------------------------------------------------------------------
+                string[] explicitExtraXamlFiles = new[]
+                {
+                    "MouseJumpPanel.xaml", // Mouse Jump settings panel
+                };
+
+                foreach (var extraFileName in explicitExtraXamlFiles)
+                {
+                    try
+                    {
+                        var matches = Directory.GetFiles(xamlRootDirectory, extraFileName, SearchOption.AllDirectories);
+                        foreach (var match in matches)
+                        {
+                            var full = Path.GetFullPath(match);
+                            if (processedFiles.Contains(full))
+                            {
+                                continue; // already processed in general scan
+                            }
+
+                            Debug.WriteLine($"Processing (explicit include): {extraFileName}");
+                            var elements = ExtractSearchableElements(full);
+                            var baseName = Path.GetFileNameWithoutExtension(full);
+                            if (PanelPageMapping.TryGetValue(baseName, out var hostPage))
+                            {
+                                for (int i = 0; i < elements.Count; i++)
+                                {
+                                    var entry = elements[i];
+                                    entry.PageTypeName = hostPage;
+                                    elements[i] = entry;
+                                }
+                            }
+
+                            searchableElements.AddRange(elements);
+                            processedFiles.Add(full);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Explicit include failed for {extraFileName}: {ex.Message}");
+                    }
                 }
 
                 searchableElements = searchableElements.OrderBy(e => e.PageTypeName).ThenBy(e => e.ElementName).ToList();
@@ -89,23 +181,21 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
                 // Define namespaces
                 XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
                 XNamespace controls = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
-                XNamespace labs = "using:CommunityToolkit.Labs.WinUI";
-                XNamespace winui = "using:CommunityToolkit.WinUI.UI.Controls";
 
                 // Extract SettingsPageControl elements
                 var settingsPageElements = doc.Descendants()
                     .Where(e => e.Name.LocalName == "SettingsPageControl")
                     .Where(e => e.Attribute(x + "Uid") != null);
 
-                // Extract SettingsCard elements
+                // Extract SettingsCard elements (support both Name and x:Name)
                 var settingsElements = doc.Descendants()
                     .Where(e => e.Name.LocalName == "SettingsCard")
-                    .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Uid") != null);
+                    .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Name") != null || e.Attribute(x + "Uid") != null);
 
-                // Extract SettingsExpander elements
+                // Extract SettingsExpander elements (support both Name and x:Name)
                 var settingsExpanderElements = doc.Descendants()
                     .Where(e => e.Name.LocalName == "SettingsExpander")
-                    .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Uid") != null);
+                    .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Name") != null || e.Attribute(x + "Uid") != null);
 
                 // Process SettingsPageControl elements
                 foreach (var element in settingsPageElements)
@@ -185,16 +275,36 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
 
         public static string GetElementName(XElement element, XNamespace x)
         {
-            // Get Name attribute (we call it ElementName in our indexing system)
             var name = element.Attribute("Name")?.Value;
+            if (string.IsNullOrEmpty(name))
+            {
+                name = element.Attribute(x + "Name")?.Value;
+            }
+
             return name;
         }
 
         public static string GetElementUid(XElement element, XNamespace x)
         {
-            // Try x:Uid
+            // Try x:Uid on the element itself
             var uid = element.Attribute(x + "Uid")?.Value;
-            return uid;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                return uid;
+            }
+
+            // Fallback: check the first direct child element's x:Uid
+            var firstChild = element.Elements().FirstOrDefault();
+            if (firstChild != null)
+            {
+                var childUid = firstChild.Attribute(x + "Uid")?.Value;
+                if (!string.IsNullOrWhiteSpace(childUid))
+                {
+                    return childUid;
+                }
+            }
+
+            return null;
         }
 
         public static string GetParentElementName(XElement element, XNamespace x)
@@ -211,6 +321,11 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
                     if (expanderParent?.Name.LocalName == "SettingsExpander")
                     {
                         var expanderName = expanderParent.Attribute("Name")?.Value;
+                        if (string.IsNullOrEmpty(expanderName))
+                        {
+                            expanderName = expanderParent.Attribute(x + "Name")?.Value;
+                        }
+
                         if (!string.IsNullOrEmpty(expanderName))
                         {
                             return expanderName;
@@ -221,6 +336,11 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
                 {
                     // Direct child of SettingsExpander
                     var expanderName = current.Attribute("Name")?.Value;
+                    if (string.IsNullOrEmpty(expanderName))
+                    {
+                        expanderName = current.Attribute(x + "Name")?.Value;
+                    }
+
                     if (!string.IsNullOrEmpty(expanderName))
                     {
                         return expanderName;

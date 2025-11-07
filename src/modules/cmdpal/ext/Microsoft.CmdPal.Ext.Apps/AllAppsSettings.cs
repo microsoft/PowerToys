@@ -18,7 +18,13 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static string Experimental(string propertyName) => $"{_namespace}.experimental.{propertyName}";
+    private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
+    [
+        new ChoiceSetSetting.Choice(Resources.limit_0, "0"),
+        new ChoiceSetSetting.Choice(Resources.limit_1, "1"),
+        new ChoiceSetSetting.Choice(Resources.limit_5, "5"),
+        new ChoiceSetSetting.Choice(Resources.limit_10, "10"),
+    ];
 
 #pragma warning disable SA1401 // Fields should be private
     internal static AllAppsSettings Instance = new();
@@ -41,6 +47,14 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     public bool EnableRegistrySource => _enableRegistrySource.Value;
 
     public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
+
+    private readonly ChoiceSetSetting _searchResultLimitSource = new(
+        Namespaced(nameof(SearchResultLimit)),
+        Resources.limit_fallback_results_source,
+        Resources.limit_fallback_results_source_description,
+        _searchResultLimitChoices);
+
+    public string SearchResultLimit => _searchResultLimitSource.Value ?? string.Empty;
 
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
@@ -87,6 +101,7 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Settings.Add(_enableDesktopSource);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
+        Settings.Add(_searchResultLimitSource);
 
         // Load settings from file upon initialization
         LoadSettings();

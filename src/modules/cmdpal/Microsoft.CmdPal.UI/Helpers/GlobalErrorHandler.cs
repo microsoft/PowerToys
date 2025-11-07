@@ -4,10 +4,9 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services.Reports;
+using Microsoft.CmdPal.Core.Common.Services.Reports;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
-
 using SystemUnhandledExceptionEventArgs = System.UnhandledExceptionEventArgs;
 using XamlUnhandledExceptionEventArgs = Microsoft.UI.Xaml.UnhandledExceptionEventArgs;
 
@@ -91,22 +90,22 @@ internal sealed partial class GlobalErrorHandler : IDisposable
 
         string? reportPath = null;
         if (handlingOptions.HasFlag(ExceptionHandlingOptions.CreateReport))
-        {
+            {
             reportPath = StoreReport(reportContent, _options.StoreReportOnUserDesktop);
-        }
+            }
 
         var isTonedDown = IsDwmCompositionChangedException(ex);
 
         if (isTonedDown || (handlingOptions.HasFlag(ExceptionHandlingOptions.ShowNotification) && !_options.IsSilentException(ex)))
-        {
+            {
             PushNotification(reportPath, isRecoverable);
-        }
+            }
 
         if (!isTonedDown && handlingOptions.HasFlag(ExceptionHandlingOptions.ShowDialog) && !_options.IsSilentException(ex))
         {
             TryShowErrorDialog(ex, reportContent, reportPath, isRecoverable);
         }
-    }
+        }
 
     private static void LogException(Exception ex, Context context)
     {
@@ -120,12 +119,16 @@ internal sealed partial class GlobalErrorHandler : IDisposable
         var name = FormattableString.Invariant($"CmdPal_ErrorReport_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{Random.Shared.Next(100000):D5}.log");
 
         // Always store a copy in log directory, this way it is available for Bug Report Tool
-        var reportPath = Save(report, name, () => Logger.CurrentVersionLogDirectoryPath);
+        string? reportPath = null;
+        if (Logger.CurrentVersionLogDirectoryPath != null)
+        {
+            reportPath = Save(report, name, static () => Logger.CurrentVersionLogDirectoryPath);
+        }
 
         // Optionally store a copy on the desktop for user (in)convenience
         if (storeOnDesktop)
         {
-            var path = Save(report, name, () => Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+            var path = Save(report, name, static () => Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
 
             // show the desktop copy if both succeeded
             if (path != null)
@@ -188,7 +191,7 @@ internal sealed partial class GlobalErrorHandler : IDisposable
 
         var notification = notificationBuilder.BuildNotification();
         AppNotificationManager.Default.Show(notification);
-    }
+        }
 
     private ExceptionHandlingOptions GetReportActionsForContext(Context context)
     {
@@ -257,12 +260,12 @@ internal sealed partial class GlobalErrorHandler : IDisposable
             !IsDisposalException(ex);
 
         /// <summary>
-        /// Determines if the exception is recoverable and the application can continue running.
+        /// Gets a function that determines the exception is recoverable and the application can continue running.
         /// </summary>
         public Func<Exception, bool> IsRecoverableException { get; init; } = static _ => false;
 
         /// <summary>
-        /// Determines if the exception should be silently logged without user notification.
+        /// Gets a function that determines if the exception should be silently logged without user notification.
         /// </summary>
         public Func<Exception, bool> IsSilentException { get; init; } = static _ => false;
 

@@ -105,6 +105,7 @@
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/
 ^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
+^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
@@ -123,6 +124,10 @@
 ^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
 ^src/modules/MouseWithoutBorders/ModuleInterface/generateSecurityDescriptor\.h$
 ^src/modules/peek/Peek.Common/NativeMethods\.txt$
+^src/modules/peek/Peek.UITests/TestAssets/4\.qoi$
+^src/modules/powerrename/PowerRenameUITest/testItems/folder1/testCase2\.txt$
+^src/modules/powerrename/PowerRenameUITest/testItems/folder2/SpecialCase\.txt$
+^src/modules/powerrename/PowerRenameUITest/testItems/testCase1\.txt$
 ^src/modules/previewpane/SvgPreviewHandler/SvgHTMLPreviewGenerator\.cs$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
@@ -133,3 +138,4 @@
 ignore$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
 ^src/common/CalculatorEngineCommon/exprtk\.hpp$
+src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs

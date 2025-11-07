@@ -156,6 +156,39 @@
     <value>Settings</value>
   </data>
   <data name="list_item_title" xml:space="preserve">
-    <value>Open Windows Terminal Profiles</value>
+    <value>Open Windows Terminal profiles</value>
+  </data>
+  <data name="preferred_channel" xml:space="preserve">
+    <value>Preferred channel</value>
+  </data>
+  <data name="preferred_channel_description" xml:space="preserve">
+    <value>Preferred channel</value>
+  </data>
+  <data name="all_channels" xml:space="preserve">
+    <value>All channels</value>
+  </data>
+  <data name="save_last_selected_channel" xml:space="preserve">
+    <value>Keep last channel filter</value>
+  </data>
+  <data name="save_last_selected_channel_description" xml:space="preserve">
+    <value>Remember the last selected channel instead of resetting to All Channels.</value>
+  </data>
+  <data name="profile_sort_order" xml:space="preserve">
+    <value>Profiles order</value>
+  </data>
+  <data name="profile_sort_order_description" xml:space="preserve">
+    <value>Profiles order</value>
+  </data>
+  <data name="profile_sort_order_item_default" xml:space="preserve">
+    <value>Default (alphabetical)</value>
+  </data>
+  <data name="profile_sort_order_item_mru" xml:space="preserve">
+    <value>Most recently used</value>
+  </data>
+  <data name="profile_sort_order_item_as_in_terminal" xml:space="preserve">
+    <value>As defined in Terminal</value>
+  </data>
+  <data name="profile_sort_order_item_alphabetical" xml:space="preserve">
+    <value>Alphabetical</value>
   </data>
 </root>

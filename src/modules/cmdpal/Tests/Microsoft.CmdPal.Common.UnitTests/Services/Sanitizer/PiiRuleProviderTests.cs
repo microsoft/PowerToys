@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common.Services.Sanitizer;
-using Microsoft.CmdPal.Common.Services.Sanitizer.Abstraction;
 using Microsoft.CmdPal.Common.UnitTests.TestUtils;
+using Microsoft.CmdPal.Core.Common.Services.Sanitizer;
+using Microsoft.CmdPal.Core.Common.Services.Sanitizer.Abstraction;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Services.Sanitizer;
 
