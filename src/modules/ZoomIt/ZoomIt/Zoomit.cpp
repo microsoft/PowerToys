@@ -6167,12 +6167,10 @@ LRESULT APIENTRY MainWndProc(
                 GetCursorPos(&local_savedCursorPos);
             }
 
-            HBITMAP     hInterimSaveBitmap;
-            HDC         hInterimSaveDc;
-            HBITMAP     hSaveBitmap;
-            HDC         hSaveDc;
-            int         copyX, copyY;
-            int         copyWidth, copyHeight;
+            // Determine the user's desired save area in zoomed viewport coordinates.
+            // This will be the entire viewport if the user does not select a crop
+            // rectangle.
+            int copyX = 0, copyY = 0, copyWidth = width, copyHeight = height;
 
             if ( LOWORD( wParam ) == IDC_SAVE_CROP )
             {
@@ -6187,20 +6185,15 @@ LRESULT APIENTRY MainWndProc(
                     }
                     break;
                 }
+
                 auto copyRc = selectRectangle.SelectedRect();
                 selectRectangle.Stop();
                 g_RecordCropping = FALSE;
+
                 copyX = copyRc.left;
                 copyY = copyRc.top;
                 copyWidth = copyRc.right - copyRc.left;
                 copyHeight = copyRc.bottom - copyRc.top;
-            }
-            else
-            {
-                copyX = 0;
-                copyY = 0;
-                copyWidth = width;
-                copyHeight = height;
             }
             OutputDebug( L"***x: %d, y: %d, width: %d, height: %d\n", copyX, copyY, copyWidth, copyHeight );
 
@@ -6208,34 +6201,35 @@ LRESULT APIENTRY MainWndProc(
             GetClipCursor( &oldClipRect );
             ClipCursor( NULL );
 
-            // Capture the screen before displaying the save dialog
-            hInterimSaveDc = CreateCompatibleDC( hdcScreen );
-            hInterimSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
-            SelectObject( hInterimSaveDc, hInterimSaveBitmap );
+            // Translate the viewport selection into coordinates for the 1:1 source
+            // bitmap hdcScreenCompat.
+            int viewportX, viewportY;
+            GetZoomedTopLeftCoordinates(
+                zoomLevel, &cursorPos, &viewportX, width, &viewportY, height );
 
-            hSaveDc = CreateCompatibleDC( hdcScreen );
-#if SCALE_HALFTONE
-            SetStretchBltMode( hInterimSaveDc, HALFTONE );
-            SetStretchBltMode( hSaveDc, HALFTONE );
-#else
-            // Use HALFTONE for better quality when smooth image is enabled
-            if (g_SmoothImage) {
-                SetStretchBltMode( hInterimSaveDc, HALFTONE );
-                SetStretchBltMode( hSaveDc, HALFTONE );
-            } else {
-                SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
-                SetStretchBltMode( hSaveDc, COLORONCOLOR );
-            }
-#endif
-            StretchBlt( hInterimSaveDc,
-                        0, 0,
-                        copyWidth, copyHeight,
-                        hdcScreen,
-                        monInfo.rcMonitor.left + copyX,
-                        monInfo.rcMonitor.top + copyY,
-                        copyWidth, copyHeight,
-                        SRCCOPY|CAPTUREBLT );
+            int saveX = viewportX + static_cast<int>(copyX / zoomLevel);
+            int saveY = viewportY + static_cast<int>(copyY / zoomLevel);
+            int saveWidth = static_cast<int>(copyWidth / zoomLevel);
+            int saveHeight = static_cast<int>(copyHeight / zoomLevel);
 
+            // Create a pixel-accurate copy of the desired area from the source bitmap.
+            wil::unique_hdc hdcActualSize( CreateCompatibleDC( hdcScreen ) );
+            wil::unique_hbitmap hbmActualSize(
+                CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight ) );
+            // Note: we do not need to restore the existing context later. The objects
+            // are transient and not reused.
+            SelectObject( hdcActualSize.get(), hbmActualSize.get() );
+
+            // Perform a direct 1:1 copy from the backing bitmap.
+            BitBlt( hdcActualSize.get(),
+                    0, 0,
+                    saveWidth, saveHeight,
+                    hdcScreenCompat,
+                    saveX, saveY,
+                    SRCCOPY | CAPTUREBLT );
+
+            // Open the Save As dialog and capture the desired file path and whether to
+            // save the zoomed display or the source bitmap pixels.
             g_bSaveInProgress = true;
             memset( &openFileName, 0, sizeof(openFileName ));
             openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
@@ -6251,6 +6245,7 @@ LRESULT APIENTRY MainWndProc(
                                              "Actual size PNG\0*.png\0\0";
                                              //"Actual size BMP\0*.bmp\0\0";
             openFileName.lpstrFile			= filePath;
+
             if( GetSaveFileName( &openFileName ) )
             {
                 TCHAR targetFilePath[MAX_PATH];
@@ -6260,42 +6255,47 @@ LRESULT APIENTRY MainWndProc(
                     _tcscat( targetFilePath, L".png" );
                 }
 
-                // Save image at screen size
-                if( openFileName.nFilterIndex == 1 )
+                if( openFileName.nFilterIndex == 2 )
                 {
-                    SavePng( targetFilePath, hInterimSaveBitmap );
+                    // Save at actual size.
+                    SavePng( targetFilePath, hbmActualSize.get() );
                 }
-                // Save image scaled down to actual size
                 else
                 {
-                    int saveWidth = static_cast<int>( copyWidth / zoomLevel );
-                    int saveHeight = static_cast<int>( copyHeight / zoomLevel );
+                    // Save zoomed-in image at screen resolution.
+#if SCALE_HALFTONE
+                    const int bltMode = HALFTONE;
+#else
+                    // Use HALFTONE for better quality when smooth image is enabled
+                    const int bltMode = g_SmoothImage ? HALFTONE : COLORONCOLOR;
+#endif
+                    // Recreate the zoomed-in view by upscaling from our source bitmap.
+                    wil::unique_hdc hdcZoomed( CreateCompatibleDC(hdcScreen) );
+                    wil::unique_hbitmap hbmZoomed(
+                        CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight ) );
+                    SelectObject( hdcZoomed.get(), hbmZoomed.get() );
 
-                    hSaveBitmap = CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
-                    SelectObject( hSaveDc, hSaveBitmap );
+                    SetStretchBltMode( hdcZoomed.get(), bltMode );
 
-                    StretchBlt( hSaveDc,
+                    StretchBlt( hdcZoomed.get(),
+                                0, 0,
+                                copyWidth, copyHeight,
+                                hdcActualSize.get(),
                                 0, 0,
                                 saveWidth, saveHeight,
-                                hInterimSaveDc,
-                                0,
-                                0,
-                                copyWidth, copyHeight,
                                 SRCCOPY | CAPTUREBLT );
-				
-                    SavePng( targetFilePath, hSaveBitmap );
+
+                    SavePng( targetFilePath, hbmZoomed.get() );
                 }
             }
             g_bSaveInProgress = false;
 
-            DeleteDC( hInterimSaveDc );
-            DeleteDC( hSaveDc );
-
             if( lParam != SHALLOW_ZOOM )
             {
-                SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
+                SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
             }
             ClipCursor( &oldClipRect );
+
             break;
         }
 
