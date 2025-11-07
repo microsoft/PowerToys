@@ -51,10 +51,10 @@ internal sealed partial class GlobalErrorHandler
         // without its exception being observed. It is NOT raised immediately
         // when the Task faults; timing depends on GC finalization.
         e.SetObserved();
-        HandleException(e.Exception, Context.UnobservedTaskException, isRecoverable: true);
+        HandleException(e.Exception, Context.UnobservedTaskException);
     }
 
-    private void HandleException(Exception ex, Context context, bool isRecoverable = false)
+    private static void HandleException(Exception ex, Context context)
     {
         Logger.LogError($"Unhandled exception detected ({context})", ex);
 
@@ -70,10 +70,25 @@ internal sealed partial class GlobalErrorHandler
 
             StoreReport(report, storeOnDesktop: false);
 
+            string message;
+            string caption;
+            try
+            {
+                message = ResourceLoaderInstance.GetString("GlobalErrorHandler_CrashMessageBox_Message");
+                caption = ResourceLoaderInstance.GetString("GlobalErrorHandler_CrashMessageBox_Caption");
+            }
+            catch
+            {
+                // The resource loader may not be available if the exception occurred during startup.
+                // Fall back to hardcoded strings in that case.
+                message = "Command Palette has encountered a fatal error and must close.";
+                caption = "Command Palette - Fatal error";
+            }
+
             PInvoke.MessageBox(
                 HWND.Null,
-                "Command Palette has encountered a fatal error and must close.\n\nAn error report has been saved to your desktop.",
-                "Unhandled Error",
+                message,
+                caption,
                 MESSAGEBOX_STYLE.MB_ICONERROR);
         }
     }
