@@ -626,17 +626,120 @@ opera.exe</value>
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
     <value>Enable Paste with AI</value>
   </data>
+  <data name="AdvancedPaste_EnableAIDialogMarkdown.Text" xml:space="preserve">
+    <value>## Preview Terms
+
+Please review the placeholder content that represents the final terms and usage guidance for Advanced Paste.
+
+1. This is sample information.
+2. Real policy content will be provided later.
+3. Continue only if you are comfortable with the above.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
+    <value>I have read and accept the information above.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
+    <value>Enable OpenAI content moderation</value>
+  </data>
+  <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
+    <value>Enable OpenAI content moderation</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Header" xml:space="preserve">
+    <value>Enable Advanced AI</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Description" xml:space="preserve">
+    <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
+  </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Clipboard history</value>
+    <value>Access Clipboard History</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
-    <value>Save multiple items to your clipboard. This is an OS feature.</value>
+    <value>Clipboard History shows a list of previously copied items.</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
-    <value>Additional actions</value>
+    <value>Custom actions</value>
+  </data>
+  <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="FoundryLocal_RestartRequiredNote.Text" xml:space="preserve">
+    <value>Note: After installing the Foundry Local CLI, restart PowerToys to use it.</value>
+    <comment>Message informing users that PowerToys needs to be restarted after installing Foundry Local CLI</comment>
+  </data>
+  <data name="AdvancedPaste_LocalModel_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to OpenAI services. By setting up this provider, you agree to comply with OpenAI's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_TermsLabel" xml:space="preserve">
+    <value>Terms of Use</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_PrivacyLabel" xml:space="preserve">
+    <value>Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_TermsLabel" xml:space="preserve">
+    <value>Microsoft Azure Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_PrivacyLabel" xml:space="preserve">
+    <value>Microsoft Privacy Statement</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_TermsLabel" xml:space="preserve">
+    <value>Microsoft Azure Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_PrivacyLabel" xml:space="preserve">
+    <value>Microsoft Privacy Statement</value>
+  </data>
+  <data name="AdvancedPaste_Google_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Google services. By setting up this provider, you agree to comply with Google's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Google_TermsLabel" xml:space="preserve">
+    <value>Google Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Google_PrivacyLabel" xml:space="preserve">
+    <value>Google Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_Anthropic_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Anthropic services. By setting up this provider, you agree to comply with Anthropic's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Anthropic_TermsLabel" xml:space="preserve">
+    <value>Anthropic Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Anthropic_PrivacyLabel" xml:space="preserve">
+    <value>Anthropic Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Mistral services. By setting up this provider, you agree to comply with Mistral's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_TermsLabel" xml:space="preserve">
+    <value>Mistral Terms of Use</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_PrivacyLabel" xml:space="preserve">
+    <value>Mistral Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_AmazonBedrock_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Amazon services. By setting up this provider, you agree to comply with Amazon's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AmazonBedrock_TermsLabel" xml:space="preserve">
+    <value>AWS Service Terms</value>
+  </data>
+  <data name="AdvancedPaste_AmazonBedrock_PrivacyLabel" xml:space="preserve">
+    <value>AWS Privacy Notice</value>
+  </data>
+  <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
+    <value>Ollama Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Ollama_PrivacyLabel" xml:space="preserve">
+    <value>Ollama Privacy Policy</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current key remappings</value>
@@ -1956,6 +2059,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="AdvancedPasteUI_CustomAction_Description.Header" xml:space="preserve">
+    <value>Description</value>
+  </data>
   <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
     <value>Prompt</value>
   </data>
@@ -2589,12 +2695,47 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
+  </data>	
+
+  <!-- CursorWrap Module -->
+  <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
+    <value>Enable CursorWrap</value>
   </data>
+  <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
+    <value>CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
+    <value>Wrap the mouse cursor between monitor edges</value>
+  </data>
+	
+  <!-- Activation Shortcut -->
+  <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Description.Text" xml:space="preserve">
+    <value>Hotkey to toggle cursor wrapping on/off</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
+    <value>Set shortcut</value>
+  </data>
+	
+  <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
+    <value>Disable wrapping while dragging</value>
+  </data>	
+
+  <!-- Auto-activate -->
+  <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
+    <value>Auto-activate on startup</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>	
+	
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
@@ -2893,7 +3034,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
     <value>Crosshairs orientation</value>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
@@ -3301,7 +3442,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
-    <value>This feature allows you to format your clipboard content with the power of AI. An OpenAI API key is required.</value>
+    <value>Transform your clipboard content with the power of AI. An cloud or local endpoint is required.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -3935,7 +4076,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Paste with AI</value>
   </data>
   <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
-    <value>Behavior</value>
+    <value>Activation &amp; behavior</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
     <value>Custom format preview</value>
@@ -3944,10 +4085,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
-    <value>Enable advanced AI</value>
+    <value>Advanced AI</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
+    <value>Supports advanced workflows by chaining transformations and working with files and images. May use additional API credits.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4356,6 +4497,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Home</value>
   </data>
+  <data name="Dashboard_SortBy_ToolTip.Text" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
+  <data name="Dashboard_SortAlphabetical.Text" xml:space="preserve">
+    <value>Alphabetically</value>
+  </data>
+  <data name="Dashboard_SortByStatus.Text" xml:space="preserve">
+    <value>By status</value>
+  </data>
+  <data name="Dashboard_SortBy.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
   </data>
@@ -4476,9 +4629,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
-  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
-    <value>Automatically close the AdvancedPaste window after it loses focus</value>
-    <comment>AdvancedPaste is a product name, do not loc</comment>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
+    <value>Automatically close the Advanced Paste window after it loses focus</value>
+    <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
@@ -4664,7 +4817,7 @@ Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or s
   </data>
   <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
     <value>Smooth zoomed image</value>
-  </data>  
+  </data>
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
     <value>Specify the initial level of magnification when zooming in</value>
   </data>
@@ -5427,6 +5580,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
     <value>Shortcut conflicts</value>
   </data>
+  <data name="ShortcutConflictControl_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut conflicts</value>
+  </data>	
   <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
     <value>No conflicts found</value>
   </data>
@@ -5492,5 +5648,49 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
+  </data>
+  <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Hosts_Backup.Header" xml:space="preserve">
+    <value>Backup hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup.Description" xml:space="preserve">
+    <value>Automatically create a backup of the hosts file when you save for the first time in a session</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup_Location.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="Hosts_Delete_Backup.Header" xml:space="preserve">
+    <value>Automatically delete backups</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Header" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Description" xml:space="preserve">
+    <value>Set the number of backups to keep. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Description" xml:space="preserve">
+    <value>Set the number of days to keep backups. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_CountBased.Content" xml:space="preserve">
+    <value>Based on count</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_AgeAndCountBased.Content" xml:space="preserve">
+    <value>Based on age and count</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Age_Description" xml:space="preserve">
+    <value>Set an optional number of backups to always keep despite their age</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Header" xml:space="preserve">
+    <value>Backup count</value>
   </data>
 </root>

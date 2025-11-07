@@ -144,15 +144,66 @@
   <data name="PasteActionModerated" xml:space="preserve">
     <value>The paste operation was moderated due to sensitive content. Please try another query.</value>
   </data>
-  <data name="ClipboardHistoryButton.Text" xml:space="preserve">
+  <data name="ClipboardHistoryButtonToolTip.Text" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
   <data name="ClipboardHistoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clipboard history</value>
   </data>
+  <data name="AIProviderButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>AI provider selector</value>
+  </data>
+  <data name="AIProviderButtonTooltipEmpty" xml:space="preserve">
+    <value>Select an AI provider</value>
+  </data>
+  <data name="AIProviderButtonTooltipFormat" xml:space="preserve">
+    <value>Active provider: {0}</value>
+  </data>
+  <data name="AIProvidersFlyoutHeader.Text" xml:space="preserve">
+    <value>AI providers</value>
+  </data>
+  <data name="AIProvidersEmptyText.Text" xml:space="preserve">
+    <value>No AI providers configured</value>
+  </data>
+  <data name="AIProvidersManageButtonContent.Content" xml:space="preserve">
+    <value>Configure models in Settings</value>
+  </data>
   <data name="ClipboardHistoryImage" xml:space="preserve">
     <value>Image data</value>
     <comment>Label used to represent an image in the clipboard history</comment>
+  </data>
+  <data name="ClipboardPreviewCategoryText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ClipboardPreviewCategoryImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="ClipboardPreviewCategoryAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="ClipboardPreviewCategoryVideo" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="ClipboardPreviewCategoryFile" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="ClipboardPreviewCategoryUnknown" xml:space="preserve">
+    <value>Clipboard</value>
+  </data>
+  <data name="ClipboardPreviewCopiedJustNow" xml:space="preserve">
+    <value>Copied just now</value>
+  </data>
+  <data name="ClipboardPreviewCopiedSeconds" xml:space="preserve">
+    <value>Copied {0} sec ago</value>
+  </data>
+  <data name="ClipboardPreviewCopiedMinutes" xml:space="preserve">
+    <value>Copied {0} min ago</value>
+  </data>
+  <data name="ClipboardPreviewCopiedHours" xml:space="preserve">
+    <value>Copied {0} hr ago</value>
+  </data>
+  <data name="ClipboardPreviewCopiedDays" xml:space="preserve">
+    <value>Copied {0} day ago</value>
   </data>
   <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
@@ -196,7 +247,7 @@
   <data name="TranscodeToMp3" xml:space="preserve">
     <value>Transcode to .mp3</value>
     <comment>Option to transcode audio files to MP3 format</comment>
-  </data>  
+  </data>
   <data name="TranscodeToMp4" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
     <comment>Option to transcode video files to MP4 format with H.264 video codec and AAC audio codec</comment>
@@ -272,11 +323,11 @@
   <data name="NextResultBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Next result</value>
   </data>
-  <data name="PrivacyLink.Text" xml:space="preserve">
-    <value>OpenAI Privacy</value>
+  <data name="PrivacyLink.Content" xml:space="preserve">
+    <value>Privacy Policy</value>
   </data>
-  <data name="TermsLink.Text" xml:space="preserve">
-    <value>OpenAI Terms</value>
+  <data name="TermsLink.Content" xml:space="preserve">
+    <value>Terms</value>
   </data>
   <data name="OpenAIGpoDisabled" xml:space="preserve">
     <value>To custom with AI is disabled by your organization</value>
@@ -286,5 +337,28 @@
   </data>
   <data name="PasteAsFile_FilePrefix" xml:space="preserve">
     <value>PowerToys_Paste_</value>
+  </data>
+  <data name="Relative_JustNow" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="Relative_MinuteAgo" xml:space="preserve">
+    <value>1 minute ago</value>
+  </data>
+  <data name="Relative_MinutesAgo_Format" xml:space="preserve">
+    <value>{0} minutes ago</value>
+  </data>
+  <data name="Relative_Today_TimeFormat" xml:space="preserve">
+    <value>Today, {0}</value>
+  </data>
+  <data name="Relative_Yesterday_TimeFormat" xml:space="preserve">
+    <value>Yesterday, {0}</value>
+  </data>
+  <data name="Relative_Weekday_TimeFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>(e.g., “Wednesday, 17:05”)</comment>
+  </data>
+  <data name="Relative_Date_TimeFormat" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>(e.g., “10/20/2025, 17:05” in the user’s locale)</comment>
   </data>
 </root>

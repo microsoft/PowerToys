@@ -29,7 +29,10 @@
                         Name="TextExtractorEnableToggleControlHeaderText"
                         x:Uid="TextExtractor_EnableToggleControl_HeaderText"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="EnableTextExtractorToggleSwitch"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <InfoBar
@@ -48,12 +51,16 @@
                         Name="ActivationShortcut"
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="TextExtractorActivationShortcut"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="TextExtractorLanguages" x:Uid="TextExtractor_Languages">
                         <ComboBox
                             x:Name="TextExtractor_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="TextExtractorLanguageComboBox"
                             DropDownOpened="TextExtractor_ComboBox_DropDownOpened"
                             ItemsSource="{x:Bind Path=ViewModel.AvailableLanguages, Mode=OneWay}"
                             Loaded="TextExtractor_ComboBox_Loaded"
