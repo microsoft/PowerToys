@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -18,7 +18,12 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 {
     private const string _id = "com.microsoft.cmdpal.builtin.remotedesktop.fallback";
 
-    // Cache the CompositeFormat for repeated use (CA1863)
+    private static readonly UriHostNameType[] ValidUriHostNameTypes = [
+        UriHostNameType.IPv6,
+        UriHostNameType.IPv4,
+        UriHostNameType.Dns
+        ];
+
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
     private readonly ServiceProvider _serviceProvider;
 
@@ -42,22 +47,25 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
             return;
         }
 
-        List<ConnectionListItem> items = new();
-
         var rdpConnectionManager = _serviceProvider.GetRequiredService<RDPConnectionsManager>();
-        rdpConnectionManager.Reload();
+        var connections = rdpConnectionManager.Connections.Where(w => !string.IsNullOrWhiteSpace(w.ConnectionName));
 
-        var connections = rdpConnectionManager.FindConnections(query) ?? Enumerable.Empty<Scored<string>>();
+        var queryConnection = RDPConnectionsManager.FindConnection(query, connections);
 
-        items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
-
-        if (items.Count > 0)
+        if (queryConnection is not null && !string.IsNullOrWhiteSpace(queryConnection.ConnectionName))
         {
-            var connectionName = items[0].ConnectionName;
+            var connectionName = queryConnection.ConnectionName;
 
             Command = new OpenRemoteDesktopCommand(connectionName);
             Title = connectionName;
             Subtitle = string.Format(CultureInfo.CurrentCulture, RemoteDesktopOpenHostFormat, connectionName);
+        }
+        else if (ValidUriHostNameTypes.Contains(Uri.CheckHostName(query)))
+        {
+            var connectionName = query.Trim();
+            Command = new OpenRemoteDesktopCommand(connectionName);
+            Title = string.Format(CultureInfo.CurrentCulture, RemoteDesktopOpenHostFormat, connectionName);
+            Subtitle = Resources.remotedesktop_title;
         }
         else
         {

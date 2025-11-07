@@ -1431,7 +1431,6 @@ rclsid
 RCZOOMIT
 remotedesktop
 rdp
-Rdp
 RDW
 READMODE
 READOBJECTS

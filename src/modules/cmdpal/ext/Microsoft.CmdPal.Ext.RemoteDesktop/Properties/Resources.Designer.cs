@@ -79,6 +79,24 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The hostname &apos;{0}&apos; was invalid. Ensure you&apos;re using a valid hostname or IP address..
+        /// </summary>
+        public static string remotedesktop_log_invalid_hostname {
+            get {
+                return ResourceManager.GetString("remotedesktop_log_invalid_hostname", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to initialize Microsoft Terminal Service Client. Ensure it is enabled in Windows Settings.\r{0}.
+        /// </summary>
+        public static string remotedesktop_log_mstsc_error {
+            get {
+                return ResourceManager.GetString("remotedesktop_log_mstsc_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connect to {0}.
         /// </summary>
         public static string remotedesktop_open_host {
@@ -97,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A list of connections to include in the query results by default..
+        ///   Looks up a localized string similar to A list of connections to include in the query results by default.
         /// </summary>
         public static string remotedesktop_settings_predefined_connections_description {
             get {

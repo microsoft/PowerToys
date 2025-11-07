@@ -23,18 +23,19 @@ public class SettingsManager : JsonSettingsManager
         Namespaced(nameof(PredefinedConnections)),
         Resources.remotedesktop_settings_predefined_connections_title,
         Resources.remotedesktop_settings_predefined_connections_description,
-        string.Empty);
+        string.Empty)
+    {
+        Multiline = true,
+        Placeholder = $"server1.domain.com{TEXTBOXNEWLINE}server2.domain.com{TEXTBOXNEWLINE}192.168.1.1",
+    };
 
     public List<string> PredefinedConnections => _predefinedConnections.Value?.Split(TEXTBOXNEWLINE).ToList() ?? [];
-
-    public bool RunAsAdministrator { get; set; }
 
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
         return Path.Combine(directory, "settings.json");
     }
 
@@ -42,7 +43,6 @@ public class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        _predefinedConnections.Multiline = true;
         Settings.Add(_predefinedConnections);
 
         // Load settings from file upon initialization

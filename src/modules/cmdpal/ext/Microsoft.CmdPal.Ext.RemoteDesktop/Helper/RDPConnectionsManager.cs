@@ -15,11 +15,26 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 internal sealed class RDPConnectionsManager
 {
     private readonly SettingsManager _settingsManager;
-    private readonly List<string> _connections = [];
+    private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);
+
+    private List<ConnectionListItem> _connections = [];
+    private List<string> _registryConnections = [];
+    private List<string> _predefinedConnections = [];
+
+    private const int DaysToCache = 1;
+    private DateTime? _registryConnectionsLastLoaded;
+    private DateTime? _predefinedConnectionsLastLoaded;
+
+    public List<ConnectionListItem> Connections => _connections;
 
     public RDPConnectionsManager(SettingsManager settingsManager)
     {
         _settingsManager = settingsManager;
+        _settingsManager.Settings.SettingsChanged += (s, e) =>
+        {
+            _predefinedConnectionsLastLoaded = null;
+            Reload();
+        };
 
         Reload();
     }
@@ -28,44 +43,74 @@ internal sealed class RDPConnectionsManager
     {
         _connections.Clear();
 
-        var rdpConnections = GetRdpConnectionsFromRegistry();
+        if (!_registryConnectionsLastLoaded.HasValue ||
+            (DateTime.Now - _registryConnectionsLastLoaded.Value).TotalDays >= DaysToCache)
+        {
+            // Load RDP connections from registry
+            GetRdpConnectionsFromRegistry();
+        }
 
-        var predefinedConnections = _settingsManager.PredefinedConnections
-                                                    .Where(w => !string.IsNullOrWhiteSpace(w));
+        if (!_predefinedConnectionsLastLoaded.HasValue ||
+          (DateTime.Now - _predefinedConnectionsLastLoaded.Value).TotalDays >= DaysToCache)
+        {
+            // Load predefined connections from settings
+            GetPredefinedConnectionsFromSettings();
+        }
 
-        HashSet<string> newConnections = [.. rdpConnections];
-        newConnections.UnionWith(predefinedConnections);
-
-        _connections.AddRange(newConnections.ToArray());
+        _connections = new List<ConnectionListItem>(_registryConnections.Count + _predefinedConnections.Count);
+        _connections.AddRange(_registryConnections.Select(RDPConnectionsManager.MapToResult));
+        _connections.AddRange(_predefinedConnections.Select(RDPConnectionsManager.MapToResult));
+        _connections.Insert(0, _openRdpCommandListItem);
     }
 
-    private string[] GetRdpConnectionsFromRegistry()
+    private void GetRdpConnectionsFromRegistry()
     {
-        var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Terminal Server Client\Default");
+        using var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Terminal Server Client\Default");
+
         if (key is null)
         {
-            return [];
+            _registryConnections = [];
+            _registryConnectionsLastLoaded = DateTime.Now;
+            return;
         }
 
-        return [.. key.GetValueNames().Select(x => key.GetValue(x.Trim())?.ToString()).Where(value => value != null).Cast<string>()];
+        var validConnections = key.GetValueNames()
+                                    .Select(name => key.GetValue(name))
+                                    .OfType<string>() // Keep only string values
+                                    .Select(v => v.Trim()) // Normalize
+                                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                                    .Distinct() // Remove dupes if any
+                                    .ToList();
+
+        _registryConnections = validConnections;
+        _registryConnectionsLastLoaded = DateTime.Now;
     }
 
-    public static ConnectionListItem MapToResult(Scored<string> item) => new(item.Item);
-
-    public IReadOnlyCollection<Scored<string>> FindConnections(string querySearch)
+    private void GetPredefinedConnectionsFromSettings()
     {
-        if (string.IsNullOrWhiteSpace(querySearch))
-        {
-            return _connections
-                .Select(MapToScore)
-                .ToList();
-        }
+        var validConnections = _settingsManager.PredefinedConnections
+                                    .Select(s => s.Trim())
+                                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                                    .ToList();
 
-        return _connections
-            .Where(x => x.Contains(querySearch, StringComparison.InvariantCultureIgnoreCase))
-            .Select(MapToScore)
-            .ToList();
+        _predefinedConnections = validConnections;
+        _predefinedConnectionsLastLoaded = DateTime.Now;
     }
 
-    private Scored<string> MapToScore(string x, int i) => new() { Item = x, Score = _connections.Count + 1 - i };
+    public static ConnectionListItem MapToResult(string item) => new(item);
+
+    public static ConnectionListItem? FindConnection(string query, IEnumerable<ConnectionListItem> connections)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return null;
+        }
+
+        var matchedConnection = ListHelpers.FilterList(
+                                            connections,
+                                            query,
+                                            (s, i) => ListHelpers.ScoreListItem(s, i))
+                                            .FirstOrDefault();
+        return matchedConnection;
+    }
 }

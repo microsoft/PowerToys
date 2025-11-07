@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
@@ -14,10 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 
-internal sealed partial class RemoteDesktopListPage : DynamicListPage
+internal sealed partial class RemoteDesktopListPage : ListPage
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);
+    private readonly RDPConnectionsManager _rdpConnectionManager;
 
     public RemoteDesktopListPage(ServiceProvider serviceProvider)
     {
@@ -26,36 +23,10 @@ internal sealed partial class RemoteDesktopListPage : DynamicListPage
         Id = "com.microsoft.cmdpal.builtin.remotedesktop";
 
         _serviceProvider = serviceProvider;
+        _rdpConnectionManager = _serviceProvider.GetRequiredService<RDPConnectionsManager>();
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch)
-    {
-        if (string.Equals(oldSearch, newSearch, System.StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        RaiseItemsChanged();
-    }
-
-    public override IListItem[] GetItems()
-    {
-        List<ConnectionListItem> items = new();
-
-        var rdpConnectionManager = _serviceProvider.GetRequiredService<RDPConnectionsManager>();
-        rdpConnectionManager.Reload();
-
-        var connections = rdpConnectionManager.FindConnections(SearchText) ?? Enumerable.Empty<Scored<string>>();
-
-        items.AddRange(connections.OrderBy(o => o.Score).Select(RDPConnectionsManager.MapToResult));
-
-        if (string.IsNullOrWhiteSpace(SearchText))
-        {
-            items.Insert(0, _openRdpCommandListItem);
-        }
-
-        return items.ToArray();
-    }
+    public override IListItem[] GetItems() => _rdpConnectionManager.Connections.ToArray();
 
     public ICommandItem ToCommandItem()
     {
