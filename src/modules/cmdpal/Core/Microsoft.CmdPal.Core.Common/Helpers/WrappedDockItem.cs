@@ -51,7 +51,13 @@ public partial class WrappedDockList : ListPage
         // listen for property changes on the inner item.
         _items = new IListItem[]
         {
-            new ListItem(_command) { Title = item.Title, Subtitle = item.Subtitle, Icon = item.Icon },
+            new ListItem(_command)
+            {
+                Title = item.Title,
+                Subtitle = item.Subtitle,
+                Icon = item.Icon,
+                MoreCommands = item.MoreCommands,
+            },
         };
         Name = _command.Name;
         _id = string.IsNullOrEmpty(id) ? _command.Id : id;

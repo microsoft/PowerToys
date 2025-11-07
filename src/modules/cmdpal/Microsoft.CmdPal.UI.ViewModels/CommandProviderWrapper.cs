@@ -247,20 +247,12 @@ public sealed class CommandProviderWrapper
                 {
                     if (json.Id == c.Id)
                     {
-                        var bandModel = c.ToDockBandItem(showLabels: false);
+                        var bandModel = c.ToDockBandItem();
                         var bandVm = make(bandModel, false);
                         bands.Add(bandVm);
                         break;
                     }
                 }
-
-                // var matches = state.TopLevelCommandBands.Where(bandSettings => bandSettings.Id == c.Id);
-                // if (state.TopLevelCommandBands.Where(bandSettings => bandSettings.Id == c.Id).FirstOrDefault() is JsonCommandBand b)
-                // {
-                //    var bandModel = c.ToDockBandItem(showLabels: false);
-                //    var bandVm = make(bandModel, false);
-                //    bands.Add(bandVm);
-                // }
             }
 
             DockBandItems = bands.ToArray();

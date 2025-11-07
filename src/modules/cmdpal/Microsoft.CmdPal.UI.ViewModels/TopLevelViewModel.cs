@@ -403,25 +403,98 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             // Add a separator
             contextItems.Add(new Separator());
 
-            // Now we need to add the dock commands.
-            // these are implemented by asking the dock VM, to
-            // * create a new band command item in the builtins
+            // Now we need to add the dock commands. these are implemented by
+            // asking the dock VM, to
+            // * create a new band command item in appstate,
+            //   - And we also need to... reload the commands? Not that though.
+            //     That's destructive (terminates processes).
+            //   - We need to somehow have the TopLevelCommandManager
+            //     re-evaluate the commands for a given provider. That's gross.
             // * assigning this command's ID into that command
-            // * then adding _that_ command (from the builtins) to the dock settings model
+            // * then adding _that_ command (from the builtins) to the dock
+            //   settings model
+            contextItems.Add(
+                new PinToDockContextItem(
+                    this,
+                    _dockViewModel,
+                    _settings,
+                    _serviceProvider.GetService<AppStateModel>()!));
         }
 
         return contextItems.ToArray();
     }
 
-    internal ICommandItem ToDockBandItem(bool showLabels)
+    internal ICommandItem ToDockBandItem()
     {
         var item = new WrappedDockItem(this, this.Id);
 
-        // if (!showLabels)
-        // {
-        //     item.Title = string.Empty;
-        //     item.Subtitle = string.Empty;
-        // }
         return item;
+    }
+
+    private sealed partial class PinToDockContextItem : CommandContextItem
+    {
+        private readonly TopLevelViewModel _topLevelViewModel;
+        private readonly DockViewModel _dockViewModel;
+        private readonly SettingsModel _settings;
+
+        public override IIconInfo Icon => Icons.PinIcon;
+
+        public PinToDockContextItem(
+            TopLevelViewModel topLevelViewModel,
+            DockViewModel dockViewModel,
+            SettingsModel settings,
+            AppStateModel appStateModel)
+            : base(new PinToDockCommand(topLevelViewModel, dockViewModel, settings, appStateModel))
+        {
+            _topLevelViewModel = topLevelViewModel;
+            _dockViewModel = dockViewModel;
+            _settings = settings;
+
+            Title = "Pin to Dock";
+        }
+    }
+
+    private sealed partial class PinToDockCommand : InvokableCommand
+    {
+        private readonly TopLevelViewModel _topLevelViewModel;
+        private readonly DockViewModel _dockViewModel;
+        private readonly SettingsModel _settings;
+        private readonly AppStateModel _appStateModel;
+
+        public PinToDockCommand(
+            TopLevelViewModel topLevelViewModel,
+            DockViewModel dockViewModel,
+            SettingsModel settings,
+            AppStateModel appStateModel)
+        {
+            _topLevelViewModel = topLevelViewModel;
+            _dockViewModel = dockViewModel;
+            _settings = settings;
+            _appStateModel = appStateModel;
+        }
+
+        public override CommandResult Invoke()
+        {
+            Logger.LogDebug($"PinToDockCommand.Invoke: {_topLevelViewModel.Id}");
+
+            var bandSettings = new JsonCommandBand()
+            {
+                Id = _topLevelViewModel.Id,
+            };
+            _appStateModel.TopLevelCommandBands.Add(bandSettings);
+            AppStateModel.SaveState(_appStateModel);
+            _settings.DockSettings.StartBands.Add(new DockBandSettings()
+            {
+                Id = _topLevelViewModel.Id,
+                ShowLabels = true,
+            });
+            SettingsModel.SaveSettings(_settings);
+
+            // TODO! temporary: send a reload message, so that we have
+            // everything repopulated
+            WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+
+            return CommandResult.GoHome();
+        }
     }
 }

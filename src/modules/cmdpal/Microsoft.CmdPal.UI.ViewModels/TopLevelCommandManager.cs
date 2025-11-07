@@ -305,8 +305,6 @@ public partial class TopLevelCommandManager : ObservableObject,
         var timer = new Stopwatch();
         timer.Start();
 
-        // var appState = _serviceProvider.GetService<AppStateModel>()!;
-
         // Start all extensions in parallel
         var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
@@ -336,16 +334,6 @@ public partial class TopLevelCommandManager : ObservableObject,
                     foreach (var c in commands)
                     {
                         TopLevelCommands.Add(c);
-
-                        // if (appState.TopLevelCommandBands.Where(bandSettings => bandSettings.Id == c.Id).FirstOrDefault() is JsonCommandBand b)
-                        // {
-                        //    if (c.ToDockBandItem(showLabels: false) is ICommandItem bandItem)
-                        //    {
-                        //        var topLevelBand = new TopLevelViewModel(new(new(bandItem)))
-                        //    }
-                        //
-                        //    DockBands.Add((TopLevelViewModel)bandItem);
-                        // }
                     }
                 }
 
