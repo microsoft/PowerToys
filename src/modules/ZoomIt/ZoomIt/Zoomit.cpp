@@ -6207,10 +6207,10 @@ LRESULT APIENTRY MainWndProc(
             GetZoomedTopLeftCoordinates(
                 zoomLevel, &cursorPos, &viewportX, width, &viewportY, height );
 
-            int saveX = viewportX + static_cast<int>(copyX / zoomLevel);
-            int saveY = viewportY + static_cast<int>(copyY / zoomLevel);
-            int saveWidth = static_cast<int>(copyWidth / zoomLevel);
-            int saveHeight = static_cast<int>(copyHeight / zoomLevel);
+            int saveX = viewportX + static_cast<int>( copyX / zoomLevel );
+            int saveY = viewportY + static_cast<int>( copyY / zoomLevel );
+            int saveWidth = static_cast<int>( copyWidth / zoomLevel );
+            int saveHeight = static_cast<int>( copyHeight / zoomLevel );
 
             // Create a pixel-accurate copy of the desired area from the source bitmap.
             wil::unique_hdc hdcActualSize( CreateCompatibleDC( hdcScreen ) );
