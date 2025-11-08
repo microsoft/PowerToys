@@ -27,7 +27,7 @@ public partial class ErrorReportSanitizerTests
               X-API-key: 1234567890abcdef
               Pet-Shop-Subscription-Key: 1234567890abcdef
               Here is a user name {Environment.UserName}
-              And here is a profile path {Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\Pictures
+              And here is a profile path {Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\RandomFolder
               Here is a local app data path {Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Microsoft\PowerToys\CmdPal
               Here is machine name {Environment.MachineName}
               JWT token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
@@ -62,7 +62,7 @@ public partial class ErrorReportSanitizerTests
              X-API-key: [REDACTED]
              Pet-Shop-Subscription-Key: [REDACTED]
              Here is a user name [USERNAME_REDACTED]
-             And here is a profile path [USER_PROFILE_DIR]Pictures
+             And here is a profile path [USER_PROFILE_DIR]RandomFolder
              Here is a local app data path [LOCALAPPLICATIONDATA_DIR]Microsoft\PowerToys\CmdPal
              Here is machine name [MACHINE_NAME_REDACTED]
              JWT token: [REDACTED]
