@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 internal sealed partial class RemoteDesktopListPage : ListPage
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly IRDPConnectionManager _rdpConnectionManager;
+    private readonly IRdpConnectionManager _rdpConnectionManager;
 
     public RemoteDesktopListPage(ServiceProvider serviceProvider)
     {
@@ -24,7 +24,7 @@ internal sealed partial class RemoteDesktopListPage : ListPage
         Id = "com.microsoft.cmdpal.builtin.remotedesktop";
 
         _serviceProvider = serviceProvider;
-        _rdpConnectionManager = _serviceProvider.GetRequiredService<IRDPConnectionManager>();
+        _rdpConnectionManager = _serviceProvider.GetRequiredService<IRdpConnectionManager>();
     }
 
     public override IListItem[] GetItems() => _rdpConnectionManager.Connections.ToArray();

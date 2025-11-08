@@ -11,7 +11,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
-internal class RDPConnectionsManager : IRDPConnectionManager
+internal class RDPConnectionsManager : IRdpConnectionManager
 {
     private readonly ISettingsInterface _settingsManager;
     private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);

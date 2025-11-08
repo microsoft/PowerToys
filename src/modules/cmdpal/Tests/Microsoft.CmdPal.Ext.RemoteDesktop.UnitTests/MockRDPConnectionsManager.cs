@@ -10,7 +10,7 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
-internal sealed class MockRDPConnectionsManager : IRDPConnectionManager
+internal sealed class MockRDPConnectionsManager : IRdpConnectionManager
 {
     private readonly List<ConnectionListItem> _connections = new();
 
