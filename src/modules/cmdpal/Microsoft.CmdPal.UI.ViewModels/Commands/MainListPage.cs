@@ -55,6 +55,7 @@ public partial class MainListPage : DynamicListPage,
 
     public MainListPage(IServiceProvider serviceProvider)
     {
+        Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
