@@ -12,7 +12,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
-internal sealed class RDPConnectionsManager
+internal class RDPConnectionsManager
 {
     private readonly SettingsManager _settingsManager;
     private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);
@@ -25,7 +25,7 @@ internal sealed class RDPConnectionsManager
     private DateTime? _registryConnectionsLastLoaded;
     private DateTime? _predefinedConnectionsLastLoaded;
 
-    public List<ConnectionListItem> Connections => _connections;
+    public IReadOnlyCollection<ConnectionListItem> Connections => _connections;
 
     public RDPConnectionsManager(SettingsManager settingsManager)
     {

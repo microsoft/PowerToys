@@ -6,13 +6,12 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
+namespace Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 
 internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 {
