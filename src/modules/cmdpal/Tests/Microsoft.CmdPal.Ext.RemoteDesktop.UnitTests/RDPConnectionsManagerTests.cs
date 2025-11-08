@@ -29,7 +29,7 @@ public class RDPConnectionsManagerTests
         var connection = new ConnectionListItem("rdp-contoso");
 
         // Act
-        var result = RDPConnectionsManager.FindConnection("rdp-contoso", new[] { connection });
+        var result = ConnectionHelpers.FindConnection("rdp-contoso", new[] { connection });
 
         // Assert
         Assert.IsNotNull(result);
@@ -43,7 +43,7 @@ public class RDPConnectionsManagerTests
         var connection = new ConnectionListItem("rdp-fabrikam");
 
         // Act
-        var result = RDPConnectionsManager.FindConnection("   ", new[] { connection });
+        var result = ConnectionHelpers.FindConnection("   ", new[] { connection });
 
         // Assert
         Assert.IsNull(result);

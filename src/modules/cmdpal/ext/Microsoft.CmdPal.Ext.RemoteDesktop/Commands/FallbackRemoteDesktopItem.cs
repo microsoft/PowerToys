@@ -46,10 +46,10 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
             return;
         }
 
-        var rdpConnectionManager = _serviceProvider.GetRequiredService<RDPConnectionsManager>();
+        var rdpConnectionManager = _serviceProvider.GetRequiredService<IRDPConnectionManager>();
         var connections = rdpConnectionManager.Connections.Where(w => !string.IsNullOrWhiteSpace(w.ConnectionName));
 
-        var queryConnection = RDPConnectionsManager.FindConnection(query, connections);
+        var queryConnection = ConnectionHelpers.FindConnection(query, connections);
 
         if (queryConnection is not null && !string.IsNullOrWhiteSpace(queryConnection.ConnectionName))
         {

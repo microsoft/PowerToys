@@ -10,17 +10,14 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
-/// <summary>
-/// Lightweight test double for <see cref="RDPConnectionsManager"/> that avoids registry access
-/// and gives tests deterministic control over the connection list.
-/// </summary>
-internal sealed class MockRDPConnectionsManager : RDPConnectionsManager
+internal sealed class MockRDPConnectionsManager : IRDPConnectionManager
 {
     private readonly List<ConnectionListItem> _connections = new();
 
-    public MockRDPConnectionsManager(SettingsManager settingsManager)
-        : base(settingsManager)
+    public IReadOnlyCollection<ConnectionListItem> Connections => _connections.AsReadOnly();
+
+    public MockRDPConnectionsManager(ISettingsInterface settingsManager)
     {
-        _connections.AddRange(settingsManager.PredefinedConnections.Select(RDPConnectionsManager.MapToResult));
+        _connections.AddRange(settingsManager.PredefinedConnections.Select(ConnectionHelpers.MapToResult));
     }
 }

@@ -7,14 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
-internal class RDPConnectionsManager
+internal class RDPConnectionsManager : IRDPConnectionManager
 {
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
     private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);
 
     private List<ConnectionListItem> _connections = [];
@@ -25,9 +24,9 @@ internal class RDPConnectionsManager
     private DateTime? _registryConnectionsLastLoaded;
     private DateTime? _predefinedConnectionsLastLoaded;
 
-    public IReadOnlyCollection<ConnectionListItem> Connections => _connections;
+    public IReadOnlyCollection<ConnectionListItem> Connections => _connections.AsReadOnly();
 
-    public RDPConnectionsManager(SettingsManager settingsManager)
+    public RDPConnectionsManager(ISettingsInterface settingsManager)
     {
         _settingsManager = settingsManager;
         _settingsManager.Settings.SettingsChanged += (s, e) =>
@@ -39,7 +38,7 @@ internal class RDPConnectionsManager
         Reload();
     }
 
-    public void Reload()
+    private void Reload()
     {
         _connections.Clear();
 
@@ -58,8 +57,8 @@ internal class RDPConnectionsManager
         }
 
         _connections = new List<ConnectionListItem>(_registryConnections.Count + _predefinedConnections.Count);
-        _connections.AddRange(_registryConnections.Select(RDPConnectionsManager.MapToResult));
-        _connections.AddRange(_predefinedConnections.Select(RDPConnectionsManager.MapToResult));
+        _connections.AddRange(_registryConnections.Select(ConnectionHelpers.MapToResult));
+        _connections.AddRange(_predefinedConnections.Select(ConnectionHelpers.MapToResult));
         _connections.Insert(0, _openRdpCommandListItem);
     }
 
@@ -95,22 +94,5 @@ internal class RDPConnectionsManager
 
         _predefinedConnections = validConnections;
         _predefinedConnectionsLastLoaded = DateTime.Now;
-    }
-
-    public static ConnectionListItem MapToResult(string item) => new(item);
-
-    public static ConnectionListItem? FindConnection(string query, IEnumerable<ConnectionListItem> connections)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return null;
-        }
-
-        var matchedConnection = ListHelpers.FilterList(
-                                            connections,
-                                            query,
-                                            (s, i) => ListHelpers.ScoreListItem(s, i))
-                                            .FirstOrDefault();
-        return matchedConnection;
     }
 }

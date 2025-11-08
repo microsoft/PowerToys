@@ -38,14 +38,14 @@ public class RemoteDesktopListPageTests
         Assert.IsInstanceOfType(contextItem.Command, typeof(IContentPage));
     }
 
-    private static (RemoteDesktopListPage Page, ServiceProvider Provider, RDPConnectionsManager Manager) CreatePage(params string[] connectionNames)
+    private static (RemoteDesktopListPage Page, ServiceProvider Provider, IRDPConnectionManager Manager) CreatePage(params string[] connectionNames)
     {
         var settingsManager = new MockSettingsManager(connectionNames);
         var connectionsManager = new MockRDPConnectionsManager(settingsManager);
 
         var services = new ServiceCollection();
-        services.AddSingleton<SettingsManager>(settingsManager);
-        services.AddSingleton<RDPConnectionsManager>(connectionsManager);
+        services.AddSingleton<ISettingsInterface>(settingsManager);
+        services.AddSingleton<IRDPConnectionManager>(connectionsManager);
 
         var provider = services.BuildServiceProvider();
         var page = new RemoteDesktopListPage(provider);

@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 
-public class SettingsManager : JsonSettingsManager
+internal class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
     // Line break character used in WinUI3 TextBox and TextBlock.
     private const char TEXTBOXNEWLINE = '\r';
@@ -29,7 +29,7 @@ public class SettingsManager : JsonSettingsManager
         Placeholder = $"server1.domain.com{TEXTBOXNEWLINE}server2.domain.com{TEXTBOXNEWLINE}192.168.1.1",
     };
 
-    public List<string> PredefinedConnections => _predefinedConnections.Value?.Split(TEXTBOXNEWLINE).ToList() ?? [];
+    public IReadOnlyCollection<string> PredefinedConnections => _predefinedConnections.Value?.Split(TEXTBOXNEWLINE).ToList() ?? [];
 
     internal static string SettingsJsonPath()
     {

@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Text;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
-using Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +32,9 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery("my-rdp-server");
 
         // Assert
-        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, connectionName);
-        Assert.AreEqual(expectedTitle, fallback.Title);
-        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+        Assert.AreEqual(connectionName, fallback.Title);
+        var expectedSubtitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, connectionName);
+        Assert.AreEqual(expectedSubtitle, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
         Assert.IsNotNull(command);
@@ -108,17 +107,22 @@ public class FallbackRemoteDesktopItemTests
     private static string GetCommandHost(OpenRemoteDesktopCommand command)
     {
         var field = typeof(OpenRemoteDesktopCommand).GetField("_rdpHost", BindingFlags.NonPublic | BindingFlags.Instance);
-        return (string)field?.GetValue(command) ?? string.Empty;
+        if (field is null)
+        {
+            return string.Empty;
+        }
+
+        return field.GetValue(command) as string ?? string.Empty;
     }
 
-    private static (FallbackRemoteDesktopItem Fallback, ServiceProvider Provider, RDPConnectionsManager Manager) CreateFallback(params string[] connectionNames)
+    private static (FallbackRemoteDesktopItem Fallback, ServiceProvider Provider, IRDPConnectionManager Manager) CreateFallback(params string[] connectionNames)
     {
         var settingsManager = new MockSettingsManager(connectionNames);
-        var connectionsManager = new RDPConnectionsManager(settingsManager);
+        var connectionsManager = new MockRDPConnectionsManager(settingsManager);
 
         var services = new ServiceCollection();
-        services.AddSingleton<SettingsManager>(settingsManager);
-        services.AddSingleton(connectionsManager);
+        services.AddSingleton<ISettingsInterface>(settingsManager);
+        services.AddSingleton<IRDPConnectionManager>(connectionsManager);
 
         var provider = services.BuildServiceProvider();
         var fallback = new FallbackRemoteDesktopItem(provider);

@@ -25,8 +25,8 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
         Icon = Icons.RDPIcon;
 
         ServiceCollection services = new();
-        services.AddSingleton<SettingsManager>();
-        services.AddSingleton<RDPConnectionsManager>();
+        services.AddSingleton<ISettingsInterface, SettingsManager>();
+        services.AddSingleton<IRDPConnectionManager, RDPConnectionsManager>();
         var serviceProvider = services.BuildServiceProvider();
 
         listPage = new RemoteDesktopListPage(serviceProvider);
