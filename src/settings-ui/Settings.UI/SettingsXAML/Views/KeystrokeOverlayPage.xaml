@@ -54,73 +54,82 @@
 
                 <controls:SettingsGroup x:Uid="KeystrokeOverlay_Appearance" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_Preview" HeaderIcon="{ui:FontIcon Glyph=&#xE922;}">
-                        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center" Margin="0,12">
-                            
-                            <Border CornerRadius="4" 
-                                    Padding="12,6"
-                                    MinWidth="40"
-                                    VerticalAlignment="Center">
-                                
-                                <Border.Background>
-                                    <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
-                                </Border.Background>
-                                
-                                <TextBlock Text="Ctrl" 
-                                        HorizontalAlignment="Center"
-                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
-                                        FontWeight="SemiBold">
-                                    
-                                    <TextBlock.Foreground>
-                                        <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
-                                    </TextBlock.Foreground>
-                                    
-                                </TextBlock>
-                            </Border>
-                            
-                            <Border CornerRadius="4" 
-                                    Padding="12,6"
-                                    MinWidth="40"
-                                    VerticalAlignment="Center">
-                                
-                                <Border.Background>
-                                    <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
-                                </Border.Background>
-                                
-                                <TextBlock Text="Alt"
-                                        HorizontalAlignment="Center"
-                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
-                                        FontWeight="SemiBold">
-                                    
-                                    <TextBlock.Foreground>
-                                        <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
-                                    </TextBlock.Foreground>
-                                    
-                                </TextBlock>
-                            </Border>
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_Preview" Background="Transparent" >
+                        <tkcontrols:SettingsCard.Description>
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                                    CornerRadius="8" 
+                                    Padding="15,12"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                    BorderThickness="1"
+                                    HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                            <Border CornerRadius="4" 
-                                    Padding="12,6"
-                                    MinWidth="40"
-                                    VerticalAlignment="Center">
-                                
-                                <Border.Background>
-                                    <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
-                                </Border.Background>
-                                
-                                <TextBlock Text="K"
-                                        HorizontalAlignment="Center"
-                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
-                                        FontWeight="SemiBold">
-                                    
-                                    <TextBlock.Foreground>
-                                        <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
-                                    </TextBlock.Foreground>
-                                    
-                                </TextBlock>
+                                    <Border CornerRadius="4" 
+                                        Padding="12,6"
+                                        MinWidth="40"
+                                        VerticalAlignment="Center">
+
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                        </Border.Background>
+
+                                        <TextBlock Text="Ctrl" 
+                                            HorizontalAlignment="Center"
+                                            FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
+                                            FontWeight="SemiBold">
+
+                                            <TextBlock.Foreground>
+                                                <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            </TextBlock.Foreground>
+
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border CornerRadius="4" 
+                                        Padding="12,6"
+                                        MinWidth="40"
+                                        VerticalAlignment="Center">
+
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                        </Border.Background>
+
+                                        <TextBlock Text="Alt"
+                                            HorizontalAlignment="Center"
+                                            FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
+                                            FontWeight="SemiBold">
+
+                                            <TextBlock.Foreground>
+                                                <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            </TextBlock.Foreground>
+
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border CornerRadius="4" 
+                                        Padding="12,6"
+                                        MinWidth="40"
+                                        VerticalAlignment="Center">
+
+                                        <Border.Background>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                        </Border.Background>
+
+                                        <TextBlock Text="K"
+                                            HorizontalAlignment="Center"
+                                            FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
+                                            FontWeight="SemiBold">
+
+                                            <TextBlock.Foreground>
+                                                <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            </TextBlock.Foreground>
+
+                                        </TextBlock>
+                                    </Border>
+
+                                </StackPanel>
                             </Border>
-                            
-                        </StackPanel>
+                        </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard Name="TextSize" x:Uid="KeystrokeOverlay_TextSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
@@ -134,16 +143,16 @@
                             Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="TextColor" x:Uid="KeystrokeOverlay_TextAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE8D3;}">                
+                    <tkcontrols:SettingsCard Name="KeystrokeOverlay_TextAppearance" x:Uid="KeystrokeOverlay_TextAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE8D3;}">                
                         <controls:ColorPickerButton x:Name="TextColorPicker"
-                            SelectedColor="{x:Bind ViewModel.TextColorWithAlpha, Mode=TwoWay}"
+                            SelectedColor="{x:Bind Path=ViewModel.TextColorWithAlpha, Mode=TwoWay}"
                             IsAlphaEnabled="True"
                         />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard Name="BackgroundColor" x:Uid="KeystrokeOverlay_BackgroundAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE97C;}">                
+                    <tkcontrols:SettingsCard Name="KeystrokeOverlay_BackgroundAppearance" x:Uid="KeystrokeOverlay_BackgroundAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE97C;}">                
                         <controls:ColorPickerButton x:Name="BackgroundColorPicker"
-                            SelectedColor="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
+                            SelectedColor="{x:Bind Path=ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
                             IsAlphaEnabled="True"
                         />
                     </tkcontrols:SettingsCard>
