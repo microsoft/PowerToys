@@ -40,8 +40,6 @@ internal class RDPConnectionsManager : IRdpConnectionManager
 
     private void Reload()
     {
-        _connections.Clear();
-
         if (!_registryConnectionsLastLoaded.HasValue ||
             (DateTime.Now - _registryConnectionsLastLoaded.Value).TotalDays >= DaysToCache)
         {
