@@ -257,7 +257,7 @@ namespace UITests_FancyZones
 
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             this.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Button>("Launch layout editor").Click(false, 500, 5000);
+            this.Find<Button>("Open layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
 
             // pipeline machine may have an unstable delays, causing the custom layout to be unavailable as we set. then A retry is required.
@@ -273,7 +273,7 @@ namespace UITests_FancyZones
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
                 SetupCustomLayouts();
-                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 5000, 5000);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Open layout editor").Click(false, 5000, 5000);
                 this.Session.Attach(PowerToysModule.FancyZone);
 
                 // customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
@@ -301,11 +301,11 @@ namespace UITests_FancyZones
             Task.Delay(1000).Wait();
 
             this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
-            this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
+            this.Find<ToggleSwitch>("Open as administrator").Toggle(launchAsAdmin);
             this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 
             // launch Hosts File Editor
-            this.Find<Button>("Launch Hosts File Editor").Click();
+            this.Find<Button>("Open Hosts File Editor").Click();
 
             Task.Delay(5000).Wait();
         }
