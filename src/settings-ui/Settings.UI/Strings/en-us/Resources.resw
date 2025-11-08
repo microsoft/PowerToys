@@ -5556,4 +5556,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="KeystrokeOverlay_Appearance.Description" xml:space="preserve">
     <value>This is a preview of how the overlay will look like on your screen.</value>
   </data>
+  <data name="Shell_KeystrokeOverlay.Content" xml:space="preserve">
+    <value>Keystroke Overlay</value>
+    <comment>Product name: Navigation view item name for Keystroke Overlay</comment>
+  </data>
 </root>
