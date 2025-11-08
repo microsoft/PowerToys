@@ -48,7 +48,7 @@ public class FallbackRemoteDesktopItemTests
         // Arrange
         var setup = CreateFallback();
         var fallback = setup.Fallback;
-        const string hostname = "contoso.corp";
+        const string hostname = "test.corp";
 
         // Act
         fallback.UpdateQuery(hostname);

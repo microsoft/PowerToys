@@ -16,7 +16,7 @@ public class RDPConnectionsManagerTests
     public void Constructor_AddsOpenCommandItem()
     {
         // Act
-        var manager = new RDPConnectionsManager(new MockSettingsManager(["testhome.local"]));
+        var manager = new RDPConnectionsManager(new MockSettingsManager(["test.local"]));
 
         // Assert
         Assert.IsTrue(manager.Connections.Any(item => string.IsNullOrEmpty(item.ConnectionName)));
@@ -26,21 +26,22 @@ public class RDPConnectionsManagerTests
     public void FindConnection_ReturnsExactMatch()
     {
         // Arrange
-        var connection = new ConnectionListItem("rdp-contoso");
+        var connectionName = "rdp-test";
+        var connection = new ConnectionListItem(connectionName);
 
         // Act
-        var result = ConnectionHelpers.FindConnection("rdp-contoso", new[] { connection });
+        var result = ConnectionHelpers.FindConnection(connectionName, new[] { connection });
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual("rdp-contoso", result.ConnectionName);
+        Assert.AreEqual(connectionName, result.ConnectionName);
     }
 
     [TestMethod]
     public void FindConnection_ReturnsNullForWhitespaceQuery()
     {
         // Arrange
-        var connection = new ConnectionListItem("rdp-fabrikam");
+        var connection = new ConnectionListItem("rdp-test");
 
         // Act
         var result = ConnectionHelpers.FindConnection("   ", new[] { connection });
