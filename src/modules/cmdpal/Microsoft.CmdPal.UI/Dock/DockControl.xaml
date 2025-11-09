@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Dock.DockControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -232,8 +232,8 @@
     <Grid
         x:Name="RootGrid"
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-        RightTapped="RootGrid_RightTapped"
-        BorderThickness="0,0,0,1">
+        BorderThickness="0,0,0,1"
+        RightTapped="RootGrid_RightTapped">
         <Grid x:Name="ContentGrid" Padding="0,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />

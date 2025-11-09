@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.DockSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -43,9 +43,9 @@
                             Choose the size of your dock
                         </controls:SettingsCard.Description>
                         <ComboBox
-                        x:Name="DockSizeComboBox"
-                        MinWidth="120"
-                        SelectedIndex="{x:Bind SelectedDockSizeIndex, Mode=TwoWay}">
+                            x:Name="DockSizeComboBox"
+                            MinWidth="120"
+                            SelectedIndex="{x:Bind SelectedDockSizeIndex, Mode=TwoWay}">
                             <ComboBoxItem Content="Small" />
                             <ComboBoxItem Content="Medium" />
                             <ComboBoxItem Content="Large" />
@@ -61,9 +61,9 @@
                             Choose where the dock appears on your screen
                         </controls:SettingsCard.Description>
                         <ComboBox
-                        x:Name="DockPositionComboBox"
-                        MinWidth="120"
-                        SelectedIndex="{x:Bind SelectedSideIndex, Mode=TwoWay}">
+                            x:Name="DockPositionComboBox"
+                            MinWidth="120"
+                            SelectedIndex="{x:Bind SelectedSideIndex, Mode=TwoWay}">
                             <ComboBoxItem Content="Left" />
                             <ComboBoxItem Content="Top" />
                             <ComboBoxItem Content="Right" />
@@ -77,9 +77,9 @@
                             Choose the background effect for your dock
                         </controls:SettingsCard.Description>
                         <ComboBox
-                        x:Name="BackdropComboBox"
-                        MinWidth="120"
-                        SelectedIndex="{x:Bind SelectedBackdropIndex, Mode=TwoWay}">
+                            x:Name="BackdropComboBox"
+                            MinWidth="120"
+                            SelectedIndex="{x:Bind SelectedBackdropIndex, Mode=TwoWay}">
                             <ComboBoxItem Content="Mica" />
                             <ComboBoxItem Content="Transparent" />
                             <ComboBoxItem Content="Acrylic" />
