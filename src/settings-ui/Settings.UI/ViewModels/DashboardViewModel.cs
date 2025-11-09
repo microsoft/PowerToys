@@ -78,11 +78,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
-                if (moduleType == ModuleType.KeystrokeOverlay)
-                {
-                    continue;
-                }
-
                 AddDashboardListItem(moduleType);
             }
 
