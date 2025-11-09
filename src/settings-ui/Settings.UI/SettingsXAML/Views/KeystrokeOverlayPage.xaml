@@ -64,69 +64,60 @@
                                     HorizontalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
 
-                                    <Border CornerRadius="4" 
-                                        Padding="12,6"
+                                    <controls:KeyVisual 
+                                        VerticalAlignment="Center"
                                         MinWidth="40"
-                                        VerticalAlignment="Center">
-
-                                        <Border.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
-                                        </Border.Background>
-
-                                        <TextBlock Text="Ctrl" 
-                                            HorizontalAlignment="Center"
-                                            FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
-                                            FontWeight="SemiBold">
-
-                                            <TextBlock.Foreground>
-                                                <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
-                                            </TextBlock.Foreground>
-
-                                        </TextBlock>
-                                    </Border>
-
-                                    <Border CornerRadius="4" 
                                         Padding="12,6"
-                                        MinWidth="40"
-                                        VerticalAlignment="Center">
+                                        CornerRadius="4"
+                                        Content="Ctrl"
+                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
-                                        <Border.Background>
+                                        <controls:KeyVisual.Background>
                                             <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
-                                        </Border.Background>
+                                        </controls:KeyVisual.Background>
 
-                                        <TextBlock Text="Alt"
-                                            HorizontalAlignment="Center"
-                                            FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
-                                            FontWeight="SemiBold">
+                                        <controls:KeyVisual.Foreground>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                        </controls:KeyVisual.Foreground>
 
-                                            <TextBlock.Foreground>
-                                                <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
-                                            </TextBlock.Foreground>
+                                    </controls:KeyVisual>
 
-                                        </TextBlock>
-                                    </Border>
-
-                                    <Border CornerRadius="4" 
+                                    <controls:KeyVisual 
+                                        VerticalAlignment="Center"
+                                        MinWidth="40"
                                         Padding="12,6"
-                                        MinWidth="40"
-                                        VerticalAlignment="Center">
+                                        CornerRadius="4"
+                                        Content="Alt"
+                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
-                                        <Border.Background>
+                                        <controls:KeyVisual.Background>
                                             <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
-                                        </Border.Background>
+                                        </controls:KeyVisual.Background>
 
-                                        <TextBlock Text="K"
-                                            HorizontalAlignment="Center"
-                                            FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
-                                            FontWeight="SemiBold">
+                                        <controls:KeyVisual.Foreground>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                        </controls:KeyVisual.Foreground>
 
-                                            <TextBlock.Foreground>
-                                                <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
-                                            </TextBlock.Foreground>
+                                    </controls:KeyVisual>
 
-                                        </TextBlock>
-                                    </Border>
+                                    <controls:KeyVisual 
+                                        VerticalAlignment="Center"
+                                        MinWidth="40"
+                                        Padding="12,6"
+                                        CornerRadius="4"
+                                        Content="K"
+                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
+                                        <controls:KeyVisual.Background>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                        </controls:KeyVisual.Background>
+
+                                        <controls:KeyVisual.Foreground>
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                        </controls:KeyVisual.Foreground>
+
+                                    </controls:KeyVisual>
+                                    
                                 </StackPanel>
                             </Border>
                         </tkcontrols:SettingsCard.Description>
