@@ -10,7 +10,6 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -25,7 +24,9 @@ public sealed partial class SettingsWindow : WindowEx,
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
-    public Action NavigationViewLoaded { get; set; } = () => { };
+    public Action? NavigationViewLoaded { get; set; }
+
+    internal string? OpenToPage { get; set; }
 
     public SettingsWindow()
     {
@@ -50,7 +51,9 @@ public sealed partial class SettingsWindow : WindowEx,
         Task.Delay(500).ContinueWith(_ => this.NavigationViewLoaded?.Invoke(), TaskScheduler.FromCurrentSynchronizationContext());
 
         NavView.SelectedItem = NavView.MenuItems[0];
-        Navigate("General");
+
+        Navigate(OpenToPage);
+        OpenToPage = null;
 
         if (sender is NavigationView navigationView)
         {
@@ -77,20 +80,34 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    private void Navigate(string page)
+    internal void Navigate(string? page)
     {
         var pageType = page switch
         {
+            null => typeof(GeneralPage),
             "General" => typeof(GeneralPage),
             "Extensions" => typeof(ExtensionsPage),
             "Dock" => typeof(DockSettingsPage),
             _ => null,
         };
+        var actualPage = page ?? "General";
         if (pageType is not null)
         {
             BreadCrumbs.Clear();
-            BreadCrumbs.Add(new(page, page));
+            BreadCrumbs.Add(new(actualPage, actualPage));
             NavFrame.Navigate(pageType);
+
+            // Now, make sure to actually select the correct menu item too
+            foreach (var obj in NavView.MenuItems)
+            {
+                if (obj is NavigationViewItem item)
+                {
+                    if (item.Tag is string s && s == page)
+                    {
+                        NavView.SelectedItem = item;
+                    }
+                }
+            }
         }
     }
 

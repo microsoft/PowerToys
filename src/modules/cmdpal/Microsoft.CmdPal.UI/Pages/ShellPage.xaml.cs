@@ -257,15 +257,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            OpenSettings();
+            OpenSettings(message.Page);
         });
     }
 
-    public void OpenSettings()
+    public void OpenSettings(string? page = null)
     {
         if (_settingsWindow is null)
         {
             _settingsWindow = new SettingsWindow();
+        }
+
+        if (page is not null)
+        {
+            _settingsWindow.OpenToPage = page;
+            _settingsWindow.Navigate(page);
         }
 
         _settingsWindow.Activate();

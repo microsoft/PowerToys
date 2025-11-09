@@ -232,6 +232,7 @@
     <Grid
         x:Name="RootGrid"
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+        RightTapped="RootGrid_RightTapped"
         BorderThickness="0,0,0,1">
         <Grid x:Name="ContentGrid" Padding="0,0,0,0">
             <Grid.ColumnDefinitions>

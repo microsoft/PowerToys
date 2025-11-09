@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -152,7 +152,7 @@ internal sealed partial class TrayIconService
                 {
                     if (wParam == PInvoke.WM_USER + 1)
                     {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
                     }
                     else if (wParam == PInvoke.WM_USER + 2)
                     {

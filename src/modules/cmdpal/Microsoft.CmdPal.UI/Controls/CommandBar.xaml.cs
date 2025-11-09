@@ -126,7 +126,7 @@ public sealed partial class CommandBar : UserControl,
 
     private void SettingsIcon_Clicked(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
     }
 
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)

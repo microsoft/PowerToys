@@ -243,6 +243,25 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
             ContextMenuFlyout.Hide();
         }
     }
+
+    private void RootGrid_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+    {
+        var pos = e.GetPosition(null);
+        var item = this.ViewModel.GetContextMenuForDock();
+        if (item.HasMoreCommands)
+        {
+            ContextControl.ViewModel.SelectedItem = item;
+            ContextMenuFlyout.ShowAt(
+            this.RootGrid,
+            new FlyoutShowOptions()
+            {
+                ShowMode = FlyoutShowMode.Standard,
+                Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                Position = pos,
+            });
+            e.Handled = true;
+        }
+    }
 }
 
 #pragma warning restore SA1402 // File may only contain a single type

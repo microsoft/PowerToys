@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -121,6 +122,35 @@ public sealed partial class DockViewModel : IDisposable,
             CancellationToken.None,
             TaskCreationOptions.None,
             Scheduler);
+    }
+
+    public CommandItemViewModel GetContextMenuForDock()
+    {
+        var model = new DockContextMenuItem();
+        var vm = new CommandItemViewModel(new(model), new(this));
+        vm.SlowInitializeProperties();
+        return vm;
+    }
+
+    private sealed partial class DockContextMenuItem : CommandItem
+    {
+        public DockContextMenuItem()
+        {
+            var openSettingsCommand = new AnonymousCommand(
+                action: () =>
+                {
+                    WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Dock"));
+                })
+            {
+                Name = "Customize", // TODO!Loc
+                Icon = Icons.SettingsIcon,
+            };
+
+            MoreCommands = new CommandContextItem[]
+            {
+                new CommandContextItem(openSettingsCommand),
+            };
+        }
     }
 }
 

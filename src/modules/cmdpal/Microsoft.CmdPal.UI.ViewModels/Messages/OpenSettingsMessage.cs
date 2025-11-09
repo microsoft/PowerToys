@@ -4,6 +4,6 @@
 
 namespace Microsoft.CmdPal.UI.Messages;
 
-public record OpenSettingsMessage()
+public record OpenSettingsMessage(string? Page = null)
 {
 }
