@@ -88,15 +88,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        public string AccessibleName
-        {
-            get
-            {
-                var title = ResourceLoader.GetString("ShortcutConflictControl_Title");
-                return $"{title}, {ConflictText}";
-            }
-        }
-
         public bool HasConflicts => ConflictCount > 0;
 
         private static void OnAllHotkeyConflictsDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -113,7 +104,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             OnPropertyChanged(nameof(ConflictCount));
             OnPropertyChanged(nameof(ConflictText));
-            OnPropertyChanged(nameof(AccessibleName));
             OnPropertyChanged(nameof(HasConflicts));
 
             // Update visibility based on conflict count
