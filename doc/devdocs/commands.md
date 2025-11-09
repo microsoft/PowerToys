@@ -7,7 +7,7 @@ The PowerToys repository uses some special keywords to help manage issues and pu
 | `/azp run` | Triggers the Azure Pipelines CI build for the current PR. Useful if you want to re-run the build without creating a new commit. |
 | `/bugreport` / `/reportbug` | Adds a comment with a manual for the Bug Report Tool, which helps users collect logs and system information for debugging purposes. It requests to upload this file and adds the `Needs-Author-Feedback` label. |
 | `/feedbackhub` | Adds a comment with a link to the Feedback Hub app on Windows, where users can submit feedback about PowerToys. Closes the issue and adds the `Resolution-Please File on Feedback Hub` label. |
-| `/dup #...` or `/duplicate #...` or `/dup https://...` or `/duplicate https://...` | Marks the current issue as a duplicate of another issue. It closes the current issue and applies the `Resolution-Duplicate` label. Replace `#...` with the issue number or a link to the issue. |
+| `/dup #...` / `/duplicate #...` / `/dup https://...` / `/duplicate https://...` | Marks the current issue as a duplicate of another issue. It closes the current issue and applies the `Resolution-Duplicate` label. Replace `#...` with the issue number or a link to the issue. |
 | `/needinfo` | Adds the `Needs-Author-Feedback` label to the issue or PR, indicating that more information is needed from the author. |
 | `/helped` | Closes the issue and adds the `Resolution-Helped User` label. Furthermore a comment is added with a link to the PowerToys user documentation. |
 | `/loc` | Adds a comment informing the user that the issue was forwarded to the localization team and will soon be fixed. It adds the `Loc-Sent To Team` label. |
