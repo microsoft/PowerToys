@@ -5715,6 +5715,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_KeystrokeOverlay.Content" xml:space="preserve">
     <value>Keystroke Overlay</value>
     <comment>Product name: Navigation view item name for Keystroke Overlay</comment>
+  </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
   </data>
