@@ -63,7 +63,21 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[0] : null;
+    public CommandItemViewModel? SecondaryCommand // => HasMoreCommands ? ActualCommands[0] : null;
+    {
+        get
+        {
+            if (HasMoreCommands)
+            {
+                if (MoreCommands[0] is CommandContextItemViewModel command)
+                {
+                    return command;
+                }
+            }
+
+            return null;
+        }
+    }
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
