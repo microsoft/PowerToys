@@ -190,7 +190,11 @@ internal sealed partial class SampleListPage : ListPage
                     new CommandContextItem(new EverChangingCommand("Faces", "😁", "🥺", "😍")),
                     new CommandContextItem(new EverChangingCommand("Hearts", "♥️", "💚", "💜", "🧡", "💛", "💙")),
                 ],
-            }
+            },
+            new ListItemChangingCommandInTime()
+            {
+                Title = "I'm a list item that changes entire command in time",
+            },
         ];
     }
 
@@ -248,6 +252,11 @@ internal sealed partial class SampleListPage : ListPage
         private int _currentIndex;
 
         public EverChangingCommand(string name, params string[] icons)
+            : this(name, TimeSpan.FromSeconds(5), icons)
+        {
+        }
+
+        public EverChangingCommand(string name, TimeSpan interval, params string[] icons)
         {
             _icons = icons ?? throw new ArgumentNullException(nameof(icons));
             if (_icons.Length == 0)
@@ -260,7 +269,7 @@ internal sealed partial class SampleListPage : ListPage
             Icon = new IconInfo(_icons[_currentIndex]);
 
             // Start timer to change icon and name every 5 seconds
-            _timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+            _timer = new Timer(OnTimerElapsed, null, interval, interval);
         }
 
         private void OnTimerElapsed(object state)
@@ -280,6 +289,29 @@ internal sealed partial class SampleListPage : ListPage
         public void Dispose()
         {
             _timer?.Dispose();
+        }
+    }
+
+    internal sealed partial class ListItemChangingCommandInTime : ListItem
+        [
+            new("Water", TimeSpan.FromSeconds(2), "🐬", "🐳", "🐟", "🦈"),
+            new("Faces", TimeSpan.FromSeconds(2), "😁", "🥺", "😍"),
+            new("Hearts", TimeSpan.FromSeconds(2), "♥️", "💚", "💜", "🧡", "💛", "💙"),
+        ];
+
+        private int _state;
+
+        public ListItemChangingCommandInTime()
+        {
+            Subtitle = "I change my command every 10 seconds, and the command changes it's icon every 2 seconds";
+            var timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+            this.Command = _commands[0];
+        }
+
+        private void OnTimerElapsed(object state)
+        {
+            _state = (_state + 1) % _commands.Length;
+            this.Command = _commands[_state];
         }
     }
 }

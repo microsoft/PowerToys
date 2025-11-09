@@ -13,6 +13,7 @@ using AdvancedPaste.Models;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Windows.Security.Credentials;
 
 namespace AdvancedPaste.Settings
 {
@@ -33,7 +34,7 @@ namespace AdvancedPaste.Settings
 
         public event EventHandler Changed;
 
-        public bool IsAdvancedAIEnabled { get; private set; }
+        public bool IsAIEnabled { get; private set; }
 
         public bool ShowCustomPreview { get; private set; }
 
@@ -43,13 +44,16 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
+        public PasteAIConfiguration PasteAIConfiguration { get; private set; }
+
         public UserSettings(IFileSystem fileSystem)
         {
             _settingsUtils = new SettingsUtils(fileSystem);
 
-            IsAdvancedAIEnabled = false;
+            IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
@@ -94,13 +98,16 @@ namespace AdvancedPaste.Settings
                         var settings = _settingsUtils.GetSettingsOrDefault<AdvancedPasteSettings>(AdvancedPasteModuleName);
                         if (settings != null)
                         {
+                            bool migratedLegacyEnablement = TryMigrateLegacyAIEnablement(settings);
+
                             void UpdateSettings()
                             {
                                 var properties = settings.Properties;
 
-                                IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
+                                IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
+                                PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
@@ -126,6 +133,11 @@ namespace AdvancedPaste.Settings
                             Task.Factory
                                 .StartNew(UpdateSettings, CancellationToken.None, TaskCreationOptions.None, _taskScheduler)
                                 .Wait();
+
+                            if (migratedLegacyEnablement)
+                            {
+                                settings.Save(_settingsUtils);
+                            }
                         }
 
                         retry = false;
@@ -142,6 +154,114 @@ namespace AdvancedPaste.Settings
                     }
                 }
             }
+        }
+
+        private static bool TryMigrateLegacyAIEnablement(AdvancedPasteSettings settings)
+        {
+            if (settings?.Properties is null)
+            {
+                return false;
+            }
+
+            if (settings.Properties.IsAIEnabled || !LegacyOpenAIKeyExists())
+            {
+                return false;
+            }
+
+            settings.Properties.IsAIEnabled = true;
+            return true;
+        }
+
+        private static bool LegacyOpenAIKeyExists()
+        {
+            try
+            {
+                PasswordVault vault = new();
+                return vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey") is not null;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task SetActiveAIProviderAsync(string providerId)
+        {
+            if (string.IsNullOrWhiteSpace(providerId))
+            {
+                return;
+            }
+
+            await Task.Run(() =>
+            {
+                lock (_loadingSettingsLock)
+                {
+                    var settings = _settingsUtils.GetSettingsOrDefault<AdvancedPasteSettings>(AdvancedPasteModuleName);
+                    var configuration = settings?.Properties?.PasteAIConfiguration;
+                    var providers = configuration?.Providers;
+
+                    if (configuration == null || providers == null || providers.Count == 0)
+                    {
+                        return;
+                    }
+
+                    var target = providers.FirstOrDefault(provider => string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                    if (target == null)
+                    {
+                        return;
+                    }
+
+                    if (string.Equals(configuration.ActiveProvider?.Id, providerId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+
+                    configuration.ActiveProviderId = providerId;
+
+                    foreach (var provider in providers)
+                    {
+                        provider.IsActive = string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    try
+                    {
+                        settings.Save(_settingsUtils);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to set active AI provider", ex);
+                        return;
+                    }
+
+                    try
+                    {
+                        Task.Factory
+                            .StartNew(
+                                () =>
+                                {
+                                    PasteAIConfiguration.ActiveProviderId = providerId;
+
+                                    if (PasteAIConfiguration.Providers is not null)
+                                    {
+                                        foreach (var provider in PasteAIConfiguration.Providers)
+                                        {
+                                            provider.IsActive = string.Equals(provider.Id, providerId, StringComparison.OrdinalIgnoreCase);
+                                        }
+                                    }
+
+                                    Changed?.Invoke(this, EventArgs.Empty);
+                                },
+                                CancellationToken.None,
+                                TaskCreationOptions.None,
+                                _taskScheduler)
+                            .Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to dispatch active AI provider change", ex);
+                    }
+                }
+            });
         }
 
         public void Dispose()

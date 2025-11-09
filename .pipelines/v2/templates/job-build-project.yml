@@ -111,6 +111,7 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
+    NUGET_PACKAGES: 'C:\NuGetPackages' # Some of our build steps cache these here... and it was apparently part of the global environment
     MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
@@ -139,6 +140,10 @@ jobs:
     - output: pipelineArtifact
       artifactName: $(JobOutputArtifactName)
       targetPath: $(Build.ArtifactStagingDirectory)
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
+      targetPath: $(LogOutputDirectory)
+      condition: or(failed(), canceled())
   steps:
   - checkout: self
     clean: true
@@ -266,6 +271,26 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - task: VSBuild@1
+    displayName: Generate DSC artifacts for ARM64
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
+    inputs:
+      solution: PowerToys.sln
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore
+        /p:Configuration=$(BuildConfiguration)
+        /p:Platform=x64
+        /t:DSC\PowerToys_Settings_DSC_Schema_Generator
+        /bl:$(LogOutputDirectory)\build-dsc-generator.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
+      platform: x64
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
   # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
   - task: VSBuild@1
     displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
@@ -375,7 +400,7 @@ jobs:
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
     displayName: HACK Copy core WebView2 ARM64 dll to output directory
-    condition: eq(variables['BuildPlatform'],'arm64')
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
       contents: packages/Microsoft.Web.WebView2.1.0.2903.40/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
       targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
@@ -414,11 +439,11 @@ jobs:
       inputs:
         testResultsFormat: VSTest
         testResultsFiles: '**/*.trx'
-      condition: ne(variables['BuildPlatform'],'arm64')
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
     # Native dlls
     - task: VSTest@2
-      condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
       displayName: 'Native Tests'
       inputs:
         platform: '$(BuildPlatform)'
@@ -511,14 +536,6 @@ jobs:
       signingIdentity: ${{ parameters.signingIdentity }}
       versionNumber: ${{ parameters.versionNumber }}
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-
-  - template: steps-build-installer-vnext.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
