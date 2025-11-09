@@ -96,9 +96,14 @@ public partial class CommandBarViewModel : ObservableObject,
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
 
-        ShouldShowContextMenu = SelectedItem.MoreCommands
-            .OfType<CommandContextItemViewModel>()
-            .Count() > 1;
+        var hasMoreThanOneContextItem = SelectedItem.MoreCommands.Count() > 1;
+        var hasMoreThanOneCommand = SelectedItem.MoreCommands.OfType<CommandContextItemViewModel>().Any();
+
+        // ShouldShowContextMenu = SelectedItem.MoreCommands
+
+        // // .OfType<CommandContextItemViewModel>()
+        //    .Count() > 1;
+        ShouldShowContextMenu = hasMoreThanOneContextItem && hasMoreThanOneCommand;
 
         OnPropertyChanged(nameof(HasSecondaryCommand));
         OnPropertyChanged(nameof(SecondaryCommand));
