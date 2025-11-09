@@ -19,13 +19,20 @@
             H2Margin="0, 16, 0, 4"
             H3FontSize="16"
             H3FontWeight="SemiBold"
-            H3Margin="0, 16, 0, 4" />
+            H3Margin="0, 16, 0, 4"
+            ImageMaxHeight="200"
+            ImageMaxWidth="600"
+            ImageStretch="Uniform" />
         <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
     </Page.Resources>
     <ScrollViewer>
-        <StackPanel Padding="24" Spacing="12">
+        <Grid Padding="24" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <!--  Header image  -->
-            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12">
+            <!--<Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12">
                 <Image
                     x:Name="HeaderImage"
                     Height="180"
@@ -33,16 +40,30 @@
                     VerticalAlignment="Center"
                     Stretch="UniformToFill"
                     Visibility="Collapsed" />
+            </Border>-->
+            <Border Width="1000">
+                <tkcontrols:MarkdownTextBlock
+                    x:Name="BlogTextBlock"
+                    MaxWidth="1000"
+                    Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                    UseAutoLinks="True"
+                    UseEmphasisExtras="True"
+                    UseListExtras="True"
+                    UsePipeTables="True"
+                    UseTaskLists="True" />
+
+
             </Border>
 
             <tkcontrols:MarkdownTextBlock
                 x:Name="MarkdownBlock"
+                Grid.Row="1"
                 Config="{StaticResource ReleaseNotesMarkdownConfig}"
                 UseAutoLinks="True"
                 UseEmphasisExtras="True"
                 UseListExtras="True"
                 UsePipeTables="True"
                 UseTaskLists="True" />
-        </StackPanel>
+        </Grid>
     </ScrollViewer>
 </Page>

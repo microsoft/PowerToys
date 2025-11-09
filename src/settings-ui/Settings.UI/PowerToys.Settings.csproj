@@ -67,6 +67,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
+		<PackageReference Include="ReverseMarkdown" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />

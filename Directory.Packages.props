@@ -22,7 +22,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.2.250402" />
     <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
-    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.251002-build.2316" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.251101-build.2372" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
@@ -73,7 +73,7 @@
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
     <PackageVersion Include="OpenAI" Version="2.0.0" />
-    <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
+    <PackageVersion Include="ReverseMarkdown" Version="4.7.1" />
     <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
