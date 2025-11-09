@@ -5,6 +5,7 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using SamplePagesExtension.Pages;
+using SamplePagesExtension.Pages.IssueSpecificPages;
 
 namespace SamplePagesExtension;
 
@@ -47,6 +48,11 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
+        },
+        new ListItem(new SlowListPage())
+        {
+            Title = "Slow loading list page",
+            Subtitle = "A demo of a list page that takes a while to load",
         },
 
         // Content pages
@@ -101,6 +107,11 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Evil samples",
             Subtitle = "Samples designed to break the palette in many different evil ways",
+        },
+        new ListItem(new AllIssueSamplesIndexPage())
+        {
+            Title = "Issue-specific samples",
+            Subtitle = "Samples designed to reproduce specific issues",
         }
     ];
 

@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Foundation;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI;
@@ -25,6 +26,8 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
+    IRecipient<NavigatePageDownCommand>,
+    IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
@@ -59,10 +62,17 @@ public sealed partial class ListPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ListViewModel lvm)
+        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
         {
-            ViewModel = lvm;
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
+
+        if (navigationRequest.TargetViewModel is not ListViewModel listViewModel)
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ListViewModel)}");
+        }
+
+        ViewModel = listViewModel;
 
         if (e.NavigationMode == NavigationMode.Back
             || (e.NavigationMode == NavigationMode.New && ItemView.Items.Count > 0))
@@ -75,6 +85,8 @@ public sealed partial class ListPage : Page,
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
 
@@ -87,6 +99,8 @@ public sealed partial class ListPage : Page,
 
         WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
@@ -174,9 +188,9 @@ public sealed partial class ListPage : Page,
                 var notificationText = li.Title;
 
                 UIHelper.AnnounceActionForAccessibility(
-                     ItemsList,
-                     notificationText,
-                     "CommandPaletteSelectedItemChanged");
+                    ItemsList,
+                    notificationText,
+                    "CommandPaletteSelectedItemChanged");
             }
         }
     }
@@ -289,6 +303,142 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    public void Receive(NavigatePageDownCommand message)
+    {
+        var indexes = CalculateTargetIndexPageUpDownScrollTo(true);
+        if (indexes is null)
+        {
+            return;
+        }
+
+        if (indexes.Value.CurrentIndex != indexes.Value.TargetIndex)
+        {
+            ItemView.SelectedIndex = indexes.Value.TargetIndex;
+            ItemView.ScrollIntoView(ItemView.SelectedItem);
+        }
+    }
+
+    public void Receive(NavigatePageUpCommand message)
+    {
+        var indexes = CalculateTargetIndexPageUpDownScrollTo(false);
+        if (indexes is null)
+        {
+            return;
+        }
+
+        if (indexes.Value.CurrentIndex != indexes.Value.TargetIndex)
+        {
+            ItemView.SelectedIndex = indexes.Value.TargetIndex;
+            ItemView.ScrollIntoView(ItemView.SelectedItem);
+        }
+    }
+
+    /// <summary>
+    /// Calculates the item index to target when performing a page up or page down
+    /// navigation. The calculation attempts to estimate how many items fit into
+    /// the visible viewport by measuring actual container heights currently visible
+    /// within the internal ScrollViewer. If measurements are not available a
+    /// fallback estimate is used.
+    /// </summary>
+    /// <param name="isPageDown">True to calculate a page-down target, false for page-up.</param>
+    /// <returns>
+    /// A tuple containing the current index and the calculated target index, or null
+    /// if a valid calculation could not be performed (for example, missing ScrollViewer).
+    /// </returns>
+    private (int CurrentIndex, int TargetIndex)? CalculateTargetIndexPageUpDownScrollTo(bool isPageDown)
+    {
+        var scroll = FindScrollViewer(ItemView);
+        if (scroll is null)
+        {
+            return null;
+        }
+
+        var viewportHeight = scroll.ViewportHeight;
+        if (viewportHeight <= 0)
+        {
+            return null;
+        }
+
+        var currentIndex = ItemView.SelectedIndex < 0 ? 0 : ItemView.SelectedIndex;
+        var itemCount = ItemView.Items.Count;
+
+        // Compute visible item heights within the ScrollViewer viewport
+        const int firstVisibleIndexNotFound = -1;
+        var firstVisibleIndex = firstVisibleIndexNotFound;
+        var visibleHeights = new List<double>(itemCount);
+
+        for (var i = 0; i < itemCount; i++)
+        {
+            if (ItemView.ContainerFromIndex(i) is FrameworkElement container)
+            {
+                try
+                {
+                    var transform = container.TransformToVisual(scroll);
+                    var topLeft = transform.TransformPoint(new Point(0, 0));
+                    var bottom = topLeft.Y + container.ActualHeight;
+
+                    // If any part of the container is inside the viewport, consider it visible
+                    if (topLeft.Y >= 0 && bottom <= viewportHeight)
+                    {
+                        if (firstVisibleIndex == firstVisibleIndexNotFound)
+                        {
+                            firstVisibleIndex = i;
+                        }
+
+                        visibleHeights.Add(container.ActualHeight > 0 ? container.ActualHeight : 0);
+                    }
+                }
+                catch
+                {
+                    // ignore transform errors and continue
+                }
+            }
+        }
+
+        var itemsPerPage = 0;
+
+        // Calculate how many items fit in the viewport based on their actual heights
+        if (visibleHeights.Count > 0)
+        {
+            double accumulated = 0;
+            for (var i = 0; i < visibleHeights.Count; i++)
+            {
+                accumulated += visibleHeights[i] <= 0 ? 1 : visibleHeights[i];
+                itemsPerPage++;
+                if (accumulated >= viewportHeight)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // fallback: estimate using first measured container height
+            double itemHeight = 0;
+            for (var i = currentIndex; i < itemCount; i++)
+            {
+                if (ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c)
+                {
+                    itemHeight = c.ActualHeight;
+                    break;
+                }
+            }
+
+            if (itemHeight <= 0)
+            {
+                itemHeight = 1;
+            }
+
+            itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
+        }
+
+        var targetIndex = isPageDown
+                              ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
+                              : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
+
+        return (currentIndex, targetIndex);
+    }
+
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ListPage @this)
@@ -344,11 +494,11 @@ public sealed partial class ListPage : Page,
         }
     }
 
-    private ScrollViewer? FindScrollViewer(DependencyObject parent)
+    private static ScrollViewer? FindScrollViewer(DependencyObject parent)
     {
-        if (parent is ScrollViewer)
+        if (parent is ScrollViewer viewer)
         {
-            return (ScrollViewer)parent;
+            return viewer;
         }
 
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)

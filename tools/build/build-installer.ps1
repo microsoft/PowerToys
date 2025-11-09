@@ -21,12 +21,9 @@ Specifies the build configuration (e.g., 'Debug', 'Release'). Default is 'Releas
 .PARAMETER PerUser
 Specifies whether to build a per-user installer (true) or machine-wide installer (false). Default is true (per-user).
 
-.PARAMETER InstallerSuffix
-Specifies the suffix for the installer naming (e.g., 'wix5', 'vnext'). Default is 'wix5'.
-
 .EXAMPLE
 .\build-installer.ps1
-Runs the installer build pipeline for x64 Release with default suffix (wix5).
+Runs the installer build pipeline for x64 Release.
 
 .EXAMPLE
 .\build-installer.ps1 -Platform x64 -Configuration Release
@@ -35,10 +32,6 @@ Runs the pipeline for x64 Release.
 .EXAMPLE
 .\build-installer.ps1 -Platform x64 -Configuration Release -PerUser false
 Runs the pipeline for x64 Release with machine-wide installer.
-
-.EXAMPLE
-.\build-installer.ps1 -Platform x64 -Configuration Release -InstallerSuffix vnext
-Runs the pipeline for x64 Release with 'vnext' suffix.
 
 .NOTES
 - Make sure to run this script from a Developer PowerShell (e.g., VS2022 Developer PowerShell).
@@ -54,8 +47,7 @@ Runs the pipeline for x64 Release with 'vnext' suffix.
 param (
     [string]$Platform = '',
     [string]$Configuration = 'Release',
-    [string]$PerUser = 'true',
-    [string]$InstallerSuffix = 'wix5'
+    [string]$PerUser = 'true'
 )
 
 # Ensure helpers are available
@@ -97,7 +89,7 @@ if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
 }
 
 Write-Host "PowerToys repository root detected: $repoRoot"
-# WiX v5 projects use WixToolset.Sdk via NuGet/MSBuild; a separate WiX 3 installation is not required here.
+# WiX v5 projects use WixToolset.Sdk via NuGet/MSBuild; no separate WiX installation is required.
 Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1} PerUser={2}" -f $Platform, $Configuration, $PerUser)
 Write-Host ''
 
@@ -151,8 +143,8 @@ try {
 
 RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
 
 Write-Host '[PIPELINE] Completed'

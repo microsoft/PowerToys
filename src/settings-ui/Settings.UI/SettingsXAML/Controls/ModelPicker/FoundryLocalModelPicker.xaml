@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.FoundryLocalModelPicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:LanguageModelProvider"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    x:Name="Root"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <Style x:Key="TagBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ControlStrongStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="TagTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <StackPanel
+            x:Name="LoadingPanel"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="12">
+            <ProgressRing
+                x:Name="LoadingIndicator"
+                Width="36"
+                Height="36"
+                HorizontalAlignment="Center" />
+            <TextBlock
+                x:Name="LoadingStatusTextBlock"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Loading Foundry Local status..."
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <ScrollViewer x:Name="ModelsView" Visibility="Collapsed">
+            <Grid Padding="0,12,0,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel
+                    x:Name="NoModelsPanel"
+                    Grid.Row="0"
+                    Margin="0,0,0,16"
+                    HorizontalAlignment="Center"
+                    Orientation="Vertical"
+                    Spacing="4">
+                    <FontIcon FontSize="24" Glyph="&#xE74E;" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="No models downloaded"
+                        TextAlignment="Center" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Run Foundry Local to download or add a local model below."
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <Button
+                        x:Name="LaunchFoundryModelListButton"
+                        HorizontalAlignment="Center"
+                        Click="LaunchFoundryModelListButton_Click"
+                        Content="Open Foundry model list"
+                        Style="{StaticResource AccentButtonStyle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Spacing="12">
+                    <Grid ColumnSpacing="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            x:Name="CachedModelsComboBox"
+                            Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Name"
+                            ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
+                            SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
+                            SelectionChanged="CachedModelsComboBox_SelectionChanged">
+                            <ComboBox.Header>
+                                <TextBlock>
+                                    <Run Text="Foundry Local model" /><LineBreak /><Run
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="Use the Foundry Local CLI to download models that run locally on-device. They'll appear here." />
+                                </TextBlock>
+                            </ComboBox.Header>
+                        </ComboBox>
+                        <Button
+                            x:Name="RefreshModelsButton"
+                            Grid.Column="1"
+                            MinHeight="32"
+                            VerticalAlignment="Bottom"
+                            Click="RefreshModelsButton_Click"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            ToolTipService.ToolTip="Refresh model list">
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                        </Button>
+                    </Grid>
+                    <StackPanel
+                        x:Name="SelectedModelDetailsPanel"
+                        Spacing="8"
+                        Visibility="Collapsed">
+                        <TextBlock
+                            x:Name="SelectedModelDescriptionText"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextWrapping="Wrap" />
+                        <toolkit:WrapPanel
+                            x:Name="SelectedModelTagsPanel"
+                            HorizontalSpacing="4"
+                            VerticalSpacing="4"
+                            Visibility="Collapsed" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <Grid x:Name="NotAvailableGrid" Visibility="Collapsed">
+            <StackPanel
+                Margin="48,0,48,48"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Vertical"
+                Spacing="8">
+                <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
+                <TextBlock
+                    FontWeight="SemiBold"
+                    Text="Foundry Local is not available on this device yet."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    IsTextSelectionEnabled="True"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap">
+                    <Run Text="Start the Foundry Local service before returning to PowerToys." />
+                </TextBlock>
+                <HyperlinkButton Content="Follow the Foundry Local CLI guide" NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/get-started" />
+                <TextBlock
+                    x:Uid="FoundryLocal_RestartRequiredNote"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="Note: After installing the Foundry Local CLI, restart PowerToys to use it."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="StateGroup">
+                <VisualState x:Name="ShowLoading" />
+                <VisualState x:Name="ShowModels">
+                    <VisualState.Setters>
+                        <Setter Target="LoadingPanel.Visibility" Value="Collapsed" />
+                        <Setter Target="NotAvailableGrid.Visibility" Value="Collapsed" />
+                        <Setter Target="ModelsView.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="ShowNotAvailable">
+                    <VisualState.Setters>
+                        <Setter Target="LoadingPanel.Visibility" Value="Collapsed" />
+                        <Setter Target="NotAvailableGrid.Visibility" Value="Visible" />
+                        <Setter Target="ModelsView.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

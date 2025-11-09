@@ -3,6 +3,7 @@ abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
 ABOUTBOX
+ABORTIFHUNG
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -21,12 +22,11 @@ ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
+adjacents
 ADMINS
 adml
 admx
 advancedpaste
-advancedpasteui
-advancedpasteuishortcut
 advapi
 advfirewall
 AFeature
@@ -35,6 +35,7 @@ AFX
 AGGREGATABLE
 AHK
 AHybrid
+AIUI
 akv
 ALarger
 ALIGNRIGHT
@@ -44,9 +45,9 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
-allpc
 ALLVIEW
 ALPHATYPE
+amazonbedrock
 AModifier
 amr
 ANDSCANS
@@ -77,6 +78,7 @@ appwiz
 appxpackage
 APSTUDIO
 AQS
+Aquadrant
 ARandom
 ARCHITEW
 ARemapped
@@ -95,9 +97,10 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+ATX
 ATRIOX
 aumid
-Authenticode
+authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -111,9 +114,13 @@ AValid
 AWAYMODE
 azcliversion
 azman
+azureaiinference
+azureinference
+azureopenai
 bbwe
 BCIE
 bck
+backticks
 BESTEFFORT
 bezelled
 bhid
@@ -134,7 +141,6 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-blogs
 Blt
 BLURBEHIND
 BLURREGION
@@ -142,6 +148,7 @@ bmi
 BNumber
 BODGY
 BOklab
+Bootstrappers
 BOOTSTRAPPERINSTALLFOLDER
 BOTTOMALIGN
 boxmodel
@@ -169,9 +176,12 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
+Carlseibert
 Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
@@ -195,9 +205,11 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
+CIBUILD
 cidl
 CIELCh
 cim
+claude
 CImage
 cla
 CLASSDC
@@ -230,6 +242,7 @@ CODENAME
 codereview
 Codespaces
 Coen
+cognitiveservices
 COINIT
 colid
 colorconv
@@ -244,6 +257,7 @@ cominterop
 commandnotfound
 commandpalette
 compmgmt
+COMPOSITIONDISABLED
 COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
@@ -269,12 +283,14 @@ countof
 covrun
 cpcontrols
 cph
+cppcoreguidelines
 cplusplus
 CPower
 cpptools
 cppvsdbg
 cppwinrt
 createdump
+creativecommons
 CREATEPROCESS
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -298,6 +314,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
+CURSORWRAP
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -337,6 +354,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+dfx
 Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -371,7 +389,7 @@ devmgmt
 DEVMODE
 DEVMODEW
 devpal
-DFX
+dfx
 DIALOGEX
 digicert
 DINORMAL
@@ -385,6 +403,7 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
+djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -410,7 +429,7 @@ DROPFILES
 DSTINVERT
 DString
 DSVG
-DTo
+dto
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -444,7 +463,7 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
-ekus
+eku
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -455,6 +474,7 @@ encryptor
 ENDSESSION
 ENSUREVISIBLE
 ENTERSIZEMOVE
+ENTRYW
 ENU
 environmentvariables
 EOAC
@@ -507,10 +527,12 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
+fdx
 fesf
-fff
 FFFF
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -537,6 +559,7 @@ FIXEDSYS
 flac
 flyouts
 FMask
+foundrylocal
 fmtid
 FOF
 FOFX
@@ -572,6 +595,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -581,6 +605,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gitmodules
 GHND
 GMEM
 GNumber
@@ -599,6 +624,8 @@ GValue
 gwl
 GWLP
 GWLSTYLE
+googleai
+googlegemini
 hangeul
 Hanzi
 Hardlines
@@ -635,6 +662,7 @@ Hiber
 Hiberboot
 HIBYTE
 hicon
+HICONSM
 HIDEREADONLY
 HIDEWINDOW
 Hif
@@ -660,6 +688,7 @@ hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
+huggingface
 HORZRES
 HORZSIZE
 Hostbackdropbrush
@@ -668,11 +697,7 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
-hotkeylockmachine
-hotkeyreconnect
 hotkeys
-hotkeyswitch
-hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -690,6 +715,7 @@ HTCLIENT
 hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
+hutchinsoniana
 HVal
 HValue
 Hvci
@@ -711,7 +737,9 @@ IDCANCEL
 IDD
 idk
 idl
+IIM
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -728,11 +756,10 @@ Ijwhost
 ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
+IPTC
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
-imagetotext
-imagetotextshortcut
 imagingdevices
 ime
 imgflip
@@ -748,7 +775,7 @@ INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
-Inlines
+inlines
 INPC
 inproc
 INPUTHARDWARE
@@ -822,6 +849,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+ksa
 kvp
 Kybd
 LARGEICON
@@ -829,6 +857,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 LCh
+lbl
 lcid
 LCIDTo
 lcl
@@ -847,10 +876,12 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+lightswitch
 linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -862,18 +893,20 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+lon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
-LOn
+lng
+lon
 longdate
 LONGNAMES
 lowlevel
+lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -920,12 +953,11 @@ luid
 LUMA
 lusrmgr
 LVal
-lvm
 LWA
 lwin
 LZero
 MAGTRANSFORM
-MAJORMINOR
+makeappx
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -950,7 +982,6 @@ MDL
 mdtext
 mdtxt
 mdwn
-measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -958,6 +989,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 Metadatas
+metadatamatters
 metafile
 mfc
 Mgmt
@@ -1000,7 +1032,6 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
-mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1026,6 +1057,7 @@ msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIRESTARTMANAGERCONTROL
+MSIs
 msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
@@ -1045,7 +1077,6 @@ MWBEx
 MYICON
 NAMECHANGE
 namespaceanddescendants
-Namotion
 nao
 NCACTIVATE
 ncc
@@ -1083,7 +1114,6 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
-NJson
 NLog
 NLSTEXT
 NMAKE
@@ -1122,6 +1152,7 @@ nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
+NPU
 NOREDIRECTIONBITMAP
 NOREDRAW
 NOREMOVE
@@ -1158,6 +1189,7 @@ NTSTATUS
 NTSYSAPI
 NULLCURSOR
 nullonfailure
+nullref
 numberbox
 nwc
 ocr
@@ -1180,6 +1212,9 @@ opencode
 OPENFILENAME
 opensource
 openxmlformats
+ollama
+Olllama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1210,18 +1245,6 @@ PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
-pasteashtmlfile
-pasteashtmlfileshortcut
-pasteasjson
-pasteasjsonshortcut
-pasteasmarkdown
-pasteasmarkdownshortcut
-pasteasplaintext
-pasteasplaintextshortcut
-pasteaspngfile
-pasteaspngfileshortcut
-pasteastxtfile
-pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1229,6 +1252,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
@@ -1272,6 +1296,7 @@ pinvoke
 pipename
 PKBDLLHOOKSTRUCT
 pkgfamily
+PKI
 plib
 ploc
 ploca
@@ -1284,6 +1309,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1291,7 +1317,6 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
-powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1342,7 +1367,6 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
-projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1350,6 +1374,7 @@ PRTL
 prvpane
 psapi
 pscid
+pscustomobject
 PSECURITY
 psfgao
 psfi
@@ -1379,6 +1404,8 @@ pwsz
 pwtd
 QDC
 qit
+QNN
+Qualcomm
 QITAB
 QITABENT
 qoi
@@ -1390,6 +1417,7 @@ quickaccent
 QUNS
 RAII
 RAlt
+RAquadrant
 randi
 rasterization
 Rasterize
@@ -1434,7 +1462,6 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
-reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1460,7 +1487,6 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-Rns
 RNumber
 rop
 ROUNDSMALL
@@ -1488,6 +1514,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samsung
 sancov
 SAVEFAILED
 scanled
@@ -1684,10 +1711,10 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
-Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
+suntimes
 sut
 svchost
 SVGIn
@@ -1715,6 +1742,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
@@ -1753,9 +1781,9 @@ tgz
 themeresources
 THH
 THICKFRAME
+THEMECHANGED
 THISCOMPONENT
 throughs
-thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1769,10 +1797,9 @@ tkconverters
 tlb
 tlbimp
 tlc
+tmain
 TNP
-TOGGLEEASYMOUSE
 Toolhelp
-toolkitconverters
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF
@@ -1784,11 +1811,9 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
-transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
-Tru
 trl
 trx
 tsa
@@ -1824,7 +1849,6 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
-undefining
 UNDNAME
 UNICODETEXT
 unins
@@ -1853,6 +1877,7 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
+utm
 UType
 uuidv
 uwp
@@ -1929,6 +1954,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WCT
+WCRAPI
 WDA
 wdm
 wdp
@@ -1942,6 +1968,7 @@ wgpocpl
 WHEREID
 wic
 wifi
+wikimedia
 wikipedia
 WIL
 winapi
@@ -1971,6 +1998,8 @@ WINL
 winlogon
 winmd
 WINNT
+windowsml
+winml
 winres
 winrt
 winsdk
@@ -1991,6 +2020,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+wmsg
 WMSYSCOMMAND
 wnd
 WNDCLASS
@@ -2004,6 +2034,7 @@ WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
 WORKSPACESWINDOWARRANGER
+worktree
 wox
 wparam
 wpf
@@ -2034,7 +2065,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 xdf
 XDocument
 XElement
@@ -2052,6 +2085,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2059,6 +2093,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels

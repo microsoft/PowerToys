@@ -121,8 +121,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,166,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,223,306,50,14
-    LTEXT           "ZoomIt v9.01",IDC_VERSION,42,7,73,10
-    LTEXT           "Copyright © 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,166,8
+    LTEXT           "ZoomIt v9.10",IDC_VERSION,42,7,73,10
+    LTEXT           "Copyright © 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,231,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
@@ -149,7 +149,8 @@ BEGIN
     CONTROL         "",IDC_TIMER_POS7,"Button",BS_AUTORADIOBUTTON,63,108,10,10
     CONTROL         "",IDC_TIMER_POS8,"Button",BS_AUTORADIOBUTTON,79,108,10,10
     CONTROL         "",IDC_TIMER_POS9,"Button",BS_AUTORADIOBUTTON,97,108,10,10
-    CONTROL         "Show background bitmap:",IDC_CHECK_BACKGROUND_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,122,99,10,WS_EX_RIGHT
+    CONTROL         "Show background bitmap:",IDC_CHECK_BACKGROUND_FILE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,122,99,10,WS_EX_RIGHT
     CONTROL         "Use faded desktop as background",IDC_STATIC_DESKTOP_BACKGROUND,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,46,135,125,10
     CONTROL         "Use image file as background",IDC_STATIC_BACKGROUND_FILE,
@@ -165,23 +166,25 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,7,196,193,1,WS_EX_CLIENTEDGE
 END
 
-ZOOM DIALOGEX 0, 0, 260, 158
+ZOOM DIALOGEX 0, 0, 260, 170
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,59,57,80,12
     LTEXT           "After toggling ZoomIt you can zoom in with the mouse wheel or up and down arrow keys. Exit zoom mode with Escape or by pressing the right mouse button.",IDC_STATIC,7,6,246,26
     LTEXT           "Zoom Toggle:",IDC_STATIC,7,59,51,8
-    CONTROL         "",IDC_ZOOM_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,53,104,150,15,WS_EX_TRANSPARENT
-    LTEXT           "Specify the initial level of magnification when zooming in:",IDC_STATIC,7,91,215,10
-    LTEXT           "1.25",IDC_STATIC,52,122,16,8
-    LTEXT           "1.5",IDC_STATIC,82,122,12,8
-    LTEXT           "1.75",IDC_STATIC,108,122,16,8
-    LTEXT           "2.0",IDC_STATIC,138,122,12,8
-    LTEXT           "3.0",IDC_STATIC,164,122,12,8
-    LTEXT           "4.0",IDC_STATIC,190,122,12,8
+    CONTROL         "",IDC_ZOOM_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,53,118,150,15,WS_EX_TRANSPARENT
+    LTEXT           "Specify the initial level of magnification when zooming in:",IDC_STATIC,7,105,215,10
+    LTEXT           "1.25",IDC_STATIC,52,136,16,8
+    LTEXT           "1.5",IDC_STATIC,82,136,12,8
+    LTEXT           "1.75",IDC_STATIC,108,136,16,8
+    LTEXT           "2.0",IDC_STATIC,138,136,12,8
+    LTEXT           "3.0",IDC_STATIC,164,136,12,8
+    LTEXT           "4.0",IDC_STATIC,190,136,12,8
     CONTROL         "Animate zoom in and zoom out:",IDC_ANIMATE_ZOOM,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,74,116,10
-    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,7,34,246,17
+    CONTROL         "Smooth zoomed image:",IDC_SMOOTH_IMAGE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,88,116,10
+    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,7,148,246,17
+    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,6,34,246,18
 END
 
 DRAW DIALOGEX 0, 0, 260, 228
@@ -295,7 +298,8 @@ BEGIN
     LTEXT           "DemoType toggle:",IDC_STATIC,7,157,63,8
     PUSHBUTTON      "&...",IDC_DEMOTYPE_BROWSE,231,137,16,13
     CONTROL         "",IDC_DEMOTYPE_SPEED_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,52,202,150,11,WS_EX_TRANSPARENT
-    CONTROL         "Drive input with typing:",IDC_DEMOTYPE_USER_DRIVEN,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,173,88,10
+    CONTROL         "Drive input with typing:",IDC_DEMOTYPE_USER_DRIVEN,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,173,88,10
     LTEXT           "DemoType typing speed:",IDC_STATIC,7,189,215,10
     LTEXT           "Slow",IDC_DEMOTYPE_STATIC1,51,213,18,8
     LTEXT           "Fast",IDC_DEMOTYPE_STATIC2,186,213,17,8
@@ -413,8 +417,8 @@ ACCELERATORS ACCELERATORS
 BEGIN
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDC_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "C",            IDC_COPY_CROP,           VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "S",            IDC_SAVE_CROP,           VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "C",            IDC_COPY_CROP,          VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "S",            IDC_SAVE_CROP,          VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
 
 

@@ -140,7 +140,7 @@
     <comment>"Terminal" should be the localized name of the Windows Terminal</comment>
   </data>
   <data name="bookmarks_form_name_label" xml:space="preserve">
-    <value>Name</value>
+    <value>Name (optional)</value>
   </data>
   <data name="bookmarks_form_save" xml:space="preserve">
     <value>Save</value>
@@ -184,5 +184,21 @@
   </data>
   <data name="bookmark_toast_failed_open_text" xml:space="preserve">
     <value>Failed to open {0}</value>
+  </data>
+  <data name="bookmarks_form_hint_text1" xml:space="preserve">
+    <value>You can add placeholders to bookmarks, and Command Palette will prompt you to enter their values when you open the bookmark.
+A placeholder looks like this:</value>
+  </data>
+  <data name="bookmarks_form_hint_text2" xml:space="preserve">
+    <value>{placeholder}</value>
+  </data>
+  <data name="bookmarks_form_hint_text3" xml:space="preserve">
+    <value>— for example:</value>
+  </data>
+  <data name="bookmarks_form_hint_text4" xml:space="preserve">
+    <value>https://www.bing.com/search?q={Query}</value>
+  </data>
+  <data name="bookmarks_form_bookmark_placeholder" xml:space="preserve">
+    <value>Enter URL or file path, you can use {placeholders}, e.g. https://www.bing.com/search?q={Query}</value>
   </data>
 </root>
