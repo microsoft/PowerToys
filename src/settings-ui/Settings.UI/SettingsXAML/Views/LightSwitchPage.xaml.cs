@@ -18,20 +18,18 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
-using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
-using Windows.Services.Maps;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class LightSwitchPage : Page
+    public sealed partial class LightSwitchPage : NavigablePage, IRefreshablePage
     {
         private readonly string _appName = "LightSwitch";
         private readonly SettingsUtils _settingsUtils;
         private readonly Func<string, int> _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
-        private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
-        private readonly ISettingsRepository<LightSwitchSettings> _moduleSettingsRepository;
+        private readonly SettingsRepository<GeneralSettings> _generalSettingsRepository;
+        private readonly SettingsRepository<LightSwitchSettings> _moduleSettingsRepository;
 
         private readonly IFileSystem _fileSystem;
         private readonly IFileSystemWatcher _fileSystemWatcher;
@@ -55,7 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var darkSettings = _moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            ViewModel = new LightSwitchViewModel(darkSettings, ShellPage.SendDefaultIPCMessage);
+            ViewModel = new LightSwitchViewModel(darkSettings, _sendConfigMsg);
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
@@ -74,9 +72,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _fileSystemWatcher.Changed += Settings_Changed;
             _fileSystemWatcher.EnableRaisingEvents = true;
 
-            this.InitializeComponent();
-            this.Loaded += LightSwitchPage_Loaded;
-            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
+            InitializeComponent();
+            Loaded += LightSwitchPage_Loaded;
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshEnabledState();
         }
 
         private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
@@ -369,7 +372,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void CityAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        /* private void CityAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             if (args.SelectedItem is SearchLocation location)
             {
@@ -379,7 +382,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 LocationDialog.IsPrimaryButtonEnabled = true;
                 LocationResultPanel.Visibility = Visibility.Visible;
             }
-        }
+        } */
 
         private void ModeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
