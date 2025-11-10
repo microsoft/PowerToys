@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
@@ -33,6 +34,105 @@ public class PeekFilePreviewTests : UITestBase
     public PeekFilePreviewTests()
         : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical)
     {
+    }
+
+    static PeekFilePreviewTests()
+    {
+        FixSettingsFileBeforeTests();
+    }
+
+    private static readonly JsonSerializerOptions IndentedJsonOptions = new() { WriteIndented = true };
+
+    private static void FixSettingsFileBeforeTests()
+    {
+        try
+        {
+            // Default Peek settings
+            string peekSettingsContent = @"{
+                  ""name"": ""Peek"",
+                  ""version"": ""1.0"",
+                  ""properties"": {
+                    ""ActivationShortcut"": {
+                      ""win"": false,
+                      ""ctrl"": true,
+                      ""alt"": false,
+                      ""shift"": false,
+                      ""code"": 32,
+                      ""key"": ""Space""
+                    },
+                    ""AlwaysRunNotElevated"": {
+                      ""value"": true
+                    },
+                    ""CloseAfterLosingFocus"": {
+                      ""value"": false
+                    },
+                    ""ConfirmFileDelete"": {
+                      ""value"": true
+                    },
+                    ""EnableSpaceToActivate"": {
+                      ""value"": false
+                    }
+                  }
+                }";
+
+            // Update Peek module settings
+            SettingsConfigHelper.UpdateModuleSettings(
+                "Peek",
+                peekSettingsContent,
+                (settings) =>
+                {
+                    // Get or ensure properties section exists
+                    Dictionary<string, object> properties;
+
+                    if (settings.TryGetValue("properties", out var propertiesObj))
+                    {
+                        if (propertiesObj is Dictionary<string, object> dict)
+                        {
+                            properties = dict;
+                        }
+                        else if (propertiesObj is JsonElement jsonElem)
+                        {
+                            properties = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonElem.GetRawText())
+                                        ?? throw new InvalidOperationException("Failed to deserialize properties");
+                        }
+                        else
+                        {
+                            properties = new Dictionary<string, object>();
+                        }
+                    }
+                    else
+                    {
+                        properties = new Dictionary<string, object>();
+                    }
+
+                    // Update the required properties
+                    properties["ActivationShortcut"] = new Dictionary<string, object>
+                    {
+                        { "win", false },
+                        { "ctrl", true },
+                        { "alt", false },
+                        { "shift", false },
+                        { "code", 32 },
+                        { "key", "Space" },
+                    };
+
+                    properties["EnableSpaceToActivate"] = new Dictionary<string, object>
+                    {
+                        { "value", false },
+                    };
+
+                    settings["properties"] = properties;
+                });
+
+            // Disable all modules except Peek in global settings
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Peek");
+
+            Debug.WriteLine("Successfully updated all settings - Peek shortcut configured and all modules except Peek disabled");
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"ERROR in FixSettingsFileBeforeTests: {ex.Message}");
+        }
     }
 
     [TestInitialize]

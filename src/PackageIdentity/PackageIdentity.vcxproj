@@ -17,7 +17,7 @@
       <CIBuildParam Condition="'$(CIBuild)' != 'true'"></CIBuildParam>
     </PropertyGroup>
     
-  <Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam) $(CIBuildParam)" 
+  <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam) $(CIBuildParam)" 
           ContinueOnError="false"
           WorkingDirectory="$(MSBuildThisFileDirectory)" />
   </Target>

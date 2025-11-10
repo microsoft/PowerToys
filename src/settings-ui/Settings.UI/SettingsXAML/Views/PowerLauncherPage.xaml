@@ -67,6 +67,7 @@
                     Header="{x:Bind Path=DisplayLabel}">
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
                         DisplayMemberPath="Key"
                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
@@ -110,6 +111,7 @@
                     Header="{x:Bind Path=DisplayLabel}">
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
                         Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
                         Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
@@ -175,6 +177,7 @@
                     IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
                         DisplayMemberPath="Key"
                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
@@ -290,6 +293,7 @@
                     IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
                         Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
                         Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
