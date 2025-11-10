@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
-xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
-xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-xmlns:ui="using:CommunityToolkit.WinUI"
-xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-d:DataContext="{d:DesignInstance Type=viewModels:LightSwitchViewModel}"
-AutomationProperties.LandmarkType="Main"
-mc:Ignorable="d">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewModels:LightSwitchViewModel}"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
     <local:NavigablePage.Resources>
-    <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
+        <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
         <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
     </local:NavigablePage.Resources>
     <Grid>
@@ -255,6 +255,7 @@ mc:Ignorable="d">
                                     <NumberBox
                                         x:Name="LatitudeBox"
                                         x:Uid="LightSwitch_LatitudeBox"
+                                        AutomationProperties.AutomationId="LatitudeBox_LightSwitch"
                                         Maximum="90"
                                         Minimum="-90"
                                         ValueChanged="LatLonBox_ValueChanged"
@@ -263,6 +264,7 @@ mc:Ignorable="d">
                                         x:Name="LongitudeBox"
                                         x:Uid="LightSwitch_LongitudeBox"
                                         Grid.Column="1"
+                                        AutomationProperties.AutomationId="LongitudeBox_LightSwitch"
                                         Maximum="180"
                                         Minimum="-180"
                                         ValueChanged="LatLonBox_ValueChanged"
