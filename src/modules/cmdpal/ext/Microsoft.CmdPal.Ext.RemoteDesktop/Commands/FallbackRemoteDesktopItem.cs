@@ -9,7 +9,6 @@ using System.Text;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 
@@ -24,12 +23,12 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
         ];
 
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
-    private readonly ServiceProvider _serviceProvider;
+    private readonly IRdpConnectionManager _rdpConnectionsManager;
 
-    public FallbackRemoteDesktopItem(ServiceProvider serviceProvider)
+    public FallbackRemoteDesktopItem(IRdpConnectionManager rdpConnectionsManager)
     : base(new OpenRemoteDesktopCommand(string.Empty), Resources.remotedesktop_title)
     {
-        _serviceProvider = serviceProvider;
+        _rdpConnectionsManager = rdpConnectionsManager;
 
         Title = string.Empty;
         Subtitle = string.Empty;
@@ -46,8 +45,7 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
             return;
         }
 
-        var rdpConnectionManager = _serviceProvider.GetRequiredService<IRdpConnectionManager>();
-        var connections = rdpConnectionManager.Connections.Where(w => !string.IsNullOrWhiteSpace(w.ConnectionName));
+        var connections = _rdpConnectionsManager.Connections.Where(w => !string.IsNullOrWhiteSpace(w.ConnectionName));
 
         var queryConnection = ConnectionHelpers.FindConnection(query, connections);
 

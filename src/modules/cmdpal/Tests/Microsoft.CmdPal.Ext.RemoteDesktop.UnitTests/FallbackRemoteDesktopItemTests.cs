@@ -8,8 +8,6 @@ using System.Text;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
-using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
@@ -115,18 +113,13 @@ public class FallbackRemoteDesktopItemTests
         return field.GetValue(command) as string ?? string.Empty;
     }
 
-    private static (FallbackRemoteDesktopItem Fallback, ServiceProvider Provider, IRdpConnectionManager Manager) CreateFallback(params string[] connectionNames)
+    private static (FallbackRemoteDesktopItem Fallback, IRdpConnectionManager Manager) CreateFallback(params string[] connectionNames)
     {
         var settingsManager = new MockSettingsManager(connectionNames);
         var connectionsManager = new MockRDPConnectionsManager(settingsManager);
 
-        var services = new ServiceCollection();
-        services.AddSingleton<ISettingsInterface>(settingsManager);
-        services.AddSingleton<IRdpConnectionManager>(connectionsManager);
+        var fallback = new FallbackRemoteDesktopItem(connectionsManager);
 
-        var provider = services.BuildServiceProvider();
-        var fallback = new FallbackRemoteDesktopItem(provider);
-
-        return (fallback, provider, connectionsManager);
+        return (fallback, connectionsManager);
     }
 }

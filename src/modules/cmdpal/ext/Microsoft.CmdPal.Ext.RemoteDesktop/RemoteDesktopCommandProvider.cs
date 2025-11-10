@@ -9,14 +9,13 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop;
 
 public partial class RemoteDesktopCommandProvider : CommandProvider
 {
-    private RemoteDesktopListPage listPage;
-    private FallbackRemoteDesktopItem fallback;
+    private readonly CommandItem listPageCommand;
+    private readonly FallbackRemoteDesktopItem fallback;
 
     public RemoteDesktopCommandProvider()
     {
@@ -24,16 +23,23 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
         DisplayName = Resources.remotedesktop_title;
         Icon = Icons.RDPIcon;
 
-        ServiceCollection services = new();
-        services.AddSingleton<ISettingsInterface, SettingsManager>();
-        services.AddSingleton<IRdpConnectionManager, RDPConnectionsManager>();
-        var serviceProvider = services.BuildServiceProvider();
+        var settingsManager = new SettingsManager();
+        var rdpConnectionsManager = new RDPConnectionsManager(settingsManager);
+        var listPage = new RemoteDesktopListPage(rdpConnectionsManager);
 
-        listPage = new RemoteDesktopListPage(serviceProvider);
-        fallback = new FallbackRemoteDesktopItem(serviceProvider);
+        fallback = new FallbackRemoteDesktopItem(rdpConnectionsManager);
+
+        listPageCommand = new CommandItem(listPage)
+        {
+            Subtitle = Resources.remotedesktop_subtitle,
+            Icon = Icons.RDPIcon,
+            MoreCommands = [
+                new CommandContextItem(settingsManager.Settings.SettingsPage),
+            ],
+        };
     }
 
-    public override ICommandItem[] TopLevelCommands() => [listPage.ToCommandItem()];
+    public override ICommandItem[] TopLevelCommands() => [listPageCommand];
 
     public override IFallbackCommandItem[] FallbackCommands() => [fallback];
 }
