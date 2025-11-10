@@ -241,6 +241,12 @@
                             <ComboBoxItem>1.0</ComboBoxItem>
                         </ComboBox>
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordFormatIndex, Mode=TwoWay}">
+                            <ComboBoxItem>GIF</ComboBoxItem>
+                            <ComboBoxItem>MP4</ComboBoxItem>
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" x:Uid="ZoomIt_Record_CaptureAudio">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
