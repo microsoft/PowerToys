@@ -17,10 +17,6 @@
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
-extern int g_lastUpdatedDay = -1;
-static ScheduleMode prevMode = ScheduleMode::Off;
-static int prevMinutes = -1;
-static bool lastOverrideStatus = false;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
