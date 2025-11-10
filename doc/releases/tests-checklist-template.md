@@ -818,6 +818,22 @@ Cursor Wrap: **new**
    - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
    - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
+## DSCV3
+* DSC v3 Environment Check
+   - [ ] Run $env:PATH to check whether PowerToysInstallLocation\DSCModules has been added to the PATH.
+   - [ ] Check that PowerToysInstallLocation\DSCModules contains 25 *.settings.dsc.resource.json files.
+   - [ ] Verify that per-user uninstall entries (`HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\*`) or machine-level entries (`HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\*`) includes the InstallLocation value.
+* Open a PowerShell 7
+   - [ ] Run `dsc resource list` to list all resources.  
+   - [ ] Run `dsc resource get --resource Microsoft.PowerToys/MeasureToolSettings` to get the configuration of a specific module.  
+   - [ ] Run `dsc resource set --resource Microsoft.PowerToys/AdvancedPaste --input '{ "settings": { "properties": { "IsAdvancedAIEnabled": { "value": false }, "ShowCustomPreview": { "value": false } } } }'` to set the configuration for the module.
+   - [ ] Run `winget configure export --all -o all.yaml` add all config to yaml
+
+## Sparse App
+* Open a PowerShell 7
+   - [ ] Run `Get-AppxPackage Microsoft.PowerToys.SparseApp`. Check the sparse app is installed
+   - [ ] Run ImageResizer, get its process ID (PID), then navigate to the src/PackageIdentity folder in the repository. Run '.\Check-ProcessIdentity.ps1 -ProcessId {pid}' to verify that the package identity is attached
+
 ## [Advanced Paste](tests-checklist-template-advanced-paste-section.md)
   NOTES:
     When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
