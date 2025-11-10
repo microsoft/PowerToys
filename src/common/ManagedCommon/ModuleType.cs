@@ -20,6 +20,7 @@ namespace ManagedCommon
         Hosts,
         ImageResizer,
         KeyboardManager,
+        KeystrokeOverlay,
         LightSwitch,
         MouseHighlighter,
         MouseJump,

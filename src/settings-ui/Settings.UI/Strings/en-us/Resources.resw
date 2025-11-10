@@ -5649,6 +5649,73 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
+  <data name="KeystrokeOverlay_SwitchMonitor" xml:space="preserve">
+    <value>Switch Monitor Shortcut</value>
+  </data>
+  <data name="KeystrokeOverlay_Enable.Header" xml:space="preserve">
+    <value>Enable Keystroke Overlay</value>
+  </data>
+  <data name="KeystrokeOverlay_SwitchMonitorHotkey.Header" xml:space="preserve">
+    <value>Switch Monitor Shortcut</value>
+  </data>
+  <data name="KeystrokeOverlay_SwitchMonitorHotkey.Description" xml:space="preserve">
+    <value>Quickly move the overlay between monitors</value>
+  </data>
+  <data name="KeystrokeOverlay_DraggableOverlay.Header" xml:space="preserve">
+    <value>Draggable Overlay</value>
+  </data>
+  <data name="KeystrokeOverlay_DraggableOverlay.Description" xml:space="preserve">
+    <value>Toggle the ability to dynamically adjust overlay position on the screen</value>
+  </data>
+  <data name="KeystrokeOverlay_DisplayMode.Header" xml:space="preserve">
+    <value>Display Mode</value>
+  </data>
+  <data name="Radio_KeystrokeOverlay_DisplayMode_LastFiveKeystrokes.Content" xml:space="preserve">
+    <value>Last Five Keystrokes</value>
+  </data>
+  <data name="Radio_KeystrokeOverlay_DisplayMode_SingleCharactersOnly.Content" xml:space="preserve">
+    <value>Single Characters Only</value>
+  </data>
+  <data name="Radio_KeystrokeOverlay_DisplayMode_ShortcutsOnly.Content" xml:space="preserve">
+    <value>Shortcuts Only</value>
+  </data>
+  <data name="KeystrokeOverlay_OverlayTimeout.Header" xml:space="preserve">
+    <value>Overlay Timeout (ms)</value>
+  </data>
+  <data name="KeystrokeOverlay_OverlayTimeout.Description" xml:space="preserve">
+    <value>Time before overlay key disappears</value>
+  </data>
+  <data name="KeystrokeOverlay_TextSize.Header" xml:space="preserve">
+    <value>Text Size</value>
+  </data>
+  <data name="KeystrokeOverlay_TextAppearance.Header" xml:space="preserve">
+    <value>Text Color and Opacity</value>
+  </data>
+  <data name="KeystrokeOverlay_BackgroundAppearance.Header" xml:space="preserve">
+    <value>Background Color and Opacity</value>
+  </data>
+  <data name="LearnMore_KeystrokeOverlay.Text" xml:space="preserve">
+    <value>Learn more about Keystroke Overlay</value>
+  </data>
+  <data name="KeystrokeOverlay_Appearance.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="KeystrokeOverlay_Shortcut.Header" xml:space="preserve">
+    <value>Shortcut Specifics</value>
+  </data>
+  <data name="KeystrokeOverlay.ModuleTitle" xml:space="preserve">
+    <value>Keystroke Overlay</value>
+  </data>
+  <data name="KeystrokeOverlay.ModuleDescription" xml:space="preserve">
+    <value>Displays your keystrokes, shortcuts, and mouse clicks on-screen in real-time. This is perfect for screen recordings, presentations, or tutorials where you want to show your audience exactly what you are doing.</value>
+  </data>
+  <data name="KeystrokeOverlay_Appearance.Description" xml:space="preserve">
+    <value>This is a preview of how the overlay will look like on your screen.</value>
+  </data>
+  <data name="Shell_KeystrokeOverlay.Content" xml:space="preserve">
+    <value>Keystroke Overlay</value>
+    <comment>Product name: Navigation view item name for Keystroke Overlay</comment>
+  </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
   </data>

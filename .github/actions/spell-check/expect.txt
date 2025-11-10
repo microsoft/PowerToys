@@ -463,6 +463,7 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
+ekus
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -1188,6 +1189,7 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
+nullref
 nullonfailure
 nullref
 numberbox

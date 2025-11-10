@@ -82,6 +82,7 @@ namespace PowerToys
             static GpoRuleConfigured GetAllowDataDiagnosticsValue();
             static GpoRuleConfigured GetConfiguredRunAtStartupValue();
             static GpoRuleConfigured GetConfiguredNewPlusReplaceVariablesValue();
+            static GpoRuleConfigured GetConfiguredKeystrokeOverlayEnabledValue();
         }
     }
 }

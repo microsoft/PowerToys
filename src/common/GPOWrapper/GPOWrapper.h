@@ -78,6 +78,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetAllowDataDiagnosticsValue();
         static GpoRuleConfigured GetConfiguredRunAtStartupValue();
         static GpoRuleConfigured GetConfiguredNewPlusReplaceVariablesValue();
+        static GpoRuleConfigured GetConfiguredKeystrokeOverlayEnabledValue();
     };
 }
 
