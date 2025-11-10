@@ -108,7 +108,7 @@ When performing incremental review, skip steps that are irrelevant based on chan
 - List the concrete checks for *this step only* (5–10 bullets).
 
 ## Findings
-(If none, write **None**. Otherwise one or more blocks:)
+(If none, write **None**. Defaults have one or more blocks:)
 
 ```mcp-review-comment
 {"file":"relative/path.ext","start_line":123,"end_line":125,"severity":"high|medium|low|info","tags":["<step-slug>","pr-tag-here"],"related_files":["optional/other/file1"],"body":"Problem → Why it matters → Concrete fix. If spans multiple files, name them here."}

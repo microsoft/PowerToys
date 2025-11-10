@@ -150,7 +150,7 @@ Post these questions as issue comment to gather missing information:
 7) **Risks & Mitigations** — flags/canary/shadow-write/config guards.  
 8) **Task Breakdown (agent-ready)** — table (leave a blank line before the header so Markdown renders correctly):
 
-| Task | Intent | Files/Areas | Steps | Tests (brief) | Owner (Agent/Human) | HITL? (why) |
+| Task | Intent | Files/Areas | Steps | Tests (brief) | Owner (Agent/Human) | Human interaction needed? (why) |
 |---|---|---|---|---|---|---|
 
 9) **Tests to Add (only)**

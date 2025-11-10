@@ -29,7 +29,7 @@ For **#{{issue_number}}**:
 
 # OUTPUT FILES
 1) Generated Files/issueFix/{{issue_number}}/pr-description.md
-2) Generated Files/issueFix/{{issue_number}}/manual-steps.md   # only if HITL or external setup is required
+2) Generated Files/issueFix/{{issue_number}}/manual-steps.md   # only if human interaction or external setup is required
 
 # EXECUTION RULES
 1) Read implementation-plan.md and execute:
@@ -43,7 +43,7 @@ For **#{{issue_number}}**:
 2) Locate affected files via `rg` or `git grep`.
 3) Add/update tests to enforce the fixed behavior.
 4) If any ambiguity exists, add:
-// TODO(HITL): <clarification needed>
+// TODO(Human input needed): <clarification needed>
 5) Verify locally: build & tests run successfully.
 
 # pr-description.md should include:
@@ -57,15 +57,15 @@ For **#{{issue_number}}**:
 - `Closes #{{issue_number}}`
 
 # manual-steps.md (only if needed)
-- List required human actions: secrets, config, approvals, missing info, or HITL code comments.
+- List required human actions: secrets, config, approvals, missing info, or code comments requiring human decisions.
 
 # IMPORTANT
 - Apply code and tests directly; do not produce patch files.
 - Follow implementation-plan.md as the source of truth.
-- Insert HITL comments where a human must decide.
+- Insert comments for human review where a decision or input is required.
 - Use repository conventions and deterministic, minimal changes.
 
 # FINALIZE
 - Write pr-description.md
 - Write manual-steps.md only if needed
-- Print concise success or HITL message
+- Print concise success message or note items requiring human interaction
