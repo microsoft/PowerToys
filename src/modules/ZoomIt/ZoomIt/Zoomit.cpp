@@ -1812,7 +1812,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 // Check if GIF is selected by comparing the text
                 bool isGifSelected = (wcscmp(selectedText, L"GIF") == 0);
 
-                // if gif is selected set the scaling to the g_recordScaleGIF value otherwise to the g_recordScaleMP4 value
+                // If GIF is selected, set the scaling to the g_RecordScalingGIF value; otherwise to the g_RecordScalingMP4 value
                 if (isGifSelected) {
                     g_RecordScaling = g_RecordScalingGIF;
 
