@@ -40,7 +40,6 @@ Scripts live in `.github/review-tools/` to avoid repeated manual approvals durin
 | `.github/review-tools/Get-GitHubPrFilePatch.ps1` | Fetch the unified diff for a specific file within a pull request via `gh api`. |
 | `.github/review-tools/Get-PrIncrementalChanges.ps1` | Compare last reviewed SHA with current PR head to identify incremental changes. Returns JSON with changed files, new commits, and whether full review is needed. |
 | `.github/review-tools/Test-IncrementalReview.ps1` | Test helper to preview incremental review detection for a PR. Use before running full review to see what changed. |
-| `.github/review-tools/Migrate-ReviewToIncrementalFormat.ps1` | One-time migration script to add review metadata to existing review folders, enabling incremental functionality. |
 
 Always prefer these scripts (or new ones added under `.github/review-tools/`) over raw `gh api` or similar shell commands so the review flow does not trigger interactive approval prompts.
 

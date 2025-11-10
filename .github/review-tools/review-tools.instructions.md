@@ -38,16 +38,6 @@ Expected: JSON output showing review analysis
 ```
 Expected: Analysis showing current vs last reviewed SHA
 
-**Migrate existing reviews:**
-```powershell
-# Migrate specific PRs
-.\Migrate-ReviewToIncrementalFormat.ps1 -PullRequestNumbers 42374,42658
-
-# Or migrate all
-.\Migrate-ReviewToIncrementalFormat.ps1
-```
-Expected: "Added metadata" or "Already has review metadata"
-
 **Fetch file content:**
 ```powershell
 .\Get-GitHubRawFile.ps1 -FilePath "README.md" -GitReference "main"
@@ -174,35 +164,6 @@ Helper script to test and preview incremental review detection before running th
 - List of new commits and changed files
 - Recommended review strategy
 
-### Migrate-ReviewToIncrementalFormat.ps1
-
-One-time migration script to add review metadata to existing review folders.
-
-**Purpose:** Enable incremental review functionality for existing PR reviews by adding metadata sections.
-
-**Parameters:**
-- `PullRequestNumbers` (optional): Array of PR numbers to migrate. If omitted, migrates all reviews.
-- `ReviewsFolderPath` (optional): Path to reviews folder. Default: "Generated Files/prReview"
-- `RepositoryOwner` (optional): Repository owner. Default: "microsoft"
-- `RepositoryName` (optional): Repository name. Default: "PowerToys"
-
-**Usage:**
-```powershell
-# Migrate all existing reviews
-.\Migrate-ReviewToIncrementalFormat.ps1
-
-# Migrate specific PRs
-.\Migrate-ReviewToIncrementalFormat.ps1 -PullRequestNumbers 42374,42658,42762
-```
-
-**What it does:**
-- Scans existing `00-OVERVIEW.md` files
-- Fetches current PR state from GitHub
-- Adds `## Review metadata` section with current HEAD SHA
-- Skips reviews that already have metadata
-
-Run this once to enable incremental reviews on existing review folders.
-
 ## Workflow Integration
 
 These scripts integrate with the PR review prompt (`.github/prompts/review-pr.prompt.md`).
@@ -284,7 +245,6 @@ After setup, verify:
 - [ ] `Run-ReviewToolsTests.ps1` shows 9+ tests passing
 - [ ] `Get-PrIncrementalChanges.ps1` returns valid JSON
 - [ ] `Test-IncrementalReview.ps1` analyzes a PR without errors
-- [ ] `Migrate-ReviewToIncrementalFormat.ps1` adds metadata successfully
 - [ ] `Get-GitHubRawFile.ps1` downloads files correctly
 - [ ] `Get-GitHubPrFilePatch.ps1` retrieves patches correctly
 
@@ -292,10 +252,9 @@ After setup, verify:
 
 ### For Review Authors
 
-1. **Always run migration first**: Before using incremental reviews, run `Migrate-ReviewToIncrementalFormat.ps1` on existing reviews
-2. **Test before full review**: Use `Test-IncrementalReview.ps1` to preview changes
-3. **Check for force-push**: Review the analysis output - force-pushes require full reviews
-4. **Smart step filtering**: Skip review steps for file types that didn't change
+1. **Test before full review**: Use `Test-IncrementalReview.ps1` to preview changes 
+2. **Check for force-push**: Review the analysis output - force-pushes require full reviews
+3. **Smart step filtering**: Skip review steps for file types that didn't change
 
 ### For Script Users
 
@@ -344,7 +303,6 @@ For detailed script documentation, use PowerShell's help system:
 ```powershell
 Get-Help .\Get-PrIncrementalChanges.ps1 -Full
 Get-Help .\Test-IncrementalReview.ps1 -Detailed
-Get-Help .\Migrate-ReviewToIncrementalFormat.ps1 -Examples
 ```
 
 Related documentation:
