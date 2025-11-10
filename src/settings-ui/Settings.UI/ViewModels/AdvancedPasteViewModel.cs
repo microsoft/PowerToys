@@ -10,10 +10,8 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Versioning;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -56,6 +54,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
+
+        private static readonly HashSet<string> CustomActionNonPersistedProperties = new(StringComparer.Ordinal)
+        {
+            nameof(AdvancedPasteCustomAction.CanMoveUp),
+            nameof(AdvancedPasteCustomAction.CanMoveDown),
+            nameof(AdvancedPasteCustomAction.IsValid),
+            nameof(AdvancedPasteCustomAction.HasConflict),
+            nameof(AdvancedPasteCustomAction.Tooltip),
+            nameof(AdvancedPasteCustomAction.SubActions),
+        };
 
         public AdvancedPasteViewModel(
             ISettingsUtils settingsUtils,
@@ -558,11 +566,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AIServiceType.OpenAI => "gpt-4",
                 AIServiceType.AzureOpenAI => "gpt-4",
                 AIServiceType.Mistral => "mistral-large-latest",
-                AIServiceType.Google => "gemini-1.5-pro",
+                AIServiceType.Google => "gemini-2.5-pro",
                 AIServiceType.AzureAIInference => "gpt-4o-mini",
                 AIServiceType.Ollama => "llama3",
-                AIServiceType.Anthropic => "claude-3-5-sonnet",
-                AIServiceType.AmazonBedrock => "anthropic.claude-3-haiku",
                 _ => string.Empty,
             };
         }
@@ -589,7 +595,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     AIServiceType.AzureAIInference => GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue(),
                     AIServiceType.Mistral => GPOWrapper.GetAllowedAdvancedPasteMistralValue(),
                     AIServiceType.Google => GPOWrapper.GetAllowedAdvancedPasteGoogleValue(),
-                    AIServiceType.Anthropic => GPOWrapper.GetAllowedAdvancedPasteAnthropicValue(),
                     _ => GpoRuleConfigured.Unavailable,
                 };
 
@@ -844,9 +849,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "azureaiinference" => "https://azure.microsoft.com/products/ai-services/ai-inference",
                 "mistral" => "https://console.mistral.ai/account/api-keys",
                 "google" => "https://ai.google.dev/",
-                "huggingface" => "https://huggingface.co/settings/tokens",
-                "anthropic" => "https://console.anthropic.com/account/keys",
-                "amazonbedrock" => "https://aws.amazon.com/bedrock/",
                 "ollama" => "https://ollama.com/",
                 _ => "https://platform.openai.com/api-keys",
             };
@@ -1000,7 +1002,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnCustomActionPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (typeof(AdvancedPasteCustomAction).GetProperty(e.PropertyName).GetCustomAttribute<JsonIgnoreAttribute>() == null)
+            if (!string.IsNullOrEmpty(e.PropertyName) && !CustomActionNonPersistedProperties.Contains(e.PropertyName))
             {
                 SaveCustomActions();
             }

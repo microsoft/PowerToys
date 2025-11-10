@@ -708,15 +708,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_Google_PrivacyLabel" xml:space="preserve">
     <value>Google Privacy Policy</value>
   </data>
-  <data name="AdvancedPaste_Anthropic_LegalDescription" xml:space="preserve">
-    <value>Your API key connects directly to Anthropic services. By setting up this provider, you agree to comply with Anthropic's usage policies and data handling practices.</value>
-  </data>
-  <data name="AdvancedPaste_Anthropic_TermsLabel" xml:space="preserve">
-    <value>Anthropic Terms of Service</value>
-  </data>
-  <data name="AdvancedPaste_Anthropic_PrivacyLabel" xml:space="preserve">
-    <value>Anthropic Privacy Policy</value>
-  </data>
   <data name="AdvancedPaste_Mistral_LegalDescription" xml:space="preserve">
     <value>Your API key connects directly to Mistral services. By setting up this provider, you agree to comply with Mistral's usage policies and data handling practices.</value>
   </data>
@@ -725,15 +716,6 @@ Please review the placeholder content that represents the final terms and usage 
   </data>
   <data name="AdvancedPaste_Mistral_PrivacyLabel" xml:space="preserve">
     <value>Mistral Privacy Policy</value>
-  </data>
-  <data name="AdvancedPaste_AmazonBedrock_LegalDescription" xml:space="preserve">
-    <value>Your API key connects directly to Amazon services. By setting up this provider, you agree to comply with Amazon's usage policies and data handling practices.</value>
-  </data>
-  <data name="AdvancedPaste_AmazonBedrock_TermsLabel" xml:space="preserve">
-    <value>AWS Service Terms</value>
-  </data>
-  <data name="AdvancedPaste_AmazonBedrock_PrivacyLabel" xml:space="preserve">
-    <value>AWS Privacy Notice</value>
   </data>
   <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
     <value>Ollama Terms of Service</value>

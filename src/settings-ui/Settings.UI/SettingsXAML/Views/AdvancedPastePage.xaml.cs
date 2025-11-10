@@ -317,7 +317,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool requiresEndpoint = serviceKind is AIServiceType.AzureOpenAI
                 or AIServiceType.AzureAIInference
                 or AIServiceType.Mistral
-                or AIServiceType.HuggingFace
                 or AIServiceType.Ollama;
             bool requiresDeployment = serviceKind == AIServiceType.AzureOpenAI;
             bool requiresApiVersion = serviceKind == AIServiceType.AzureOpenAI;
@@ -874,7 +873,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 AIServiceType.AzureOpenAI => "https://your-resource.openai.azure.com/",
                 AIServiceType.AzureAIInference => "https://{resource-name}.cognitiveservices.azure.com/",
                 AIServiceType.Mistral => "https://api.mistral.ai/v1/",
-                AIServiceType.HuggingFace => "https://api-inference.huggingface.co/models/",
                 AIServiceType.Ollama => "http://localhost:11434/",
                 _ => "https://your-resource.openai.azure.com/",
             };

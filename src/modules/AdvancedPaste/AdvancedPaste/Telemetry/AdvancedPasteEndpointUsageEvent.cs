@@ -15,7 +15,7 @@ namespace AdvancedPaste.Telemetry;
 public class AdvancedPasteEndpointUsageEvent : EventBase, IEvent
 {
     /// <summary>
-    /// Gets or sets the AI provider type (e.g., OpenAI, AzureOpenAI, Anthropic).
+    /// Gets or sets the AI provider type (e.g., OpenAI, AzureOpenAI, Google).
     /// </summary>
     public string ProviderType { get; set; }
 

@@ -47,7 +47,6 @@ Allmodule
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
-amazonbedrock
 AModifier
 amr
 ANDSCANS
@@ -692,7 +691,6 @@ hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
 HOOKPROC
-huggingface
 HORZRES
 HORZSIZE
 Hostbackdropbrush
