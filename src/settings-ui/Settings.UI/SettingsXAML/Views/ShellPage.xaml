@@ -319,6 +319,12 @@
                             helpers:NavHelper.NavigateTo="views:PowerAccentPage"
                             AutomationProperties.AutomationId="QuickAccentNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
+                        <NavigationViewItem
+                            x:Name="ScreencastModeNavigationItem"
+                            x:Uid="Shell_ScreencastMode"
+                            helpers:NavHelper.NavigateTo="views:ScreencastModePage"
+                            AutomationProperties.AutomationId="ScreencastModeNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

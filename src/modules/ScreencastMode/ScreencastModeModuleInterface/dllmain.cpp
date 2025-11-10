@@ -25,9 +25,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"ScreencastMode";
+const static wchar_t* MODULE_NAME = L"Screencast Mode";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"This is a module that allows you to visualise keystrokes on the screen";
+const static wchar_t* MODULE_DESC = L"This is a module that allows you to visualize keystrokes on the screen";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings

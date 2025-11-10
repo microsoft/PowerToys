@@ -1,0 +1,37 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+using System.Linq;
+using CommunityToolkit.WinUI;
+using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+
+namespace Microsoft.PowerToys.Settings.UI.Views
+{
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class ScreencastModePage : NavigablePage, IRefreshablePage
+    {
+        private ScreencastModeViewModel ViewModel { get; set; }
+
+        public ScreencastModePage()
+        {
+            InitializeComponent();
+            var settingsUtils = new SettingsUtils();
+            ViewModel = new ScreencastModeViewModel(
+                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                ShellPage.SendDefaultIPCMessage);
+            DataContext = ViewModel;
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshEnabledState();
+        }
+    }
+}
