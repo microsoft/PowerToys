@@ -513,6 +513,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cursorWrap; // defaulting to off
+
+        [JsonPropertyName("CursorWrap")]
+        public bool CursorWrap
+        {
+            get => cursorWrap;
+            set
+            {
+                if (cursorWrap != value)
+                {
+                    LogTelemetryEvent(value);
+                    cursorWrap = value;
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]

@@ -32,6 +32,7 @@ RegistryPreview
 ShortcutGuide
 Workspaces
 ZoomIt
+KeystrokeOverlay
 ```
 
 ### 📄 Get

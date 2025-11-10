@@ -149,10 +149,10 @@
     <value>Shutdown</value>
   </data>
   <data name="Microsoft_plugin_ext_connection_details" xml:space="preserve">
-    <value>Connection Details</value>
+    <value>Connection details</value>
   </data>
   <data name="Microsoft_plugin_ext_adapter_details" xml:space="preserve">
-    <value>Adapter Details</value>
+    <value>Adapter details</value>
   </data>
   <data name="Microsoft_plugin_ext_copy" xml:space="preserve">
     <value>Copy to clipboard</value>
@@ -161,10 +161,10 @@
     <value>Hide disconnected network info</value>
   </data>
   <data name="Microsoft_plugin_ext_system_page_title" xml:space="preserve">
-    <value>Windows System Commands</value>
+    <value>Windows system commands</value>
   </data>
   <data name="Microsoft_plugin_ext_system_page_name" xml:space="preserve">
-    <value>System Commands</value>
+    <value>System commands</value>
   </data>
   <data name="Microsoft_plugin_sys_AdapterName" xml:space="preserve">
     <value>Adapter name</value>
@@ -327,7 +327,7 @@
     <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer_confirmation" xml:space="preserve">
-    <value>You are about to restart this computer, are you sure?</value>
+    <value>You are about to restart this computer. Are you sure?</value>
     <comment>This should align to the action in Windows of a restarting your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_restart_computer_description" xml:space="preserve">
@@ -381,7 +381,7 @@
     <value>State</value>
   </data>
   <data name="Microsoft_plugin_sys_Suffix" xml:space="preserve">
-    <value>DNS Suffix</value>
+    <value>DNS suffix</value>
   </data>
   <data name="Microsoft_plugin_sys_TunnelConnection" xml:space="preserve">
     <value>Tunnel</value>
@@ -391,15 +391,15 @@
     <comment>Means type like category. Here it means network interface type (ethernet, wifi, ...).</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi" xml:space="preserve">
-    <value>UEFI Firmware Settings</value>
+    <value>UEFI firmware settings</value>
     <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi_confirmation" xml:space="preserve">
-    <value>You are about to reboot this computer into UEFI Firmware Settings menu, are you sure?</value>
+    <value>You are about to reboot this computer into UEFI firmware settings menu, are you sure?</value>
     <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi_description" xml:space="preserve">
-    <value>Reboot computer into UEFI Firmware Settings (Requires administrative permissions.)</value>
+    <value>Reboot computer into UEFI firmware Settings (requires administrative permissions.)</value>
     <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Microsoft_plugin_sys_Unknown" xml:space="preserve">
@@ -415,7 +415,7 @@
     <value>Sleep</value>
   </data>
   <data name="Microsoft_plugin_ext_fallback_display_title" xml:space="preserve">
-    <value>Open System Command</value>
+    <value>Execute system commands</value>
   </data>
   <data name="Microsoft_plugin_sys_RestartShell" xml:space="preserve">
     <value>Restart Windows Explorer</value>

@@ -35,6 +35,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMouseHighlighterEnabledValue();
         static GpoRuleConfigured GetConfiguredMouseJumpEnabledValue();
         static GpoRuleConfigured GetConfiguredMousePointerCrosshairsEnabledValue();
+        static GpoRuleConfigured GetConfiguredCursorWrapEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();
         static GpoRuleConfigured GetConfiguredQuickAccentEnabledValue();
@@ -54,6 +55,14 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredQoiPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredQoiThumbnailsEnabledValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOnlineAIModelsValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOpenAIValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteAzureOpenAIValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteAzureAIInferenceValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteMistralValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteGoogleValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteAnthropicValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteOllamaValue();
+        static GpoRuleConfigured GetAllowedAdvancedPasteFoundryLocalValue();
         static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
         static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
