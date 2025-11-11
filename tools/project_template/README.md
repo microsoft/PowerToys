@@ -442,7 +442,7 @@ void ExamplePowertoy::save_settings() {
 
 ## Add a new PowerToy to the Installer
 
-In the `installer` folder, open the `PowerToysSetup.sln` solution.
+In the `installer` folder, open the `PowerToysSetup.slnx` solution.
 Under the `PowerToysSetup` project, edit `Product.wxs`.
 You will need to add a component for your module DLL. Search for `Module_ShortcutGuide` to see where to add the component declaration and where to reference that declaration so the DLL is added to the installer.
 Each component requires a newly generated GUID (you can use the Visual Studio integrated tool to generate one).

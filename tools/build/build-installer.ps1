@@ -141,10 +141,10 @@ try {
     Pop-Location
 }
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
 
 Write-Host '[PIPELINE] Completed'

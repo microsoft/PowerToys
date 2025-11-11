@@ -199,7 +199,7 @@ jobs:
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:

@@ -110,7 +110,7 @@ The installer can only be compiled in `Release` mode; steps 1 and 2 must be perf
 1. Compile `PowerToys.slnx`. Instructions are listed above.
 1. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
 1. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
-1. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
+1. Compile `PowerToysSetup.slnx` Path from root: `installer\PowerToysSetup.slnx` (details listed below)
 
 See [Installer](core/installer.md) for more details on building and debugging the installer.
 
