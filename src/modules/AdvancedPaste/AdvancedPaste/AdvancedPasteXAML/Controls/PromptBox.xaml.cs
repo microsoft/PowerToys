@@ -22,6 +22,8 @@ namespace AdvancedPaste.Controls
     {
         public OptionsViewModel ViewModel { get; private set; }
 
+        private bool _syncingProviderSelection;
+
         public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
             nameof(PlaceholderText),
             typeof(string),
@@ -74,6 +76,11 @@ namespace AdvancedPaste.Controls
                 var state = ViewModel.IsBusy ? "LoadingState" : ViewModel.PasteActionError.HasText ? "ErrorState" : "DefaultState";
                 VisualStateManager.GoToState(this, state, true);
             }
+
+            if (e.PropertyName is nameof(ViewModel.ActiveAIProvider) or nameof(ViewModel.AIProviders))
+            {
+                SyncProviderSelection();
+            }
         }
 
         private void ViewModel_PreviewRequested(object sender, EventArgs e)
@@ -87,6 +94,7 @@ namespace AdvancedPaste.Controls
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
             InputTxtBox.Focus(FocusState.Programmatic);
+            SyncProviderSelection();
         }
 
         [RelayCommand]
@@ -126,18 +134,56 @@ namespace AdvancedPaste.Controls
             Loader.IsLoading = loading;
         }
 
+        private void SyncProviderSelection()
+        {
+            if (AIProviderListView is null)
+            {
+                return;
+            }
+
+            try
+            {
+                _syncingProviderSelection = true;
+                AIProviderListView.SelectedItem = ViewModel.ActiveAIProvider;
+            }
+            finally
+            {
+                _syncingProviderSelection = false;
+            }
+        }
+
+        private void AIProviderFlyout_Opened(object sender, object e)
+        {
+            SyncProviderSelection();
+        }
+
         private async void AIProviderListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (AIProviderListView.SelectedItem is PasteAIProviderDefinition provider)
+            if (_syncingProviderSelection)
             {
-                if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
-                {
-                    await ViewModel.SetActiveProviderCommand.ExecuteAsync(provider);
-                }
-
-                var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
-                flyout?.Hide();
+                return;
             }
+
+            var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
+
+            if (AIProviderListView.SelectedItem is not PasteAIProviderDefinition provider)
+            {
+                return;
+            }
+
+            if (string.Equals(ViewModel.ActiveAIProvider?.Id, provider.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                flyout?.Hide();
+                return;
+            }
+
+            if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
+            {
+                await ViewModel.SetActiveProviderCommand.ExecuteAsync(provider);
+                SyncProviderSelection();
+            }
+
+            flyout?.Hide();
         }
     }
 }

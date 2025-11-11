@@ -56,9 +56,9 @@ public static class AIServiceTypeRegistry
             IsOnlineService = true,
             LegalDescription = "AdvancedPaste_Google_LegalDescription",
             TermsLabel = "AdvancedPaste_Google_TermsLabel",
-            TermsUri = new Uri("https://policies.google.com/terms"),
+            TermsUri = new Uri("https://ai.google.dev/gemini-api/terms"),
             PrivacyLabel = "AdvancedPaste_Google_PrivacyLabel",
-            PrivacyUri = new Uri("https://policies.google.com/privacy"),
+            PrivacyUri = new Uri("https://support.google.com/gemini/answer/13594961"),
         },
         [AIServiceType.Mistral] = new AIServiceTypeMetadata
         {
@@ -93,9 +93,9 @@ public static class AIServiceTypeRegistry
             IsLocalModel = true,
             LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",
             TermsLabel = "AdvancedPaste_Ollama_TermsLabel",
-            TermsUri = new Uri("https://ollama.com/terms"),
+            TermsUri = new Uri("https://ollama.org/terms"),
             PrivacyLabel = "AdvancedPaste_Ollama_PrivacyLabel",
-            PrivacyUri = new Uri("https://ollama.com/privacy"),
+            PrivacyUri = new Uri("https://ollama.org/privacy"),
         },
         [AIServiceType.Onnx] = new AIServiceTypeMetadata
         {

@@ -23,7 +23,10 @@
                         Name="NewPlusEnableToggle"
                         x:Uid="NewPlus_Enable_Toggle"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=NewPlusEnableToggle, Path=Header}"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -60,12 +63,18 @@
                             Name="NewPlusHideFileExtensionToggle"
                             x:Uid="NewPlus_Hide_File_Extension_Toggle"
                             IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
-                            <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="HideFileExtensionToggle"
+                                AutomationProperties.Name="{Binding ElementName=NewPlusHideFileExtensionToggle, Path=Header}"
+                                IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                     <tkcontrols:SettingsCard Name="NewPlusHideStartingDigitsToggle" x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
 
-                        <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="HideStartingDigitsToggle"
+                            AutomationProperties.Name="{Binding ElementName=NewPlusHideStartingDigitsToggle, Path=Header}"
+                            IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
                         </tkcontrols:SettingsCard.Description>
@@ -79,7 +88,10 @@
                             x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle"
                             IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
+                                <ToggleSwitch
+                                    x:Uid="ReplaceVariablesToggle"
+                                    AutomationProperties.Name="{Binding ElementName=NewPlusBehaviourReplaceVariablesToggle, Path=Header}"
+                                    IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
                                 <Button
                                     x:Uid="FileCreationButton"
                                     Width="28"
