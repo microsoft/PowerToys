@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -19,28 +21,28 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private const string DefaultModuleName = "";
         private readonly IFile _file;
         private readonly ISettingsPath _settingsPath;
-
-        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            MaxDepth = 0,
-            IncludeFields = true,
-            TypeInfoResolver = SettingsSerializationContext.Default,
-        };
+        private readonly JsonSerializerOptions _serializerOptions;
 
         public SettingsUtils()
             : this(new FileSystem())
         {
         }
 
-        public SettingsUtils(IFileSystem fileSystem)
-            : this(fileSystem?.File, new SettingPath(fileSystem?.Directory, fileSystem?.Path))
+        public SettingsUtils(IFileSystem? fileSystem, JsonSerializerOptions? serializerOptions = null)
+            : this(fileSystem?.File!, new SettingPath(fileSystem?.Directory, fileSystem?.Path), serializerOptions)
         {
         }
 
-        public SettingsUtils(IFile file, ISettingsPath settingPath)
+        public SettingsUtils(IFile file, ISettingsPath settingPath, JsonSerializerOptions? serializerOptions = null)
         {
             _file = file ?? throw new ArgumentNullException(nameof(file));
             _settingsPath = settingPath;
+            _serializerOptions = serializerOptions ?? new JsonSerializerOptions
+            {
+                MaxDepth = 0,
+                IncludeFields = true,
+                TypeInfoResolver = SettingsSerializationContext.Default,
+            };
         }
 
         public bool SettingsExists(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
@@ -110,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// This function creates a file in the powertoy folder if it does not exist and returns an object with default properties.
         /// </summary>
         /// <returns>Deserialized json settings object.</returns>
-        public T GetSettingsOrDefault<T, T2>(string powertoy = DefaultModuleName, string fileName = DefaultFileName, Func<object, object> settingsUpgrader = null)
+        public T GetSettingsOrDefault<T, T2>(string powertoy = DefaultModuleName, string fileName = DefaultFileName, Func<object, object>? settingsUpgrader = null)
             where T : ISettingsConfig, new()
             where T2 : ISettingsConfig, new()
         {
@@ -130,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 try
                 {
                     T2 oldSettings = GetSettings<T2>(powertoy, fileName);
-                    T newSettings = (T)settingsUpgrader(oldSettings);
+                    T newSettings = (T)settingsUpgrader!(oldSettings);
                     Logger.LogInfo($"Settings file {fileName} for {powertoy} was read successfully in the old format.");
 
                     // If the file needs to be modified, to save the new configurations accordingly.
