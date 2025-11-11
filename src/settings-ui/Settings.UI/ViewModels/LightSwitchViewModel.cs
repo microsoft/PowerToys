@@ -407,6 +407,41 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private int _locationPanelLightTime;
+        private int _locationPanelDarkTime;
+
+        public int LocationPanelLightTimeMinutes
+        {
+            get => _locationPanelLightTime;
+            set
+            {
+                if (_locationPanelLightTime != value)
+                {
+                    _locationPanelLightTime = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(LocationPanelLightTime));
+                }
+            }
+        }
+
+        public int LocationPanelDarkTimeMinutes
+        {
+            get => _locationPanelDarkTime;
+            set
+            {
+                if (_locationPanelDarkTime != value)
+                {
+                    _locationPanelDarkTime = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(LocationPanelDarkTime));
+                }
+            }
+        }
+
+        public TimeSpan LocationPanelLightTime => TimeSpan.FromMinutes(_locationPanelLightTime);
+
+        public TimeSpan LocationPanelDarkTime => TimeSpan.FromMinutes(_locationPanelDarkTime);
+
         public HotkeySettings ToggleThemeActivationShortcut
         {
             get => ModuleSettings.Properties.ToggleThemeHotkey.Value;

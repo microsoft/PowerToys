@@ -36,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly DispatcherQueue dispatcherQueue;
         private bool suppressViewModelUpdates;
         private bool suppressLatLonChange = true;
+        private bool latBoxLoaded;
+        private bool lonBoxLoaded;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
@@ -118,14 +120,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
-                this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
-                this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
+
+                var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+                this.ViewModel.LocationPanelLightTimeMinutes = (result.SunriseHour * 60) + result.SunriseMinute;
+                this.ViewModel.LocationPanelDarkTimeMinutes = (result.SunsetHour * 60) + result.SunsetMinute;
 
                 // Since we use this mode, we can remove the selected city data.
                 this.ViewModel.SelectedCity = null;
-
-                // CityAutoSuggestBox.Text = string.Empty;
-                this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
 
                 this.suppressLatLonChange = false;
 
@@ -173,15 +175,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
-
             var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
-            // Temporarily display these preview times
-            this.ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-            this.ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+            this.ViewModel.LocationPanelLightTimeMinutes = (result.SunriseHour * 60) + result.SunriseMinute;
+            this.ViewModel.LocationPanelDarkTimeMinutes = (result.SunsetHour * 60) + result.SunsetMinute;
 
             // Show the panel with these values
             this.LocationResultPanel.Visibility = Visibility.Visible;
@@ -193,14 +190,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void LocationDialog_PrimaryButtonClick(object sender, ContentDialogButtonClickEventArgs args)
         {
-            /* if (ViewModel.ScheduleMode == "SunriseToSunsetUser")
+            if (double.IsNaN(this.LatitudeBox.Value) || double.IsNaN(this.LongitudeBox.Value))
             {
-                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.City;
+                return;
             }
-            else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
-            {
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
-            } */
+
+            double latitude = this.LatitudeBox.Value;
+            double longitude = this.LongitudeBox.Value;
+
+            // need to save the values
+            this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
+            this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
+            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
+
+            var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+            this.ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+            this.ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
 
             this.SunriseModeChartState();
         }
@@ -215,12 +221,25 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             this.LatitudeBox.Loaded -= LatLonBox_Loaded;
             this.LongitudeBox.Loaded -= LatLonBox_Loaded;
+            this.latBoxLoaded = false;
+            this.lonBoxLoaded = false;
         }
 
-        private async void LatLonBox_Loaded(object sender, RoutedEventArgs e)
+        private void LatLonBox_Loaded(object sender, RoutedEventArgs e)
         {
-            await Task.Yield();
-            this.suppressLatLonChange = false;
+            if (sender is NumberBox numberBox && numberBox == this.LatitudeBox && this.LatitudeBox.IsLoaded)
+            {
+                this.latBoxLoaded = true;
+            }
+            else if (sender is NumberBox numberBox2 && numberBox2 == this.LongitudeBox && this.LongitudeBox.IsLoaded)
+            {
+                this.lonBoxLoaded = true;
+            }
+
+            if (this.latBoxLoaded && this.lonBoxLoaded)
+            {
+                this.suppressLatLonChange = false;
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

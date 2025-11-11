@@ -316,7 +316,7 @@
                                         Grid.Column="1"
                                         AutomationProperties.AutomationId="SunriseText_LightSwitch"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.LightTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.LocationPanelLightTime, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
                                         TextAlignment="Left" />
                                     <FontIcon
                                         Grid.Row="1"
@@ -331,7 +331,7 @@
                                         Grid.Column="1"
                                         AutomationProperties.AutomationId="SunsetText_LightSwitch"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.DarkTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
+                                        Text="{x:Bind ViewModel.LocationPanelDarkTime, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
                                         TextAlignment="Left" />
                                 </Grid>
                             </Grid>
