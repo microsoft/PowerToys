@@ -176,7 +176,6 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
-cabstr
 calpwstr
 caub
 Cangjie
@@ -205,7 +204,6 @@ changecursor
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
-CIBUILD
 cidl
 CIELCh
 cim
@@ -403,7 +401,6 @@ DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 divyan
-djwsxzxb
 Dlg
 DLGFRAME
 DLGMODALFRAME
@@ -730,7 +727,6 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
 IDCANCEL
@@ -792,7 +788,6 @@ INSTALLFOLDERTOPREVIOUSINSTALLFOLDER
 INSTALLLOCATION
 INSTALLMESSAGE
 INSTALLPROPERTY
-installscopeperuser
 INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
@@ -805,6 +800,7 @@ invokecommand
 ipcmanager
 IPREVIEW
 ipreviewhandlervisualssetfont
+irdp
 irow
 irprops
 isbi
@@ -848,7 +844,6 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
-ksa
 kvp
 Kybd
 LARGEICON
@@ -1214,7 +1209,6 @@ openrdp
 opensource
 openxmlformats
 ollama
-Olllama
 onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
@@ -1448,9 +1442,7 @@ regfile
 REGISTERCLASSFAILED
 REGISTRYHEADER
 REGISTRYPREVIEWEXT
-registryroot
 regkey
-regroot
 regsvr
 REINSTALLMODE
 releaseblog
@@ -1503,7 +1495,6 @@ rstringalpha
 rstringdigit
 rtb
 RTLREADING
-rtm
 runas
 rundll
 rungameid
@@ -1717,7 +1708,6 @@ sublang
 SUBMODULEUPDATE
 subresource
 Superbar
-suntimes
 sut
 svchost
 SVGIn
@@ -1751,7 +1741,6 @@ SYSTEMMODAL
 SYSTEMTIME
 TARG
 TARGETAPPHEADER
-TARGETDIR
 targetentrypoint
 TARGETHEADER
 targetver
@@ -1880,7 +1869,6 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
-utm
 UType
 uuidv
 uwp
