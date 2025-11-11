@@ -29,11 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 "ml" or "windowsml" or "winml" => AIServiceType.ML,
                 "mistral" => AIServiceType.Mistral,
                 "google" or "googleai" or "googlegemini" => AIServiceType.Google,
-                "huggingface" => AIServiceType.HuggingFace,
                 "azureaiinference" or "azureinference" => AIServiceType.AzureAIInference,
                 "ollama" => AIServiceType.Ollama,
-                "anthropic" => AIServiceType.Anthropic,
-                "amazonbedrock" or "bedrock" => AIServiceType.AmazonBedrock,
                 _ => AIServiceType.Unknown,
             };
         }
@@ -52,11 +49,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.ML => "ML",
                 AIServiceType.Mistral => "Mistral",
                 AIServiceType.Google => "Google",
-                AIServiceType.HuggingFace => "HuggingFace",
                 AIServiceType.AzureAIInference => "AzureAIInference",
                 AIServiceType.Ollama => "Ollama",
-                AIServiceType.Anthropic => "Anthropic",
-                AIServiceType.AmazonBedrock => "AmazonBedrock",
                 AIServiceType.Unknown => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, "Unsupported AI service type."),
             };
@@ -76,11 +70,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.ML => "ml",
                 AIServiceType.Mistral => "mistral",
                 AIServiceType.Google => "google",
-                AIServiceType.HuggingFace => "huggingface",
                 AIServiceType.AzureAIInference => "azureaiinference",
                 AIServiceType.Ollama => "ollama",
-                AIServiceType.Anthropic => "anthropic",
-                AIServiceType.AmazonBedrock => "amazonbedrock",
                 _ => string.Empty,
             };
         }
