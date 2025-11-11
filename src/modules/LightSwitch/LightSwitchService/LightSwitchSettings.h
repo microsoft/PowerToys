@@ -19,7 +19,8 @@ enum class ScheduleMode
 {
     Off,
     FixedHours,
-    SunsetToSunrise
+    SunsetToSunrise,
+    FollowNightLight,
     // Add more in the future
 };
 
@@ -31,6 +32,8 @@ inline std::wstring ToString(ScheduleMode mode)
         return L"FixedHours";
     case ScheduleMode::SunsetToSunrise:
         return L"SunsetToSunrise";
+    case ScheduleMode::FollowNightLight:
+        return L"FollowNightLight";
     default:
         return L"Off";
     }
@@ -42,6 +45,8 @@ inline ScheduleMode FromString(const std::wstring& str)
         return ScheduleMode::SunsetToSunrise;
     if (str == L"FixedHours")
         return ScheduleMode::FixedHours;
+    if (str == L"FollowNightLight")
+        return ScheduleMode::FollowNightLight;
     else
         return ScheduleMode::Off;
 }
