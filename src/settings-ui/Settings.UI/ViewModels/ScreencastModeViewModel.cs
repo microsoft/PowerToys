@@ -1,99 +1,98 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Globalization;
+using System.Text.Json;
+using global::PowerToys.GPOWrapper;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
-using Microsoft.PowerToys.Settings.UI.SerializationContext;
-using Microsoft.PowerToys.Settings.Utilities;
-using Settings.UI.Library;
-using Settings.UI.Library.Helpers;
 
-namespace Microsoft.PowerToys.Settings.UI.ViewModels
+namespace Microsoft.PowerToys.Settings.UI.ViewModels;
+
+public class ScreencastModeViewModel : Observable
 {
-    public partial class ScreencastModeViewModel : PageViewModelBase
+    private GeneralSettings GeneralSettingsConfig { get; set; }
+
+    private readonly ScreencastModeSettings _screencastModeSettings;
+    private readonly ISettingsUtils _settingsUtils;
+    private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
+
+    private Func<string, int> SendConfigMSG { get; }
+
+    public ScreencastModeViewModel(
+        ISettingsUtils settingsUtils,
+        ISettingsRepository<GeneralSettings> settingsRepository,
+        Func<string, int> ipcMSGCallBackFunc)
     {
-        protected override string ModuleName => ScreencastModeSettings.ModuleName;
+        ArgumentNullException.ThrowIfNull(settingsRepository);
 
-        private Func<string, int> SendConfigMSG { get; }
+        _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+        _settingsRepository = settingsRepository;
+        GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-        private ScreencastModeSettings _moduleSettings;
-        private bool _isEnabled;
+        // Load or create ScreencastMode settings
+        _screencastModeSettings = _settingsUtils.GetSettingsOrDefault<ScreencastModeSettings>(ScreencastModeSettings.ModuleName);
 
-        public ScreencastModeViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        SendConfigMSG = ipcMSGCallBackFunc;
+    }
+
+    public bool IsEnabled
+    {
+        get => GeneralSettingsConfig.Enabled.ScreencastMode;
+        set
         {
-            _moduleSettings = new ScreencastModeSettings();
-            SendConfigMSG = ipcMSGCallBackFunc;
+            if (GeneralSettingsConfig.Enabled.ScreencastMode != value)
+            {
+                GeneralSettingsConfig.Enabled.ScreencastMode = value;
+                OnPropertyChanged(nameof(IsEnabled));
 
-            try
-            {
-                _moduleSettings = settingsUtils.GetSettingsOrDefault<ScreencastModeSettings>(ScreencastModeSettings.ModuleName);
-                if (_moduleSettings == null || _moduleSettings.Properties == null)
-                {
-                    _moduleSettings = new ScreencastModeSettings();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to load ScreencastMode settings: {ex}", ex);
-                _moduleSettings = new ScreencastModeSettings();
-            }
+                // Notify the runner about the state change
+                OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                SendConfigMSG(outgoing.ToString());
 
-            try
-            {
-                _isEnabled = generalSettingsRepository?.SettingsConfig?.Enabled?.ScreencastMode ?? false;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to get ScreencastMode enabled state: {ex}", ex);
-                _isEnabled = false;
+                // Also save settings
+                _settingsRepository.SettingsConfig = GeneralSettingsConfig;
             }
         }
+    }
 
-        public bool IsEnabled
+    public HotkeySettings ScreencastModeShortcut
+    {
+        get => _screencastModeSettings.Properties.ScreencastModeShortcut;
+        set
         {
-            get => _isEnabled;
-            set
+            if (_screencastModeSettings.Properties.ScreencastModeShortcut != value)
             {
-                if (_isEnabled != value)
-                {
-                    _isEnabled = value;
-                    RefreshEnabledState();
-                    NotifyPropertyChanged();
-                }
+                _screencastModeSettings.Properties.ScreencastModeShortcut = value;
+                OnPropertyChanged(nameof(ScreencastModeShortcut));
+
+                SaveAndNotifySettings();
             }
         }
+    }
 
-        public ScreencastModeSettings ModuleSettings
-        {
-            get => _moduleSettings;
-            set
-            {
-                if (_moduleSettings != value)
-                {
-                    _moduleSettings = value;
-                    NotifyPropertyChanged(nameof(ModuleSettings));
-                    RefreshEnabledState();
-                }
-            }
-        }
+    private void SaveAndNotifySettings()
+    {
+        _settingsUtils.SaveSettings(_screencastModeSettings.ToJsonString(), ScreencastModeSettings.ModuleName);
+        NotifySettingsChanged();
+    }
 
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            Logger.LogInfo($"Changed the property {propertyName}");
-            OnPropertyChanged(propertyName);
-        }
+    private void NotifySettingsChanged()
+    {
+        // Using InvariantCulture as this is an IPC message
+        SendConfigMSG(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                ScreencastModeSettings.ModuleName,
+                JsonSerializer.Serialize(_screencastModeSettings)));
+    }
 
-        public void RefreshEnabledState()
-        {
-            OnPropertyChanged(nameof(IsEnabled));
-        }
+    public void RefreshEnabledState()
+    {
+        OnPropertyChanged(nameof(IsEnabled));
     }
 }

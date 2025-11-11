@@ -7,13 +7,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
-namespace Settings.UI.Library
+namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ScreencastModeProperties
     {
+        public HotkeySettings ScreencastModeShortcut { get; set; }
+
         public ScreencastModeProperties()
         {
+            ScreencastModeShortcut = new HotkeySettings(true, false, true, false, 83); // Win + Alt + S
         }
     }
 }

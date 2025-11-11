@@ -1,28 +1,38 @@
 <local:NavigablePage
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.ScreencastModePage"
+  x:Class="Microsoft.PowerToys.Settings.UI.Views.ScreencastModePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    
-    <controls:SettingsPageControl x:Uid="ScreencastMode" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreencastMode.png">
+
+    <controls:SettingsPageControl x:Uid="ScreencastMode"
+          ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreencastMode.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                    <tkcontrols:SettingsCard
-                        x:Uid="ScreencastMode_EnableToggleControl_HeaderText"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreencastMode.png}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-            </StackPanel>
+      <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+    <controls:SettingsGroup x:Uid="ScreencastMode_Enable">
+            <tkcontrols:SettingsCard
+   x:Uid="ScreencastMode_EnableToggle"
+            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreencastMode.png}">
+      <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+      </tkcontrols:SettingsCard>
+      </controls:SettingsGroup>
+
+       <InfoBar
+       x:Uid="ScreencastMode_Description"
+                IsClosable="False"
+   IsOpen="True"
+IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+    Severity="Informational" />
+
+ <controls:SettingsGroup x:Uid="ScreencastMode_Activation" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+      <controls:ShortcutControl x:Uid="ScreencastMode_ActivationShortcut" HotkeySettings="{x:Bind ViewModel.ScreencastModeShortcut, Mode=TwoWay}" />
+        </controls:SettingsGroup>
+      </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
     </controls:SettingsPageControl>
-    
 </local:NavigablePage>
