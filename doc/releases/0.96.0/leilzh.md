@@ -27,109 +27,74 @@
    * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
    * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
-## Functional tests
-## Localization
- Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
- - [ ] ZoomIt
-
 ## [General Settings](tests-checklist-template-settings-section.md)
 
 **Admin mode:**
- - [ ] restart PT and verify it runs as user
- - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it  runs as admin
+ - [x] restart PT and verify it runs as user
+ - [x] restart as admin and set "Always run as admin"
+ - [x] restart PT and verify it  runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [x] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [x] turn off all the modules and verify all module are off
+ - [x] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [x] turn on all the module, all module are now working
+ - [x] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Quick access tray icon flyout:**
- - [ ] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
- - [ ] Try to launch a module from the launch screen in the flyout.
- - [ ] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
- - [ ] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
- - [ ] Quick Access should be able to toggle Mouse Cursor module on/off
+ - [x] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
+ - [x] Try to launch a module from the launch screen in the flyout.
+ - [x] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
+ - [x] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
+ - [x] Quick Access should be able to toggle Mouse Cursor module on/off
 
 **Settings backup/restore:**
- - [ ] In the General tab, create a backup of the settings.
- - [ ] Change some settings in some PowerToys.
- - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
+ - [x] In the General tab, create a backup of the settings.
+ - [x] Change some settings in some PowerToys.
+ - [x] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
 **Tray Icon show/hide:**
- - [ ] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
+ - [x] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
 
 ## OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [x] Start PowerToys and verify OOBE opens
  * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
- - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
+ - [x] Start PowerToys and verify OOBE opens in the "What's New" page
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [x] open the Settings for that module
+   - [x] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [x] close the Settings
+   - [x] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
-
- 
-## Quick Accent
- * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
- * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
+ - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## DSC
@@ -138,27 +103,27 @@
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## DSCV3
 * DSC v3 Environment Check
-   - [ ] Run $env:PATH to check whether PowerToysInstallLocation\DSCModules has been added to the PATH.
-   - [ ] Check that PowerToysInstallLocation\DSCModules contains 25 *.settings.dsc.resource.json files.
-   - [ ] Verify that per-user uninstall entries (`HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\*`) or machine-level entries (`HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\*`) includes the InstallLocation value.
+   - [x] Run $env:PATH to check whether PowerToysInstallLocation\DSCModules has been added to the PATH.
+   - [x] Check that PowerToysInstallLocation\DSCModules contains 25 *.settings.dsc.resource.json files.
+   - [x] Verify that per-user uninstall entries (`HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\*`) or machine-level entries (`HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\*`) includes the InstallLocation value.
 * Open a PowerShell 7
-   - [ ] Run `dsc resource list` to list all resources.  
-   - [ ] Run `dsc resource get --resource Microsoft.PowerToys/MeasureToolSettings` to get the configuration of a specific module.  
-   - [ ] Run `dsc resource set --resource Microsoft.PowerToys/AdvancedPaste --input '{ "settings": { "properties": { "IsAdvancedAIEnabled": { "value": false }, "ShowCustomPreview": { "value": false } } } }'` to set the configuration for the module.
-   - [ ] Run `winget configure export --all -o all.yaml` add all config to yaml
+   - [x] Run `dsc resource list` to list all resources.  
+   - [x] Run `dsc resource get --resource Microsoft.PowerToys/MeasureToolSettings` to get the configuration of a specific module.  
+   - [x] Run `dsc resource set --resource Microsoft.PowerToys/AdvancedPaste --input '{ "settings": { "properties": { "IsAdvancedAIEnabled": { "value": false }, "ShowCustomPreview": { "value": false } } } }'` to set the configuration for the module.
+   - [x] Run `winget configure export --all -o all.yaml` add all config to yaml
 
 ## Sparse App
 * Open a PowerShell 7
-   - [ ] Run `Get-AppxPackage Microsoft.PowerToys.SparseApp`. Check the sparse app is installed
-   - [ ] Run ImageResizer, get its process ID (PID), then navigate to the src/PackageIdentity folder in the repository. Run '.\Check-ProcessIdentity.ps1 -ProcessId {pid}' to verify that the package identity is attached
+   - [x] Run `Get-AppxPackage Microsoft.PowerToys.SparseApp`. Check the sparse app is installed
+   - [x] Run ImageResizer, get its process ID (PID), then navigate to the src/PackageIdentity folder in the repository. Run '.\Check-ProcessIdentity.ps1 -ProcessId {pid}' to verify that the package identity is attached
 
 
