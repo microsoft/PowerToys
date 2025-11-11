@@ -113,7 +113,7 @@ function BuildProjectsInDirectory {
 
     $files = @()
     try {
-        $files = Get-ChildItem -Path (Join-Path $DirectoryPath '*') -Include *.sln,*.csproj,*.vcxproj -File -ErrorAction SilentlyContinue
+        $files = Get-ChildItem -Path (Join-Path $DirectoryPath '*') -Include *.sln,*.slnx,*.csproj,*.vcxproj -File -ErrorAction SilentlyContinue
     } catch {
         $files = @()
     }
