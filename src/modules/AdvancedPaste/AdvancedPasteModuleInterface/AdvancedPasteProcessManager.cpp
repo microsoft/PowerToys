@@ -35,25 +35,27 @@ namespace
 void AdvancedPasteProcessManager::start()
 {
     m_enabled = true;
-    submit_task([this]() { refresh(); });
+    auto future = submit_task([this]() { refresh(); });
+    future.wait();
 }
 
 void AdvancedPasteProcessManager::stop()
 {
     m_enabled = false;
-    submit_task([this]() { refresh(); });
+    auto future = submit_task([this]() { refresh(); });
+    future.wait();
 }
 
 void AdvancedPasteProcessManager::send_message(const std::wstring& message_type, const std::wstring& message_arg)
 {
-    submit_task([this, message_type, message_arg] {
+    (void)submit_task([this, message_type, message_arg] {
         send_named_pipe_message(message_type, message_arg);
     });
 }
 
 void AdvancedPasteProcessManager::bring_to_front()
 {
-    submit_task([this] {
+    (void)submit_task([this] {
         if (!is_process_running())
         {
             return;
@@ -76,9 +78,9 @@ void AdvancedPasteProcessManager::bring_to_front()
     });
 }
 
-void AdvancedPasteProcessManager::submit_task(std::function<void()> task)
+std::future<void> AdvancedPasteProcessManager::submit_task(std::function<void()> task)
 {
-    m_thread_executor.submit(OnThreadExecutor::task_t{ task });
+    return m_thread_executor.submit(OnThreadExecutor::task_t{ std::move(task) });
 }
 
 bool AdvancedPasteProcessManager::is_process_running() const

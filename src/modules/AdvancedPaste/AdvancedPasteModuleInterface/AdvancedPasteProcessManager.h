@@ -7,6 +7,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <future>
 
 class AdvancedPasteProcessManager
 {
@@ -21,7 +22,7 @@ public:
     void bring_to_front();
 
 private:
-    void submit_task(std::function<void()> task);
+    std::future<void> submit_task(std::function<void()> task);
     bool is_process_running() const;
     void terminate_process();
     HRESULT start_process(const std::wstring& pipe_name);
