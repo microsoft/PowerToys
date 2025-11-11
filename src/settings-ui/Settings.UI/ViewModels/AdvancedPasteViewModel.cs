@@ -169,19 +169,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            var properties = _advancedPasteSettings.Properties;
-            var configuration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
-            properties.PasteAIConfiguration = configuration;
+            var properties = _advancedPasteSettings?.Properties;
+            if (properties is null)
+            {
+                return;
+            }
 
-            bool configurationUpdated = AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
+            var configuration = properties.PasteAIConfiguration;
+            bool configurationCreated = false;
 
-            var legacyCredential = TryGetLegacyOpenAICredential();
+            if (configuration is null)
+            {
+                configuration = new PasteAIConfiguration();
+                properties.PasteAIConfiguration = configuration;
+                configurationCreated = true;
+            }
 
-            bool requiresOpenAIProvider = legacyCredential is not null ||
-                                           (properties.IsAIEnabled && (configuration.Providers is null || configuration.Providers.Count == 0));
+            int providerCount = configuration.Providers?.Count ?? 0;
+            bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
+            bool needsProviderRecovery = properties.IsAIEnabled && providerCount == 0;
+            bool shouldRunMigration = configurationCreated || hasLegacyProviders || needsProviderRecovery;
+
+            PasswordCredential legacyCredential = null;
+
+            if (!shouldRunMigration)
+            {
+                legacyCredential = TryGetLegacyOpenAICredential();
+                shouldRunMigration = legacyCredential is not null;
+            }
+            else
+            {
+                legacyCredential = TryGetLegacyOpenAICredential();
+            }
+
+            if (!shouldRunMigration)
+            {
+                return;
+            }
+
+            bool configurationUpdated = configurationCreated;
+
+            configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
 
             PasteAIProviderDefinition openAIProvider = null;
-            if (requiresOpenAIProvider)
+            if (legacyCredential is not null || needsProviderRecovery)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
