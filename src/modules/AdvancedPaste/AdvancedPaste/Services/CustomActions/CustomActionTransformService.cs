@@ -181,8 +181,6 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 AIServiceType.Onnx => false,
                 AIServiceType.Ollama => false,
-                AIServiceType.Anthropic => false,
-                AIServiceType.AmazonBedrock => false,
                 _ => true,
             };
         }

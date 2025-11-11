@@ -156,16 +156,10 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
                 resource = "https://ai.google.dev/";
                 serviceKey = "google";
                 break;
-            case AIServiceType.HuggingFace:
-                resource = "https://huggingface.co/settings/tokens";
-                serviceKey = "huggingface";
-                break;
             case AIServiceType.FoundryLocal:
             case AIServiceType.ML:
             case AIServiceType.Onnx:
             case AIServiceType.Ollama:
-            case AIServiceType.Anthropic:
-            case AIServiceType.AmazonBedrock:
                 return null;
             default:
                 return null;
