@@ -328,6 +328,30 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 - [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
 - [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
+## Light Switch
+UI Validation:
+- [ ] Module turns service off and on appropriately
+- [ ] Modes are able to be switched and the appropriate UI shows for each
+- [ ] Update the offsets reflect in the timeline chart
+- [ ] Updating the time reflects in the timeline chart
+- [ ] You are able to fetch using geo location (and sun information is accurate)
+- [ ] You are able to manually enter coordinates (and sun information is accurate)
+
+Service Validation:
+- [ ] Ensure that pressing the shortcut key triggers an update
+- [ ] Ensure that pressing the shortcut key triggers a block in the schedule (Should see logs Skipping schedule due to manual override at the next minute after activation)
+- [ ] Ensure that changing windows settings triggers a manual override (at the next minute)
+- [ ] Ensure that the manual override is cleared once a boundary is met (Use shortcut, set transition using Fixed Hours to 2 mins in the future, ensure the first minute doesn't flip back and the second minute the override is cleared)
+- [ ] Ensure that the schedule resumes following the boundary clearance.
+- [ ] Ensure the shortcut still works when the mode is set to "Off"
+- [ ] Ensure the schedule resumes as expected once turned back on.
+- Hibernation test
+   - [ ] Set your schedule to change themes in the next 2 minutes.
+   - [ ] Send your machine to hibernate shutdown /h
+   - [ ] Wake your machine after your theme should have changed and ensure Light Switch catches itself up
+   - [ ] Repeat steps above but with a manual override triggered prior to the theme change.Ensure manual override is flushed and schedule resumes.
+- [ ] Stop and restart the module. Ensure it behaves as expected. No reset settings, etc.
+
 ## [Keyboard Manager](tests-checklist-template-keyboard-manager-section.md)
 
 UI Validation:
