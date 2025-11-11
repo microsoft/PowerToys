@@ -87,6 +87,9 @@ struct ModuleSettings
     int m_sunset_offset = 0;
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
+    bool m_use_theme_switching = false;
+    std::wstring m_light_theme_path = L"";
+    std::wstring m_dark_theme_path = L"";
 } g_settings;
 
 class LightSwitchInterface : public PowertoyModuleIface
@@ -226,6 +229,22 @@ public:
             L"Force Dark",
             L"{}");
 
+        // Theme switching settings
+        settings.add_bool_toggle(
+            L"use_theme_switching",
+            L"Enable or disable theme switching based on location.",
+            g_settings.m_use_theme_switching);
+
+        settings.add_string(
+            L"light_theme_path",
+            L"Path to your light theme file.",
+            g_settings.m_light_theme_path);
+
+        settings.add_string(
+            L"dark_theme_path",
+            L"Path to your dark theme file.",
+            g_settings.m_dark_theme_path);
+
         // Hotkeys
         PowerToysSettings::HotkeyObject dm_hk = PowerToysSettings::HotkeyObject::from_settings(
             m_toggle_theme_hotkey.win,
@@ -332,6 +351,18 @@ public:
             if (auto v = values.get_string_value(L"longitude"))
             {
                 g_settings.m_longitude = *v;
+            }
+            if (auto v = values.get_bool_value(L"use_theme_switching"))
+            {
+                g_settings.m_use_theme_switching = *v;
+            }
+            if (auto v = values.get_string_value(L"light_theme_path"))
+            {
+                g_settings.m_light_theme_path = *v;
+            }
+            if (auto v = values.get_string_value(L"dark_theme_path"))
+            {
+                g_settings.m_dark_theme_path = *v;
             }
 
             values.save_to_settings_file();
@@ -618,6 +649,12 @@ void LightSwitchInterface::init_settings()
             g_settings.m_latitude = *v;
         if (auto v = settings.get_string_value(L"longitude"))
             g_settings.m_longitude = *v;
+        if (auto v = settings.get_bool_value(L"use_theme_switching"))
+            g_settings.m_use_theme_switching = *v;
+        if (auto v = settings.get_string_value(L"light_theme_path"))
+            g_settings.m_light_theme_path = *v;
+        if (auto v = settings.get_string_value(L"dark_theme_path"))
+            g_settings.m_dark_theme_path = *v;
 
         Logger::info(L"[Light Switch] init_settings: loaded successfully");
     }
