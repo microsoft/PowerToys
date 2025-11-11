@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.17" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.18" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -33,6 +33,7 @@
       <string id="SUPPORTED_POWERTOYS_0_88_0">PowerToys version 0.88.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_90_0">PowerToys version 0.90.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.96.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -291,6 +292,54 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
       <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Allow using online AI models</string>
+      <string id="AllowAdvancedPasteOpenAI">Advanced Paste: Allow OpenAI endpoint</string>
+      <string id="AllowAdvancedPasteOpenAIDescription">This policy controls whether users can use the OpenAI endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use OpenAI as their AI provider.
+
+If you disable this policy, users will not be able to select or use OpenAI endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteAzureOpenAI">Advanced Paste: Allow Azure OpenAI endpoint</string>
+      <string id="AllowAdvancedPasteAzureOpenAIDescription">This policy controls whether users can use the Azure OpenAI endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Azure OpenAI as their AI provider.
+
+If you disable this policy, users will not be able to select or use Azure OpenAI endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteAzureAIInference">Advanced Paste: Allow Azure AI Inference endpoint</string>
+      <string id="AllowAdvancedPasteAzureAIInferenceDescription">This policy controls whether users can use the Azure AI Inference endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Azure AI Inference as their AI provider.
+
+If you disable this policy, users will not be able to select or use Azure AI Inference endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteMistral">Advanced Paste: Allow Mistral endpoint</string>
+      <string id="AllowAdvancedPasteMistralDescription">This policy controls whether users can use the Mistral AI endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Mistral as their AI provider.
+
+If you disable this policy, users will not be able to select or use Mistral endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteGoogle">Advanced Paste: Allow Google endpoint</string>
+      <string id="AllowAdvancedPasteGoogleDescription">This policy controls whether users can use the Google (Gemini) endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Google as their AI provider.
+
+If you disable this policy, users will not be able to select or use Google endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteAnthropic">Advanced Paste: Allow Anthropic endpoint</string>
+      <string id="AllowAdvancedPasteAnthropicDescription">This policy controls whether users can use the Anthropic (Claude) endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Anthropic as their AI provider.
+
+If you disable this policy, users will not be able to select or use Anthropic endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteOllama">Advanced Paste: Allow Ollama endpoint</string>
+      <string id="AllowAdvancedPasteOllamaDescription">This policy controls whether users can use the Ollama local model endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Ollama as their AI provider.
+
+If you disable this policy, users will not be able to select or use Ollama endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPasteFoundryLocal">Advanced Paste: Allow Foundry Local endpoint</string>
+      <string id="AllowAdvancedPasteFoundryLocalDescription">This policy controls whether users can use the Foundry Local model endpoint in Advanced Paste.
+
+If you enable or don't configure this policy, users can configure and use Foundry Local as their AI provider.
+
+If you disable this policy, users will not be able to select or use Foundry Local endpoint in Advanced Paste settings.</string>
       <string id="MwbClipboardSharingEnabled">Clipboard sharing enabled</string>
       <string id="MwbFileTransferEnabled">File transfer enabled</string>
       <string id="MwbUseOriginalUserInterface">Original user interface is available</string>

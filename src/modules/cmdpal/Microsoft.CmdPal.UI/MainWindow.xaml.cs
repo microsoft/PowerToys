@@ -57,10 +57,13 @@ public sealed partial class MainWindow : WindowEx,
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+
+    private WindowPosition _currentWindowPosition = new();
 
     public MainWindow()
     {
@@ -73,6 +76,8 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
+        _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
+
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
 
@@ -80,7 +85,9 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        PositionCentered();
+        RestoreWindowPosition();
+        UpdateWindowPositionInMemory();
+
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -126,16 +133,6 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
-
-        ApplyWindowStyle();
-    }
-
-    private void ApplyWindowStyle()
-    {
-        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
-        // Since tool windows have smaller corner radii, we need to force the normal ones
-        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, !Debugger.IsAttached);
-        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -161,6 +158,39 @@ public sealed partial class MainWindow : WindowEx,
         PositionCentered(displayArea);
     }
 
+    private void RestoreWindowPosition()
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>();
+        if (settings?.LastWindowPosition is not WindowPosition savedPosition)
+        {
+            PositionCentered();
+            return;
+        }
+
+        if (savedPosition.Width <= 0 || savedPosition.Height <= 0)
+        {
+            PositionCentered();
+            return;
+        }
+
+        AppWindow.Resize(new SizeInt32 { Width = savedPosition.Width, Height = savedPosition.Height });
+
+        var savedRect = new RectInt32(savedPosition.X, savedPosition.Y, savedPosition.Width, savedPosition.Height);
+        var displayArea = DisplayArea.GetFromRect(savedRect, DisplayAreaFallback.Nearest);
+        var workArea = displayArea.WorkArea;
+
+        var maxX = workArea.X + Math.Max(0, workArea.Width - savedPosition.Width);
+        var maxY = workArea.Y + Math.Max(0, workArea.Height - savedPosition.Height);
+
+        var targetPoint = new PointInt32
+        {
+            X = Math.Clamp(savedPosition.X, workArea.X, maxX),
+            Y = Math.Clamp(savedPosition.Y, workArea.Y, maxY),
+        };
+
+        AppWindow.Move(targetPoint);
+    }
+
     private void PositionCentered(DisplayArea displayArea)
     {
         if (displayArea is not null)
@@ -173,6 +203,17 @@ public sealed partial class MainWindow : WindowEx,
             centeredPosition.Y += displayArea.WorkArea.Y;
             AppWindow.Move(centeredPosition);
         }
+    }
+
+    private void UpdateWindowPositionInMemory()
+    {
+        _currentWindowPosition = new WindowPosition
+        {
+            X = AppWindow.Position.X,
+            Y = AppWindow.Position.Y,
+            Width = AppWindow.Size.Width,
+            Height = AppWindow.Size.Height,
+        };
     }
 
     private void HotReloadSettings()
@@ -257,14 +298,22 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        if (target == MonitorBehavior.ToLast)
+        {
+            AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
+            AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
+        }
+        else
+        {
+            var display = GetScreen(hwnd, target);
+            PositionCentered(display);
+        }
 
         // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
         // because that would make it hard to debug the app
         if (Debugger.IsAttached)
         {
-            ApplyWindowStyle();
+            _hiddenOwnerBehavior.ShowInTaskbar(this, true);
         }
 
         // Just to be sure, SHOW our hwnd.
@@ -419,6 +468,22 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
+        UpdateWindowPositionInMemory();
+
+        var settings = serviceProvider.GetService<SettingsModel>();
+        if (settings is not null)
+        {
+            settings.LastWindowPosition = new WindowPosition
+            {
+                X = _currentWindowPosition.X,
+                Y = _currentWindowPosition.Y,
+                Width = _currentWindowPosition.Width,
+                Height = _currentWindowPosition.Height,
+            };
+
+            SettingsModel.SaveSettings(settings);
+        }
+
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
@@ -490,6 +555,9 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            // Save the current window position before hiding the window
+            UpdateWindowPositionInMemory();
+
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
             {

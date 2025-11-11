@@ -5,7 +5,10 @@
 #include <vector>
 #include <memory>
 #include <windows.h>
-
+#include <mutex>
+#include <atomic>
+#include <thread>
+#include <chrono>
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <SettingsConstants.h>
@@ -14,6 +17,7 @@ class SettingsObserver;
 
 enum class ScheduleMode
 {
+    Off,
     FixedHours,
     SunsetToSunrise
     // Add more in the future
@@ -28,7 +32,7 @@ inline std::wstring ToString(ScheduleMode mode)
     case ScheduleMode::SunsetToSunrise:
         return L"SunsetToSunrise";
     default:
-        return L"FixedHours";
+        return L"Off";
     }
 }
 
@@ -36,8 +40,10 @@ inline ScheduleMode FromString(const std::wstring& str)
 {
     if (str == L"SunsetToSunrise")
         return ScheduleMode::SunsetToSunrise;
-    else
+    if (str == L"FixedHours")
         return ScheduleMode::FixedHours;
+    else
+        return ScheduleMode::Off;
 }
 
 struct LightSwitchConfig
@@ -75,14 +81,26 @@ public:
     void RemoveObserver(SettingsObserver& observer);
 
     void LoadSettings();
+    void ApplyThemeIfNecessary();
+
+    HANDLE GetSettingsChangedEvent() const;
 
 private:
     LightSwitchSettings();
-    ~LightSwitchSettings() = default;
+    ~LightSwitchSettings();
 
     LightSwitchConfig m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
     std::unordered_set<SettingsObserver*> m_observers;
 
     void NotifyObservers(SettingId id) const;
+
+    HANDLE m_settingsChangedEvent = nullptr;
+    mutable std::mutex m_settingsMutex;
+
+    // Debounce state
+    std::atomic_bool m_debouncePending{ false };
+    std::mutex m_debounceMutex;
+    std::chrono::steady_clock::time_point m_lastChangeTime{};
+    std::jthread m_debounceThread;
 };
