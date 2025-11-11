@@ -71,9 +71,17 @@
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.37" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.250907003" />
+	<PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.WinML" Version="0.10.1" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.38" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.Base" Version="1.8.250831001" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.DWrite" Version="1.8.25090401" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.250906002" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="1.8.250906004" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.ML" Version="1.8.2095" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.251003001" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.Widgets" Version="1.8.250904007" />
+	<PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="1.8.250906003" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
@@ -112,6 +120,7 @@
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="9.0.10" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+	<PackageVersion Include="System.Numerics.Tensors" Version="9.0.10" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.10" />
