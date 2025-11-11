@@ -324,7 +324,7 @@
                             x:Uid="Shell_ScreencastMode"
                             helpers:NavHelper.NavigateTo="views:ScreencastModePage"
                             AutomationProperties.AutomationId="ScreencastModeNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreencastMode.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
