@@ -23,6 +23,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
     private bool _isValid;
     private bool _hasConflict;
     private string _tooltip;
+    private bool _useCustomModel;
+    private string _customModelPath = string.Empty;
 
     [JsonPropertyName("id")]
     public int Id
@@ -122,6 +124,32 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
         set => Set(ref _tooltip, value);
     }
 
+    [JsonPropertyName("useCustomModel")]
+    public bool UseCustomModel
+    {
+        get => _useCustomModel;
+        set
+        {
+            if (Set(ref _useCustomModel, value))
+            {
+                UpdateIsValid();
+            }
+        }
+    }
+
+    [JsonPropertyName("customModelPath")]
+    public string CustomModelPath
+    {
+        get => _customModelPath;
+        set
+        {
+            if (Set(ref _customModelPath, value ?? string.Empty))
+            {
+                UpdateIsValid();
+            }
+        }
+    }
+
     [JsonIgnore]
     public IEnumerable<IAdvancedPasteAction> SubActions => [];
 
@@ -144,6 +172,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
         CanMoveDown = other.CanMoveDown;
         HasConflict = other.HasConflict;
         Tooltip = other.Tooltip;
+        UseCustomModel = other.UseCustomModel;
+        CustomModelPath = other.CustomModelPath;
     }
 
     private HotkeySettings GetShortcutClone()
@@ -159,6 +189,10 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
 
     private void UpdateIsValid()
     {
-        IsValid = !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Prompt);
+        bool hasPrompt = !string.IsNullOrWhiteSpace(Prompt);
+        bool hasName = !string.IsNullOrWhiteSpace(Name);
+        bool hasModel = !UseCustomModel || !string.IsNullOrWhiteSpace(CustomModelPath);
+
+        IsValid = hasName && hasPrompt && hasModel;
     }
 }

@@ -7,11 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Settings;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Services.CustomActions
 {
     public interface ICustomActionTransformService
     {
-        Task<CustomActionTransformResult> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress);
+        Task<CustomActionTransformResult> TransformTextAsync(AdvancedPasteCustomAction customAction, string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress);
     }
 }

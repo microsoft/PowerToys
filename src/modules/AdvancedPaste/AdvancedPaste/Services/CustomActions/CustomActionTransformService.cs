@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -40,10 +41,12 @@ namespace AdvancedPaste.Services.CustomActions
             this.userSettings = userSettings;
         }
 
-        public async Task<CustomActionTransformResult> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CustomActionTransformResult> TransformTextAsync(AdvancedPasteCustomAction customAction, string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pasteConfig = userSettings?.PasteAIConfiguration;
-            var providerConfig = BuildProviderConfig(pasteConfig);
+            var providerConfig = customAction?.UseCustomModel == true
+                ? BuildCustomModelConfig(customAction)
+                : BuildProviderConfig(pasteConfig);
 
             return await TransformAsync(prompt, inputText, providerConfig, cancellationToken, progress);
         }
@@ -164,6 +167,24 @@ namespace AdvancedPaste.Services.CustomActions
             return providerConfig;
         }
 
+        private PasteAIConfig BuildCustomModelConfig(AdvancedPasteCustomAction customAction)
+        {
+            ArgumentNullException.ThrowIfNull(customAction);
+
+            var modelPath = ResolveCustomModelPath(customAction);
+            var systemPrompt = DetermineCustomModelSystemPrompt();
+
+            return new PasteAIConfig
+            {
+                ProviderType = AIServiceType.ML,
+                Model = Path.GetFileNameWithoutExtension(modelPath),
+                LocalModelPath = modelPath,
+                ModelPath = modelPath,
+                SystemPrompt = systemPrompt,
+                ModerationEnabled = false,
+            };
+        }
+
         private string AcquireApiKey(AIServiceType serviceType)
         {
             if (!RequiresApiKey(serviceType))
@@ -195,6 +216,58 @@ namespace AdvancedPaste.Services.CustomActions
             }
 
             return providerConfig.ProviderType == AIServiceType.OpenAI || providerConfig.ProviderType == AIServiceType.AzureOpenAI;
+        }
+
+        private string ResolveCustomModelPath(AdvancedPasteCustomAction customAction)
+        {
+            var modelPath = customAction.CustomModelPath?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(modelPath))
+            {
+                throw new PasteActionException(GetCustomModelMissingMessage(), new FileNotFoundException());
+            }
+
+            var storagePath = userSettings?.CustomModelStoragePath;
+            var expandedPath = Environment.ExpandEnvironmentVariables(modelPath);
+            if (!Path.IsPathRooted(expandedPath) && !string.IsNullOrEmpty(storagePath))
+            {
+                expandedPath = Path.Combine(storagePath, expandedPath);
+            }
+
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(expandedPath);
+            }
+            catch (Exception ex)
+            {
+                throw new PasteActionException(GetCustomModelMissingMessage(), ex);
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                throw new PasteActionException(GetCustomModelMissingMessage(), new FileNotFoundException(fullPath));
+            }
+
+            return fullPath;
+        }
+
+        private static string GetCustomModelMissingMessage()
+        {
+            var message = ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPasteCustomModelNotFound");
+            return string.IsNullOrWhiteSpace(message) ? "The selected custom model could not be found." : message;
+        }
+
+        private string DetermineCustomModelSystemPrompt()
+        {
+            var customPrompt = userSettings?.PasteAIConfiguration?.ActiveProvider?.SystemPrompt
+                ?? userSettings?.PasteAIConfiguration?.Providers?.FirstOrDefault()?.SystemPrompt;
+
+            if (string.IsNullOrWhiteSpace(customPrompt))
+            {
+                return DefaultSystemPrompt;
+            }
+
+            return customPrompt;
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
@@ -90,6 +91,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SetupSettingsFileWatcher();
 
             InitializePasteAIProviderState();
+            EnsureCustomModelStoragePathInitialized();
 
             InitializeEnabledValue();
             MigrateLegacyAIEnablement();
@@ -467,6 +469,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _advancedPasteSettings.Properties.CloseAfterLosingFocus = value;
                     NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string CustomModelStoragePath
+        {
+            get => _advancedPasteSettings.Properties.CustomModelStoragePath;
+            set
+            {
+                var normalized = NormalizeDirectoryPath(value);
+                var current = NormalizeDirectoryPath(_advancedPasteSettings.Properties.CustomModelStoragePath);
+
+                if (!string.Equals(current, normalized, StringComparison.OrdinalIgnoreCase))
+                {
+                    _advancedPasteSettings.Properties.CustomModelStoragePath = normalized;
+                    EnsureDirectoryExists(normalized);
+                    OnPropertyChanged(nameof(CustomModelStoragePath));
+                    SaveAndNotifySettings();
                 }
             }
         }
@@ -1149,6 +1169,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 OnPropertyChanged(nameof(CloseAfterLosingFocus));
             }
 
+            if (!string.Equals(NormalizeDirectoryPath(target.CustomModelStoragePath), NormalizeDirectoryPath(source.CustomModelStoragePath), StringComparison.OrdinalIgnoreCase))
+            {
+                target.CustomModelStoragePath = NormalizeDirectoryPath(source.CustomModelStoragePath);
+                EnsureDirectoryExists(target.CustomModelStoragePath);
+                OnPropertyChanged(nameof(CustomModelStoragePath));
+            }
+
             var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();
             if (ShouldReplacePasteAIConfiguration(target.PasteAIConfiguration, incomingConfig))
             {
@@ -1380,6 +1407,60 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var customAction = _customActions[index];
                 customAction.CanMoveUp = index != 0;
                 customAction.CanMoveDown = index != _customActions.Count - 1;
+            }
+        }
+
+        private void EnsureCustomModelStoragePathInitialized()
+        {
+            var path = NormalizeDirectoryPath(_advancedPasteSettings.Properties.CustomModelStoragePath);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                path = NormalizeDirectoryPath(AdvancedPasteProperties.GetDefaultCustomModelStoragePath());
+                _advancedPasteSettings.Properties.CustomModelStoragePath = path;
+                SaveAndNotifySettings();
+            }
+
+            EnsureDirectoryExists(path);
+            OnPropertyChanged(nameof(CustomModelStoragePath));
+        }
+
+        private static string NormalizeDirectoryPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                path = path.Trim();
+                if (path.Length == 0)
+                {
+                    return string.Empty;
+                }
+
+                path = Environment.ExpandEnvironmentVariables(path);
+                return Path.GetFullPath(path);
+            }
+            catch (Exception)
+            {
+                return path;
+            }
+        }
+
+        private static void EnsureDirectoryExists(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(path);
+            }
+            catch (Exception)
+            {
             }
         }
     }

@@ -237,7 +237,7 @@ public abstract class KernelServiceBase(
                     ? $"Runs the \"{customAction.Name}\" custom action."
                     : customAction.Description;
                 return KernelFunctionFactory.CreateFromMethod(
-                    method: async (Kernel kernel) => await ExecuteCustomActionAsync(kernel, customAction.Prompt),
+                    method: async (Kernel kernel) => await ExecuteCustomActionAsync(kernel, customAction),
                     functionName: functionName,
                     description: description,
                     parameters: null,
@@ -286,14 +286,14 @@ public abstract class KernelServiceBase(
         return string.IsNullOrEmpty(sanitized) ? "_CustomAction" : sanitized;
     }
 
-    private Task<string> ExecuteCustomActionAsync(Kernel kernel, string fixedPrompt) =>
+    private Task<string> ExecuteCustomActionAsync(Kernel kernel, AdvancedPasteCustomAction customAction) =>
         ExecuteTransformAsync(
             kernel,
-            new ActionChainItem(PasteFormats.CustomTextTransformation, Arguments: new() { { PromptParameterName, fixedPrompt } }),
+            new ActionChainItem(PasteFormats.CustomTextTransformation, Arguments: new() { { PromptParameterName, customAction?.Prompt ?? string.Empty } }),
             async dataPackageView =>
             {
                 var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
-                var result = await _customActionTransformService.TransformTextAsync(fixedPrompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
+                var result = await _customActionTransformService.TransformTextAsync(customAction, customAction?.Prompt ?? string.Empty, input, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
 
@@ -311,7 +311,7 @@ public abstract class KernelServiceBase(
     private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformTextAsync(prompt, input, cancellationToken, progress))?.Content ?? string.Empty,
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformTextAsync(null, prompt, input, cancellationToken, progress))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 

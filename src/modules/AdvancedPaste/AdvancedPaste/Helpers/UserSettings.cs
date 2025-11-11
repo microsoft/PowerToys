@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
@@ -46,6 +47,8 @@ namespace AdvancedPaste.Settings
 
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
+        public string CustomModelStoragePath { get; private set; }
+
         public UserSettings(IFileSystem fileSystem)
         {
             _settingsUtils = new SettingsUtils(fileSystem);
@@ -54,6 +57,8 @@ namespace AdvancedPaste.Settings
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
             PasteAIConfiguration = new PasteAIConfiguration();
+            CustomModelStoragePath = NormalizeDirectoryPath(AdvancedPasteProperties.GetDefaultCustomModelStoragePath());
+            EnsureDirectoryExists(CustomModelStoragePath);
             _additionalActions = [];
             _customActions = [];
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
@@ -108,6 +113,8 @@ namespace AdvancedPaste.Settings
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
+                                CustomModelStoragePath = NormalizeDirectoryPath(properties.CustomModelStoragePath);
+                                EnsureDirectoryExists(CustomModelStoragePath);
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
@@ -287,6 +294,40 @@ namespace AdvancedPaste.Settings
         ~UserSettings()
         {
             Dispose(false);
+        }
+
+        private static string NormalizeDirectoryPath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return AdvancedPasteProperties.GetDefaultCustomModelStoragePath();
+            }
+
+            try
+            {
+                path = Environment.ExpandEnvironmentVariables(path.Trim());
+                return Path.GetFullPath(path);
+            }
+            catch (Exception)
+            {
+                return path;
+            }
+        }
+
+        private static void EnsureDirectoryExists(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(path);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

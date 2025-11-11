@@ -381,6 +381,20 @@
                                 </DataTemplate>
                             </tkcontrols:SettingsExpander.ItemTemplate>
                         </tkcontrols:SettingsExpander>
+                        <tkcontrols:SettingsCard
+                            x:Uid="AdvancedPaste_CustomModelStoragePath"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
+                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox
+                                    Width="320"
+                                    Text="{x:Bind ViewModel.CustomModelStoragePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button
+                                    x:Uid="AdvancedPaste_CustomModelStoragePath_BrowseButton"
+                                    Click="BrowseCustomModelStoragePath_Click"
+                                    Style="{ThemeResource AccentButtonStyle}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
                         <InfoBar
                             x:Uid="AdvancedPaste_ShortcutWarning"
                             IsClosable="False"
@@ -423,6 +437,31 @@
                     AcceptsReturn="true"
                     Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap" />
+                <ToggleSwitch
+                    x:Uid="AdvancedPasteUI_CustomAction_UseCustomModel"
+                    HorizontalAlignment="Left"
+                    IsOn="{Binding UseCustomModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    OffContent=""
+                    OnContent=""
+                    Toggled="CustomActionUseCustomModel_Toggled" />
+                <StackPanel
+                    Orientation="Vertical"
+                    Spacing="8"
+                    Visibility="{Binding UseCustomModel, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ComboBox
+                        x:Name="CustomActionModelComboBox"
+                        x:Uid="AdvancedPasteUI_CustomAction_ModelPath"
+                        Width="340"
+                        HorizontalAlignment="Left"
+                        ItemsSource="{x:Bind CustomModelOptions, Mode=OneWay}"
+                        SelectedItem="{Binding CustomModelPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        ToolTipService.ToolTip="{Binding CustomModelPath, Mode=OneWay}" />
+                    <Button
+                        x:Uid="AdvancedPasteUI_CustomAction_SelectModelButton"
+                        HorizontalAlignment="Left"
+                        Click="BrowseCustomActionModel_Click"
+                        Style="{ThemeResource AccentButtonStyle}" />
+                </StackPanel>
             </StackPanel>
         </ContentDialog>
 

@@ -662,6 +662,22 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
     <value>Custom actions</value>
   </data>
+  <data name="AdvancedPaste_CustomModelStoragePath.Header" xml:space="preserve">
+    <value>Custom model storage path</value>
+    <comment>Header for the settings card that lets users choose where custom models are stored.</comment>
+  </data>
+  <data name="AdvancedPaste_CustomModelStoragePath.Description" xml:space="preserve">
+    <value>PowerToys looks in this folder when custom actions use locally downloaded models.</value>
+  </data>
+  <data name="AdvancedPaste_CustomModelStoragePath_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="AdvancedPasteCustomModelNotFound" xml:space="preserve">
+    <value>The custom model could not be found. Verify the path and try again.</value>
+  </data>
+  <data name="AdvancedPasteCustomModelInferenceError" xml:space="preserve">
+    <value>PowerToys couldn't generate a response using the selected custom model.</value>
+  </data>
   <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
     <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
   </data>
@@ -2064,6 +2080,20 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
     <value>Prompt</value>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_UseCustomModel.Header" xml:space="preserve">
+    <value>Use custom model</value>
+    <comment>Toggle allowing the user to choose a locally stored model for the custom action.</comment>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_ModelPath.Header" xml:space="preserve">
+    <value>Model path</value>
+    <comment>Label for the text box showing the selected custom model path.</comment>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_ModelPath.PlaceholderText" xml:space="preserve">
+    <value>Select a local model file</value>
+  </data>
+  <data name="AdvancedPasteUI_CustomAction_SelectModelButton.Content" xml:space="preserve">
+    <value>Choose model</value>
   </data>
   <data name="CustomActionDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>

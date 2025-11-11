@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -28,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
             PasteAIConfiguration = new();
+            CustomModelStoragePath = GetDefaultCustomModelStoragePath();
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -87,7 +90,36 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnoreAttribute]
         public PasteAIConfiguration PasteAIConfiguration { get; set; }
 
+        [JsonPropertyName("custom-model-storage-path")]
+        [CmdConfigureIgnoreAttribute]
+        public string CustomModelStoragePath { get; set; }
+
         public override string ToString()
             => JsonSerializer.Serialize(this);
+
+        public static string GetDefaultCustomModelStoragePath()
+        {
+            try
+            {
+                var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                if (string.IsNullOrWhiteSpace(userProfile))
+                {
+                    userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                }
+
+                if (string.IsNullOrWhiteSpace(userProfile))
+                {
+                    var temp = Path.GetTempPath();
+                    return Path.Combine(temp, "PowerToys", "Models");
+                }
+
+                return Path.Combine(userProfile, ".cache", "PowerToys");
+            }
+            catch (Exception)
+            {
+                var temp = Path.GetTempPath();
+                return Path.Combine(temp, "PowerToys", "Models");
+            }
+        }
     }
 }

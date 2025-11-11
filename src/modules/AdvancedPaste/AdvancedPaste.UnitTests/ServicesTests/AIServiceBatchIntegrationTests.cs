@@ -144,7 +144,7 @@ public sealed class AIServiceBatchIntegrationTests
         switch (format)
         {
             case PasteFormats.CustomTextTransformation:
-                var transformResult = await services.CustomActionTransformService.TransformTextAsync(batchTestInput.Prompt, batchTestInput.Clipboard, CancellationToken.None, progress);
+                var transformResult = await services.CustomActionTransformService.TransformTextAsync(null, batchTestInput.Prompt, batchTestInput.Clipboard, CancellationToken.None, progress);
                 return DataPackageHelpers.CreateFromText(transformResult.Content ?? string.Empty);
 
             case PasteFormats.KernelQuery:

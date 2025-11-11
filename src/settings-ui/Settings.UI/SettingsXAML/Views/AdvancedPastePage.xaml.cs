@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -37,9 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string AdvancedAISystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
         private const string SimpleAISystemPrompt = "You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content.";
 
+        private readonly ObservableCollection<string> _customModelOptions = new();
+
         private AdvancedPasteViewModel ViewModel { get; set; }
 
         public ICommand EnableAdvancedPasteAICommand => new RelayCommand(EnableAdvancedPasteAI);
+
+        public ObservableCollection<string> CustomModelOptions => _customModelOptions;
 
         public AdvancedPastePage()
         {
@@ -51,6 +56,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            ViewModel.PropertyChanged += AdvancedPasteViewModel_PropertyChanged;
 
             if (FoundryLocalPicker is not null)
             {
@@ -133,6 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             CustomActionDialog.Title = resourceLoader.GetString("AddCustomAction");
             CustomActionDialog.DataContext = ViewModel.GetNewCustomAction(resourceLoader.GetString("AdvancedPasteUI_NewCustomActionPrefix"));
             CustomActionDialog.PrimaryButtonText = resourceLoader.GetString("CustomActionSave");
+            RefreshCustomActionModelOptions(CustomActionDialog.DataContext as AdvancedPasteCustomAction);
             await CustomActionDialog.ShowAsync();
         }
 
@@ -143,6 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             CustomActionDialog.Title = resourceLoader.GetString("EditCustomAction");
             CustomActionDialog.DataContext = GetBoundCustomAction(sender, e).Clone();
             CustomActionDialog.PrimaryButtonText = resourceLoader.GetString("CustomActionUpdate");
+            RefreshCustomActionModelOptions(CustomActionDialog.DataContext as AdvancedPasteCustomAction);
             await CustomActionDialog.ShowAsync();
         }
 
@@ -256,11 +265,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (!string.IsNullOrEmpty(selectedFile))
             {
-                PasteAIModelPathTextBox.Text = selectedFile;
                 if (ViewModel?.PasteAIProviderDraft is not null)
                 {
                     ViewModel.PasteAIProviderDraft.ModelPath = selectedFile;
                 }
+            }
+        }
+
+        private void BrowseCustomActionModel_Click(object sender, RoutedEventArgs e)
+        {
+            string selectedFile = PickFileDialog(
+                "Model Files\0*.onnx;*.zip;*.model\0All Files\0*.*\0",
+                "Select Model File",
+                ViewModel?.CustomModelStoragePath);
+
+            if (string.IsNullOrEmpty(selectedFile))
+            {
+                return;
+            }
+
+            if (CustomActionDialog?.DataContext is AdvancedPasteCustomAction action)
+            {
+                action.CustomModelPath = NormalizeCustomModelSelectionPath(selectedFile);
+                RefreshCustomActionModelOptions(action);
+            }
+        }
+
+        private void BrowseCustomModelStoragePath_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            string selectedFolder = ShellGetFolder.GetFolderDialogWithFlags(hwnd, ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE);
+
+            if (!string.IsNullOrEmpty(selectedFolder) && ViewModel is not null)
+            {
+                ViewModel.CustomModelStoragePath = selectedFolder;
+                RefreshCustomActionModelOptions(CustomActionDialog?.DataContext as AdvancedPasteCustomAction);
             }
         }
 
@@ -291,6 +330,121 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             return null;
+        }
+
+        private string NormalizeCustomModelSelectionPath(string selectedFile)
+        {
+            if (string.IsNullOrWhiteSpace(selectedFile))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var fullSelection = Path.GetFullPath(selectedFile);
+                var storagePath = ViewModel?.CustomModelStoragePath;
+
+                if (!string.IsNullOrWhiteSpace(storagePath))
+                {
+                    var fullStorage = Path.GetFullPath(storagePath);
+                    if (fullSelection.StartsWith(fullStorage, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var relative = Path.GetRelativePath(fullStorage, fullSelection);
+                        if (!string.IsNullOrEmpty(relative) && !relative.StartsWith("..", StringComparison.Ordinal))
+                        {
+                            return relative;
+                        }
+                    }
+                }
+
+                return fullSelection;
+            }
+            catch (Exception)
+            {
+                return selectedFile;
+            }
+        }
+
+        private void RefreshCustomActionModelOptions(AdvancedPasteCustomAction action)
+        {
+            var options = new List<string>();
+            var storageRoot = GetCustomModelStorageRoot();
+
+            if (!string.IsNullOrWhiteSpace(storageRoot) && Directory.Exists(storageRoot))
+            {
+                try
+                {
+                    foreach (var file in Directory.EnumerateFiles(storageRoot, "*.onnx", SearchOption.AllDirectories))
+                    {
+                        var option = NormalizeCustomModelSelectionPath(file);
+                        if (!string.IsNullOrWhiteSpace(option))
+                        {
+                            options.Add(option);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Enumeration failures are non-fatal; leave the list empty and allow manual selection.
+                }
+            }
+
+            if (action?.UseCustomModel == true && !string.IsNullOrWhiteSpace(action.CustomModelPath))
+            {
+                options.Add(action.CustomModelPath);
+            }
+
+            var uniqueOptions = options
+                .Where(option => !string.IsNullOrWhiteSpace(option))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(option => option, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            _customModelOptions.Clear();
+            foreach (var option in uniqueOptions)
+            {
+                _customModelOptions.Add(option);
+            }
+
+            if (action?.UseCustomModel == true && string.IsNullOrWhiteSpace(action.CustomModelPath) && _customModelOptions.Count > 0)
+            {
+                action.CustomModelPath = _customModelOptions[0];
+            }
+        }
+
+        private string GetCustomModelStorageRoot()
+        {
+            var path = ViewModel?.CustomModelStoragePath;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                path = Environment.ExpandEnvironmentVariables(path.Trim());
+                return Path.GetFullPath(path);
+            }
+            catch (Exception)
+            {
+                return path;
+            }
+        }
+
+        private void AdvancedPasteViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (string.Equals(e.PropertyName, nameof(AdvancedPasteViewModel.CustomModelStoragePath), StringComparison.Ordinal))
+            {
+                RefreshCustomActionModelOptions(CustomActionDialog?.DataContext as AdvancedPasteCustomAction);
+            }
+        }
+
+        private void CustomActionUseCustomModel_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (CustomActionDialog?.DataContext is AdvancedPasteCustomAction action && action.UseCustomModel)
+            {
+                RefreshCustomActionModelOptions(action);
+            }
         }
 
         private void ShowApiKeySavedMessage(string configType)
@@ -1002,7 +1156,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 FoundryLocalPicker.LoadRequested -= FoundryLocalPicker_LoadRequested;
             }
 
-            ViewModel?.Dispose();
+            if (ViewModel is not null)
+            {
+                ViewModel.PropertyChanged -= AdvancedPasteViewModel_PropertyChanged;
+                ViewModel.Dispose();
+            }
 
             _disposed = true;
             GC.SuppressFinalize(this);

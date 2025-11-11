@@ -25,6 +25,8 @@ namespace AdvancedPaste.Settings
 
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
+        public string CustomModelStoragePath { get; }
+
         public event EventHandler Changed;
 
         Task SetActiveAIProviderAsync(string providerId);

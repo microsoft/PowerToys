@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Models;
 
@@ -32,12 +33,13 @@ public sealed class PasteFormat
             IsSavedQuery = false,
         };
 
-    public static PasteFormat CreateCustomAIFormat(PasteFormats format, string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled) =>
+    public static PasteFormat CreateCustomAIFormat(PasteFormats format, string name, string prompt, bool isSavedQuery, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, AdvancedPasteCustomAction customAction = null) =>
         new(format, clipboardFormats, isAIServiceEnabled)
         {
             Name = name,
             Prompt = prompt,
             IsSavedQuery = isSavedQuery,
+            CustomAction = customAction,
         };
 
     public PasteFormatMetadataAttribute Metadata => MetadataDict[Format];
@@ -51,6 +53,8 @@ public sealed class PasteFormat
     public string Prompt { get; private init; }
 
     public bool IsSavedQuery { get; private init; }
+
+    public AdvancedPasteCustomAction CustomAction { get; private init; }
 
     public bool IsEnabled { get; private init; }
 

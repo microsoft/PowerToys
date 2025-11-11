@@ -55,6 +55,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public PasteAIConfiguration PasteAIConfiguration => _configuration;
 
+    public string CustomModelStoragePath => AdvancedPasteProperties.GetDefaultCustomModelStoragePath();
+
     public event EventHandler Changed;
 
     public Task SetActiveAIProviderAsync(string providerId)
