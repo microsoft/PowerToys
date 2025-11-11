@@ -259,7 +259,7 @@
                                         Maximum="90"
                                         Minimum="-90"
                                         ValueChanged="LatLonBox_ValueChanged"
-                                        Value="{x:Bind ViewModel.Latitude, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}" />
+                                        Value="{x:Bind ViewModel.LocationPanelLatitude, Mode=TwoWay}" />
                                     <NumberBox
                                         x:Name="LongitudeBox"
                                         x:Uid="LightSwitch_LongitudeBox"
@@ -268,7 +268,7 @@
                                         Maximum="180"
                                         Minimum="-180"
                                         ValueChanged="LatLonBox_ValueChanged"
-                                        Value="{x:Bind ViewModel.Longitude, Mode=TwoWay, Converter={StaticResource StringToDoubleConverter}}" />
+                                        Value="{x:Bind ViewModel.LocationPanelLongitude, Mode=TwoWay}" />
                                     <Button
                                         x:Name="SyncButton"
                                         x:Uid="LightSwitch_FindLocationAutomation"

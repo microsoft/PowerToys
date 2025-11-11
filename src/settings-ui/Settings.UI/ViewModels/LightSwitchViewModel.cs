@@ -407,6 +407,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private double _locationPanelLatitude;
+        private double _locationPanelLongitude;
+
+        public double LocationPanelLatitude
+        {
+            get => _locationPanelLatitude;
+            set
+            {
+                if (_locationPanelLatitude != value)
+                {
+                    _locationPanelLatitude = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(LocationPanelLightTime));
+                }
+            }
+        }
+
+        public double LocationPanelLongitude
+        {
+            get => _locationPanelLongitude;
+            set
+            {
+                if (_locationPanelLongitude != value)
+                {
+                    _locationPanelLongitude = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         private int _locationPanelLightTime;
         private int _locationPanelDarkTime;
 

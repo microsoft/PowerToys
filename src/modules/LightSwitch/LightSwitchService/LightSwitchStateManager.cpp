@@ -120,6 +120,7 @@ static std::pair<int, int> update_sun_times(auto& settings)
 // Internal: decide what should happen now
 void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 {
+    LightSwitchSettings::instance().LoadSettings();
     const auto& _currentSettings = LightSwitchSettings::settings();
     auto now = GetNowMinutes();
 
@@ -149,6 +150,11 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
             _state.lastEvaluatedDay = st.wDay;
             _state.effectiveLightMinutes = newLightTime + _currentSettings.sunrise_offset;
             _state.effectiveDarkMinutes = newDarkTime + _currentSettings.sunset_offset;
+        }
+        else
+        {
+            _state.effectiveLightMinutes = _currentSettings.lightTime + _currentSettings.sunrise_offset;
+            _state.effectiveDarkMinutes = _currentSettings.darkTime + _currentSettings.sunset_offset;
         }
     }
     else if (_currentSettings.scheduleMode == ScheduleMode::FixedHours)
@@ -199,6 +205,17 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
     bool appsNeedsToChange = _currentSettings.changeApps && (_state.isAppsLightActive != shouldBeLight);
     bool systemNeedsToChange = _currentSettings.changeSystem && (_state.isSystemLightActive != shouldBeLight);
+
+    Logger::debug(
+        L"[LightSwitchStateManager] now = {:02d}:{:02d}, light boundary = {:02d}:{:02d} ({}), dark boundary = {:02d}:{:02d} ({})",
+        now / 60,
+        now % 60,
+        _state.effectiveLightMinutes / 60,
+        _state.effectiveLightMinutes % 60,
+        _state.effectiveLightMinutes,
+        _state.effectiveDarkMinutes / 60,
+        _state.effectiveDarkMinutes % 60,
+        _state.effectiveDarkMinutes);
 
     Logger::debug("should be light = {}, apps needs change = {}, system needs change = {}",
                   shouldBeLight ? "true" : "false",

@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel = new LightSwitchViewModel(darkSettings, this.sendConfigMsg);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            this.LoadSettings();
+            this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
 
             DataContext = this.ViewModel;
 
@@ -120,6 +120,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
+
+                ViewModel.LocationPanelLatitude = latitude;
+                ViewModel.LocationPanelLongitude = longitude;
 
                 var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
@@ -284,22 +287,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void LoadSettings()
+        private void LoadSettings(SettingsRepository<GeneralSettings> generalSettingsRepository, SettingsRepository<LightSwitchSettings> moduleSettingsRepository)
         {
-            if (this.generalSettingsRepository != null)
+            if (generalSettingsRepository != null)
             {
-                if (this.moduleSettingsRepository != null)
+                if (moduleSettingsRepository != null)
                 {
-                    UpdateViewModelSettings(this.moduleSettingsRepository.SettingsConfig, this.generalSettingsRepository.SettingsConfig);
+                    UpdateViewModelSettings(moduleSettingsRepository.SettingsConfig, generalSettingsRepository.SettingsConfig);
                 }
                 else
                 {
-                    throw new ArgumentNullException(nameof(this.moduleSettingsRepository));
+                    throw new ArgumentNullException(nameof(moduleSettingsRepository));
                 }
             }
             else
             {
-                throw new ArgumentNullException(nameof(this.generalSettingsRepository));
+                throw new ArgumentNullException(nameof(generalSettingsRepository));
             }
         }
 
@@ -332,7 +335,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.suppressViewModelUpdates = true;
 
                 this.moduleSettingsRepository.ReloadSettings();
-                this.LoadSettings();
+                this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
 
                 this.suppressViewModelUpdates = false;
             });
