@@ -489,7 +489,7 @@ Mouse Jump:
     - [ ] 45. Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
-## [Light Switch](tests-checklist-template.md#light-switch)
+## [Light Switch](../tests-checklist-template.md#light-switch)
 UI Validation:
 - [ ] Module turns service off and on appropriately
 - [ ] Modes are able to be switched and the appropriate UI shows for each
