@@ -66,7 +66,10 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\ColorPalette.xaml" />
+    <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
+    <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
@@ -75,10 +78,12 @@
     <None Remove="Pages\Settings\ExtensionsPage.xaml" />
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
+    <None Remove="Settings\AppearancePage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
+    <None Remove="Styles\Theme.Normal.xaml" />
   </ItemGroup>
 
 
@@ -194,6 +199,39 @@
     <Content Update="Assets\WinGetLogo.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\CommandPalettePreview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ScreenPreview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ColorPalette.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Styles\Theme.Colorful.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\Theme.Normal.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Settings\AppearancePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

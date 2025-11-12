@@ -140,6 +140,7 @@ BITSPIXEL
 bla
 BLACKFRAME
 BLENDFUNCTION
+blittable
 Blockquotes
 Blt
 BLURBEHIND
@@ -251,6 +252,7 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+colorref
 comctl
 comdlg
 comexp
@@ -1862,8 +1864,10 @@ Uniquifies
 unitconverter
 unittests
 UNLEN
+Uninitializes
 UNORM
 unremapped
+Unsubscribes
 unvirtualized
 unwide
 unzoom
