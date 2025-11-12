@@ -76,6 +76,7 @@
   <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+    <CAExcludePath>$(MSBuildThisFileDirectory)\deps\;$(MSBuildThisFileDirectory)\packages\;$(CAExcludePath)</CAExcludePath>
   </PropertyGroup>
 
   <!-- C++ source compile-specific things for all configurations -->
