@@ -1638,6 +1638,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnx
 SMALLICON
 smartphone
 smileys
