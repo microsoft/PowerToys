@@ -40,7 +40,7 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_ENABLED[] = L"enabled";
     const wchar_t JSON_KEY_HOTKEY_ENABLED[] = L"hotkey_enabled";
-    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
     const wchar_t JSON_KEY_WIN[] = L"win";
     const wchar_t JSON_KEY_ALT[] = L"alt";
     const wchar_t JSON_KEY_CTRL[] = L"ctrl";
@@ -107,6 +107,7 @@ private:
                         m_activation_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                         m_activation_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                         m_activation_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                        m_activation_hotkey.isShown = true;
                         Logger::trace(L"Parsed activation hotkey: Win={} Ctrl={} Alt={} Shift={} Key={}",
                                      m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
                                      m_activation_hotkey.shift, m_activation_hotkey.key);
@@ -114,12 +115,14 @@ private:
                     else
                     {
                         Logger::info("ActivationShortcut not found in settings, using default Win+Alt+M");
+                        m_activation_hotkey.isShown = true;
                     }
                 }
             }
             catch (...)
             {
                 Logger::error("Failed to parse PowerDisplay activation shortcut, using default Win+Alt+M");
+                m_activation_hotkey.isShown = true;
             }
         }
     }

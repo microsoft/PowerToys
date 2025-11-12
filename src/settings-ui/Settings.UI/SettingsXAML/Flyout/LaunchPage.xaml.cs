@@ -141,6 +141,10 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case ModuleType.PowerDisplay: // Launch PowerDisplay
+                    Views.ShellPage.SendDefaultIPCMessage("{\"action\":{\"PowerDisplay\":{\"action_name\":\"Launch\", \"value\":\"\"}}}");
+                    break;
+
                 default:
                     moduleRun = false;
                     break;
