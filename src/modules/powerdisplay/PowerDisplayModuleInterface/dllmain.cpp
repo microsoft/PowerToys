@@ -233,9 +233,9 @@ public:
             parse_activation_hotkey(values);
             values.save_to_settings_file();
 
-            // Notify PowerDisplay.exe that settings have been updated
-            auto message = std::format(L"{{\"action\":\"settings_updated\",\"config\":{}}}", config);
-            m_process_manager.send_message_to_powerdisplay(message);
+            // Notify PowerDisplay.exe that settings have been updated (signal only, no config data)
+            // PowerDisplay will read the updated settings.json file itself
+            m_process_manager.send_message_to_powerdisplay(L"{\"action\":\"settings_updated\"}");
         }
         catch (std::exception&)
         {

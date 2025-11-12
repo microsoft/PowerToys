@@ -66,25 +66,19 @@ void PowerDisplayProcessManager::send_message_to_powerdisplay(const std::wstring
             try
             {
                 const auto formatted = std::format(L"{}\r\n", message);
-                
-                // Convert wide string to UTF-8 for C# interop
-                int utf8_size = WideCharToMultiByte(CP_UTF8, 0, formatted.c_str(), -1, nullptr, 0, nullptr, nullptr);
-                if (utf8_size > 0)
-                {
-                    std::string utf8_msg(static_cast<size_t>(utf8_size) - 1, '\0'); // -1 to exclude null terminator
-                    WideCharToMultiByte(CP_UTF8, 0, formatted.c_str(), -1, &utf8_msg[0], utf8_size, nullptr, nullptr);
 
-                    const DWORD bytes_to_write = static_cast<DWORD>(utf8_msg.length());
-                    DWORD bytes_written = 0;
-                    
-                    if (FAILED(m_write_pipe->Write(utf8_msg.c_str(), bytes_to_write, &bytes_written)))
-                    {
-                        Logger::error(L"Failed to write message to PowerDisplay pipe");
-                    }
-                    else
-                    {
-                        Logger::trace(L"Sent message to PowerDisplay: {}", message);
-                    }
+                // Match WinUI side which reads the pipe using UTF-16 (Encoding.Unicode)
+                const CString payload(formatted.c_str());
+                const DWORD bytes_to_write = static_cast<DWORD>(payload.GetLength() * sizeof(wchar_t));
+                DWORD bytes_written = 0;
+
+                if (FAILED(m_write_pipe->Write(payload, bytes_to_write, &bytes_written)))
+                {
+                    Logger::error(L"Failed to write message to PowerDisplay pipe");
+                }
+                else
+                {
+                    Logger::trace(L"Sent message to PowerDisplay: {}", message);
                 }
             }
             catch (...)
