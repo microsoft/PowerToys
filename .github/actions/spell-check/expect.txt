@@ -22,6 +22,7 @@ ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
+adjacents
 ADMINS
 adml
 admx
@@ -34,6 +35,7 @@ AFX
 AGGREGATABLE
 AHK
 AHybrid
+AIUI
 akv
 ALarger
 ALIGNRIGHT
@@ -63,6 +65,7 @@ APIIs
 Apm
 APPBARDATA
 APPEXECLINK
+appext
 APPLICATIONFRAMEHOST
 appmanifest
 APPMODEL
@@ -97,7 +100,7 @@ atl
 ATX
 ATRIOX
 aumid
-Authenticode
+authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -111,6 +114,9 @@ AValid
 AWAYMODE
 azcliversion
 azman
+azureaiinference
+azureinference
+azureopenai
 bbwe
 BCIE
 bck
@@ -142,6 +148,7 @@ bmi
 BNumber
 BODGY
 BOklab
+Bootstrappers
 BOOTSTRAPPERINSTALLFOLDER
 BOTTOMALIGN
 boxmodel
@@ -169,14 +176,18 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
+Carlseibert
 Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
 CAtl
+CBN
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -199,6 +210,7 @@ CIBUILD
 cidl
 CIELCh
 cim
+claude
 CImage
 cla
 CLASSDC
@@ -231,6 +243,7 @@ CODENAME
 codereview
 Codespaces
 Coen
+cognitiveservices
 COINIT
 colid
 colorconv
@@ -245,6 +258,7 @@ cominterop
 commandnotfound
 commandpalette
 compmgmt
+COMPOSITIONDISABLED
 COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
@@ -277,6 +291,7 @@ cpptools
 cppvsdbg
 cppwinrt
 createdump
+creativecommons
 CREATEPROCESS
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -300,6 +315,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
+CURSORWRAP
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -339,6 +355,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+dfx
 Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -398,6 +415,9 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downsampled
+downsampling
+Downsampled
 downscale
 DPICHANGED
 DPIs
@@ -413,7 +433,7 @@ DROPFILES
 DSTINVERT
 DString
 DSVG
-DTo
+dto
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -447,7 +467,6 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
-ekus
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -512,6 +531,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
 fdx
 fesf
@@ -543,6 +563,7 @@ FIXEDSYS
 flac
 flyouts
 FMask
+foundrylocal
 fmtid
 FOF
 FOFX
@@ -581,6 +602,7 @@ getfilesiginforedist
 geolocator
 GETHOTKEY
 GETICON
+GETLBTEXT
 GETMINMAXINFO
 GETNONCLIENTMETRICS
 GETPROPERTYSTOREFLAGS
@@ -588,6 +610,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+GIFs
 gitmodules
 GHND
 GMEM
@@ -598,6 +621,7 @@ GPOCA
 gpp
 gpu
 gradians
+grctlext
 Gridcustomlayout
 GSM
 gtm
@@ -607,6 +631,8 @@ GValue
 gwl
 GWLP
 GWLSTYLE
+googleai
+googlegemini
 hangeul
 Hanzi
 Hardlines
@@ -695,6 +721,7 @@ HTCLIENT
 hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
+hutchinsoniana
 HVal
 HValue
 Hvci
@@ -716,7 +743,9 @@ IDCANCEL
 IDD
 idk
 idl
+IIM
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -733,6 +762,7 @@ Ijwhost
 ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
+IPTC
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
@@ -872,6 +902,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+lon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
@@ -963,6 +994,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 Metadatas
+metadatamatters
 metafile
 mfc
 Mgmt
@@ -1030,6 +1062,7 @@ msiexec
 MSIFASTINSTALL
 MSIHANDLE
 MSIRESTARTMANAGERCONTROL
+MSIs
 msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
@@ -1124,6 +1157,7 @@ nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
+NPU
 NOREDIRECTIONBITMAP
 NOREDRAW
 NOREMOVE
@@ -1159,8 +1193,8 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
-nullref
 nullonfailure
+nullref
 numberbox
 nwc
 ocr
@@ -1183,6 +1217,9 @@ opencode
 OPENFILENAME
 opensource
 openxmlformats
+ollama
+Olllama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1277,6 +1314,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1371,6 +1409,8 @@ pwsz
 pwtd
 QDC
 qit
+QNN
+Qualcomm
 QITAB
 QITABENT
 qoi
@@ -1479,6 +1519,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samsung
 sancov
 SAVEFAILED
 scanled
@@ -1841,6 +1882,7 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
+utm
 UType
 uuidv
 uwp
@@ -1917,6 +1959,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WCT
+WCRAPI
 WDA
 wdm
 wdp
@@ -1930,6 +1973,7 @@ wgpocpl
 WHEREID
 wic
 wifi
+wikimedia
 wikipedia
 WIL
 winapi
@@ -1959,6 +2003,8 @@ WINL
 winlogon
 winmd
 WINNT
+windowsml
+winml
 winres
 winrt
 winsdk
@@ -2024,7 +2070,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 xdf
 XDocument
 XElement
@@ -2042,6 +2090,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2049,6 +2098,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels

@@ -52,8 +52,6 @@ extends:
       name: SHINE-INT-S
       ${{ if eq(parameters.useVSPreview, true) }}:
         demands: ImageOverride -equals SHINE-VS17-Preview
-      ${{ else }}:
-        image: SHINE-VS17-Latest
       os: windows
     sdl:
       tsa:
@@ -75,7 +73,6 @@ extends:
                 name: SHINE-INT-L
                 demands:
                   # Our INT agents have a large disk mounted at P:\
-                  - WorkFolder -equals P:\_work
                   - ${{ if eq(parameters.useVSPreview, true) }}:
                     - ImageOverride -equals SHINE-VS17-Preview
                 os: windows
@@ -126,7 +123,6 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                image: SHINE-VS17-Latest
                 os: windows
               official: true
               codeSign: true
