@@ -156,7 +156,7 @@
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="20"
-            Visibility="{x:Bind ViewModel.ClipboardHasData, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ShowClipboardPreview, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />

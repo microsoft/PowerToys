@@ -60,9 +60,11 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(ClipboardHasDataForCustomAI))]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
         [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
+        [NotifyPropertyChangedFor(nameof(ShowClipboardPreview))]
         private ClipboardFormat _availableClipboardFormats;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowClipboardPreview))]
         private bool _clipboardHistoryEnabled;
 
         [ObservableProperty]
@@ -224,6 +226,8 @@ namespace AdvancedPaste.ViewModels
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
+
+        public bool ShowClipboardPreview => ClipboardHistoryEnabled;
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
