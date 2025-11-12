@@ -651,7 +651,7 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Access Clipboard History</value>
+    <value>Show what's currently on your Clipboard and access your Clipboard history</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
     <value>Clipboard History shows a list of previously copied items.</value>
@@ -4604,7 +4604,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
   <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
-    <value>Automatically close the Advanced Paste window after it loses focus</value>
+    <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
