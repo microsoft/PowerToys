@@ -176,43 +176,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var configuration = properties.PasteAIConfiguration;
-            bool configurationCreated = false;
-
             if (configuration is null)
             {
                 configuration = new PasteAIConfiguration();
                 properties.PasteAIConfiguration = configuration;
-                configurationCreated = true;
             }
 
-            int providerCount = configuration.Providers?.Count ?? 0;
             bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
-            bool needsProviderRecovery = properties.IsAIEnabled && providerCount == 0;
-            bool shouldRunMigration = configurationCreated || hasLegacyProviders || needsProviderRecovery;
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
 
-            PasswordCredential legacyCredential = null;
-
-            if (!shouldRunMigration)
-            {
-                legacyCredential = TryGetLegacyOpenAICredential();
-                shouldRunMigration = legacyCredential is not null;
-            }
-            else
-            {
-                legacyCredential = TryGetLegacyOpenAICredential();
-            }
-
-            if (!shouldRunMigration)
+            if (!hasLegacyProviders && legacyCredential is null)
             {
                 return;
             }
 
-            bool configurationUpdated = configurationCreated;
+            bool configurationUpdated = false;
 
-            configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
+            if (hasLegacyProviders)
+            {
+                configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
+            }
 
             PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null || needsProviderRecovery)
+            if (legacyCredential is not null)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
@@ -225,17 +211,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 RemoveLegacyOpenAICredential();
             }
 
+            bool enabledChanged = false;
             if (!properties.IsAIEnabled && legacyCredential is not null)
             {
                 properties.IsAIEnabled = true;
-                configurationUpdated = true;
-                OnPropertyChanged(nameof(IsAIEnabled));
+                enabledChanged = true;
             }
 
-            if (configurationUpdated)
+            if (configurationUpdated || enabledChanged)
             {
                 SaveAndNotifySettings();
-                OnPropertyChanged(nameof(PasteAIConfiguration));
+
+                if (configurationUpdated)
+                {
+                    OnPropertyChanged(nameof(PasteAIConfiguration));
+                }
+
+                if (enabledChanged)
+                {
+                    OnPropertyChanged(nameof(IsAIEnabled));
+                }
             }
         }
 
