@@ -105,7 +105,7 @@
                             SelectionChanged="CachedModelsComboBox_SelectionChanged">
                             <ComboBox.Header>
                                 <TextBlock>
-                                    <Run Text="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run
+                                    <Run x:Uid="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run
                                         x:Uid="AdvancedPaste_FL_UseCLIToDownloadModels"
                                         FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
