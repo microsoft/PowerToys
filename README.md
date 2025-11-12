@@ -115,7 +115,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - **NEW:** The **Cursor Wrap** utility Cursor Wrap makes it simple to move the mouse from one edge of a display (or set of displays) to the opposite edge of the display stack.
  - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
  - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
- - Peek can now be activated from the command line or through a named pipe for integration with scripts and other tools.
+ - Peek can now be activated from the command line.
 
 ### Advanced Paste
  - Advanced Paste now lets you connect to multiple AI providers instead of being limited to a single OpenAI provider.
@@ -186,7 +186,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Peek
 - Fixed media files remaining locked after preview window closes. Thanks [@daverayment](https://github.com/daverayment)!
-- Added command-line interface for previewing files via CLI or named pipe. Thanks [@prochan2](https://github.com/prochan2)!
+- Added command-line interface for previewing files via CLI. Thanks [@prochan2](https://github.com/prochan2)!
 
 ### PowerRename
 - PowerRename no longer crashes due to a missing resources file.
