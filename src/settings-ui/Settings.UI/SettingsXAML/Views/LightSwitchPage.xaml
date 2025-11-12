@@ -199,10 +199,8 @@
                         <ContentDialog
                             x:Name="LocationDialog"
                             x:Uid="LightSwitch_LocationDialog"
-                            Closed="LocationDialog_Closed"
                             IsPrimaryButtonEnabled="False"
                             IsSecondaryButtonEnabled="True"
-                            Opened="LocationDialog_Opened"
                             PrimaryButtonClick="LocationDialog_PrimaryButtonClick"
                             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
                             <Grid RowSpacing="16">

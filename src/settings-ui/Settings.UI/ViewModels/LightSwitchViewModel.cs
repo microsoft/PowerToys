@@ -562,7 +562,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 SyncButtonInformation = SelectedCity != null
                     ? SelectedCity.City
-                    : $"{Latitude},{Longitude}";
+                    : $"{Latitude}°,{Longitude}°";
 
                 double lat = double.Parse(ModuleSettings.Properties.Latitude.Value, CultureInfo.InvariantCulture);
                 double lon = double.Parse(ModuleSettings.Properties.Longitude.Value, CultureInfo.InvariantCulture);
