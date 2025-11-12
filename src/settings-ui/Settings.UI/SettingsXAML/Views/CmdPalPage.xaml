@@ -10,40 +10,129 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+    <!-- x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png" CmdPal_Activation_GroupSettings     <controls:PageLink x:Uid="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />-->
+    <Grid>
+        <Grid
+            MaxWidth="1000"
+            Padding="16,32,16,16"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!--<Image
+                Width="32"
+                HorizontalAlignment="Center"
+                Source="/Assets/Settings/Icons/CmdPal.png" />-->
+            <TextBlock
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                Style="{StaticResource TitleTextBlockStyle}"
+                Text="Command Palette"
+                TextWrapping="Wrap" />
+            <TextBlock
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                TextAlignment="Center"
+                TextWrapping="Wrap">
+                <Run Text="Find files, launch apps, and do a billion other things with the most extensible quick launcher." />
+                <Hyperlink>
+                    <Run Text="Learn more" />
+                </Hyperlink>
+            </TextBlock>
 
-    <controls:SettingsPageControl x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png">
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="CmdPalEnableCmdPal"
-                        x:Uid="CmdPal_Enable_CmdPal"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="CmdPalActivationShortcut"
-                        x:Uid="CmdPal_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
-                            IsEnabled="False" />
-                        <tkcontrols:SettingsCard.Description>
-                            <HyperlinkButton
-                                x:Name="CmdPalSettingsDeeplink"
-                                x:Uid="CmdPal_DeeplinkContent"
-                                Click="CmdPalSettingsDeeplink_Click" />
-                        </tkcontrols:SettingsCard.Description>
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+
+            <tkcontrols:SettingsCard
+                Name="CmdPalEnableCmdPal"
+                x:Uid="CmdPal_Enable_CmdPal"
+                Grid.Row="4"
+                MinWidth="480"
+                Margin="64,0,0,0"
+                HorizontalAlignment="Center"
+                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
+                <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+            </tkcontrols:SettingsCard>
+
+
+            <StackPanel
+                Grid.Row="4"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    Content="Launch"
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                    Style="{StaticResource AccentButtonStyle}" />
+                <controls:ShortcutWithTextLabelControl
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                    Keys="{x:Bind Path=ViewModel.Hotkey.GetKeysList(), Mode=OneWay}"
+                    LabelPlacement="Before"
+                    Text="or use" />
             </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
+            <HyperlinkButton
+                x:Name="CmdPalSettingsDeeplink"
+                Grid.Row="5"
+                HorizontalAlignment="Center"
+                Click="CmdPalSettingsDeeplink_Click"
+                Content="Open Command Palette settings"
+                FontSize="12"
+                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />
-        </controls:SettingsPageControl.PrimaryLinks>
-    </controls:SettingsPageControl>
+
+            <tkcontrols:OpacityMaskView
+                Grid.Row="3"
+                Margin="-16,16,-16,0"
+                HorizontalAlignment="Stretch">
+                <tkcontrols:OpacityMaskView.OpacityMask>
+                    <Rectangle>
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0" Color="White" />
+                                <GradientStop Offset="1" Color="Transparent" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </tkcontrols:OpacityMaskView.OpacityMask>
+                <Image
+                    Height="480"
+                    HorizontalAlignment="Stretch"
+                    Source="/Assets/Settings/Modules/CmdPal.png"
+                    Stretch="UniformToFill" />
+            </tkcontrols:OpacityMaskView>
+
+        </Grid>
+
+
+        <!--<controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+            <tkcontrols:SettingsCard
+                Name="CmdPalEnableCmdPal"
+                x:Uid="CmdPal_Enable_CmdPal"
+                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}" />
+        </controls:GPOInfoControl>-->
+
+
+        <!--<tkcontrols:SettingsCard
+            Name="CmdPalActivationShortcut"
+            x:Uid="CmdPal_ActivationShortcut"
+            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+            <controls:ShortcutControl
+                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
+                IsEnabled="False" />
+            <tkcontrols:SettingsCard.Description />
+        </tkcontrols:SettingsCard>-->
+    </Grid>
 </local:NavigablePage>
