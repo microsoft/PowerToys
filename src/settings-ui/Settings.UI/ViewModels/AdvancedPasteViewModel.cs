@@ -172,14 +172,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void MigrateLegacyAIEnablement()
         {
-            if (IsOnlineAIModelsDisallowedByGPO)
+            var properties = _advancedPasteSettings?.Properties;
+            if (properties is null)
             {
                 return;
             }
 
-            var properties = _advancedPasteSettings?.Properties;
-            if (properties is null)
+            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
+            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
+
+            if (IsOnlineAIModelsDisallowedByGPO)
             {
+                if (legacyAdvancedAIConsumed)
+                {
+                    SaveAndNotifySettings();
+                }
+
                 return;
             }
 
@@ -193,7 +201,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
             PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
 
-            if (!hasLegacyProviders && legacyCredential is null)
+            if (!hasLegacyProviders && legacyCredential is null && !legacyAdvancedAIConsumed)
             {
                 return;
             }
@@ -206,11 +214,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null)
+            if (legacyCredential is not null || hasLegacyProviders || legacyAdvancedAIConsumed)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
                 configurationUpdated |= ensureResult.Updated;
+            }
+
+            if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
+            {
+                openAIProvider.EnableAdvancedAI = legacyAdvancedAIEnabled;
+                configurationUpdated = true;
             }
 
             if (legacyCredential is not null && openAIProvider is not null)
@@ -226,7 +240,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 enabledChanged = true;
             }
 
-            if (configurationUpdated || enabledChanged)
+            bool shouldPersist = configurationUpdated || enabledChanged || legacyAdvancedAIConsumed;
+
+            if (shouldPersist)
             {
                 SaveAndNotifySettings();
 

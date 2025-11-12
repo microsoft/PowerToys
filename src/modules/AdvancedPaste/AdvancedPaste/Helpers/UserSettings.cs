@@ -173,9 +173,11 @@ namespace AdvancedPaste.Settings
             }
 
             bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
+            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
+            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
             PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
 
-            if (!hasLegacyProviders && legacyCredential is null)
+            if (!hasLegacyProviders && legacyCredential is null && !legacyAdvancedAIConsumed)
             {
                 return false;
             }
@@ -188,11 +190,17 @@ namespace AdvancedPaste.Settings
             }
 
             PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null)
+            if (legacyCredential is not null || hasLegacyProviders || legacyAdvancedAIConsumed)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
                 configurationUpdated |= ensureResult.Updated;
+            }
+
+            if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
+            {
+                openAIProvider.EnableAdvancedAI = legacyAdvancedAIEnabled;
+                configurationUpdated = true;
             }
 
             if (legacyCredential is not null && openAIProvider is not null)
@@ -208,7 +216,7 @@ namespace AdvancedPaste.Settings
                 enabledUpdated = true;
             }
 
-            return configurationUpdated || enabledUpdated;
+            return configurationUpdated || enabledUpdated || legacyAdvancedAIConsumed;
         }
 
         private static PasswordCredential TryGetLegacyOpenAICredential()
