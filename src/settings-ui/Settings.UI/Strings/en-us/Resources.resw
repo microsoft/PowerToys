@@ -708,15 +708,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_Google_PrivacyLabel" xml:space="preserve">
     <value>Google Privacy Policy</value>
   </data>
-  <data name="AdvancedPaste_Anthropic_LegalDescription" xml:space="preserve">
-    <value>Your API key connects directly to Anthropic services. By setting up this provider, you agree to comply with Anthropic's usage policies and data handling practices.</value>
-  </data>
-  <data name="AdvancedPaste_Anthropic_TermsLabel" xml:space="preserve">
-    <value>Anthropic Terms of Service</value>
-  </data>
-  <data name="AdvancedPaste_Anthropic_PrivacyLabel" xml:space="preserve">
-    <value>Anthropic Privacy Policy</value>
-  </data>
   <data name="AdvancedPaste_Mistral_LegalDescription" xml:space="preserve">
     <value>Your API key connects directly to Mistral services. By setting up this provider, you agree to comply with Mistral's usage policies and data handling practices.</value>
   </data>
@@ -725,15 +716,6 @@ Please review the placeholder content that represents the final terms and usage 
   </data>
   <data name="AdvancedPaste_Mistral_PrivacyLabel" xml:space="preserve">
     <value>Mistral Privacy Policy</value>
-  </data>
-  <data name="AdvancedPaste_AmazonBedrock_LegalDescription" xml:space="preserve">
-    <value>Your API key connects directly to Amazon services. By setting up this provider, you agree to comply with Amazon's usage policies and data handling practices.</value>
-  </data>
-  <data name="AdvancedPaste_AmazonBedrock_TermsLabel" xml:space="preserve">
-    <value>AWS Service Terms</value>
-  </data>
-  <data name="AdvancedPaste_AmazonBedrock_PrivacyLabel" xml:space="preserve">
-    <value>AWS Privacy Notice</value>
   </data>
   <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
     <value>Ollama Terms of Service</value>
@@ -2695,9 +2677,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
-  </data>	
-
-  <!-- CursorWrap Module -->
+  </data>
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
     <value>Enable CursorWrap</value>
   </data>
@@ -2707,8 +2687,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
-	
-  <!-- Activation Shortcut -->
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
@@ -2718,19 +2696,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
   </data>
-	
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
-  </data>	
-
-  <!-- Auto-activate -->
+  </data>
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
     <value>Auto-activate on startup</value>
   </data>
   <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
     <value>Automatically activate on utility startup</value>
-  </data>	
-	
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -5483,16 +5457,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Select a location</value>
   </data>
   <data name="LightSwitch_LocationDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Select</value>
+    <value>Save</value>
   </data>
   <data name="LightSwitch_LocationDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="LightSwitch_GetCurrentLocation.Text" xml:space="preserve">
-    <value>Get current location</value>
-  </data>
   <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
-    <value>To calculate the sunrise and sunset, Light Switch needs a location.</value>
+    <value>Detect your location automatically or enter it manually to calculate sunrise and sunset times.</value>
   </data>
   <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5500,8 +5471,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_SunsetText.Text" xml:space="preserve">
     <value>Sunset</value>
   </data>
-  <data name="LightSwitch_LocationTooltip.Text" xml:space="preserve">
-    <value>Location</value>
+  <data name="LightSwitch_LatitudeBox.Header" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="LightSwitch_LongitudeBox.Header" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="LightSwitch_FindLocation.Text" xml:space="preserve">
+    <value>Detect location</value>
+  </data>
+  <data name="LightSwitch_FindLocationAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Detect location</value>
   </data>
   <data name="LightSwitch_SunriseTooltip.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5585,7 +5565,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ShortcutConflictControl_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut conflicts</value>
-  </data>	
+  </data>
   <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
     <value>No conflicts found</value>
   </data>
@@ -5695,5 +5675,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Hosts_Backup_CountInput_Header" xml:space="preserve">
     <value>Backup count</value>
+  </data>
+  <data name="LightSwitch_SetLocationButton.Content" xml:space="preserve">
+    <value>Set Location</value>
   </data>
 </root>

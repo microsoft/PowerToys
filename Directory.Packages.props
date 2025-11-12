@@ -51,10 +51,8 @@
     <PackageVersion Include="Microsoft.AI.Foundry.Local" Version="0.3.0" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.66.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.66.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Amazon" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" Version="1.66.0-beta" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.66.0-alpha" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.66.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.MistralAI" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
