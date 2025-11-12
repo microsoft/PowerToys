@@ -270,9 +270,9 @@
                                 <StackPanel Spacing="8">
                                     <TextBlock TextWrapping="Wrap">
                                         <Run x:Uid="AIMistakeNote" /><LineBreak /><Run
+                                            x:Uid="CustomEndpointWarning"
                                             FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="You are using a custom endpoint. Verify all answers." />
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </TextBlock>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <HyperlinkButton

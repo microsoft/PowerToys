@@ -359,6 +359,13 @@
   </data>
   <data name="Relative_Date_TimeFormat" xml:space="preserve">
     <value>{0}, {1}</value>
-    <comment>(e.g., “10/20/2025, 17:05” in the user’s locale)</comment>
+    <comment>(e.g., "10/20/2025, 17:05" in the user's locale)</comment>
+  </data>
+  <data name="CustomEndpointWarning" xml:space="preserve">
+    <value>You are using a custom endpoint. Verify all answers.</value>
+  </data>
+  <data name="LocalModelBadge" xml:space="preserve">
+    <value>Local</value>
+    <comment>Badge label displayed next to local AI model providers (e.g., Ollama, Foundry Local) to indicate the model runs locally</comment>
   </data>
 </root>
