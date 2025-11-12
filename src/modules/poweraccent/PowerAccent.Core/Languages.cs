@@ -230,7 +230,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
-                LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
+                LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡", "₊", "⁺" },
                 LetterKey.VK_BACKSLASH => new[] { "`", "~" },
                 _ => Array.Empty<string>(),
             };
@@ -539,7 +539,6 @@ namespace PowerAccent.Core
                 LetterKey.VK_P => new[] { "π" },
                 LetterKey.VK_S => new[] { "$" },
                 LetterKey.VK_U => new[] { "ú" },
-                LetterKey.VK_COMMA => new[] { "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -712,7 +711,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_Y => new[] { "ױ" },
                 LetterKey.VK_COMMA => new[] { "”", "’", "״", "׳" },
                 LetterKey.VK_PERIOD => new[] { "\u05ab", "\u05bd", "\u05bf" },
-                LetterKey.VK_MINUS => new[] { "–", "־" },
+                LetterKey.VK_MINUS => new[] { "־" },
                 _ => Array.Empty<string>(),
             };
         }
