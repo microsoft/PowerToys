@@ -4,27 +4,30 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <format>
+#include <wil/stl.h>
+#include <wil/win32_helpers.h>
+
 void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
-    std::string reportFilename{ "PowerToysReport_" };
-    reportFilename += timeutil::format_as_local("%F-%H-%M-%S", timeutil::now());
-    reportFilename += ".zip";
-    auto finalReportFullPath{ zipPath / reportFilename };
+    const auto reportFilename{
+        std::format("PowerToysReport_{0}.zip",
+                    timeutil::format_as_local("%F-%H-%M-%S", timeutil::now()))
+    };
+    const auto finalReportFullPath{ zipPath / reportFilename };
 
-    std::string tempReportFilename{ reportFilename + ".tmp" };
-    auto tempReportFullPath{ zipPath / tempReportFilename };
+    const auto tempReportFilename{ reportFilename + ".tmp" };
+    const auto tempReportFullPath{ zipPath / tempReportFilename };
 
-    // tar -c --format=zip -f "reportzipfile" *
-    const std::string executable{ R"(c:\windows\system32\tar.exe)" };
-    std::string commandline{ executable + R"( -c --format=zip -f ")" };
-    commandline += tempReportFullPath.string();
-    commandline += R"(" *)";
+    // tar -c --format=zip -f "ReportFile.zip" *
+    const auto executable{ wil::ExpandEnvironmentStringsW<std::wstring>(LR"(%WINDIR%\System32\tar.exe)") };
+    auto commandline{ std::format(LR"("{0}" -c --format=zip -f "{1}" *)", executable, tempReportFullPath.wstring()) };
 
-    const auto folderPathAsString{ folderPath.lexically_normal().string() };
+    const auto folderPathAsString{ folderPath.lexically_normal().wstring() };
 
-    PROCESS_INFORMATION pi{};
-    STARTUPINFOA si{ .cb = sizeof(STARTUPINFOA) };
-    if (!CreateProcessA(executable.c_str(),
+    wil::unique_process_information pi;
+    STARTUPINFOW si{ .cb = sizeof(STARTUPINFOW) };
+    if (!CreateProcessW(executable.c_str(),
                         commandline.data() /* must be mutable */,
                         nullptr,
                         nullptr,
