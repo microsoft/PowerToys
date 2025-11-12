@@ -15,7 +15,8 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
-    private static readonly NoOpCommand _baseCommandWithId = new() { Id = "com.microsoft.indexer.fallback" };
+    private const string _id = "com.microsoft.cmdpal.builtin.indexer.fallback";
+    private static readonly NoOpCommand _baseCommandWithId = new() { Id = _id };
 
     private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
 
@@ -26,7 +27,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     private Func<string, bool> _suppressCallback;
 
     public FallbackOpenFileItem()
-        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title, _id)
     {
         Title = string.Empty;
         Subtitle = string.Empty;

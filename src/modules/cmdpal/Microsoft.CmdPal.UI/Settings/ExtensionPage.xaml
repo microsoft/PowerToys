@@ -37,6 +37,13 @@
                 x:Key="BoolToOptionConverter"
                 FalseValue="1"
                 TrueValue="0" />
+            <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
+            <Flyout
+                x:Name="FallbackRankerFlyout"
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
+                <cpcontrols:FallbackRanker x:Name="FallbackRanker" />
+            </Flyout>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -132,23 +139,45 @@
                                     Layout="{StaticResource VerticalStackLayout}"
                                     Visibility="{x:Bind ViewModel.HasFallbackCommands}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
-                                            <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
-                                                <controls:SettingsCard.HeaderIcon>
+                                        <DataTemplate x:DataType="viewModels:FallbackSettingsViewModel">
+                                            <controls:SettingsExpander
+                                                Grid.Column="1"
+                                                Header="{x:Bind DisplayName, Mode=OneWay}"
+                                                IsExpanded="False">
+                                                <controls:SettingsExpander.HeaderIcon>
                                                     <cpcontrols:ContentIcon>
                                                         <cpcontrols:ContentIcon.Content>
                                                             <cpcontrols:IconBox
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
-                                                                SourceKey="{x:Bind InitialIcon, Mode=OneWay}"
+                                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                                 SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
-                                                </controls:SettingsCard.HeaderIcon>
-                                                <!--  Content goes here  -->
-                                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
-                                            </controls:SettingsCard>
+                                                </controls:SettingsExpander.HeaderIcon>
+
+                                                 <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+
+                                                <controls:SettingsExpander.Items>
+                                                    <controls:SettingsCard ContentAlignment="Left">
+                                                        <cpcontrols:CheckBoxWithDescriptionControl
+                                                            x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard"
+                                                            IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
+                                                            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
+                                                    </controls:SettingsCard>
+                                                    <controls:SettingsCard ContentAlignment="Left">
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    Spacing="8">
+                                                            <TextBlock
+                                                                Text="Sort it up yo"/>
+                                                            <Button
+                                                                Click="Button_Click"
+                                                               >Go go gadget sorter</Button>
+                                                        </StackPanel>
+                                                    </controls:SettingsCard>
+                                                </controls:SettingsExpander.Items>
+                                            </controls:SettingsExpander>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>

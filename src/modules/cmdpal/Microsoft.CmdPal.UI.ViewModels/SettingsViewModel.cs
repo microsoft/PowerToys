@@ -5,14 +5,13 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly SettingsModel _settings;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly TopLevelCommandManager _topLevelCommandManager;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -140,12 +139,14 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
+    public ObservableCollection<string> FallbackRanks { get; } = [];
+
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
+    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler)
     {
         _settings = settings;
-        _serviceProvider = serviceProvider;
+        _topLevelCommandManager = topLevelCommandManager;
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
@@ -154,17 +155,18 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             var providerSettings = settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
             CommandProviders.Add(settingsModel);
         }
+
+        FallbackRanks = new ObservableCollection<string>(_settings.FallbackRanks);
 
         Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
     {
-        var manager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        var allProviders = manager.CommandProviders;
+        var allProviders = _topLevelCommandManager.CommandProviders;
         return allProviders;
     }
 

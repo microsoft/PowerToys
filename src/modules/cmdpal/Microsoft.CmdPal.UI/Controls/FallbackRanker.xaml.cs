@@ -5,17 +5,15 @@
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel;
 
-namespace Microsoft.CmdPal.UI.Settings;
+namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class GeneralPage : Page
+public sealed partial class FallbackRanker : UserControl
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+    private SettingsViewModel? viewModel;
 
-    private readonly SettingsViewModel? viewModel;
-
-    public GeneralPage()
+    public FallbackRanker()
     {
         this.InitializeComponent();
 
@@ -24,12 +22,7 @@ public sealed partial class GeneralPage : Page
         viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler);
     }
 
-    public string ApplicationVersion
+    private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
-        get
-        {
-            var version = Package.Current.Id.Version;
-            return $"Version {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        }
     }
 }

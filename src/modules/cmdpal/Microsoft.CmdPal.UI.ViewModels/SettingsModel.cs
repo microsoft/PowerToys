@@ -46,6 +46,8 @@ public partial class SettingsModel : ObservableObject
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
+    public string[] FallbackRanks { get; set; } = [];
+
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
 
     public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
@@ -79,6 +81,25 @@ public partial class SettingsModel : ObservableObject
         }
 
         return settings;
+    }
+
+    public string[] GetGlobalFallbacks()
+    {
+        var globalFallbacks = new HashSet<string>();
+
+        foreach (var provider in ProviderSettings.Values)
+        {
+            foreach (var fallback in provider.FallbackCommands)
+            {
+                var fallbackSetting = fallback.Value;
+                if (fallbackSetting.IsEnabled && fallbackSetting.IncludeInGlobalResults)
+                {
+                    globalFallbacks.Add(fallback.Key);
+                }
+            }
+        }
+
+        return globalFallbacks.ToArray();
     }
 
     public static SettingsModel LoadSettings()
