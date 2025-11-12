@@ -6,14 +6,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
 
@@ -74,18 +71,20 @@ public partial class UWP
             PInvoke.SHCreateStreamOnFileEx(path, STGMREAD, noAttribute, false, null, &stream).ThrowOnFailure();
             using var streamHandle = new SafeComHandle((IntPtr)stream);
 
-            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest =>
+            var appsInManifest = AppxPackageHelper.GetAppsFromManifest(stream);
+
+            foreach (var appInManifest in appsInManifest)
             {
                 using var appHandle = new SafeComHandle(appInManifest);
-                return new UWPApplication((IAppxManifestApplication*)appInManifest, this);
-            }).Where(a =>
-            {
-                var valid =
-                    !string.IsNullOrEmpty(a.UserModelId) &&
-                    !string.IsNullOrEmpty(a.DisplayName) &&
-                    a.AppListEntry != "none";
-                return valid;
-            }).ToList();
+                var uwpApp = new UWPApplication((IAppxManifestApplication*)appInManifest, this);
+
+                if (!string.IsNullOrEmpty(uwpApp.UserModelId) &&
+                    !string.IsNullOrEmpty(uwpApp.DisplayName) &&
+                    uwpApp.AppListEntry != "none")
+                {
+                    Apps.Add(uwpApp);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -95,19 +94,31 @@ public partial class UWP
         }
     }
 
-    // http://www.hanselman.com/blog/GetNamespacesFromAnXMLDocumentWithXPathDocumentAndLINQToXML.aspx
     private static string[] XmlNamespaces(string path)
     {
         var z = XDocument.Load(path);
-        if (z.Root != null)
+        if (z.Root is not null)
         {
-            var namespaces = z.Root.Attributes().
-                Where(a => a.IsNamespaceDeclaration).
-                GroupBy(
-                    a => a.Name.Namespace == XNamespace.None ? string.Empty : a.Name.LocalName,
-                    a => XNamespace.Get(a.Value)).Select(
-                    g => g.First().ToString()).ToArray();
-            return namespaces;
+            var namespaces = new HashSet<string>();
+
+            var attributes = z.Root.Attributes();
+            foreach (var attribute in attributes)
+            {
+                if (attribute.IsNamespaceDeclaration)
+                {
+                    // Extract namespace
+                    var key = attribute.Name.Namespace == XNamespace.None ? string.Empty : attribute.Name.LocalName;
+                    XNamespace ns = XNamespace.Get(attribute.Value);
+                    var nsString = ns.ToString();
+
+                    // Use HashSet to check for duplicates
+                    namespaces.Add(nsString);
+                }
+            }
+
+            var uniqueNamespaces = new string[namespaces.Count];
+            namespaces.CopyTo(uniqueNamespaces);
+            return uniqueNamespaces;
         }
         else
         {
@@ -117,10 +128,13 @@ public partial class UWP
 
     private void InitPackageVersion(string[] namespaces)
     {
-        foreach (var n in _versionFromNamespace.Keys.Where(namespaces.Contains))
+        foreach (var n in _versionFromNamespace.Keys)
         {
-            Version = _versionFromNamespace[n];
-            return;
+            if (Array.IndexOf(namespaces, n) >= 0)
+            {
+                Version = _versionFromNamespace[n];
+                return;
+            }
         }
 
         Version = PackageVersion.Unknown;
@@ -139,7 +153,18 @@ public partial class UWP
 
                 foreach (var app in u.Apps)
                 {
-                    if (AllAppsSettings.Instance.DisabledProgramSources.All(x => x.UniqueIdentifier != app.UniqueIdentifier))
+                    var isDisabled = false;
+
+                    foreach (var disabled in AllAppsSettings.Instance.DisabledProgramSources)
+                    {
+                        if (disabled.UniqueIdentifier == app.UniqueIdentifier)
+                        {
+                            isDisabled = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDisabled)
                     {
                         appsBag.Add(app);
                     }
@@ -156,20 +181,28 @@ public partial class UWP
 
     private static IEnumerable<IPackage> CurrentUserPackages()
     {
-        return PackageManagerWrapper.FindPackagesForCurrentUser().Where(p =>
+        var currentUsersPackages = PackageManagerWrapper.FindPackagesForCurrentUser();
+        ICollection<IPackage> packagesToReturn = [];
+
+        foreach (var pkg in currentUsersPackages)
         {
             try
             {
-                var f = p.IsFramework;
-                var path = p.InstalledLocation;
-                return !f && !string.IsNullOrEmpty(path);
+                var f = pkg.IsFramework;
+                var path = pkg.InstalledLocation;
+
+                if (!f && !string.IsNullOrEmpty(path))
+                {
+                    packagesToReturn.Add(pkg);
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.Message);
-                return false;
             }
-        });
+        }
+
+        return packagesToReturn;
     }
 
     public override string ToString()

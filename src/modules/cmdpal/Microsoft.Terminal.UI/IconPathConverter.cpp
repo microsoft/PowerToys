@@ -2,7 +2,7 @@
 #include "IconPathConverter.h"
 #include "IconPathConverter.g.cpp"
 
-// #include "Utils.h"
+ #include "FontIconGlyphClassifier.h"
 
 #include <Shlobj.h>
 #include <Shlobj_core.h>
@@ -110,7 +110,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
                 if (til::equals_insensitive_ascii(iconUri.Extension(), L".svg"))
                 {
                     typename ImageIconSource<TIconSource>::type iconSource;
-                    winrt::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource source{ iconUri };	
+                    winrt::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource source{ iconUri };
                     iconSource.ImageSource(source);
                     return iconSource;
                 }
@@ -158,7 +158,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     // Return Value:
     // - An IconElement with its IconSource set, if possible.
     template<typename TIconSource>
-    TIconSource _getIconSource(const winrt::hstring& iconPath, bool monochrome, const int targetSize)
+    TIconSource _getIconSource(const winrt::hstring& iconPath, bool monochrome, const winrt::hstring& fontFamily, const int targetSize)
     {
         TIconSource iconSource{ nullptr };
 
@@ -169,36 +169,46 @@ namespace winrt::Microsoft::Terminal::UI::implementation
 
             // If we fail to set the icon source using the "icon" as a path,
             // let's try it as a symbol/emoji.
-            //
-            // Anything longer than 2 wchar_t's _isn't_ an emoji or symbol, so
-            // don't do this if it's just an invalid path.
-            if (!iconSource && iconPath.size() <= 2)
+            if (!iconSource)
             {
                 try
                 {
-                    typename FontIconSource<TIconSource>::type icon;
-                    const auto ch = til::at(iconPath, 0);
+                    const auto glyph_kind = FontIconGlyphClassifier::Classify(iconPath);
 
-                    // The range of MDL2 Icons isn't explicitly defined, but
-                    // we're using this based off the table on:
-                    // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
-                    const auto isMDL2Icon = ch >= L'\uE700' && ch <= L'\uF8FF';
-                    if (isMDL2Icon)
+                    winrt::hstring family;
+                    if (glyph_kind == FontIconGlyphKind::Invalid)
                     {
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ L"Segoe Fluent Icons, Segoe MDL2 Assets" });
+                        family = L"Segoe UI";
+                    }
+                    else if (!fontFamily.empty())
+                    {
+                        family = fontFamily;
+                    }
+                    else if (glyph_kind == FontIconGlyphKind::FluentSymbol)
+                    {
+                        family = L"Segoe Fluent Icons, Segoe MDL2 Assets";
+                    }
+                    else if (glyph_kind == FontIconGlyphKind::Emoji)
+                    {
+                        // Emoji and other symbols go in the Segoe UI Emoji font.
+                        // Some emojis (e.g. 2️⃣) would be rendered as emoji glyphs otherwise.
+                        family = L"Segoe UI Emoji, Segoe UI";
                     }
                     else
                     {
-                        // Note: you _do_ need to manually set the font here.
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ L"Segoe UI" });
+                        family = L"Segoe UI";
                     }
+
+                    typename FontIconSource<TIconSource>::type icon;
+                    icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ family });
                     icon.FontSize(targetSize);
-                    icon.Glyph(iconPath);
+                    icon.Glyph(glyph_kind == FontIconGlyphKind::Invalid ? L"\u25CC" : iconPath);
                     iconSource = icon;
                 }
                 CATCH_LOG();
             }
         }
+
         if (!iconSource)
         {
             // Set the default IconSource to a BitmapIconSource with a null source
@@ -225,9 +235,9 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     //     return _getIconSource<Windows::UI::Xaml::Controls::IconSource>(path, false);
     // }
 
-    static Microsoft::UI::Xaml::Controls::IconSource _IconSourceMUX(const hstring& path, bool monochrome, const int targetSize)
+    static Microsoft::UI::Xaml::Controls::IconSource _IconSourceMUX(const hstring& path, bool monochrome, const winrt::hstring& fontFamily, const int targetSize)
     {
-        return _getIconSource<Microsoft::UI::Xaml::Controls::IconSource>(path, monochrome, targetSize);
+        return _getIconSource<Microsoft::UI::Xaml::Controls::IconSource>(path, monochrome, fontFamily, targetSize);
     }
 
     static SoftwareBitmap _convertToSoftwareBitmap(HICON hicon,
@@ -321,7 +331,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     }
 
     static winrt::Microsoft::UI::Xaml::Media::Imaging::SoftwareBitmapSource _getImageIconSourceForBinary(std::wstring_view iconPathWithoutIndex,
-                                                                                                         int index, 
+                                                                                                         int index,
                                                                                                          int targetSize)
     {
         // Try:
@@ -343,13 +353,14 @@ namespace winrt::Microsoft::Terminal::UI::implementation
 
     MUX::Controls::IconSource IconPathConverter::IconSourceMUX(const winrt::hstring& iconPath,
                                                                const bool monochrome,
+                                                               const winrt::hstring& fontFamily,
                                                                const int targetSize)
     {
         std::wstring_view iconPathWithoutIndex;
         const auto indexOpt = _getIconIndex(iconPath, iconPathWithoutIndex);
         if (!indexOpt.has_value())
         {
-            return _IconSourceMUX(iconPath, monochrome, targetSize);
+            return _IconSourceMUX(iconPath, monochrome, fontFamily, targetSize);
         }
 
         const auto bitmapSource = _getImageIconSourceForBinary(iconPathWithoutIndex, indexOpt.value(), targetSize);
@@ -369,7 +380,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         const auto indexOpt = _getIconIndex(iconPath, iconPathWithoutIndex);
         if (!indexOpt.has_value())
         {
-            auto source = IconSourceMUX(iconPath, false, targetSize);
+            auto source = IconSourceMUX(iconPath, false, L"", targetSize);
             Microsoft::UI::Xaml::Controls::IconSourceElement icon;
             icon.IconSource(source);
             return icon;

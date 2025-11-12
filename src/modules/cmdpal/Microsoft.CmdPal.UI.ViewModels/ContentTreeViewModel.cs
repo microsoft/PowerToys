@@ -25,18 +25,18 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
     // This is the content that's actually bound in XAML. We needed a
     // collection, even if the collection is just a single item.
-    public ObservableCollection<ContentViewModel> Root => [RootContent];
+    public ObservableCollection<ContentViewModel> Root => RootContent is not null ? [RootContent] : [];
 
     public override void InitializeProperties()
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         var root = model.RootContent;
-        if (root != null)
+        if (root is not null)
         {
             RootContent = ViewModelFromContent(root, PageContext);
             RootContent?.InitializeProperties();
@@ -82,7 +82,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     protected void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -91,7 +91,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         {
             case nameof(RootContent):
                 var root = model.RootContent;
-                if (root != null)
+                if (root is not null)
                 {
                     RootContent = ViewModelFromContent(root, PageContext);
                 }
@@ -119,10 +119,10 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
             foreach (var item in newItems)
             {
                 var viewModel = ViewModelFromContent(item, PageContext);
-                if (viewModel != null)
+                if (viewModel is not null)
                 {
                     viewModel.InitializeProperties();
-                    newContent.Add(viewModel);
+                    newContent.Add((ContentViewModel)viewModel);
                 }
             }
         }
@@ -153,7 +153,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
         Children.Clear();
         var model = Model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
             model.ItemsChanged -= Model_ItemsChanged;

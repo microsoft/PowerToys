@@ -35,6 +35,7 @@ namespace PowerAccent.Core
         KU,
         LT,
         MK,
+        MT,
         MI,
         NL,
         NO,
@@ -98,6 +99,7 @@ namespace PowerAccent.Core
                     Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
                     Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
                     Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
+                    Language.MT => GetDefaultLetterKeyMT(letter), // Maltese
                     Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                     Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                     Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
@@ -155,6 +157,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyLT(letter))
                 .Union(GetDefaultLetterKeyROM(letter))
                 .Union(GetDefaultLetterKeyMK(letter))
+                .Union(GetDefaultLetterKeyMT(letter))
                 .Union(GetDefaultLetterKeyMI(letter))
                 .Union(GetDefaultLetterKeyNL(letter))
                 .Union(GetDefaultLetterKeyNO(letter))
@@ -209,7 +212,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_L => new[] { "ļ", "₺" }, // ₺ is in VK_T for other languages, but not VK_L, so we add it here.
                 LetterKey.VK_M => new[] { "ṁ" },
                 LetterKey.VK_N => new[] { "ņ", "ṅ", "ⁿ", "ℕ", "№" },
-                LetterKey.VK_O => new[] { "ȯ", "∅" },
+                LetterKey.VK_O => new[] { "ȯ", "∅", "⌀" },
                 LetterKey.VK_P => new[] { "ṗ", "℗", "∏", "¶" },
                 LetterKey.VK_Q => new[] { "ℚ" },
                 LetterKey.VK_R => new[] { "ṙ", "®", "ℝ" },
@@ -778,14 +781,14 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new[] { "â" },
-                LetterKey.VK_E => new[] { "ê" },
-                LetterKey.VK_I => new[] { "î" },
-                LetterKey.VK_O => new[] { "ô" },
+                LetterKey.VK_A => new[] { "â", "ä", "à", "á" },
+                LetterKey.VK_E => new[] { "ê", "ë", "è", "é" },
+                LetterKey.VK_I => new[] { "î", "ï", "ì", "í" },
+                LetterKey.VK_O => new[] { "ô", "ö", "ò", "ó" },
                 LetterKey.VK_P => new[] { "£" },
-                LetterKey.VK_U => new[] { "û" },
-                LetterKey.VK_Y => new[] { "ŷ" },
-                LetterKey.VK_W => new[] { "ŵ" },
+                LetterKey.VK_U => new[] { "û", "ü", "ù", "ú" },
+                LetterKey.VK_Y => new[] { "ŷ", "ÿ", "ỳ", "ý" },
+                LetterKey.VK_W => new[] { "ŵ", "ẅ", "ẁ", "ẃ" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -835,6 +838,24 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_E => new[] { "ѐ" },
                 LetterKey.VK_I => new[] { "ѝ" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Maltese
+        private static string[] GetDefaultLetterKeyMT(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "à" },
+                LetterKey.VK_C => new[] { "ċ" },
+                LetterKey.VK_E => new[] { "è", "€" },
+                LetterKey.VK_G => new[] { "ġ" },
+                LetterKey.VK_H => new[] { "ħ" },
+                LetterKey.VK_I => new[] { "ì" },
+                LetterKey.VK_O => new[] { "ò" },
+                LetterKey.VK_U => new[] { "ù" },
+                LetterKey.VK_Z => new[] { "ż" },
                 _ => Array.Empty<string>(),
             };
         }

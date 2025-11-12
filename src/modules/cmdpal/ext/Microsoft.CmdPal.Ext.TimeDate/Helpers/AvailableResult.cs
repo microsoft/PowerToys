@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System.Runtime.CompilerServices;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
@@ -64,12 +63,12 @@ internal sealed class AvailableResult
     public int Score(string query, string label, string tags)
     {
         // Get match for label (or for tags if label score is <1)
-        var score = StringMatcher.FuzzySearch(query, label).Score;
+        var score = FuzzyStringMatcher.ScoreFuzzy(query, label);
         if (score < 1)
         {
             foreach (var t in tags.Split(";"))
             {
-                var tagScore = StringMatcher.FuzzySearch(query, t.Trim()).Score / 2;
+                var tagScore = FuzzyStringMatcher.ScoreFuzzy(query, t.Trim()) / 2;
                 if (tagScore > score)
                 {
                     score = tagScore / 2;

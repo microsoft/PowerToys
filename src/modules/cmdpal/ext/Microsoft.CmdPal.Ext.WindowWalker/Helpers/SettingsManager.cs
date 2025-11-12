@@ -70,6 +70,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.windowwalker_SettingInMruOrder_Description,
         true);
 
+    private readonly ToggleSetting _useWindowIcon = new(
+        Namespaced(nameof(UseWindowIcon)),
+        Resources.windowwalker_SettingUseWindowIcon,
+        Resources.windowwalker_SettingUseWindowIcon_Description,
+        true);
+
     public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
 
     public bool SubtitleShowPid => _subtitleShowPid.Value;
@@ -87,6 +93,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     public bool HideExplorerSettingInfo => _hideExplorerSettingInfo.Value;
 
     public bool InMruOrder => _inMruOrder.Value;
+
+    public bool UseWindowIcon => _useWindowIcon.Value;
 
     internal static string SettingsJsonPath()
     {
@@ -110,6 +118,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_hideKillProcessOnElevatedProcesses);
         Settings.Add(_hideExplorerSettingInfo);
         Settings.Add(_inMruOrder);
+        Settings.Add(_useWindowIcon);
 
         // Load settings from file upon initialization
         LoadSettings();

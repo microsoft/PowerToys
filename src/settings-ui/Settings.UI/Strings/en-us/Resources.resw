@@ -1,17 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -150,6 +150,22 @@
   <data name="MeasureTool_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
+  <data name="Shell_DebugLabel.Text" xml:space="preserve">
+    <value>Debug</value>
+    <comment>Debug label visible in title bar when debugging</comment>
+  </data>
+  <data name="Shell_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for settings</value>
+    <comment>Placeholder in settings search box</comment>
+  </data>
+  <data name="Shell_Search_NoResults" xml:space="preserve">
+    <value>No results for</value>
+    <comment>Prefix used in the no-results row; the query is appended in code, e.g., "No results for 'abc'"</comment>
+  </data>
+  <data name="Shell_Search_ShowAll" xml:space="preserve">
+    <value>Show all results</value>
+    <comment>Tail item text to navigate to full results</comment>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default mode</value>
@@ -398,6 +414,9 @@
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
+    <value>Easy Mouse</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
@@ -418,6 +437,27 @@
   <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
+    <value>Disable Easy Mouse when an application is running in full screen.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
+  </data>
+  <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
+    <value>Disabling Easy Mouse in full-screen mode only affects the host PC. It won’t stop the mouse from moving away from remote machines.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>msedge.exe
+firefox.exe
+opera.exe</value>
+    <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Header" xml:space="preserve">
+    <value>Ignored fullscreen applications</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
+    <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen, separate each executable with a new line.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
@@ -485,7 +525,7 @@
   </data>
   <data name="Shell_Awake.Content" xml:space="preserve">
     <value>Awake</value>
-    <comment>Product name: Navigation view item name for Awake</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
@@ -586,30 +626,115 @@
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
     <value>Enable Paste with AI</value>
   </data>
+  <data name="AdvancedPaste_EnableAIDialogMarkdown.Text" xml:space="preserve">
+    <value>## Preview Terms
+
+Please review the placeholder content that represents the final terms and usage guidance for Advanced Paste.
+
+1. This is sample information.
+2. Real policy content will be provided later.
+3. Continue only if you are comfortable with the above.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
+    <value>I have read and accept the information above.</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
+    <value>Enable OpenAI content moderation</value>
+  </data>
+  <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
+    <value>Enable OpenAI content moderation</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Header" xml:space="preserve">
+    <value>Enable Advanced AI</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Description" xml:space="preserve">
+    <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
+  </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Clipboard history</value>
+    <value>Access Clipboard History</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
-    <value>Save multiple items to your clipboard. This is an OS feature.</value>
+    <value>Clipboard History shows a list of previously copied items.</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
-    <value>Additional actions</value>
+    <value>Custom actions</value>
+  </data>
+  <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="FoundryLocal_RestartRequiredNote.Text" xml:space="preserve">
+    <value>Note: After installing the Foundry Local CLI, restart PowerToys to use it.</value>
+    <comment>Message informing users that PowerToys needs to be restarted after installing Foundry Local CLI</comment>
+  </data>
+  <data name="AdvancedPaste_LocalModel_LegalDescription" xml:space="preserve">
+    <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to OpenAI services. By setting up this provider, you agree to comply with OpenAI's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_TermsLabel" xml:space="preserve">
+    <value>Terms of Use</value>
+  </data>
+  <data name="AdvancedPaste_OpenAI_PrivacyLabel" xml:space="preserve">
+    <value>Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_TermsLabel" xml:space="preserve">
+    <value>Microsoft Azure Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_AzureOpenAI_PrivacyLabel" xml:space="preserve">
+    <value>Microsoft Privacy Statement</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Microsoft Azure services. By setting up this provider, you agree to comply with Microsoft Azure's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_TermsLabel" xml:space="preserve">
+    <value>Microsoft Azure Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_AzureAIInference_PrivacyLabel" xml:space="preserve">
+    <value>Microsoft Privacy Statement</value>
+  </data>
+  <data name="AdvancedPaste_Google_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Google services. By setting up this provider, you agree to comply with Google's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Google_TermsLabel" xml:space="preserve">
+    <value>Google Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Google_PrivacyLabel" xml:space="preserve">
+    <value>Google Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_LegalDescription" xml:space="preserve">
+    <value>Your API key connects directly to Mistral services. By setting up this provider, you agree to comply with Mistral's usage policies and data handling practices.</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_TermsLabel" xml:space="preserve">
+    <value>Mistral Terms of Use</value>
+  </data>
+  <data name="AdvancedPaste_Mistral_PrivacyLabel" xml:space="preserve">
+    <value>Mistral Privacy Policy</value>
+  </data>
+  <data name="AdvancedPaste_Ollama_TermsLabel" xml:space="preserve">
+    <value>Ollama Terms of Service</value>
+  </data>
+  <data name="AdvancedPaste_Ollama_PrivacyLabel" xml:space="preserve">
+    <value>Ollama Privacy Policy</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Current Key Remappings</value>
+    <value>Current key remappings</value>
   </data>
   <data name="RemapShortcutsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Current Shortcut Remappings</value>
+    <value>Current shortcut remappings</value>
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Key Remapping</value>
+    <value>Key remapping</value>
     <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Shortcut Remapping</value>
+    <value>Shortcut remapping</value>
   </data>
   <data name="KeyboardManager_RemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
@@ -618,7 +743,7 @@
     <value>Remapped to</value>
   </data>
   <data name="KeyboardManager_TargetApp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>For Target Application</value>
+    <value>For target application</value>
     <comment>What computer application would this be for</comment>
   </data>
   <data name="KeyboardManager_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -1916,6 +2041,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="AdvancedPasteUI_CustomAction_Description.Header" xml:space="preserve">
+    <value>Description</value>
+  </data>
   <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
     <value>Prompt</value>
   </data>
@@ -2049,17 +2177,26 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
     <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
   </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
+    <value>Shortcut conflict detection</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card.Text" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting.</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card_Description.Header" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Header" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Description" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
+  </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
     <value>View more diagnostic data settings</value>
   </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
     <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
-    <value>Diagnostic data</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
     <value>Turn on diagnostic data to help us improve PowerToys?</value>
@@ -2114,7 +2251,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Press the **Restart as administrator** button from the File Locksmith UI to also get information on elevated processes that might be using the files.</value>
   </data>
   <data name="Oobe_FileExplorer_HowToEnable.Text" xml:space="preserve">
-    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**. 
+    <value>Select **View** which is located at the top of File Explorer, followed by **Show**, and then **Preview pane**.
 From there, simply click on one of the supported files in the File Explorer and observe the content on the preview pane!</value>
   </data>
   <data name="Oobe_HowToCreateMappings.Text" xml:space="preserve">
@@ -2271,6 +2408,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
@@ -2324,12 +2462,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_Awake.Description" xml:space="preserve">
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by **right-clicking the Awake icon** in the system tray.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update:</value>
@@ -2424,6 +2565,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ModeSettingsCard.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -2536,11 +2678,38 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
+    <value>Enable CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
+    <value>CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
+    <value>Wrap the mouse cursor between monitor edges</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Description.Text" xml:space="preserve">
+    <value>Hotkey to toggle cursor wrapping on/off</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
+    <value>Set shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
+    <value>Disable wrapping while dragging</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
+    <value>Auto-activate on startup</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
@@ -2613,29 +2782,32 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Press a combination of keys to change this shortcut.
 Right-click to remove the key combination, thereby deactivating the shortcut.</value>
   </data>
-  <data name="Activation_Shortcut_Reset" xml:space="preserve">
-    <value>Reset</value>
-  </data>
   <data name="Activation_Shortcut_Save" xml:space="preserve">
     <value>Save</value>
   </data>
   <data name="Activation_Shortcut_Title" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="InvalidShortcut.Title" xml:space="preserve">
+  <data name="InvalidShortcut.Message" xml:space="preserve">
     <value>Invalid shortcut</value>
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
-    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <value>A shortcut should start with **Windows key**, **Ctrl**, **Alt** or **Shift**.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+  <data name="WarningShortcutAltGr.Message" xml:space="preserve">
     <value>Possible shortcut interference with Alt Gr</value>
     <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
   </data>
   <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
+    <value>This shortcut has a potential conflict, but the warning is ignored.</value>
+  </data>
+  <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
+    <value>A conflict has been detected for this shortcut.</value>
   </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
@@ -2835,6 +3007,36 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength.Header" xml:space="preserve">
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
+    <value>Crosshairs orientation</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
+    <value>Vertical and horizontal lines</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Vertical.Content" xml:space="preserve">
+    <value>Vertical only</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Horizontal.Content" xml:space="preserve">
+    <value>Horizontal only</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor.Header" xml:space="preserve">
+    <value>Gliding cursor</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
+    <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+    <value>Initial line speed</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
+    <value>Speed of the horizontal or vertical line when it begins moving</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
+    <value>Reduced line speed</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
+    <value>Speed after slowing down the line with a second shortcut press</value>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
@@ -3074,6 +3276,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
+  <data name="Peek_ActivationMethod.Header" xml:space="preserve">
+    <value>Activation method</value>
+  </data>
+  <data name="Peek_ActivationMethod.Description" xml:space="preserve">
+    <value>Use a shortcut or press the Spacebar when a file is selected</value>
+    <comment>Spacebar is a physical keyboard key</comment>
+  </data>
+  <data name="Peek_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
+    <value>Custom shortcut</value>
+  </data>
+  <data name="Peek_ActivationMethod_SpaceBar.Content" xml:space="preserve">
+    <value>Spacebar</value>
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
   </data>
@@ -3161,6 +3376,15 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
   </data>
+  <data name="LightSwitch_ThemeToggle_Shortcut.Header" xml:space="preserve">
+    <value>Theme toggle shortcut</value>
+  </data>
+  <data name="LightSwitch_ThemeToggle_Shortcut.Description" xml:space="preserve">
+    <value>Switch between light and dark mode</value>
+  </data>
+  <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
+    <value>Toggle theme</value>
+  </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
     <value>Pick a color</value>
   </data>
@@ -3192,7 +3416,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
-    <value>This feature allows you to format your clipboard content with the power of AI. An OpenAI API key is required.</value>
+    <value>Transform your clipboard content with the power of AI. An cloud or local endpoint is required.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -3536,6 +3760,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Macedonian" xml:space="preserve">
     <value>Macedonian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Maltese" xml:space="preserve">
+    <value>Maltese</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Maori" xml:space="preserve">
     <value>Maori</value>
   </data>
@@ -3808,7 +4035,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>Advanced Paste is a tool to put your clipboard content into any format you need. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key.</value>
+    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -3823,7 +4050,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Paste with AI</value>
   </data>
   <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
-    <value>Behavior</value>
+    <value>Activation &amp; behavior</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
     <value>Custom format preview</value>
@@ -3832,10 +4059,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
-    <value>Enable advanced AI</value>
+    <value>Advanced AI</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
+    <value>Supports advanced workflows by chaining transformations and working with files and images. May use additional API credits.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4244,6 +4471,18 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_Dashboard.Content" xml:space="preserve">
     <value>Home</value>
   </data>
+  <data name="Dashboard_SortBy_ToolTip.Text" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
+  <data name="Dashboard_SortAlphabetical.Text" xml:space="preserve">
+    <value>Alphabetically</value>
+  </data>
+  <data name="Dashboard_SortByStatus.Text" xml:space="preserve">
+    <value>By status</value>
+  </data>
+  <data name="Dashboard_SortBy.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort utilities</value>
+  </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
   </data>
@@ -4324,7 +4563,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show minimap</value>
   </data>
   <data name="PrivacyLink.Text" xml:space="preserve">
-    <value>OpenAI Privacy</value>
+    <value>OpenAI privacy</value>
   </data>
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
@@ -4364,9 +4603,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
-  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
-    <value>Automatically close the AdvancedPaste window after it loses focus</value>
-    <comment>AdvancedPaste is a product name, do not loc</comment>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
+    <value>Automatically close the Advanced Paste window after it loses focus</value>
+    <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
@@ -4545,10 +4784,13 @@ Activate by holding the key for the character you want to add an accent to, then
 Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
   </data>
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
-    <value>Zoom Toggle Hotkey</value>
+    <value>Zoom hotkey</value>
   </data>
   <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
     <value>Animate zoom in and zoom out</value>
+  </data>
+  <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
+    <value>Smooth zoomed image</value>
   </data>
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
     <value>Specify the initial level of magnification when zooming in</value>
@@ -4566,7 +4808,7 @@ Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter 
 To enter and exit LiveZoom, enter the hotkey specified below.</value>
   </data>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
-    <value>Live Zoom Toggle Hotkey</value>
+    <value>Live Zoom hotkey</value>
   </data>
   <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
     <value>Draw</value>
@@ -4585,7 +4827,7 @@ Shapes - Draw a line by holding down the Shift key, a rectangle with the Ctrl ke
 Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
   </data>
   <data name="ZoomIt_Draw_Shortcut.Header" xml:space="preserve">
-    <value>Draw without Zoom Hotkey</value>
+    <value>Draw without zoom hotkey</value>
   </data>
   <data name="ZoomIt_TypeGroup.Header" xml:space="preserve">
     <value>Type</value>
@@ -4599,11 +4841,11 @@ The text color is the current drawing color.</value>
     <value>Text font</value>
   </data>
   <data name="ZoomIt_Type_Font_Button.Content" xml:space="preserve">
-    <value>Choose Font</value>
+    <value>Choose font</value>
     <comment>Font refers to text font</comment>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Header" xml:space="preserve">
-    <value>Demo Type</value>
+    <value>DemoType</value>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Description" xml:space="preserve">
     <value>Use DemoType to have ZoomIt type text specified in the input file when you enter the DemoType toggle. You can also pull input from the clipboard if it is prefixed with the [start] keyword.
@@ -4617,7 +4859,7 @@ When driving input, hit the space bar to unblock keyboard input at the end of a 
 When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
-    <value>Demo Type Toggle Hotkey</value>
+    <value>DemoType toggle hotkey</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4626,7 +4868,7 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
     <value>Browse</value>
   </data>
   <data name="ZoomIt_DemoType_File_Picker_Dialog_Title" xml:space="preserve">
-    <value>Specify DemoType file...</value>
+    <value>Specify DemoType file..</value>
   </data>
   <data name="FilePicker_AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
@@ -4649,19 +4891,19 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
 Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.</value>
   </data>
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
-    <value>Start Break Timer Hotkey</value>
+    <value>Start break timer hotkey</value>
   </data>
   <data name="ZoomIt_Break_Timeout.Header" xml:space="preserve">
     <value>Timer (minutes)</value>
   </data>
   <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
-    <value>Show Time Elapsed After Expiration</value>
+    <value>Show time elapsed after expiration</value>
   </data>
   <data name="ZoomIt_Break_PlaySoundsFile.Header" xml:space="preserve">
-    <value>Play Sound on Expiration</value>
+    <value>Play sound on expiration</value>
   </data>
   <data name="ZoomIt_Break_SoundFile.Header" xml:space="preserve">
-    <value>Alarm Sound File</value>
+    <value>Alarm sound file</value>
   </data>
   <data name="ZoomIt_Break_SoundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
@@ -4673,7 +4915,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Sounds</value>
   </data>
   <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
-    <value>Timer Opacity</value>
+    <value>Timer opacity</value>
   </data>
   <data name="ZoomIt_Break_TimerOpacity_10Percent.Content" xml:space="preserve">
     <value>10%</value>
@@ -4706,7 +4948,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>100%</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
-    <value>Timer Position</value>
+    <value>Timer position</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition_TopLeftCorner.Content" xml:space="preserve">
     <value>Top left corner</value>
@@ -4736,7 +4978,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Bottom right corner</value>
   </data>
   <data name="ZoomIt_Break_ShowBackgroundBitmap.Header" xml:space="preserve">
-    <value>Show Background Bitmap</value>
+    <value>Show background bitmap</value>
   </data>
   <data name="ZoomIt_Break_ShowFadedDesktop.Content" xml:space="preserve">
     <value>Use faded desktop as background</value>
@@ -4745,7 +4987,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Use image file as background</value>
   </data>
   <data name="ZoomIt_Break_BackgroundFile.Header" xml:space="preserve">
-    <value>Background Image File</value>
+    <value>Background image file</value>
   </data>
   <data name="ZoomIt_Break_BackgroundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
@@ -4766,17 +5008,20 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Record</value>
   </data>
   <data name="ZoomIt_RecordGroup.Description" xml:space="preserve">
-    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hot key and finish the recording by entering it again.
+    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hotkey and finish the recording by entering it again.
 
 To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode.
 
 To record a specific window, enter the hotkey with the Alt key in the opposite mode.</value>
   </data>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
-    <value>Record Toggle Hotkey</value>
+    <value>Record hotkey</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
+  </data>
+  <data name="ZoomIt_Record_Format.Header" xml:space="preserve">
+    <value>Format</value>
   </data>
   <data name="ZoomIt_Record_CaptureAudio.Header" xml:space="preserve">
     <value>Capture audio input</value>
@@ -4794,7 +5039,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
-    <value>Snip Toggle Hotkey</value>
+    <value>Snip hotkey</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -4911,7 +5156,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>File Management</value>
   </data>
   <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
-    <value>Input / Output</value>
+    <value>Input &amp; Output</value>
   </data>
   <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
     <value>Windowing &amp; Layouts</value>
@@ -5027,9 +5272,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
   </data>
-  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
-    <value>Shut down</value>
-  </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
@@ -5061,13 +5303,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Configure shortcut</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
-    <value>Configure shortcut</value>
+    <value>Assign shortcut</value>
   </data>
   <data name="QuickAccessTitle.Title" xml:space="preserve">
     <value>Quick access</value>
   </data>
   <data name="ShortcutsOverview.Title" xml:space="preserve">
-    <value>Shortcuts overview</value>
+    <value>Shortcuts</value>
   </data>
   <data name="NoActionsToShow.Text" xml:space="preserve">
     <value>No actions to show..</value>
@@ -5124,7 +5366,317 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="Shell_LightSwitch.Content" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="LightSwitch_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Light Switch</value>
+  </data>
+  <data name="LightSwitch.ModuleDescription" xml:space="preserve">
+    <value>Easily switch between light and dark mode - on a schedule, automatically, or with a shortcut.</value>
+  </data>
+  <data name="LightSwitch.ModuleTitle" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="LearnMore_LightSwitch.Text" xml:space="preserve">
+    <value>Learn more about Light Switch</value>
+  </data>
+  <data name="LightSwitch_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="LightSwitch_EnableSettingsCard.Header" xml:space="preserve">
+    <value>Enable Light Switch</value>
+  </data>
+  <data name="LightSwitch_ShortcutsSettingsGroup.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="LightSwitch_ScheduleSettingsGroup.Header" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="LightSwitch_ModeSettingsExpander.Header" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="LightSwitch_ModeSettingsExpander.Description" xml:space="preserve">
+    <value>Determine when dark mode should be turned on</value>
+  </data>
+  <data name="LightSwitch_ModeOff.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="LightSwitch_ModeManual.Content" xml:space="preserve">
+    <value>Fixed hours</value>
+  </data>
+  <data name="LightSwitch_ModeSunsetToSunrise.Content" xml:space="preserve">
+    <value>Sunset to sunrise</value>
+  </data>
+  <data name="LightSwitch_ScheduleOffMessage.Title" xml:space="preserve">
+    <value>Scheduling is turned off.</value>
+  </data>
+  <data name="LightSwitch_TurnOnDarkMode.Header" xml:space="preserve">
+    <value>Turn on dark mode</value>
+  </data>
+  <data name="LightSwitch_TurnOffDarkMode.Header" xml:space="preserve">
+    <value>Turn off dark mode</value>
+  </data>
+  <data name="LightSwitch_LocationSettingsCard.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="LightSwitch_LocationSettingsCard.Description" xml:space="preserve">
+    <value>Used to automatically calculate accurate sunrise and sunset times</value>
+  </data>
+  <data name="LightSwitch_OffsetSettingsCard.Header" xml:space="preserve">
+    <value>Offset (in minutes)</value>
+  </data>
+  <data name="LightSwitch_OffsetSettingsCard.Description" xml:space="preserve">
+    <value>Adjust the trigger time by starting earlier or later</value>
+  </data>
+  <data name="LightSwitch_LocationWarningBar.Title" xml:space="preserve">
+    <value>Location required</value>
+  </data>
+  <data name="LightSwitch_LocationWarningBar.Message" xml:space="preserve">
+    <value>Sync your location so Light Switch can calculate the correct sunrise- and sunset times</value>
+  </data>
+  <data name="LightSwitch_ApplyDarkModeExpander.Header" xml:space="preserve">
+    <value>Apply dark mode to</value>
+  </data>
+  <data name="LightSwitch_ApplyDarkModeExpander.Description" xml:space="preserve">
+    <value>Pick which parts of your PC should follow Light Switch</value>
+  </data>
+  <data name="LightSwitch_SystemCheckbox.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="LightSwitch_SystemCheckbox.Description" xml:space="preserve">
+    <value>Taskbar, Start, and other system UI</value>
+  </data>
+  <data name="LightSwitch_AppsCheckbox.Header" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="LightSwitch_AppsCheckbox.Description" xml:space="preserve">
+    <value>Supported applications</value>
+  </data>
+  <data name="LightSwitch_LocationDialog.Title" xml:space="preserve">
+    <value>Select a location</value>
+  </data>
+  <data name="LightSwitch_LocationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="LightSwitch_LocationDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
+    <value>Detect your location automatically or enter it manually to calculate sunrise and sunset times.</value>
+  </data>
+  <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
+    <value>Sunrise</value>
+  </data>
+  <data name="LightSwitch_SunsetText.Text" xml:space="preserve">
+    <value>Sunset</value>
+  </data>
+  <data name="LightSwitch_LatitudeBox.Header" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="LightSwitch_LongitudeBox.Header" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="LightSwitch_FindLocation.Text" xml:space="preserve">
+    <value>Detect location</value>
+  </data>
+  <data name="LightSwitch_FindLocationAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Detect location</value>
+  </data>
+  <data name="LightSwitch_SunriseTooltip.Text" xml:space="preserve">
+    <value>Sunrise</value>
+  </data>
+  <data name="LightSwitch_SunsetTooltip.Text" xml:space="preserve">
+    <value>Sunset</value>
+  </data>
+  <data name="Close_NavViewItem.Content" xml:space="preserve">
+    <value>Close PowerToys</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Content" xml:space="preserve">
+    <value>Closing PowerToys will stop all active utilities.</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Title" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="CloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
+  </data>
+  <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SearchResults_ModulesTitle.Header" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="SearchResults_NoResultsHeader.Text" xml:space="preserve">
+    <value>No results</value>
+  </data>
+  <data name="SearchResults_NoResultsDescription.Text" xml:space="preserve">
+    <value>Try a different search term</value>
+  </data>
+  <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut is already in use by another utility.</value>
+  </data>
+  <data name="SysHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut is already in use by a default system shortcut.</value>
+  </data>
+  <data name="ShortcutConflictWindow_Title" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictWindow_TitleTxt.Title" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictWindow_Description.Text" xml:space="preserve">
+    <value>If any shortcut conflicts are detected, they’ll appear below. Conflicts can happen between PowerToys utilities or Windows system shortcuts, and may cause unexpected behavior. If everything works as expected, you can safely ignore the conflict.</value>
+  </data>
+  <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
+    <value>Conflicts found for</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
+    <value>System shortcut</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemCard.Description" xml:space="preserve">
+    <value>This shortcut is reserved by Windows and can't be reassigned.</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemShortcutLink.Content" xml:space="preserve">
+    <value>See all Windows shortcuts</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
+    <value>This shortcut is used by Windows and can't be changed.</value>
+  </data>
+  <data name="ShortcutConflictWindow_NoConflictsTitle.Text" xml:space="preserve">
+    <value>No conflicts detected</value>
+  </data>
+  <data name="ShortcutConflictWindow_NoConflictsDescription.Text" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
+  </data>
+  <data name="ResolveConflicts_Button.Content" xml:space="preserve">
+    <value>Resolve conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
+    <value>Shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="ShortcutConflictControl_SingleConflictFound" xml:space="preserve">
+    <value>1 conflict found</value>
+  </data>
+  <data name="ShortcutConflictControl_MultipleConflictsFound" xml:space="preserve">
+    <value>{0} conflicts found</value>
+    <comment>{0} is replaced with the number of conflicts</comment>
+  </data>
+  <data name="Hosts_NoLeadingSpaces.Header" xml:space="preserve">
+    <value>No leading spaces</value>
+  </data>
+  <data name="Hosts_NoLeadingSpaces.Description" xml:space="preserve">
+    <value>Do not prepend spaces to active lines when saving the hosts file</value>
+  </data>
+  <data name="Search_ResultsFor" xml:space="preserve">
+    <value>Results for</value>
+    <comment>Prefix for search string. E.g. "Results for 'shortcut'"</comment>
+  </data>
+  <data name="UtilitiesHeader.Title" xml:space="preserve">
+    <value>Utilities</value>
+  </data>
+  <data name="Oobe_LightSwitch.Title" xml:space="preserve">
+    <value>Light Switch</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_LightSwitch.Description" xml:space="preserve">
+    <value>Light Switch automatically manages your Windows light and dark mode based on schedules, sunrise/sunset times, or manual control. Keep your system theme synchronized with your preferences and daily rhythm.</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_LightSwitch_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings** and enable Light Switch to set up automatic theme switching</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_LightSwitch_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the **keyboard shortcut** to instantly toggle between light and dark modes, or set up **sunrise/sunset automation** for natural theme transitions.</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="DismissConflictBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="DismissText.Text" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="Shortcut_ResetBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Reset shortcut</value>
+  </data>
+  <data name="Shortcut_ResetToolTip.Text" xml:space="preserve">
+    <value>Reset to the default shortcut</value>
+  </data>
+  <data name="Shortcut_Reset.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Shortcut_ClearBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clear shortcut</value>
+  </data>
+  <data name="Shortcut_ClearToolTip.Text" xml:space="preserve">
+    <value>Clear and unassign this shortcut</value>
+  </data>
+  <data name="Shortcut_Clear.Text" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Hosts_Backup.Header" xml:space="preserve">
+    <value>Backup hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup.Description" xml:space="preserve">
+    <value>Automatically create a backup of the hosts file when you save for the first time in a session</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup_Location.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="Hosts_Delete_Backup.Header" xml:space="preserve">
+    <value>Automatically delete backups</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Header" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Description" xml:space="preserve">
+    <value>Set the number of backups to keep. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_Backup_DaysInput.Description" xml:space="preserve">
+    <value>Set the number of days to keep backups. Older backups will be deleted once the limit is reached.</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_CountBased.Content" xml:space="preserve">
+    <value>Based on count</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_AgeAndCountBased.Content" xml:space="preserve">
+    <value>Based on age and count</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Age_Description" xml:space="preserve">
+    <value>Set an optional number of backups to always keep despite their age</value>
+  </data>
+  <data name="Hosts_Backup_CountInput_Header" xml:space="preserve">
+    <value>Backup count</value>
+  </data>
+  <data name="LightSwitch_SetLocationButton.Content" xml:space="preserve">
+    <value>Set Location</value>
   </data>
 </root>

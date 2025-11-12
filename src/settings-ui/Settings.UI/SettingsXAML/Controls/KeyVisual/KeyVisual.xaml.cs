@@ -12,12 +12,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     [TemplateVisualState(Name = NormalState, GroupName = "CommonStates")]
     [TemplateVisualState(Name = DisabledState, GroupName = "CommonStates")]
     [TemplateVisualState(Name = InvalidState, GroupName = "CommonStates")]
+    [TemplateVisualState(Name = WarningState, GroupName = "CommonStates")]
     public sealed partial class KeyVisual : Control
     {
         private const string KeyPresenter = "KeyPresenter";
         private const string NormalState = "Normal";
         private const string DisabledState = "Disabled";
         private const string InvalidState = "Invalid";
+        private const string WarningState = "Warning";
         private KeyCharPresenter _keyPresenter;
 
         public object Content
@@ -28,13 +30,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(nameof(Content), typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
-        public bool IsInvalid
+        public State State
         {
-            get => (bool)GetValue(IsInvalidProperty);
-            set => SetValue(IsInvalidProperty, value);
+            get => (State)GetValue(StateProperty);
+            set => SetValue(StateProperty, value);
         }
 
-        public static readonly DependencyProperty IsInvalidProperty = DependencyProperty.Register(nameof(IsInvalid), typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsInvalidChanged));
+        public static readonly DependencyProperty StateProperty = DependencyProperty.Register(nameof(State), typeof(State), typeof(KeyVisual), new PropertyMetadata(State.Normal, OnStateChanged));
 
         public bool RenderKeyAsGlyph
         {
@@ -64,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ((KeyVisual)d).SetVisualStates();
         }
 
-        private static void OnIsInvalidChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((KeyVisual)d).SetVisualStates();
         }
@@ -73,9 +75,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             if (this != null)
             {
-                if (IsInvalid)
+                if (State == State.Error)
                 {
                     VisualStateManager.GoToState(this, InvalidState, true);
+                }
+                else if (State == State.Warning)
+                {
+                    VisualStateManager.GoToState(this, WarningState, true);
                 }
                 else if (!IsEnabled)
                 {
@@ -95,9 +101,23 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            if (Content is string)
+            if (Content is string key)
             {
-                _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+                switch (key)
+                {
+                    case "Copilot":
+                        _keyPresenter.Style = (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"];
+                        break;
+
+                    case "Office":
+                        _keyPresenter.Style = (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"];
+                        break;
+
+                    default:
+                        _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+                        break;
+                }
+
                 return;
             }
 
@@ -162,5 +182,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             SetVisualStates();
         }
+    }
+
+    public enum State
+    {
+        Normal,
+        Error,
+        Warning,
     }
 }

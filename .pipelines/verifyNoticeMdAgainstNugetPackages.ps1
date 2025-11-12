@@ -57,12 +57,19 @@ $totalList = $projFiles | ForEach-Object -Parallel {
 
             $p = -split $p
             $p = $p[1, 2]
-            $tempString = $p[0] + " " + $p[1]
+            $tempString = $p[0]
 
-            if(![string]::IsNullOrWhiteSpace($tempString))
+            if([string]::IsNullOrWhiteSpace($tempString))
             {
-		   echo "- $tempString";
+                Continue
             }
+
+            if($tempString.StartsWith("Microsoft.") -Or $tempString.StartsWith("System."))
+            {
+                Continue
+            }
+
+            echo "- $tempString"
         }
 	$csproj = $null;
     }

@@ -16,7 +16,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
 
-#include <winrt/Windows.Security.Credentials.h>
+#include <algorithm>
+#include <cwctype>
 #include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -54,12 +55,14 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
-    const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
+    const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
+    const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
+    const wchar_t JSON_KEY_PASTE_AI_CONFIGURATION[] = L"paste-ai-configuration";
+    const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
+    const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
+    const wchar_t JSON_KEY_ENABLE_ADVANCED_AI[] = L"enable-advanced-ai";
     const wchar_t JSON_KEY_VALUE[] = L"value";
-
-    const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
-    const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
 }
 
 class AdvancedPaste : public PowertoyModuleIface
@@ -94,6 +97,7 @@ private:
     using CustomAction = ActionData<int>;
     std::vector<CustomAction> m_custom_actions;
 
+    bool m_is_ai_enabled = false;
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
 
@@ -112,7 +116,7 @@ private:
         return {};
     }
 
-    static Hotkey parse_single_hotkey(const winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject)
+    static Hotkey parse_single_hotkey(const winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject, bool isShown = true)
     {
         try
         {
@@ -122,6 +126,7 @@ private:
             hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
             hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
             hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            hotkey.isShown = isShown;
             return hotkey;
         }
         catch (...)
@@ -144,32 +149,11 @@ private:
         return jsonObject;
     }
 
-    static bool open_ai_key_exists()
-    {
-        try
-        {
-            winrt::Windows::Security::Credentials::PasswordVault().Retrieve(OPENAI_VAULT_RESOURCE, OPENAI_VAULT_USERNAME);
-            return true;
-        }
-        catch (const winrt::hresult_error& ex)
-        {
-            // Looks like the only way to access the PasswordVault is through an API that throws an exception in case the resource doesn't exist.
-            // If the debugger breaks here, just continue.
-            // If you want to disable breaking here in a more permanent way, just add a condition in Visual Studio's Exception Settings to not break on win::hresult_error, but that might make you not hit other exceptions you might want to catch.
-            if (ex.code() == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
-            {
-                return false; // Credential doesn't exist.
-            }
-            Logger::error("Unexpected error while retrieving OpenAI key from vault: {}", winrt::to_string(ex.message()));
-            return false;
-        }
-    }
-
-    bool is_open_ai_enabled()
+    bool is_ai_enabled()
     {
         return gpo_policy_enabled_configuration() != powertoys_gpo::gpo_rule_configured_disabled &&
                powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue() != powertoys_gpo::gpo_rule_configured_disabled &&
-               open_ai_key_exists();
+               m_is_ai_enabled;
     }
 
     static std::wstring kebab_to_pascal_case(const std::wstring& kebab_str)
@@ -197,6 +181,13 @@ private:
             }
         }
 
+        return result;
+    }
+
+    static std::wstring to_lower_case(const std::wstring& value)
+    {
+        std::wstring result = value;
+        std::transform(result.begin(), result.end(), result.begin(), [](wchar_t ch) { return std::towlower(ch); });
         return result;
     }
 
@@ -231,8 +222,10 @@ private:
         return false;
     }
 
-    void process_additional_action(const winrt::hstring& actionName, const winrt::Windows::Data::Json::IJsonValue& actionValue)
+    void process_additional_action(const winrt::hstring& actionName, const winrt::Windows::Data::Json::IJsonValue& actionValue, bool actionsGroupIsShown = true)
     {
+        bool actionIsShown = true;
+
         if (actionValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
         {
             return;
@@ -240,9 +233,9 @@ private:
 
         const auto action = actionValue.GetObjectW();
 
-        if (!action.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
+        if (!action.GetNamedBoolean(JSON_KEY_IS_SHOWN, false) || !actionsGroupIsShown)
         {
-            return;
+            actionIsShown = false;
         }
 
         if (action.HasKey(JSON_KEY_SHORTCUT))
@@ -250,7 +243,7 @@ private:
             const AdditionalAction additionalAction
             {
                 actionName.c_str(),
-                parse_single_hotkey(action.GetNamedObject(JSON_KEY_SHORTCUT))
+                parse_single_hotkey(action.GetNamedObject(JSON_KEY_SHORTCUT), actionIsShown)
             };
 
             m_additional_actions.push_back(additionalAction);
@@ -259,12 +252,67 @@ private:
         {
             for (const auto& [subActionName, subAction] : action)
             {
-                process_additional_action(subActionName, subAction);
+                process_additional_action(subActionName, subAction, actionIsShown);
             }
         }
     }
 
-    void read_settings(PowerToysSettings::PowerToyValues& settings)
+    bool has_advanced_ai_provider(const winrt::Windows::Data::Json::JsonObject& propertiesObject)
+    {
+        if (!propertiesObject.HasKey(JSON_KEY_PASTE_AI_CONFIGURATION))
+        {
+            return false;
+        }
+
+        const auto configValue = propertiesObject.GetNamedValue(JSON_KEY_PASTE_AI_CONFIGURATION);
+        if (configValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+        {
+            return false;
+        }
+
+        const auto configObject = configValue.GetObjectW();
+        if (!configObject.HasKey(JSON_KEY_PROVIDERS))
+        {
+            return false;
+        }
+
+        const auto providersValue = configObject.GetNamedValue(JSON_KEY_PROVIDERS);
+        if (providersValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Array)
+        {
+            return false;
+        }
+
+        const auto providers = providersValue.GetArray();
+        for (const auto providerValue : providers)
+        {
+            if (providerValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+            {
+                continue;
+            }
+
+            const auto providerObject = providerValue.GetObjectW();
+            if (!providerObject.GetNamedBoolean(JSON_KEY_ENABLE_ADVANCED_AI, false))
+            {
+                continue;
+            }
+
+            if (!providerObject.HasKey(JSON_KEY_SERVICE_TYPE))
+            {
+                continue;
+            }
+
+            const std::wstring serviceType = providerObject.GetNamedString(JSON_KEY_SERVICE_TYPE, L"").c_str();
+            const auto normalizedServiceType = to_lower_case(serviceType);
+            if (normalizedServiceType == L"openai" || normalizedServiceType == L"azureopenai")
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+        void read_settings(PowerToysSettings::PowerToyValues& settings)
     {
         const auto settingsObject = settings.get_raw_json();
 
@@ -317,31 +365,40 @@ private:
                     {
                         const auto additionalActions = propertiesObject.GetNamedObject(JSON_KEY_ADDITIONAL_ACTIONS);
 
-                        for (const auto& [actionName, additionalAction] : additionalActions)
+                        // Define the expected order to ensure consistent hotkey ID assignment
+                        const std::vector<winrt::hstring> expectedOrder = {
+                            L"image-to-text",
+                            L"paste-as-file",
+                            L"transcode"
+                        };
+
+                        // Process actions in the predefined order
+                        for (auto& actionKey : expectedOrder)
                         {
-                            process_additional_action(actionName, additionalAction);
+                            if (additionalActions.HasKey(actionKey))
+                            {
+                                const auto actionValue = additionalActions.GetNamedValue(actionKey);
+                                process_additional_action(actionKey, actionValue);
+                            }
                         }
                     }
 
                     if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
                     {
                         const auto customActions = propertiesObject.GetNamedObject(JSON_KEY_CUSTOM_ACTIONS).GetNamedArray(JSON_KEY_VALUE);
-                        if (customActions.Size() > 0 && is_open_ai_enabled())
+                        if (customActions.Size() > 0 && is_ai_enabled())
                         {
                             for (const auto& customAction : customActions)
                             {
                                 const auto object = customAction.GetObjectW();
+                                bool actionIsShown = object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false);
 
-                                if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
-                                {
-                                    const CustomAction customActionData
-                                    {
-                                        static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)),
-                                        parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT))
-                                    };
+                                const CustomAction customActionData{
+                                    static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)),
+                                    parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT), actionIsShown)
+                                };
 
-                                    m_custom_actions.push_back(customActionData);
-                                }
+                                m_custom_actions.push_back(customActionData);
                             }
                         }
                     }
@@ -353,9 +410,19 @@ private:
         {
             const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
-            if (propertiesObject.HasKey(JSON_KEY_IS_ADVANCED_AI_ENABLED))
+            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
+
+            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
             {
-                m_is_advanced_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_ADVANCED_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else
+            {
+                m_is_ai_enabled = false;
             }
 
             if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))

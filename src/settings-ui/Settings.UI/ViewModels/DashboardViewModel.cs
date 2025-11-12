@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
@@ -14,18 +15,21 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class DashboardViewModel : Observable
+    public partial class DashboardViewModel : PageViewModelBase
     {
-        private const string JsonFileType = ".json";
+        protected override string ModuleName => "Dashboard";
+
         private Dispatcher dispatcher;
 
         public Func<string, int> SendConfigMSG { get; }
@@ -36,11 +40,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
+        private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
+
+        public AllHotkeyConflictsData AllHotkeyConflictsData
+        {
+            get => _allHotkeyConflictsData;
+            set
+            {
+                if (Set(ref _allHotkeyConflictsData, value))
+                {
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public string PowerToysVersion
         {
             get
             {
                 return Helper.GetProductVersion();
+            }
+        }
+
+        private DashboardSortOrder _dashboardSortOrder = DashboardSortOrder.Alphabetical;
+
+        public DashboardSortOrder DashboardSortOrder
+        {
+            get => generalSettingsConfig.DashboardSortOrder;
+            set
+            {
+                if (Set(ref _dashboardSortOrder, value))
+                {
+                    generalSettingsConfig.DashboardSortOrder = value;
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+                    RefreshModuleList();
+                }
             }
         }
 
@@ -55,32 +90,78 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
 
+            // Initialize dashboard sort order from settings
+            _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
+
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
-            {
-                AddDashboardListItem(moduleType);
-            }
-
+            RefreshModuleList();
             GetShortcutModules();
         }
 
-        private void AddDashboardListItem(ModuleType moduleType)
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
-            var newItem = new DashboardListItem()
+            dispatcher.BeginInvoke(() =>
             {
-                Tag = moduleType,
-                Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
-                IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
-                Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                DashboardModuleItems = GetModuleItems(moduleType),
+                var allConflictData = e.Conflicts;
+                foreach (var inAppConflict in allConflictData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    inAppConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                foreach (var systemConflict in allConflictData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    systemConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
+            });
+        }
+
+        private void RequestConflictData()
+        {
+            // Request current conflicts data
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
+
+        private void RefreshModuleList()
+        {
+            AllModules.Clear();
+
+            var moduleItems = new List<DashboardListItem>();
+
+            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
+            {
+                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+                var newItem = new DashboardListItem()
+                {
+                    Tag = moduleType,
+                    Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                    IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
+                    IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
+                    Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                    DashboardModuleItems = GetModuleItems(moduleType),
+                };
+                newItem.EnabledChangedCallback = EnabledChangedOnUI;
+                moduleItems.Add(newItem);
+            }
+
+            // Sort based on current sort order
+            var sortedItems = DashboardSortOrder switch
+            {
+                DashboardSortOrder.ByStatus => moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
+                _ => moduleItems.OrderBy(x => x.Label), // Default alphabetical
             };
 
-            AllModules.Add(newItem);
-            newItem.EnabledChangedCallback = EnabledChangedOnUI;
+            foreach (var item in sortedItems)
+            {
+                AllModules.Add(item);
+            }
         }
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
@@ -93,15 +174,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var settings = NewPlusViewModel.LoadSettings(settingsUtils);
                 NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
             }
+
+            // Request updated conflicts after module state change
+            RequestConflictData();
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
         {
             try
             {
+                RefreshModuleList();
                 GetShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));
+
+                // Request updated conflicts after module state change
+                RequestConflictData();
             }
             catch (Exception ex)
             {
@@ -174,6 +262,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
@@ -218,6 +307,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("ColorPicker_ShortDescription"), Shortcut = hotkey.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsLightSwitch()
+        {
+            ISettingsRepository<LightSwitchSettings> moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("LightSwitch_ForceDarkMode"), Shortcut = settings.Properties.ToggleThemeHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

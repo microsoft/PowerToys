@@ -105,4 +105,9 @@ public partial class ListPage : Page, IListPage
         {
         }
     }
+
+    protected void SetSearchNoUpdate(string newSearchText)
+    {
+        _searchText = newSearchText;
+    }
 }

@@ -25,8 +25,7 @@ public partial class RegistryCommandsProvider : CommandProvider
         return [
             new CommandItem(new RegistryListPage(_settingsManager))
             {
-                Title = "Registry",
-                Subtitle = "Navigate the Windows registry",
+                Title = "Browse the Windows registry",
             }
         ];
     }

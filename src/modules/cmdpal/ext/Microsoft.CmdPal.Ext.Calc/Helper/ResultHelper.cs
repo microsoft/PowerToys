@@ -16,7 +16,7 @@ public static class ResultHelper
     public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, ISettingsInterface settings, TypedEventHandler<object, object> handleSave)
     {
         // Return null when the expression is not a valid calculator query.
-        if (roundedResult == null)
+        if (roundedResult is null)
         {
             return null;
         }
@@ -48,7 +48,7 @@ public static class ResultHelper
     public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query)
     {
         // Return null when the expression is not a valid calculator query.
-        if (roundedResult == null)
+        if (roundedResult is null)
         {
             return null;
         }
