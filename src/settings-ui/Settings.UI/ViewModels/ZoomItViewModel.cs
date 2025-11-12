@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private const string FormatGif = "GIF";
         private const string FormatMp4 = "MP4";
-    
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
