@@ -570,9 +570,6 @@
                             IsOn="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
                             Toggled="PasteAIEnableAdvancedAICheckBox_Toggled"
                             Visibility="Collapsed">
-                            <ToolTipService.ToolTip>
-                                <TextBlock Text="" TextWrapping="Wrap" />
-                            </ToolTipService.ToolTip>
                             <ToggleSwitch.Header>
                                 <TextBlock>
                                     <Run x:Uid="AdvancedPaste_EnableAdvancedAI" /> <LineBreak />
