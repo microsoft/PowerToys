@@ -120,9 +120,9 @@
                             Click="RefreshModelsButton_Click"
                             Style="{StaticResource SubtleButtonStyle}">
                             <FontIcon FontSize="16" Glyph="&#xE72C;" />
-                            <Button.ToolTip>
+                            <ToolTipService.ToolTip>
                                 <TextBlock x:Uid="AdvancedPaste_FL_RefreshModelList" />
-                            </Button.ToolTip>
+                            </ToolTipService.ToolTip>
                         </Button>
                     </Grid>
                     <StackPanel

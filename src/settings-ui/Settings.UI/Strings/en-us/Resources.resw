@@ -647,9 +647,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_EnableAdvancedAIDescription.Text" xml:space="preserve">
     <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Description" xml:space="preserve">
-    <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
-  </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
     <value>Show what's currently on your Clipboard and access your Clipboard history</value>
   </data>
@@ -4060,9 +4057,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
     <value>Enable Advanced AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Supports advanced workflows by chaining transformations and working with files and images. May use additional API credits.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
