@@ -4,13 +4,18 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class PowerDisplayProperties
     {
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4D); // Win+Alt+M
+
         public PowerDisplayProperties()
         {
+            ActivationShortcut = DefaultActivationShortcut;
             LaunchAtStartup = false;
             BrightnessUpdateRate = "1s";
             Monitors = new List<MonitorInfo>();
@@ -19,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
         }
+
+        public HotkeySettings ActivationShortcut { get; set; }
 
         [JsonPropertyName("launch_at_startup")]
         public bool LaunchAtStartup { get; set; }

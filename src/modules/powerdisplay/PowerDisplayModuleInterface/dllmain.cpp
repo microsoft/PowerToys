@@ -40,6 +40,12 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_ENABLED[] = L"enabled";
     const wchar_t JSON_KEY_HOTKEY_ENABLED[] = L"hotkey_enabled";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
 }
 
 class PowerDisplayModule : public PowertoyModuleIface
@@ -47,6 +53,7 @@ class PowerDisplayModule : public PowertoyModuleIface
 private:
     bool m_enabled = false;
     bool m_hotkey_enabled = false;
+    Hotkey m_activation_hotkey = { .win = true, .ctrl = false, .shift = false, .alt = true, .key = 'M' };
 
     // Process manager for handling PowerDisplay.exe lifecycle and IPC
     PowerDisplayProcessManager m_process_manager;
@@ -82,6 +89,41 @@ private:
         }
     }
 
+    void parse_activation_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
+                {
+                    auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                    if (properties.HasKey(JSON_KEY_ACTIVATION_SHORTCUT))
+                    {
+                        auto jsonHotkeyObject = properties.GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+                        m_activation_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                        m_activation_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                        m_activation_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                        m_activation_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                        m_activation_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                        Logger::trace(L"Parsed activation hotkey: Win={} Ctrl={} Alt={} Shift={} Key={}",
+                                     m_activation_hotkey.win, m_activation_hotkey.ctrl, m_activation_hotkey.alt,
+                                     m_activation_hotkey.shift, m_activation_hotkey.key);
+                    }
+                    else
+                    {
+                        Logger::info("ActivationShortcut not found in settings, using default Win+Alt+M");
+                    }
+                }
+            }
+            catch (...)
+            {
+                Logger::error("Failed to parse PowerDisplay activation shortcut, using default Win+Alt+M");
+            }
+        }
+    }
+
     void init_settings()
     {
         try
@@ -90,6 +132,7 @@ private:
                 PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
 
             parse_hotkey_settings(settings);
+            parse_activation_hotkey(settings);
         }
         catch (std::exception&)
         {
@@ -187,6 +230,7 @@ public:
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
             parse_hotkey_settings(values);
+            parse_activation_hotkey(values);
             values.save_to_settings_file();
 
             // Notify PowerDisplay.exe that settings have been updated
@@ -236,6 +280,19 @@ public:
         }
 
         return false;
+    }
+
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (m_activation_hotkey.key != 0)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_activation_hotkey;
+            }
+            return 1;
+        }
+        return 0;
     }
 };
 

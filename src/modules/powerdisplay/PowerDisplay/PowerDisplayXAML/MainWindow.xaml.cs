@@ -109,8 +109,11 @@ namespace PowerDisplay
             // Start async initialization (monitor scanning happens here)
             await InitializeAsync();
 
-            // Hide window after initialization completes
-            HideWindow();
+            // FIX BUG #4: Don't auto-hide window after initialization
+            // Window visibility should be controlled by IPC commands (show_window/toggle_window)
+            // If launched via PowerToys Runner, window should start hidden and wait for IPC show command
+            // If launched standalone, window should stay visible
+            // HideWindow();  // REMOVED - controlled by IPC or standalone mode
         }
 
         private async Task InitializeAsync()
@@ -223,7 +226,7 @@ namespace PowerDisplay
             }
         }
 
-        private void ShowWindow()
+        public void ShowWindow()
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
@@ -253,7 +256,7 @@ namespace PowerDisplay
             }
         }
 
-        private void HideWindow()
+        public void HideWindow()
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
@@ -276,6 +279,16 @@ namespace PowerDisplay
                 // Fallback: hide immediately if animation not found
                 WindowHelper.ShowWindow(hWnd, false);
             }
+        }
+
+        /// <summary>
+        /// Check if window is currently visible
+        /// </summary>
+        /// <returns>True if window is visible, false otherwise</returns>
+        public bool IsWindowVisible()
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            return PInvoke.IsWindowVisible(hWnd);
         }
 
         private async void OnUIRefreshRequested(object? sender, EventArgs e)

@@ -5503,6 +5503,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
     <value>Configuration</value>
   </data>
+  <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
+    <value>Toggle Power Display</value>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+  </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
   </data>

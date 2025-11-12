@@ -54,6 +54,10 @@ namespace PowerDisplay.Native
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool SetForegroundWindow(IntPtr hWnd);
 
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool IsWindowVisible(IntPtr hWnd);
+
         // ==================== User32.dll - Window Creation and Messaging ====================
         [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", StringMarshalling = StringMarshalling.Utf16)]
         internal static partial IntPtr CreateWindowEx(

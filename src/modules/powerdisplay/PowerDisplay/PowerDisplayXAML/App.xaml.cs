@@ -171,7 +171,9 @@ namespace PowerDisplay
 
                 // Initialize IPC in background (non-blocking)
                 // Only connect pipes when launched from PowerToys (not standalone)
-                if (!string.IsNullOrEmpty(_pipeUuid) && _powerToysRunnerPid != -1)
+                bool isIPCMode = !string.IsNullOrEmpty(_pipeUuid) && _powerToysRunnerPid != -1;
+
+                if (isIPCMode)
                 {
                     // Async pipe connection in background - don't block UI thread
                     _ = Task.Run(() => InitializeBidirectionalPipes(_pipeUuid));
@@ -182,8 +184,23 @@ namespace PowerDisplay
                     Logger.LogInfo("Running in standalone mode, IPC disabled");
                 }
 
-                // Create main window but don't activate, window will auto-hide after initialization
+                // Create main window
                 _mainWindow = new MainWindow();
+
+                // FIX BUG #5: Window visibility depends on launch mode
+                // - IPC mode (launched by PowerToys Runner): Start hidden, wait for show_window IPC command
+                // - Standalone mode (no command-line args): Show window immediately
+                if (!isIPCMode)
+                {
+                    // Standalone mode - activate and show window
+                    _mainWindow.Activate();
+                    Logger.LogInfo("Window activated (standalone mode)");
+                }
+                else
+                {
+                    // IPC mode - window remains inactive (hidden) until show_window command received
+                    Logger.LogInfo("Window created but not activated (IPC mode - waiting for show_window command)");
+                }
             }
             catch (Exception ex)
             {
@@ -251,7 +268,7 @@ namespace PowerDisplay
         /// <summary>
         /// Message receiver thread procedure
         /// </summary>
-        private static void MessageReceiverThreadProc()
+        private void MessageReceiverThreadProc()
         {
             Logger.LogInfo("Message receiver thread started");
 
@@ -299,7 +316,7 @@ namespace PowerDisplay
         /// <summary>
         /// Handle IPC messages received from ModuleInterface/Settings UI
         /// </summary>
-        private static void OnIPCMessageReceived(string message)
+        private void OnIPCMessageReceived(string message)
         {
             try
             {
@@ -317,31 +334,71 @@ namespace PowerDisplay
                         case "show_window":
                             Logger.LogInfo("Received show_window command");
 
-                            // TODO: Implement window show logic
+                            // FIX BUG #3: Implement window show logic
+                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                if (_mainWindow is MainWindow mainWindow)
+                                {
+                                    mainWindow.ShowWindow();
+                                }
+                            });
                             break;
 
                         case "toggle_window":
                             Logger.LogInfo("Received toggle_window command");
 
-                            // TODO: Implement window toggle logic
+                            // FIX BUG #3: Implement window toggle logic
+                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                if (_mainWindow is MainWindow mainWindow)
+                                {
+                                    if (mainWindow.IsWindowVisible())
+                                    {
+                                        mainWindow.HideWindow();
+                                    }
+                                    else
+                                    {
+                                        mainWindow.ShowWindow();
+                                    }
+                                }
+                            });
                             break;
 
                         case "refresh_monitors":
                             Logger.LogInfo("Received refresh_monitors command");
 
-                            // TODO: Implement monitor refresh logic
+                            // FIX BUG #3: Implement monitor refresh logic
+                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                                {
+                                    mainWindow.ViewModel.RefreshCommand?.Execute(null);
+                                }
+                            });
                             break;
 
                         case "settings_updated":
                             Logger.LogInfo("Received settings_updated command");
 
-                            // TODO: Implement settings update logic
+                            // FIX BUG #3: Implement settings update logic
+                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                                {
+                                    // Reload settings from file
+                                    _ = mainWindow.ViewModel.ReloadMonitorSettingsAsync();
+                                }
+                            });
                             break;
 
                         case "terminate":
                             Logger.LogInfo("Received terminate command");
 
-                            // TODO: Implement graceful shutdown
+                            // FIX BUG #3: Implement graceful shutdown
+                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                Shutdown();
+                            });
                             break;
 
                         default:

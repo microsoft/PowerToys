@@ -16,12 +16,14 @@ class PowerDisplayProcessManager
 {
 private:
     HANDLE m_hProcess = nullptr;
-    std::unique_ptr<CAtlFile> m_write_pipe;  // Write to PowerDisplay (OUT)
+    std::unique_ptr<CAtlFile> m_write_pipe;  // Write to PowerDisplay (OUT pipe)
+    HANDLE m_read_pipe = nullptr;  // Read from PowerDisplay (IN pipe) - for bidirectional support
     OnThreadExecutor m_thread_executor;
     bool m_enabled = false;
 
-    // Pipe name for this session
+    // Pipe names for this session
     std::wstring m_pipe_name_out;
+    std::wstring m_pipe_name_in;
 
 public:
     PowerDisplayProcessManager() = default;

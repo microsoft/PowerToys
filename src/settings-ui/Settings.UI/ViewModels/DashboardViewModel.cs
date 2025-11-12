@@ -232,6 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
                 ModuleType.Peek => GetModuleItemsPeek(),
+                ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
@@ -510,6 +511,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerDisplay()
+        {
+            ISettingsRepository<PowerDisplaySettings> moduleSettingsRepository = SettingsRepository<PowerDisplaySettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerDisplay_ToggleWindow"), Shortcut = settings.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/PowerDisplay.png", ButtonClickHandler = PowerDisplayLaunchClicked },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         internal void SWVersionButtonClicked()
         {
             NavigationService.Navigate(typeof(GeneralPage));
@@ -545,6 +558,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        private void PowerDisplayLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var actionName = "Launch";
+            SendConfigMSG("{\"action\":{\"PowerDisplay\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         internal void DashboardListItemClick(object sender)

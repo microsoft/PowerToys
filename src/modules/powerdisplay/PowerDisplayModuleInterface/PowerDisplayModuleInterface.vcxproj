@@ -49,7 +49,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\modules\PowerDisplay\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\PowerDisplayModuleInterface\</IntDir>
     <TargetName>PowerToys.PowerDisplayModuleInterface</TargetName>
   </PropertyGroup>
