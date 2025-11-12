@@ -168,7 +168,8 @@
                 Margin="0,0,4,0"
                 VerticalAlignment="Center"
                 IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
-                Style="{StaticResource SubtleButtonStyle}">
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind ViewModel.ShowClipboardHistoryButton, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="ClipboardHistoryButtonToolTip" />
                 </ToolTipService.ToolTip>

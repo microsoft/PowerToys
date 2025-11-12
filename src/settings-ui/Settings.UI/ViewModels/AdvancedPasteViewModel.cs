@@ -546,6 +546,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool EnableClipboardPreview
+        {
+            get => _advancedPasteSettings.Properties.EnableClipboardPreview;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.EnableClipboardPreview)
+                {
+                    _advancedPasteSettings.Properties.EnableClipboardPreview = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
                           .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
@@ -1202,6 +1215,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 target.CloseAfterLosingFocus = source.CloseAfterLosingFocus;
                 OnPropertyChanged(nameof(CloseAfterLosingFocus));
+            }
+
+            if (target.EnableClipboardPreview != source.EnableClipboardPreview)
+            {
+                target.EnableClipboardPreview = source.EnableClipboardPreview;
+                OnPropertyChanged(nameof(EnableClipboardPreview));
             }
 
             var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();

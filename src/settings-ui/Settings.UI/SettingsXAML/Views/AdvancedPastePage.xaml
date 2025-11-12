@@ -180,6 +180,9 @@
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
+                                    <CheckBox x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteShowCustomPreviewSettingsCard" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
