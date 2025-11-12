@@ -499,7 +499,7 @@
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
                             Header="Model name"
-                            PlaceholderText="gpt-4"
+                            PlaceholderText="gpt-4o"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelName, Mode=TwoWay}" />
                         <TextBox
                             x:Name="PasteAIEndpointUrlTextBox"
@@ -526,7 +526,7 @@
                             x:Name="PasteAIDeploymentNameTextBox"
                             MinWidth="200"
                             Header="Deployment name"
-                            PlaceholderText="gpt-4"
+                            PlaceholderText="gpt-4o"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.DeploymentName, Mode=TwoWay}" />
                         <TextBox
                             x:Name="PasteAISystemPromptTextBox"
