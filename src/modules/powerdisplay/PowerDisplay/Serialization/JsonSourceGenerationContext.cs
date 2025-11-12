@@ -21,6 +21,7 @@ namespace PowerDisplay.Serialization
     [JsonSerializable(typeof(IPCMessageAction))]
     [JsonSerializable(typeof(MonitorStateFile))]
     [JsonSerializable(typeof(MonitorStateEntry))]
+    [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSourceGenerationOptions(
         WriteIndented = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // which is managed separately by PowerDisplay app
         }
 
+        [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
 
         [JsonPropertyName("launch_at_startup")]

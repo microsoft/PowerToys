@@ -66,17 +66,25 @@ void PowerDisplayProcessManager::send_message_to_powerdisplay(const std::wstring
             try
             {
                 const auto formatted = std::format(L"{}\r\n", message);
-                const CString msg(formatted.c_str());
-                const DWORD bytes_to_write = static_cast<DWORD>(msg.GetLength() * sizeof(TCHAR));
+                
+                // Convert wide string to UTF-8 for C# interop
+                int utf8_size = WideCharToMultiByte(CP_UTF8, 0, formatted.c_str(), -1, nullptr, 0, nullptr, nullptr);
+                if (utf8_size > 0)
+                {
+                    std::string utf8_msg(static_cast<size_t>(utf8_size) - 1, '\0'); // -1 to exclude null terminator
+                    WideCharToMultiByte(CP_UTF8, 0, formatted.c_str(), -1, &utf8_msg[0], utf8_size, nullptr, nullptr);
 
-                DWORD bytes_written = 0;
-                if (FAILED(m_write_pipe->Write(msg.GetString(), bytes_to_write, &bytes_written)))
-                {
-                    Logger::error(L"Failed to write message to PowerDisplay pipe");
-                }
-                else
-                {
-                    Logger::trace(L"Sent message to PowerDisplay: {}", message);
+                    const DWORD bytes_to_write = static_cast<DWORD>(utf8_msg.length());
+                    DWORD bytes_written = 0;
+                    
+                    if (FAILED(m_write_pipe->Write(utf8_msg.c_str(), bytes_to_write, &bytes_written)))
+                    {
+                        Logger::error(L"Failed to write message to PowerDisplay pipe");
+                    }
+                    else
+                    {
+                        Logger::trace(L"Sent message to PowerDisplay: {}", message);
+                    }
                 }
             }
             catch (...)
@@ -103,14 +111,8 @@ bool PowerDisplayProcessManager::is_process_running() const
 
 void PowerDisplayProcessManager::terminate_process()
 {
-    // Close pipes
+    // Close pipe
     m_write_pipe.reset();
-
-    if (m_read_pipe != nullptr)
-    {
-        CloseHandle(m_read_pipe);
-        m_read_pipe = nullptr;
-    }
 
     // Terminate process
     if (m_hProcess != nullptr)
@@ -155,14 +157,11 @@ HRESULT PowerDisplayProcessManager::start_command_pipe(const std::wstring& pipe_
     const constexpr DWORD BUFSIZE = 4096 * 4;
     const constexpr DWORD client_timeout_millis = 5000;
 
-    // FIX BUG #2: Create BOTH pipes (bidirectional)
-    // PowerDisplay.exe expects both IN and OUT pipes to exist
-
-    // Create OUT pipe: ModuleInterface writes, PowerDisplay reads
-    m_pipe_name_out = std::format(L"\\\\.\\pipe\\powertoys_powerdisplay_{}_out", pipe_uuid);
+    // Create single-direction pipe: ModuleInterface writes commands to PowerDisplay
+    const std::wstring pipe_name = std::format(L"\\\\.\\pipe\\powertoys_powerdisplay_{}", pipe_uuid);
 
     HANDLE hWritePipe = CreateNamedPipe(
-        m_pipe_name_out.c_str(),
+        pipe_name.c_str(),
         PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
         PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
         1,       // max instances
@@ -174,115 +173,53 @@ HRESULT PowerDisplayProcessManager::start_command_pipe(const std::wstring& pipe_
 
     if (hWritePipe == NULL || hWritePipe == INVALID_HANDLE_VALUE)
     {
-        Logger::error(L"Error creating OUT pipe for PowerDisplay");
+        Logger::error(L"Error creating pipe for PowerDisplay");
         return E_FAIL;
     }
 
-    // Create IN pipe: PowerDisplay writes, ModuleInterface reads
-    m_pipe_name_in = std::format(L"\\\\.\\pipe\\powertoys_powerdisplay_{}_in", pipe_uuid);
+    // Create overlapped event for waiting for client to connect
+    OVERLAPPED overlapped = { 0 };
+    overlapped.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
-    m_read_pipe = CreateNamedPipe(
-        m_pipe_name_in.c_str(),
-        PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-        1,       // max instances
-        0,       // out buffer size (not used for inbound)
-        BUFSIZE, // in buffer size
-        0,       // client timeout
-        NULL     // default security
-    );
-
-    if (m_read_pipe == NULL || m_read_pipe == INVALID_HANDLE_VALUE)
+    if (!overlapped.hEvent)
     {
-        Logger::error(L"Error creating IN pipe for PowerDisplay");
+        Logger::error(L"Error creating overlapped event for PowerDisplay pipe");
         CloseHandle(hWritePipe);
         return E_FAIL;
     }
 
-    // Create overlapped events for waiting for client to connect
-    OVERLAPPED write_overlapped = { 0 };
-    write_overlapped.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-
-    OVERLAPPED read_overlapped = { 0 };
-    read_overlapped.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-
-    if (!write_overlapped.hEvent || !read_overlapped.hEvent)
-    {
-        Logger::error(L"Error creating overlapped events for PowerDisplay pipes");
-        if (write_overlapped.hEvent) CloseHandle(write_overlapped.hEvent);
-        if (read_overlapped.hEvent) CloseHandle(read_overlapped.hEvent);
-        CloseHandle(hWritePipe);
-        CloseHandle(m_read_pipe);
-        m_read_pipe = nullptr;
-        return E_FAIL;
-    }
-
-    // Connect both pipes
-    bool write_pipe_pending = false;
-    bool read_pipe_pending = false;
-
-    if (!ConnectNamedPipe(hWritePipe, &write_overlapped))
+    // Connect pipe
+    if (!ConnectNamedPipe(hWritePipe, &overlapped))
     {
         const auto lastError = GetLastError();
-        if (lastError == ERROR_IO_PENDING)
+        if (lastError != ERROR_IO_PENDING && lastError != ERROR_PIPE_CONNECTED)
         {
-            write_pipe_pending = true;
-        }
-        else if (lastError != ERROR_PIPE_CONNECTED)
-        {
-            Logger::error(L"Error connecting OUT pipe");
-            CloseHandle(write_overlapped.hEvent);
-            CloseHandle(read_overlapped.hEvent);
+            Logger::error(L"Error connecting pipe");
+            CloseHandle(overlapped.hEvent);
             CloseHandle(hWritePipe);
-            CloseHandle(m_read_pipe);
-            m_read_pipe = nullptr;
             return E_FAIL;
         }
     }
 
-    if (!ConnectNamedPipe(m_read_pipe, &read_overlapped))
+    // Wait for pipe to connect (with timeout)
+    DWORD wait_result = WaitForSingleObject(overlapped.hEvent, client_timeout_millis);
+    CloseHandle(overlapped.hEvent);
+
+    if (wait_result == WAIT_OBJECT_0 || wait_result == WAIT_TIMEOUT)
     {
-        const auto lastError = GetLastError();
-        if (lastError == ERROR_IO_PENDING)
+        // Check if actually connected
+        DWORD bytes_transferred = 0;
+        if (GetOverlappedResult(hWritePipe, &overlapped, &bytes_transferred, FALSE) || GetLastError() == ERROR_PIPE_CONNECTED)
         {
-            read_pipe_pending = true;
-        }
-        else if (lastError != ERROR_PIPE_CONNECTED)
-        {
-            Logger::error(L"Error connecting IN pipe");
-            CloseHandle(write_overlapped.hEvent);
-            CloseHandle(read_overlapped.hEvent);
-            CloseHandle(hWritePipe);
-            CloseHandle(m_read_pipe);
-            m_read_pipe = nullptr;
-            return E_FAIL;
+            m_write_pipe = std::make_unique<CAtlFile>(hWritePipe);
+            Logger::trace(L"PowerDisplay pipe connected successfully: {}", pipe_name);
+            return S_OK;
         }
     }
 
-    // Wait for both pipes to connect (with timeout)
-    HANDLE wait_handles[2] = { write_overlapped.hEvent, read_overlapped.hEvent };
-    DWORD wait_result = WaitForMultipleObjects(2, wait_handles, TRUE, client_timeout_millis);
-
-    CloseHandle(write_overlapped.hEvent);
-    CloseHandle(read_overlapped.hEvent);
-
-    if (wait_result == WAIT_OBJECT_0)
-    {
-        // Both pipes connected successfully
-        m_write_pipe = std::make_unique<CAtlFile>(hWritePipe);
-
-        Logger::trace(L"PowerDisplay bidirectional pipes connected successfully (OUT: {}, IN: {})",
-                     m_pipe_name_out, m_pipe_name_in);
-        return S_OK;
-    }
-    else
-    {
-        Logger::error(L"Timeout waiting for PowerDisplay to connect to pipes");
-        CloseHandle(hWritePipe);
-        CloseHandle(m_read_pipe);
-        m_read_pipe = nullptr;
-        return E_FAIL;
-    }
+    Logger::error(L"Timeout waiting for PowerDisplay to connect to pipe");
+    CloseHandle(hWritePipe);
+    return E_FAIL;
 }
 
 void PowerDisplayProcessManager::refresh()

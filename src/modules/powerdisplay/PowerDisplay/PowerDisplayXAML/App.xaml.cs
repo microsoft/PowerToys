@@ -20,42 +20,14 @@ namespace PowerDisplay
     /// <summary>
     /// PowerDisplay application main class
     /// </summary>
+#pragma warning disable CA1001 // CancellationTokenSource is disposed in Shutdown/ForceExit methods
     public partial class App : Application
+#pragma warning restore CA1001
     {
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
         private string _pipeUuid = string.Empty;
-        private static Mutex? _mutex;
-
-        // Bidirectional named pipes for IPC
-        private static System.IO.Pipes.NamedPipeClientStream? _readPipe;  // Read from ModuleInterface (OUT pipe)
-        private static System.IO.Pipes.NamedPipeClientStream? _writePipe; // Write to ModuleInterface (IN pipe)
-        private static Thread? _messageReceiverThread;
-        private static bool _stopReceiver;
-
-        /// <summary>
-        /// Sends IPC message to Settings UI via ModuleInterface
-        /// </summary>
-        public static void SendIPCMessage(string message)
-        {
-            try
-            {
-                if (_writePipe != null && _writePipe.IsConnected)
-                {
-                    var writer = new System.IO.StreamWriter(_writePipe) { AutoFlush = true };
-                    writer.WriteLine(message);
-                    Logger.LogTrace($"Sent IPC message: {message}");
-                }
-                else
-                {
-                    Logger.LogWarning("Cannot send IPC message: pipe not connected");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to send IPC message: {ex.Message}");
-            }
-        }
+        private CancellationTokenSource? _ipcCancellationTokenSource;
 
         public App(int runnerPid, string pipeUuid)
         {
@@ -111,19 +83,8 @@ namespace PowerDisplay
         {
             try
             {
-                // Use Mutex to ensure only one PowerDisplay instance is running
-                _mutex = new Mutex(true, "PowerDisplay", out bool isNewInstance);
-
-                if (!isNewInstance)
-                {
-                    // PowerDisplay is already running, exit current instance
-                    Logger.LogInfo("PowerDisplay is already running. Exiting duplicate instance.");
-                    Environment.Exit(0);
-                    return;
-                }
-
-                // Ensure Mutex is released when app exits
-                AppDomain.CurrentDomain.ProcessExit += (_, _) => _mutex?.ReleaseMutex();
+                // Single instance is already ensured by AppInstance.FindOrRegisterForKey() in Program.cs
+                // No need for additional Mutex check here
 
                 // Parse command line arguments
                 var cmdArgs = Environment.GetCommandLineArgs();
@@ -175,9 +136,10 @@ namespace PowerDisplay
 
                 if (isIPCMode)
                 {
-                    // Async pipe connection in background - don't block UI thread
-                    _ = Task.Run(() => InitializeBidirectionalPipes(_pipeUuid));
-                    Logger.LogInfo("Starting IPC pipe connection in background");
+                    // Start IPC message listener in background
+                    _ipcCancellationTokenSource = new CancellationTokenSource();
+                    _ = Task.Run(() => StartIPCListener(_pipeUuid, _ipcCancellationTokenSource.Token));
+                    Logger.LogInfo("Starting IPC pipe listener in background");
                 }
                 else
                 {
@@ -187,7 +149,7 @@ namespace PowerDisplay
                 // Create main window
                 _mainWindow = new MainWindow();
 
-                // FIX BUG #5: Window visibility depends on launch mode
+                // Window visibility depends on launch mode
                 // - IPC mode (launched by PowerToys Runner): Start hidden, wait for show_window IPC command
                 // - Standalone mode (no command-line args): Show window immediately
                 if (!isIPCMode)
@@ -200,6 +162,23 @@ namespace PowerDisplay
                 {
                     // IPC mode - window remains inactive (hidden) until show_window command received
                     Logger.LogInfo("Window created but not activated (IPC mode - waiting for show_window command)");
+
+                    // Start background initialization to scan monitors even when hidden
+                    _ = Task.Run(async () =>
+                    {
+                        // Give window a moment to finish construction
+                        await Task.Delay(500);
+
+                        // Trigger initialization on UI thread
+                        _mainWindow?.DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            if (_mainWindow is MainWindow mainWindow)
+                            {
+                                await mainWindow.EnsureInitializedAsync();
+                                Logger.LogInfo("Background initialization completed (IPC mode)");
+                            }
+                        });
+                    });
                 }
             }
             catch (Exception ex)
@@ -209,112 +188,33 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Initialize bidirectional named pipes for IPC with ModuleInterface
+        /// Start IPC listener to receive commands from ModuleInterface
         /// </summary>
-        private void InitializeBidirectionalPipes(string pipeUuid)
+        private async Task StartIPCListener(string pipeUuid, CancellationToken cancellationToken)
         {
             try
             {
-                // Pipe names based on UUID from ModuleInterface
-                string pipeNameIn = $"powertoys_powerdisplay_{pipeUuid}_in";   // Write to this (ModuleInterface reads)
-                string pipeNameOut = $"powertoys_powerdisplay_{pipeUuid}_out"; // Read from this (ModuleInterface writes)
+                string pipeName = $"powertoys_powerdisplay_{pipeUuid}";
+                Logger.LogInfo($"Connecting to pipe: {pipeName}");
 
-                Logger.LogInfo($"Connecting to pipes: IN={pipeNameIn}, OUT={pipeNameOut}");
-
-                // Connect to write pipe (IN pipe from ModuleInterface perspective)
-                _writePipe = new System.IO.Pipes.NamedPipeClientStream(
-                    ".",
-                    pipeNameIn,
-                    System.IO.Pipes.PipeDirection.Out);
-                _writePipe.Connect(2000); // 2 second timeout (reduced from 5s, we're in background thread)
-
-                // Connect to read pipe (OUT pipe from ModuleInterface perspective)
-                _readPipe = new System.IO.Pipes.NamedPipeClientStream(
-                    ".",
-                    pipeNameOut,
-                    System.IO.Pipes.PipeDirection.In);
-                _readPipe.Connect(2000); // 2 second timeout (reduced from 5s)
-
-                Logger.LogInfo("Successfully connected to bidirectional pipes");
-
-                // Start message receiver thread
-                _stopReceiver = false;
-                _messageReceiverThread = new Thread(MessageReceiverThreadProc)
-                {
-                    IsBackground = true,
-                    Name = "PowerDisplay IPC Receiver",
-                };
-                _messageReceiverThread.Start();
+                await NamedPipeProcessor.ProcessNamedPipeAsync(
+                    pipeName,
+                    TimeSpan.FromSeconds(5),
+                    OnIPCMessageReceived,
+                    cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogInfo("IPC listener cancelled");
             }
             catch (Exception ex)
             {
-                Logger.LogWarning($"Failed to initialize bidirectional pipes: {ex.Message}. App will continue in standalone mode.");
-
-                // Clean up on failure
-                try
-                {
-                    _writePipe?.Dispose();
-                    _readPipe?.Dispose();
-                    _writePipe = null;
-                    _readPipe = null;
-                }
-                catch
-                {
-                    // Ignore cleanup errors
-                }
+                Logger.LogError($"Error in IPC listener: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Message receiver thread procedure
-        /// </summary>
-        private void MessageReceiverThreadProc()
-        {
-            Logger.LogInfo("Message receiver thread started");
-
-            try
-            {
-                if (_readPipe == null || !_readPipe.IsConnected)
-                {
-                    Logger.LogError("Read pipe is not connected");
-                    return;
-                }
-
-                var reader = new System.IO.StreamReader(_readPipe);
-
-                while (!_stopReceiver && _readPipe.IsConnected)
-                {
-                    try
-                    {
-                        string? message = reader.ReadLine();
-                        if (message != null)
-                        {
-                            OnIPCMessageReceived(message);
-                        }
-                    }
-                    catch (System.IO.IOException)
-                    {
-                        // Pipe disconnected
-                        Logger.LogWarning("Pipe disconnected");
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Error reading from pipe: {ex.Message}");
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Message receiver thread error: {ex.Message}");
-            }
-
-            Logger.LogInfo("Message receiver thread exiting");
-        }
-
-        /// <summary>
-        /// Handle IPC messages received from ModuleInterface/Settings UI
+        /// Handle IPC messages received from ModuleInterface
         /// </summary>
         private void OnIPCMessageReceived(string message)
         {
@@ -322,19 +222,18 @@ namespace PowerDisplay
             {
                 Logger.LogInfo($"Received IPC message: {message}");
 
-                // Parse JSON message and handle commands (using source-generated context for AOT)
-                // Expected format: {"action": "command_name", ...}
-                var ipcMessage = System.Text.Json.JsonSerializer.Deserialize(message, AppJsonContext.Default.IPCMessageAction);
-                if (ipcMessage?.Action != null)
+                // Parse JSON command
+                var json = System.Text.Json.JsonDocument.Parse(message);
+                var root = json.RootElement;
+
+                if (root.TryGetProperty("action", out var actionElement))
                 {
-                    string action = ipcMessage.Action;
+                    string action = actionElement.GetString() ?? string.Empty;
 
                     switch (action)
                     {
                         case "show_window":
                             Logger.LogInfo("Received show_window command");
-
-                            // FIX BUG #3: Implement window show logic
                             _mainWindow?.DispatcherQueue.TryEnqueue(() =>
                             {
                                 if (_mainWindow is MainWindow mainWindow)
@@ -346,8 +245,6 @@ namespace PowerDisplay
 
                         case "toggle_window":
                             Logger.LogInfo("Received toggle_window command");
-
-                            // FIX BUG #3: Implement window toggle logic
                             _mainWindow?.DispatcherQueue.TryEnqueue(() =>
                             {
                                 if (_mainWindow is MainWindow mainWindow)
@@ -366,8 +263,6 @@ namespace PowerDisplay
 
                         case "refresh_monitors":
                             Logger.LogInfo("Received refresh_monitors command");
-
-                            // FIX BUG #3: Implement monitor refresh logic
                             _mainWindow?.DispatcherQueue.TryEnqueue(() =>
                             {
                                 if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
@@ -379,13 +274,10 @@ namespace PowerDisplay
 
                         case "settings_updated":
                             Logger.LogInfo("Received settings_updated command");
-
-                            // FIX BUG #3: Implement settings update logic
                             _mainWindow?.DispatcherQueue.TryEnqueue(() =>
                             {
                                 if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
                                 {
-                                    // Reload settings from file
                                     _ = mainWindow.ViewModel.ReloadMonitorSettingsAsync();
                                 }
                             });
@@ -393,8 +285,6 @@ namespace PowerDisplay
 
                         case "terminate":
                             Logger.LogInfo("Received terminate command");
-
-                            // FIX BUG #3: Implement graceful shutdown
                             _mainWindow?.DispatcherQueue.TryEnqueue(() =>
                             {
                                 Shutdown();
@@ -402,7 +292,7 @@ namespace PowerDisplay
                             break;
 
                         default:
-                            Logger.LogWarning($"Unknown action received: {action}");
+                            Logger.LogWarning($"Unknown action: {action}");
                             break;
                     }
                 }
@@ -487,111 +377,33 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Quick cleanup when application exits
+        /// Shutdown application (simplified version following other PowerToys modules pattern)
         /// </summary>
         public void Shutdown()
         {
-            try
-            {
-                // Start timeout mechanism, ensure exit within 1 second
-                var timeoutTimer = new System.Threading.Timer(
-                    _ =>
-                    {
-                        Logger.LogWarning("Shutdown timeout reached, forcing exit");
-                        Environment.Exit(0);
-                    },
-                    null,
-                    1000,
-                    System.Threading.Timeout.Infinite);
+            Logger.LogInfo("PowerDisplay shutting down");
 
-                // Immediately notify MainWindow that program is exiting, enable fast shutdown mode
-                if (_mainWindow is MainWindow mainWindow)
-                {
-                    mainWindow.SetExiting();
-                    mainWindow.FastShutdown();
-                }
+            // Cancel IPC listener
+            _ipcCancellationTokenSource?.Cancel();
+            _ipcCancellationTokenSource?.Dispose();
 
-                _mainWindow = null;
-
-                // Clean up IPC pipes
-                try
-                {
-                    _stopReceiver = true;
-                    _messageReceiverThread?.Join(1000); // Wait max 1 second
-
-                    _readPipe?.Close();
-                    _readPipe?.Dispose();
-                    _readPipe = null;
-
-                    _writePipe?.Close();
-                    _writePipe?.Dispose();
-                    _writePipe = null;
-                }
-                catch
-                {
-                    // Ignore IPC cleanup errors
-                }
-
-                // Immediately release Mutex
-                _mutex?.ReleaseMutex();
-                _mutex?.Dispose();
-                _mutex = null;
-
-                // Cancel timeout timer
-                timeoutTimer?.Dispose();
-            }
-            catch
-            {
-                // Ignore cleanup errors, ensure exit
-                Environment.Exit(0);
-            }
+            // Exit immediately - OS will clean up all resources (pipes, threads, windows, etc.)
+            // Single instance is managed by AppInstance in Program.cs, no manual cleanup needed
+            Environment.Exit(0);
         }
 
         /// <summary>
-        /// Force exit application, ensure complete termination
+        /// Force exit when PowerToys Runner exits
         /// </summary>
         private void ForceExit()
         {
-            try
-            {
-                // Immediately start timeout mechanism, must exit within 500ms
-                var emergencyTimer = new System.Threading.Timer(
-                    _ =>
-                    {
-                        Logger.LogWarning("Emergency exit timeout reached, terminating process");
-                        Environment.Exit(0);
-                    },
-                    null,
-                    500,
-                    System.Threading.Timeout.Infinite);
+            Logger.LogInfo("PowerToys Runner exited, forcing shutdown");
 
-                PerformForceExit();
-            }
-            catch
-            {
-                // If all other methods fail, immediately force exit process
-                Environment.Exit(0);
-            }
-        }
+            // Cancel IPC listener
+            _ipcCancellationTokenSource?.Cancel();
+            _ipcCancellationTokenSource?.Dispose();
 
-        /// <summary>
-        /// Perform fast exit operation
-        /// </summary>
-        private void PerformForceExit()
-        {
-            try
-            {
-                // Fast shutdown
-                Shutdown();
-
-                // Immediately exit
-                Environment.Exit(0);
-            }
-            catch
-            {
-                // Ensure exit
-                Environment.Exit(0);
-            }
+            Environment.Exit(0);
         }
     }
 }

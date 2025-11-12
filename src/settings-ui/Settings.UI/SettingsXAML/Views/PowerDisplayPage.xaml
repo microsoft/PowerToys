@@ -21,6 +21,14 @@
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </tkcontrols:SettingsCard>
 
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="PowerDisplay_Configuration_GroupSettings" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_LaunchButtonControl"

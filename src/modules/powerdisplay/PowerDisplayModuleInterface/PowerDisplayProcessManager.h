@@ -6,24 +6,20 @@
 
 #include <functional>
 #include <memory>
+#include <thread>
 #include <atlfile.h>
 #include <common/utils/OnThreadExecutor.h>
 
 /// <summary>
-/// Manages PowerDisplay.exe process lifecycle and bidirectional IPC communication
+/// Manages PowerDisplay.exe process lifecycle and IPC communication
 /// </summary>
 class PowerDisplayProcessManager
 {
 private:
     HANDLE m_hProcess = nullptr;
-    std::unique_ptr<CAtlFile> m_write_pipe;  // Write to PowerDisplay (OUT pipe)
-    HANDLE m_read_pipe = nullptr;  // Read from PowerDisplay (IN pipe) - for bidirectional support
+    std::unique_ptr<CAtlFile> m_write_pipe;
     OnThreadExecutor m_thread_executor;
     bool m_enabled = false;
-
-    // Pipe names for this session
-    std::wstring m_pipe_name_out;
-    std::wstring m_pipe_name_in;
 
 public:
     PowerDisplayProcessManager() = default;

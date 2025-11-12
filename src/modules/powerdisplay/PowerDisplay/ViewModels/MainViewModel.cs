@@ -238,8 +238,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasMonitors));
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
 
-        // Send monitor information to Settings UI via IPC
-        SendMonitorInfoToSettingsUI();
+        // Save monitor information to settings.json for Settings UI
+        SaveMonitorsToSettings();
 
         // Restore saved settings if enabled (async, don't block)
         // Pass color temperature initialization tasks so we can wait for them if needed
@@ -293,8 +293,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
             StatusText = $"Monitor list updated ({Monitors.Count} total)";
 
-            // Send updated monitor list to Settings UI via IPC
-            SendMonitorInfoToSettingsUI();
+            // Save updated monitor list to settings.json for Settings UI
+            SaveMonitorsToSettings();
         });
     }
 
@@ -663,49 +663,51 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Send monitor information to Settings UI via IPC (using standard Model)
+    /// Save monitor information to settings.json for Settings UI to read
     /// </summary>
-    private void SendMonitorInfoToSettingsUI()
+    private void SaveMonitorsToSettings()
     {
         try
         {
             if (Monitors.Count == 0)
             {
-                Logger.LogInfo("[IPC] No monitors to send to Settings UI");
+                Logger.LogInfo("No monitors to save to settings.json");
                 return;
             }
 
-            // Build monitor data list
-            var monitorsData = new List<MonitorInfoData>();
+            // Build monitor list using Settings UI's MonitorInfo model
+            var monitors = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
 
             foreach (var vm in Monitors)
             {
-                var monitorData = new MonitorInfoData
-                {
-                    Name = vm.Name,
-                    InternalName = vm.Id,
-                    HardwareId = vm.HardwareId,
-                    CommunicationMethod = GetCommunicationMethodString(vm.Type),
-                    MonitorType = vm.Type.ToString(),
-                    CurrentBrightness = vm.Brightness,
-                    ColorTemperature = vm.ColorTemperature,
-                };
+                var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
+                    name: vm.Name,
+                    internalName: vm.Id,
+                    hardwareId: vm.HardwareId,
+                    communicationMethod: GetCommunicationMethodString(vm.Type),
+                    monitorType: vm.Type.ToString(),
+                    currentBrightness: vm.Brightness,
+                    colorTemperature: vm.ColorTemperature);
 
-                monitorsData.Add(monitorData);
+                monitors.Add(monitorInfo);
             }
 
-            // Use standard IPC Response Model with JsonSerializer (source-generated for AOT)
-            var response = new PowerDisplayMonitorsIPCResponse(monitorsData);
-            string jsonMessage = System.Text.Json.JsonSerializer.Serialize(response, AppJsonContext.Default.PowerDisplayMonitorsIPCResponse);
+            // Load current settings
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
 
-            // Send to Settings UI via IPC
-            App.SendIPCMessage(jsonMessage);
+            // Update monitors list
+            settings.Properties.Monitors = monitors;
 
-            Logger.LogInfo($"[IPC] Sent {Monitors.Count} monitors to Settings UI");
+            // Save back to settings.json using source-generated context for AOT
+            _settingsUtils.SaveSettings(
+                System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                PowerDisplaySettings.ModuleName);
+
+            Logger.LogInfo($"Saved {Monitors.Count} monitors to settings.json");
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[IPC] Failed to send monitor info: {ex.Message}");
+            Logger.LogError($"Failed to save monitors to settings.json: {ex.Message}");
         }
     }
 

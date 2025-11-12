@@ -87,6 +87,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
         }
 
+        public HotkeySettings ActivationShortcut
+        {
+            get => _settings.Properties.ActivationShortcut;
+            set => SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v);
+        }
+
         public string BrightnessUpdateRate
         {
             get => _settings.Properties.BrightnessUpdateRate;

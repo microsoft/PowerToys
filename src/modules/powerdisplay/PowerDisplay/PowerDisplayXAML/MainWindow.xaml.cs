@@ -85,6 +85,20 @@ namespace PowerDisplay
                 return;
             }
 
+            await EnsureInitializedAsync();
+        }
+
+        /// <summary>
+        /// Ensures the window is properly initialized with ViewModel and data
+        /// Can be called from external code (e.g., App startup) to initialize in background
+        /// </summary>
+        public async Task EnsureInitializedAsync()
+        {
+            if (_hasInitialized)
+            {
+                return;
+            }
+
             _hasInitialized = true;
             this.Activated -= OnFirstActivated; // Unsubscribe after first run
 
@@ -226,8 +240,14 @@ namespace PowerDisplay
             }
         }
 
-        public void ShowWindow()
+        public async void ShowWindow()
         {
+            // Ensure window is initialized before showing
+            if (!_hasInitialized)
+            {
+                await EnsureInitializedAsync();
+            }
+
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
             // Adjust window size before showing

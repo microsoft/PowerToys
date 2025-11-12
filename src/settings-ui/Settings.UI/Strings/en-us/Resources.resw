@@ -5507,6 +5507,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Toggle Power Display</value>
     <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
   </data>
+  <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+    <comment>Header for the PowerDisplay activation shortcut setting</comment>
+  </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
   </data>
@@ -5523,6 +5527,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>On</value>
   </data>
   <data name="PowerDisplay_LaunchAtStartup_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Header" xml:space="preserve">
+    <value>Restore settings on startup</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Description" xml:space="preserve">
+    <value>Restore monitor brightness and color temperature when Power Display launches</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
     <value>Off</value>
   </data>
   <data name="PowerDisplay_BrightnessUpdateRate.Header" xml:space="preserve">
