@@ -164,18 +164,31 @@ namespace AdvancedPaste.Settings
             }
 
             var properties = settings.Properties;
-            var configuration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
-            properties.PasteAIConfiguration = configuration;
+            var configuration = properties.PasteAIConfiguration;
 
-            bool configurationUpdated = AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
+            if (configuration is null)
+            {
+                configuration = new PasteAIConfiguration();
+                properties.PasteAIConfiguration = configuration;
+            }
 
-            var legacyCredential = TryGetLegacyOpenAICredential();
+            bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
 
-            bool requiresOpenAIProvider = legacyCredential is not null ||
-                                           (properties.IsAIEnabled && (configuration.Providers is null || configuration.Providers.Count == 0));
+            if (!hasLegacyProviders && legacyCredential is null)
+            {
+                return false;
+            }
+
+            bool configurationUpdated = false;
+
+            if (hasLegacyProviders)
+            {
+                configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
+            }
 
             PasteAIProviderDefinition openAIProvider = null;
-            if (requiresOpenAIProvider)
+            if (legacyCredential is not null)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
