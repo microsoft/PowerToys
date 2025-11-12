@@ -1000,6 +1000,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettingsConfig.Enabled.CursorWrap = value;
                     OnPropertyChanged(nameof(IsCursorWrapEnabled));
 
+                    // Auto-enable the AutoActivate setting when CursorWrap is enabled
+                    // This ensures cursor wrapping is active immediately after enabling
+                    if (value && !_cursorWrapAutoActivate)
+                    {
+                        CursorWrapAutoActivate = true;
+                    }
+
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
