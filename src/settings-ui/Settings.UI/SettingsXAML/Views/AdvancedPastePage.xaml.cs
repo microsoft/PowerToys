@@ -36,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private const string AdvancedAISystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
         private const string SimpleAISystemPrompt = "You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content.";
+        private static readonly string AdvancedAISystemPromptNormalized = AdvancedAISystemPrompt.Trim();
+        private static readonly string SimpleAISystemPromptNormalized = SimpleAISystemPrompt.Trim();
 
         private AdvancedPasteViewModel ViewModel { get; set; }
 
@@ -804,6 +806,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            NormalizeSystemPrompt(draft);
             string serviceType = draft.ServiceType ?? "OpenAI";
             string apiKey = PasteAIApiKeyPasswordBox.Password;
             string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
@@ -834,22 +837,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            bool isEmptyOrDefault = string.IsNullOrWhiteSpace(draft.SystemPrompt) ||
-                                     draft.SystemPrompt.Trim() == AdvancedAISystemPrompt.Trim() ||
-                                     draft.SystemPrompt.Trim() == SimpleAISystemPrompt.Trim();
-
-            if (isEmptyOrDefault)
-            {
-                if (!draft.EnableAdvancedAI)
-                {
-                    // Now we'll switch
-                    draft.SystemPrompt = AdvancedAISystemPrompt;
-                }
-                else
-                {
-                    draft.SystemPrompt = SimpleAISystemPrompt;
-                }
-            }
+            NormalizeSystemPrompt(draft);
+            UpdateSystemPromptPlaceholder();
         }
 
         private static bool RequiresApiKeyForService(string serviceType)
@@ -950,15 +939,47 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private Visibility GetServicePrivacyVisibility(string serviceType) => HasServicePrivacyLink(serviceType) ? Visibility.Visible : Visibility.Collapsed;
 
-        private void UpdateSystemPromptPlaceholder()
+        private static bool IsPlaceholderSystemPrompt(string prompt)
         {
-            var draft = ViewModel?.PasteAIProviderDraft;
-            if (draft is null || PasteAISystemPromptTextBox is null)
+            if (string.IsNullOrWhiteSpace(prompt))
+            {
+                return true;
+            }
+
+            string trimmedPrompt = prompt.Trim();
+            return string.Equals(trimmedPrompt, AdvancedAISystemPromptNormalized, StringComparison.Ordinal)
+                || string.Equals(trimmedPrompt, SimpleAISystemPromptNormalized, StringComparison.Ordinal);
+        }
+
+        private static void NormalizeSystemPrompt(PasteAIProviderDefinition draft)
+        {
+            if (draft is null)
             {
                 return;
             }
 
-            PasteAISystemPromptTextBox.PlaceholderText = draft.EnableAdvancedAI
+            if (IsPlaceholderSystemPrompt(draft.SystemPrompt))
+            {
+                draft.SystemPrompt = string.Empty;
+            }
+        }
+
+        private void UpdateSystemPromptPlaceholder()
+        {
+            var draft = ViewModel?.PasteAIProviderDraft;
+            if (draft is null)
+            {
+                return;
+            }
+
+            NormalizeSystemPrompt(draft);
+            if (PasteAISystemPromptTextBox is null)
+            {
+                return;
+            }
+
+            bool useAdvancedPlaceholder = PasteAIEnableAdvancedAICheckBox?.IsOn ?? draft.EnableAdvancedAI;
+            PasteAISystemPromptTextBox.PlaceholderText = useAdvancedPlaceholder
                 ? AdvancedAISystemPrompt
                 : SimpleAISystemPrompt;
         }
