@@ -213,10 +213,11 @@ namespace AdvancedPaste.Settings
                 RemoveLegacyOpenAICredential();
             }
 
+            bool shouldEnableAI = legacyCredential is not null;
             bool enabledUpdated = false;
-            if (!properties.IsAIEnabled && legacyCredential is not null)
+            if (properties.IsAIEnabled != shouldEnableAI)
             {
-                properties.IsAIEnabled = true;
+                properties.IsAIEnabled = shouldEnableAI;
                 enabledUpdated = true;
             }
 

@@ -233,10 +233,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 RemoveLegacyOpenAICredential();
             }
 
+            bool shouldEnableAI = legacyCredential is not null;
             bool enabledChanged = false;
-            if (!properties.IsAIEnabled && legacyCredential is not null)
+            if (properties.IsAIEnabled != shouldEnableAI)
             {
-                properties.IsAIEnabled = true;
+                properties.IsAIEnabled = shouldEnableAI;
                 enabledChanged = true;
             }
 
