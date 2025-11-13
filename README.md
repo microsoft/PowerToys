@@ -187,6 +187,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### PowerToys Run
  - Added retry logic with exponential backoff to handle DWM composition errors during theme changes. Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - Update OneNote png icons to new core10 design. Thanks [@trevorNgo](https://github.com/trevorNgo).
 
  ### Quick Accent
  - Added diameter symbol (⌀) for Shift+O in Special Characters mode, thanks to [@anselumjuju](https://github.com/anselumjuju).
@@ -194,6 +195,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### Zoomit
  - Smooth out zoom-animation in ZoomIt by coalescing mouse-move and timer events, thanks to [@foxmsft](https://github.com/foxmsft).
  - Enable GIF support for ZoomIt, thanks to [@MarioHewardt](https://github.com/MarioHewardt).
+ - Fix spelling mistakes, and refactored some literal strings to string constants, thanks to [@lzandman](https://github.com/lzandman).
 
 ### Settings
 - Fixed title bar overlapping issue at smaller window sizes.
