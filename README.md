@@ -7,7 +7,9 @@
 <h1 align="center">
   <span>Microsoft PowerToys</span>
 </h1>
-
+<p align="center">
+  <span align="center">Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.</span>
+</p>
 <h3 align="center">
   <a href="#-installation">Installation</a>
   <span> · </span>
@@ -18,8 +20,10 @@
   <a href="#-whats-new">Release notes</a>
 </h3>
 <br/><br/>
-Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
-<br/><br/>
+
+## 🔨 Utilities
+
+PowerToys includes over 25 utilities to help you customize and optimize your Windows experience:
 
 |   |   |   |
 |---|---|---|
@@ -37,20 +41,13 @@ Microsoft PowerToys is a collection of utilities that help you customize Windows
 
 ## 📋 Installation
 
-For detailed installation instructions, visit the [installation docs](https://learn.microsoft.com/windows/powertoys/install). 
+For detailed installation instructions and system requirements, visit the [installation docs](https://learn.microsoft.com/windows/powertoys/install). 
 
-Before you begin, make sure your device meets the system requirements:
-
-> [!NOTE]
-> - Windows 11 or Windows 10 version 2004 (20H1 / build 19041) or newer
-> - 64-bit processor: x64 or ARM64
-> - Latest stable version of [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) is installed via the bootstrapper during setup
-
-Choose one of the installation methods below:
-
+But to get started quickly, choose one of the installation methods below:
+<br/><br/>
 <details open>
-<summary>Download .exe from GitHub</summary>
-
+<summary><strong>Download .exe from GitHub</strong></summary>
+<br/>
 Go to the [PowerToys GitHub releases][github-release-link], click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
 
 <!-- items that need to be updated release to release -->
@@ -67,11 +64,11 @@ Go to the [PowerToys GitHub releases][github-release-link], click Assets to reve
 | Per user - ARM64     | [PowerToysUserSetup-0.95.1-arm64.exe][ptUserArm64] |
 | Machine wide - x64   | [PowerToysSetup-0.95.1-x64.exe][ptMachineX64] |
 | Machine wide - ARM64 | [PowerToysSetup-0.95.1-arm64.exe][ptMachineArm64] |
-
 </details>
 
 <details>
-<summary>Microsoft Store</summary>
+<summary><strong>Microsoft Store</strong></summary>
+<br/>
 You can easily install PowerToys from the Microsoft Store:
 <p>
   <a style="text-decoration:none" href="https://aka.ms/getPowertoys">
@@ -82,10 +79,9 @@ You can easily install PowerToys from the Microsoft Store:
 </p>
 </details>
 
-
 <details>
-<summary>WinGet</summary>
-
+<summary><strong>WinGet</strong></summary>
+<br/>
 Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
 *User scope installer [default]*
@@ -100,8 +96,8 @@ winget install --scope machine Microsoft.PowerToys -s winget
 </details>
 
 <details>
-<summary>Other methods</summary>
-
+<summary><strong>Other methods</strong></summary>
+<br/>
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
 
