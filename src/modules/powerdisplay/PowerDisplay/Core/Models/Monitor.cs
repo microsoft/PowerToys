@@ -187,7 +187,7 @@ namespace PowerDisplay.Core.Models
         public IntPtr Handle { get; set; } = IntPtr.Zero;
 
         /// <summary>
-        /// Device key - unique identifier part of device path (like Twinkle Tray's deviceKey)
+        /// Device key - unique identifier part of device path
         /// </summary>
         public string DeviceKey { get; set; } = string.Empty;
 
@@ -215,6 +215,16 @@ namespace PowerDisplay.Core.Models
         /// Supported control methods
         /// </summary>
         public MonitorCapabilities Capabilities { get; set; } = MonitorCapabilities.None;
+
+        /// <summary>
+        /// Raw DDC/CI capabilities string (MCCS format)
+        /// </summary>
+        public string? CapabilitiesRaw { get; set; }
+
+        /// <summary>
+        /// Parsed VCP capabilities information
+        /// </summary>
+        public VcpCapabilities? VcpCapabilitiesInfo { get; set; }
 
         /// <summary>
         /// Last update time

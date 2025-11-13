@@ -42,12 +42,20 @@ namespace PowerDisplay.Native
         public const byte VcpCodeMute = 0x8D;
 
         /// <summary>
-        /// VCP code: Color temperature request (primary color temperature control)
+        /// VCP code: Color Temperature Request (0x0C)
+        /// Per MCCS v2.2a specification:
+        /// - Used to SET and GET specific color temperature presets
+        /// - Typically supports discrete values (e.g., 5000K, 6500K, 9300K)
+        /// - Primary method for color temperature control
         /// </summary>
         public const byte VcpCodeColorTemperature = 0x0C;
 
         /// <summary>
-        /// VCP code: Color temperature increment (incremental color temperature adjustment)
+        /// VCP code: Color Temperature Increment (0x0B)
+        /// Per MCCS v2.2a specification:
+        /// - Used for incremental color temperature adjustment
+        /// - Typically supports continuous range (0-100 or custom range)
+        /// - Fallback method when 0x0C is not supported
         /// </summary>
         public const byte VcpCodeColorTemperatureIncrement = 0x0B;
 

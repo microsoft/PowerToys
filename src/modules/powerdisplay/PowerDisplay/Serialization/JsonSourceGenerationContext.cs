@@ -71,6 +71,9 @@ namespace PowerDisplay.Serialization
         [JsonPropertyName("volume")]
         public int Volume { get; set; }
 
+        [JsonPropertyName("capabilitiesRaw")]
+        public string? CapabilitiesRaw { get; set; }
+
         [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdated { get; set; }
     }

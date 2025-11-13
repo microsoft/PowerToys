@@ -127,6 +127,36 @@ namespace PowerDisplay.Core
                                 Logger.LogWarning($"Failed to get brightness for monitor {monitor.Id}: {ex.Message}");
                             }
 
+                            // Get capabilities for DDC/CI monitors (External type)
+                            if (monitor.Type == MonitorType.External && controller.SupportedType == MonitorType.External)
+                            {
+                                try
+                                {
+                                    Logger.LogInfo($"Getting capabilities for monitor {monitor.Id}");
+                                    var capsString = await controller.GetCapabilitiesStringAsync(monitor, cancellationToken);
+
+                                    if (!string.IsNullOrEmpty(capsString))
+                                    {
+                                        monitor.CapabilitiesRaw = capsString;
+
+                                        // Parse capabilities
+                                        monitor.VcpCapabilitiesInfo = Utils.VcpCapabilitiesParser.Parse(capsString);
+
+                                        Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
+                                    }
+                                    else
+                                    {
+                                        Logger.LogWarning($"Got empty capabilities string for monitor {monitor.Id}");
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.LogWarning($"Failed to get capabilities for monitor {monitor.Id}: {ex.Message}");
+
+                                    // Continue without capabilities - not critical
+                                }
+                            }
+
                             newMonitors.Add(monitor);
                         }
                     }

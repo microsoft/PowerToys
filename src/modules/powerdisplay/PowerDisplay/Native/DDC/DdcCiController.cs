@@ -239,7 +239,7 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// Get monitor capabilities string
+        /// Get monitor capabilities string with retry logic
         /// </summary>
         public async Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -253,25 +253,62 @@ namespace PowerDisplay.Native.DDC
 
                 try
                 {
-                    if (GetCapabilitiesStringLength(monitor.Handle, out uint length) && length > 0)
+                    // Step 1: Get capabilities string length (retry up to 3 times)
+                    uint length = 0;
+                    const int lengthMaxRetries = 3;
+                    for (int i = 0; i < lengthMaxRetries; i++)
+                    {
+                        if (GetCapabilitiesStringLength(monitor.Handle, out length) && length > 0)
+                        {
+                            Logger.LogDebug($"Got capabilities length: {length} (attempt {i + 1})");
+                            break;
+                        }
+
+                        if (i < lengthMaxRetries - 1)
+                        {
+                            Thread.Sleep(100); // 100ms delay between retries
+                        }
+                    }
+
+                    if (length == 0)
+                    {
+                        Logger.LogWarning("Failed to get capabilities string length after retries");
+                        return string.Empty;
+                    }
+
+                    // Step 2: Get actual capabilities string (retry up to 5 times)
+                    const int capsMaxRetries = 5;
+                    for (int i = 0; i < capsMaxRetries; i++)
                     {
                         var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal((int)length);
                         try
                         {
                             if (CapabilitiesRequestAndCapabilitiesReply(monitor.Handle, buffer, length))
                             {
-                                return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buffer) ?? string.Empty;
+                                var capsString = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buffer) ?? string.Empty;
+                                if (!string.IsNullOrEmpty(capsString))
+                                {
+                                    Logger.LogInfo($"Got capabilities string (length: {capsString.Length}, attempt: {i + 1})");
+                                    return capsString;
+                                }
                             }
                         }
                         finally
                         {
                             System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer);
                         }
+
+                        if (i < capsMaxRetries - 1)
+                        {
+                            Thread.Sleep(100); // 100ms delay between retries
+                        }
                     }
+
+                    Logger.LogWarning("Failed to get capabilities string after retries");
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning($"Failed to get capabilities string: {ex.Message}");
+                    Logger.LogError($"Exception getting capabilities string: {ex.Message}");
                 }
 
                 return string.Empty;
@@ -323,7 +360,7 @@ namespace PowerDisplay.Native.DDC
 
                 try
                 {
-                    // Get all display devices with stable device IDs (Twinkle Tray style)
+                    // Get all display devices with stable device IDs
                     var displayDevices = DdcCiNative.GetAllDisplayDevices();
 
                     // Also get hardware info for friendly names
@@ -355,8 +392,7 @@ namespace PowerDisplay.Native.DDC
                             continue;
                         }
 
-                        // Sometimes Windows returns NULL handles. Implement Twinkle Tray's retry logic.
-                        // See: twinkle-tray/src/Monitors.js line 617
+                        // Sometimes Windows returns NULL handles, so we implement retry logic
                         PHYSICAL_MONITOR[]? physicalMonitors = null;
                         const int maxRetries = 3;
                         const int retryDelayMs = 200;
@@ -380,7 +416,7 @@ namespace PowerDisplay.Native.DDC
                                 continue;
                             }
 
-                            // Check if any handle is NULL (Twinkle Tray checks handleIsValid)
+                            // Check if any handle is NULL
                             bool hasNullHandle = false;
                             for (int i = 0; i < physicalMonitors.Length; i++)
                             {
@@ -414,7 +450,7 @@ namespace PowerDisplay.Native.DDC
                             continue;
                         }
 
-                        // Match physical monitors with DisplayDeviceInfo (Twinkle Tray logic)
+                        // Match physical monitors with DisplayDeviceInfo
                         // For each physical monitor on this adapter, find the corresponding DisplayDeviceInfo
                         for (int i = 0; i < physicalMonitors.Length; i++)
                         {

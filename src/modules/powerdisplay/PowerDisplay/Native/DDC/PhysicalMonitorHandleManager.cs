@@ -12,11 +12,10 @@ namespace PowerDisplay.Native.DDC
 {
     /// <summary>
     /// Manages physical monitor handles - reuse, cleanup, and validation
-    /// Twinkle Tray style handle management
     /// </summary>
     public partial class PhysicalMonitorHandleManager : IDisposable
     {
-        // Twinkle Tray style mapping: deviceKey -> physical handle
+        // Mapping: deviceKey -> physical handle
         private readonly Dictionary<string, IntPtr> _deviceKeyToHandleMap = new();
         private bool _disposed;
 

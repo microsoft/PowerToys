@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
@@ -20,6 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableColorTemperature;
         private bool _enableContrast;
         private bool _enableVolume;
+        private string _capabilitiesRaw = string.Empty;
+        private List<string> _vcpCodes = new List<string>();
+        private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
 
         public MonitorInfo()
         {
@@ -197,5 +202,70 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
         }
+
+        [JsonPropertyName("capabilitiesRaw")]
+        public string CapabilitiesRaw
+        {
+            get => _capabilitiesRaw;
+            set
+            {
+                if (_capabilitiesRaw != value)
+                {
+                    _capabilitiesRaw = value ?? string.Empty;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasCapabilities));
+                }
+            }
+        }
+
+        [JsonPropertyName("vcpCodes")]
+        public List<string> VcpCodes
+        {
+            get => _vcpCodes;
+            set
+            {
+                if (_vcpCodes != value)
+                {
+                    _vcpCodes = value ?? new List<string>();
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(VcpCodesSummary));
+                }
+            }
+        }
+
+        [JsonPropertyName("vcpCodesFormatted")]
+        public List<VcpCodeDisplayInfo> VcpCodesFormatted
+        {
+            get => _vcpCodesFormatted;
+            set
+            {
+                if (_vcpCodesFormatted != value)
+                {
+                    _vcpCodesFormatted = value ?? new List<VcpCodeDisplayInfo>();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public string VcpCodesSummary
+        {
+            get
+            {
+                if (_vcpCodes == null || _vcpCodes.Count == 0)
+                {
+                    return "No VCP codes detected";
+                }
+
+                var count = _vcpCodes.Count;
+                var preview = string.Join(", ", _vcpCodes.Take(10));
+                return count > 10
+                    ? $"{count} VCP codes: {preview}..."
+                    : $"{count} VCP codes: {preview}";
+            }
+        }
+
+        [JsonIgnore]
+        public bool HasCapabilities => !string.IsNullOrEmpty(_capabilitiesRaw);
     }
 }

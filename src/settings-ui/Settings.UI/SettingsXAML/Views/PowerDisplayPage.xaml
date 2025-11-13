@@ -117,6 +117,48 @@
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_HideMonitor">
                                             <ToggleSwitch x:Uid="PowerDisplay_Monitor_HideMonitor_ToggleSwitch" IsOn="{x:Bind IsHidden, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
+
+                                        <!-- VCP Capabilities -->
+                                        <tkcontrols:SettingsCard
+                                            Header="VCP Capabilities (Debug Info)"
+                                            Description="DDC/CI VCP codes and supported values"
+                                            HeaderIcon="{ui:FontIcon Glyph=&#xE946;}"
+                                            Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <Button
+                                                Content="&#xE946;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Style="{StaticResource SubtleButtonStyle}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="View VCP Details" />
+                                                </ToolTipService.ToolTip>
+                                                <Button.Flyout>
+                                                    <Flyout ShouldConstrainToRootBounds="False">
+                                                        <ScrollViewer MaxHeight="500" Width="450" VerticalScrollBarVisibility="Auto">
+                                                            <StackPanel Spacing="4">
+                                                                <TextBlock Text="Detected VCP Codes" FontWeight="SemiBold" FontSize="13" />
+                                                                <ItemsControl ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate x:DataType="library:VcpCodeDisplayInfo">
+                                                                            <StackPanel Orientation="Vertical" Margin="0,4">
+                                                                                <TextBlock Text="{x:Bind Title}"
+                                                                                           FontWeight="SemiBold"
+                                                                                           FontSize="11" />
+                                                                                <TextBlock Text="{x:Bind Values}"
+                                                                                           FontSize="10"
+                                                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                                           TextWrapping="Wrap"
+                                                                                           Margin="12,2,0,0"
+                                                                                           Visibility="{x:Bind HasValues}" />
+                                                                            </StackPanel>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+                                                        </ScrollViewer>
+                                                    </Flyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </tkcontrols:SettingsCard>
                                     </tkcontrols:SettingsExpander.Items>
                                 </tkcontrols:SettingsExpander>
                             </DataTemplate>

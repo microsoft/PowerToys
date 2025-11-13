@@ -687,7 +687,18 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     communicationMethod: GetCommunicationMethodString(vm.Type),
                     monitorType: vm.Type.ToString(),
                     currentBrightness: vm.Brightness,
-                    colorTemperature: vm.ColorTemperature);
+                    colorTemperature: vm.ColorTemperature)
+                {
+                    CapabilitiesRaw = vm.CapabilitiesRaw,
+                    VcpCodes = vm.VcpCapabilitiesInfo?.SupportedVcpCodes
+                        .OrderBy(kvp => kvp.Key)
+                        .Select(kvp => $"0x{kvp.Key:X2}")
+                        .ToList() ?? new List<string>(),
+                    VcpCodesFormatted = vm.VcpCapabilitiesInfo?.SupportedVcpCodes
+                        .OrderBy(kvp => kvp.Key)
+                        .Select(kvp => FormatVcpCodeForDisplay(kvp.Key, kvp.Value))
+                        .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
+                };
 
                 monitors.Add(monitorInfo);
             }
@@ -712,8 +723,36 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Get communication method string based on monitor type
+    /// Format VCP code information for display in Settings UI
     /// </summary>
+    private Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo FormatVcpCodeForDisplay(byte code, VcpCodeInfo info)
+    {
+        var result = new Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo
+        {
+            Title = $"{info.Name} (0x{code:X2})",
+        };
+
+        if (info.IsContinuous)
+        {
+            result.Values = "Continuous range";
+            result.HasValues = true;
+        }
+        else if (info.HasDiscreteValues)
+        {
+            var formattedValues = info.SupportedValues
+                .Select(v => Core.Utils.VcpValueNames.GetName(code, v))
+                .ToList();
+            result.Values = $"Values: {string.Join(", ", formattedValues)}";
+            result.HasValues = true;
+        }
+        else
+        {
+            result.HasValues = false;
+        }
+
+        return result;
+    }
+
     private string GetCommunicationMethodString(MonitorType type)
     {
         return type switch

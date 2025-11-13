@@ -43,6 +43,8 @@ namespace PowerDisplay.Helpers
             public int Contrast { get; set; }
 
             public int Volume { get; set; }
+
+            public string? CapabilitiesRaw { get; set; }
         }
 
         public MonitorStateManager()
@@ -148,6 +150,47 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Update monitor capabilities and schedule save.
+        /// Capabilities are saved separately to avoid frequent writes.
+        /// </summary>
+        public void UpdateMonitorCapabilities(string hardwareId, string? capabilitiesRaw)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(hardwareId))
+                {
+                    Logger.LogWarning($"Cannot update capabilities: HardwareId is empty");
+                    return;
+                }
+
+                lock (_lock)
+                {
+                    // Get or create state entry
+                    if (!_states.TryGetValue(hardwareId, out var state))
+                    {
+                        state = new MonitorState();
+                        _states[hardwareId] = state;
+                    }
+
+                    // Update capabilities
+                    state.CapabilitiesRaw = capabilitiesRaw;
+
+                    // Mark dirty and schedule save
+                    _isDirty = true;
+                }
+
+                // Schedule save
+                _saveTimer.Change(SaveDebounceMs, Timeout.Infinite);
+
+                Logger.LogInfo($"[State] Updated capabilities for monitor HardwareId='{hardwareId}' (length: {capabilitiesRaw?.Length ?? 0})");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to update monitor capabilities: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Get saved parameters for a monitor using HardwareId
         /// </summary>
         public (int Brightness, int ColorTemperature, int Contrast, int Volume)? GetMonitorParameters(string hardwareId)
@@ -162,6 +205,27 @@ namespace PowerDisplay.Helpers
                 if (_states.TryGetValue(hardwareId, out var state))
                 {
                     return (state.Brightness, state.ColorTemperature, state.Contrast, state.Volume);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get saved capabilities for a monitor using HardwareId
+        /// </summary>
+        public string? GetMonitorCapabilities(string hardwareId)
+        {
+            if (string.IsNullOrEmpty(hardwareId))
+            {
+                return null;
+            }
+
+            lock (_lock)
+            {
+                if (_states.TryGetValue(hardwareId, out var state))
+                {
+                    return state.CapabilitiesRaw;
                 }
             }
 
@@ -215,6 +279,7 @@ namespace PowerDisplay.Helpers
                                 ColorTemperature = entry.ColorTemperature,
                                 Contrast = entry.Contrast,
                                 Volume = entry.Volume,
+                                CapabilitiesRaw = entry.CapabilitiesRaw,
                             };
                         }
                     }
@@ -263,6 +328,7 @@ namespace PowerDisplay.Helpers
                             ColorTemperature = state.ColorTemperature,
                             Contrast = state.Contrast,
                             Volume = state.Volume,
+                            CapabilitiesRaw = state.CapabilitiesRaw,
                             LastUpdated = now,
                         };
                     }

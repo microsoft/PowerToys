@@ -138,6 +138,10 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     public string TypeDisplay => Type == MonitorType.Internal ? "Internal" : "External";
 
+    public string? CapabilitiesRaw => _monitor.CapabilitiesRaw;
+
+    public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
+
     /// <summary>
     /// Gets the icon glyph based on monitor type
     /// </summary>

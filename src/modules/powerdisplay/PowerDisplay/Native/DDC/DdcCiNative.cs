@@ -394,8 +394,7 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// Get all display device information (using EnumDisplayDevices API)
-        /// Implementation consistent with Twinkle Tray
+        /// Get all display device information using EnumDisplayDevices API
         /// </summary>
         /// <returns>List of display device information</returns>
         public static unsafe List<DisplayDeviceInfo> GetAllDisplayDevices()

@@ -28,12 +28,13 @@ namespace PowerDisplay.Native.DDC
         };
 
         // VCP code priority order (for color temperature control)
+        // Per MCCS specification:
+        // - 0x0C (Color Temperature Request): Set specific color temperature preset
+        // - 0x0B (Color Temperature Increment): Increment color temperature value
         private static readonly byte[] ColorTemperatureVcpCodes =
         {
-            NativeConstants.VcpCodeColorTemperature,           // 0x0C - Standard color temperature
-            NativeConstants.VcpCodeColorTemperatureIncrement,  // 0x0B - Color temperature increment
-            NativeConstants.VcpCodeSelectColorPreset,          // 0x14 - Color preset selection
-            NativeConstants.VcpCodeGamma,                      // 0x72 - Gamma correction
+            NativeConstants.VcpCodeColorTemperature,           // 0x0C - Standard color temperature (primary)
+            NativeConstants.VcpCodeColorTemperatureIncrement,  // 0x0B - Color temperature increment (fallback)
         };
 
         /// <summary>
