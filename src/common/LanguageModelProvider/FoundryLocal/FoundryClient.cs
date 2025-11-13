@@ -205,4 +205,12 @@ internal sealed class FoundryClient
             return false;
         }
     }
+
+    public async Task EnsureRunning()
+    {
+        if (!_foundryManager.IsServiceRunning)
+        {
+            await _foundryManager.StartServiceAsync();
+        }
+    }
 }

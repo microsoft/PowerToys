@@ -13,7 +13,7 @@ namespace LanguageModelProvider;
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
     private IEnumerable<ModelDetails>? _downloadedModels;
-    private FoundryClient? _foundryManager;
+    private FoundryClient? _foundryClient;
     private string? _serviceUrl;
 
     public static FoundryLocalModelProvider Instance { get; } = new();
@@ -37,7 +37,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             return null;
         }
 
-        if (string.IsNullOrWhiteSpace(_serviceUrl) || _foundryManager == null)
+        if (string.IsNullOrWhiteSpace(_serviceUrl) || _foundryClient == null)
         {
             Logger.LogError("[FoundryLocal] Service URL or manager is null");
             return null;
@@ -56,7 +56,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         // Ensure the model is loaded before returning chat client
         try
         {
-            var isLoaded = _foundryManager.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
+            var isLoaded = _foundryClient.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
             if (!isLoaded)
             {
                 Logger.LogError($"[FoundryLocal] Failed to load model: {modelId}");
@@ -72,7 +72,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         }
 
         // Use ServiceUri instead of Endpoint since Endpoint already includes /v1
-        var baseUri = _foundryManager.GetServiceUri();
+        var baseUri = _foundryClient.GetServiceUri();
         if (baseUri == null)
         {
             Logger.LogError("[FoundryLocal] Service URI is null");
@@ -133,24 +133,25 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     private async Task InitializeAsync(CancellationToken cancelationToken = default)
     {
-        if (_foundryManager != null && _downloadedModels != null && _downloadedModels.Any())
+        if (_foundryClient != null && _downloadedModels != null && _downloadedModels.Any())
         {
+            await _foundryClient.EnsureRunning().ConfigureAwait(false);
             return;
         }
 
         Logger.LogInfo("[FoundryLocal] Initializing provider");
-        _foundryManager ??= await FoundryClient.CreateAsync();
+        _foundryClient ??= await FoundryClient.CreateAsync();
 
-        if (_foundryManager == null)
+        if (_foundryClient == null)
         {
             Logger.LogError("[FoundryLocal] Failed to create Foundry client");
             return;
         }
 
-        _serviceUrl ??= await _foundryManager.GetServiceUrl();
+        _serviceUrl ??= await _foundryClient.GetServiceUrl();
         Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
 
-        var cachedModels = await _foundryManager.ListCachedModels();
+        var cachedModels = await _foundryClient.ListCachedModels();
         Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
 
         List<ModelDetails> downloadedModels = [];
@@ -178,7 +179,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     {
         Logger.LogInfo("[FoundryLocal] Checking availability");
         await InitializeAsync();
-        var available = _foundryManager != null;
+        var available = _foundryClient != null;
         Logger.LogInfo($"[FoundryLocal] Available: {available}");
         return available;
     }
