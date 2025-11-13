@@ -60,18 +60,11 @@ Go to the [PowerToys GitHub releases][github-release-link], click Assets to reve
  
 |  Description   | Filename |
 |----------------|----------|
-<<<<<<< HEAD
 | Per user - x64       | [PowerToysUserSetup-0.96.0-x64.exe][ptUserX64] |
 | Per user - ARM64     | [PowerToysUserSetup-0.96.0-arm64.exe][ptUserArm64] |
 | Machine wide - x64   | [PowerToysSetup-0.96.0-x64.exe][ptMachineX64] |
 | Machine wide - ARM64 | [PowerToysSetup-0.96.0-arm64.exe][ptMachineArm64] |
 
-=======
-| Per user - x64       | [PowerToysUserSetup-0.95.1-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.95.1-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.95.1-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.95.1-arm64.exe][ptMachineArm64] |
->>>>>>> b41ed2feb (Minor styling tweaks in README (#43494))
 </details>
 
 <details>
