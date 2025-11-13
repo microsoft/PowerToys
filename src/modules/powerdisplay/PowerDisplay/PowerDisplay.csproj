@@ -17,7 +17,6 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AssemblyName>PowerToys.PowerDisplay</AssemblyName>
-    <ApplicationIcon>Assets\PowerDisplay.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.PowerDisplay.pri</ProjectPriFileName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

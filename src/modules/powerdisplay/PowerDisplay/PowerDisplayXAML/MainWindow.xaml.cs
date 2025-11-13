@@ -36,7 +36,6 @@ namespace PowerDisplay
     {
         private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private MainViewModel _viewModel = null!;
-        private TrayIconHelper _trayIcon = null!;
         private AppWindow _appWindow = null!;
         private bool _isExiting;
 
@@ -55,9 +54,6 @@ namespace PowerDisplay
                 // Lightweight initialization - no heavy operations in constructor
                 // Setup window properties
                 SetupWindow();
-
-                // Initialize tray icon
-                InitializeTrayIcon();
 
                 // Initialize UI text
                 InitializeUIText();
@@ -228,29 +224,6 @@ namespace PowerDisplay
             // If only user operation (although we hide close button), just hide window
             args.Handled = true; // Prevent window closing
             HideWindow();
-        }
-
-        private void InitializeTrayIcon()
-        {
-            _trayIcon = new TrayIconHelper(this);
-            _trayIcon.SetCallbacks(
-                onShow: ShowWindow,
-                onExit: ExitApplication,
-                onRefresh: () => _viewModel?.RefreshCommand?.Execute(null),
-                onSettings: OpenSettings);
-        }
-
-        private void OpenSettings()
-        {
-            try
-            {
-                // Open PowerToys Settings to PowerDisplay page
-                PowerDisplay.Helpers.SettingsDeepLink.OpenPowerDisplaySettings();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to open settings: {ex.Message}");
-            }
         }
 
         public void ShowWindow()
@@ -449,9 +422,6 @@ namespace PowerDisplay
             try
             {
                 _isExiting = true;
-
-                // 立即释放托盘图标
-                _trayIcon?.Dispose();
 
                 // 快速清理 ViewModel
                 if (_viewModel != null)
@@ -907,7 +877,6 @@ namespace PowerDisplay
         public void Dispose()
         {
             _viewModel?.Dispose();
-            _trayIcon?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
