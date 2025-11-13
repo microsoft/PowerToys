@@ -11,12 +11,13 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <!-- x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png" CmdPal_Activation_GroupSettings     <controls:PageLink x:Uid="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />-->
-    <Grid>
+    <Grid Padding="0,32,0,0">
         <Grid
             MaxWidth="1000"
-            Padding="16,32,16,16"
+            Padding="16,16,16,16"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0"
+            BorderThickness="1"
             CornerRadius="{StaticResource OverlayCornerRadius}"
             RowSpacing="8">
             <Grid.RowDefinitions>
@@ -50,48 +51,6 @@
                     <Run Text="Learn more" />
                 </Hyperlink>
             </TextBlock>
-
-
-            <tkcontrols:SettingsCard
-                Name="CmdPalEnableCmdPal"
-                x:Uid="CmdPal_Enable_CmdPal"
-                Grid.Row="4"
-                MinWidth="480"
-                Margin="64,0,0,0"
-                HorizontalAlignment="Center"
-                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
-                <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-            </tkcontrols:SettingsCard>
-
-
-            <StackPanel
-                Grid.Row="4"
-                Margin="0,16,0,0"
-                HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="8">
-                <Button
-                    Content="Launch"
-                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                    Style="{StaticResource AccentButtonStyle}" />
-                <controls:ShortcutWithTextLabelControl
-                    FontSize="12"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                    Keys="{x:Bind Path=ViewModel.Hotkey.GetKeysList(), Mode=OneWay}"
-                    LabelPlacement="Before"
-                    Text="or use" />
-            </StackPanel>
-            <HyperlinkButton
-                x:Name="CmdPalSettingsDeeplink"
-                Grid.Row="5"
-                HorizontalAlignment="Center"
-                Click="CmdPalSettingsDeeplink_Click"
-                Content="Open Command Palette settings"
-                FontSize="12"
-                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
-
-
             <tkcontrols:OpacityMaskView
                 Grid.Row="3"
                 Margin="-16,16,-16,0"
@@ -100,19 +59,116 @@
                     <Rectangle>
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                <GradientStop Offset="0" Color="White" />
+                                <GradientStop Offset="0.5" Color="White" />
                                 <GradientStop Offset="1" Color="Transparent" />
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                     </Rectangle>
                 </tkcontrols:OpacityMaskView.OpacityMask>
                 <Image
-                    Height="480"
+                    Height="360"
                     HorizontalAlignment="Stretch"
                     Source="/Assets/Settings/Modules/CmdPal.png"
                     Stretch="UniformToFill" />
             </tkcontrols:OpacityMaskView>
 
+            <Grid
+                Grid.Row="4"
+                Margin="0,12,0,48"
+                ColumnSpacing="32"
+                RowSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    HorizontalAlignment="Center"
+                    FontSize="36"
+                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                    Glyph="&#xE620;" />
+                <TextBlock
+                    Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
+                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A rich set of extensions supercharge Command Palette to be more productive" />
+                </TextBlock>
+
+                <FontIcon
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    FontSize="36"
+                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                    Glyph="&#xE620;" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
+                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A rich set of extensions supercharge Command Palette to be more productive" />
+                </TextBlock>
+
+                <FontIcon
+                    Grid.Column="2"
+                    HorizontalAlignment="Center"
+                    FontSize="36"
+                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                    Glyph="&#xE620;" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
+                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A rich set of extensions supercharge Command Palette to be more productive" />
+                </TextBlock>
+            </Grid>
+
+
+            <tkcontrols:SettingsCard
+                Name="CmdPalEnableCmdPal"
+                x:Uid="CmdPal_Enable_CmdPal"
+                Grid.Row="5"
+                Margin="64,0,0,0"
+                HorizontalAlignment="Stretch"
+                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
+                <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+            </tkcontrols:SettingsCard>
+            <tkcontrols:SettingsCard Grid.Row="6" Header="Try Command Palette now">
+                <tkcontrols:SettingsCard.Description>
+                    <HyperlinkButton
+                        x:Name="CmdPalSettingsDeeplink"
+                        Click="CmdPalSettingsDeeplink_Click"
+                        Content="Open Command Palette settings"
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
+                </tkcontrols:SettingsCard.Description>
+                <StackPanel
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <Button
+                        Content="Launch"
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        Style="{StaticResource AccentButtonStyle}" />
+                    <controls:ShortcutWithTextLabelControl
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        Keys="{x:Bind Path=ViewModel.Hotkey.GetKeysList(), Mode=OneWay}"
+                        LabelPlacement="Before"
+                        Text="or use" />
+                </StackPanel>
+            </tkcontrols:SettingsCard>
         </Grid>
 
 
