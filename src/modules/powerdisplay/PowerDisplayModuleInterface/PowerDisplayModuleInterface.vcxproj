@@ -90,7 +90,6 @@
   <ItemGroup>
     <ClInclude Include="Constants.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PowerDisplayProcessManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
@@ -99,7 +98,6 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PowerDisplayProcessManager.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.AppLifecycle;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
+using PowerToys.Interop;
 
 namespace PowerDisplay
 {
@@ -24,15 +25,18 @@ namespace PowerDisplay
     public partial class App : Application
 #pragma warning restore CA1001
     {
+        // Windows Event names (from shared_constants.h)
+        private const string ShowPowerDisplayEvent = "Local\\PowerToysPowerDisplay-ShowEvent-d8a4e0e3-2c5b-4a1c-9e7f-8b3d6c1a2f4e";
+        private const string TerminatePowerDisplayEvent = "Local\\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
+        private const string RefreshMonitorsEvent = "Local\\PowerToysPowerDisplay-RefreshMonitorsEvent-a3f5c8e7-9d1b-4e2f-8c6a-3b5d7e9f1a2c";
+        private const string SettingsUpdatedEvent = "Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
+
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
-        private string _pipeUuid = string.Empty;
-        private CancellationTokenSource? _ipcCancellationTokenSource;
 
-        public App(int runnerPid, string pipeUuid)
+        public App(int runnerPid)
         {
             _powerToysRunnerPid = runnerPid;
-            _pipeUuid = pipeUuid;
 
             this.InitializeComponent();
 
@@ -84,84 +88,100 @@ namespace PowerDisplay
             try
             {
                 // Single instance is already ensured by AppInstance.FindOrRegisterForKey() in Program.cs
-                // No need for additional Mutex check here
+                // PID is already parsed in Program.cs and passed to constructor
 
-                // Parse command line arguments
-                var cmdArgs = Environment.GetCommandLineArgs();
-                if (cmdArgs?.Length > 1)
-                {
-                    // Support two formats: direct PID or --pid PID
-                    int pidValue = -1;
-
-                    // Check if using --pid format
-                    for (int i = 1; i < cmdArgs.Length - 1; i++)
+                // Set up Windows Events monitoring (Awake pattern)
+                NativeEventWaiter.WaitForEventLoop(
+                    ShowPowerDisplayEvent,
+                    () =>
                     {
-                        if (cmdArgs[i] == "--pid" && int.TryParse(cmdArgs[i + 1], out pidValue))
+                        Logger.LogInfo("[EVENT] Show event received");
+                        Logger.LogInfo($"[EVENT] _mainWindow is null: {_mainWindow == null}");
+                        Logger.LogInfo($"[EVENT] _mainWindow type: {_mainWindow?.GetType().Name}");
+                        Logger.LogInfo($"[EVENT] Current thread ID: {Environment.CurrentManagedThreadId}");
+
+                        // Direct call - NativeEventWaiter already marshalled to UI thread
+                        // No need for double DispatcherQueue.TryEnqueue
+                        if (_mainWindow is MainWindow mainWindow)
                         {
-                            break;
+                            Logger.LogInfo("[EVENT] Calling ShowWindow directly");
+                            mainWindow.ShowWindow();
+                            Logger.LogInfo("[EVENT] ShowWindow returned");
                         }
-                    }
-
-                    // If not --pid format, try parsing last argument (compatible with old format)
-                    if (pidValue == -1 && cmdArgs.Length > 1)
-                    {
-                        _ = int.TryParse(cmdArgs[cmdArgs.Length - 1], out pidValue);
-                    }
-
-                    if (pidValue > 0)
-                    {
-                        _powerToysRunnerPid = pidValue;
-
-                        // Started from PowerToys Runner
-                        Logger.LogInfo($"PowerDisplay started from PowerToys Runner. Runner pid={_powerToysRunnerPid}");
-
-                        // Monitor parent process
-                        RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+                        else
                         {
-                            Logger.LogInfo("PowerToys Runner exited. Exiting PowerDisplay");
-                            ForceExit();
+                            Logger.LogError($"[EVENT] _mainWindow type mismatch, actual type: {_mainWindow?.GetType().Name}");
+                        }
+                    });
+
+                NativeEventWaiter.WaitForEventLoop(
+                    TerminatePowerDisplayEvent,
+                    () =>
+                    {
+                        Logger.LogInfo("Received terminate event - exiting immediately");
+                        Environment.Exit(0);
+                    });
+
+                NativeEventWaiter.WaitForEventLoop(
+                    RefreshMonitorsEvent,
+                    () =>
+                    {
+                        Logger.LogInfo("Received refresh monitors event");
+                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                            {
+                                mainWindow.ViewModel.RefreshCommand?.Execute(null);
+                            }
                         });
-                    }
+                    });
+
+                NativeEventWaiter.WaitForEventLoop(
+                    SettingsUpdatedEvent,
+                    () =>
+                    {
+                        Logger.LogInfo("Received settings updated event");
+                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                            {
+                                _ = mainWindow.ViewModel.ReloadMonitorSettingsAsync();
+                            }
+                        });
+                    });
+
+                // Monitor Runner process (backup exit mechanism)
+                if (_powerToysRunnerPid > 0)
+                {
+                    Logger.LogInfo($"PowerDisplay started from PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+
+                    RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
+                    {
+                        Logger.LogInfo("PowerToys Runner exited. Exiting PowerDisplay");
+                        Environment.Exit(0);
+                    });
                 }
                 else
                 {
-                    // Standalone mode
-                    Logger.LogInfo("PowerDisplay started detached from PowerToys Runner.");
-                    _powerToysRunnerPid = -1;
-                }
-
-                // Initialize IPC in background (non-blocking)
-                // Only connect pipes when launched from PowerToys (not standalone)
-                bool isIPCMode = !string.IsNullOrEmpty(_pipeUuid) && _powerToysRunnerPid != -1;
-
-                if (isIPCMode)
-                {
-                    // Start IPC message listener in background
-                    _ipcCancellationTokenSource = new CancellationTokenSource();
-                    _ = Task.Run(() => StartIPCListener(_pipeUuid, _ipcCancellationTokenSource.Token));
-                    Logger.LogInfo("Starting IPC pipe listener in background");
-                }
-                else
-                {
-                    Logger.LogInfo("Running in standalone mode, IPC disabled");
+                    Logger.LogInfo("PowerDisplay started in standalone mode");
                 }
 
                 // Create main window
                 _mainWindow = new MainWindow();
 
                 // Window visibility depends on launch mode
-                // - IPC mode (launched by PowerToys Runner): Start hidden, wait for show_window IPC command
-                // - Standalone mode (no command-line args): Show window immediately
-                if (!isIPCMode)
+                bool isStandaloneMode = _powerToysRunnerPid <= 0;
+
+                if (isStandaloneMode)
                 {
-                    // Standalone mode - activate and show window
+                    // Standalone mode - activate and show window immediately
                     _mainWindow.Activate();
                     Logger.LogInfo("Window activated (standalone mode)");
                 }
                 else
                 {
-                    // IPC mode - window remains inactive (hidden) until show_window command received
-                    Logger.LogInfo("Window created but not activated (IPC mode - waiting for show_window command)");
+                    // PowerToys mode - window remains hidden until show event received
+                    Logger.LogInfo("Window created, waiting for show event (PowerToys mode)");
 
                     // Start background initialization to scan monitors even when hidden
                     _ = Task.Run(async () =>
@@ -175,7 +195,7 @@ namespace PowerDisplay
                             if (_mainWindow is MainWindow mainWindow)
                             {
                                 await mainWindow.EnsureInitializedAsync();
-                                Logger.LogInfo("Background initialization completed (IPC mode)");
+                                Logger.LogInfo("Background initialization completed");
                             }
                         });
                     });
@@ -184,122 +204,6 @@ namespace PowerDisplay
             catch (Exception ex)
             {
                 ShowStartupError(ex);
-            }
-        }
-
-        /// <summary>
-        /// Start IPC listener to receive commands from ModuleInterface
-        /// </summary>
-        private async Task StartIPCListener(string pipeUuid, CancellationToken cancellationToken)
-        {
-            try
-            {
-                string pipeName = $"powertoys_powerdisplay_{pipeUuid}";
-                Logger.LogInfo($"Connecting to pipe: {pipeName}");
-
-                await NamedPipeProcessor.ProcessNamedPipeAsync(
-                    pipeName,
-                    TimeSpan.FromSeconds(5),
-                    OnIPCMessageReceived,
-                    cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.LogInfo("IPC listener cancelled");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Error in IPC listener: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Handle IPC messages received from ModuleInterface
-        /// </summary>
-        private void OnIPCMessageReceived(string message)
-        {
-            try
-            {
-                Logger.LogInfo($"Received IPC message: {message}");
-
-                // Parse JSON command
-                var json = System.Text.Json.JsonDocument.Parse(message);
-                var root = json.RootElement;
-
-                if (root.TryGetProperty("action", out var actionElement))
-                {
-                    string action = actionElement.GetString() ?? string.Empty;
-
-                    switch (action)
-                    {
-                        case "show_window":
-                            Logger.LogInfo("Received show_window command");
-                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_mainWindow is MainWindow mainWindow)
-                                {
-                                    mainWindow.ShowWindow();
-                                }
-                            });
-                            break;
-
-                        case "toggle_window":
-                            Logger.LogInfo("Received toggle_window command");
-                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_mainWindow is MainWindow mainWindow)
-                                {
-                                    if (mainWindow.IsWindowVisible())
-                                    {
-                                        mainWindow.HideWindow();
-                                    }
-                                    else
-                                    {
-                                        mainWindow.ShowWindow();
-                                    }
-                                }
-                            });
-                            break;
-
-                        case "refresh_monitors":
-                            Logger.LogInfo("Received refresh_monitors command");
-                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
-                                {
-                                    mainWindow.ViewModel.RefreshCommand?.Execute(null);
-                                }
-                            });
-                            break;
-
-                        case "settings_updated":
-                            Logger.LogInfo("Received settings_updated command");
-                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                            {
-                                if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
-                                {
-                                    _ = mainWindow.ViewModel.ReloadMonitorSettingsAsync();
-                                }
-                            });
-                            break;
-
-                        case "terminate":
-                            Logger.LogInfo("Received terminate command");
-                            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                            {
-                                Shutdown();
-                            });
-                            break;
-
-                        default:
-                            Logger.LogWarning($"Unknown action: {action}");
-                            break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Error processing IPC message: {ex.Message}");
             }
         }
 
@@ -377,32 +281,11 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Shutdown application (simplified version following other PowerToys modules pattern)
+        /// Shutdown application (Awake pattern - simple and clean)
         /// </summary>
         public void Shutdown()
         {
             Logger.LogInfo("PowerDisplay shutting down");
-
-            // Cancel IPC listener
-            _ipcCancellationTokenSource?.Cancel();
-            _ipcCancellationTokenSource?.Dispose();
-
-            // Exit immediately - OS will clean up all resources (pipes, threads, windows, etc.)
-            // Single instance is managed by AppInstance in Program.cs, no manual cleanup needed
-            Environment.Exit(0);
-        }
-
-        /// <summary>
-        /// Force exit when PowerToys Runner exits
-        /// </summary>
-        private void ForceExit()
-        {
-            Logger.LogInfo("PowerToys Runner exited, forcing shutdown");
-
-            // Cancel IPC listener
-            _ipcCancellationTokenSource?.Cancel();
-            _ipcCancellationTokenSource?.Dispose();
-
             Environment.Exit(0);
         }
     }

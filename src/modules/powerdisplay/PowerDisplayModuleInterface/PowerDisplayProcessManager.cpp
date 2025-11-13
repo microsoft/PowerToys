@@ -105,18 +105,46 @@ bool PowerDisplayProcessManager::is_process_running() const
 
 void PowerDisplayProcessManager::terminate_process()
 {
-    // Close pipe
-    m_write_pipe.reset();
-
-    // Terminate process
+    // Terminate process if still running
     if (m_hProcess != nullptr)
     {
-        TerminateProcess(m_hProcess, 1);
+        // Check if process is still running
+        if (WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT)
+        {
+            Logger::trace(L"Process still running, calling TerminateProcess");
+
+            // Force terminate the process
+            if (TerminateProcess(m_hProcess, 1))
+            {
+                // Wait a bit to ensure process is terminated
+                DWORD wait_result = WaitForSingleObject(m_hProcess, 1000);
+                if (wait_result == WAIT_OBJECT_0)
+                {
+                    Logger::trace(L"PowerDisplay process successfully terminated");
+                }
+                else
+                {
+                    Logger::error(L"TerminateProcess succeeded but process did not exit within timeout");
+                }
+            }
+            else
+            {
+                Logger::error(L"TerminateProcess failed: {}", get_last_error_or_default(GetLastError()));
+            }
+        }
+        else
+        {
+            Logger::trace(L"PowerDisplay process already exited gracefully");
+        }
+
+        // Clean up process handle
         CloseHandle(m_hProcess);
         m_hProcess = nullptr;
     }
 
-    Logger::trace(L"PowerDisplay process terminated");
+    // Close pipe after process is terminated
+    m_write_pipe.reset();
+    Logger::trace(L"PowerDisplay process cleanup complete");
 }
 
 HRESULT PowerDisplayProcessManager::start_process(const std::wstring& pipe_uuid)
@@ -256,24 +284,60 @@ void PowerDisplayProcessManager::refresh()
         // Stop PowerDisplay process
         Logger::trace(L"Stopping PowerDisplay process");
 
-        // Send terminate message
-        send_message_to_powerdisplay(L"{\"action\":\"terminate\"}");
-
-        // Wait for graceful exit
-        if (m_hProcess != nullptr)
+        // Send terminate message synchronously (not through thread executor)
+        // This ensures the message is sent before we wait for process exit
+        if (m_write_pipe)
         {
-            WaitForSingleObject(m_hProcess, 2000);
-        }
+            try
+            {
+                const auto message = L"{\"action\":\"terminate\"}";
+                const auto formatted = std::format(L"{}\r\n", message);
 
-        if (is_process_running())
-        {
-            Logger::warn(L"PowerDisplay process failed to gracefully exit, terminating");
+                // Match WinUI side which reads the pipe using UTF-16 (Encoding.Unicode)
+                const CString payload(formatted.c_str());
+                const DWORD bytes_to_write = static_cast<DWORD>(payload.GetLength() * sizeof(wchar_t));
+                DWORD bytes_written = 0;
+
+                if (SUCCEEDED(m_write_pipe->Write(payload, bytes_to_write, &bytes_written)))
+                {
+                    Logger::trace(L"Sent terminate message to PowerDisplay");
+                }
+                else
+                {
+                    Logger::warn(L"Failed to send terminate message to PowerDisplay");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn(L"Exception while sending terminate message to PowerDisplay");
+            }
         }
         else
         {
-            Logger::trace(L"PowerDisplay process successfully exited");
+            Logger::warn(L"Cannot send terminate message: pipe not connected");
         }
 
+        // Wait for graceful exit (use longer timeout like AdvancedPaste)
+        if (m_hProcess != nullptr)
+        {
+            Logger::trace(L"Waiting for PowerDisplay process to exit gracefully");
+            DWORD wait_result = WaitForSingleObject(m_hProcess, 5000);
+
+            if (wait_result == WAIT_OBJECT_0)
+            {
+                Logger::trace(L"PowerDisplay process exited gracefully");
+            }
+            else if (wait_result == WAIT_TIMEOUT)
+            {
+                Logger::warn(L"PowerDisplay process failed to exit within timeout, will force terminate");
+            }
+            else
+            {
+                Logger::error(L"WaitForSingleObject failed with error: {}", get_last_error_or_default(GetLastError()));
+            }
+        }
+
+        // Clean up (will force terminate if still running)
         terminate_process();
     }
 }

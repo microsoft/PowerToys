@@ -240,39 +240,83 @@ namespace PowerDisplay
             }
         }
 
-        public async void ShowWindow()
+        public void ShowWindow()
         {
-            // Ensure window is initialized before showing
-            if (!_hasInitialized)
+            Logger.LogInfo("[SHOWWINDOW] Method entry");
+            Logger.LogInfo($"[SHOWWINDOW] _hasInitialized: {_hasInitialized}");
+            Logger.LogInfo($"[SHOWWINDOW] Current thread ID: {Environment.CurrentManagedThreadId}");
+
+            try
             {
-                await EnsureInitializedAsync();
+                // If not initialized, log warning but continue showing
+                if (!_hasInitialized)
+                {
+                    Logger.LogWarning("[SHOWWINDOW] Window not fully initialized yet, showing anyway");
+                }
+
+                Logger.LogInfo("[SHOWWINDOW] Getting window handle");
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                Logger.LogInfo($"[SHOWWINDOW] Window handle: 0x{hWnd:X}");
+
+                Logger.LogInfo("[SHOWWINDOW] Adjusting window size");
+                AdjustWindowSizeToContent();
+
+                Logger.LogInfo("[SHOWWINDOW] Repositioning window");
+                if (_appWindow != null)
+                {
+                    PositionWindowAtBottomRight(_appWindow);
+                    Logger.LogInfo("[SHOWWINDOW] Window repositioned");
+                }
+                else
+                {
+                    Logger.LogWarning("[SHOWWINDOW] _appWindow is null, skipping reposition");
+                }
+
+                Logger.LogInfo("[SHOWWINDOW] Setting opacity to 0 for animation");
+                RootGrid.Opacity = 0;
+
+                Logger.LogInfo("[SHOWWINDOW] Calling this.Activate()");
+                this.Activate();
+
+                Logger.LogInfo("[SHOWWINDOW] Calling WindowHelper.ShowWindow");
+                WindowHelper.ShowWindow(hWnd, true);
+
+                Logger.LogInfo("[SHOWWINDOW] Calling WindowHelpers.BringToForeground");
+                WindowHelpers.BringToForeground(hWnd);
+
+                Logger.LogInfo("[SHOWWINDOW] Checking for animation storyboard");
+                if (RootGrid.Resources.ContainsKey("SlideInStoryboard"))
+                {
+                    Logger.LogInfo("[SHOWWINDOW] Starting SlideInStoryboard animation");
+                    var slideInStoryboard = RootGrid.Resources["SlideInStoryboard"] as Storyboard;
+                    slideInStoryboard?.Begin();
+                }
+                else
+                {
+                    Logger.LogWarning("[SHOWWINDOW] SlideInStoryboard not found, setting opacity=1");
+                    RootGrid.Opacity = 1;
+                }
+
+                Logger.LogInfo("[SHOWWINDOW] Verifying window visibility");
+                bool isVisible = IsWindowVisible();
+                Logger.LogInfo($"[SHOWWINDOW] IsWindowVisible result: {isVisible}");
+
+                if (!isVisible)
+                {
+                    Logger.LogError("[SHOWWINDOW] Window not visible after show, forcing visibility");
+                    RootGrid.Opacity = 1;
+                    this.Activate();
+                    WindowHelpers.BringToForeground(hWnd);
+                }
+
+                Logger.LogInfo("[SHOWWINDOW] Method completed successfully");
             }
-
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-
-            // Adjust window size before showing
-            AdjustWindowSizeToContent();
-
-            // Reposition to bottom right (set position before showing)
-            if (_appWindow != null)
+            catch (Exception ex)
             {
-                PositionWindowAtBottomRight(_appWindow);
-            }
-
-            // Set initial state for animation
-            RootGrid.Opacity = 0;
-
-            // Show window
-            WindowHelper.ShowWindow(hWnd, true);
-
-            // Bring window to foreground
-            PInvoke.SetForegroundWindow(hWnd);
-
-            // Use storyboard animation for window entrance
-            if (RootGrid.Resources.ContainsKey("SlideInStoryboard"))
-            {
-                var slideInStoryboard = RootGrid.Resources["SlideInStoryboard"] as Storyboard;
-                slideInStoryboard?.Begin();
+                Logger.LogError($"[SHOWWINDOW] Exception: {ex.GetType().Name}");
+                Logger.LogError($"[SHOWWINDOW] Exception message: {ex.Message}");
+                Logger.LogError($"[SHOWWINDOW] Stack trace: {ex.StackTrace}");
+                throw;
             }
         }
 

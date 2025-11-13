@@ -11,7 +11,6 @@
 
 #include "resource.h"
 #include "Constants.h"
-#include "PowerDisplayProcessManager.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -55,8 +54,12 @@ private:
     bool m_hotkey_enabled = false;
     Hotkey m_activation_hotkey = { .win = true, .ctrl = false, .shift = false, .alt = true, .key = 'M' };
 
-    // Process manager for handling PowerDisplay.exe lifecycle and IPC
-    PowerDisplayProcessManager m_process_manager;
+    // Windows Events for IPC (persistent handles - ColorPicker pattern)
+    HANDLE m_hProcess = nullptr;
+    HANDLE m_hInvokeEvent = nullptr;
+    HANDLE m_hTerminateEvent = nullptr;
+    HANDLE m_hRefreshEvent = nullptr;
+    HANDLE m_hSettingsUpdatedEvent = nullptr;
 
     void parse_hotkey_settings(PowerToysSettings::PowerToyValues settings)
     {
@@ -143,6 +146,42 @@ private:
         }
     }
 
+    // Helper method to check if PowerDisplay.exe process is still running
+    bool is_process_running()
+    {
+        if (m_hProcess == nullptr)
+        {
+            return false;
+        }
+        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+    }
+
+    // Helper method to launch PowerDisplay.exe process
+    void launch_process()
+    {
+        Logger::trace(L"Starting PowerDisplay process");
+        unsigned long powertoys_pid = GetCurrentProcessId();
+
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+        sei.lpFile = L"WinUI3Apps\\PowerToys.PowerDisplay.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace(L"Successfully started PowerDisplay process");
+            m_hProcess = sei.hProcess;
+        }
+        else
+        {
+            Logger::error(L"PowerDisplay process failed to start. {}",
+                         get_last_error_or_default(GetLastError()));
+        }
+    }
+
 public:
     PowerDisplayModule()
     {
@@ -151,27 +190,51 @@ public:
 
         init_settings();
 
-        // Note: PowerDisplay.exe will send messages directly to runner via named pipes
-        // The runner's message_receiver_thread will handle routing to Settings UI
-        // No need to set a callback here - the process manager just manages lifecycle
+        // Create all Windows Events (persistent handles - ColorPicker pattern)
+        m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_POWER_DISPLAY_EVENT);
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT);
+        m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
+        m_hSettingsUpdatedEvent = CreateDefaultEvent(CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT);
+
+        if (!m_hInvokeEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent)
+        {
+            Logger::error(L"Failed to create one or more event handles");
+        }
     }
 
     ~PowerDisplayModule()
     {
         if (m_enabled)
         {
-            m_process_manager.stop();
+            disable();
         }
-        m_enabled = false;
+
+        // Clean up all event handles
+        if (m_hInvokeEvent)
+        {
+            CloseHandle(m_hInvokeEvent);
+            m_hInvokeEvent = nullptr;
+        }
+        if (m_hTerminateEvent)
+        {
+            CloseHandle(m_hTerminateEvent);
+            m_hTerminateEvent = nullptr;
+        }
+        if (m_hRefreshEvent)
+        {
+            CloseHandle(m_hRefreshEvent);
+            m_hRefreshEvent = nullptr;
+        }
+        if (m_hSettingsUpdatedEvent)
+        {
+            CloseHandle(m_hSettingsUpdatedEvent);
+            m_hSettingsUpdatedEvent = nullptr;
+        }
     }
 
     virtual void destroy() override
     {
         Logger::trace("PowerDisplay::destroy()");
-        if (m_enabled)
-        {
-            m_process_manager.stop();
-        }
         delete this;
     }
 
@@ -209,14 +272,33 @@ public:
 
             if (action_object.get_name() == L"Launch")
             {
-                Logger::trace(L"Launch action received, sending show_window command");
-                m_process_manager.send_message_to_powerdisplay(L"{\"action\":\"show_window\"}");
+                Logger::trace(L"Launch action received");
+
+                // ColorPicker pattern: check if process is running, re-launch if needed
+                if (!is_process_running())
+                {
+                    Logger::trace(L"PowerDisplay process not running, re-launching");
+                    launch_process();
+                }
+
+                if (m_hInvokeEvent)
+                {
+                    Logger::trace(L"Signaling show event");
+                    SetEvent(m_hInvokeEvent);
+                }
                 Trace::ActivatePowerDisplay();
             }
             else if (action_object.get_name() == L"RefreshMonitors")
             {
-                Logger::trace(L"RefreshMonitors action received");
-                m_process_manager.send_message_to_powerdisplay(L"{\"action\":\"refresh_monitors\"}");
+                Logger::trace(L"RefreshMonitors action received, signaling refresh event");
+                if (m_hRefreshEvent)
+                {
+                    SetEvent(m_hRefreshEvent);
+                }
+                else
+                {
+                    Logger::warn(L"Refresh event handle is null");
+                }
             }
         }
         catch (std::exception&)
@@ -236,9 +318,16 @@ public:
             parse_activation_hotkey(values);
             values.save_to_settings_file();
 
-            // Notify PowerDisplay.exe that settings have been updated (signal only, no config data)
-            // PowerDisplay will read the updated settings.json file itself
-            m_process_manager.send_message_to_powerdisplay(L"{\"action\":\"settings_updated\"}");
+            // Signal settings updated event
+            if (m_hSettingsUpdatedEvent)
+            {
+                Logger::trace(L"Signaling settings updated event");
+                SetEvent(m_hSettingsUpdatedEvent);
+            }
+            else
+            {
+                Logger::warn(L"Settings updated event handle is null");
+            }
         }
         catch (std::exception&)
         {
@@ -248,19 +337,43 @@ public:
 
     virtual void enable() override
     {
+        Logger::trace(L"PowerDisplay::enable()");
         m_enabled = true;
         Trace::EnablePowerDisplay(true);
 
-        Logger::trace(L"PowerDisplay enabled, starting process manager");
-        m_process_manager.start();
+        // Launch PowerDisplay.exe with PID only (Awake pattern)
+        launch_process();
     }
 
     virtual void disable() override
     {
+        Logger::trace(L"PowerDisplay::disable()");
+
         if (m_enabled)
         {
-            Logger::trace(L"Disabling Power Display...");
-            m_process_manager.stop();
+            // Reset invoke event to prevent accidental activation during shutdown
+            if (m_hInvokeEvent)
+            {
+                ResetEvent(m_hInvokeEvent);
+            }
+
+            // Signal terminate event
+            if (m_hTerminateEvent)
+            {
+                Logger::trace(L"Signaling PowerDisplay to exit");
+                SetEvent(m_hTerminateEvent);
+            }
+            else
+            {
+                Logger::warn(L"Terminate event handle is null");
+            }
+
+            // Close process handle (don't wait, don't force terminate - Awake pattern)
+            if (m_hProcess)
+            {
+                CloseHandle(m_hProcess);
+                m_hProcess = nullptr;
+            }
         }
 
         m_enabled = false;
@@ -274,11 +387,19 @@ public:
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
-        if (m_enabled)
+        if (m_enabled && m_hInvokeEvent)
         {
             Logger::trace(L"Power Display hotkey pressed");
-            // Send toggle window command
-            m_process_manager.send_message_to_powerdisplay(L"{\"action\":\"toggle_window\"}");
+
+            // ColorPicker pattern: check if process is running, re-launch if needed
+            if (!is_process_running())
+            {
+                Logger::trace(L"PowerDisplay process not running, re-launching");
+                launch_process();
+            }
+
+            Logger::trace(L"Signaling show event");
+            SetEvent(m_hInvokeEvent);
             return true;
         }
 

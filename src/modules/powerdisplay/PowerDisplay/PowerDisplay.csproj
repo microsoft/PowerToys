@@ -67,6 +67,7 @@
     <!-- Removed Common.UI dependency - SettingsDeepLink is now implemented locally -->
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <!-- Copy Assets folder to output directory -->

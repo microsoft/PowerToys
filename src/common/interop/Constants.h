@@ -54,6 +54,8 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring ShowCmdPalEvent();
         static hstring ShowPowerDisplayEvent();
         static hstring TerminatePowerDisplayEvent();
+        static hstring RefreshPowerDisplayMonitorsEvent();
+        static hstring SettingsUpdatedPowerDisplayEvent();
     };
 }
 

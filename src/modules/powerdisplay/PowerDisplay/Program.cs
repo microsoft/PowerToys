@@ -19,24 +19,24 @@ namespace PowerDisplay
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-            // Parse command line arguments: args[0] = runner_pid, args[1] = pipe_uuid
+            // Parse command line arguments: args[0] = runner_pid (Awake pattern)
             int runnerPid = -1;
-            string pipeUuid = string.Empty;
 
-            if (args.Length >= 2)
+            if (args.Length >= 1)
             {
                 if (int.TryParse(args[0], out int parsedPid))
                 {
                     runnerPid = parsedPid;
+                    Logger.LogInfo($"PowerDisplay started with runner_pid={runnerPid}");
                 }
-
-                pipeUuid = args[1];
-                Logger.LogInfo($"PowerDisplay started with runner_pid={runnerPid}, pipe_uuid={pipeUuid}");
+                else
+                {
+                    Logger.LogWarning($"Failed to parse PID from args[0]: {args[0]}");
+                }
             }
             else
             {
-                Logger.LogWarning("PowerDisplay started without command line arguments");
-                Logger.LogWarning($"PowerDisplay started with insufficient arguments (expected 2, got {args.Length}). Running in standalone mode.");
+                Logger.LogWarning("PowerDisplay started without runner PID. Running in standalone mode.");
             }
 
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_PowerDisplay_Instance");
@@ -47,7 +47,7 @@ namespace PowerDisplay
                 {
                     var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                     SynchronizationContext.SetSynchronizationContext(context);
-                    _ = new App(runnerPid, pipeUuid);
+                    _ = new App(runnerPid);
                 });
             }
             else
