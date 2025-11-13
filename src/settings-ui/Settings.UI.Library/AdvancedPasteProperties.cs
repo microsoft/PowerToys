@@ -52,10 +52,68 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     _extensionData.Remove("IsOpenAIEnabled");
                 }
+
+                if (_extensionData != null && _extensionData.TryGetValue("IsAdvancedAIEnabled", out var legacyAdvancedElement))
+                {
+                    bool? legacyValue = legacyAdvancedElement.ValueKind switch
+                    {
+                        JsonValueKind.True => true,
+                        JsonValueKind.False => false,
+                        JsonValueKind.Object when legacyAdvancedElement.TryGetProperty("value", out var advancedValueElement) => advancedValueElement.ValueKind switch
+                        {
+                            JsonValueKind.True => true,
+                            JsonValueKind.False => false,
+                            _ => null,
+                        },
+                        _ => null,
+                    };
+
+                    if (legacyValue.HasValue)
+                    {
+                        LegacyAdvancedAIEnabled = legacyValue.Value;
+                    }
+
+                    _extensionData.Remove("IsAdvancedAIEnabled");
+                }
             }
         }
 
         private Dictionary<string, JsonElement> _extensionData;
+        private bool? _legacyAdvancedAIEnabled;
+
+        [JsonPropertyName("IsAdvancedAIEnabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public BoolProperty LegacyAdvancedAIEnabledProperty
+        {
+            get => null;
+            set
+            {
+                if (value is not null)
+                {
+                    LegacyAdvancedAIEnabled = value.Value;
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool? LegacyAdvancedAIEnabled
+        {
+            get => _legacyAdvancedAIEnabled;
+            private set => _legacyAdvancedAIEnabled = value;
+        }
+
+        public bool TryConsumeLegacyAdvancedAIEnabled(out bool value)
+        {
+            if (_legacyAdvancedAIEnabled is bool flag)
+            {
+                value = flag;
+                _legacyAdvancedAIEnabled = null;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }
