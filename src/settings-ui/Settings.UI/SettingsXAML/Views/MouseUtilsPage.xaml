@@ -277,9 +277,10 @@
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsExpander
                             Name="MouseUtilsEnableCursorWrap"
-                            x:Uid="MouseUtils_Enable_CursorWrap" IsExpanded="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}"
+                            x:Uid="MouseUtils_Enable_CursorWrap"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorWrap.png}"
-                            IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsExpanded="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
                             <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
