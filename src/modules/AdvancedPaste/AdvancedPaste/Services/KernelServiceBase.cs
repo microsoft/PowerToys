@@ -29,6 +29,7 @@ public abstract class KernelServiceBase(
     ICustomActionTransformService customActionTransformService) : IKernelService
 {
     private const string PromptParameterName = "prompt";
+    private const string DefaultSystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
 
     private readonly IKernelQueryCacheService _queryCacheService = queryCacheService;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
@@ -144,7 +145,8 @@ public abstract class KernelServiceBase(
 
         ChatHistory chatHistory = [];
 
-        chatHistory.AddSystemMessage(runtimeConfig.SystemPrompt);
+        var systemPrompt = string.IsNullOrWhiteSpace(runtimeConfig.SystemPrompt) ? DefaultSystemPrompt : runtimeConfig.SystemPrompt;
+        chatHistory.AddSystemMessage(systemPrompt);
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
 
