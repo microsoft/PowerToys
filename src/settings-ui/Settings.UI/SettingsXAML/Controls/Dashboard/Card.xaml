@@ -33,6 +33,7 @@
             <TextBlock
                 Margin="16,0,0,0"
                 VerticalAlignment="Center"
+                AutomationProperties.HeadingLevel="Level2"
                 FontSize="16"
                 FontWeight="SemiBold"
                 Text="{x:Bind Title, Mode=OneWay}" />
