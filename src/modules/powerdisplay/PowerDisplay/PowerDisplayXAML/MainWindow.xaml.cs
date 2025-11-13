@@ -51,21 +51,34 @@ namespace PowerDisplay
             {
                 this.InitializeComponent();
 
-                // Lightweight initialization - no heavy operations in constructor
-                // Setup window properties
-                SetupWindow();
+                // 1. Configure window immediately (synchronous, no data dependency)
+                ConfigureWindow();
 
-                // Initialize UI text
+                // 2. Initialize UI text (synchronous, lightweight)
                 InitializeUIText();
 
-                // Clean up resources on window close
-                this.Closed += OnWindowClosed;
+                // 3. Create ViewModel immediately (lightweight object, no scanning yet)
+                _viewModel = new MainViewModel();
+                RootGrid.DataContext = _viewModel;
+                Bindings.Update();
 
-                // Auto-hide window when it loses focus (click outside)
-                this.Activated += OnWindowActivated;
+                // 4. Register event handlers
+                RegisterEventHandlers();
 
-                // Delay ViewModel creation until first activation (async)
-                this.Activated += OnFirstActivated;
+                // 5. Start background initialization (don't wait)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await InitializeAsync();
+                        _hasInitialized = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Background initialization failed: {ex.Message}");
+                        DispatcherQueue.TryEnqueue(() => ShowError($"Initialization failed: {ex.Message}"));
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -74,22 +87,31 @@ namespace PowerDisplay
             }
         }
 
-        private bool _hasInitialized;
-
-        private async void OnFirstActivated(object sender, WindowActivatedEventArgs args)
+        /// <summary>
+        /// Register all event handlers for window and ViewModel
+        /// </summary>
+        private void RegisterEventHandlers()
         {
-            // Only initialize once on first activation
-            if (_hasInitialized)
-            {
-                return;
-            }
+            // Window events
+            this.Closed += OnWindowClosed;
+            this.Activated += OnWindowActivated;
 
-            await EnsureInitializedAsync();
+            // ViewModel events
+            _viewModel.UIRefreshRequested += OnUIRefreshRequested;
+            _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
+            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
+            // Button events
+            LinkButton.Click += OnLinkClick;
+            DisableButton.Click += OnDisableClick;
+            RefreshButton.Click += OnRefreshClick;
         }
+
+        private bool _hasInitialized;
 
         /// <summary>
         /// Ensures the window is properly initialized with ViewModel and data
-        /// Can be called from external code (e.g., App startup) to initialize in background
+        /// Can be called from external code (e.g., App startup) to pre-initialize in background
         /// </summary>
         public async Task EnsureInitializedAsync()
         {
@@ -98,57 +120,32 @@ namespace PowerDisplay
                 return;
             }
 
-            _hasInitialized = true;
-            this.Activated -= OnFirstActivated; // Unsubscribe after first run
-
-            // Create and initialize ViewModel asynchronously
-            // This will trigger Loading UI (IsScanning) during monitor discovery
-            _viewModel = new MainViewModel();
-            RootGrid.DataContext = _viewModel;
-
-            // Notify bindings that ViewModel is now available (for x:Bind)
-            Bindings.Update();
-
-            // Initialize ViewModel event handlers
-            _viewModel.UIRefreshRequested += OnUIRefreshRequested;
-            _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
-            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-
-            // Bind button events
-            LinkButton.Click += OnLinkClick;
-            DisableButton.Click += OnDisableClick;
-            RefreshButton.Click += OnRefreshClick;
-
-            // Start async initialization (monitor scanning happens here)
+            // Wait for background initialization to complete
+            // This is a no-op if initialization already completed
             await InitializeAsync();
-
-            // FIX BUG #4: Don't auto-hide window after initialization
-            // Window visibility should be controlled by IPC commands (show_window/toggle_window)
-            // If launched via PowerToys Runner, window should start hidden and wait for IPC show command
-            // If launched standalone, window should stay visible
-            // HideWindow();  // REMOVED - controlled by IPC or standalone mode
+            _hasInitialized = true;
         }
 
         private async Task InitializeAsync()
         {
             try
             {
-                // No delays! Direct async operation
+                // Perform monitor scanning and settings reload
                 await _viewModel.RefreshMonitorsAsync();
                 await _viewModel.ReloadMonitorSettingsAsync();
 
-                // Adjust window size after data is loaded (event-driven)
-                AdjustWindowSizeToContent();
+                // Adjust window size after data is loaded (must run on UI thread)
+                DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
             }
             catch (WmiLight.WmiException ex)
             {
                 Logger.LogError($"WMI access failed: {ex.Message}");
-                ShowError("Unable to access internal display control, administrator privileges may be required.");
+                DispatcherQueue.TryEnqueue(() => ShowError("Unable to access internal display control, administrator privileges may be required."));
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Initialization failed: {ex.Message}");
-                ShowError($"Initialization failed: {ex.Message}");
+                DispatcherQueue.TryEnqueue(() => ShowError($"Initialization failed: {ex.Message}"));
             }
         }
 
@@ -199,7 +196,6 @@ namespace PowerDisplay
             // Auto-hide window when it loses focus (deactivated)
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                Logger.LogInfo("[DEACTIVATED] Window lost focus, hiding");
                 HideWindow();
             }
         }
@@ -228,80 +224,54 @@ namespace PowerDisplay
 
         public void ShowWindow()
         {
-            Logger.LogInfo("[SHOWWINDOW] Method entry");
-            Logger.LogInfo($"[SHOWWINDOW] _hasInitialized: {_hasInitialized}");
-            Logger.LogInfo($"[SHOWWINDOW] Current thread ID: {Environment.CurrentManagedThreadId}");
-
             try
             {
                 // If not initialized, log warning but continue showing
                 if (!_hasInitialized)
                 {
-                    Logger.LogWarning("[SHOWWINDOW] Window not fully initialized yet, showing anyway");
+                    Logger.LogWarning("Window not fully initialized yet, showing anyway");
                 }
 
-                Logger.LogInfo("[SHOWWINDOW] Getting window handle");
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-                Logger.LogInfo($"[SHOWWINDOW] Window handle: 0x{hWnd:X}");
-
-                Logger.LogInfo("[SHOWWINDOW] Adjusting window size");
                 AdjustWindowSizeToContent();
 
-                Logger.LogInfo("[SHOWWINDOW] Repositioning window");
                 if (_appWindow != null)
                 {
                     PositionWindowAtBottomRight(_appWindow);
-                    Logger.LogInfo("[SHOWWINDOW] Window repositioned");
                 }
                 else
                 {
-                    Logger.LogWarning("[SHOWWINDOW] _appWindow is null, skipping reposition");
+                    Logger.LogWarning("AppWindow is null, skipping window repositioning");
                 }
 
-                Logger.LogInfo("[SHOWWINDOW] Setting opacity to 0 for animation");
                 RootGrid.Opacity = 0;
-
-                Logger.LogInfo("[SHOWWINDOW] Calling this.Activate()");
                 this.Activate();
-
-                Logger.LogInfo("[SHOWWINDOW] Calling WindowHelper.ShowWindow");
                 WindowHelper.ShowWindow(hWnd, true);
-
-                Logger.LogInfo("[SHOWWINDOW] Calling WindowHelpers.BringToForeground");
                 WindowHelpers.BringToForeground(hWnd);
 
-                Logger.LogInfo("[SHOWWINDOW] Checking for animation storyboard");
                 if (RootGrid.Resources.ContainsKey("SlideInStoryboard"))
                 {
-                    Logger.LogInfo("[SHOWWINDOW] Starting SlideInStoryboard animation");
                     var slideInStoryboard = RootGrid.Resources["SlideInStoryboard"] as Storyboard;
                     slideInStoryboard?.Begin();
                 }
                 else
                 {
-                    Logger.LogWarning("[SHOWWINDOW] SlideInStoryboard not found, setting opacity=1");
+                    Logger.LogWarning("SlideInStoryboard not found, window will appear without animation");
                     RootGrid.Opacity = 1;
                 }
 
-                Logger.LogInfo("[SHOWWINDOW] Verifying window visibility");
                 bool isVisible = IsWindowVisible();
-                Logger.LogInfo($"[SHOWWINDOW] IsWindowVisible result: {isVisible}");
-
                 if (!isVisible)
                 {
-                    Logger.LogError("[SHOWWINDOW] Window not visible after show, forcing visibility");
+                    Logger.LogError("Window not visible after show attempt, forcing visibility");
                     RootGrid.Opacity = 1;
                     this.Activate();
                     WindowHelpers.BringToForeground(hWnd);
                 }
-
-                Logger.LogInfo("[SHOWWINDOW] Method completed successfully");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[SHOWWINDOW] Exception: {ex.GetType().Name}");
-                Logger.LogError($"[SHOWWINDOW] Exception message: {ex.Message}");
-                Logger.LogError($"[SHOWWINDOW] Stack trace: {ex.StackTrace}");
+                Logger.LogError($"Failed to show window: {ex.Message}");
                 throw;
             }
         }
@@ -346,35 +316,28 @@ namespace PowerDisplay
         /// </summary>
         public void ToggleWindow()
         {
-            Logger.LogInfo("[TOGGLEWINDOW] Method entry");
             try
             {
                 bool isVisible = IsWindowVisible();
-                Logger.LogInfo($"[TOGGLEWINDOW] Current visibility: {isVisible}");
 
                 if (isVisible)
                 {
-                    Logger.LogInfo("[TOGGLEWINDOW] Window is visible, hiding");
                     HideWindow();
                 }
                 else
                 {
-                    Logger.LogInfo("[TOGGLEWINDOW] Window is hidden, showing");
                     ShowWindow();
                 }
-
-                Logger.LogInfo("[TOGGLEWINDOW] Method completed");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[TOGGLEWINDOW] Exception: {ex.Message}");
+                Logger.LogError($"Failed to toggle window: {ex.Message}");
                 throw;
             }
         }
 
         private async void OnUIRefreshRequested(object? sender, EventArgs e)
         {
-            Logger.LogInfo("UI refresh requested due to settings change");
             await _viewModel.ReloadMonitorSettingsAsync();
 
             // Adjust window size after settings are reloaded (no delay needed!)
@@ -415,7 +378,7 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// 快速关闭窗口，跳过动画和复杂清理
+        /// Fast shutdown: skip animations and complex cleanup
         /// </summary>
         public void FastShutdown()
         {
@@ -423,25 +386,25 @@ namespace PowerDisplay
             {
                 _isExiting = true;
 
-                // 快速清理 ViewModel
+                // Quick cleanup of ViewModel
                 if (_viewModel != null)
                 {
-                    // 取消事件订阅
+                    // Unsubscribe from events
                     _viewModel.UIRefreshRequested -= OnUIRefreshRequested;
                     _viewModel.Monitors.CollectionChanged -= OnMonitorsCollectionChanged;
                     _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
 
-                    // 立即释放
+                    // Dispose immediately
                     _viewModel.Dispose();
                 }
 
-                // 直接关闭窗口，不等待动画
+                // Close window directly without animations
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
                 WindowHelper.ShowWindow(hWnd, false);
             }
             catch (Exception ex)
             {
-                // 忽略清理错误，确保能够关闭
+                // Ignore cleanup errors to ensure shutdown
                 Logger.LogWarning($"FastShutdown error: {ex.Message}");
             }
         }
@@ -450,21 +413,21 @@ namespace PowerDisplay
         {
             try
             {
-                // 使用快速关闭
+                // Use fast shutdown
                 FastShutdown();
 
-                // 直接调用应用程序快速退出
+                // Call application shutdown directly
                 if (Application.Current is App app)
                 {
                     app.Shutdown();
                 }
 
-                // 确保立即退出
+                // Ensure immediate exit
                 Environment.Exit(0);
             }
             catch (Exception ex)
             {
-                // 确保能够退出
+                // Ensure exit even on error
                 Logger.LogError($"ExitApplication error: {ex.Message}");
                 Environment.Exit(0);
             }
@@ -618,7 +581,10 @@ namespace PowerDisplay
             }
         }
 
-        private void SetupWindow()
+        /// <summary>
+        /// Configure window properties (synchronous, no data dependency)
+        /// </summary>
+        private void ConfigureWindow()
         {
             try
             {
@@ -712,7 +678,7 @@ namespace PowerDisplay
             catch (Exception ex)
             {
                 // Ignore window setup errors
-                Logger.LogWarning($"Window setup error: {ex.Message}");
+                Logger.LogWarning($"Window configuration error: {ex.Message}");
             }
         }
 
@@ -743,7 +709,6 @@ namespace PowerDisplay
                 var currentSize = _appWindow.Size;
                 if (Math.Abs(currentSize.Height - scaledHeight) > 1)
                 {
-                    Logger.LogInfo($"Adjusting window height from {currentSize.Height} to {scaledHeight} (content: {contentHeight})");
                     _appWindow.Resize(new SizeInt32 { Width = 640, Height = scaledHeight });
 
                     // Update clip region to match new window size
@@ -800,10 +765,9 @@ namespace PowerDisplay
                     appWindow.Move(new PointInt32 { X = x, Y = y });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Ignore errors when positioning window
-                Logger.LogDebug($"Failed to position window: {ex.Message}");
             }
         }
 
@@ -857,19 +821,15 @@ namespace PowerDisplay
             {
                 case "Brightness":
                     monitorVm.Brightness = finalValue;
-                    Logger.LogDebug($"[UI] Brightness drag completed: {finalValue}");
                     break;
                 case "ColorTemperature":
                     monitorVm.ColorTemperaturePercent = finalValue;
-                    Logger.LogDebug($"[UI] ColorTemperature drag completed: {finalValue}%");
                     break;
                 case "Contrast":
                     monitorVm.ContrastPercent = finalValue;
-                    Logger.LogDebug($"[UI] Contrast drag completed: {finalValue}%");
                     break;
                 case "Volume":
                     monitorVm.Volume = finalValue;
-                    Logger.LogDebug($"[UI] Volume drag completed: {finalValue}");
                     break;
             }
         }

@@ -63,7 +63,7 @@ namespace PowerDisplay.Core
                 }
                 else
                 {
-                    Logger.LogInfo("WMI brightness control not available on this system");
+                    Logger.LogWarning("WMI brightness control not available on this system");
                 }
             }
             catch (Exception ex)
@@ -199,31 +199,23 @@ namespace PowerDisplay.Core
         /// </summary>
         public async Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
         {
-            Logger.LogDebug($"[MonitorManager] SetBrightnessAsync called for {monitorId}, brightness={brightness}");
-
             var monitor = GetMonitor(monitorId);
             if (monitor == null)
             {
-                Logger.LogError($"[MonitorManager] Monitor not found: {monitorId}");
+                Logger.LogError($"Monitor not found: {monitorId}");
                 return MonitorOperationResult.Failure("Monitor not found");
             }
-
-            Logger.LogDebug($"[MonitorManager] Monitor found: {monitor.Id}, Type={monitor.Type}, Handle=0x{monitor.Handle:X}, DeviceKey={monitor.DeviceKey}");
 
             var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
-                Logger.LogError($"[MonitorManager] No controller available for monitor {monitorId}, Type={monitor.Type}");
+                Logger.LogError($"No controller available for monitor {monitorId}, Type={monitor.Type}");
                 return MonitorOperationResult.Failure("No controller available for this monitor");
             }
 
-            Logger.LogDebug($"[MonitorManager] Controller found: {controller.GetType().Name}");
-
             try
             {
-                Logger.LogDebug($"[MonitorManager] Calling controller.SetBrightnessAsync for {monitor.Id}");
                 var result = await controller.SetBrightnessAsync(monitor, brightness, cancellationToken);
-                Logger.LogDebug($"[MonitorManager] controller.SetBrightnessAsync returned: IsSuccess={result.IsSuccess}, ErrorMessage={result.ErrorMessage}");
 
                 if (result.IsSuccess)
                 {
@@ -344,8 +336,6 @@ namespace PowerDisplay.Core
                         // This is a rough mapping - actual values depend on monitor implementation
                         var kelvin = ConvertVcpValueToKelvin(tempInfo.Current, tempInfo.Maximum);
                         monitor.CurrentColorTemperature = kelvin;
-
-                        Logger.LogInfo($"Initialized color temperature for {monitorId}: {kelvin}K (VCP: {tempInfo.Current}/{tempInfo.Maximum})");
                     }
                 }
             }

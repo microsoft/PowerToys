@@ -5,31 +5,31 @@
 using System;
 using System.Runtime.InteropServices;
 
-// 类型别名，兼容 Windows API 命名约定
+// Type aliases for Windows API naming conventions compatibility
 using RECT = PowerDisplay.Native.Rect;
 
 namespace PowerDisplay.Native;
 
 /// <summary>
-/// 委托类型定义
+/// Native delegate type definitions
 /// </summary>
 public static class NativeDelegates
 {
     /// <summary>
-    /// 显示器枚举过程委托
+    /// Monitor enumeration procedure delegate
     /// </summary>
-    /// <param name="hMonitor">显示器句柄</param>
-    /// <param name="hdcMonitor">显示器 DC</param>
-    /// <param name="lprcMonitor">显示器矩形指针</param>
-    /// <param name="dwData">用户数据</param>
-    /// <returns>继续枚举返回 true</returns>
+    /// <param name="hMonitor">Monitor handle</param>
+    /// <param name="hdcMonitor">Monitor device context</param>
+    /// <param name="lprcMonitor">Pointer to monitor rectangle</param>
+    /// <param name="dwData">User data</param>
+    /// <returns>True to continue enumeration</returns>
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, IntPtr lprcMonitor, IntPtr dwData);
 
     /// <summary>
-    /// 线程启动例程委托
+    /// Thread start routine delegate
     /// </summary>
-    /// <param name="lpParameter">线程参数</param>
-    /// <returns>线程退出代码</returns>
+    /// <param name="lpParameter">Thread parameter</param>
+    /// <returns>Thread exit code</returns>
     public delegate uint ThreadStartRoutine(IntPtr lpParameter);
 }

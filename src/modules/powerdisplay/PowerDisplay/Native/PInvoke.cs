@@ -171,13 +171,6 @@ namespace PowerDisplay.Native
             POINT pt,
             uint dwFlags);
 
-        // ==================== Shell32.dll - Tray Icon ====================
-        [LibraryImport("shell32.dll", EntryPoint = "Shell_NotifyIconW", StringMarshalling = StringMarshalling.Utf16)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool Shell_NotifyIcon(
-            uint dwMessage,
-            ref NOTIFYICONDATA lpData);
-
         // ==================== Dxva2.dll - DDC/CI Monitor Control ====================
         [LibraryImport("Dxva2.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

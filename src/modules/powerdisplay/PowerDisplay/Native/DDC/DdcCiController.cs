@@ -224,7 +224,6 @@ namespace PowerDisplay.Native.DDC
                         var vcpCode = _vcpResolver.GetColorTemperatureVcpCode(monitor.Id, monitor.Handle);
                         if (vcpCode.HasValue && DdcCiNative.TrySetVCPFeature(monitor.Handle, vcpCode.Value, targetValue))
                         {
-                            Logger.LogInfo($"Successfully set color temperature to {colorTemperature}K via DDC/CI (VCP 0x{vcpCode.Value:X2})");
                             return MonitorOperationResult.Success();
                         }
 
@@ -326,25 +325,20 @@ namespace PowerDisplay.Native.DDC
                 {
                     // Get all display devices with stable device IDs (Twinkle Tray style)
                     var displayDevices = DdcCiNative.GetAllDisplayDevices();
-                    Logger.LogInfo($"DDC: Found {displayDevices.Count} display devices via EnumDisplayDevices");
 
                     // Also get hardware info for friendly names
                     var monitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
-                    Logger.LogDebug($"DDC: GetAllMonitorDisplayInfo returned {monitorDisplayInfo.Count} items");
 
                     // Enumerate all monitors
                     var monitorHandles = new List<IntPtr>();
-                    Logger.LogDebug($"DDC: About to call EnumDisplayMonitors...");
 
                     bool EnumProc(IntPtr hMonitor, IntPtr hdcMonitor, IntPtr lprcMonitor, IntPtr dwData)
                     {
-                        Logger.LogDebug($"DDC: EnumProc callback - hMonitor=0x{hMonitor:X}");
                         monitorHandles.Add(hMonitor);
                         return true;
                     }
 
                     bool enumResult = EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, EnumProc, IntPtr.Zero);
-                    Logger.LogDebug($"DDC: EnumDisplayMonitors returned {enumResult}, found {monitorHandles.Count} monitor handles");
 
                     if (!enumResult)
                     {
@@ -371,7 +365,6 @@ namespace PowerDisplay.Native.DDC
                         {
                             if (attempt > 0)
                             {
-                                Logger.LogInfo($"DDC: Retry attempt {attempt}/{maxRetries - 1} for hMonitor 0x{hMonitor:X} after {retryDelayMs}ms delay");
                                 await Task.Delay(retryDelayMs, cancellationToken);
                             }
 
@@ -402,11 +395,6 @@ namespace PowerDisplay.Native.DDC
                             if (!hasNullHandle)
                             {
                                 // Success! All handles are valid
-                                if (attempt > 0)
-                                {
-                                    Logger.LogInfo($"DDC: Successfully obtained valid handles on attempt {attempt + 1}");
-                                }
-
                                 break;
                             }
                             else if (attempt < maxRetries - 1)
@@ -474,7 +462,6 @@ namespace PowerDisplay.Native.DDC
                             var monitor = _discoveryHelper.CreateMonitorFromPhysical(monitorToCreate, adapterName, i, monitorDisplayInfo, matchedDevice);
                             if (monitor != null)
                             {
-                                Logger.LogInfo($"DDC: Created monitor {monitor.Id} with handle 0x{monitor.Handle:X} (reused: {reusingOldHandle}), deviceKey: {monitor.DeviceKey}");
                                 monitors.Add(monitor);
 
                                 // Store in new map for cleanup
@@ -492,7 +479,6 @@ namespace PowerDisplay.Native.DDC
                 }
                 finally
                 {
-                    Logger.LogDebug($"DDC: DiscoverMonitorsAsync returning {monitors.Count} monitors");
                 }
 
                 return monitors;

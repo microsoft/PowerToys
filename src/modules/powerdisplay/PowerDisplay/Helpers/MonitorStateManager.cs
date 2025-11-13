@@ -25,8 +25,11 @@ namespace PowerDisplay.Helpers
         private readonly string _stateFilePath;
         private readonly Dictionary<string, MonitorState> _states = new();
         private readonly object _lock = new object();
+        private readonly Timer _saveTimer;
 
         private bool _disposed;
+        private bool _isDirty;
+        private const int SaveDebounceMs = 2000; // Save 2 seconds after last update
 
         /// <summary>
         /// Monitor state data (internal tracking, not serialized)
@@ -55,16 +58,40 @@ namespace PowerDisplay.Helpers
 
             _stateFilePath = Path.Combine(powerToysPath, AppConstants.State.StateFileName);
 
+            // Initialize debounce timer (disabled initially)
+            _saveTimer = new Timer(OnSaveTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
+
             // Load existing state if available
             LoadStateFromDisk();
 
-            Logger.LogInfo($"MonitorStateManager initialized with direct-save strategy, state file: {_stateFilePath}");
+            Logger.LogInfo($"MonitorStateManager initialized with debounced-save strategy (debounce: {SaveDebounceMs}ms), state file: {_stateFilePath}");
         }
 
         /// <summary>
-        /// Update monitor parameter and save immediately to disk.
+        /// Timer callback to save state when dirty
+        /// </summary>
+        private void OnSaveTimerElapsed(object? state)
+        {
+            bool shouldSave = false;
+            lock (_lock)
+            {
+                if (_isDirty && !_disposed)
+                {
+                    shouldSave = true;
+                    _isDirty = false;
+                }
+            }
+
+            if (shouldSave)
+            {
+                SaveStateToDisk();
+            }
+        }
+
+        /// <summary>
+        /// Update monitor parameter and schedule debounced save to disk.
         /// Uses HardwareId as the stable key.
-        /// Direct-save strategy ensures no data loss and simplifies code (KISS principle).
+        /// Debounced-save strategy reduces disk I/O by batching rapid updates (e.g., during slider drag).
         /// </summary>
         public void UpdateMonitorParameter(string hardwareId, string property, int value)
         {
@@ -104,12 +131,15 @@ namespace PowerDisplay.Helpers
                             Logger.LogWarning($"Unknown property: {property}");
                             return;
                     }
+
+                    // Mark dirty and schedule debounced save
+                    _isDirty = true;
                 }
 
-                // Save immediately after update - simple and reliable!
-                SaveStateToDisk();
+                // Reset timer to debounce rapid updates (e.g., during slider drag)
+                _saveTimer.Change(SaveDebounceMs, Timeout.Infinite);
 
-                Logger.LogTrace($"[State] Updated and saved {property}={value} for monitor HardwareId='{hardwareId}'");
+                Logger.LogTrace($"[State] Updated {property}={value} for monitor HardwareId='{hardwareId}', save scheduled");
             }
             catch (Exception ex)
             {
@@ -201,7 +231,7 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Save current state to disk immediately.
-        /// Simplified direct-save approach - no timer, no dirty flags, just save!
+        /// Called by timer after debounce period or on dispose to flush pending changes.
         /// </summary>
         private void SaveStateToDisk()
         {
@@ -257,12 +287,26 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
+            // Stop the timer first
+            _saveTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+
+            bool wasDirty = false;
             lock (_lock)
             {
+                wasDirty = _isDirty;
                 _disposed = true;
+                _isDirty = false;
             }
 
-            // State is already saved with each update, no need for final flush!
+            // Flush any pending changes before disposing
+            if (wasDirty)
+            {
+                Logger.LogInfo("Flushing pending state changes before dispose");
+                SaveStateToDisk();
+            }
+
+            _saveTimer?.Dispose();
+
             Logger.LogInfo("MonitorStateManager disposed");
             GC.SuppressFinalize(this);
         }

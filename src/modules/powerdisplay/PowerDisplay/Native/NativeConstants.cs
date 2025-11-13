@@ -42,22 +42,22 @@ namespace PowerDisplay.Native
         public const byte VcpCodeMute = 0x8D;
 
         /// <summary>
-        /// VCP code: Color temperature request (主要色温控制)
+        /// VCP code: Color temperature request (primary color temperature control)
         /// </summary>
         public const byte VcpCodeColorTemperature = 0x0C;
 
         /// <summary>
-        /// VCP code: Color temperature increment (色温增量调节)
+        /// VCP code: Color temperature increment (incremental color temperature adjustment)
         /// </summary>
         public const byte VcpCodeColorTemperatureIncrement = 0x0B;
 
         /// <summary>
-        /// VCP code: Gamma correction (Gamma调节)
+        /// VCP code: Gamma correction (gamma adjustment)
         /// </summary>
         public const byte VcpCodeGamma = 0x72;
 
         /// <summary>
-        /// VCP code: Select color preset (颜色预设选择)
+        /// VCP code: Select color preset (color preset selection)
         /// </summary>
         public const byte VcpCodeSelectColorPreset = 0x14;
 

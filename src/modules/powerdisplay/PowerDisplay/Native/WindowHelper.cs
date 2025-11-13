@@ -43,32 +43,32 @@ namespace PowerDisplay.Native
         private const int SwRestore = 9;
 
         /// <summary>
-        /// 禁用窗口的拖动和缩放功能
+        /// Disable window moving and resizing functionality
         /// </summary>
         public static void DisableWindowMovingAndResizing(IntPtr hWnd)
         {
-            // 获取当前窗口样式
+            // Get current window style
 #if WIN64
             int style = (int)GetWindowLong(hWnd, GwlStyle);
 #else
             int style = GetWindowLong(hWnd, GwlStyle);
 #endif
 
-            // 移除可调整大小的边框、标题栏和系统菜单
+            // Remove resizable borders, title bar, and system menu
             style &= ~WsThickframe;
             style &= ~WsMaximizebox;
             style &= ~WsMinimizebox;
-            style &= ~WsCaption;  // 移除整个标题栏
-            style &= ~WsSysmenu;   // 移除系统菜单
+            style &= ~WsCaption;  // Remove entire title bar
+            style &= ~WsSysmenu;   // Remove system menu
 
-            // 设置新的窗口样式
+            // Set new window style
 #if WIN64
             _ = SetWindowLong(hWnd, GwlStyle, new IntPtr(style));
 #else
             _ = SetWindowLong(hWnd, GwlStyle, style);
 #endif
 
-            // 获取扩展样式并移除相关边框
+            // Get extended style and remove related borders
 #if WIN64
             int exStyle = (int)GetWindowLong(hWnd, GwlExstyle);
 #else
@@ -84,7 +84,7 @@ namespace PowerDisplay.Native
             _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
 #endif
 
-            // 刷新窗口框架
+            // Refresh window frame
             SetWindowPos(
                 hWnd,
                 IntPtr.Zero,
@@ -96,7 +96,7 @@ namespace PowerDisplay.Native
         }
 
         /// <summary>
-        /// 设置窗口是否置顶
+        /// Set whether window is topmost
         /// </summary>
         public static void SetWindowTopmost(IntPtr hWnd, bool topmost)
         {
@@ -111,7 +111,7 @@ namespace PowerDisplay.Native
         }
 
         /// <summary>
-        /// 显示或隐藏窗口
+        /// Show or hide window
         /// </summary>
         public static void ShowWindow(IntPtr hWnd, bool show)
         {
@@ -119,7 +119,7 @@ namespace PowerDisplay.Native
         }
 
         /// <summary>
-        /// 最小化窗口
+        /// Minimize window
         /// </summary>
         public static void MinimizeWindow(IntPtr hWnd)
         {
@@ -127,7 +127,7 @@ namespace PowerDisplay.Native
         }
 
         /// <summary>
-        /// 恢复窗口
+        /// Restore window
         /// </summary>
         public static void RestoreWindow(IntPtr hWnd)
         {
@@ -135,28 +135,28 @@ namespace PowerDisplay.Native
         }
 
         /// <summary>
-        /// 设置窗口不在任务栏显示
+        /// Hide window from taskbar
         /// </summary>
         public static void HideFromTaskbar(IntPtr hWnd)
         {
-            // 获取当前扩展样式
+            // Get current extended style
 #if WIN64
             int exStyle = (int)GetWindowLong(hWnd, GwlExstyle);
 #else
             int exStyle = GetWindowLong(hWnd, GwlExstyle);
 #endif
 
-            // 添加 WS_EX_TOOLWINDOW 样式，这会让窗口不在任务栏显示
+            // Add WS_EX_TOOLWINDOW style to hide window from taskbar
             exStyle |= WsExToolwindow;
 
-            // 设置新的扩展样式
+            // Set new extended style
 #if WIN64
             _ = SetWindowLong(hWnd, GwlExstyle, new IntPtr(exStyle));
 #else
             _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
 #endif
 
-            // 刷新窗口框架
+            // Refresh window frame
             SetWindowPos(
                 hWnd,
                 IntPtr.Zero,

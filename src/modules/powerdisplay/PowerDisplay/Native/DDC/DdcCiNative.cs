@@ -10,7 +10,7 @@ using static PowerDisplay.Native.NativeConstants;
 using static PowerDisplay.Native.NativeDelegates;
 using static PowerDisplay.Native.PInvoke;
 
-// 类型别名，兼容 Windows API 命名约定
+// Type aliases for Windows API naming conventions compatibility
 using DISPLAY_DEVICE = PowerDisplay.Native.DisplayDevice;
 using DISPLAYCONFIG_DEVICE_INFO_HEADER = PowerDisplay.Native.DISPLAYCONFIG_DEVICE_INFO_HEADER;
 using DISPLAYCONFIG_MODE_INFO = PowerDisplay.Native.DISPLAYCONFIG_MODE_INFO;
@@ -27,7 +27,7 @@ using RECT = PowerDisplay.Native.Rect;
 namespace PowerDisplay.Native.DDC
 {
     /// <summary>
-    /// 显示设备信息类
+    /// Display device information class
     /// </summary>
     public class DisplayDeviceInfo
     {
@@ -41,11 +41,11 @@ namespace PowerDisplay.Native.DDC
     }
 
     /// <summary>
-    /// DDC/CI 原生 API 封装
+    /// DDC/CI native API wrapper
     /// </summary>
     public static class DdcCiNative
     {
-        // Display Configuration 常量
+        // Display Configuration constants
         public const uint QdcAllPaths = 0x00000001;
 
         public const uint QdcOnlyActivePaths = 0x00000002;
@@ -55,13 +55,13 @@ namespace PowerDisplay.Native.DDC
         // Helper Methods
 
         /// <summary>
-        /// 获取 VCP 功能值的安全包装
+        /// Safe wrapper for getting VCP feature value
         /// </summary>
-        /// <param name="hPhysicalMonitor">物理显示器句柄</param>
-        /// <param name="vcpCode">VCP 代码</param>
-        /// <param name="currentValue">当前值</param>
-        /// <param name="maxValue">最大值</param>
-        /// <returns>是否成功</returns>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <param name="vcpCode">VCP code</param>
+        /// <param name="currentValue">Current value</param>
+        /// <param name="maxValue">Maximum value</param>
+        /// <returns>True if successful</returns>
         public static bool TryGetVCPFeature(IntPtr hPhysicalMonitor, byte vcpCode, out uint currentValue, out uint maxValue)
         {
             currentValue = 0;
@@ -83,12 +83,12 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// 设置 VCP 功能值的安全包装
+        /// Safe wrapper for setting VCP feature value
         /// </summary>
-        /// <param name="hPhysicalMonitor">物理显示器句柄</param>
-        /// <param name="vcpCode">VCP 代码</param>
-        /// <param name="value">新值</param>
-        /// <returns>是否成功</returns>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <param name="vcpCode">VCP code</param>
+        /// <param name="value">New value</param>
+        /// <returns>True if successful</returns>
         public static bool TrySetVCPFeature(IntPtr hPhysicalMonitor, byte vcpCode, uint value)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
@@ -107,13 +107,13 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// 获取高级亮度信息的安全包装
+        /// Safe wrapper for getting advanced brightness information
         /// </summary>
-        /// <param name="hPhysicalMonitor">物理显示器句柄</param>
-        /// <param name="minBrightness">最小亮度</param>
-        /// <param name="currentBrightness">当前亮度</param>
-        /// <param name="maxBrightness">最大亮度</param>
-        /// <returns>是否成功</returns>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <param name="minBrightness">Minimum brightness</param>
+        /// <param name="currentBrightness">Current brightness</param>
+        /// <param name="maxBrightness">Maximum brightness</param>
+        /// <returns>True if successful</returns>
         public static bool TryGetMonitorBrightness(IntPtr hPhysicalMonitor, out uint minBrightness, out uint currentBrightness, out uint maxBrightness)
         {
             minBrightness = 0;
@@ -394,10 +394,10 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// 获取所有显示设备信息（使用 EnumDisplayDevices API）
-        /// 与 Twinkle Tray 实现保持一致
+        /// Get all display device information (using EnumDisplayDevices API)
+        /// Implementation consistent with Twinkle Tray
         /// </summary>
-        /// <returns>显示设备信息列表</returns>
+        /// <returns>List of display device information</returns>
         public static unsafe List<DisplayDeviceInfo> GetAllDisplayDevices()
         {
             var devices = new List<DisplayDeviceInfo>();
