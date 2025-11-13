@@ -5696,14 +5696,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Foundry Local model</value>
     <comment>Do not localize "Foundry Local", it's a product name</comment>
   </data>
-  <data name="AdvancedPaste_FL_UseCLIToDownloadModels.Text" xml:space="preserve">
+  <data name="AdvancedPaste_FL_UseCliToDownloadModels.Text" xml:space="preserve">
     <value>Use the Foundry Local CLI to download models that run locally on-device. They'll appear here.</value>
     <comment>Do not localize "Foundry Local", it's a product name</comment>
   </data>
   <data name="AdvancedPaste_FL_RefreshModelList.Text" xml:space="preserve">
     <value>Refresh model list</value>
   </data>
-  <data name="AdvancedPaste_FL_FLNotavailableYet.Text" xml:space="preserve">
+  <data name="AdvancedPaste_FL_FLNotAvailableYet.Text" xml:space="preserve">
     <value>Foundry Local is not available on this device yet.</value>
     <comment>Do not localize "Foundry Local", it's a product name</comment>
   </data>
