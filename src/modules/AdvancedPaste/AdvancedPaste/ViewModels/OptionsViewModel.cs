@@ -77,6 +77,7 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(PrivacyLinkUri))]
         [NotifyPropertyChangedFor(nameof(HasTermsLink))]
         [NotifyPropertyChangedFor(nameof(HasPrivacyLink))]
+        [NotifyPropertyChangedFor(nameof(HasLegalLinks))]
         private bool _isAllowedByGPO;
 
         [ObservableProperty]
@@ -221,6 +222,8 @@ namespace AdvancedPaste.ViewModels
         public bool HasTermsLink => GetActiveProviderMetadata().HasTermsLink;
 
         public bool HasPrivacyLink => GetActiveProviderMetadata().HasPrivacyLink;
+
+        public bool HasLegalLinks => HasTermsLink || HasPrivacyLink;
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
@@ -367,6 +370,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(PrivacyLinkUri));
             OnPropertyChanged(nameof(HasTermsLink));
             OnPropertyChanged(nameof(HasPrivacyLink));
+            OnPropertyChanged(nameof(HasLegalLinks));
         }
 
         private void RefreshPasteFormats()
