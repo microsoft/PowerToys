@@ -264,7 +264,8 @@
                     <Button
                         Padding="0"
                         VerticalAlignment="Center"
-                        Style="{StaticResource SubtleButtonStyle}">
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="{x:Bind ViewModel.HasLegalLinks, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <FontIcon FontSize="12" Glyph="&#xE946;" />
                         <Button.Flyout>
                             <Flyout>
