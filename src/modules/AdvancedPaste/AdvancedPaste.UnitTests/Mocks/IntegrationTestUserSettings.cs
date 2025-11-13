@@ -49,6 +49,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public bool CloseAfterLosingFocus => false;
 
+    public bool EnableClipboardPreview => true;
+
     public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
     public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;

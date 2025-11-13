@@ -35,9 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly IFileSystemWatcher fileSystemWatcher;
         private readonly DispatcherQueue dispatcherQueue;
         private bool suppressViewModelUpdates;
-        private bool suppressLatLonChange = true;
-        private bool latBoxLoaded;
-        private bool lonBoxLoaded;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
@@ -132,8 +129,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Since we use this mode, we can remove the selected city data.
                 this.ViewModel.SelectedCity = null;
 
-                this.suppressLatLonChange = false;
-
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 this.SyncButton.IsEnabled = true;
                 this.SyncLoader.IsActive = false;
@@ -157,23 +152,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            if (this.suppressLatLonChange)
-            {
-                return;
-            }
-
             double latitude = this.LatitudeBox.Value;
             double longitude = this.LongitudeBox.Value;
 
-            if (double.IsNaN(latitude) || double.IsNaN(longitude))
-            {
-                return;
-            }
-
-            double viewModelLatitude = double.TryParse(this.ViewModel.Latitude, out var lat) ? lat : 0.0;
-            double viewModelLongitude = double.TryParse(this.ViewModel.Longitude, out var lon) ? lon : 0.0;
-
-            if (Math.Abs(latitude - viewModelLatitude) < 0.0001 && Math.Abs(longitude - viewModelLongitude) < 0.0001)
+            if (double.IsNaN(latitude) || double.IsNaN(longitude) || (latitude == 0 && longitude == 0))
             {
                 return;
             }
@@ -183,7 +165,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel.LocationPanelLightTimeMinutes = (result.SunriseHour * 60) + result.SunriseMinute;
             this.ViewModel.LocationPanelDarkTimeMinutes = (result.SunsetHour * 60) + result.SunsetMinute;
 
-            // Show the panel with these values
             this.LocationResultPanel.Visibility = Visibility.Visible;
             if (this.LocationDialog != null)
             {
@@ -212,37 +193,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
 
             this.SunriseModeChartState();
-        }
-
-        private void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            this.LatitudeBox.Loaded += LatLonBox_Loaded;
-            this.LongitudeBox.Loaded += LatLonBox_Loaded;
-        }
-
-        private void LocationDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
-        {
-            this.LatitudeBox.Loaded -= LatLonBox_Loaded;
-            this.LongitudeBox.Loaded -= LatLonBox_Loaded;
-            this.latBoxLoaded = false;
-            this.lonBoxLoaded = false;
-        }
-
-        private void LatLonBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is NumberBox numberBox && numberBox == this.LatitudeBox && this.LatitudeBox.IsLoaded)
-            {
-                this.latBoxLoaded = true;
-            }
-            else if (sender is NumberBox numberBox2 && numberBox2 == this.LongitudeBox && this.LongitudeBox.IsLoaded)
-            {
-                this.lonBoxLoaded = true;
-            }
-
-            if (this.latBoxLoaded && this.lonBoxLoaded)
-            {
-                this.suppressLatLonChange = false;
-            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
