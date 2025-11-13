@@ -34,52 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool IsAIEnabled { get; set; }
 
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> ExtensionData
-        {
-            get => _extensionData;
-            set
-            {
-                _extensionData = value;
-
-                if (_extensionData != null && _extensionData.TryGetValue("IsOpenAIEnabled", out var legacyElement) && legacyElement.ValueKind == JsonValueKind.Object && legacyElement.TryGetProperty("value", out var valueElement))
-                {
-                    IsAIEnabled = valueElement.ValueKind switch
-                    {
-                        JsonValueKind.True => true,
-                        JsonValueKind.False => false,
-                        _ => IsAIEnabled,
-                    };
-
-                    _extensionData.Remove("IsOpenAIEnabled");
-                }
-
-                if (_extensionData != null && _extensionData.TryGetValue("IsAdvancedAIEnabled", out var legacyAdvancedElement))
-                {
-                    bool? legacyValue = legacyAdvancedElement.ValueKind switch
-                    {
-                        JsonValueKind.True => true,
-                        JsonValueKind.False => false,
-                        JsonValueKind.Object when legacyAdvancedElement.TryGetProperty("value", out var advancedValueElement) => advancedValueElement.ValueKind switch
-                        {
-                            JsonValueKind.True => true,
-                            JsonValueKind.False => false,
-                            _ => null,
-                        },
-                        _ => null,
-                    };
-
-                    if (legacyValue.HasValue)
-                    {
-                        LegacyAdvancedAIEnabled = legacyValue.Value;
-                    }
-
-                    _extensionData.Remove("IsAdvancedAIEnabled");
-                }
-            }
-        }
-
-        private Dictionary<string, JsonElement> _extensionData;
         private bool? _legacyAdvancedAIEnabled;
 
         [JsonPropertyName("IsAdvancedAIEnabled")]
