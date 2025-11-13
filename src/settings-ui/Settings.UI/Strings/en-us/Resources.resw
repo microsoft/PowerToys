@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -644,14 +644,11 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
     <value>Enable OpenAI content moderation</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Header" xml:space="preserve">
-    <value>Enable Advanced AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Description" xml:space="preserve">
+  <data name="AdvancedPaste_EnableAdvancedAIDescription.Text" xml:space="preserve">
     <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Access Clipboard History</value>
+    <value>Show what's currently on your Clipboard and access your Clipboard history</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
     <value>Clipboard History shows a list of previously copied items.</value>
@@ -4058,11 +4055,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
-    <value>Advanced AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Supports advanced workflows by chaining transformations and working with files and images. May use additional API credits.</value>
+  <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
+    <value>Enable Advanced AI</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4604,7 +4598,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
   <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
-    <value>Automatically close the Advanced Paste window after it loses focus</value>
+    <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
@@ -5678,5 +5672,75 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="LightSwitch_SetLocationButton.Content" xml:space="preserve">
     <value>Set Location</value>
+  </data>
+  <data name="AdvancedPaste_FL_OpenFoundryModelList.Content" xml:space="preserve">
+    <value>Open Foundry Local model list</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_RunFoundryLocalText.Text" xml:space="preserve">
+    <value>Run Foundry Local to download or add a local model</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_NoModelsDownloaded.Text" xml:space="preserve">
+    <value>No models downloaded</value>
+  </data>
+  <data name="AdvancedPaste_FL_LoadingStatus.Text" xml:space="preserve">
+    <value>Loading Foundry Local status..</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_LocalModel.Text" xml:space="preserve">
+    <value>Foundry Local model</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_UseCLIToDownloadModels.Text" xml:space="preserve">
+    <value>Use the Foundry Local CLI to download models that run locally on-device. They'll appear here.</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_RefreshModelList.Text" xml:space="preserve">
+    <value>Refresh model list</value>
+  </data>
+  <data name="AdvancedPaste_FL_FLNotavailableYet.Text" xml:space="preserve">
+    <value>Foundry Local is not available on this device yet.</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_StartService.Text" xml:space="preserve">
+    <value>Start the Foundry Local service before returning to PowerToys.</value>
+  </data>
+  <data name="AdvancedPaste_FL_CLIGuide.Content" xml:space="preserve">
+    <value>Follow the Foundry Local CLI guide</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_ModelProviders.Header" xml:space="preserve">
+    <value>Model providers</value>
+  </data>
+  <data name="AdvancedPaste_ModelProviders.Description" xml:space="preserve">
+    <value>Add online or local models</value>
+  </data>
+  <data name="AdvancedPaste_Edit.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="AdvancedPaste_Remove.Text" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="AdvancedPaste_ModelName.Header" xml:space="preserve">
+    <value>Model name</value>
+  </data>
+  <data name="AdvancedPaste_EndpointURL.Header" xml:space="preserve">
+    <value>Endpoint URL</value>
+  </data>
+  <data name="AdvancedPaste_APIKey.Header" xml:space="preserve">
+    <value>API key</value>
+  </data>
+  <data name="AdvancedPaste_APIKey.PlaceholderText" xml:space="preserve">
+    <value>Enter API key</value>
+  </data>
+  <data name="AdvancedPaste_APIVersion.Header" xml:space="preserve">
+    <value>API version</value>
+  </data>
+  <data name="AdvancedPaste_DeploymentName.Header" xml:space="preserve">
+    <value>Deployment name</value>
+  </data>
+  <data name="AdvancedPaste_SystemPrompt.Header" xml:space="preserve">
+    <value>System prompt</value>
   </data>
 </root>
