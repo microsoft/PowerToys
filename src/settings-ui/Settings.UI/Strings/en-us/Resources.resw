@@ -2685,10 +2685,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
-  </data>
-  <data name="MouseUtils_CursorWrap_ActivationShortcut_Description.Text" xml:space="preserve">
-    <value>Hotkey to toggle cursor wrapping on/off</value>
+    <value>Activation and behavior</value>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
