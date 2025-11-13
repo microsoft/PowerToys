@@ -171,12 +171,8 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Fixed settings consistency during batch resize operations by capturing settings once before processing. Thanks [@daverayment](https://github.com/daverayment)
 
 ### Light Switch
-- Refactored service with cleaner state management and debouncing for settings changes.
-- Added "Off" schedule mode and changed default to disabled for new installations.
-- Introduced automatic detection of Windows Settings theme changes as manual override.
-- Fixed manual override boundary detection to handle offline transitions correctly.
-- Enhanced service to immediately recalculate sun times when schedule mode or coordinates change.
-- Introduces new UI to allow the users to manually enter their lat/long.
+- Introduces new UI to allow users to manually enter their latitude and longitude in Sunrise to Sunset mode.
+- Refactored service with cleaner state management for stability.
 
 ### Mouse Pointer Crosshairs
  - Enabled switching between Mouse Pointer Crosshairs and Gliding Cursor modes. Thanks [@mikehall-ms](https://github.com/mikehall-ms).
