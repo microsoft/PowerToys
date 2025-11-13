@@ -40,6 +40,8 @@ namespace AdvancedPaste.Settings
 
         public bool CloseAfterLosingFocus { get; private set; }
 
+        public bool EnableClipboardPreview { get; private set; }
+
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
@@ -53,6 +55,7 @@ namespace AdvancedPaste.Settings
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            EnableClipboardPreview = true;
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
@@ -107,6 +110,7 @@ namespace AdvancedPaste.Settings
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
+                                EnableClipboardPreview = properties.EnableClipboardPreview;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;

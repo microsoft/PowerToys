@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            EnableClipboardPreview = true;
             PasteAIConfiguration = new();
         }
 
@@ -120,6 +121,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool CloseAfterLosingFocus { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableClipboardPreview { get; set; }
 
         [JsonPropertyName("advanced-paste-ui-hotkey")]
         public HotkeySettings AdvancedPasteUIShortcut { get; set; }
