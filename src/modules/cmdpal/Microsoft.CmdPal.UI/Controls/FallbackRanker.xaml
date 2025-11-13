@@ -10,6 +10,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -36,12 +37,11 @@
                         CanDragItems="True"
                         CanReorderItems="True"
                         DragItemsCompleted="ListView_DragItemsCompleted"
-                        ItemsSource="{x:Bind viewModel.FallbackRanks, Mode=OneWay}"
+                        ItemsSource="{x:Bind viewModel.FallbackRankings, Mode=OneWay}"
                         SelectionMode="None">
                         <ListView.ItemTemplate>
-                            <!-- Remove x:DataType for System.String, use implicit binding -->
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}"/>
+                            <DataTemplate x:DataType="viewModels:FallbackSettingsViewModel">
+                                <TextBlock Text="{x:Bind Id }"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                         <!--  Customize Size of Item Container from ListView  -->

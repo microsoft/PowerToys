@@ -24,5 +24,6 @@ public sealed partial class FallbackRanker : UserControl
 
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
     {
+        viewModel?.ApplyFallbackSort();
     }
 }

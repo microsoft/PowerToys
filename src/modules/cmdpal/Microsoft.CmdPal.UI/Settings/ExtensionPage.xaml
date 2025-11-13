@@ -129,10 +129,23 @@
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
 
-                                <TextBlock
-                                    x:Uid="ExtensionFallbackCommandsHeader"
-                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
+                                <StackPanel 
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}"
+                                    Orientation="Horizontal">
+                                    <TextBlock
+                                        x:Uid="ExtensionFallbackCommandsHeader"
+                                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                                    <Button
+                                        Click="Button_Click"
+                                       >
+                                        <StackPanel Orientation="Horizontal">
+                                            <cpcontrols:IconBox/>
+                                            <TextBlock>Rank</TextBlock>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                
+                               
 
                                 <ItemsRepeater
                                     ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}"
@@ -165,16 +178,6 @@
                                                             x:Uid="Settings_FallbacksPage_GlobalResults_SettingsCard"
                                                             IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
                                                             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
-                                                    </controls:SettingsCard>
-                                                    <controls:SettingsCard ContentAlignment="Left">
-                                                        <StackPanel Orientation="Horizontal"
-                                                                    Spacing="8">
-                                                            <TextBlock
-                                                                Text="Sort it up yo"/>
-                                                            <Button
-                                                                Click="Button_Click"
-                                                               >Go go gadget sorter</Button>
-                                                        </StackPanel>
                                                     </controls:SettingsCard>
                                                 </controls:SettingsExpander.Items>
                                             </controls:SettingsExpander>
