@@ -648,10 +648,10 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Show what's currently on your Clipboard and access your Clipboard history</value>
+    <value>Access Clipboard History</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
-    <value>Clipboard History shows a list of previously copied items.</value>
+    <value>View and select previously copied items</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
@@ -4601,7 +4601,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Content" xml:space="preserve">
+  <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
     <value>Show clipboard preview</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
@@ -5746,5 +5746,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="AdvancedPaste_SystemPrompt.Header" xml:space="preserve">
     <value>System prompt</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
+    <value>Display a preview of the current clipboard content</value>
   </data>
 </root>

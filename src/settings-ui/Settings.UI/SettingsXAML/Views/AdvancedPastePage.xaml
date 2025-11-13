@@ -168,6 +168,9 @@
                                 </InfoBar>
                             </tkcontrols:SettingsExpander.ItemsHeader>
                             <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
                                     ContentAlignment="Left"
@@ -176,9 +179,6 @@
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
-                                    <CheckBox x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteShowCustomPreviewSettingsCard" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
@@ -429,12 +429,11 @@
         <!--  Paste AI provider dialog  -->
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
+            x:Uid="AdvancedPaste_EndpointDialog"
             Title="Paste with AI provider configuration"
             Closed="PasteAIProviderConfigurationDialog_Closed"
             PrimaryButtonClick="PasteAIProviderConfigurationDialog_PrimaryButtonClick"
-            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
-            PrimaryButtonText="Save"
-            SecondaryButtonText="Cancel">
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
             <ContentDialog.Resources>
                 <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
                 <x:Double x:Key="ContentDialogMaxHeight">700</x:Double>
