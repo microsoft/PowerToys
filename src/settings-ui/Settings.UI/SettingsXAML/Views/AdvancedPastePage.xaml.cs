@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class AdvancedPastePage : NavigablePage, IRefreshablePage, IDisposable
     {
         private readonly ObservableCollection<ModelDetails> _foundryCachedModels = new();
-        private readonly ObservableCollection<FoundryDownloadableModel> _foundryDownloadableModels = new();
         private CancellationTokenSource _foundryModelLoadCts;
         private bool _suppressFoundrySelectionChanged;
         private bool _isFoundryLocalAvailable;
@@ -57,7 +56,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (FoundryLocalPicker is not null)
             {
                 FoundryLocalPicker.CachedModels = _foundryCachedModels;
-                FoundryLocalPicker.DownloadableModels = _foundryDownloadableModels;
                 FoundryLocalPicker.SelectionChanged += FoundryLocalPicker_SelectionChanged;
                 FoundryLocalPicker.LoadRequested += FoundryLocalPicker_LoadRequested;
             }
@@ -469,7 +467,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 var cachedModels = cachedModelsEnumerable?.ToList() ?? new List<ModelDetails>();
 
-                UpdateFoundryCollections(cachedModels, []);
+                UpdateFoundryCollections(cachedModels);
                 ShowFoundryAvailableState();
                 RestoreFoundrySelection(cachedModels);
             }
@@ -538,7 +536,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateFoundrySaveButtonState();
         }
 
-        private void UpdateFoundryCollections(IReadOnlyCollection<ModelDetails> cachedModels, IReadOnlyCollection<ModelDetails> catalogModels)
+        private void UpdateFoundryCollections(IReadOnlyCollection<ModelDetails> cachedModels)
         {
             _foundryCachedModels.Clear();
 
@@ -547,20 +545,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 _foundryCachedModels.Add(model);
             }
 
-            var cachedReferences = new HashSet<string>(_foundryCachedModels.Select(m => NormalizeFoundryModelReference(m.Url ?? m.Name)), StringComparer.OrdinalIgnoreCase);
-
-            _foundryDownloadableModels.Clear();
-
-            foreach (var model in catalogModels.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                var reference = NormalizeFoundryModelReference(model.Url ?? model.Name);
-                if (cachedReferences.Contains(reference))
-                {
-                    continue;
-                }
-
-                _foundryDownloadableModels.Add(new FoundryDownloadableModel(model));
-            }
+            var cachedReferences = new HashSet<string>(_foundryCachedModels.Select(m => m.Name), StringComparer.OrdinalIgnoreCase);
         }
 
         private void RestoreFoundrySelection(IReadOnlyCollection<ModelDetails> cachedModels)
@@ -576,9 +561,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (!string.IsNullOrWhiteSpace(currentModelReference))
             {
-                var normalizedReference = NormalizeFoundryModelReference(currentModelReference);
                 matchingModel = cachedModels.FirstOrDefault(model =>
-                    string.Equals(NormalizeFoundryModelReference(model.Url ?? model.Name), normalizedReference, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(model.Name, currentModelReference, StringComparison.OrdinalIgnoreCase));
             }
 
             if (FoundryLocalPicker is null)
@@ -608,7 +592,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIProviderDraft.ModelName = NormalizeFoundryModelReference(matchingModel.Url ?? matchingModel.Name);
+                    ViewModel.PasteAIProviderDraft.ModelName = matchingModel.Name;
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -618,19 +602,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             UpdateFoundrySaveButtonState();
-        }
-
-        private static string NormalizeFoundryModelReference(string modelReference)
-        {
-            if (string.IsNullOrWhiteSpace(modelReference))
-            {
-                return string.Empty;
-            }
-
-            var prefix = FoundryLocalModelProvider.Instance.UrlPrefix;
-            return modelReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                ? modelReference
-                : $"{prefix}{modelReference}";
         }
 
         private void UpdateFoundrySaveButtonState()
@@ -656,7 +627,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            if (!_isFoundryLocalAvailable || _foundryDownloadableModels.Any(model => model.IsDownloading))
+            if (!_isFoundryLocalAvailable)
             {
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
                 return;
@@ -677,7 +648,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIProviderDraft.ModelName = NormalizeFoundryModelReference(selectedModel.Url ?? selectedModel.Name);
+                    ViewModel.PasteAIProviderDraft.ModelName = selectedModel.Name;
                 }
 
                 if (FoundryLocalPicker is not null)

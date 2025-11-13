@@ -22,13 +22,11 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public string ProviderDescription => "The model will run locally via Foundry Local";
 
-    public string UrlPrefix => "fl://";
-
-    public IChatClient? GetIChatClient(string url)
+    public IChatClient? GetIChatClient(string modelId)
     {
         try
         {
-            Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {url}");
+            Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {modelId}");
             InitializeAsync().GetAwaiter().GetResult();
         }
         catch (Exception ex)
@@ -43,15 +41,11 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             return null;
         }
 
-        // Extract model ID from URL (format: fl://modelname)
-        var modelId = url.Replace(UrlPrefix, string.Empty).Trim('/');
         if (string.IsNullOrWhiteSpace(modelId))
         {
             Logger.LogError("[FoundryLocal] Model ID is empty after extraction");
             return null;
         }
-
-        Logger.LogInfo($"[FoundryLocal] Extracted model ID: {modelId}");
 
         // Ensure the model is loaded before returning chat client
         try
@@ -163,7 +157,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             {
                 Id = $"fl-{model.Name}",
                 Name = model.Name,
-                Url = $"{UrlPrefix}{model.Name}",
+                Url = $"fl://{model.Name}",
                 Description = $"{model.Name} running locally with Foundry Local",
                 HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
                 SupportedOnQualcomm = true,
