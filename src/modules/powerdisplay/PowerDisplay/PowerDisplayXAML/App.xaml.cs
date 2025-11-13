@@ -27,6 +27,7 @@ namespace PowerDisplay
     {
         // Windows Event names (from shared_constants.h)
         private const string ShowPowerDisplayEvent = "Local\\PowerToysPowerDisplay-ShowEvent-d8a4e0e3-2c5b-4a1c-9e7f-8b3d6c1a2f4e";
+        private const string TogglePowerDisplayEvent = "Local\\PowerToysPowerDisplay-ToggleEvent-5f1a9c3e-7d2b-4e8f-9a6c-3b5d7e9f1a2c";
         private const string TerminatePowerDisplayEvent = "Local\\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
         private const string RefreshMonitorsEvent = "Local\\PowerToysPowerDisplay-RefreshMonitorsEvent-a3f5c8e7-9d1b-4e2f-8c6a-3b5d7e9f1a2c";
         private const string SettingsUpdatedEvent = "Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
@@ -111,6 +112,22 @@ namespace PowerDisplay
                         else
                         {
                             Logger.LogError($"[EVENT] _mainWindow type mismatch, actual type: {_mainWindow?.GetType().Name}");
+                        }
+                    });
+
+                NativeEventWaiter.WaitForEventLoop(
+                    TogglePowerDisplayEvent,
+                    () =>
+                    {
+                        Logger.LogInfo("[EVENT] Toggle event received");
+                        if (_mainWindow is MainWindow mainWindow)
+                        {
+                            Logger.LogInfo("[EVENT] Calling ToggleWindow");
+                            mainWindow.ToggleWindow();
+                        }
+                        else
+                        {
+                            Logger.LogError($"[EVENT] _mainWindow type mismatch for toggle");
                         }
                     });
 

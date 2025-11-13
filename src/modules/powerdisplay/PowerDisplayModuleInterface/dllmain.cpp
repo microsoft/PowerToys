@@ -57,6 +57,7 @@ private:
     // Windows Events for IPC (persistent handles - ColorPicker pattern)
     HANDLE m_hProcess = nullptr;
     HANDLE m_hInvokeEvent = nullptr;
+    HANDLE m_hToggleEvent = nullptr;
     HANDLE m_hTerminateEvent = nullptr;
     HANDLE m_hRefreshEvent = nullptr;
     HANDLE m_hSettingsUpdatedEvent = nullptr;
@@ -192,11 +193,12 @@ public:
 
         // Create all Windows Events (persistent handles - ColorPicker pattern)
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_POWER_DISPLAY_EVENT);
+        m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT);
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
         m_hSettingsUpdatedEvent = CreateDefaultEvent(CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT);
 
-        if (!m_hInvokeEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent)
+        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent)
         {
             Logger::error(L"Failed to create one or more event handles");
         }
@@ -214,6 +216,11 @@ public:
         {
             CloseHandle(m_hInvokeEvent);
             m_hInvokeEvent = nullptr;
+        }
+        if (m_hToggleEvent)
+        {
+            CloseHandle(m_hToggleEvent);
+            m_hToggleEvent = nullptr;
         }
         if (m_hTerminateEvent)
         {
@@ -281,10 +288,10 @@ public:
                     launch_process();
                 }
 
-                if (m_hInvokeEvent)
+                if (m_hToggleEvent)
                 {
-                    Logger::trace(L"Signaling show event");
-                    SetEvent(m_hInvokeEvent);
+                    Logger::trace(L"Signaling toggle event");
+                    SetEvent(m_hToggleEvent);
                 }
                 Trace::ActivatePowerDisplay();
             }
@@ -387,7 +394,7 @@ public:
 
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
-        if (m_enabled && m_hInvokeEvent)
+        if (m_enabled && m_hToggleEvent)
         {
             Logger::trace(L"Power Display hotkey pressed");
 
@@ -398,8 +405,8 @@ public:
                 launch_process();
             }
 
-            Logger::trace(L"Signaling show event");
-            SetEvent(m_hInvokeEvent);
+            Logger::trace(L"Signaling toggle event");
+            SetEvent(m_hToggleEvent);
             return true;
         }
 

@@ -65,6 +65,9 @@ namespace PowerDisplay
                 // Clean up resources on window close
                 this.Closed += OnWindowClosed;
 
+                // Auto-hide window when it loses focus (click outside)
+                this.Activated += OnWindowActivated;
+
                 // Delay ViewModel creation until first activation (async)
                 this.Activated += OnFirstActivated;
             }
@@ -192,6 +195,16 @@ namespace PowerDisplay
             else
             {
                 Logger.LogError($"Error (ViewModel not yet initialized): {message}");
+            }
+        }
+
+        private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            // Auto-hide window when it loses focus (deactivated)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                Logger.LogInfo("[DEACTIVATED] Window lost focus, hiding");
+                HideWindow();
             }
         }
 
@@ -353,6 +366,37 @@ namespace PowerDisplay
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             return PInvoke.IsWindowVisible(hWnd);
+        }
+
+        /// <summary>
+        /// Toggle window visibility (show if hidden, hide if visible)
+        /// </summary>
+        public void ToggleWindow()
+        {
+            Logger.LogInfo("[TOGGLEWINDOW] Method entry");
+            try
+            {
+                bool isVisible = IsWindowVisible();
+                Logger.LogInfo($"[TOGGLEWINDOW] Current visibility: {isVisible}");
+
+                if (isVisible)
+                {
+                    Logger.LogInfo("[TOGGLEWINDOW] Window is visible, hiding");
+                    HideWindow();
+                }
+                else
+                {
+                    Logger.LogInfo("[TOGGLEWINDOW] Window is hidden, showing");
+                    ShowWindow();
+                }
+
+                Logger.LogInfo("[TOGGLEWINDOW] Method completed");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[TOGGLEWINDOW] Exception: {ex.Message}");
+                throw;
+            }
         }
 
         private async void OnUIRefreshRequested(object? sender, EventArgs e)
