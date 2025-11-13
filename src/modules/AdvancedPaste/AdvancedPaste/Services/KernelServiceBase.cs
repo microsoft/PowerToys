@@ -186,12 +186,20 @@ public abstract class KernelServiceBase(
 
     private void LogResult(bool cacheUsed, bool isSavedQuery, IEnumerable<ActionChainItem> actionChain, AIServiceUsage usage)
     {
-        AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage.PromptTokens, usage.CompletionTokens, AdvancedAIModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
+        var runtimeConfig = GetRuntimeConfiguration();
+
+        AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(
+            cacheUsed,
+            isSavedQuery,
+            usage.PromptTokens,
+            usage.CompletionTokens,
+            AdvancedAIModelName,
+            runtimeConfig.ServiceType.ToString(),
+            AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
         PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
 
         // Log endpoint usage
-        var runtimeConfig = GetRuntimeConfiguration();
-        var endpointEvent = new AdvancedPasteEndpointUsageEvent(runtimeConfig.ServiceType);
+        var endpointEvent = new AdvancedPasteEndpointUsageEvent(runtimeConfig.ServiceType, AdvancedAIModelName, isAdvanced: true);
         PowerToysTelemetry.Log.WriteEvent(endpointEvent);
 
         var logEvent = new AIServiceFormatEvent(telemetryEvent);

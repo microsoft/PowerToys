@@ -156,7 +156,7 @@
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="20"
-            Visibility="{x:Bind ViewModel.ClipboardHasData, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ShowClipboardPreview, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -168,7 +168,8 @@
                 Margin="0,0,4,0"
                 VerticalAlignment="Center"
                 IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
-                Style="{StaticResource SubtleButtonStyle}">
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind ViewModel.ShowClipboardHistoryButton, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="ClipboardHistoryButtonToolTip" />
                 </ToolTipService.ToolTip>
@@ -270,9 +271,9 @@
                                 <StackPanel Spacing="8">
                                     <TextBlock TextWrapping="Wrap">
                                         <Run x:Uid="AIMistakeNote" /><LineBreak /><Run
+                                            x:Uid="CustomEndpointWarning"
                                             FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="You are using a custom endpoint. Verify all answers." />
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </TextBlock>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <HyperlinkButton
