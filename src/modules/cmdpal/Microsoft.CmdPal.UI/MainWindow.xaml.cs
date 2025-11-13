@@ -428,7 +428,7 @@ public sealed partial class MainWindow : WindowEx,
 
         if (effectiveDpi <= 0)
         {
-            effectiveDpi = 96; // fallback to standard DPI
+            effectiveDpi = 96;
         }
 
         return effectiveDpi;
