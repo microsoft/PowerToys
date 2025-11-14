@@ -207,8 +207,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             bool configurationUpdated = false;
 
-            PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null || legacyAdvancedAIConsumed)
+            const string openAIServiceType = "OpenAI";
+            PasteAIProviderDefinition openAIProvider = configuration?.Providers?.FirstOrDefault(
+                provider => string.Equals(provider.ServiceType, openAIServiceType, StringComparison.OrdinalIgnoreCase));
+
+            bool shouldEnsureOpenAIProvider = legacyCredential is not null;
+            if (shouldEnsureOpenAIProvider)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
