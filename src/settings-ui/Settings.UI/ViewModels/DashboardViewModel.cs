@@ -137,6 +137,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
+                // Hide CursorWrap from Dashboard
+                if (moduleType == ModuleType.CursorWrap)
+                {
+                    continue;
+                }
+
                 GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
@@ -145,7 +151,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.CursorWrap,
+
+                    // IsNew = moduleType == ModuleType.CursorWrap,
                     DashboardModuleItems = GetModuleItems(moduleType),
                 };
                 newItem.EnabledChangedCallback = EnabledChangedOnUI;
