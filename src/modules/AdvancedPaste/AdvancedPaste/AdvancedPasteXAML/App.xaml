@@ -9,6 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="ms-appx:///AdvancedPasteXAML/Controls/AnimatedContentControl/AnimatedContentControl.xaml" />
+                <ResourceDictionary Source="ms-appx:///AdvancedPasteXAML/Styles/Button.xaml" />
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->

@@ -1,24 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Page
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helpers="using:Settings.UI.Library.Helpers"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    d:DataContext="{d:DesignInstance Type=ViewModel:LightSwitchViewModel}"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewModels:LightSwitchViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Page.Resources>
+    <local:NavigablePage.Resources>
         <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
-    </Page.Resources>
+        <converters:StringToDoubleConverter x:Key="StringToDoubleConverter" />
+    </local:NavigablePage.Resources>
     <Grid>
         <controls:SettingsPageControl
             x:Uid="LightSwitch"
@@ -88,16 +87,14 @@
                                     x:Uid="LightSwitch_LocationSettingsCard"
                                     Visibility="Collapsed">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock
+                                        <controls:IsEnabledTextBlock
                                             VerticalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Text="{x:Bind ViewModel.SyncButtonInformation, Mode=OneWay}" />
                                         <Button
-                                            Padding="8"
+                                            x:Uid="LightSwitch_SetLocationButton"
                                             AutomationProperties.AutomationId="SetLocationButton_LightSwitch"
-                                            Click="SyncLocationButton_Click"
-                                            Content="{ui:FontIcon Glyph=&#xECAF;,
-                                                                  FontSize=16}" />
+                                            Click="SyncLocationButton_Click" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
 
@@ -202,17 +199,20 @@
                         <ContentDialog
                             x:Name="LocationDialog"
                             x:Uid="LightSwitch_LocationDialog"
-                            IsPrimaryButtonEnabled="True"
+                            IsPrimaryButtonEnabled="False"
                             IsSecondaryButtonEnabled="True"
-                            Opened="LocationDialog_Opened"
                             PrimaryButtonClick="LocationDialog_PrimaryButtonClick"
                             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
-                            <Grid RowSpacing="48">
+                            <Grid RowSpacing="16">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" MinHeight="64" />
                                 </Grid.RowDefinitions>
-                                <TextBlock x:Uid="LightSwitch_LocationDialog_Description" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock
+                                    x:Uid="LightSwitch_LocationDialog_Description"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap" />
                                 <!--<AutoSuggestBox
                                 x:Name="CityAutoSuggestBox"
                                 Grid.Row="1"
@@ -240,80 +240,84 @@
                                     </DataTemplate>
                                 </AutoSuggestBox.ItemTemplate>
                             </AutoSuggestBox>-->
-                                <StackPanel
-                                    Grid.Row="2"
-                                    Margin="0,24,0,0"
-                                    HorizontalAlignment="Center"
-                                    Orientation="Vertical"
-                                    Spacing="32">
+
+                                <Grid
+                                    Grid.Row="1"
+                                    Margin="0,12,0,0"
+                                    ColumnSpacing="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="124" />
+                                        <ColumnDefinition Width="124" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <NumberBox
+                                        x:Name="LatitudeBox"
+                                        x:Uid="LightSwitch_LatitudeBox"
+                                        AutomationProperties.AutomationId="LatitudeBox_LightSwitch"
+                                        Maximum="90"
+                                        Minimum="-90"
+                                        ValueChanged="LatLonBox_ValueChanged"
+                                        Value="{x:Bind ViewModel.LocationPanelLatitude, Mode=TwoWay}" />
+                                    <NumberBox
+                                        x:Name="LongitudeBox"
+                                        x:Uid="LightSwitch_LongitudeBox"
+                                        Grid.Column="1"
+                                        AutomationProperties.AutomationId="LongitudeBox_LightSwitch"
+                                        Maximum="180"
+                                        Minimum="-180"
+                                        ValueChanged="LatLonBox_ValueChanged"
+                                        Value="{x:Bind ViewModel.LocationPanelLongitude, Mode=TwoWay}" />
                                     <Button
                                         x:Name="SyncButton"
+                                        x:Uid="LightSwitch_FindLocationAutomation"
+                                        Grid.Column="2"
+                                        Margin="4,0,0,0"
                                         HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Bottom"
                                         AutomationProperties.AutomationId="SyncLocationButton_LightSwitch"
-                                        Style="{StaticResource AccentButtonStyle}"
-                                        Visibility="Collapsed">
+                                        Click="GetGeoLocation_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <FontIcon FontSize="14" Glyph="&#xECAF;" />
-                                            <TextBlock x:Uid="LightSwitch_GetCurrentLocation" />
+                                            <FontIcon FontSize="16" Glyph="&#xECAF;" />
+                                            <TextBlock x:Uid="LightSwitch_FindLocation" />
                                         </StackPanel>
                                     </Button>
-                                </StackPanel>
-
+                                </Grid>
                                 <ProgressRing
                                     x:Name="SyncLoader"
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     Width="40"
                                     Height="40"
                                     VerticalAlignment="Center"
                                     IsActive="False"
                                     Visibility="Collapsed" />
-
                                 <Grid
                                     x:Name="LocationResultPanel"
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     VerticalAlignment="Bottom"
                                     ColumnSpacing="16"
                                     RowSpacing="12"
                                     Visibility="Collapsed">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <FontIcon FontSize="16" Glyph="&#xECAF;">
-                                        <ToolTipService.ToolTip>
-                                            <TextBlock x:Uid="LightSwitch_LocationTooltip" />
-                                        </ToolTipService.ToolTip>
-                                    </FontIcon>
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        AutomationProperties.AutomationId="LocationResultText_LightSwitch"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        TextAlignment="Center">
-                                        <Run Text="{x:Bind ViewModel.Latitude, Mode=OneWay}" /><Run Text="°, " />
-                                        <Run Text="{x:Bind ViewModel.Longitude, Mode=OneWay}" /><Run Text="°" />
-                                    </TextBlock>
-                                    <FontIcon
-                                        Grid.Column="1"
-                                        FontSize="20"
-                                        Glyph="&#xED39;">
+                                    <FontIcon FontSize="20" Glyph="&#xED39;">
                                         <ToolTipService.ToolTip>
                                             <TextBlock x:Uid="LightSwitch_SunriseTooltip" />
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
                                     <TextBlock
-                                        Grid.Row="1"
                                         Grid.Column="1"
                                         AutomationProperties.AutomationId="SunriseText_LightSwitch"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.LightTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
-                                        TextAlignment="Center" />
+                                        Text="{x:Bind ViewModel.LocationPanelLightTime, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
+                                        TextAlignment="Left" />
                                     <FontIcon
-                                        Grid.Column="2"
+                                        Grid.Row="1"
                                         FontSize="20"
                                         Glyph="&#xED3A;">
                                         <ToolTipService.ToolTip>
@@ -321,12 +325,12 @@
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
                                     <TextBlock
-                                        Grid.Row="2"
-                                        Grid.Column="2"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
                                         AutomationProperties.AutomationId="SunsetText_LightSwitch"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.DarkTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
-                                        TextAlignment="Center" />
+                                        Text="{x:Bind ViewModel.LocationPanelDarkTime, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}"
+                                        TextAlignment="Left" />
                                 </Grid>
                             </Grid>
                         </ContentDialog>
@@ -358,4 +362,4 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
-</Page>
+</local:NavigablePage>

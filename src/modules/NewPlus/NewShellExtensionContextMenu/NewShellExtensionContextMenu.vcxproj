@@ -67,6 +67,8 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>dll.def</ModuleDefinitionFile>
       <AdditionalDependencies>runtimeobject.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PreBuildEvent>
       <Command>del $(OutDir)\NewPlusPackage.msix /q
@@ -98,6 +100,8 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>dll.def</ModuleDefinitionFile>
       <AdditionalDependencies>runtimeobject.lib;$(CoreLibraryDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
     <PreBuildEvent>
       <Command>del $(OutDir)\NewPlusPackage.msix /q
@@ -110,6 +114,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dll_main.h" />
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="helpers_filesystem.h" />
     <ClInclude Include="helpers_variables.h" />
     <ClInclude Include="shell_context_menu.h" />
@@ -127,7 +132,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="template_item.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp" />
+    <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="new_utilities.cpp" />
     <ClCompile Include="shell_context_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu.cpp" />

@@ -117,11 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="builtin_open_settings_subtitle" xml:space="preserve">
-    <value>Open Command Palette settings</value>
-  </data>
   <data name="builtin_new_extension_subtitle" xml:space="preserve">
-    <value>Creates a project for a new Command Palette extension</value>
+    <value>Generate a new Command Palette extension project</value>
   </data>
   <data name="builtin_quit_subtitle" xml:space="preserve">
     <value>Exit Command Palette</value>
@@ -157,10 +154,10 @@
     <value>Open</value>
   </data>
   <data name="builtin_create_extension_title" xml:space="preserve">
-    <value>Create a new extension</value>
+    <value>Create extension</value>
   </data>
   <data name="builtin_open_settings_name" xml:space="preserve">
-    <value>Open Settings</value>
+    <value>Open Command Palette settings</value>
   </data>
   <data name="builtin_create_extension_success" xml:space="preserve">
     <value>Successfully created your new extension!</value>

@@ -22,6 +22,7 @@ ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
+adjacents
 ADMINS
 adml
 admx
@@ -34,6 +35,7 @@ AFX
 AGGREGATABLE
 AHK
 AHybrid
+AIUI
 akv
 ALarger
 ALIGNRIGHT
@@ -63,6 +65,7 @@ APIIs
 Apm
 APPBARDATA
 APPEXECLINK
+appext
 APPLICATIONFRAMEHOST
 appmanifest
 APPMODEL
@@ -97,7 +100,6 @@ atl
 ATRIOX
 ATX
 aumid
-Authenticode
 authenticode
 AUTOBUDDY
 AUTOCHECKBOX
@@ -112,6 +114,9 @@ AValid
 AWAYMODE
 azcliversion
 azman
+azureaiinference
+azureinference
+azureopenai
 backticks
 bbwe
 BCIE
@@ -136,7 +141,7 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-Blt
+blt
 BLURBEHIND
 BLURREGION
 bmi
@@ -171,14 +176,18 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
+Carlseibert
 Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
 CAtl
+CBN
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -200,6 +209,7 @@ CHOOSEFONT
 cidl
 CIELCh
 cim
+claude
 CImage
 cla
 CLASSDC
@@ -232,6 +242,7 @@ CODENAME
 codereview
 Codespaces
 Coen
+cognitiveservices
 COINIT
 colid
 colorconv
@@ -246,6 +257,7 @@ cominterop
 commandnotfound
 commandpalette
 compmgmt
+COMPOSITIONDISABLED
 COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
@@ -278,6 +290,7 @@ cpptools
 cppvsdbg
 cppwinrt
 createdump
+creativecommons
 CREATEPROCESS
 CREATESCHEDULEDTASK
 CREATESTRUCT
@@ -301,6 +314,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
+CURSORWRAP
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -340,6 +354,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+dfx
 Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -398,6 +413,9 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downsampled
+downsampling
+Downsampled
 downscale
 DPICHANGED
 DPIs
@@ -413,7 +431,7 @@ DROPFILES
 DSTINVERT
 DString
 DSVG
-DTo
+dto
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -512,6 +530,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
 fdx
 fesf
@@ -543,6 +562,7 @@ FIXEDSYS
 flac
 flyouts
 FMask
+foundrylocal
 fmtid
 FOF
 FOFX
@@ -581,6 +601,7 @@ GETDPISCALEDSIZE
 getfilesiginforedist
 GETHOTKEY
 GETICON
+GETLBTEXT
 GETMINMAXINFO
 GETNONCLIENTMETRICS
 GETPROPERTYSTOREFLAGS
@@ -589,6 +610,7 @@ GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
 GHND
+GIFs
 gitmodules
 GMEM
 GNumber
@@ -598,6 +620,7 @@ GPOCA
 gpp
 gpu
 gradians
+grctlext
 Gridcustomlayout
 Groq
 GSM
@@ -608,6 +631,8 @@ GValue
 gwl
 GWLP
 GWLSTYLE
+googleai
+googlegemini
 hangeul
 Hanzi
 Hardlines
@@ -696,6 +721,7 @@ HTCLIENT
 hthumbnail
 HTOUCHINPUT
 HTTRANSPARENT
+hutchinsoniana
 HVal
 HValue
 Hvci
@@ -716,7 +742,9 @@ IDCANCEL
 IDD
 idk
 idl
+IIM
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -733,6 +761,7 @@ Ijwhost
 ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
+IPTC
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
@@ -961,6 +990,7 @@ MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
 Metadatas
+metadatamatters
 metafile
 mfc
 Mgmt
@@ -1123,6 +1153,7 @@ nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
+NPU
 NOREDIRECTIONBITMAP
 NOREDRAW
 NOREMOVE
@@ -1182,6 +1213,9 @@ opencode
 OPENFILENAME
 opensource
 openxmlformats
+ollama
+Olllama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1276,6 +1310,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1370,6 +1405,8 @@ pwsz
 pwtd
 QDC
 qit
+QNN
+Qualcomm
 QITAB
 QITABENT
 qoi
@@ -1475,6 +1512,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samsung
 sancov
 SAVEFAILED
 scanled
@@ -1826,6 +1864,7 @@ UPDATENOW
 UPDATEREGISTRY
 updown
 UPGRADINGPRODUCTCODE
+upscaling
 Uptool
 urld
 Usb
@@ -1835,6 +1874,7 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
+utm
 UType
 uuidv
 uwp
@@ -1911,6 +1951,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WCT
+WCRAPI
 WDA
 wdm
 wdp
@@ -1924,6 +1965,7 @@ wgpocpl
 WHEREID
 wic
 wifi
+wikimedia
 wikipedia
 WIL
 winapi
@@ -1953,6 +1995,8 @@ WINL
 winlogon
 winmd
 WINNT
+windowsml
+winml
 winres
 winrt
 winsdk
@@ -2018,7 +2062,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 xdf
 XDocument
 XElement
@@ -2036,6 +2082,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2043,6 +2090,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels
