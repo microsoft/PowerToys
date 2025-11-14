@@ -17,9 +17,9 @@
         Orientation="Vertical">
         <!--  Shortcut section  -->
         <TextBlock
+            x:Uid="TextPageInputControlShortcutKeysTextBlock"
             Margin="0,12,0,8"
-            FontWeight="SemiBold"
-            Text="{x:Bind helper:ResourceLoaderInstance.GetString('TextPageInputControl_ShortcutKeys')}" />
+            FontWeight="SemiBold"/>
 
         <ToggleButton
             x:Name="ShortcutToggleBtn"
@@ -46,29 +46,27 @@
         <!--  Text section  -->
         <TextBox
             x:Name="TextContentBox"
+            x:Uid="TextPageInputControlTextContentTextBox"
             Height="120"
             Margin="0,8,0,0"
             AcceptsReturn="True"
             Background="{ThemeResource TextControlBackgroundFocused}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             FontSize="13"
-            Header="{x:Bind helper:ResourceLoaderInstance.GetString('TextPageInputControl_TextContentBoxHeader')}"
-            PlaceholderText="{x:Bind helper:ResourceLoaderInstance.GetString('TextPageInputControl_TextContentBoxPlaceholder')}"
             TextWrapping="Wrap" />
 
         <!--  App specific section  -->
         <CheckBox
             x:Name="AllAppsCheckBox"
+            x:Uid="TextPageInputControlAllAppsCheckBox"
             Margin="0,8,0,0"
-            Content="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsCheckboxText')}"
             Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
         <TextBox
             x:Name="AppNameTextBox"
+            x:Uid="TextPageInputControlAllAppsTextBox"
             Background="{ThemeResource TextControlBackgroundFocused}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-            Header="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsTextboxHeader')}"
-            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}"
-            PlaceholderText="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsTextboxPlaceholder')}" />
+            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}"/>
     </StackPanel>
 </UserControl>

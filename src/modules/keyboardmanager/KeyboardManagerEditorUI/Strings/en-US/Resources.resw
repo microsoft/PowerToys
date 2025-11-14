@@ -294,16 +294,25 @@
   <data name="InputControl_AllAppsTextboxHeader" xml:space="preserve">
     <value>Application name</value>
   </data>
-  <data name="TextPageInputControl_ShortcutKeys" xml:space="preserve">
+  <data name="TextPageInputControlShortcutKeysTextBlock.Text" xml:space="preserve">
     <value>Shortcut key(s)</value>
   </data>
-  <data name="TextPageInputControl_TextContentBoxPlaceholder" xml:space="preserve">
+  <data name="TextPageInputControlTextContentTextBox.PlaceholderText" xml:space="preserve">
     <value>Enter text that will be inserted when the shortcut is pressed</value>
   </data>
-  <data name="TextPageInputControl_TextContentBoxHeader" xml:space="preserve">
+  <data name="TextPageInputControlTextContentTextBox.Header" xml:space="preserve">
     <value>Text to insert</value>
   </data>
   <data name="TextPageDeleteButton.ToolTipSevice.ToolTip" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="TextPageInputControlAllAppsCheckBox.Content" xml:space="preserve">
+    <value>Only apply this remapping to a specific application</value>
+  </data>
+  <data name="TextPageInputControlAllAppsTextBox.Header" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="TextPageInputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g.: outlook.exe</value>
   </data>
 </root>
