@@ -195,50 +195,7 @@
                                                                   Text="{x:Bind Brightness, Mode=OneWay}" />
                                                     </Grid>
 
-                                                    <!-- Color Temperature Control -->
-                                                    <Grid Height="40"
-                                                          HorizontalAlignment="Stretch"
-                                                          Visibility="{x:Bind ConvertBoolToVisibility(ShowColorTemperature), Mode=OneWay}">
-                                                        <Grid.Transitions>
-                                                            <TransitionCollection>
-                                                                <EntranceThemeTransition FromVerticalOffset="10" />
-                                                                <RepositionThemeTransition />
-                                                            </TransitionCollection>
-                                                        </Grid.Transitions>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="1*"/>
-                                                            <ColumnDefinition Width="7*"/>
-                                                            <ColumnDefinition Width="2*"/>
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <FontIcon Grid.Column="0"
-                                                                 Glyph="&#xE790;"
-                                                                 FontSize="14"
-                                                                 VerticalAlignment="Center"
-                                                                 HorizontalAlignment="Center" />
-
-                                                        <Slider Grid.Column="1"
-                                                               HorizontalAlignment="Stretch"
-                                                               MinHeight="32"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,2"
-                                                               Minimum="0"
-                                                               Maximum="100"
-                                                               Value="{x:Bind ColorTemperaturePercent, Mode=OneWay}"
-                                                               ValueChanged="Slider_ValueChanged"
-                                                               PointerCaptureLost="Slider_PointerCaptureLost"
-                                                               Tag="ColorTemperature"
-                                                               IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}" />
-
-                                                        <TextBlock Grid.Column="2"
-                                                                  FontSize="12"
-                                                                  FontWeight="SemiBold"
-                                                                  HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center">
-                                                            <Run Text="{x:Bind ColorTemperature, Mode=OneWay}" />
-                                                            <Run Text="K" FontSize="9" />
-                                                        </TextBlock>
-                                                    </Grid>
+                                                    <!-- Color Temperature Control removed - now in Settings UI -->
 
                                                     <!-- Contrast Control -->
                                                     <Grid Height="40"

@@ -12,60 +12,67 @@ namespace PowerDisplay.Native
     public static class NativeConstants
     {
         /// <summary>
-        /// VCP code: Brightness (primary usage)
+        /// VCP code: Brightness (0x10)
+        /// Standard VESA MCCS brightness control.
+        /// This is the ONLY brightness code used by PowerDisplay.
         /// </summary>
         public const byte VcpCodeBrightness = 0x10;
 
         /// <summary>
-        /// VCP code: Contrast
+        /// VCP code: Contrast (0x12)
+        /// Standard VESA MCCS contrast control.
         /// </summary>
         public const byte VcpCodeContrast = 0x12;
 
         /// <summary>
-        /// VCP code: Backlight control (alternative brightness)
+        /// VCP code: Backlight control (0x13)
+        /// OBSOLETE: PowerDisplay now uses only VcpCodeBrightness (0x10).
         /// </summary>
+        [Obsolete("Use VcpCodeBrightness (0x10) only. PowerDisplay no longer uses fallback codes.")]
         public const byte VcpCodeBacklightControl = 0x13;
 
         /// <summary>
-        /// VCP code: White backlight level
+        /// VCP code: White backlight level (0x6B)
+        /// OBSOLETE: PowerDisplay now uses only VcpCodeBrightness (0x10).
         /// </summary>
+        [Obsolete("Use VcpCodeBrightness (0x10) only. PowerDisplay no longer uses fallback codes.")]
         public const byte VcpCodeBacklightLevelWhite = 0x6B;
 
         /// <summary>
-        /// VCP code: Audio speaker volume
+        /// VCP code: Audio Speaker Volume (0x62)
+        /// Standard VESA MCCS volume control for monitors with built-in speakers.
         /// </summary>
         public const byte VcpCodeVolume = 0x62;
 
         /// <summary>
-        /// VCP code: Audio mute
+        /// VCP code: Audio mute (0x8D)
         /// </summary>
         public const byte VcpCodeMute = 0x8D;
 
         /// <summary>
         /// VCP code: Color Temperature Request (0x0C)
-        /// Per MCCS v2.2a specification:
-        /// - Used to SET and GET specific color temperature presets
-        /// - Typically supports discrete values (e.g., 5000K, 6500K, 9300K)
-        /// - Primary method for color temperature control
+        /// OBSOLETE: Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.
         /// </summary>
+        [Obsolete("Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.")]
         public const byte VcpCodeColorTemperature = 0x0C;
 
         /// <summary>
         /// VCP code: Color Temperature Increment (0x0B)
-        /// Per MCCS v2.2a specification:
-        /// - Used for incremental color temperature adjustment
-        /// - Typically supports continuous range (0-100 or custom range)
-        /// - Fallback method when 0x0C is not supported
+        /// OBSOLETE: Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.
         /// </summary>
+        [Obsolete("Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.")]
         public const byte VcpCodeColorTemperatureIncrement = 0x0B;
 
         /// <summary>
-        /// VCP code: Gamma correction (gamma adjustment)
+        /// VCP code: Gamma correction (0x72)
         /// </summary>
         public const byte VcpCodeGamma = 0x72;
 
         /// <summary>
-        /// VCP code: Select color preset (color preset selection)
+        /// VCP code: Select Color Preset (0x14)
+        /// Standard VESA MCCS color temperature preset selection.
+        /// Supports discrete values like: 0x01=sRGB, 0x04=5000K, 0x05=6500K, 0x08=9300K.
+        /// This is the standard method for color temperature control.
         /// </summary>
         public const byte VcpCodeSelectColorPreset = 0x14;
 

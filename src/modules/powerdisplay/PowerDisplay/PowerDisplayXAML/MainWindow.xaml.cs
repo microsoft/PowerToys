@@ -822,9 +822,8 @@ namespace PowerDisplay
                 case "Brightness":
                     monitorVm.Brightness = finalValue;
                     break;
-                case "ColorTemperature":
-                    monitorVm.ColorTemperaturePercent = finalValue;
-                    break;
+
+                // ColorTemperature case removed - now controlled via Settings UI
                 case "Contrast":
                     monitorVm.ContrastPercent = finalValue;
                     break;

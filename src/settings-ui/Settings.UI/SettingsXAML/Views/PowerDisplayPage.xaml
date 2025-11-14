@@ -87,6 +87,23 @@
                                     HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
                                     IsExpanded="False">
                                     <tkcontrols:SettingsExpander.Items>
+                                        <!-- Capabilities warning -->
+                                        <tkcontrols:SettingsCard
+                                            Visibility="{x:Bind ShowCapabilitiesWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <tkcontrols:SettingsCard.Content>
+                                                <InfoBar
+                                                    Title="Monitor capabilities unavailable"
+                                                    Message="This monitor did not report DDC/CI capabilities. Advanced controls may be limited."
+                                                    IsClosable="False"
+                                                    IsOpen="True"
+                                                    Severity="Warning">
+                                                    <InfoBar.IconSource>
+                                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7BA;" />
+                                                    </InfoBar.IconSource>
+                                                </InfoBar>
+                                            </tkcontrols:SettingsCard.Content>
+                                        </tkcontrols:SettingsCard>
+
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Name">
                                             <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
                                         </tkcontrols:SettingsCard>
@@ -102,17 +119,81 @@
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Brightness">
                                             <TextBlock Text="{x:Bind CurrentBrightness, Mode=OneWay}" />
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_ColorTemperature">
-                                            <TextBlock Text="{x:Bind ColorTemperature, Mode=OneWay}" />
+                                        <tkcontrols:SettingsCard
+                                            x:Uid="PowerDisplay_Monitor_ColorTemperature"
+                                            IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard.Description>
+                                                <TextBlock
+                                                    Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}"
+                                                    Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </tkcontrols:SettingsCard.Description>
+                                            <ComboBox
+                                                MinWidth="200"
+                                                ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
+                                                SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
+                                                SelectedValuePath="VcpValue"
+                                                DisplayMemberPath="DisplayName"
+                                                PlaceholderText="Not available"
+                                                IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}" />
+                                                </ToolTipService.ToolTip>
+                                            </ComboBox>
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableColorTemperature">
-                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch" IsOn="{x:Bind EnableColorTemperature, Mode=TwoWay}" />
+                                        <tkcontrols:SettingsCard
+                                            x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
+                                            IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard.Description>
+                                                <TextBlock
+                                                    Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}"
+                                                    Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </tkcontrols:SettingsCard.Description>
+                                            <ToggleSwitch
+                                                x:Uid="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch"
+                                                IsOn="{x:Bind EnableColorTemperature, Mode=TwoWay}"
+                                                IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}" />
+                                                </ToolTipService.ToolTip>
+                                            </ToggleSwitch>
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableContrast">
-                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableContrast_ToggleSwitch" IsOn="{x:Bind EnableContrast, Mode=TwoWay}" />
+                                        <tkcontrols:SettingsCard
+                                            x:Uid="PowerDisplay_Monitor_EnableContrast"
+                                            IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard.Description>
+                                                <TextBlock
+                                                    Text="{x:Bind ContrastTooltip, Mode=OneWay}"
+                                                    Visibility="{x:Bind SupportsContrast, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </tkcontrols:SettingsCard.Description>
+                                            <ToggleSwitch
+                                                x:Uid="PowerDisplay_Monitor_EnableContrast_ToggleSwitch"
+                                                IsOn="{x:Bind EnableContrast, Mode=TwoWay}"
+                                                IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="{x:Bind ContrastTooltip, Mode=OneWay}" />
+                                                </ToolTipService.ToolTip>
+                                            </ToggleSwitch>
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_EnableVolume">
-                                            <ToggleSwitch x:Uid="PowerDisplay_Monitor_EnableVolume_ToggleSwitch" IsOn="{x:Bind EnableVolume, Mode=TwoWay}" />
+                                        <tkcontrols:SettingsCard
+                                            x:Uid="PowerDisplay_Monitor_EnableVolume"
+                                            IsEnabled="{x:Bind SupportsVolume, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard.Description>
+                                                <TextBlock
+                                                    Text="{x:Bind VolumeTooltip, Mode=OneWay}"
+                                                    Visibility="{x:Bind SupportsVolume, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </tkcontrols:SettingsCard.Description>
+                                            <ToggleSwitch
+                                                x:Uid="PowerDisplay_Monitor_EnableVolume_ToggleSwitch"
+                                                IsOn="{x:Bind EnableVolume, Mode=TwoWay}"
+                                                IsEnabled="{x:Bind SupportsVolume, Mode=OneWay}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="{x:Bind VolumeTooltip, Mode=OneWay}" />
+                                                </ToolTipService.ToolTip>
+                                            </ToggleSwitch>
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_HideMonitor">
                                             <ToggleSwitch x:Uid="PowerDisplay_Monitor_HideMonitor_ToggleSwitch" IsOn="{x:Bind IsHidden, Mode=TwoWay}" />

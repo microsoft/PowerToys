@@ -498,16 +498,12 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                             Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for HardwareId '{hardwareId}', skipping");
                         }
 
-                        // Color temperature must be valid and within range
-                        if (savedState.Value.ColorTemperature > 0 &&
-                            savedState.Value.ColorTemperature >= monitorVm.MinColorTemperature &&
-                            savedState.Value.ColorTemperature <= monitorVm.MaxColorTemperature)
+                        // Color temperature: VCP 0x14 preset value (discrete values, no range check needed)
+                        // Note: ColorTemperature is now read-only in flyout UI, controlled via Settings UI
+                        if (savedState.Value.ColorTemperature > 0)
                         {
+                            // Validation will happen in Settings UI when applying preset values
                             monitorVm.UpdatePropertySilently(nameof(monitorVm.ColorTemperature), savedState.Value.ColorTemperature);
-                        }
-                        else
-                        {
-                            Logger.LogWarning($"[Startup] Invalid color temperature value {savedState.Value.ColorTemperature} for HardwareId '{hardwareId}', skipping");
                         }
 
                         // Contrast validation - only apply if hardware supports it
@@ -649,7 +645,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 // Apply default values
                 monitorVm.Brightness = 30;
-                monitorVm.ColorTemperature = 6500;
+
+                // ColorTemperature is now read-only in flyout UI - controlled via Settings UI only
                 monitorVm.Contrast = 50;
                 monitorVm.Volume = 50;
 
@@ -729,6 +726,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         var result = new Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo
         {
+            Code = $"0x{code:X2}",
             Title = $"{info.Name} (0x{code:X2})",
         };
 
@@ -744,6 +742,15 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 .ToList();
             result.Values = $"Values: {string.Join(", ", formattedValues)}";
             result.HasValues = true;
+
+            // Populate value list for Settings UI ComboBox
+            result.ValueList = info.SupportedValues
+                .Select(v => new Microsoft.PowerToys.Settings.UI.Library.VcpValueInfo
+                {
+                    Value = $"0x{v:X2}",
+                    Name = Core.Utils.VcpValueNames.GetName(code, v),
+                })
+                .ToList();
         }
         else
         {

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -25,6 +26,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _capabilitiesRaw = string.Empty;
         private List<string> _vcpCodes = new List<string>();
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
+
+        // Feature support status (determined from capabilities)
+        private bool _supportsBrightness = true; // Brightness always shown even if unsupported
+        private bool _supportsContrast;
+        private bool _supportsColorTemperature;
+        private bool _supportsVolume;
+        private string _capabilitiesStatus = "unknown"; // "available", "unavailable", or "unknown"
+
+        // Available color temperature presets (populated from VcpCodesFormatted for VCP 0x14)
+        private ObservableCollection<ColorPresetItem> _availableColorPresets = new ObservableCollection<ColorPresetItem>();
 
         public MonitorInfo()
         {
@@ -265,7 +276,162 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("supportsBrightness")]
+        public bool SupportsBrightness
+        {
+            get => _supportsBrightness;
+            set
+            {
+                if (_supportsBrightness != value)
+                {
+                    _supportsBrightness = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(BrightnessTooltip));
+                }
+            }
+        }
+
+        [JsonPropertyName("supportsContrast")]
+        public bool SupportsContrast
+        {
+            get => _supportsContrast;
+            set
+            {
+                if (_supportsContrast != value)
+                {
+                    _supportsContrast = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(ContrastTooltip));
+                }
+            }
+        }
+
+        [JsonPropertyName("supportsColorTemperature")]
+        public bool SupportsColorTemperature
+        {
+            get => _supportsColorTemperature;
+            set
+            {
+                if (_supportsColorTemperature != value)
+                {
+                    _supportsColorTemperature = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(ColorTemperatureTooltip));
+                }
+            }
+        }
+
+        [JsonPropertyName("supportsVolume")]
+        public bool SupportsVolume
+        {
+            get => _supportsVolume;
+            set
+            {
+                if (_supportsVolume != value)
+                {
+                    _supportsVolume = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(VolumeTooltip));
+                }
+            }
+        }
+
+        [JsonPropertyName("capabilitiesStatus")]
+        public string CapabilitiesStatus
+        {
+            get => _capabilitiesStatus;
+            set
+            {
+                if (_capabilitiesStatus != value)
+                {
+                    _capabilitiesStatus = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(ShowCapabilitiesWarning));
+                }
+            }
+        }
+
+        [JsonPropertyName("availableColorPresets")]
+        public ObservableCollection<ColorPresetItem> AvailableColorPresets
+        {
+            get => _availableColorPresets;
+            set
+            {
+                if (_availableColorPresets != value)
+                {
+                    _availableColorPresets = value ?? new ObservableCollection<ColorPresetItem>();
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasColorPresets));
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool HasColorPresets => _availableColorPresets != null && _availableColorPresets.Count > 0;
+
         [JsonIgnore]
         public bool HasCapabilities => !string.IsNullOrEmpty(_capabilitiesRaw);
+
+        [JsonIgnore]
+        public bool ShowCapabilitiesWarning => _capabilitiesStatus == "unavailable";
+
+        [JsonIgnore]
+        public string BrightnessTooltip => _supportsBrightness ? string.Empty : "Brightness control not supported by this monitor";
+
+        [JsonIgnore]
+        public string ContrastTooltip => _supportsContrast ? string.Empty : "Contrast control not supported by this monitor";
+
+        [JsonIgnore]
+        public string ColorTemperatureTooltip => _supportsColorTemperature ? string.Empty : "Color temperature control not supported by this monitor";
+
+        [JsonIgnore]
+        public string VolumeTooltip => _supportsVolume ? string.Empty : "Volume control not supported by this monitor";
+
+        /// <summary>
+        /// Represents a color temperature preset item for VCP code 0x14
+        /// </summary>
+        public class ColorPresetItem : Observable
+        {
+            private int _vcpValue;
+            private string _displayName = string.Empty;
+
+            [JsonPropertyName("vcpValue")]
+            public int VcpValue
+            {
+                get => _vcpValue;
+                set
+                {
+                    if (_vcpValue != value)
+                    {
+                        _vcpValue = value;
+                        OnPropertyChanged();
+                    }
+                }
+            }
+
+            [JsonPropertyName("displayName")]
+            public string DisplayName
+            {
+                get => _displayName;
+                set
+                {
+                    if (_displayName != value)
+                    {
+                        _displayName = value;
+                        OnPropertyChanged();
+                    }
+                }
+            }
+
+            public ColorPresetItem()
+            {
+            }
+
+            public ColorPresetItem(int vcpValue, string displayName)
+            {
+                VcpValue = vcpValue;
+                DisplayName = displayName;
+            }
+        }
     }
 }

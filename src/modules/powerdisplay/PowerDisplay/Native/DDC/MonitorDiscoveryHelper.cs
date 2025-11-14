@@ -22,11 +22,8 @@ namespace PowerDisplay.Native.DDC
     /// </summary>
     public class MonitorDiscoveryHelper
     {
-        private readonly VcpCodeResolver _vcpResolver;
-
-        public MonitorDiscoveryHelper(VcpCodeResolver vcpResolver)
+        public MonitorDiscoveryHelper()
         {
-            _vcpResolver = vcpResolver;
         }
 
         /// <summary>
@@ -183,34 +180,16 @@ namespace PowerDisplay.Native.DDC
                     IsAvailable = true,
                     Handle = physicalMonitor.HPhysicalMonitor,
                     DeviceKey = deviceKey,
-                    Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.DdcCi,
+                    Capabilities = MonitorCapabilities.DdcCi,
                     ConnectionType = "External",
                     CommunicationMethod = "DDC/CI",
                     Manufacturer = ExtractManufacturer(name),
+                    CapabilitiesStatus = "unknown",
                 };
 
-                // Check contrast support
-                if (DdcCiNative.TryGetVCPFeature(physicalMonitor.HPhysicalMonitor, VcpCodeContrast, out _, out _))
-                {
-                    monitor.Capabilities |= MonitorCapabilities.Contrast;
-                }
-
-                // Check color temperature support (suppress logging for discovery)
-                var colorTempVcpCode = _vcpResolver.GetColorTemperatureVcpCode(monitorId, physicalMonitor.HPhysicalMonitor);
-                monitor.SupportsColorTemperature = colorTempVcpCode.HasValue;
-
-                // Check volume support
-                if (DdcCiNative.TryGetVCPFeature(physicalMonitor.HPhysicalMonitor, VcpCodeVolume, out _, out _))
-                {
-                    monitor.Capabilities |= MonitorCapabilities.Volume;
-                }
-
-                // Check high-level API support
-                if (DdcCiNative.TryGetMonitorBrightness(physicalMonitor.HPhysicalMonitor, out _, out _, out _))
-                {
-                    monitor.Capabilities |= MonitorCapabilities.HighLevel;
-                }
-
+                // Note: Feature detection (brightness, contrast, color temp, volume) is now done
+                // in MonitorManager after capabilities string is retrieved and parsed.
+                // This ensures we rely on capabilities data rather than trial-and-error probing.
                 return monitor;
             }
             catch (Exception ex)
@@ -221,24 +200,20 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// Get current brightness using VCP codes
+        /// Get current brightness using VCP code 0x10 only
         /// </summary>
         private BrightnessInfo GetCurrentBrightness(IntPtr handle)
         {
-            // Try high-level API
+            // Try high-level API first
             if (DdcCiNative.TryGetMonitorBrightness(handle, out uint min, out uint current, out uint max))
             {
                 return new BrightnessInfo((int)current, (int)min, (int)max);
             }
 
-            // Try VCP codes
-            byte[] vcpCodes = { VcpCodeBrightness, VcpCodeBacklightControl, VcpCodeBacklightLevelWhite, VcpCodeContrast };
-            foreach (var code in vcpCodes)
+            // Try VCP code 0x10 (standard brightness)
+            if (DdcCiNative.TryGetVCPFeature(handle, VcpCodeBrightness, out current, out max))
             {
-                if (DdcCiNative.TryGetVCPFeature(handle, code, out current, out max))
-                {
-                    return new BrightnessInfo((int)current, 0, (int)max);
-                }
+                return new BrightnessInfo((int)current, 0, (int)max);
             }
 
             return BrightnessInfo.Invalid;

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
+using PowerDisplay.Helpers;
 using static PowerDisplay.Native.NativeConstants;
 using static PowerDisplay.Native.NativeDelegates;
 using static PowerDisplay.Native.PInvoke;
@@ -29,14 +30,13 @@ namespace PowerDisplay.Native.DDC
     public partial class DdcCiController : IMonitorController, IDisposable
     {
         private readonly PhysicalMonitorHandleManager _handleManager = new();
-        private readonly VcpCodeResolver _vcpResolver = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
 
         private bool _disposed;
 
         public DdcCiController()
         {
-            _discoveryHelper = new MonitorDiscoveryHelper(_vcpResolver);
+            _discoveryHelper = new MonitorDiscoveryHelper();
         }
 
         public string Name => "DDC/CI Monitor Controller";
@@ -63,7 +63,7 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// Get monitor brightness
+        /// Get monitor brightness using VCP code 0x10
         /// </summary>
         public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -73,29 +73,32 @@ namespace PowerDisplay.Native.DDC
                     var physicalHandle = GetPhysicalHandle(monitor);
                     if (physicalHandle == IntPtr.Zero)
                     {
+                        Logger.LogDebug($"[{monitor.Id}] Invalid physical handle");
                         return BrightnessInfo.Invalid;
                     }
 
                     // First try high-level API
                     if (DdcCiNative.TryGetMonitorBrightness(physicalHandle, out uint minBrightness, out uint currentBrightness, out uint maxBrightness))
                     {
+                        Logger.LogDebug($"[{monitor.Id}] Brightness via high-level API: {currentBrightness}/{maxBrightness}");
                         return new BrightnessInfo((int)currentBrightness, (int)minBrightness, (int)maxBrightness);
                     }
 
-                    // Try different VCP codes
-                    var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
-                    if (vcpCode.HasValue && DdcCiNative.TryGetVCPFeature(physicalHandle, vcpCode.Value, out uint current, out uint max))
+                    // Try VCP code 0x10 (standard brightness)
+                    if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out uint current, out uint max))
                     {
+                        Logger.LogDebug($"[{monitor.Id}] Brightness via 0x10: {current}/{max}");
                         return new BrightnessInfo((int)current, 0, (int)max);
                     }
 
+                    Logger.LogWarning($"[{monitor.Id}] Failed to read brightness");
                     return BrightnessInfo.Invalid;
                 },
                 cancellationToken);
         }
 
         /// <summary>
-        /// Set monitor brightness
+        /// Set monitor brightness using VCP code 0x10
         /// </summary>
         public async Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
         {
@@ -115,6 +118,7 @@ namespace PowerDisplay.Native.DDC
                         var currentInfo = GetBrightnessInfo(monitor, physicalHandle);
                         if (!currentInfo.IsValid)
                         {
+                            Logger.LogWarning($"[{monitor.Id}] Cannot read current brightness");
                             return MonitorOperationResult.Failure("Cannot read current brightness");
                         }
 
@@ -123,21 +127,24 @@ namespace PowerDisplay.Native.DDC
                         // First try high-level API
                         if (DdcCiNative.TrySetMonitorBrightness(physicalHandle, targetValue))
                         {
+                            Logger.LogInfo($"[{monitor.Id}] Set brightness to {brightness}% via high-level API");
                             return MonitorOperationResult.Success();
                         }
 
-                        // Try VCP codes
-                        var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
-                        if (vcpCode.HasValue && DdcCiNative.TrySetVCPFeature(physicalHandle, vcpCode.Value, targetValue))
+                        // Try VCP code 0x10 (standard brightness)
+                        if (DdcCiNative.TrySetVCPFeature(physicalHandle, VcpCodeBrightness, targetValue))
                         {
+                            Logger.LogInfo($"[{monitor.Id}] Set brightness to {brightness}% via 0x10");
                             return MonitorOperationResult.Success();
                         }
 
                         var lastError = GetLastError();
+                        Logger.LogError($"[{monitor.Id}] Failed to set brightness, error: {lastError}");
                         return MonitorOperationResult.Failure($"Failed to set brightness via DDC/CI", (int)lastError);
                     }
                     catch (Exception ex)
                     {
+                        Logger.LogError($"[{monitor.Id}] Exception setting brightness: {ex.Message}");
                         return MonitorOperationResult.Failure($"Exception setting brightness: {ex.Message}");
                     }
                 },
@@ -169,7 +176,8 @@ namespace PowerDisplay.Native.DDC
             => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, volume, 0, 100, cancellationToken);
 
         /// <summary>
-        /// Get monitor color temperature
+        /// Get monitor color temperature using VCP code 0x14 (Select Color Preset)
+        /// Returns the raw VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature
         /// </summary>
         public async Task<BrightnessInfo> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -178,28 +186,32 @@ namespace PowerDisplay.Native.DDC
                 {
                     if (monitor.Handle == IntPtr.Zero)
                     {
+                        Logger.LogDebug($"[{monitor.Id}] Invalid handle for color temperature read");
                         return BrightnessInfo.Invalid;
                     }
 
-                    // Try different VCP codes for color temperature
-                    var vcpCode = _vcpResolver.GetColorTemperatureVcpCode(monitor.Id, monitor.Handle);
-                    if (vcpCode.HasValue && DdcCiNative.TryGetVCPFeature(monitor.Handle, vcpCode.Value, out uint current, out uint max))
+                    // Try VCP code 0x14 (Select Color Preset)
+                    if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeSelectColorPreset, out uint current, out uint max))
                     {
+                        var presetName = VcpValueNames.GetName(0x14, (int)current);
+                        Logger.LogInfo($"[{monitor.Id}] Color temperature via 0x14: 0x{current:X2} ({presetName})");
                         return new BrightnessInfo((int)current, 0, (int)max);
                     }
 
+                    Logger.LogWarning($"[{monitor.Id}] Failed to read color temperature (0x14 not supported)");
                     return BrightnessInfo.Invalid;
                 },
                 cancellationToken);
         }
 
         /// <summary>
-        /// Set monitor color temperature
+        /// Set monitor color temperature using VCP code 0x14 (Select Color Preset)
         /// </summary>
+        /// <param name="monitor">Monitor to control</param>
+        /// <param name="colorTemperature">VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         public async Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
         {
-            colorTemperature = Math.Clamp(colorTemperature, 2000, 10000);
-
             return await Task.Run(
                 () =>
                 {
@@ -210,28 +222,34 @@ namespace PowerDisplay.Native.DDC
 
                     try
                     {
-                        // Get current color temperature info to understand the range
-                        var currentInfo = _vcpResolver.GetCurrentColorTemperature(monitor.Handle);
-                        if (!currentInfo.IsValid)
+                        // Validate value is in supported list if capabilities available
+                        var capabilities = monitor.VcpCapabilitiesInfo;
+                        if (capabilities != null && capabilities.SupportsVcpCode(0x14))
                         {
-                            return MonitorOperationResult.Failure("Cannot read current color temperature");
+                            var supportedValues = capabilities.GetSupportedValues(0x14);
+                            if (supportedValues?.Count > 0 && !supportedValues.Contains(colorTemperature))
+                            {
+                                var supportedList = string.Join(", ", supportedValues.Select(v => $"0x{v:X2}"));
+                                Logger.LogWarning($"[{monitor.Id}] Color preset 0x{colorTemperature:X2} not in supported list: [{supportedList}]");
+                                return MonitorOperationResult.Failure($"Color preset 0x{colorTemperature:X2} not supported by monitor");
+                            }
                         }
 
-                        // Convert Kelvin temperature to VCP value
-                        uint targetValue = _vcpResolver.ConvertKelvinToVcpValue(colorTemperature, currentInfo);
-
-                        // Try to set using the best available VCP code
-                        var vcpCode = _vcpResolver.GetColorTemperatureVcpCode(monitor.Id, monitor.Handle);
-                        if (vcpCode.HasValue && DdcCiNative.TrySetVCPFeature(monitor.Handle, vcpCode.Value, targetValue))
+                        // Set VCP 0x14 value
+                        var presetName = VcpValueNames.GetName(0x14, colorTemperature);
+                        if (DdcCiNative.TrySetVCPFeature(monitor.Handle, VcpCodeSelectColorPreset, (uint)colorTemperature))
                         {
+                            Logger.LogInfo($"[{monitor.Id}] Set color temperature to 0x{colorTemperature:X2} ({presetName}) via 0x14");
                             return MonitorOperationResult.Success();
                         }
 
                         var lastError = GetLastError();
+                        Logger.LogError($"[{monitor.Id}] Failed to set color temperature, error: {lastError}");
                         return MonitorOperationResult.Failure($"Failed to set color temperature via DDC/CI", (int)lastError);
                     }
                     catch (Exception ex)
                     {
+                        Logger.LogError($"[{monitor.Id}] Exception setting color temperature: {ex.Message}");
                         return MonitorOperationResult.Failure($"Exception setting color temperature: {ex.Message}");
                     }
                 },
@@ -607,7 +625,7 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// Get brightness information (with explicit handle)
+        /// Get brightness information using VCP code 0x10 only
         /// </summary>
         private BrightnessInfo GetBrightnessInfo(Monitor monitor, IntPtr physicalHandle)
         {
@@ -622,9 +640,8 @@ namespace PowerDisplay.Native.DDC
                 return new BrightnessInfo((int)current, (int)min, (int)max);
             }
 
-            // Try VCP codes
-            var vcpCode = _vcpResolver.GetBrightnessVcpCode(monitor.Id, physicalHandle);
-            if (vcpCode.HasValue && DdcCiNative.TryGetVCPFeature(physicalHandle, vcpCode.Value, out current, out max))
+            // Try VCP code 0x10 (standard brightness)
+            if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out current, out max))
             {
                 return new BrightnessInfo((int)current, 0, (int)max);
             }
@@ -651,7 +668,6 @@ namespace PowerDisplay.Native.DDC
             if (!_disposed && disposing)
             {
                 _handleManager?.Dispose();
-                _vcpResolver?.ClearCache();
                 _disposed = true;
             }
         }

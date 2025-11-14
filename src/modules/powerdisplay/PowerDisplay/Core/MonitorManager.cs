@@ -362,10 +362,9 @@ namespace PowerDisplay.Core
                     var monitor = GetMonitor(monitorId);
                     if (monitor != null)
                     {
-                        // Convert VCP value to approximate Kelvin temperature
-                        // This is a rough mapping - actual values depend on monitor implementation
-                        var kelvin = ConvertVcpValueToKelvin(tempInfo.Current, tempInfo.Maximum);
-                        monitor.CurrentColorTemperature = kelvin;
+                        // Store raw VCP 0x14 preset value (e.g., 0x05 for 6500K)
+                        // No Kelvin conversion - we use discrete presets
+                        monitor.CurrentColorTemperature = tempInfo.Current;
                     }
                 }
             }
@@ -373,14 +372,6 @@ namespace PowerDisplay.Core
             {
                 Logger.LogWarning($"Failed to initialize color temperature for {monitorId}: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// Convert VCP value to approximate Kelvin temperature (uses unified converter)
-        /// </summary>
-        private static int ConvertVcpValueToKelvin(int vcpValue, int maxVcpValue)
-        {
-            return ColorTemperatureConverter.VcpToKelvin(vcpValue, maxVcpValue);
         }
 
         /// <summary>

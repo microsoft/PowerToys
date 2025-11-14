@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using PowerDisplay.Configuration;
+using PowerDisplay.Core.Utils;
 
 namespace PowerDisplay.Core.Models
 {
@@ -16,7 +17,7 @@ namespace PowerDisplay.Core.Models
     public partial class Monitor : INotifyPropertyChanged
     {
         private int _currentBrightness;
-        private int _currentColorTemperature = AppConstants.MonitorDefaults.DefaultColorTemp;
+        private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
         private bool _isAvailable = true;
 
         /// <summary>
@@ -67,36 +68,39 @@ namespace PowerDisplay.Core.Models
         public int MaxBrightness { get; set; } = 100;
 
         /// <summary>
-        /// Current color temperature (2000-10000K)
+        /// Current color temperature VCP preset value (from VCP code 0x14).
+        /// This stores the raw VCP value (e.g., 0x05 for 6500K), not Kelvin temperature.
+        /// Use ColorTemperaturePresetName to get human-readable name.
         /// </summary>
         public int CurrentColorTemperature
         {
             get => _currentColorTemperature;
             set
             {
-                var clamped = Math.Clamp(value, MinColorTemperature, MaxColorTemperature);
-                if (_currentColorTemperature != clamped)
+                if (_currentColorTemperature != value)
                 {
-                    _currentColorTemperature = clamped;
+                    _currentColorTemperature = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(ColorTemperaturePresetName));
                 }
             }
         }
 
         /// <summary>
-        /// Minimum color temperature value
+        /// Human-readable color temperature preset name (e.g., "6500K", "sRGB")
         /// </summary>
-        public int MinColorTemperature { get; set; } = AppConstants.MonitorDefaults.MinColorTemp;
+        public string ColorTemperaturePresetName =>
+            VcpValueNames.GetName(0x14, CurrentColorTemperature) ?? $"0x{CurrentColorTemperature:X2}";
 
         /// <summary>
-        /// Maximum color temperature value
+        /// Whether supports color temperature adjustment via VCP 0x14
         /// </summary>
-        public int MaxColorTemperature { get; set; } = AppConstants.MonitorDefaults.MaxColorTemp;
+        public bool SupportsColorTemperature { get; set; }
 
         /// <summary>
-        /// Whether supports color temperature adjustment
+        /// Capabilities detection status: "available", "unavailable", or "unknown"
         /// </summary>
-        public bool SupportsColorTemperature { get; set; } = true;
+        public string CapabilitiesStatus { get; set; } = "unknown";
 
         /// <summary>
         /// Whether supports contrast adjustment

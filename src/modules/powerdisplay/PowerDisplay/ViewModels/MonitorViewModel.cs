@@ -28,12 +28,10 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     // Simple debouncers for each property (KISS principle - simpler than complex queue)
     private readonly SimpleDebouncer _brightnessDebouncer = new(300);
-    private readonly SimpleDebouncer _colorTempDebouncer = new(300);
     private readonly SimpleDebouncer _contrastDebouncer = new(300);
     private readonly SimpleDebouncer _volumeDebouncer = new(300);
 
     private int _brightness;
-    private int _colorTemperature;
     private int _contrast;
     private int _volume;
     private bool _isAvailable;
@@ -51,11 +49,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         switch (propertyName)
         {
-            case nameof(ColorTemperature):
-                _colorTemperature = value;
-                OnPropertyChanged(nameof(ColorTemperature));
-                OnPropertyChanged(nameof(ColorTemperaturePercent));
-                break;
+            // ColorTemperature removed - now controlled via Settings UI
             case nameof(Brightness):
                 _brightness = value;
                 OnPropertyChanged(nameof(Brightness));
@@ -95,29 +89,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _showContrast = monitor.SupportsContrast;
         _showVolume = monitor.SupportsVolume;
 
-        // Try to get current color temperature via DDC/CI, use default if failed
-        try
-        {
-            // For DDC/CI monitors that support color temperature, use 6500K as default
-            // The actual temperature will be loaded asynchronously after construction
-            if (monitor.SupportsColorTemperature)
-            {
-                _colorTemperature = 6500; // Default neutral temperature for DDC monitors
-            }
-            else
-            {
-                _colorTemperature = 6500; // Default for unsupported monitors
-            }
-
-            monitor.CurrentColorTemperature = _colorTemperature;
-            Logger.LogDebug($"Initialized {monitor.Id} with default color temperature {_colorTemperature}K");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning($"Failed to initialize color temperature for {monitor.Id}: {ex.Message}");
-            _colorTemperature = 6500; // Default neutral temperature
-            monitor.CurrentColorTemperature = 6500;
-        }
+        // Color temperature initialization removed - now controlled via Settings UI
+        // The Monitor.CurrentColorTemperature stores VCP 0x14 preset value (e.g., 0x05 for 6500K)
+        // and will be initialized by MonitorManager based on capabilities
 
         // Initialize basic properties from monitor
         _brightness = monitor.CurrentBrightness;
@@ -151,10 +125,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public int MinBrightness => _monitor.MinBrightness;
 
     public int MaxBrightness => _monitor.MaxBrightness;
-
-    public int MinColorTemperature => _monitor.MinColorTemperature;
-
-    public int MaxColorTemperature => _monitor.MaxColorTemperature;
 
     public int MinContrast => _monitor.MinContrast;
 
@@ -238,41 +208,12 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    public int ColorTemperature
-    {
-        get => _colorTemperature;
-        set
-        {
-            if (_colorTemperature != value)
-            {
-                _colorTemperature = value;
-                OnPropertyChanged();
-
-                // Debounce hardware update - simple and clean!
-                var capturedValue = value;
-                _colorTempDebouncer.Debounce(async () =>
-                {
-                    try
-                    {
-                        var result = await _monitorManager.SetColorTemperatureAsync(Id, capturedValue);
-                        if (result.IsSuccess)
-                        {
-                            _monitor.CurrentColorTemperature = capturedValue;
-                            _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "ColorTemperature", capturedValue);
-                        }
-                        else
-                        {
-                            Logger.LogError($"[{Id}] Failed to set color temperature: {result.ErrorMessage}");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to set color temperature for {Id}: {ex.Message}");
-                    }
-                });
-            }
-        }
-    }
+    /// <summary>
+    /// Color temperature VCP preset value (from VCP code 0x14).
+    /// Read-only in flyout UI - controlled via Settings UI.
+    /// Returns the raw VCP value (e.g., 0x05 for 6500K).
+    /// </summary>
+    public int ColorTemperature => _monitor.CurrentColorTemperature;
 
     public int Contrast
     {
@@ -348,19 +289,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     });
 
-    public ICommand SetColorTemperatureCommand => new RelayCommand<int?>((temperature) =>
-    {
-        if (temperature.HasValue && _monitor.SupportsColorTemperature)
-        {
-            Logger.LogDebug($"[{Id}] Color temperature command: {temperature.Value}K (DDC/CI)");
-            ColorTemperature = temperature.Value;
-        }
-        else if (temperature.HasValue && !_monitor.SupportsColorTemperature)
-        {
-            Logger.LogWarning($"[{Id}] Color temperature not supported on this monitor");
-        }
-    });
-
+    // SetColorTemperatureCommand removed - now controlled via Settings UI
     public ICommand SetContrastCommand => new RelayCommand<int?>((contrast) =>
     {
         if (contrast.HasValue)
@@ -378,16 +307,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     });
 
     // Percentage-based properties for uniform slider behavior
-    public int ColorTemperaturePercent
-    {
-        get => MapToPercent(_colorTemperature, MinColorTemperature, MaxColorTemperature);
-        set
-        {
-            var actualValue = MapFromPercent(value, MinColorTemperature, MaxColorTemperature);
-            ColorTemperature = actualValue;
-        }
-    }
-
+    // ColorTemperaturePercent removed - now controlled via Settings UI
     public int ContrastPercent
     {
         get => MapToPercent(_contrast, MinContrast, MaxContrast);
@@ -427,11 +347,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         // Notify percentage properties when actual values change
-        if (propertyName == nameof(ColorTemperature))
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ColorTemperaturePercent)));
-        }
-        else if (propertyName == nameof(Contrast))
+        if (propertyName == nameof(Contrast))
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContrastPercent)));
         }
@@ -455,7 +371,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         // Dispose all debouncers
         _brightnessDebouncer?.Dispose();
-        _colorTempDebouncer?.Dispose();
         _contrastDebouncer?.Dispose();
         _volumeDebouncer?.Dispose();
         GC.SuppressFinalize(this);

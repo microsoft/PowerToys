@@ -179,6 +179,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var monitorKey = GetMonitorKey(newMonitor);
 
+                // Parse capabilities to determine feature support
+                ParseFeatureSupportFromCapabilities(newMonitor);
+
+                // Populate color temperature presets if supported
+                PopulateColorPresetsForMonitor(newMonitor);
+
                 // Check if we have an existing monitor with the same key
                 if (existingMonitors.TryGetValue(monitorKey, out var existingMonitor))
                 {
@@ -208,6 +214,110 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             return monitor.InternalName ?? monitor.Name ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Parse feature support from capabilities VcpCodes list
+        /// Sets support flags based on VCP code presence
+        /// </summary>
+        private void ParseFeatureSupportFromCapabilities(MonitorInfo monitor)
+        {
+            if (monitor == null)
+            {
+                return;
+            }
+
+            // Check capabilities status
+            if (string.IsNullOrEmpty(monitor.CapabilitiesRaw))
+            {
+                monitor.CapabilitiesStatus = "unavailable";
+                monitor.SupportsBrightness = false;
+                monitor.SupportsContrast = false;
+                monitor.SupportsColorTemperature = false;
+                monitor.SupportsVolume = false;
+                return;
+            }
+
+            monitor.CapabilitiesStatus = "available";
+
+            // Parse VCP codes to determine feature support
+            // VCP codes are stored as hex strings (e.g., "0x10", "10")
+            var vcpCodes = monitor.VcpCodes ?? new List<string>();
+
+            // Convert all VCP codes to integers for comparison
+            var vcpCodeInts = new HashSet<int>();
+            foreach (var code in vcpCodes)
+            {
+                if (int.TryParse(code.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int codeInt))
+                {
+                    vcpCodeInts.Add(codeInt);
+                }
+            }
+
+            // Check for feature support based on VCP codes
+            // 0x10 (16): Brightness
+            // 0x12 (18): Contrast
+            // 0x14 (20): Color Temperature (Select Color Preset)
+            // 0x62 (98): Volume
+            monitor.SupportsBrightness = vcpCodeInts.Contains(0x10);
+            monitor.SupportsContrast = vcpCodeInts.Contains(0x12);
+            monitor.SupportsColorTemperature = vcpCodeInts.Contains(0x14);
+            monitor.SupportsVolume = vcpCodeInts.Contains(0x62);
+        }
+
+        /// <summary>
+        /// Populate color temperature presets for a monitor from VcpCodesFormatted
+        /// Builds the ComboBox items from VCP code 0x14 supported values
+        /// </summary>
+        private void PopulateColorPresetsForMonitor(MonitorInfo monitor)
+        {
+            if (monitor == null)
+            {
+                return;
+            }
+
+            if (!monitor.SupportsColorTemperature)
+            {
+                // Create new empty collection to trigger property change notification
+                monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>();
+                return;
+            }
+
+            // Find VCP code 0x14 in the formatted list
+            var colorTempVcp = monitor.VcpCodesFormatted?.FirstOrDefault(v =>
+            {
+                if (int.TryParse(v.Code?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int code))
+                {
+                    return code == 0x14;
+                }
+
+                return false;
+            });
+
+            if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)
+            {
+                // No supported values found, create new empty collection
+                monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>();
+                return;
+            }
+
+            // Build preset list from supported values
+            var presetList = new List<MonitorInfo.ColorPresetItem>();
+            foreach (var valueInfo in colorTempVcp.ValueList)
+            {
+                if (int.TryParse(valueInfo.Value?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int vcpValue))
+                {
+                    var displayName = valueInfo.Name ?? $"0x{vcpValue:X2}";
+                    presetList.Add(new MonitorInfo.ColorPresetItem(vcpValue, displayName));
+                }
+            }
+
+            // Sort by VCP value for consistent ordering
+            presetList = presetList.OrderBy(p => p.VcpValue).ToList();
+
+            // Create new collection and assign it - this triggers property setter
+            // which will call UpdateSelectedColorPresetFromTemperature() to sync the selection
+            monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>(presetList);
         }
 
         public void Dispose()

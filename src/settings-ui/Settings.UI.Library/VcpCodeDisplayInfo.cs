@@ -11,6 +11,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     /// </summary>
     public class VcpCodeDisplayInfo
     {
+        [JsonPropertyName("code")]
+        public string Code { get; set; } = string.Empty;
+
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
 
@@ -19,5 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("hasValues")]
         public bool HasValues { get; set; }
+
+        [JsonPropertyName("valueList")]
+        public System.Collections.Generic.List<VcpValueInfo> ValueList { get; set; } = new System.Collections.Generic.List<VcpValueInfo>();
     }
 }
