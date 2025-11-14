@@ -176,7 +176,6 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
-cabstr
 calpwstr
 caub
 Cangjie
@@ -209,7 +208,6 @@ CHOOSEFONT
 cidl
 CIELCh
 cim
-claude
 CImage
 cla
 CLASSDC
@@ -222,6 +220,7 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
+CLITo
 closesocket
 clp
 CLSCTX
@@ -330,7 +329,6 @@ CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
 Czechia
-cziplib
 Dac
 dacl
 DAffine
@@ -466,7 +464,6 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 eku
-ekus
 emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
@@ -622,7 +619,6 @@ gpu
 gradians
 grctlext
 Gridcustomlayout
-Groq
 GSM
 gtm
 guiddata
@@ -738,6 +734,7 @@ hyjiacan
 IAI
 ICONERROR
 ICONLOCATION
+icf
 IDCANCEL
 IDD
 idk
@@ -1077,6 +1074,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1214,7 +1212,6 @@ OPENFILENAME
 opensource
 openxmlformats
 ollama
-Olllama
 onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
@@ -1874,7 +1871,6 @@ USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
-utm
 UType
 uuidv
 uwp
