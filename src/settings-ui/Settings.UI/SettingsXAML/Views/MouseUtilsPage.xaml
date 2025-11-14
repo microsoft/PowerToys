@@ -273,6 +273,7 @@
 
                 <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
+                <!--
                 <controls:SettingsGroup x:Uid="MouseUtils_CursorWrap" AutomationProperties.AutomationId="MouseUtils_CursorWrapTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
@@ -300,7 +301,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </controls:SettingsGroup>-->
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard

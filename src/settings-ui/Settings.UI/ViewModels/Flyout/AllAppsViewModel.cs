@@ -36,6 +36,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
+                // Hide CursorWrap from All Apps flyout
+                if (moduleType == ModuleType.CursorWrap)
+                {
+                    continue;
+                }
+
                 AddFlyoutMenuItem(moduleType);
             }
 
