@@ -176,25 +176,19 @@ namespace AdvancedPaste.Settings
                 properties.PasteAIConfiguration = configuration;
             }
 
-            bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
             bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
             bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
             PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
 
-            if (!hasLegacyProviders && legacyCredential is null && !legacyAdvancedAIConsumed)
+            if (legacyCredential is null && !legacyAdvancedAIConsumed)
             {
                 return false;
             }
 
             bool configurationUpdated = false;
 
-            if (hasLegacyProviders)
-            {
-                configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
-            }
-
             PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null || hasLegacyProviders || legacyAdvancedAIConsumed)
+            if (legacyCredential is not null || legacyAdvancedAIConsumed)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;

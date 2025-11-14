@@ -198,23 +198,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 properties.PasteAIConfiguration = configuration;
             }
 
-            bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
             PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
 
-            if (!hasLegacyProviders && legacyCredential is null && !legacyAdvancedAIConsumed)
+            if (legacyCredential is null && !legacyAdvancedAIConsumed)
             {
                 return;
             }
 
             bool configurationUpdated = false;
 
-            if (hasLegacyProviders)
-            {
-                configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
-            }
-
             PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null || hasLegacyProviders || legacyAdvancedAIConsumed)
+            if (legacyCredential is not null || legacyAdvancedAIConsumed)
             {
                 var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
                 openAIProvider = ensureResult.Provider;
@@ -1248,11 +1242,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return true;
             }
 
-            if (current.UseSharedCredentials != incoming.UseSharedCredentials)
-            {
-                return true;
-            }
-
             var currentProviders = current.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
             var incomingProviders = incoming.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
 
@@ -1408,8 +1397,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal)
-                || string.Equals(e.PropertyName, nameof(PasteAIConfiguration.UseSharedCredentials), StringComparison.Ordinal))
+            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal))
             {
                 SaveAndNotifySettings();
             }
@@ -1426,15 +1414,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
 
-            bool configurationUpdated = AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(pasteConfig);
-
             SubscribeToPasteAIProviders(pasteConfig);
-
-            if (configurationUpdated)
-            {
-                SaveAndNotifySettings();
-                OnPropertyChanged(nameof(PasteAIConfiguration));
-            }
         }
 
         private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)
