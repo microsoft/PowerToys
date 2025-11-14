@@ -40,7 +40,7 @@ parameters:
   - name: useVSPreview
     type: boolean
     displayName: "Build Using Visual Studio Preview"
-    default: false
+    default: true
 
 extends:
   template: templates/pipeline-ci-build.yml

@@ -123,12 +123,12 @@ namespace MouseWithoutBorders
 
             if (!LegalKeyDictionary.TryGetValue(myKey, out byte[] value))
             {
-                Rfc2898DeriveBytes key = new(
+                rv = Rfc2898DeriveBytes.Pbkdf2(
                     myKey,
                     Common.GetBytesU(InitialIV),
                     50000,
-                    HashAlgorithmName.SHA512);
-                rv = key.GetBytes(32);
+                    HashAlgorithmName.SHA512,
+                    32);
                 _ = LegalKeyDictionary.AddOrUpdate(myKey, rv, (k, v) => rv);
             }
             else
