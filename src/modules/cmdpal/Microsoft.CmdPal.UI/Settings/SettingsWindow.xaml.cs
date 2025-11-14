@@ -82,13 +82,23 @@ public sealed partial class SettingsWindow : WindowEx,
         var pageType = page switch
         {
             "General" => typeof(GeneralPage),
+            "Appearance" => typeof(AppearancePage),
             "Extensions" => typeof(ExtensionsPage),
             _ => null,
         };
+
+        var pageCrumbLabel = page switch
+        {
+            "General" => RS_.GetString("Settings_PageTitles_GeneralPage"),
+            "Appearance" => RS_.GetString("Settings_PageTitles_AppearancePage"),
+            "Extensions" => RS_.GetString("Settings_PageTitles_ExtensionsPage"),
+            _ => page,
+        };
+
         if (pageType is not null)
         {
             BreadCrumbs.Clear();
-            BreadCrumbs.Add(new(page, page));
+            BreadCrumbs.Add(new(label: pageCrumbLabel, data: page));
             NavFrame.Navigate(pageType);
         }
     }
