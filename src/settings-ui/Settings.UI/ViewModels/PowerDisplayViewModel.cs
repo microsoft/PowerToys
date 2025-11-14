@@ -14,12 +14,14 @@ using System.Threading.Tasks;
 using System.Windows;
 
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -44,13 +46,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
 
             // Initialize monitors collection using property setter for proper subscription setup
-            Monitors = new ObservableCollection<MonitorInfo>(_settings.Properties.Monitors);
+            // Parse capabilities for each loaded monitor to ensure UI displays correctly
+            var loadedMonitors = _settings.Properties.Monitors;
+            foreach (var monitor in loadedMonitors)
+            {
+                ParseFeatureSupportFromCapabilities(monitor);
+                PopulateColorPresetsForMonitor(monitor);
+            }
+
+            Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            // Subscribe to monitor information updates
-            IPCResponseService.PowerDisplayMonitorsReceived += OnMonitorsReceived;
+            // TODO: Re-enable monitor refresh events when Logger and Constants are properly defined
+            // Listen for monitor refresh events from PowerDisplay.exe
+            // NativeEventWaiter.WaitForEventLoop(
+            //     Constants.RefreshPowerDisplayMonitorsEvent(),
+            //     () =>
+            //     {
+            //         Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
+            //         ReloadMonitorsFromSettings();
+            //     });
         }
 
         private void InitializeEnabledValue()
@@ -145,11 +162,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged();
                 }
             }
-        }
-
-        private void OnMonitorsReceived(object sender, MonitorInfo[] monitors)
-        {
-            UpdateMonitors(monitors);
         }
 
         private void Monitors_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -307,7 +319,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (int.TryParse(valueInfo.Value?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int vcpValue))
                 {
-                    var displayName = valueInfo.Name ?? $"0x{vcpValue:X2}";
+                    // Format display name for Settings UI
+                    var displayName = FormatColorTemperatureDisplayName(valueInfo.Name, vcpValue);
                     presetList.Add(new MonitorInfo.ColorPresetItem(vcpValue, displayName));
                 }
             }
@@ -320,6 +333,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>(presetList);
         }
 
+        /// <summary>
+        /// Format color temperature display name for Settings UI
+        /// Examples:
+        /// - Undefined values: "Manufacturer Defined (0x05)"
+        /// - Predefined values: "6500K (0x05)", "sRGB (0x01)"
+        /// </summary>
+        private string FormatColorTemperatureDisplayName(string name, int vcpValue)
+        {
+            var hexValue = $"0x{vcpValue:X2}";
+
+            // Check if name is undefined (null or empty)
+            // GetName now returns null for unknown values instead of hex string
+            if (string.IsNullOrEmpty(name))
+            {
+                return $"Manufacturer Defined ({hexValue})";
+            }
+
+            // For predefined names, append the hex value in parentheses
+            // Examples: "6500K (0x05)", "sRGB (0x01)"
+            return $"{name} ({hexValue})";
+        }
+
         public void Dispose()
         {
             // Unsubscribe from monitor property changes
@@ -330,9 +365,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
-
-            // Unsubscribe from events
-            IPCResponseService.PowerDisplayMonitorsReceived -= OnMonitorsReceived;
         }
 
         /// <summary>
@@ -397,6 +429,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG(JsonSerializer.Serialize(actionMessage));
         }
 
+        /// <summary>
+        /// Reload monitor list from settings file (called when PowerDisplay.exe signals monitor changes)
+        /// </summary>
+        private void ReloadMonitorsFromSettings()
+        {
+            try
+            {
+                // TODO: Re-enable logging when Logger is properly defined
+                // Logger.LogInfo("Reloading monitors from settings file");
+
+                // Read fresh settings from file
+                var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+                var updatedMonitors = updatedSettings.Properties.Monitors;
+
+                // Parse capabilities for each monitor
+                foreach (var monitor in updatedMonitors)
+                {
+                    ParseFeatureSupportFromCapabilities(monitor);
+                    PopulateColorPresetsForMonitor(monitor);
+                }
+
+                // Update the monitors collection
+                // This will trigger UI update through property change notification
+                Monitors = new ObservableCollection<MonitorInfo>(updatedMonitors);
+
+                // Update internal settings reference
+                _settings.Properties.Monitors = updatedMonitors;
+
+                // Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
+            }
+            catch (Exception)
+            {
+                // Logger.LogError($"Failed to reload monitors from settings: {ex.Message}");
+            }
+        }
+
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isPowerDisplayEnabled;
@@ -425,16 +493,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
+            // Persist locally first so settings survive even if the module DLL isn't loaded yet.
+            SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);
+
             // Using InvariantCulture as this is an IPC message
+            // This message will be intercepted by the runner, which passes the serialized JSON to
+            // PowerDisplay Module Interface's set_config() method, which then applies it in-process.
             SendConfigMSG(
                    string.Format(
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PowerDisplaySettings.ModuleName,
                        JsonSerializer.Serialize(_settings, SourceGenerationContextContext.Default.PowerDisplaySettings)));
-
-            // Save settings using the standard settings utility
-            SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);
         }
     }
 }

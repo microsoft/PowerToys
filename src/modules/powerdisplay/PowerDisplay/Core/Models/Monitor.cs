@@ -36,11 +36,6 @@ namespace PowerDisplay.Core.Models
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Monitor type
-        /// </summary>
-        public MonitorType Type { get; set; } = MonitorType.Unknown;
-
-        /// <summary>
         /// Current brightness (0-100)
         /// </summary>
         public int CurrentBrightness
@@ -87,10 +82,10 @@ namespace PowerDisplay.Core.Models
         }
 
         /// <summary>
-        /// Human-readable color temperature preset name (e.g., "6500K", "sRGB")
+        /// Human-readable color temperature preset name (e.g., "6500K (0x05)", "sRGB (0x01)")
         /// </summary>
         public string ColorTemperaturePresetName =>
-            VcpValueNames.GetName(0x14, CurrentColorTemperature) ?? $"0x{CurrentColorTemperature:X2}";
+            VcpValueNames.GetFormattedName(0x14, CurrentColorTemperature);
 
         /// <summary>
         /// Whether supports color temperature adjustment via VCP 0x14
@@ -244,7 +239,7 @@ namespace PowerDisplay.Core.Models
 
         public override string ToString()
         {
-            return $"{Name} ({Type}) - {CurrentBrightness}%";
+            return $"{Name} ({CommunicationMethod}) - {CurrentBrightness}%";
         }
 
         /// <summary>

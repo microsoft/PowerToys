@@ -388,6 +388,41 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string VolumeTooltip => _supportsVolume ? string.Empty : "Volume control not supported by this monitor";
 
         /// <summary>
+        /// Generate formatted text of all VCP codes for clipboard
+        /// </summary>
+        public string GetVcpCodesAsText()
+        {
+            if (_vcpCodesFormatted == null || _vcpCodesFormatted.Count == 0)
+            {
+                return "No VCP codes detected";
+            }
+
+            var lines = new List<string>();
+            lines.Add($"VCP Capabilities for {_name}");
+            lines.Add($"Monitor: {_name}");
+            lines.Add($"Hardware ID: {_hardwareId}");
+            lines.Add(string.Empty);
+            lines.Add("Detected VCP Codes:");
+            lines.Add(new string('-', 50));
+
+            foreach (var vcp in _vcpCodesFormatted)
+            {
+                lines.Add(string.Empty);
+                lines.Add(vcp.Title);
+                if (vcp.HasValues)
+                {
+                    lines.Add($"  {vcp.Values}");
+                }
+            }
+
+            lines.Add(string.Empty);
+            lines.Add(new string('-', 50));
+            lines.Add($"Total: {_vcpCodesFormatted.Count} VCP codes");
+
+            return string.Join(System.Environment.NewLine, lines);
+        }
+
+        /// <summary>
         /// Represents a color temperature preset item for VCP code 0x14
         /// </summary>
         public class ColorPresetItem : Observable

@@ -158,15 +158,32 @@ namespace PowerDisplay.Core.Utils
         /// </summary>
         /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
         /// <param name="value">Value to translate</param>
-        /// <returns>Formatted string like "sRGB (0x01)" or "0x01" if unknown</returns>
-        public static string GetName(byte vcpCode, int value)
+        /// <returns>Name string like "sRGB" or null if unknown</returns>
+        public static string? GetName(byte vcpCode, int value)
         {
             if (ValueNames.TryGetValue(vcpCode, out var codeValues))
             {
                 if (codeValues.TryGetValue(value, out var name))
                 {
-                    return $"{name} (0x{value:X2})";
+                    return name;
                 }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get formatted display name for a VCP value (with hex value in parentheses)
+        /// </summary>
+        /// <param name="vcpCode">VCP code (e.g., 0x14)</param>
+        /// <param name="value">Value to translate</param>
+        /// <returns>Formatted string like "sRGB (0x01)" or "0x01" if unknown</returns>
+        public static string GetFormattedName(byte vcpCode, int value)
+        {
+            var name = GetName(vcpCode, value);
+            if (name != null)
+            {
+                return $"{name} (0x{value:X2})";
             }
 
             return $"0x{value:X2}";

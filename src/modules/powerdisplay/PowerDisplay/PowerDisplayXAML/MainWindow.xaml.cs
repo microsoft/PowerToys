@@ -130,9 +130,8 @@ namespace PowerDisplay
         {
             try
             {
-                // Perform monitor scanning and settings reload
+                // Perform monitor scanning (which internally calls ReloadMonitorSettingsAsync)
                 await _viewModel.RefreshMonitorsAsync();
-                await _viewModel.ReloadMonitorSettingsAsync();
 
                 // Adjust window size after data is loaded (must run on UI thread)
                 DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
@@ -336,11 +335,9 @@ namespace PowerDisplay
             }
         }
 
-        private async void OnUIRefreshRequested(object? sender, EventArgs e)
+        private void OnUIRefreshRequested(object? sender, EventArgs e)
         {
-            await _viewModel.ReloadMonitorSettingsAsync();
-
-            // Adjust window size after settings are reloaded (no delay needed!)
+            // Adjust window size when UI configuration changes (feature visibility toggles)
             DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
         }
 
@@ -543,7 +540,7 @@ namespace PowerDisplay
                 foreach (var monitor in monitors)
                 {
                     message += $"• {monitor.Name}\n";
-                    message += $"  Type: {monitor.Type}\n";
+                    message += $"  Communication: {monitor.CommunicationMethod}\n";
                     message += $"  Brightness: {monitor.CurrentBrightness}%\n\n";
                 }
 

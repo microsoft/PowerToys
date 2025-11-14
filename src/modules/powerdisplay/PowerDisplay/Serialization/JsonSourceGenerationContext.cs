@@ -16,7 +16,6 @@ namespace PowerDisplay.Serialization
     /// JSON source generation context for AOT compatibility.
     /// Eliminates reflection-based JSON serialization.
     /// </summary>
-    [JsonSerializable(typeof(PowerDisplayMonitorsIPCResponse))]
     [JsonSerializable(typeof(MonitorInfoData))]
     [JsonSerializable(typeof(IPCMessageAction))]
     [JsonSerializable(typeof(MonitorStateFile))]

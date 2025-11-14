@@ -11,6 +11,7 @@ using ManagedCommon;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
 using PowerDisplay.Core.Utils;
+using PowerDisplay.Native;
 using PowerDisplay.Native.DDC;
 using PowerDisplay.Native.WMI;
 using Monitor = PowerDisplay.Core.Models.Monitor;
@@ -127,8 +128,9 @@ namespace PowerDisplay.Core
                                 Logger.LogWarning($"Failed to get brightness for monitor {monitor.Id}: {ex.Message}");
                             }
 
-                            // Get capabilities for DDC/CI monitors (External type)
-                            if (monitor.Type == MonitorType.External && controller.SupportedType == MonitorType.External)
+                            // Get capabilities for DDC/CI monitors
+                            // Check by CommunicationMethod instead of Type
+                            if (monitor.CommunicationMethod?.Contains("DDC", StringComparison.OrdinalIgnoreCase) == true)
                             {
                                 try
                                 {
@@ -143,6 +145,12 @@ namespace PowerDisplay.Core
                                         monitor.VcpCapabilitiesInfo = Utils.VcpCapabilitiesParser.Parse(capsString);
 
                                         Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
+
+                                        // Update capability flags based on parsed VCP codes
+                                        if (monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0)
+                                        {
+                                            UpdateMonitorCapabilitiesFromVcp(monitor);
+                                        }
                                     }
                                     else
                                     {
@@ -239,7 +247,7 @@ namespace PowerDisplay.Core
             var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
-                Logger.LogError($"No controller available for monitor {monitorId}, Type={monitor.Type}");
+                Logger.LogError($"No controller available for monitor {monitorId}");
                 return MonitorOperationResult.Failure("No controller available for this monitor");
             }
 
@@ -387,7 +395,8 @@ namespace PowerDisplay.Core
         /// </summary>
         private IMonitorController? GetControllerForMonitor(Monitor monitor)
         {
-            return _controllers.FirstOrDefault(c => c.SupportedType == monitor.Type);
+            // WMI monitors use WmiController, DDC/CI monitors use DdcCiController
+            return _controllers.FirstOrDefault(c => c.CanControlMonitorAsync(monitor).GetAwaiter().GetResult());
         }
 
         /// <summary>
@@ -411,7 +420,7 @@ namespace PowerDisplay.Core
             var controller = GetControllerForMonitor(monitor);
             if (controller == null)
             {
-                Logger.LogError($"[MonitorManager] No controller available for monitor {monitorId}, Type={monitor.Type}");
+                Logger.LogError($"[MonitorManager] No controller available for monitor {monitorId}");
                 return MonitorOperationResult.Failure("No controller available for this monitor");
             }
 
@@ -437,6 +446,41 @@ namespace PowerDisplay.Core
                 Logger.LogError($"[MonitorManager] Operation failed for {monitorId}: {ex.Message}");
                 return MonitorOperationResult.Failure($"Exception: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Update monitor capability flags based on parsed VCP capabilities
+        /// </summary>
+        private void UpdateMonitorCapabilitiesFromVcp(Monitor monitor)
+        {
+            var vcpCaps = monitor.VcpCapabilitiesInfo;
+            if (vcpCaps == null)
+            {
+                return;
+            }
+
+            // Check for Contrast support (VCP 0x12)
+            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeContrast))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Contrast;
+                Logger.LogDebug($"[{monitor.Id}] Contrast support detected via VCP 0x12");
+            }
+
+            // Check for Volume support (VCP 0x62)
+            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeVolume))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Volume;
+                Logger.LogDebug($"[{monitor.Id}] Volume support detected via VCP 0x62");
+            }
+
+            // Check for Color Temperature support (VCP 0x14)
+            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeSelectColorPreset))
+            {
+                monitor.SupportsColorTemperature = true;
+                Logger.LogDebug($"[{monitor.Id}] Color temperature support detected via VCP 0x14");
+            }
+
+            Logger.LogInfo($"[{monitor.Id}] Capabilities updated: Contrast={monitor.SupportsContrast}, Volume={monitor.SupportsVolume}, ColorTemp={monitor.SupportsColorTemperature}");
         }
 
         public void Dispose()

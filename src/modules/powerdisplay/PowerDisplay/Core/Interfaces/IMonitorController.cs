@@ -22,11 +22,6 @@ namespace PowerDisplay.Core.Interfaces
         string Name { get; }
 
         /// <summary>
-        /// Supported monitor type
-        /// </summary>
-        MonitorType SupportedType { get; }
-
-        /// <summary>
         /// Checks whether the specified monitor can be controlled
         /// </summary>
         /// <param name="monitor">Monitor object</param>

@@ -23,6 +23,7 @@ using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
+using PowerToys.Interop;
 using Monitor = PowerDisplay.Core.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -38,7 +39,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly ISettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
-    private FileSystemWatcher? _settingsWatcher;
 
     private ObservableCollection<MonitorViewModel> _monitors;
     private string _statusText;
@@ -68,9 +68,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Subscribe to events
         _monitorManager.MonitorsChanged += OnMonitorsChanged;
-
-        // Setup settings file monitoring
-        SetupSettingsFileWatcher();
 
         // Start initial discovery
         _ = InitializeAsync();
@@ -221,14 +218,28 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         Monitors.Clear();
 
+        // Load settings to check for hidden monitors
+        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+        var hiddenMonitorIds = new HashSet<string>(
+            settings.Properties.Monitors
+                .Where(m => m.IsHidden)
+                .Select(m => m.HardwareId));
+
         var colorTempTasks = new List<Task>();
         foreach (var monitor in monitors)
         {
+            // Skip monitors that are marked as hidden in settings
+            if (hiddenMonitorIds.Contains(monitor.HardwareId))
+            {
+                Logger.LogInfo($"[UpdateMonitorList] Skipping hidden monitor: {monitor.Name} (HardwareId: {monitor.HardwareId})");
+                continue;
+            }
+
             var vm = new MonitorViewModel(monitor, _monitorManager, this);
             Monitors.Add(vm);
 
             // Asynchronously initialize color temperature for DDC/CI monitors
-            if (monitor.SupportsColorTemperature && monitor.Type == MonitorType.External)
+            if (monitor.SupportsColorTemperature && monitor.CommunicationMethod == "DDC/CI")
             {
                 var task = InitializeColorTemperatureSafeAsync(monitor.Id, vm);
                 colorTempTasks.Add(task);
@@ -264,11 +275,25 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         _dispatcherQueue.TryEnqueue(() =>
         {
+            // Load settings to check for hidden monitors
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            var hiddenMonitorIds = new HashSet<string>(
+                settings.Properties.Monitors
+                    .Where(m => m.IsHidden)
+                    .Select(m => m.HardwareId));
+
             // Handle monitors being added or removed
             if (e.AddedMonitors.Count > 0)
             {
                 foreach (var monitor in e.AddedMonitors)
                 {
+                    // Skip monitors that are marked as hidden
+                    if (hiddenMonitorIds.Contains(monitor.HardwareId))
+                    {
+                        Logger.LogInfo($"[OnMonitorsChanged] Skipping hidden monitor (added): {monitor.Name} (HardwareId: {monitor.HardwareId})");
+                        continue;
+                    }
+
                     var existingVm = GetMonitorViewModel(monitor.Id);
                     if (existingVm == null)
                     {
@@ -312,110 +337,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Setup settings file watcher
-    /// </summary>
-    private void SetupSettingsFileWatcher()
-    {
-        try
-        {
-            var settingsPath = _settingsUtils.GetSettingsFilePath("PowerDisplay");
-            var directory = Path.GetDirectoryName(settingsPath);
-            var fileName = Path.GetFileName(settingsPath);
-
-            if (!string.IsNullOrEmpty(directory))
-            {
-                // Ensure directory exists
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                _settingsWatcher = new FileSystemWatcher(directory, fileName)
-                {
-                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
-                    EnableRaisingEvents = true,
-                };
-
-                _settingsWatcher.Changed += OnSettingsFileChanged;
-                _settingsWatcher.Created += OnSettingsFileChanged;
-
-                Logger.LogInfo($"Settings file watcher setup for: {settingsPath}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to setup settings file watcher: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Handle settings file changes - only monitors UI configuration changes from Settings UI
-    /// (monitor_state.json is managed separately and doesn't trigger this)
-    /// </summary>
-    private void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
-    {
-        try
-        {
-            Logger.LogInfo($"Settings file changed by Settings UI: {e.FullPath}");
-
-            // Add small delay to ensure file write completion
-            Task.Delay(200).ContinueWith(_ =>
-            {
-                try
-                {
-                    // Read updated settings
-                    var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
-
-                    _dispatcherQueue.TryEnqueue(() =>
-                    {
-                        // Update feature visibility for each monitor (UI configuration only)
-                        foreach (var monitorVm in Monitors)
-                        {
-                            // Use HardwareId for lookup (unified identification)
-                            Logger.LogInfo($"[Settings Update] Looking for monitor settings with Hardware ID: '{monitorVm.HardwareId}'");
-
-                            var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m =>
-                                m.HardwareId == monitorVm.HardwareId);
-
-                            if (monitorSettings != null)
-                            {
-                                Logger.LogInfo($"[Settings Update] Found monitor settings for Hardware ID '{monitorVm.HardwareId}': ColorTemp={monitorSettings.EnableColorTemperature}, Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}");
-
-                                // Update visibility flags based on Settings UI toggles
-                                monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature;
-                                monitorVm.ShowContrast = monitorSettings.EnableContrast;
-                                monitorVm.ShowVolume = monitorSettings.EnableVolume;
-                            }
-                            else
-                            {
-                                Logger.LogWarning($"[Settings Update] No monitor settings found for Hardware ID '{monitorVm.HardwareId}'");
-                                Logger.LogInfo($"[Settings Update] Available monitors in settings:");
-                                foreach (var availableMonitor in settings.Properties.Monitors)
-                                {
-                                    Logger.LogInfo($"  - Hardware: '{availableMonitor.HardwareId}', Name: '{availableMonitor.Name}'");
-                                }
-                            }
-                        }
-
-                        // Trigger UI refresh for configuration changes
-                        UIRefreshRequested?.Invoke(this, EventArgs.Empty);
-                    });
-
-                    Logger.LogInfo($"Settings UI configuration reloaded, monitor count: {settings.Properties.Monitors.Count}");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to reload settings: {ex.Message}");
-                }
-            });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Error handling settings file change: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// Safe wrapper for initializing color temperature asynchronously
     /// </summary>
     private async Task InitializeColorTemperatureSafeAsync(string monitorId, MonitorViewModel vm)
@@ -450,7 +371,173 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Reload monitor settings from configuration
+    /// Apply all settings changes from Settings UI (IPC event handler entry point)
+    /// Coordinates both UI configuration and hardware parameter updates
+    /// </summary>
+    public async void ApplySettingsFromUI()
+    {
+        try
+        {
+            Logger.LogInfo("[Settings] Processing settings update from Settings UI");
+
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+
+            // 1. Apply UI configuration changes (synchronous, lightweight)
+            ApplyUIConfiguration(settings);
+
+            // 2. Apply hardware parameter changes (asynchronous, may involve DDC/CI calls)
+            await ApplyHardwareParametersAsync(settings);
+
+            Logger.LogInfo("[Settings] Settings update complete");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to apply settings from UI: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Apply UI-only configuration changes (feature visibility toggles)
+    /// Synchronous, lightweight operation
+    /// </summary>
+    private void ApplyUIConfiguration(PowerDisplaySettings settings)
+    {
+        try
+        {
+            Logger.LogInfo("[Settings] Applying UI configuration changes (feature visibility)");
+
+            foreach (var monitorVm in Monitors)
+            {
+                ApplyFeatureVisibility(monitorVm, settings);
+            }
+
+            // Trigger UI refresh
+            UIRefreshRequested?.Invoke(this, EventArgs.Empty);
+
+            Logger.LogInfo("[Settings] UI configuration applied");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to apply UI configuration: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Apply hardware parameter changes (brightness, color temperature)
+    /// Asynchronous operation that communicates with monitor hardware via DDC/CI
+    /// Note: Contrast and volume are not currently adjustable from Settings UI
+    /// </summary>
+    private async Task ApplyHardwareParametersAsync(PowerDisplaySettings settings)
+    {
+        try
+        {
+            Logger.LogInfo("[Settings] Applying hardware parameter changes");
+
+            var updateTasks = new List<Task>();
+
+            foreach (var monitorVm in Monitors)
+            {
+                var hardwareId = monitorVm.HardwareId;
+                var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m => m.HardwareId == hardwareId);
+
+                if (monitorSettings == null)
+                {
+                    continue;
+                }
+
+                // Apply brightness if changed
+                if (monitorSettings.CurrentBrightness >= 0 &&
+                    monitorSettings.CurrentBrightness != monitorVm.Brightness)
+                {
+                    Logger.LogInfo($"[Settings] Scheduling brightness update for {hardwareId}: {monitorSettings.CurrentBrightness}%");
+
+                    var task = ApplyBrightnessAsync(monitorVm, monitorSettings.CurrentBrightness);
+                    updateTasks.Add(task);
+                }
+
+                // Apply color temperature if changed and feature is enabled
+                if (monitorVm.ShowColorTemperature &&
+                    monitorSettings.ColorTemperature > 0 &&
+                    monitorSettings.ColorTemperature != monitorVm.ColorTemperature)
+                {
+                    Logger.LogInfo($"[Settings] Scheduling color temperature update for {hardwareId}: 0x{monitorSettings.ColorTemperature:X2}");
+
+                    var task = ApplyColorTemperatureAsync(monitorVm, monitorSettings.ColorTemperature);
+                    updateTasks.Add(task);
+                }
+
+                // Note: Contrast and volume are adjusted in real-time via flyout UI,
+                // not from Settings UI, so they don't need IPC handling here
+            }
+
+            // Wait for all hardware updates to complete
+            if (updateTasks.Count > 0)
+            {
+                await Task.WhenAll(updateTasks);
+                Logger.LogInfo($"[Settings] Completed {updateTasks.Count} hardware parameter updates");
+            }
+            else
+            {
+                Logger.LogInfo("[Settings] No hardware parameter changes detected");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to apply hardware parameters: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Apply brightness to a specific monitor
+    /// </summary>
+    private async Task ApplyBrightnessAsync(MonitorViewModel monitorVm, int brightness)
+    {
+        // Use MonitorViewModel's unified method with immediate application (no debounce for IPC)
+        await monitorVm.SetBrightnessAsync(brightness, immediate: true);
+    }
+
+    /// <summary>
+    /// Apply color temperature to a specific monitor
+    /// </summary>
+    private async Task ApplyColorTemperatureAsync(MonitorViewModel monitorVm, int colorTemperature)
+    {
+        // Use MonitorViewModel's unified method
+        await monitorVm.SetColorTemperatureAsync(colorTemperature);
+    }
+
+    /// <summary>
+    /// Apply Settings UI configuration changes (feature visibility toggles only)
+    /// OBSOLETE: Use ApplySettingsFromUI() instead
+    /// </summary>
+    [Obsolete("Use ApplySettingsFromUI() instead - this method only handles UI config, not hardware parameters")]
+    public void ApplySettingsUIConfiguration()
+    {
+        try
+        {
+            Logger.LogInfo("[Settings] Applying Settings UI configuration changes (feature visibility only)");
+
+            // Read current settings
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+
+            // Update feature visibility for each monitor (UI configuration only)
+            foreach (var monitorVm in Monitors)
+            {
+                ApplyFeatureVisibility(monitorVm, settings);
+            }
+
+            // Trigger UI refresh for configuration changes
+            UIRefreshRequested?.Invoke(this, EventArgs.Empty);
+
+            Logger.LogInfo($"[Settings] Settings UI configuration applied, monitor count: {settings.Properties.Monitors.Count}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to apply Settings UI configuration: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Reload monitor settings from configuration - ONLY called at startup
     /// </summary>
     /// <param name="colorTempInitTasks">Optional tasks for color temperature initialization to wait for</param>
     public async Task ReloadMonitorSettingsAsync(List<Task>? colorTempInitTasks = null)
@@ -666,11 +753,12 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            if (Monitors.Count == 0)
-            {
-                Logger.LogInfo("No monitors to save to settings.json");
-                return;
-            }
+            // Load current settings to preserve user preferences (including IsHidden)
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+
+            // Create lookup of existing monitors by HardwareId to preserve settings
+            var existingMonitorSettings = settings.Properties.Monitors
+                .ToDictionary(m => m.HardwareId, m => m);
 
             // Build monitor list using Settings UI's MonitorInfo model
             var monitors = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
@@ -681,8 +769,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     name: vm.Name,
                     internalName: vm.Id,
                     hardwareId: vm.HardwareId,
-                    communicationMethod: GetCommunicationMethodString(vm.Type),
-                    monitorType: vm.Type.ToString(),
+                    communicationMethod: vm.CommunicationMethod,
+                    monitorType: vm.IsInternal ? "Internal" : "External",
                     currentBrightness: vm.Brightness,
                     colorTemperature: vm.ColorTemperature)
                 {
@@ -697,11 +785,28 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                         .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
                 };
 
+                // Preserve user settings from existing monitor if available
+                if (existingMonitorSettings.TryGetValue(vm.HardwareId, out var existingMonitor))
+                {
+                    monitorInfo.IsHidden = existingMonitor.IsHidden;
+                    monitorInfo.EnableColorTemperature = existingMonitor.EnableColorTemperature;
+                    monitorInfo.EnableContrast = existingMonitor.EnableContrast;
+                    monitorInfo.EnableVolume = existingMonitor.EnableVolume;
+                }
+
                 monitors.Add(monitorInfo);
             }
 
-            // Load current settings
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            // Also add hidden monitors from existing settings (monitors that are hidden but still connected)
+            foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden))
+            {
+                // Only add if not already in the list (to avoid duplicates)
+                if (!monitors.Any(m => m.HardwareId == existingMonitor.HardwareId))
+                {
+                    monitors.Add(existingMonitor);
+                    Logger.LogInfo($"[SaveMonitorsToSettings] Preserving hidden monitor in settings: {existingMonitor.Name} (HardwareId: {existingMonitor.HardwareId})");
+                }
+            }
 
             // Update monitors list
             settings.Properties.Monitors = monitors;
@@ -711,12 +816,40 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
 
-            Logger.LogInfo($"Saved {Monitors.Count} monitors to settings.json");
+            Logger.LogInfo($"Saved {monitors.Count} monitors to settings.json ({Monitors.Count} visible, {monitors.Count - Monitors.Count} hidden)");
+
+            // Signal Settings UI that monitor list has been updated
+            SignalMonitorsRefreshEvent();
         }
         catch (Exception ex)
         {
             Logger.LogError($"Failed to save monitors to settings.json: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Signal Settings UI that the monitor list has been refreshed
+    /// </summary>
+    private void SignalMonitorsRefreshEvent()
+    {
+        // TODO: Re-enable when Constants class is properly defined
+        /*
+        try
+        {
+            using (var eventHandle = new System.Threading.EventWaitHandle(
+                false,
+                System.Threading.EventResetMode.AutoReset,
+                Constants.RefreshPowerDisplayMonitorsEvent()))
+            {
+                eventHandle.Set();
+                Logger.LogInfo("Signaled refresh monitors event to Settings UI");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to signal refresh monitors event: {ex.Message}");
+        }
+        */
     }
 
     /// <summary>
@@ -738,12 +871,13 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         else if (info.HasDiscreteValues)
         {
             var formattedValues = info.SupportedValues
-                .Select(v => Core.Utils.VcpValueNames.GetName(code, v))
+                .Select(v => Core.Utils.VcpValueNames.GetFormattedName(code, v))
                 .ToList();
             result.Values = $"Values: {string.Join(", ", formattedValues)}";
             result.HasValues = true;
 
             // Populate value list for Settings UI ComboBox
+            // Store raw name (without formatting) so Settings UI can format it consistently
             result.ValueList = info.SupportedValues
                 .Select(v => new Microsoft.PowerToys.Settings.UI.Library.VcpValueInfo
                 {
@@ -760,16 +894,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         return result;
     }
 
-    private string GetCommunicationMethodString(MonitorType type)
-    {
-        return type switch
-        {
-            MonitorType.External => "DDC/CI",
-            MonitorType.Internal => "WMI",
-            _ => "Unknown",
-        };
-    }
-
     // IDisposable
     public void Dispose()
     {
@@ -777,10 +901,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Cancel all async operations first
             _cancellationTokenSource?.Cancel();
-
-            // Stop file monitoring immediately
-            _settingsWatcher?.Dispose();
-            _settingsWatcher = null;
 
             // No need to flush state - MonitorStateManager now saves directly on each update!
             // State is already persisted, no pending changes to wait for.

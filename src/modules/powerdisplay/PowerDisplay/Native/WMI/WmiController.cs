@@ -30,14 +30,12 @@ namespace PowerDisplay.Native.WMI
 
         public string Name => "WMI Monitor Controller (WmiLight)";
 
-        public MonitorType SupportedType => MonitorType.Internal;
-
         /// <summary>
         /// Check if the specified monitor can be controlled
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
-            if (monitor.Type != MonitorType.Internal)
+            if (monitor.CommunicationMethod != "WMI")
             {
                 return false;
             }
@@ -223,7 +221,7 @@ namespace PowerDisplay.Native.WMI
                             {
                                 Id = $"WMI_{instanceName}",
                                 Name = name,
-                                Type = MonitorType.Internal,
+
                                 CurrentBrightness = currentBrightness,
                                 MinBrightness = 0,
                                 MaxBrightness = 100,

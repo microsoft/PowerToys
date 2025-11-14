@@ -23,8 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public static event EventHandler<AllHotkeyConflictsEventArgs> AllHotkeyConflictsReceived;
 
-        public static event EventHandler<MonitorInfo[]> PowerDisplayMonitorsReceived;
-
         public void RegisterForIPC()
         {
             ShellPage.ShellHandler?.IPCResponseHandleList.Add(ProcessIPCMessage);
@@ -51,10 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     else if (responseType.Equals("all_hotkey_conflicts", StringComparison.Ordinal))
                     {
                         ProcessAllHotkeyConflicts(json);
-                    }
-                    else if (responseType.Equals("powerdisplay_monitors", StringComparison.Ordinal))
-                    {
-                        ProcessPowerDisplayMonitors(json);
                     }
                 }
             }
@@ -204,37 +198,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             return conflictGroup;
-        }
-
-        private void ProcessPowerDisplayMonitors(JsonObject json)
-        {
-            try
-            {
-                var jsonString = json.Stringify();
-                var response = System.Text.Json.JsonSerializer.Deserialize<PowerDisplayMonitorsIPCResponse>(jsonString);
-
-                if (response?.Monitors == null)
-                {
-                    PowerDisplayMonitorsReceived?.Invoke(this, Array.Empty<MonitorInfo>());
-                    return;
-                }
-
-                var monitors = response.Monitors.Select(m =>
-                    new MonitorInfo(
-                        m.Name,
-                        m.InternalName,
-                        m.HardwareId,
-                        m.CommunicationMethod,
-                        m.MonitorType,
-                        m.CurrentBrightness,
-                        m.ColorTemperature)).ToArray();
-
-                PowerDisplayMonitorsReceived?.Invoke(this, monitors);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[IPCResponseService] Failed to parse PowerDisplay monitors response: {ex.Message}");
-            }
         }
     }
 }

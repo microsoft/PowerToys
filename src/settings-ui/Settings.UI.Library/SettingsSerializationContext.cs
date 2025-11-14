@@ -133,7 +133,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(KeyboardKeysProperty))]
     [JsonSerializable(typeof(MonitorInfo))]
     [JsonSerializable(typeof(MonitorInfoData))]
-    [JsonSerializable(typeof(PowerDisplayMonitorsIPCResponse))]
     [JsonSerializable(typeof(PowerDisplayActionMessage))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
     [JsonSerializable(typeof(SndLightSwitchSettings))]

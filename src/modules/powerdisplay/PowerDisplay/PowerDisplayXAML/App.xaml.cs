@@ -162,7 +162,7 @@ namespace PowerDisplay
                         {
                             if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
                             {
-                                _ = mainWindow.ViewModel.ReloadMonitorSettingsAsync();
+                                mainWindow.ViewModel.ApplySettingsFromUI();
                             }
                         });
                     });

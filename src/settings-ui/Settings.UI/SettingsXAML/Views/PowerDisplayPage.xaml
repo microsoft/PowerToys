@@ -123,21 +123,36 @@
                                             x:Uid="PowerDisplay_Monitor_ColorTemperature"
                                             IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
                                             <tkcontrols:SettingsCard.Description>
-                                                <TextBlock
-                                                    Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <StackPanel Spacing="4">
+                                                    <!-- Simple warning message when supported -->
+                                                    <TextBlock
+                                                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                        TextWrapping="Wrap"
+                                                        Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <Run Text="⚠" FontWeight="SemiBold" />
+                                                        <Run Text=" " />
+                                                        <Run Text="Warning: Modifying this setting may cause unpredictable results. Change only if you understand what it does." />
+                                                    </TextBlock>
+                                                    <!-- Not supported message -->
+                                                    <TextBlock
+                                                        Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}"
+                                                        Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </StackPanel>
                                             </tkcontrols:SettingsCard.Description>
                                             <ComboBox
+                                                x:Name="ColorTemperatureComboBox"
                                                 MinWidth="200"
                                                 ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
-                                                SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
+                                                SelectedValue="{x:Bind ColorTemperature, Mode=OneWay}"
                                                 SelectedValuePath="VcpValue"
                                                 DisplayMemberPath="DisplayName"
                                                 PlaceholderText="Not available"
-                                                IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                                IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}"
+                                                SelectionChanged="ColorTemperatureComboBox_SelectionChanged"
+                                                Tag="{x:Bind}">
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}" />
+                                                    <TextBlock Text="Changing this setting requires confirmation" />
                                                 </ToolTipService.ToolTip>
                                             </ComboBox>
                                         </tkcontrols:SettingsCard>
@@ -201,9 +216,8 @@
 
                                         <!-- VCP Capabilities -->
                                         <tkcontrols:SettingsCard
-                                            Header="VCP Capabilities (Debug Info)"
-                                            Description="DDC/CI VCP codes and supported values"
-                                            HeaderIcon="{ui:FontIcon Glyph=&#xE946;}"
+                                            Header="VCP Capabilities"
+                                            Description="DDC/CI VCP codes and supported values (for debugging purposes)"
                                             Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <Button
                                                 Content="&#xE946;"
@@ -214,28 +228,66 @@
                                                 </ToolTipService.ToolTip>
                                                 <Button.Flyout>
                                                     <Flyout ShouldConstrainToRootBounds="False">
-                                                        <ScrollViewer MaxHeight="500" Width="450" VerticalScrollBarVisibility="Auto">
-                                                            <StackPanel Spacing="4">
-                                                                <TextBlock Text="Detected VCP Codes" FontWeight="SemiBold" FontSize="13" />
-                                                                <ItemsControl ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}">
+                                                        <Grid Width="550">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" />
+                                                            </Grid.RowDefinitions>
+                                                            
+                                                            <!-- Header with Copy Button -->
+                                                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                
+                                                                <TextBlock Grid.Column="0"
+                                                                          Text="Detected VCP Codes" 
+                                                                          FontWeight="SemiBold" 
+                                                                          FontSize="13"
+                                                                          VerticalAlignment="Center" />
+                                                                <Button Grid.Column="1"
+                                                                       VerticalAlignment="Center"
+                                                                       Padding="8,4"
+                                                                       Click="CopyVcpCodes_Click"
+                                                                       Tag="{x:Bind}"
+                                                                       ToolTipService.ToolTip="Copy all VCP codes to clipboard">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                                        <FontIcon Glyph="&#xE8C8;" FontSize="12" />
+                                                                        <TextBlock Text="Copy" FontSize="12" />
+                                                                    </StackPanel>
+                                                                </Button>
+                                                            </Grid>
+                                                            
+                                                            <!-- VCP Codes List -->
+                                                            <ScrollViewer Grid.Row="1" 
+                                                                         MaxHeight="500" 
+                                                                         VerticalScrollBarVisibility="Auto"
+                                                                         HorizontalScrollBarVisibility="Disabled"
+                                                                         HorizontalScrollMode="Disabled">
+                                                                <ItemsControl ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}"
+                                                                             HorizontalAlignment="Stretch">
                                                                     <ItemsControl.ItemTemplate>
                                                                         <DataTemplate x:DataType="library:VcpCodeDisplayInfo">
-                                                                            <StackPanel Orientation="Vertical" Margin="0,4">
+                                                                            <StackPanel Orientation="Vertical" 
+                                                                                       Margin="0,4"
+                                                                                       HorizontalAlignment="Stretch">
                                                                                 <TextBlock Text="{x:Bind Title}"
-                                                                                           FontWeight="SemiBold"
-                                                                                           FontSize="11" />
+                                                                                          FontWeight="SemiBold"
+                                                                                          FontSize="11"
+                                                                                          TextWrapping="Wrap" />
                                                                                 <TextBlock Text="{x:Bind Values}"
-                                                                                           FontSize="10"
-                                                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                                           TextWrapping="Wrap"
-                                                                                           Margin="12,2,0,0"
-                                                                                           Visibility="{x:Bind HasValues}" />
+                                                                                          FontSize="10"
+                                                                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                                          TextWrapping="Wrap"
+                                                                                          Margin="12,2,0,0"
+                                                                                          Visibility="{x:Bind HasValues}" />
                                                                             </StackPanel>
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
-                                                            </StackPanel>
-                                                        </ScrollViewer>
+                                                            </ScrollViewer>
+                                                        </Grid>
                                                     </Flyout>
                                                 </Button.Flyout>
                                             </Button>

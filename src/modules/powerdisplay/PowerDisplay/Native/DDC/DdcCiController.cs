@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
+using PowerDisplay.Core.Utils;
 using PowerDisplay.Helpers;
 using static PowerDisplay.Native.NativeConstants;
 using static PowerDisplay.Native.NativeDelegates;
@@ -41,18 +42,11 @@ namespace PowerDisplay.Native.DDC
 
         public string Name => "DDC/CI Monitor Controller";
 
-        public MonitorType SupportedType => MonitorType.External;
-
         /// <summary>
         /// Check if the specified monitor can be controlled
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
-            if (monitor.Type != MonitorType.External)
-            {
-                return false;
-            }
-
             return await Task.Run(
                 () =>
                 {
@@ -193,8 +187,8 @@ namespace PowerDisplay.Native.DDC
                     // Try VCP code 0x14 (Select Color Preset)
                     if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeSelectColorPreset, out uint current, out uint max))
                     {
-                        var presetName = VcpValueNames.GetName(0x14, (int)current);
-                        Logger.LogInfo($"[{monitor.Id}] Color temperature via 0x14: 0x{current:X2} ({presetName})");
+                        var presetName = VcpValueNames.GetFormattedName(0x14, (int)current);
+                        Logger.LogInfo($"[{monitor.Id}] Color temperature via 0x14: {presetName}");
                         return new BrightnessInfo((int)current, 0, (int)max);
                     }
 
@@ -236,10 +230,10 @@ namespace PowerDisplay.Native.DDC
                         }
 
                         // Set VCP 0x14 value
-                        var presetName = VcpValueNames.GetName(0x14, colorTemperature);
+                        var presetName = VcpValueNames.GetFormattedName(0x14, colorTemperature);
                         if (DdcCiNative.TrySetVCPFeature(monitor.Handle, VcpCodeSelectColorPreset, (uint)colorTemperature))
                         {
-                            Logger.LogInfo($"[{monitor.Id}] Set color temperature to 0x{colorTemperature:X2} ({presetName}) via 0x14");
+                            Logger.LogInfo($"[{monitor.Id}] Set color temperature to {presetName} via 0x14");
                             return MonitorOperationResult.Success();
                         }
 

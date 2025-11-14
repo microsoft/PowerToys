@@ -173,7 +173,6 @@ namespace PowerDisplay.Native.DDC
                     Id = monitorId,
                     HardwareId = hardwareId,
                     Name = name.Trim(),
-                    Type = MonitorType.External,
                     CurrentBrightness = brightnessInfo.IsValid ? brightnessInfo.ToPercentage() : 50,
                     MinBrightness = 0,
                     MaxBrightness = 100,

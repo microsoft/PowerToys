@@ -323,7 +323,6 @@ public:
 
             parse_hotkey_settings(values);
             parse_activation_hotkey(values);
-            values.save_to_settings_file();
 
             // Signal settings updated event
             if (m_hSettingsUpdatedEvent)

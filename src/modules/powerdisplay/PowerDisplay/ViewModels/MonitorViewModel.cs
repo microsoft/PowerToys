@@ -49,7 +49,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         switch (propertyName)
         {
-            // ColorTemperature removed - now controlled via Settings UI
             case nameof(Brightness):
                 _brightness = value;
                 OnPropertyChanged(nameof(Brightness));
@@ -63,6 +62,205 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 _volume = value;
                 OnPropertyChanged(nameof(Volume));
                 break;
+            case nameof(ColorTemperature):
+                // Update underlying monitor model
+                _monitor.CurrentColorTemperature = value;
+                OnPropertyChanged(nameof(ColorTemperature));
+                OnPropertyChanged(nameof(ColorTemperaturePresetName));
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Unified method to apply brightness with hardware update and state persistence.
+    /// Can be called from Flyout UI (with debounce) or Settings UI/IPC (immediate).
+    /// </summary>
+    /// <param name="brightness">Brightness value (0-100)</param>
+    /// <param name="immediate">If true, applies immediately; if false, debounces for smooth slider</param>
+    public async Task SetBrightnessAsync(int brightness, bool immediate = false)
+    {
+        brightness = Math.Clamp(brightness, MinBrightness, MaxBrightness);
+
+        // Update UI state immediately for smooth response
+        if (_brightness != brightness)
+        {
+            _brightness = brightness;
+            OnPropertyChanged(nameof(Brightness));
+        }
+
+        // Apply to hardware (with or without debounce)
+        if (immediate)
+        {
+            await ApplyBrightnessToHardwareAsync(brightness);
+        }
+        else
+        {
+            // Debounce for slider smoothness
+            var capturedValue = brightness;
+            _brightnessDebouncer.Debounce(async () => await ApplyBrightnessToHardwareAsync(capturedValue));
+        }
+    }
+
+    /// <summary>
+    /// Unified method to apply contrast with hardware update and state persistence.
+    /// </summary>
+    public async Task SetContrastAsync(int contrast, bool immediate = false)
+    {
+        contrast = Math.Clamp(contrast, MinContrast, MaxContrast);
+
+        if (_contrast != contrast)
+        {
+            _contrast = contrast;
+            OnPropertyChanged(nameof(Contrast));
+            OnPropertyChanged(nameof(ContrastPercent));
+        }
+
+        if (immediate)
+        {
+            await ApplyContrastToHardwareAsync(contrast);
+        }
+        else
+        {
+            var capturedValue = contrast;
+            _contrastDebouncer.Debounce(async () => await ApplyContrastToHardwareAsync(capturedValue));
+        }
+    }
+
+    /// <summary>
+    /// Unified method to apply volume with hardware update and state persistence.
+    /// </summary>
+    public async Task SetVolumeAsync(int volume, bool immediate = false)
+    {
+        volume = Math.Clamp(volume, MinVolume, MaxVolume);
+
+        if (_volume != volume)
+        {
+            _volume = volume;
+            OnPropertyChanged(nameof(Volume));
+        }
+
+        if (immediate)
+        {
+            await ApplyVolumeToHardwareAsync(volume);
+        }
+        else
+        {
+            var capturedValue = volume;
+            _volumeDebouncer.Debounce(async () => await ApplyVolumeToHardwareAsync(capturedValue));
+        }
+    }
+
+    /// <summary>
+    /// Unified method to apply color temperature with hardware update and state persistence.
+    /// Always immediate (no debouncing for discrete preset values).
+    /// </summary>
+    public async Task SetColorTemperatureAsync(int colorTemperature)
+    {
+        try
+        {
+            Logger.LogInfo($"[{HardwareId}] Setting color temperature to 0x{colorTemperature:X2}");
+
+            var result = await _monitorManager.SetColorTemperatureAsync(Id, colorTemperature);
+
+            if (result.IsSuccess)
+            {
+                _monitor.CurrentColorTemperature = colorTemperature;
+                OnPropertyChanged(nameof(ColorTemperature));
+                OnPropertyChanged(nameof(ColorTemperaturePresetName));
+
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "ColorTemperature", colorTemperature);
+                Logger.LogInfo($"[{HardwareId}] Color temperature applied successfully");
+            }
+            else
+            {
+                Logger.LogWarning($"[{HardwareId}] Failed to set color temperature: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{HardwareId}] Exception setting color temperature: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Internal method - applies brightness to hardware and persists state.
+    /// Unified logic for all sources (Flyout, Settings, etc.).
+    /// </summary>
+    private async Task ApplyBrightnessToHardwareAsync(int brightness)
+    {
+        try
+        {
+            Logger.LogDebug($"[{HardwareId}] Applying brightness: {brightness}%");
+
+            var result = await _monitorManager.SetBrightnessAsync(Id, brightness);
+
+            if (result.IsSuccess)
+            {
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Brightness", brightness);
+                Logger.LogTrace($"[{HardwareId}] Brightness applied and saved");
+            }
+            else
+            {
+                Logger.LogWarning($"[{HardwareId}] Failed to set brightness: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{HardwareId}] Exception setting brightness: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Internal method - applies contrast to hardware and persists state.
+    /// </summary>
+    private async Task ApplyContrastToHardwareAsync(int contrast)
+    {
+        try
+        {
+            Logger.LogDebug($"[{HardwareId}] Applying contrast: {contrast}%");
+
+            var result = await _monitorManager.SetContrastAsync(Id, contrast);
+
+            if (result.IsSuccess)
+            {
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Contrast", contrast);
+                Logger.LogTrace($"[{HardwareId}] Contrast applied and saved");
+            }
+            else
+            {
+                Logger.LogWarning($"[{HardwareId}] Failed to set contrast: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{HardwareId}] Exception setting contrast: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Internal method - applies volume to hardware and persists state.
+    /// </summary>
+    private async Task ApplyVolumeToHardwareAsync(int volume)
+    {
+        try
+        {
+            Logger.LogDebug($"[{HardwareId}] Applying volume: {volume}%");
+
+            var result = await _monitorManager.SetVolumeAsync(Id, volume);
+
+            if (result.IsSuccess)
+            {
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Volume", volume);
+                Logger.LogTrace($"[{HardwareId}] Volume applied and saved");
+            }
+            else
+            {
+                Logger.LogWarning($"[{HardwareId}] Failed to set volume: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{HardwareId}] Exception setting volume: {ex.Message}");
         }
     }
 
@@ -108,18 +306,21 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     public string Manufacturer => _monitor.Manufacturer;
 
-    public MonitorType Type => _monitor.Type;
+    public string CommunicationMethod => _monitor.CommunicationMethod;
 
-    public string TypeDisplay => Type == MonitorType.Internal ? "Internal" : "External";
+    public bool IsInternal => _monitor.CommunicationMethod == "WMI";
 
     public string? CapabilitiesRaw => _monitor.CapabilitiesRaw;
 
     public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
 
     /// <summary>
-    /// Gets the icon glyph based on monitor type
+    /// Gets the icon glyph based on communication method
+    /// WMI monitors (laptop internal displays) use laptop icon, others use external monitor icon
     /// </summary>
-    public string MonitorIconGlyph => Type == MonitorType.Internal ? "\uEA37" : "\uE7F4";
+    public string MonitorIconGlyph => _monitor.CommunicationMethod?.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
+        ? "\uEA37" // Laptop icon for WMI
+        : "\uE7F4"; // External monitor icon for DDC/CI and others
 
     // Monitor property ranges
     public int MinBrightness => _monitor.MinBrightness;
@@ -186,24 +387,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             if (_brightness != value)
             {
-                // Update UI state immediately - keep slider smooth
-                _brightness = value;
-                OnPropertyChanged(); // UI responds immediately
-
-                // Debounce hardware update - much simpler than complex queue!
-                var capturedValue = value; // Capture value for async closure
-                _brightnessDebouncer.Debounce(async () =>
-                {
-                    try
-                    {
-                        await _monitorManager.SetBrightnessAsync(Id, capturedValue);
-                        _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Brightness", capturedValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to set brightness for {Id}: {ex.Message}");
-                    }
-                });
+                // Use unified method with debouncing for smooth slider
+                _ = SetBrightnessAsync(value, immediate: false);
             }
         }
     }
@@ -215,6 +400,11 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public int ColorTemperature => _monitor.CurrentColorTemperature;
 
+    /// <summary>
+    /// Human-readable color temperature preset name (e.g., "6500K", "sRGB")
+    /// </summary>
+    public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
+
     public int Contrast
     {
         get => _contrast;
@@ -222,23 +412,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             if (_contrast != value)
             {
-                _contrast = value;
-                OnPropertyChanged();
-
-                // Debounce hardware update
-                var capturedValue = value;
-                _contrastDebouncer.Debounce(async () =>
-                {
-                    try
-                    {
-                        await _monitorManager.SetContrastAsync(Id, capturedValue);
-                        _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Contrast", capturedValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to set contrast for {Id}: {ex.Message}");
-                    }
-                });
+                // Use unified method with debouncing
+                _ = SetContrastAsync(value, immediate: false);
             }
         }
     }
@@ -250,23 +425,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             if (_volume != value)
             {
-                _volume = value;
-                OnPropertyChanged();
-
-                // Debounce hardware update
-                var capturedValue = value;
-                _volumeDebouncer.Debounce(async () =>
-                {
-                    try
-                    {
-                        await _monitorManager.SetVolumeAsync(Id, capturedValue);
-                        _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Volume", capturedValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to set volume for {Id}: {ex.Message}");
-                    }
-                });
+                // Use unified method with debouncing
+                _ = SetVolumeAsync(value, immediate: false);
             }
         }
     }
