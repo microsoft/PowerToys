@@ -64,6 +64,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public string Title { get => string.IsNullOrEmpty(field) ? Name : field; protected set; } = string.Empty;
 
+    public string Id { get; protected set; } = string.Empty;
+
     // This property maps to `IPage.IsLoading`, but we want to expose our own
     // `IsLoading` property as a combo of this value and `IsInitialized`
     public bool ModelIsLoading { get; protected set; } = true;
@@ -82,6 +84,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         PageContext = new(this);
         ExtensionHost = extensionHost;
         Icon = new(null);
+        Id = model?.Id ?? string.Empty;
 
         ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
         UpdateHasStatusMessage();
