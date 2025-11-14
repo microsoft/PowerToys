@@ -191,6 +191,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
+
+            if (legacyCredential is null)
+            {
+                if (legacyAdvancedAIConsumed)
+                {
+                    SaveAndNotifySettings();
+                }
+
+                return;
+            }
+
             var configuration = properties.PasteAIConfiguration;
             if (configuration is null)
             {
@@ -198,26 +210,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 properties.PasteAIConfiguration = configuration;
             }
 
-            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
-
-            if (legacyCredential is null && !legacyAdvancedAIConsumed)
-            {
-                return;
-            }
-
             bool configurationUpdated = false;
 
-            const string openAIServiceType = "OpenAI";
-            PasteAIProviderDefinition openAIProvider = configuration?.Providers?.FirstOrDefault(
-                provider => string.Equals(provider.ServiceType, openAIServiceType, StringComparison.OrdinalIgnoreCase));
-
-            bool shouldEnsureOpenAIProvider = legacyCredential is not null;
-            if (shouldEnsureOpenAIProvider)
-            {
-                var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
-                openAIProvider = ensureResult.Provider;
-                configurationUpdated |= ensureResult.Updated;
-            }
+            var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
+            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            configurationUpdated |= ensureResult.Updated;
 
             if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
             {
@@ -231,7 +228,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 RemoveLegacyOpenAICredential();
             }
 
-            bool shouldEnableAI = legacyCredential is not null;
+            const bool shouldEnableAI = true;
             bool enabledChanged = false;
             if (properties.IsAIEnabled != shouldEnableAI)
             {

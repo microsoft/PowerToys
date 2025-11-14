@@ -168,6 +168,15 @@ namespace AdvancedPaste.Settings
             }
 
             var properties = settings.Properties;
+            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
+            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
+
+            if (legacyCredential is null)
+            {
+                return legacyAdvancedAIConsumed;
+            }
+
             var configuration = properties.PasteAIConfiguration;
 
             if (configuration is null)
@@ -176,28 +185,11 @@ namespace AdvancedPaste.Settings
                 properties.PasteAIConfiguration = configuration;
             }
 
-            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
-            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
-            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
-
-            if (legacyCredential is null && !legacyAdvancedAIConsumed)
-            {
-                return false;
-            }
-
             bool configurationUpdated = false;
 
-            const string openAIServiceType = "OpenAI";
-            PasteAIProviderDefinition openAIProvider = configuration?.Providers?.FirstOrDefault(
-                provider => string.Equals(provider.ServiceType, openAIServiceType, StringComparison.OrdinalIgnoreCase));
-
-            bool shouldEnsureOpenAIProvider = legacyCredential is not null;
-            if (shouldEnsureOpenAIProvider)
-            {
-                var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
-                openAIProvider = ensureResult.Provider;
-                configurationUpdated |= ensureResult.Updated;
-            }
+            var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
+            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            configurationUpdated |= ensureResult.Updated;
 
             if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
             {
@@ -205,13 +197,13 @@ namespace AdvancedPaste.Settings
                 configurationUpdated = true;
             }
 
-            if (legacyCredential is not null && openAIProvider is not null)
+            if (openAIProvider is not null)
             {
                 StoreMigratedOpenAICredential(openAIProvider.Id, openAIProvider.ServiceType, legacyCredential.Password);
                 RemoveLegacyOpenAICredential();
             }
 
-            bool shouldEnableAI = legacyCredential is not null;
+            const bool shouldEnableAI = true;
             bool enabledUpdated = false;
             if (properties.IsAIEnabled != shouldEnableAI)
             {
