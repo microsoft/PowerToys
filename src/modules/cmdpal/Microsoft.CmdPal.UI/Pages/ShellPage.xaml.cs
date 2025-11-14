@@ -689,7 +689,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new(FromEscape: true));
             e.Handled = true;
         }
     }
