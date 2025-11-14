@@ -38,6 +38,11 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 - [Update Process](processes/update-process.md) - How PowerToys updates work
 - [GPO Implementation](processes/gpo.md) - Group Policy Objects implementation details
 
+## Other Resources
+
+- [aka.ms links](akaLinks.md) - List of short links
+- [Issue/PR commands](commands.md) - Special commands for managing issues and pull requests
+
 ## Fork, Clone, Branch and Create your PR
 
 Once you've discussed your proposed feature/fix/etc. with a team member, and an approach or a spec has been written and approved, it's time to start development:
