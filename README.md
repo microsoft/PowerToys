@@ -109,7 +109,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 **✨ Highlights**
  - Advanced Paste now supports multiple AI providers instead of being limited to a single OpenAI provider.
- - **NEW:** The **Cursor Wrap** utility Cursor Wrap makes it simple to move the mouse from one edge of a display (or set of displays) to the opposite edge of the display stack.
  - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
  - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
  - Peek can now be activated from the command line.
@@ -154,9 +153,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Window Walker: UWP apps no longer show a "not responding" label when suspended. — Thanks [@jiripolasek](https://github.com/jiripolasek).
  - Window Walker: Now displays the actual icon of each window rather than using the process icon, improving recognition of PWAs and Python GUIs. — Thanks [@Lee-WonJun](https://github.com/Lee-WonJun).
 - Windows Terminal profiles: Fixed a rare crash in the Windows Terminal extension when the `LOCALAPPDATA` environment variable was missing. The path is now retrieved via a reliable API. — Thanks [@jiripolasek](https://github.com/jiripolasek).
-
-### Cursor Wrap **NEW**
- - A new Cursor Wrap module lets your mouse pointer move seamlessly from one edge of the screen to the opposite edge. Thanks [@mikehall-ms](https://github.com/mikehall-ms).
 
 ### Find My Mouse
  - Activating Find My Mouse no longer makes the cursor change to the busy (hourglass) icon or steals focus from your active application.
