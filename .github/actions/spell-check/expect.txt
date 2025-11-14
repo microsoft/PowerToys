@@ -393,6 +393,7 @@ devpal
 dfx
 DIALOGEX
 digicert
+diffs
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -988,6 +989,7 @@ mdtext
 mdtxt
 mdwn
 meme
+mcp
 memicmp
 MENUITEMINFO
 MENUITEMINFOW
@@ -1077,6 +1079,8 @@ multizone
 muxc
 MVPs
 mvvm
+myorg
+myrepo
 MVVMTK
 MWBEx
 MYICON
@@ -1296,6 +1300,7 @@ phwnd
 pici
 pidl
 PIDLIST
+PII
 pinfo
 pinvoke
 pipename
@@ -1494,6 +1499,7 @@ riid
 RKey
 RNumber
 rop
+rollups
 ROUNDSMALL
 ROWSETEXT
 rpcrt
@@ -2095,6 +2101,7 @@ xmp
 XTimer
 XUP
 XVIRTUALSCREEN
+XXL
 xxxxxx
 YAxis
 ycombinator
