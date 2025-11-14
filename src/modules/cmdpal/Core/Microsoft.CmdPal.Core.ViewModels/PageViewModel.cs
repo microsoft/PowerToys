@@ -84,7 +84,6 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         PageContext = new(this);
         ExtensionHost = extensionHost;
         Icon = new(null);
-        Id = model?.Id ?? string.Empty;
 
         ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
         UpdateHasStatusMessage();
@@ -145,6 +144,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
             return; // throw?
         }
 
+        Id = page.Id;
         Name = page.Name;
         ModelIsLoading = page.IsLoading;
         Title = page.Title;
