@@ -92,7 +92,6 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getAllowedAdvancedPasteAzureAIInferenceValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteAzureAIInferenceValue()) << std::endl;
     report << "getAllowedAdvancedPasteMistralValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteMistralValue()) << std::endl;
     report << "getAllowedAdvancedPasteGoogleValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteGoogleValue()) << std::endl;
-    report << "getAllowedAdvancedPasteAnthropicValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteAnthropicValue()) << std::endl;
     report << "getAllowedAdvancedPasteOllamaValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteOllamaValue()) << std::endl;
     report << "getAllowedAdvancedPasteFoundryLocalValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowedAdvancedPasteFoundryLocalValue()) << std::endl;
     report << "getConfiguredMwbClipboardSharingEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbClipboardSharingEnabledValue()) << std::endl;

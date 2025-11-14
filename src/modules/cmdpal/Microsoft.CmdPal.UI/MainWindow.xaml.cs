@@ -68,7 +68,6 @@ public sealed partial class MainWindow : WindowEx,
     public MainWindow()
     {
         InitializeComponent();
-        HideWindow();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 

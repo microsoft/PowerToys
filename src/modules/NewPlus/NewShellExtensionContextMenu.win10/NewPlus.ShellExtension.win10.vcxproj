@@ -46,7 +46,7 @@
       <PreprocessorDefinitions>_DEBUG;NEWPLUSSHELLEXTENSIONWIN10_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories);..\NewShellExtensionContextMenu;$(MSBuildThisFileDirectory)Generated Files</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories);..\NewShellExtensionContextMenu;$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
       <CompileAsWinRT>false</CompileAsWinRT>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
@@ -67,7 +67,7 @@
       <PreprocessorDefinitions>NDEBUG;NEWPLUSSHELLEXTENSIONWIN10_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories);..\NewShellExtensionContextMenu;$(MSBuildThisFileDirectory)Generated Files</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories);..\NewShellExtensionContextMenu;$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
       <CompileAsWinRT>false</CompileAsWinRT>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
