@@ -109,9 +109,9 @@ namespace MouseWithoutBorders.Class
 
                         var shouldReopenSockets = false;
 
-                        if (Common.MyKey != _properties.SecurityKey.Value)
+                        if (Encryption.MyKey != _properties.SecurityKey.Value)
                         {
-                            Common.MyKey = _properties.SecurityKey.Value;
+                            Encryption.MyKey = _properties.SecurityKey.Value;
                             shouldReopenSockets = true;
                         }
 
@@ -489,7 +489,7 @@ namespace MouseWithoutBorders.Class
                     }
                     else
                     {
-                        string randomKey = Common.CreateDefaultKey();
+                        string randomKey = Encryption.CreateDefaultKey();
                         _properties.SecurityKey.Value = randomKey;
 
                         return randomKey;
@@ -1055,7 +1055,7 @@ namespace MouseWithoutBorders.Class
 
                     if (machineId == 0)
                     {
-                        var newMachineId = Common.Ran.Next();
+                        var newMachineId = Encryption.Ran.Next();
                         _properties.MachineID.Value = newMachineId;
                         machineId = newMachineId;
                         if (!PauseInstantSaving)

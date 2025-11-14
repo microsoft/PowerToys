@@ -112,12 +112,12 @@ namespace MouseWithoutBorders.Class
             uint scanCode = 0;
 
             // http://msdn.microsoft.com/en-us/library/ms644967(VS.85).aspx
-            if ((kd.dwFlags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
+            if ((kd.dwFlags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP)
             {
                 dwFlags = NativeMethods.KEYEVENTF.KEYUP;
             }
 
-            if ((kd.dwFlags & (int)Common.LLKHF.EXTENDED) == (int)Common.LLKHF.EXTENDED)
+            if ((kd.dwFlags & (int)WM.LLKHF.EXTENDED) == (int)WM.LLKHF.EXTENDED)
             {
                 dwFlags |= NativeMethods.KEYEVENTF.EXTENDEDKEY;
             }
@@ -173,44 +173,44 @@ namespace MouseWithoutBorders.Class
             mouse_input.mi.dy = (int)dy;
             mouse_input.mi.mouseData = md.WheelDelta;
 
-            if (md.dwFlags != Common.WM_MOUSEMOVE)
+            if (md.dwFlags != WM.WM_MOUSEMOVE)
             {
                 Logger.LogDebug($"InputSimulation.SendMouse: x = {md.X}, y = {md.Y}, WheelDelta = {md.WheelDelta}, dwFlags = {md.dwFlags}.");
             }
 
             switch (md.dwFlags)
             {
-                case Common.WM_MOUSEMOVE:
+                case WM.WM_MOUSEMOVE:
                     mouse_input.mi.dwFlags |= (int)(NativeMethods.MOUSEEVENTF.MOVE | NativeMethods.MOUSEEVENTF.ABSOLUTE);
                     break;
-                case Common.WM_LBUTTONDOWN:
+                case WM.WM_LBUTTONDOWN:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.LEFTDOWN;
                     break;
-                case Common.WM_LBUTTONUP:
+                case WM.WM_LBUTTONUP:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.LEFTUP;
                     break;
-                case Common.WM_RBUTTONDOWN:
+                case WM.WM_RBUTTONDOWN:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.RIGHTDOWN;
                     break;
-                case Common.WM_RBUTTONUP:
+                case WM.WM_RBUTTONUP:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.RIGHTUP;
                     break;
-                case Common.WM_MBUTTONDOWN:
+                case WM.WM_MBUTTONDOWN:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.MIDDLEDOWN;
                     break;
-                case Common.WM_MBUTTONUP:
+                case WM.WM_MBUTTONUP:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.MIDDLEUP;
                     break;
-                case Common.WM_MOUSEWHEEL:
+                case WM.WM_MOUSEWHEEL:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.WHEEL;
                     break;
-                case Common.WM_MOUSEHWHEEL:
+                case WM.WM_MOUSEHWHEEL:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.HWHEEL;
                     break;
-                case Common.WM_XBUTTONUP:
+                case WM.WM_XBUTTONUP:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.XUP;
                     break;
-                case Common.WM_XBUTTONDOWN:
+                case WM.WM_XBUTTONDOWN:
                     mouse_input.mi.dwFlags |= (int)NativeMethods.MOUSEEVENTF.XDOWN;
                     break;
 
@@ -373,7 +373,7 @@ namespace MouseWithoutBorders.Class
         {
             eatKey = false;
 
-            if ((flags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
+            if ((flags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP)
             {
                 switch ((VK)vkCode)
                 {

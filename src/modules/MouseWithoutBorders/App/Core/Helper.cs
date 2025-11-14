@@ -290,7 +290,7 @@ internal static class Helper
             return;
         }
 
-        if (!Common.IsMyDesktopActive())
+        if (!WinAPI.IsMyDesktopActive())
         {
             return;
         }
@@ -314,7 +314,7 @@ internal static class Helper
             _ = Launch.CreateProcessInInputDesktopSession(
                 $"\"{Path.GetDirectoryName(Application.ExecutablePath)}\\{HelperProcessName}.exe\"",
                 string.Empty,
-                Common.GetInputDesktop(),
+                WinAPI.GetInputDesktop(),
                 0);
 
             Clipboard.HasSwitchedMachineSinceLastCopy = true;
@@ -379,7 +379,7 @@ internal static class Helper
         log += "=============================================================================================================================\r\n";
         log += $"{Application.ProductName} version {Application.ProductVersion}\r\n";
 
-        log += $"{Setting.Values.Username}/{Common.GetDebugInfo(Common.MyKey)}\r\n";
+        log += $"{Setting.Values.Username}/{Encryption.GetDebugInfo(Encryption.MyKey)}\r\n";
         log += $"{Common.MachineName}/{Common.MachineID}/{Common.DesMachineID}\r\n";
         log += $"Id: {Setting.Values.DeviceId}\r\n";
         log += $"Matrix: {string.Join(",", MachineStuff.MachineMatrix)}\r\n";

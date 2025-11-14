@@ -42,7 +42,7 @@ namespace MouseWithoutBorders
 
         protected string GetSecureKey()
         {
-            return Common.MyKey;
+            return Encryption.MyKey;
         }
 
         private void BackButton_Click(object sender, EventArgs e)
