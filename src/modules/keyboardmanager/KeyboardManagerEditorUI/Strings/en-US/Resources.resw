@@ -156,34 +156,31 @@
   <data name="RemappingsPage_NewKeys" xml:space="preserve">
     <value>New key(s)</value>
   </data>
-  <data name="TextPage_Instruction" xml:space="preserve">
+  <data name="TextPageInstructionTextBlock.Text" xml:space="preserve">
     <value>Text shortcuts allow you to insert text in any input field when you use the configured keyboard shortcut</value>
   </data>
-  <data name="TextPage_NewText" xml:space="preserve">
+  <data name="TextPageNewTextBlock.Text" xml:space="preserve">
     <value>New</value>
   </data>
-  <data name="TextPage_OriginalKeys" xml:space="preserve">
+  <data name="TextPageOriginalKeysTextBlock.Text" xml:space="preserve">
     <value>Original key(s)</value>
   </data>
-  <data name="TextPage_ApplicableApps" xml:space="preserve">
+  <data name="TextPageApplicableAppsTextBlock.Text" xml:space="preserve">
     <value>Applicable apps</value>
   </data>
-  <data name="TextPage_Text" xml:space="preserve">
+  <data name="TextPageTextTextBlock.Text" xml:space="preserve">
     <value>Text</value>
   </data>
-  <data name="TextPage_DeleteTip" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="TextPage_KeyDialogTitle" xml:space="preserve">
+  <data name="TextPageKeyDialog.Title" xml:space="preserve">
     <value>Text shortcut</value>
   </data>
-  <data name="TextPage_KeyDialogPrimary" xml:space="preserve">
+  <data name="TextPageKeyDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="TextPage_KeyDialogSecondary" xml:space="preserve">
+  <data name="TextPageKeyDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="TextPage_ValidationTipClose" xml:space="preserve">
+  <data name="TextPageValidationTip.CloseButtonContent" xml:space="preserve">
     <value>OK</value>
   </data>
   <data name="ProgramsPage_Instruction" xml:space="preserve">
@@ -305,5 +302,8 @@
   </data>
   <data name="TextPageInputControl_TextContentBoxHeader" xml:space="preserve">
     <value>Text to insert</value>
+  </data>
+  <data name="TextPageDeleteButton.ToolTipSevice.ToolTip" xml:space="preserve">
+    <value>Delete</value>
   </data>
 </root>

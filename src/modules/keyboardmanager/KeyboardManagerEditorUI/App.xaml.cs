@@ -39,6 +39,7 @@ namespace KeyboardManagerEditorUI
         /// </summary>
         public App()
         {
+            global::System.Diagnostics.Debugger.Break();
             this.InitializeComponent();
 
             Task.Run(() =>
