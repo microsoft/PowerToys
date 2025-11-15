@@ -73,18 +73,18 @@ $repoRoot = $scriptDir
 
 # Navigate up from the script location to find the repo root
 # Script is typically in tools\build, so go up two levels
-while ($repoRoot -and -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
+while ($repoRoot -and -not (Test-Path (Join-Path $repoRoot "PowerToys.slnx"))) {
     $parentDir = Split-Path -Parent $repoRoot
     if ($parentDir -eq $repoRoot) {
-        # Reached the root of the drive, PowerToys.sln not found
+        # Reached the root of the drive, PowerToys.slnx not found
         Write-Error "Could not find PowerToys repository root. Make sure this script is in the PowerToys repository."
         exit 1
     }
     $repoRoot = $parentDir
 }
 
-if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
-    Write-Error "Could not locate PowerToys.sln. Please ensure this script is run from within the PowerToys repository."
+if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.slnx"))) {
+    Write-Error "Could not locate PowerToys.slnx. Please ensure this script is run from within the PowerToys repository."
     exit 1
 }
 
@@ -102,7 +102,7 @@ if (Test-Path $cmdpalOutputPath) {
 
 $commonArgs = '/p:CIBuild=true'
 # No local projects found (or continuing) - build full solution and tools
-RestoreThenBuild 'PowerToys.sln' $commonArgs $Platform $Configuration
+RestoreThenBuild 'PowerToys.slnx' $commonArgs $Platform $Configuration
 
 $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
 $msixFiles = Get-ChildItem -Path $msixSearchRoot -Recurse -Filter *.msix |
@@ -141,10 +141,10 @@ try {
     Pop-Location
 }
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
+RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
 
 Write-Host '[PIPELINE] Completed'

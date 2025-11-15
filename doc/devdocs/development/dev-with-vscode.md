@@ -42,10 +42,10 @@ Or reach out to "tools\build\BUILD-GUIDELINES.md"
 ### Sample plain msbuild command
 ```powershell
 # Restore:
-msbuild powertoys.sln -t:restore -p:configuration=debug -p:platform=x64 -m
+msbuild powertoys.slnx -t:restore -p:configuration=debug -p:platform=x64 -m
 
-# Build powertoys sln
-msbuild powertoys.sln -p:configuration=debug -p:platform=x64 -m
+# Build powertoys slnx
+msbuild powertoys.slnx -p:configuration=debug -p:platform=x64 -m
 
 # dotnet project
 msbuild src\settings-ui\Settings.UI\PowerToys.Settings.csproj -p:Platform=x64 -p:Configuration=Debug -m
@@ -122,7 +122,7 @@ Similar for attach to managed code.
 
 | Task | Command / Action | Notes |
 |------|------------------|-------|
-| Clean | `git clean -xdf` (careful) or `msbuild /t:Clean PowerToys.sln` | Deep clean removes packages & build outputs |
+| Clean | `git clean -xdf` (careful) or `msbuild /t:Clean PowerToys.slnx` | Deep clean removes packages & build outputs |
 | Rebuild single project | `msbuild path\to\proj.vcxproj /t:Rebuild -p:Platform=x64 -p:Configuration=Debug` | Faster than whole solution |
 | Generate installer (rare in inner loop) | See `tools\build\build-installer.ps1` | Usually not needed for local debug |
 | Resource conversion errors | Re-run restore + build | Triggers custom PowerShell targets |

@@ -12,7 +12,7 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
 
 ## When to use which
 1) `build-essentials.ps1`
-   - Restores NuGet for `PowerToys.sln` and builds essentials (runner, settings).
+   - Restores NuGet for `PowerToys.slnx` and builds essentials (runner, settings).
    - Auto-detects Platform; initializes VS Dev environment automatically.
    - Example (PowerShell):
      - `./tools/build/build-essentials.ps1`

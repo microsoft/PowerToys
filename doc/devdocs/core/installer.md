@@ -134,7 +134,7 @@ If you prefer, you can alternatively build prerequisite projects for the install
 
 #### Locally compiling the installer
 
-1. Open `installer\PowerToysSetup.sln`
+1. Open `installer\PowerToysSetup.slnx`
 1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 1. From the `Build` menu choose `Build Solution`.
 
@@ -144,9 +144,9 @@ To build the installer from the command line, run `Developer Command Prompt for 
 
 ```
 git clean -xfd  -e *exe -- .\installer\
-MSBuild -t:restore  .\installer\PowerToysSetup.sln -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
-MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysInstallerVNext /p:Configuration=Release /p:Platform="x64"
-MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysBootstrapperVNext /p:Configuration=Release /p:Platform="x64" 
+MSBuild -t:restore  .\installer\PowerToysSetup.slnx -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
+MSBuild -t:Restore -m .\installer\PowerToysSetup.slnx /t:PowerToysInstallerVNext /p:Configuration=Release /p:Platform="x64"
+MSBuild -t:Restore -m .\installer\PowerToysSetup.slnx /t:PowerToysBootstrapperVNext /p:Configuration=Release /p:Platform="x64" 
 ```
 
 ### Supported arguments for the .EXE Bootstrapper installer

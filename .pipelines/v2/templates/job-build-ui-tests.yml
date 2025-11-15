@@ -74,7 +74,7 @@ jobs:
       command: restore
       feedsToUse: config
       configPath: nuget.config
-      restoreSolution: PowerToys.sln
+      restoreSolution: PowerToys.slnx
       restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
   # Build all UI test projects if no specific modules are specified

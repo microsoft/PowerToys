@@ -80,7 +80,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 
 ### Install Visual Studio dependencies
 
-1. Open the `PowerToys.sln` file.
+1. Open the `PowerToys.slnx` file.
 1. If you see a dialog that says `install extra components` in the solution explorer pane, click `install`
 
 ### Get Submodules to compile
@@ -93,7 +93,7 @@ We have submodules that need to be initialized before you can compile most parts
 
 ### Compiling Source Code
 
-- Open `PowerToys.sln` in Visual Studio.
+- Open `PowerToys.slnx` in Visual Studio.
 - In the `Solutions Configuration` drop-down menu select `Release` or `Debug`.
 - From the `Build` menu choose `Build Solution`, or press <kbd>Control</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> on your keyboard.
 - The build process may take several minutes depending on your computer's performance. Once it completes, the PowerToys binaries will be in your repo under `x64\Release\`.
@@ -107,10 +107,10 @@ Our installer is two parts, an EXE and an MSI.  The EXE (Bootstrapper) contains 
 
 The installer can only be compiled in `Release` mode; steps 1 and 2 must be performed before the MSI can be compiled.
 
-1. Compile `PowerToys.sln`. Instructions are listed above.
+1. Compile `PowerToys.slnx`. Instructions are listed above.
 1. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
 1. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
-1. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
+1. Compile `PowerToysSetup.slnx` Path from root: `installer\PowerToysSetup.slnx` (details listed below)
 
 See [Installer](core/installer.md) for more details on building and debugging the installer.
 

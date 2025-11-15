@@ -55,3 +55,12 @@ steps:
     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
     restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
     includeNuGetOrg: false
+
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages (slnx)'
+  inputs:
+    command: 'restore'
+    feedsToUse: 'config'
+    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+    restoreSolution: '$(build.sourcesdirectory)\**\*.slnx'
+    includeNuGetOrg: false

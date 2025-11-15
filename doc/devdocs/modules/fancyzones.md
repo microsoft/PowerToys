@@ -161,7 +161,7 @@ FancyZones is divided into several projects:
    ```
    git clone https://github.com/microsoft/PowerToys.git
    ```
-2. Open `PowerToys.sln` in Visual Studio
+2. Open `PowerToys.slnx` in Visual Studio
 3. Select the Release configuration and build the solution
 4. If you encounter build errors, try deleting the x64 output folder and rebuild
 
@@ -244,7 +244,7 @@ UI tests are implemented using [Windows Application Driver](https://github.com/m
   
   - Exit PowerToys if it's running
   - Run WinAppDriver.exe from the installation directory. Skip this step if installed in the default directory (`C:\Program Files (x86)\Windows Application Driver`); in this case, it'll be launched automatically during tests.
-  - Open `PowerToys.sln` in Visual Studio and build the solution.
+  - Open `PowerToys.slnx` in Visual Studio and build the solution.
   - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
 >Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.

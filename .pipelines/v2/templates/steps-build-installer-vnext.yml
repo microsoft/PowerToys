@@ -35,7 +35,7 @@ steps:
   - task: VSBuild@1
     displayName: Build Shared Support DLLs
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
+      solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysSetupCustomActionsVNext;SilentFilesInUseBAFunction
@@ -74,7 +74,7 @@ steps:
   - task: VSBuild@1
     displayName: 💻 Build VNext MSI
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
+      solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 17.0
       msbuildArgs: >-
         -restore
@@ -91,7 +91,7 @@ steps:
   - task: VSBuild@1
     displayName: 👤 Build VNext MSI
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
+      solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
@@ -142,7 +142,7 @@ steps:
   - task: VSBuild@1
     displayName: 💻 Build VNext Bootstrapper
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
+      solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 17.0
       msbuildArgs: >-
         -restore
@@ -159,7 +159,7 @@ steps:
   - task: VSBuild@1
     displayName: 👤 Build VNext Bootstrapper
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
+      solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysBootstrapperVNext

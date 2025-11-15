@@ -56,7 +56,7 @@ if ($IsAzurePipelineBuild) {
 }
 
 if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
-  & $nugetPath restore (Join-Path $PSScriptRoot "..\..\..\..\..\PowerToys.sln")
+  & $nugetPath restore (Join-Path $PSScriptRoot "..\..\..\..\..\PowerToys.slnx")
 
   Try {
     foreach ($config in $Configuration.Split(",")) {
