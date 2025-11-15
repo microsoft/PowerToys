@@ -88,48 +88,48 @@
                 </Grid.ColumnDefinitions>
                 <FontIcon
                     HorizontalAlignment="Center"
-                    FontSize="36"
-                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                    Glyph="&#xE620;" />
+                    FontSize="28"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xEB3B;" />
                 <TextBlock
                     Grid.Row="1"
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
                     <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
-                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A rich set of extensions supercharge Command Palette to be more productive" />
+                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Powerful extensions help you do more" />
                 </TextBlock>
 
                 <FontIcon
                     Grid.Column="1"
                     HorizontalAlignment="Center"
-                    FontSize="36"
-                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                    Glyph="&#xE620;" />
+                    FontSize="28"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE945;" />
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
-                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A rich set of extensions supercharge Command Palette to be more productive" />
+                    <Run FontWeight="SemiBold" Text="Fast" /> <LineBreak />
+                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Find files and launch apps in an instant" />
                 </TextBlock>
 
                 <FontIcon
                     Grid.Column="2"
                     HorizontalAlignment="Center"
-                    FontSize="36"
-                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                    Glyph="&#xE620;" />
+                    FontSize="28"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE790;" />
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="2"
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
-                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A rich set of extensions supercharge Command Palette to be more productive" />
+                    <Run FontWeight="SemiBold" Text="Beautiful" /> <LineBreak />
+                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="A modern experience that feels right at home on Windows" />
                 </TextBlock>
             </Grid>
 
@@ -138,35 +138,33 @@
                 Name="CmdPalEnableCmdPal"
                 x:Uid="CmdPal_Enable_CmdPal"
                 Grid.Row="5"
-                Margin="64,0,0,0"
                 HorizontalAlignment="Stretch"
                 HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
                 <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
             </tkcontrols:SettingsCard>
-            <tkcontrols:SettingsCard Grid.Row="6" Header="Try Command Palette now">
+            <tkcontrols:SettingsCard
+                Grid.Row="6"
+                Header="Open Command Palette"
+                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                 <tkcontrols:SettingsCard.Description>
                     <HyperlinkButton
                         x:Name="CmdPalSettingsDeeplink"
                         Click="CmdPalSettingsDeeplink_Click"
-                        Content="Open Command Palette settings"
+                        Content="Configure Command Palette settings"
                         IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
                 </tkcontrols:SettingsCard.Description>
                 <StackPanel
-                    Margin="0,16,0,0"
                     HorizontalAlignment="Center"
                     Orientation="Horizontal"
                     Spacing="8">
-                    <Button
-                        Content="Launch"
-                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                        Style="{StaticResource AccentButtonStyle}" />
+                    <Button Content="Launch" Style="{StaticResource AccentButtonStyle}" />
                     <controls:ShortcutWithTextLabelControl
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Keys="{x:Bind Path=ViewModel.Hotkey.GetKeysList(), Mode=OneWay}"
                         LabelPlacement="Before"
-                        Text="or use" />
+                        Tapped="ShortcutWithTextLabelControl_Tapped"
+                        Text="or" />
                 </StackPanel>
             </tkcontrols:SettingsCard>
         </Grid>

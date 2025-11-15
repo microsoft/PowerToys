@@ -70,5 +70,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             string launchArgs = "x-cmdpal://settings";
             LaunchApp(launchPath, launchArgs);
         }
+
+        private void ShortcutWithTextLabelControl_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            // Launch CmdPal settings window as normal user using explorer
+            string launchPath = "explorer.exe";
+            string launchArgs = "x-cmdpal://settings";
+            LaunchApp(launchPath, launchArgs);
+        }
+
+        private void LaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            // Launch CmdPal settings window as normal user using explorer
+            string launchPath = "explorer.exe";
+            string launchArgs = "x-cmdpal";
+            LaunchApp(launchPath, launchArgs);
+        }
     }
 }
