@@ -523,4 +523,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
     <value>Command Palette - Fatal error</value>
   </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Header" xml:space="preserve">
+    <value>Include in the Global result</value>
+  </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
+    <value>Show results on queries without direct activation command</value>
+  </data>
 </root>
