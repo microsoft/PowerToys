@@ -237,8 +237,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.LiveZoomToggleKey.Value = value ?? ZoomItProperties.DefaultLiveZoomToggleKey;
                     OnPropertyChanged(nameof(LiveZoomToggleKey));
+                    OnPropertyChanged(nameof(LiveZoomToggleKeyDraw));
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public HotkeySettings LiveZoomToggleKeyDraw
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.LiveZoomToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Shift: if Shift is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift,  // XOR with Shift
+                    baseKey.Code);
             }
         }
 
@@ -265,8 +286,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.RecordToggleKey.Value = value ?? ZoomItProperties.DefaultRecordToggleKey;
                     OnPropertyChanged(nameof(RecordToggleKey));
+                    OnPropertyChanged(nameof(RecordToggleKeyCrop));
+                    OnPropertyChanged(nameof(RecordToggleKeyWindow));
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public HotkeySettings RecordToggleKeyCrop
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.RecordToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Shift: if Shift is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift,  // XOR with Shift
+                    baseKey.Code);
+            }
+        }
+
+        public HotkeySettings RecordToggleKeyWindow
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.RecordToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Alt: if Alt is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    !baseKey.Alt,    // XOR with Alt
+                    baseKey.Shift,
+                    baseKey.Code);
             }
         }
 
@@ -279,8 +342,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.SnipToggleKey.Value = value ?? ZoomItProperties.DefaultSnipToggleKey;
                     OnPropertyChanged(nameof(SnipToggleKey));
+                    OnPropertyChanged(nameof(SnipToggleKeySave));
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public HotkeySettings SnipToggleKeySave
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.SnipToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Shift: if Shift is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift,  // XOR with Shift
+                    baseKey.Code);
             }
         }
 
@@ -307,8 +391,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.DemoTypeToggleKey.Value = value ?? ZoomItProperties.DefaultDemoTypeToggleKey;
                     OnPropertyChanged(nameof(DemoTypeToggleKey));
+                    OnPropertyChanged(nameof(DemoTypeToggleKeyReset));
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public HotkeySettings DemoTypeToggleKeyReset
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.DemoTypeToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                // XOR with Shift: if Shift is present, remove it; if absent, add it
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift,  // XOR with Shift
+                    baseKey.Code);
             }
         }
 
