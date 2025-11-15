@@ -106,7 +106,7 @@
                             <ComboBox.Header>
                                 <TextBlock>
                                     <Run x:Uid="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run
-                                        x:Uid="AdvancedPaste_FL_UseCLIToDownloadModels"
+                                        x:Uid="AdvancedPaste_FL_UseCliToDownloadModels"
                                         FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </TextBlock>
