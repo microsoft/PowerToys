@@ -152,7 +152,7 @@
                 Spacing="8">
                 <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
                 <TextBlock
-                    x:Uid="AdvancedPaste_FL_FLNotavailableYet"
+                    x:Uid="AdvancedPaste_FL_FLNotAvailableYet"
                     HorizontalAlignment="Center"
                     FontWeight="SemiBold"
                     TextAlignment="Center"
