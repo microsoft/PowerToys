@@ -15,8 +15,6 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 public sealed partial class AppListItem : ListItem
 {
-    private static readonly Tag _appTag = new("App");
-
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
     private readonly Lazy<Details> _details;
@@ -48,7 +46,6 @@ public sealed partial class AppListItem : ListItem
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
-        Tags = [_appTag];
         Icon = Icons.GenericAppIcon;
 
         MoreCommands = AddPinCommands(_app.Commands!, isPinned);

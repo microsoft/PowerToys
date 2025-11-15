@@ -5,7 +5,10 @@
 #include <vector>
 #include <memory>
 #include <windows.h>
-
+#include <mutex>
+#include <atomic>
+#include <thread>
+#include <chrono>
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <SettingsConstants.h>
@@ -83,7 +86,7 @@ public:
 
 private:
     LightSwitchSettings();
-    ~LightSwitchSettings() = default;
+    ~LightSwitchSettings();
 
     LightSwitchConfig m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
@@ -92,4 +95,11 @@ private:
     void NotifyObservers(SettingId id) const;
 
     HANDLE m_settingsChangedEvent = nullptr;
+    mutable std::mutex m_settingsMutex;
+
+    // Debounce state
+    std::atomic_bool m_debouncePending{ false };
+    std::mutex m_debounceMutex;
+    std::chrono::steady_clock::time_point m_lastChangeTime{};
+    std::jthread m_debounceThread;
 };
