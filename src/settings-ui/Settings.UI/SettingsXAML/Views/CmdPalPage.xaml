@@ -13,7 +13,7 @@
     <Grid Padding="0,0,0,0">
         <Grid
             MaxWidth="1000"
-            Padding="16,0,16,16"
+            Padding="16,0,16,0"
             VerticalAlignment="Top"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -108,11 +108,11 @@
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="Extensible" /> <LineBreak />
+                    <Run x:Uid="CmdPal_ExtensibleHeade" FontWeight="SemiBold" /> <LineBreak />
                     <Run
+                        x:Uid="CmdPal_ExtensibleDescription"
                         FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Powerful extensions help you do more" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
 
                 <FontIcon
@@ -126,11 +126,11 @@
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="Fast" /> <LineBreak />
+                    <Run x:Uid="CmdPal_FastHeader" FontWeight="SemiBold" /> <LineBreak />
                     <Run
+                        x:Uid="CmdPal_FastDescription"
                         FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Find files and launch apps in an instant" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
 
                 <FontIcon
@@ -144,19 +144,18 @@
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="Beautiful" /> <LineBreak />
+                    <Run x:Uid="CmdPal_ModernHeader" FontWeight="SemiBold" /> <LineBreak />
                     <Run
+                        x:Uid="CmdPal_ModernDescription"
                         FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Modern UX that feels right at home on Windows" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
             </Grid>
             <StackPanel
                 Grid.Row="2"
+                Margin="0,8,0,0"
                 Orientation="Vertical"
                 Spacing="{StaticResource SettingsCardSpacing}">
-
-
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="CmdPalEnableCmdPal"
