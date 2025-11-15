@@ -368,4 +368,16 @@
     <value>Local</value>
     <comment>Badge label displayed next to local AI model providers (e.g., Ollama, Foundry Local) to indicate the model runs locally</comment>
   </data>
+  <data name="FoundryLocal_ModelNotSupported" xml:space="preserve">
+    <value>{0} is not supported in Foundry Local. Please configure supported models in Settings.</value>
+    <comment>{0} is the model identifier. Do not translate {0}.</comment>
+  </data>
+  <data name="FoundryLocal_ModelNotCached" xml:space="preserve">
+    <value>The requested model '{0}' is not cached. Please download it using Foundry Local.</value>
+    <comment>{0} is the model identifier. Do not translate {0}.</comment>
+  </data>
+  <data name="FoundryLocal_UnableToLoadModel" xml:space="preserve">
+    <value>Unable to load Foundry Local model: {0}</value>
+    <comment>{0} is the model identifier. Do not translate {0}.</comment>
+  </data>
 </root>

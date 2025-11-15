@@ -13,6 +13,7 @@ namespace LanguageModelProvider;
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
     private IEnumerable<ModelDetails>? _downloadedModels;
+    private IEnumerable<FoundryCatalogModel>? _catalogModels;
     private FoundryClient? _foundryClient;
     private string? _serviceUrl;
 
@@ -45,6 +46,24 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         {
             Logger.LogError("[FoundryLocal] Model ID is empty after extraction");
             return null;
+        }
+
+        // Check if model is in catalog
+        var isInCatalog = _catalogModels?.Any(m => m.Name == modelId) ?? false;
+        if (!isInCatalog)
+        {
+            var errorMessage = $"{modelId} is not supported in Foundry Local. Please configure supported models in Settings.";
+            Logger.LogError($"[FoundryLocal] {errorMessage}");
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        // Check if model is cached
+        var isInCache = _downloadedModels?.Any(m => m.ProviderModelDetails is FoundryCachedModel cached && cached.Name == modelId) ?? false;
+        if (!isInCache)
+        {
+            var errorMessage = $"The requested model '{modelId}' is not cached. Please download it using Foundry Local.";
+            Logger.LogError($"[FoundryLocal] {errorMessage}");
+            throw new InvalidOperationException(errorMessage);
         }
 
         // Ensure the model is loaded before returning chat client
@@ -122,12 +141,13 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     private void Reset()
     {
         _downloadedModels = null;
+        _catalogModels = null;
         _ = InitializeAsync();
     }
 
     private async Task InitializeAsync(CancellationToken cancelationToken = default)
     {
-        if (_foundryClient != null && _downloadedModels != null && _downloadedModels.Any())
+        if (_foundryClient != null && _downloadedModels != null && _downloadedModels.Any() && _catalogModels != null && _catalogModels.Any())
         {
             await _foundryClient.EnsureRunning().ConfigureAwait(false);
             return;
@@ -144,6 +164,10 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         _serviceUrl ??= await _foundryClient.GetServiceUrl();
         Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
+
+        var catalogModels = await _foundryClient.ListCatalogModels();
+        Logger.LogInfo($"[FoundryLocal] Found {catalogModels.Count} catalog models");
+        _catalogModels = catalogModels;
 
         var cachedModels = await _foundryClient.ListCachedModels();
         Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
