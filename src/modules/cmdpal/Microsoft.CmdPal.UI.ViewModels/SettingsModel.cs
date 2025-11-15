@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -15,6 +17,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsModel : ObservableObject
 {
+    private const string DeprecatedHotkeyGoesHomeKey = "HotkeyGoesHome";
+
     [JsonIgnore]
     public static readonly string FilePath;
 
@@ -29,8 +33,6 @@ public partial class SettingsModel : ObservableObject
     public bool UseLowLevelGlobalHotkey { get; set; }
 
     public bool ShowAppDetails { get; set; }
-
-    public bool HotkeyGoesHome { get; set; }
 
     public bool BackspaceGoesBack { get; set; }
 
@@ -55,6 +57,8 @@ public partial class SettingsModel : ObservableObject
     public bool DisableAnimations { get; set; } = true;
 
     public WindowPosition? LastWindowPosition { get; set; }
+
+    public TimeSpan AutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -98,12 +102,29 @@ public partial class SettingsModel : ObservableObject
         {
             // Read the JSON content from the file
             var jsonContent = File.ReadAllText(FilePath);
+            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel) ?? new();
 
-            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
+            var migratedAny = false;
+            try
+            {
+                if (JsonNode.Parse(jsonContent) is JsonObject root)
+                {
+                    migratedAny |= ApplyMigrations(root, loaded);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Migration check failed: {ex}");
+            }
 
-            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
+            Debug.WriteLine("Loaded settings file");
 
-            return loaded ?? new();
+            if (migratedAny)
+            {
+                SaveSettings(loaded);
+            }
+
+            return loaded;
         }
         catch (Exception ex)
         {
@@ -111,6 +132,51 @@ public partial class SettingsModel : ObservableObject
         }
 
         return new();
+    }
+
+    private static bool ApplyMigrations(JsonObject root, SettingsModel model)
+    {
+        var migrated = false;
+
+        // Migration #1: HotkeyGoesHome (bool) -> AutoGoHomeInterval (TimeSpan)
+        // The old 'HotkeyGoesHome' boolean indicated whether the "go home" action should happen immediately (true) or never (false).
+        // The new 'AutoGoHomeInterval' uses a TimeSpan: 'TimeSpan.Zero' means immediate, 'Timeout.InfiniteTimeSpan' means never.
+        migrated |= TryMigrate(
+            "Migration #1: HotkeyGoesHome (bool) -> AutoGoHomeInterval (TimeSpan)",
+            root,
+            model,
+            nameof(AutoGoHomeInterval),
+            DeprecatedHotkeyGoesHomeKey,
+            (settingsModel, goesHome) => settingsModel.AutoGoHomeInterval = goesHome ? TimeSpan.Zero : Timeout.InfiniteTimeSpan,
+            JsonSerializationContext.Default.Boolean);
+
+        return migrated;
+    }
+
+    private static bool TryMigrate<T>(string migrationName, JsonObject root, SettingsModel model, string newKey, string oldKey, Action<SettingsModel, T> apply, JsonTypeInfo<T> jsonTypeInfo)
+    {
+        try
+        {
+            // If new key already present, skip migration
+            if (root.ContainsKey(newKey) && root[newKey] is not null)
+            {
+                return false;
+            }
+
+            // If old key present, try to deserialize and apply
+            if (root.TryGetPropertyValue(oldKey, out var oldNode) && oldNode is not null)
+            {
+                var value = oldNode.Deserialize<T>(jsonTypeInfo);
+                apply(model, value!);
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error during migration {migrationName}.", ex);
+        }
+
+        return false;
     }
 
     public static void SaveSettings(SettingsModel model)
@@ -138,6 +204,9 @@ public partial class SettingsModel : ObservableObject
                     {
                         savedSettings[item.Key] = item.Value?.DeepClone();
                     }
+
+                    // Remove deprecated keys
+                    savedSettings.Remove(DeprecatedHotkeyGoesHomeKey);
 
                     var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
                     File.WriteAllText(FilePath, serialized);
