@@ -31,11 +31,13 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <InfoBar
             x:Uid="AdvancedPaste_FL_PreviewMessage"
+            Grid.Row="1"
+            Padding="4"
             IsClosable="False"
             IsOpen="True"
             Message="Foundry Local is still in Public Preview">
@@ -48,7 +50,6 @@
         </InfoBar>
         <StackPanel
             x:Name="LoadingPanel"
-            Grid.Row="1"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="12">
@@ -66,10 +67,7 @@
                 TextWrapping="Wrap" />
         </StackPanel>
 
-        <ScrollViewer
-            x:Name="ModelsView"
-            Grid.Row="1"
-            Visibility="Collapsed">
+        <ScrollViewer x:Name="ModelsView" Visibility="Collapsed">
             <Grid Padding="0,12,0,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -163,10 +161,7 @@
             </Grid>
         </ScrollViewer>
 
-        <Grid
-            x:Name="NotAvailableGrid"
-            Grid.Row="1"
-            Visibility="Collapsed">
+        <Grid x:Name="NotAvailableGrid" Visibility="Collapsed">
             <StackPanel
                 Margin="48,0,48,48"
                 HorizontalAlignment="Center"
