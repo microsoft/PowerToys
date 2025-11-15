@@ -5159,25 +5159,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
-  <data name="CmdPal.ModuleTitle" xml:space="preserve">
-    <value>Command Palette</value>
-  </data>
-  <data name="CmdPal_ShortDescription" xml:space="preserve">
-    <value>A better quick launcher</value>
-  </data>
-  <data name="CmdPal_ActivationDescription" xml:space="preserve">
-    <value>Open Command Palette</value>
-  </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
     <value>Enable Command Palette</value>
-    <comment>"Command Palette" is the name of the utility.</comment>
-  </data>
-  <data name="CmdPal.ModuleDescription" xml:space="preserve">
-    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
-    <value>Learn more about Command Palette</value>
-    <comment>Command Palette is a product name, do not loc</comment>
+    <value>Learn more</value>
   </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
@@ -5185,11 +5172,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Oobe_CmdPal.Description" xml:space="preserve">
     <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal.Title" xml:space="preserve">
     <value>Command Palette</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
     <value>and start typing!</value>
@@ -5222,14 +5209,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="RetryLabel.Text" xml:space="preserve">
     <value>Retry</value>
   </data>
-  <data name="CmdPal_Activation_GroupSettings.Header" xml:space="preserve">
-    <value>Activation</value>
-  </data>
-  <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
-  </data>
-  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
-    <value>Open Command Palette settings to customize the activation shortcut</value>
+  <data name="CmdPal_Settings.Header" xml:space="preserve">
+    <value>Settings</value>
   </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>
@@ -5752,5 +5733,52 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
     <value>Display a preview of the current clipboard content</value>
+  </data>
+  <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="AdvancedPaste_FL_PreviewMessage.Message" xml:space="preserve">
+    <value>Foundry Local is still in public preview</value>
+    <comment>Do not loc "Foundry Local"</comment>
+  </data>
+  <data name="CmdPal_Settings.Description" xml:space="preserve">
+    <value>Configure the activation shortcut, extensions, behavior and much more</value>
+  </data>
+  <data name="CmdPal_Launch.Header" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ShortDescription" xml:space="preserve">
+    <value>A better quick launcher</value>
+  </data>
+  <data name="CmdPal_Description.Text" xml:space="preserve">
+    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+  </data>
+  <data name="CmdPal.ModuleTitle" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
+    <value>Powerful extensions help you do more</value>
+  </data>
+  <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
+    <value>Extensible</value>
+  </data>
+  <data name="CmdPal_FastDescription.Text" xml:space="preserve">
+    <value>Find files and launch apps in an instant</value>
+  </data>
+  <data name="CmdPal_FastHeader.Text" xml:space="preserve">
+    <value>Fast</value>
+  </data>
+  <data name="CmdPal_ModernHeader.Text" xml:space="preserve">
+    <value>Beautiful</value>
+  </data>
+  <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
+    <value>A modern UI built with Fluent Design</value>
+    <comment>Fluent Design is a product name, do not loc</comment>
   </data>
 </root>
