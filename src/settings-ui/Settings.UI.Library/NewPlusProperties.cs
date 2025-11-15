@@ -33,6 +33,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("ReplaceVariables")]
         public BoolProperty ReplaceVariables { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.NewPlusProperties);
     }
 }

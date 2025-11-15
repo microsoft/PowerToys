@@ -119,7 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // converts the current to a json string.
         public string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.GeneralSettings);
         }
 
         private static string DefaultPowertoysVersion()

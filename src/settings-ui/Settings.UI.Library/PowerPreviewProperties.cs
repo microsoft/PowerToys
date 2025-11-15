@@ -340,7 +340,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PowerPreviewProperties);
         }
 
         private static void LogTelemetryEvent(bool value, [CallerMemberName] string propertyName = null)
