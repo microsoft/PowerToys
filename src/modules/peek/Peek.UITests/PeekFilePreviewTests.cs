@@ -433,6 +433,45 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
+    /// Test copying file path to clipboard by clicking the copy path menu item from more actions dropdown
+    /// </summary>
+    [TestMethod("Peek.CopyPath.ClickMenuItem")]
+    [TestCategory("Copy Path")]
+    public void TestCopyPathByMenuItem()
+    {
+        string zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
+
+        // Open zip file with Peek
+        var peekWindow = OpenPeekWindow(zipPath);
+
+        // Find the more actions dropdown button
+        var moreActionsButton = FindMoreActionsButton();
+        Assert.IsNotNull(moreActionsButton, "More actions dropdown button should be found");
+
+        // Click the dropdown to open the menu
+        moreActionsButton.Click();
+
+        // Wait a moment for the menu to appear
+        Thread.Sleep(500);
+
+        // Find and click the "Copy path" menu item
+        var copyPathMenuItem = FindCopyPathMenuItem();
+        Assert.IsNotNull(copyPathMenuItem, "Copy path menu item should be found");
+
+        // Click the menu item to copy path to clipboard
+        copyPathMenuItem.Click();
+
+        // Wait a moment for the clipboard operation to complete
+        Thread.Sleep(500);
+
+        // Note: We can't directly test clipboard contents in UI tests due to security restrictions
+        // The test verifies that the menu item exists and can be clicked without exceptions
+        // The actual clipboard functionality is tested through the underlying ClipboardHelper
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
     /// Test opening file with default program by pressing Enter key
     /// </summary>
     [TestMethod("Peek.OpenWithDefaultProgram.PressEnter")]
@@ -958,6 +997,50 @@ public class PeekFilePreviewTests : UITestBase
             {
                 return button;
             }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Helper method to find the more actions dropdown button
+    /// </summary>
+    /// <returns>The more actions dropdown button element</returns>
+    private Element? FindMoreActionsButton()
+    {
+        try
+        {
+            var button = Find(By.AccessibilityId("MoreActionsButton"), 1000);
+            if (button != null)
+            {
+                return button;
+            }
+        }
+        catch
+        {
+            // Could not find button
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Helper method to find the copy path menu item
+    /// </summary>
+    /// <returns>The copy path menu item element</returns>
+    private Element? FindCopyPathMenuItem()
+    {
+        try
+        {
+            var menuItem = Find(By.AccessibilityId("CopyPathMenuItem"), 1000);
+            if (menuItem != null)
+            {
+                return menuItem;
+            }
+        }
+        catch
+        {
+            // Could not find menu item
         }
 
         return null;
