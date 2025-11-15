@@ -180,16 +180,6 @@ internal sealed class FoundryClient
                 return true;
             }
 
-            // Check if model exists in cache
-            var cachedModels = await ListCachedModels().ConfigureAwait(false);
-            Logger.LogInfo($"[FoundryClient] Cached models: {string.Join(", ", cachedModels.Select(m => m.Name))}");
-
-            if (!cachedModels.Any(m => m.Name == modelId))
-            {
-                Logger.LogWarning($"[FoundryClient] Model not found in cache: {modelId}");
-                return false;
-            }
-
             // Load the model
             Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
             await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);

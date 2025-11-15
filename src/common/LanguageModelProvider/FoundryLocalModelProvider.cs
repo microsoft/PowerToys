@@ -13,6 +13,7 @@ namespace LanguageModelProvider;
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
     private IEnumerable<ModelDetails>? _downloadedModels;
+    private IEnumerable<FoundryCatalogModel>? _catalogModels;
     private FoundryClient? _foundryClient;
     private string? _serviceUrl;
 
@@ -47,6 +48,24 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             return null;
         }
 
+        // Check if model is in catalog
+        var isInCatalog = _catalogModels?.Any(m => m.Name == modelId) ?? false;
+        if (!isInCatalog)
+        {
+            var errorMessage = $"{modelId} is not supported in Foundry Local. Please configure supported models in Settings.";
+            Logger.LogError($"[FoundryLocal] {errorMessage}");
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        // Check if model is cached
+        var isInCache = _downloadedModels?.Any(m => m.ProviderModelDetails is FoundryCachedModel cached && cached.Name == modelId) ?? false;
+        if (!isInCache)
+        {
+            var errorMessage = $"The requested model '{modelId}' is not cached. Please download it using Foundry Local.";
+            Logger.LogError($"[FoundryLocal] {errorMessage}");
+            throw new InvalidOperationException(errorMessage);
+        }
+
         // Ensure the model is loaded before returning chat client
         try
         {
@@ -69,8 +88,9 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         var baseUri = _foundryClient.GetServiceUri();
         if (baseUri == null)
         {
-            Logger.LogError("[FoundryLocal] Service URI is null");
-            return null;
+            const string message = "Foundry Local service URL is not available. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
         }
 
         var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
@@ -122,12 +142,13 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     private void Reset()
     {
         _downloadedModels = null;
+        _catalogModels = null;
         _ = InitializeAsync();
     }
 
     private async Task InitializeAsync(CancellationToken cancelationToken = default)
     {
-        if (_foundryClient != null && _downloadedModels != null && _downloadedModels.Any())
+        if (_foundryClient != null && _downloadedModels != null && _downloadedModels.Any() && _catalogModels != null && _catalogModels.Any())
         {
             await _foundryClient.EnsureRunning().ConfigureAwait(false);
             return;
@@ -138,12 +159,17 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         if (_foundryClient == null)
         {
-            Logger.LogError("[FoundryLocal] Failed to create Foundry client");
-            return;
+            const string message = "Foundry Local client could not be created. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
         }
 
         _serviceUrl ??= await _foundryClient.GetServiceUrl();
         Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
+
+        var catalogModels = await _foundryClient.ListCatalogModels();
+        Logger.LogInfo($"[FoundryLocal] Found {catalogModels.Count} catalog models");
+        _catalogModels = catalogModels;
 
         var cachedModels = await _foundryClient.ListCachedModels();
         Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
