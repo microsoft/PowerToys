@@ -10,7 +10,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Grid Padding="0,0,0,0">
+    <Grid>
         <Grid
             MaxWidth="1000"
             Padding="16,0,16,0"

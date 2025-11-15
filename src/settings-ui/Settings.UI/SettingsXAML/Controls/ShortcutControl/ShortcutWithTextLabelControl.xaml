@@ -29,7 +29,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:KeyVisual
-                        Padding="8,4,8,4"
+                        Padding="12,8,12,8"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
                         FontSize="12"
