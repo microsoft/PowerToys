@@ -88,8 +88,9 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         var baseUri = _foundryClient.GetServiceUri();
         if (baseUri == null)
         {
-            Logger.LogError("[FoundryLocal] Service URI is null");
-            return null;
+            const string message = "Foundry Local service URL is not available. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
         }
 
         var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
@@ -158,8 +159,9 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         if (_foundryClient == null)
         {
-            Logger.LogError("[FoundryLocal] Failed to create Foundry client");
-            return;
+            const string message = "Foundry Local client could not be created. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
         }
 
         _serviceUrl ??= await _foundryClient.GetServiceUrl();
