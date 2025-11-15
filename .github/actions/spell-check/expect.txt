@@ -1708,6 +1708,7 @@ stringtable
 stringval
 Strm
 strret
+STRSAFE
 stscanf
 sttngs
 Stubless

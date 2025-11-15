@@ -7,21 +7,26 @@ using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
+using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
+using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 
 internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
 {
+    private readonly IBrowserInfoService _browserInfoService;
     private readonly OpenURLCommand _executeItem;
     private static readonly CompositeFormat PluginOpenURL = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url);
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
-    public FallbackOpenURLItem(SettingsManager settings)
-        : base(new OpenURLCommand(string.Empty), Properties.Resources.open_url_fallback_title)
+    public FallbackOpenURLItem(ISettingsInterface settings, IBrowserInfoService browserInfoService)
+        : base(new OpenURLCommand(string.Empty, browserInfoService), Resources.open_url_fallback_title)
     {
-        _executeItem = (OpenURLCommand)this.Command!;
+        ArgumentNullException.ThrowIfNull(browserInfoService);
+
+        _browserInfoService = browserInfoService;
+        _executeItem = (OpenURLCommand)Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = string.Empty;
@@ -39,7 +44,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
             return;
         }
 
-        var success = Uri.TryCreate(query, UriKind.Absolute, out var uri);
+        var success = Uri.TryCreate(query, UriKind.Absolute, out _);
 
         // if url not contain schema, add http:// by default.
         if (!success)
@@ -48,13 +53,15 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
         }
 
         _executeItem.Url = query;
-        _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.open_in_default_browser;
+        _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Resources.open_in_default_browser;
 
         Title = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
-        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
+
+        var browserName = _browserInfoService.GetDefaultBrowser()?.Name;
+        Subtitle = string.IsNullOrWhiteSpace(browserName) ? Resources.open_in_default_browser : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
     }
 
-    public static bool IsValidUrl(string url)
+    private static bool IsValidUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
         {

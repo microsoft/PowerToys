@@ -5,6 +5,7 @@
 using System;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
+using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
 using Microsoft.CmdPal.Ext.WebSearch.Pages;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -15,13 +16,15 @@ namespace Microsoft.CmdPal.Ext.WebSearch;
 public partial class WebSearchTopLevelCommandItem : CommandItem, IFallbackHandler, IDisposable
 {
     private readonly SettingsManager _settingsManager;
+    private readonly IBrowserInfoService _browserInfoService;
 
-    public WebSearchTopLevelCommandItem(SettingsManager settingsManager)
-        : base(new WebSearchListPage(settingsManager))
+    public WebSearchTopLevelCommandItem(SettingsManager settingsManager, IBrowserInfoService browserInfoService)
+        : base(new WebSearchListPage(settingsManager, browserInfoService))
     {
         Icon = Icons.WebSearch;
         SetDefaultTitle();
         _settingsManager = settingsManager;
+        _browserInfoService = browserInfoService;
     }
 
     private void SetDefaultTitle() => Title = Resources.command_item_title;
@@ -37,12 +40,12 @@ public partial class WebSearchTopLevelCommandItem : CommandItem, IFallbackHandle
         if (string.IsNullOrEmpty(query))
         {
             SetDefaultTitle();
-            ReplaceCommand(new WebSearchListPage(_settingsManager));
+            ReplaceCommand(new WebSearchListPage(_settingsManager, _browserInfoService));
         }
         else
         {
             Title = query;
-            ReplaceCommand(new SearchWebCommand(query, _settingsManager));
+            ReplaceCommand(new SearchWebCommand(query, _settingsManager, _browserInfoService));
         }
     }
 
