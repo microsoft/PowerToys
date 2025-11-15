@@ -580,6 +580,7 @@ frm
 FROMTOUCH
 fsanitize
 fsmgmt
+ftps
 fuzzingtesting
 fxf
 FZE
@@ -1296,6 +1297,7 @@ phwnd
 pici
 pidl
 PIDLIST
+pii
 pinfo
 pinvoke
 pipename
@@ -1675,6 +1677,7 @@ srw
 srwlock
 sse
 ssf
+Ssn
 STACKFRAME
 stackoverflow
 STARTF

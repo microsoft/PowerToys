@@ -75,6 +75,7 @@
     <None Remove="Pages\Settings\ExtensionsPage.xaml" />
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
+    <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
@@ -204,6 +205,18 @@
 
   <ItemGroup>
     <Page Update="Controls\KeyVisual\KeyCharPresenter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Settings\InternalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="ErrorReportWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

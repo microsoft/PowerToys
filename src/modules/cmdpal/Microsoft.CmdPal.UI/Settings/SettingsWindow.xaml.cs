@@ -40,6 +40,15 @@ public sealed partial class SettingsWindow : WindowEx,
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+
+        #if DEBUG
+        NavView.MenuItems.Add(new NavigationViewItem
+        {
+            Content = "Internal Tools",
+            Icon = new FontIcon { Glyph = "\uEC7A" },
+            Tag = "Internal",
+        });
+        #endif
     }
 
     // Handles NavigationView loaded event.
@@ -83,6 +92,7 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             "General" => typeof(GeneralPage),
             "Extensions" => typeof(ExtensionsPage),
+            "Internal" => typeof(InternalPage),
             _ => null,
         };
         if (pageType is not null)
