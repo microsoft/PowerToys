@@ -157,7 +157,7 @@
                     HorizontalAlignment="Center"
                     Orientation="Horizontal"
                     Spacing="8">
-                    <Button Content="Launch" Style="{StaticResource AccentButtonStyle}" />
+                    <Button Content="Launch" Click="LaunchButton_Click" Style="{StaticResource AccentButtonStyle}" />
                     <controls:ShortcutWithTextLabelControl
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

@@ -5753,4 +5753,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
     <value>Display a preview of the current clipboard content</value>
   </data>
+  <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="AdvancedPaste_FL_PreviewMessage.Message" xml:space="preserve">
+    <value>Foundry Local is still in public preview</value>
+    <comment>Do not loc "Foundry Local"</comment>
+  </data>
 </root>
