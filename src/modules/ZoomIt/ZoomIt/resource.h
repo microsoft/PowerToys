@@ -93,6 +93,7 @@
 #define IDC_DEMOTYPE_SLIDER2            1074
 #define IDC_DEMOTYPE_STATIC2            1074
 #define IDC_COPYRIGHT                   1075
+#define IDC_RECORD_FORMAT               1076
 #define IDC_PEN_WIDTH                   1105
 #define IDC_TIMER                       1106
 #define IDC_SMOOTH_IMAGE				1107

@@ -27,41 +27,57 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            EnableClipboardPreview = true;
             PasteAIConfiguration = new();
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool IsAIEnabled { get; set; }
 
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> ExtensionData
+        private bool? _legacyAdvancedAIEnabled;
+
+        [JsonPropertyName("IsAdvancedAIEnabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public BoolProperty LegacyAdvancedAIEnabledProperty
         {
-            get => _extensionData;
+            get => null;
             set
             {
-                _extensionData = value;
-
-                if (_extensionData != null && _extensionData.TryGetValue("IsOpenAIEnabled", out var legacyElement) && legacyElement.ValueKind == JsonValueKind.Object && legacyElement.TryGetProperty("value", out var valueElement))
+                if (value is not null)
                 {
-                    IsAIEnabled = valueElement.ValueKind switch
-                    {
-                        JsonValueKind.True => true,
-                        JsonValueKind.False => false,
-                        _ => IsAIEnabled,
-                    };
-
-                    _extensionData.Remove("IsOpenAIEnabled");
+                    LegacyAdvancedAIEnabled = value.Value;
                 }
             }
         }
 
-        private Dictionary<string, JsonElement> _extensionData;
+        [JsonIgnore]
+        public bool? LegacyAdvancedAIEnabled
+        {
+            get => _legacyAdvancedAIEnabled;
+            private set => _legacyAdvancedAIEnabled = value;
+        }
+
+        public bool TryConsumeLegacyAdvancedAIEnabled(out bool value)
+        {
+            if (_legacyAdvancedAIEnabled is bool flag)
+            {
+                value = flag;
+                _legacyAdvancedAIEnabled = null;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool CloseAfterLosingFocus { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableClipboardPreview { get; set; }
 
         [JsonPropertyName("advanced-paste-ui-hotkey")]
         public HotkeySettings AdvancedPasteUIShortcut { get; set; }

@@ -147,6 +147,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent</td>
     <td>Triggered when Advanced Paste leverages the Semantic Kernel.</td>
   </tr> 
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelErrorEvent</td>
+    <td>Occurs when the Semantic Kernel workflow encounters an error.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteEndpointUsageEvent</td>
+    <td>Logs the AI provider, model, and processing duration for each endpoint call.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteCustomActionErrorEvent</td>
+    <td>Records provider, model, and status details when a custom action fails.</td>
+  </tr>
 </table>
 
 ### Always on Top
