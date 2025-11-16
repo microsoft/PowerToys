@@ -81,7 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                     SortModuleList();
-                    GetShortcutModules();
                 }
             }
         }
@@ -105,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             BuildModuleList();
             SortModuleList();
-            GetShortcutModules();
+            RefreshShortcutModules();
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
@@ -176,7 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _ => _moduleItems.OrderBy(x => x.Label), // Default alphabetical
             }).ToList();
 
-            // If AllModules is empty (first load), just populate it
+            // If AllModules is empty (first load), just populate it.
             if (AllModules.Count == 0)
             {
                 foreach (var item in sortedItems)
@@ -187,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            // Otherwise, update the collection in place using Move to avoid UI glitches
+            // Otherwise, update the collection in place using Move to avoid UI glitches.
             for (int i = 0; i < sortedItems.Count; i++)
             {
                 var currentItem = sortedItems[i];
@@ -199,7 +198,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            // Notify that DashboardSortOrder changed to update menu checkmarks
+            // Notify that DashboardSortOrder changed to update menu checkmarks.
             OnPropertyChanged(nameof(DashboardSortOrder));
         }
 
@@ -257,16 +256,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
                 }
 
-                // Re-sort only if sorting by status (enabled modules first)
+                // Re-sort only required if sorting by enabled status.
                 if (DashboardSortOrder == DashboardSortOrder.ByStatus)
                 {
                     SortModuleList();
                 }
 
-                // Always refresh shortcuts/actions to reflect enabled state changes
-                GetShortcutModules();
+                // Always refresh shortcuts/actions to reflect enabled state changes.
+                RefreshShortcutModules();
 
-                // Request updated conflicts after module state change
+                // Request updated conflicts after module state change.
                 RequestConflictData();
             }
             finally
@@ -282,7 +281,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public void ModuleEnabledChangedOnSettingsPage()
         {
-            // Ignore if this was triggered by a UI change that we're already handling
+            // Ignore if this was triggered by a UI change that we're already handling.
             if (_isUpdatingFromUI)
             {
                 return;
@@ -291,11 +290,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 RefreshModuleList();
-                GetShortcutModules();
+                RefreshShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));
 
-                // Request updated conflicts after module state change
+                // Request updated conflicts after module state change.
                 RequestConflictData();
             }
             catch (Exception ex)
@@ -305,10 +304,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Populates ShortcutModules and ActionModules collections by filtering AllModules
+        /// Rebuilds ShortcutModules and ActionModules collections by filtering AllModules
         /// to only include enabled modules and their respective shortcut/action items.
         /// </summary>
-        private void GetShortcutModules()
+        private void RefreshShortcutModules()
         {
             ShortcutModules.Clear();
             ActionModules.Clear();
