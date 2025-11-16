@@ -18,9 +18,9 @@ namespace RunnerV2.Helpers
 {
     internal static class SettingsHelper
     {
+        private static readonly SettingsUtils _settingsUtils = new();
         private static Process? _process;
         private static TwoWayPipeMessageIPCManaged? _ipc;
-        private static SettingsUtils _settingsUtils = new();
 
         public static void OpenSettingsWindow(bool showOobeWindow = false, bool showScoobeWindow = false, bool showFlyout = false, Point? flyoutPosition = null, string? additionalArguments = null)
         {

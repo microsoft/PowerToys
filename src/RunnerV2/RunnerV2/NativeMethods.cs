@@ -63,6 +63,7 @@ namespace RunnerV2
         internal static partial bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
 
         internal const uint NIMADD = 0x00000000;
+        internal const uint NIMDELETE = 0x00000002;
 
         internal struct NOTIFYICONDATA
         {
@@ -130,6 +131,8 @@ namespace RunnerV2
             COMMAND = 0x0111,
             HOTKEY = 0x0312,
             ICON_NOTIFY = 0x0800,
+            WINDOWPOSCHANGING = 0x0046,
+            DESTROY = 0x0002,
         }
 
         [DllImport("user32.dll")]
@@ -137,6 +140,9 @@ namespace RunnerV2
 
         [LibraryImport("user32.dll", SetLastError = false)]
         internal static partial IntPtr DefWindowProcW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        [LibraryImport("user32.dll", SetLastError = true)]
+        internal static partial uint RegisterWindowMessageW([MarshalAs(UnmanagedType.LPWStr)] string lpString);
 
         [LibraryImport("user32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
         internal static partial nint CreateWindowExW(

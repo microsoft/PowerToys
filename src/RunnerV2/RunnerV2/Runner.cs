@@ -68,10 +68,13 @@ namespace RunnerV2
             }
 
             afterInitializationAction();
+
             MessageLoop();
 
             return true;
         }
+
+        private static readonly uint _taskbarCreatedMessage = RegisterWindowMessageW("TaskbarCreated");
 
         private static void MessageLoop()
         {
@@ -82,20 +85,7 @@ namespace RunnerV2
                     TranslateMessage(ref msg);
                     DispatchMessageW(ref msg);
 
-                    switch (msg.Message)
-                    {
-                        case (uint)WindowMessages.HOTKEY:
-                            HotkeyManager.ProcessHotkey(msg.WParam);
-                            break;
-                        case (uint)WindowMessages.ICON_NOTIFY:
-                            TrayIconManager.ProcessTrayIconMessage(msg.LParam);
-                            break;
-                        case (uint)WindowMessages.COMMAND:
-                            TrayIconManager.ProcessTrayMenuCommand(msg.WParam);
-                            break;
-                        default:
-                            break;
-                    }
+                    HandleMessage(msg.HWnd, msg.Message, (nint)msg.WParam, (nint)msg.LParam);
                 }
             }
         }
@@ -172,7 +162,7 @@ namespace RunnerV2
                 HInstance = hInstance,
                 LpszClassName = TrayWindowClassName,
                 Style = CSHREDRAW | CSVREDRAW,
-                LpfnWndProc = TrayIconWindowProc,
+                LpfnWndProc = HandleMessage,
                 HIcon = hIcon,
                 HbrBackground = IntPtr.Zero,
                 LpszMenuName = string.Empty,
@@ -203,9 +193,34 @@ namespace RunnerV2
             }
         }
 
-        private static IntPtr TrayIconWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        private static IntPtr HandleMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            TrayIconManager.ProcessTrayIconMessage(lParam.ToInt64());
+            switch (msg)
+            {
+                case (uint)WindowMessages.HOTKEY:
+                    HotkeyManager.ProcessHotkey((nuint)wParam);
+                    break;
+                case (uint)WindowMessages.ICON_NOTIFY:
+                    TrayIconManager.ProcessTrayIconMessage(lParam);
+                    break;
+                case (uint)WindowMessages.COMMAND:
+                    TrayIconManager.ProcessTrayMenuCommand((nuint)wParam);
+                    break;
+                case (uint)WindowMessages.WINDOWPOSCHANGING:
+                    TrayIconManager.StartTrayIcon();
+                    break;
+                case (uint)WindowMessages.DESTROY:
+                    TrayIconManager.StopTrayIcon();
+                    break;
+                default:
+                    if (msg == _taskbarCreatedMessage)
+                    {
+                        TrayIconManager.StartTrayIcon();
+                    }
+
+                    break;
+            }
+
             return DefWindowProcW(hWnd, msg, wParam, lParam);
         }
     }

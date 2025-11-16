@@ -32,6 +32,18 @@ namespace RunnerV2.Helpers
             Shell_NotifyIcon(NIMADD, ref notifyicondata);
         }
 
+        internal static void StopTrayIcon()
+        {
+            NOTIFYICONDATA notifyicondata = new()
+            {
+                CbSize = (uint)Marshal.SizeOf<NOTIFYICONDATA>(),
+                HWnd = Runner.RunnerHwnd,
+                UId = 1,
+            };
+
+            Shell_NotifyIcon(NIMDELETE, ref notifyicondata);
+        }
+
         private enum TrayButton : uint
         {
             Settings = 1,
