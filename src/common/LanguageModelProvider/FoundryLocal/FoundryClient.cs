@@ -169,41 +169,23 @@ internal sealed class FoundryClient
 
     public async Task<bool> EnsureModelLoaded(string modelId)
     {
-        try
+        Logger.LogInfo($"[FoundryClient] EnsureModelLoaded called with: {modelId}");
+
+        // Check if already loaded
+        if (await IsModelLoaded(modelId).ConfigureAwait(false))
         {
-            Logger.LogInfo($"[FoundryClient] EnsureModelLoaded called with: {modelId}");
-
-            // Check if already loaded
-            if (await IsModelLoaded(modelId).ConfigureAwait(false))
-            {
-                Logger.LogInfo($"[FoundryClient] Model already loaded: {modelId}");
-                return true;
-            }
-
-            // Check if model exists in cache
-            var cachedModels = await ListCachedModels().ConfigureAwait(false);
-            Logger.LogInfo($"[FoundryClient] Cached models: {string.Join(", ", cachedModels.Select(m => m.Name))}");
-
-            if (!cachedModels.Any(m => m.Name == modelId))
-            {
-                Logger.LogWarning($"[FoundryClient] Model not found in cache: {modelId}");
-                return false;
-            }
-
-            // Load the model
-            Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
-            await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);
-
-            // Verify it's loaded
-            var loaded = await IsModelLoaded(modelId).ConfigureAwait(false);
-            Logger.LogInfo($"[FoundryClient] Model load result: {loaded}");
-            return loaded;
+            Logger.LogInfo($"[FoundryClient] Model already loaded: {modelId}");
+            return true;
         }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[FoundryClient] EnsureModelLoaded exception: {ex.Message}");
-            return false;
-        }
+
+        // Load the model
+        Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
+        await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);
+
+        // Verify it's loaded
+        var loaded = await IsModelLoaded(modelId).ConfigureAwait(false);
+        Logger.LogInfo($"[FoundryClient] Model load result: {loaded}");
+        return loaded;
     }
 
     public async Task EnsureRunning()
