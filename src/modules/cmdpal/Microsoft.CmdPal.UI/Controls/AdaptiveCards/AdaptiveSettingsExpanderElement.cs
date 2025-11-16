@@ -13,9 +13,11 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-internal sealed class AdaptiveSettingsToggleInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
+internal sealed class AdaptiveSettingsExpanderElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
-    public static string CustomInputType => "SettingsCard.Input.Toggle";
+    public static string CustomInputType => "SettingsCard.Expander";
+
+    public string? Header { get; set; }
 
     public string? Description { get; set; }
 
@@ -51,14 +53,14 @@ internal sealed class AdaptiveSettingsToggleInputElement : IAdaptiveInputElement
 
     public string? Label { get; set; }
 
-    public string? Header { get; set; }
+    public object[] Items { get; set; } = [];
 }
 
-internal sealed class AdaptiveSettingsToggleInputParser : IAdaptiveElementParser
+internal sealed class AdaptiveSettingsExpanderElementParser : IAdaptiveElementParser
 {
     public IAdaptiveCardElement FromJson(JsonObject inputJson, AdaptiveElementParserRegistration elementParsers, AdaptiveActionParserRegistration actionParsers, IList<AdaptiveWarning> warnings)
     {
-        return new AdaptiveSettingsToggleInputElement
+        var expander = new AdaptiveSettingsExpanderElement
         {
             Id = inputJson.GetNamedString("id"),
             Label = inputJson.GetNamedString("label"),
@@ -68,42 +70,46 @@ internal sealed class AdaptiveSettingsToggleInputParser : IAdaptiveElementParser
             ErrorMessage = inputJson.GetNamedString("errorMessage"),
             Value = bool.TryParse(inputJson.GetNamedString("value"), out var result) && result,
         };
-    }
-}
 
-internal sealed class AdaptiveSettingsToggleInputValue : IAdaptiveInputValue
-{
-    public SettingsCard Card { get; }
-
-    public bool Validate() => true;
-
-    public void SetFocus() => Card.Focus(FocusState.Programmatic);
-
-    public UIElement? ErrorMessage { get; set; }
-
-    public IAdaptiveInputElement InputElement { get; set; }
-
-    public string CurrentValue
-    {
-        get
+        // parse items
+        if (inputJson.TryGetValue("items", out var itemsValue) && itemsValue.ValueType == JsonValueType.Array)
         {
-            var result = ((Card.Content as ToggleSwitch)?.IsOn ?? false) ? "true" : "false";
-            return result;
-        }
-    }
+            var itemsArray = itemsValue.GetArray();
+            var itemsList = new List<object>();
+            foreach (var itemValue in itemsArray)
+            {
+                if (itemValue.ValueType == JsonValueType.Object)
+                {
+                    var itemJson = itemValue.GetObject();
+                    var elementType = itemJson.GetNamedString("type");
+                    var parser = elementParsers.Get(elementType);
+                    var element = parser.FromJson(itemJson, elementParsers, actionParsers, warnings);
+                    itemsList.Add(element);
+                }
+            }
 
-    public AdaptiveSettingsToggleInputValue(AdaptiveSettingsToggleInputElement element, SettingsCard card)
-    {
-        InputElement = element;
-        Card = card;
+            expander.Items = itemsList.ToArray();
+        }
+
+        return expander;
     }
 }
 
-internal sealed class AdaptiveSettingsToggleInputElementRenderer : IAdaptiveElementRenderer
+internal sealed class AdaptiveSettingsExpanderElementRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {
-        var item = element as AdaptiveSettingsToggleInputElement;
+        var item = element as AdaptiveSettingsExpanderElement;
+
+        var items = item?.Items ?? [];
+        var itemsUIElement = new List<object>();
+
+        foreach (var subItem in items.OfType<IAdaptiveCardElement>())
+        {
+            var renderer = context.ElementRenderers.Get(subItem.ElementTypeString);
+            var uiElement = renderer.Render(subItem, context, renderArgs);
+            itemsUIElement.Add(uiElement);
+        }
 
         var content = new ToggleSwitch
         {
@@ -112,19 +118,15 @@ internal sealed class AdaptiveSettingsToggleInputElementRenderer : IAdaptiveElem
             VerticalAlignment = VerticalAlignment.Center,
         };
 
-        var settingsCard = new SettingsCard
+        var settingsCard = new SettingsExpander
         {
             Header = item?.Header ?? string.Empty,
             Description = item?.Description ?? string.Empty,
             VerticalAlignment = VerticalAlignment.Top,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Content = content,
+            Items = itemsUIElement,
         };
-
-        if (item != null)
-        {
-            context.AddInputValue(new AdaptiveSettingsToggleInputValue(item, settingsCard), renderArgs);
-        }
 
         return settingsCard;
     }

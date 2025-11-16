@@ -13,9 +13,9 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 
-public partial class AdaptiveSettingsComboBoxInputElement : IAdaptiveInputElement, IAdaptiveCardElement
+internal sealed class AdaptiveSettingsComboBoxInputElement : IAdaptiveInputElement, IAdaptiveCardElement, ICustomAdaptiveCardElement
 {
-    public const string CustomInputType = "SettingsCard.Input.ComboBox";
+    public static string CustomInputType => "SettingsCard.Input.ComboBox";
 
     public string? Description { get; set; }
 
@@ -56,7 +56,7 @@ public partial class AdaptiveSettingsComboBoxInputElement : IAdaptiveInputElemen
     public string? Label { get; set; }
 }
 
-public class AdaptiveSettingsComboBoxInputParser : IAdaptiveElementParser
+internal sealed class AdaptiveSettingsComboBoxInputParser : IAdaptiveElementParser
 {
     public IAdaptiveCardElement FromJson(
         JsonObject inputJson,
@@ -92,7 +92,7 @@ public class AdaptiveSettingsComboBoxInputParser : IAdaptiveElementParser
     }
 }
 
-public class ComboBoxWithValue : IAdaptiveInputValue
+internal sealed class ComboBoxWithValue : IAdaptiveInputValue
 {
     public ComboBoxWithValue(AdaptiveSettingsComboBoxInputElement element, SettingsCard card)
     {
@@ -136,7 +136,7 @@ public class ComboBoxWithValue : IAdaptiveInputValue
     }
 }
 
-public class AdaptiveSettingsComboBoxInputRenderer : IAdaptiveElementRenderer
+internal sealed class AdaptiveSettingsComboBoxInputRenderer : IAdaptiveElementRenderer
 {
     public UIElement Render(IAdaptiveCardElement element, AdaptiveRenderContext context, AdaptiveRenderArgs renderArgs)
     {
@@ -175,4 +175,4 @@ public class AdaptiveSettingsComboBoxInputRenderer : IAdaptiveElementRenderer
     }
 }
 
-public record AdaptiveChoice(string? Title, string? Value);
+internal sealed record AdaptiveChoice(string? Title, string? Value);

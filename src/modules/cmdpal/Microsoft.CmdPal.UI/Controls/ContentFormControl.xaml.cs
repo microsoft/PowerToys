@@ -35,17 +35,26 @@ public sealed partial class ContentFormControl : UserControl
             OverrideStyles = null,
         };
 
-        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsToggleInputElement.CustomInputType, new AdaptiveSettingsToggleInputParser());
-        _renderer.ElementRenderers.Set(AdaptiveSettingsToggleInputElement.CustomInputType, new AdaptiveSettingsToggleInputElementRenderer());
+        // concrete
+        Register<AdaptiveSettingsToggleInputElement, AdaptiveSettingsToggleInputParser, AdaptiveSettingsToggleInputElementRenderer>();
+        Register<AdaptiveSettingsCheckBoxInputElement, AdaptiveSettingsCheckBoxInputParser, AdaptiveSettingsCheckBoxInputRenderer>();
+        Register<AdaptiveSettingsTextInputElement, AdaptiveSettingsTextInputParser, AdaptiveSettingsTextInputElementRenderer>();
+        Register<AdaptiveSettingsComboBoxInputElement, AdaptiveSettingsComboBoxInputParser, AdaptiveSettingsComboBoxInputRenderer>();
 
-        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsCheckBoxInputElement.CustomInputType, new AdaptiveSettingsCheckBoxInputParser());
-        _renderer.ElementRenderers.Set(AdaptiveSettingsCheckBoxInputElement.CustomInputType, new AdaptiveSettingsCheckBoxInputRenderer());
+        // generic
+        Register<AdaptiveSettingsExpanderElement, AdaptiveSettingsExpanderElementParser, AdaptiveSettingsExpanderElementRenderer>();
+        Register<AdaptiveSettingsCardContainerElement, AdaptiveSettingsCardContainerElementParser, AdaptiveSettingsCardContainerElementRenderer>();
 
-        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsTextInputElement.CustomInputType, new AdaptiveSettingsTextInputParser());
-        _renderer.ElementRenderers.Set(AdaptiveSettingsTextInputElement.CustomInputType, new AdaptiveSettingsTextInputElementRenderer());
+        return;
 
-        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsComboBoxInputElement.CustomInputType, new AdaptiveSettingsComboBoxInputParser());
-        _renderer.ElementRenderers.Set(AdaptiveSettingsComboBoxInputElement.CustomInputType, new AdaptiveSettingsComboBoxInputRenderer());
+        static void Register<TElement, TParser, TRenderer>()
+            where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+            where TParser : IAdaptiveElementParser, new()
+            where TRenderer : IAdaptiveElementRenderer, new()
+        {
+            ContentFormViewModel.AdaptiveElementParserRegistration.Set(TElement.CustomInputType, new TParser());
+            _renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
+        }
     }
 
     public static void Initialize()
