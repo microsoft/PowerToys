@@ -25,22 +25,8 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public IChatClient? GetIChatClient(string modelId)
     {
-        try
-        {
-            Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {modelId}");
-            InitializeAsync().GetAwaiter().GetResult();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[FoundryLocal] Failed to initialize: {ex.Message}");
-            return null;
-        }
-
-        if (string.IsNullOrWhiteSpace(_serviceUrl) || _foundryClient == null)
-        {
-            Logger.LogError("[FoundryLocal] Service URL or manager is null");
-            return null;
-        }
+        Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {modelId}");
+        InitializeAsync().GetAwaiter().GetResult();
 
         if (string.IsNullOrWhiteSpace(modelId))
         {
@@ -67,21 +53,11 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         }
 
         // Ensure the model is loaded before returning chat client
-        try
+        var isLoaded = _foundryClient!.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
+        if (!isLoaded)
         {
-            var isLoaded = _foundryClient.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
-            if (!isLoaded)
-            {
-                Logger.LogError($"[FoundryLocal] Failed to load model: {modelId}");
-                return null;
-            }
-
-            Logger.LogInfo($"[FoundryLocal] Model is loaded: {modelId}");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[FoundryLocal] Exception ensuring model loaded: {ex.Message}");
-            return null;
+            Logger.LogError($"[FoundryLocal] Failed to load model: {modelId}");
+            throw new InvalidOperationException($"Failed to load the model '{modelId}'.");
         }
 
         // Use ServiceUri instead of Endpoint since Endpoint already includes /v1
@@ -95,7 +71,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
         Logger.LogInfo($"[FoundryLocal] Creating OpenAI client with endpoint: {endpointUri}");
-        Logger.LogInfo($"[FoundryLocal] Model ID for chat client: {modelId}");
 
         return new OpenAIClient(
             new ApiKeyCredential("none"),
