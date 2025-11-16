@@ -29,12 +29,12 @@ namespace ManagedCommon
         /// <summary>
         /// Gets the path to the log directory for the current version of the app.
         /// </summary>
-        public static string CurrentVersionLogDirectoryPath { get; private set; }
+        public static string? CurrentVersionLogDirectoryPath { get; private set; }
 
         /// <summary>
         /// Gets the path to the log directory for the app.
         /// </summary>
-        public static string AppLogDirectoryPath { get; private set; }
+        public static string? AppLogDirectoryPath { get; private set; }
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -45,7 +45,7 @@ namespace ManagedCommon
         public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
         {
             string versionedPath = LogDirectoryPath(applicationLogPath, isLocalLow);
-            string basePath = Path.GetDirectoryName(versionedPath);
+            string basePath = Path.GetDirectoryName(versionedPath)!;
 
             if (!Directory.Exists(versionedPath))
             {

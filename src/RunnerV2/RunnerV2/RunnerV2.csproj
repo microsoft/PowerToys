@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.SelfContained.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Description>PowerToys Runner</Description>
+    <AssemblyName>PowerToys2</AssemblyName>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+</Project>

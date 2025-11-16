@@ -44,7 +44,7 @@
 
 	<!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
 	<PropertyGroup>
-		<CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.ZoomItSettingsInterop</CsWinRTIncludes>
+		<CsWinRTIncludes>PowerToys.ZoomItSettingsInterop</CsWinRTIncludes>
 		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
@@ -113,7 +113,7 @@
 		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
-		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+		<ProjectReference Include="..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />

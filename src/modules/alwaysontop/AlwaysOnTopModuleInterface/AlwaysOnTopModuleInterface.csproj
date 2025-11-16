@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+  <PropertyGroup>
+    <Description>PowerToys Alway on Top module interface</Description>
+    <AssemblyName>PowerToys.AlwaysOnTopModuleInterface</AssemblyName>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+</Project>

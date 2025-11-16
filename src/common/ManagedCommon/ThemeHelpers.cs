@@ -24,7 +24,7 @@ namespace ManagedCommon
         // based on https://stackoverflow.com/questions/51334674/how-to-detect-windows-10-light-dark-mode-in-win32-application
         public static AppTheme GetAppTheme()
         {
-            int value = (int)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsPersonalizeTheme}", HValueAppTheme, 1);
+            int value = (int)Registry.GetValue($"{HKeyRoot}\\{HkeyWindowsPersonalizeTheme}", HValueAppTheme, 1)!;
             return (AppTheme)value;
         }
 
