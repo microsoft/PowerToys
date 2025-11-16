@@ -216,10 +216,6 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteGoogleValue());
     }
-    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteAnthropicValue()
-    {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteAnthropicValue());
-    }
     GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOllamaValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOllamaValue());

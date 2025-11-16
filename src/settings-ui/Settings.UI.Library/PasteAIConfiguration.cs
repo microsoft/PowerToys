@@ -20,8 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private string _activeProviderId = string.Empty;
         private ObservableCollection<PasteAIProviderDefinition> _providers = new();
-        private bool _useSharedCredentials = true;
-        private Dictionary<string, AIProviderConfigurationSnapshot> _legacyProviderConfigurations;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -37,21 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get => _providers;
             set => SetProperty(ref _providers, value ?? new ObservableCollection<PasteAIProviderDefinition>());
-        }
-
-        [JsonPropertyName("use-shared-credentials")]
-        public bool UseSharedCredentials
-        {
-            get => _useSharedCredentials;
-            set => SetProperty(ref _useSharedCredentials, value);
-        }
-
-        [JsonPropertyName("provider-configurations")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Dictionary<string, AIProviderConfigurationSnapshot> LegacyProviderConfigurations
-        {
-            get => _legacyProviderConfigurations;
-            set => _legacyProviderConfigurations = value;
         }
 
         [JsonIgnore]
