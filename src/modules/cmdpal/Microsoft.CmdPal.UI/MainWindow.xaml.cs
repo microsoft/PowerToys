@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -133,6 +134,9 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+
+        // Initialize Adaptive Cards, before any view model can create a card
+        ContentFormControl.Initialize();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)

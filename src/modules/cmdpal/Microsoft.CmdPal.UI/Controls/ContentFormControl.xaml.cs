@@ -4,6 +4,7 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -33,6 +34,22 @@ public sealed partial class ContentFormControl : UserControl
         {
             OverrideStyles = null,
         };
+
+        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsToggleInputElement.CustomInputType, new AdaptiveSettingsToggleInputParser());
+        _renderer.ElementRenderers.Set(AdaptiveSettingsToggleInputElement.CustomInputType, new AdaptiveSettingsToggleInputElementRenderer());
+
+        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsCheckBoxInputElement.CustomInputType, new AdaptiveSettingsCheckBoxInputParser());
+        _renderer.ElementRenderers.Set(AdaptiveSettingsCheckBoxInputElement.CustomInputType, new AdaptiveSettingsCheckBoxInputRenderer());
+
+        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsTextInputElement.CustomInputType, new AdaptiveSettingsTextInputParser());
+        _renderer.ElementRenderers.Set(AdaptiveSettingsTextInputElement.CustomInputType, new AdaptiveSettingsTextInputElementRenderer());
+
+        ContentFormViewModel.AdaptiveElementParserRegistration.Set(AdaptiveSettingsComboBoxInputElement.CustomInputType, new AdaptiveSettingsComboBoxInputParser());
+        _renderer.ElementRenderers.Set(AdaptiveSettingsComboBoxInputElement.CustomInputType, new AdaptiveSettingsComboBoxInputRenderer());
+    }
+
+    public static void Initialize()
+    {
     }
 
     public ContentFormControl()
@@ -40,6 +57,9 @@ public sealed partial class ContentFormControl : UserControl
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
         _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+
+        // TODO: #1 padding of entire adaptive card
+        _renderer.HostConfig.Spacing.Padding = 0;
 
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".

@@ -160,10 +160,6 @@
 
                                 <Frame
                                     x:Name="SettingsFrame"
-                                    Background="{ThemeResource SettingsCardBackground}"
-                                    BorderBrush="{ThemeResource SettingsCardBorderBrush}"
-                                    BorderThickness="{ThemeResource SettingsCardBorderThickness}"
-                                    CornerRadius="{StaticResource ControlCornerRadius}"
                                     Visibility="{x:Bind ViewModel.HasSettings}">
                                     <controls:SwitchPresenter
                                         HorizontalAlignment="Stretch"

@@ -31,6 +31,7 @@ internal sealed partial class SampleSettingsPage : ContentPage
     {
         Name = "Sample Settings";
         Icon = new IconInfo(string.Empty);
+
         _settings.Add(new ToggleSetting("onOff", true)
         {
             Label = "This is a toggle",
@@ -45,6 +46,28 @@ internal sealed partial class SampleSettingsPage : ContentPage
         {
             Label = "It also has a label",
             Description = "Describe your choice set setting here",
+        });
+
+        _settings.Add(new ToggleSetting("onOffWithError", true)
+        {
+            Label = "This is a toggle",
+            Description = "It produces a simple checkbox",
+            ErrorMessage = "Error message for the checkbox",
+            IsRequired = true,
+        });
+        _settings.Add(new TextSetting("someTextWithError", "initial value")
+        {
+            Label = "This is a text box",
+            Description = "For some string of text",
+            ErrorMessage = "Error message for the text box",
+            IsRequired = true,
+        });
+        _settings.Add(new ChoiceSetSetting("choiceSetExampleWithError", _choices)
+        {
+            Label = "It also has a label",
+            Description = "Describe your choice set setting here",
+            ErrorMessage = "Error message for the choice set",
+            IsRequired = true,
         });
 
         _settings.SettingsChanged += SettingsChanged;

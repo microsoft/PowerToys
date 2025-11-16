@@ -28,7 +28,6 @@ public sealed class ChoiceSetSetting : Setting<string>
     public List<Choice> Choices { get; set; }
 
     private ChoiceSetSetting()
-        : base()
     {
         Choices = [];
     }
@@ -45,15 +44,33 @@ public sealed class ChoiceSetSetting : Setting<string>
         Choices = choices;
     }
 
+    public ChoiceSetSetting(string key, string label, string description, List<Choice> choices, string defaultValue)
+        : base(key, label, description, defaultValue)
+    {
+        Choices = choices;
+    }
+
     public override Dictionary<string, object> ToDictionary()
     {
-        return new Dictionary<string, object>
+        /*
+        return SettingsAdaptiveCardBuilder.BuildSettingsCardWithControlOnRight(Label, Description, ErrorMessage, IsRequired, () => new Dictionary<string, object>
         {
             { "type", "Input.ChoiceSet" },
-            { "title", Label },
             { "id", Key },
-            { "label", Description },
             { "choices", Choices },
+            { "value", Value ?? string.Empty },
+            { "isRequired", IsRequired },
+            { "errorMessage", ErrorMessage },
+        });
+        */
+        return new Dictionary<string, object>
+        {
+            { "type", "SettingsCard.Input.ComboBox" },
+            { "id", Key },
+            { "choices", Choices },
+            { "label", string.Empty },
+            { "header", Label },
+            { "description", Description },
             { "value", Value ?? string.Empty },
             { "isRequired", IsRequired },
             { "errorMessage", ErrorMessage },

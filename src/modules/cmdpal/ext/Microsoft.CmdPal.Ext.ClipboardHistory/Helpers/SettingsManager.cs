@@ -21,7 +21,7 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
         Resources.settings_keep_after_paste_description!,
         false);
 
-    private readonly ToggleSetting _confirmDelete = new(
+    private readonly CheckBoxSettings _confirmDelete = new(
         Namespaced(nameof(DeleteFromHistoryRequiresConfirmation)),
         Resources.settings_confirm_delete_title!,
         Resources.settings_confirm_delete_description!,
