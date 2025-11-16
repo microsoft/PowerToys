@@ -120,7 +120,6 @@ internal sealed class ComboBoxWithValue : IAdaptiveInputValue
                 return string.Empty;
             }
 
-            // Use SelectedValue if SelectedValuePath is set, otherwise fall back to SelectedItem
             if (combo.SelectedValue is not null)
             {
                 return combo.SelectedValue.ToString() ?? string.Empty;
