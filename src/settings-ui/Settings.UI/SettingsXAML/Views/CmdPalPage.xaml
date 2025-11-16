@@ -108,7 +108,7 @@
                     HorizontalAlignment="Center"
                     TextAlignment="Center"
                     TextWrapping="Wrap">
-                    <Run x:Uid="CmdPal_ExtensibleHeade" FontWeight="SemiBold" /> <LineBreak />
+                    <Run x:Uid="CmdPal_ExtensibleHeader" FontWeight="SemiBold" /> <LineBreak />
                     <Run
                         x:Uid="CmdPal_ExtensibleDescription"
                         FontSize="12"
