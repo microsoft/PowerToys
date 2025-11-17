@@ -168,6 +168,7 @@ BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 std::wstring	g_RecordingSaveLocation;
+std::wstring	g_RecordingSaveLocationGIF;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
@@ -1812,7 +1813,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 // Check if GIF is selected by comparing the text
                 bool isGifSelected = (wcscmp(selectedText, L"GIF") == 0);
 
-                // if gif is selected set the scaling to the g_recordScaleGIF value otherwise to the g_recordScaleMP4 value
+                // If GIF is selected, set the scaling to the g_RecordScalingGIF value; otherwise to the g_RecordScalingMP4 value
                 if (isGifSelected) {
                     g_RecordScaling = g_RecordScalingGIF;
 
@@ -2173,7 +2174,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO,
             g_CaptureAudio ? BST_CHECKED: BST_UNCHECKED );
 
-        for (int i = 0; i < _countof(g_FramerateOptions); i++) {
+        //
+        // The framerate drop down list is not used in the current version (might be added in the future)
+        //
+        /*for (int i = 0; i < _countof(g_FramerateOptions); i++) {
 
             _stprintf(text, L"%d", g_FramerateOptions[i]);
             SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), static_cast<UINT>(CB_ADDSTRING),
@@ -2182,7 +2186,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
                 SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), CB_SETCURSEL, static_cast<WPARAM>(i), static_cast<LPARAM>(0));
             }
-        }
+        }*/
 
         // Add the recording format to the combo box and set the current selection
         size_t selection = 0;
@@ -2345,17 +2349,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             text[2] = 0;
             newTimeout = _tstoi( text );
 
-            if( g_RecordingFormat == RecordingFormat::GIF )
-            {
-                // Hardcode lower frame rate for GIFs
-                g_RecordFrameRate = 15;
-            }
-            else
-            {
-                g_RecordFrameRate = g_FramerateOptions[SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FRAME_RATE), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0))];
-            }
-
             g_RecordingFormat = static_cast<RecordingFormat>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_FORMAT), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)));
+            g_RecordFrameRate = (g_RecordingFormat == RecordingFormat::GIF) ? RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE : RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
             g_RecordScaling = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_SCALING), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0)) * 10 + 10);
 
             // Get the selected microphone
@@ -3536,7 +3531,16 @@ void StopRecording()
 //----------------------------------------------------------------------------
 auto GetUniqueRecordingFilename()
 {
-    std::filesystem::path path{ g_RecordingSaveLocation };
+    std::filesystem::path path;
+
+    if (g_RecordingFormat == RecordingFormat::GIF)
+    {
+        path = g_RecordingSaveLocationGIF;
+    }
+    else
+    {
+        path = g_RecordingSaveLocation;
+    }
 
     // Chop off index if it's there
     auto base = std::regex_replace( path.stem().wstring(), std::wregex( L" [(][0-9]+[)]$" ), L"" );
@@ -3591,6 +3595,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
 
     // Create the appropriate recording session based on format
+    OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
     if (g_RecordingFormat == RecordingFormat::GIF)
     {
         g_GifRecordingSession = GifRecordingSession::Create(
@@ -3657,18 +3662,44 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                 saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
             }
 
-            if( g_RecordingSaveLocation.size() == 0) {
+            // Peek the folder Windows has chosen to display
+            static std::filesystem::path lastSaveFolder;
+            wil::unique_cotaskmem_string chosenFolderPath;
+            wil::com_ptr<IShellItem> currentSelectedFolder;
+            bool bFolderChanged = false; 
+            if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
+            {
+                if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
+                {
+                    if (lastSaveFolder != chosenFolderPath.get())
+                    {
+                        lastSaveFolder = chosenFolderPath.get() ? chosenFolderPath.get() : std::filesystem::path{};
+                        bFolderChanged = true;
+                    }
+                }
+            }
+
+            if( (g_RecordingFormat == RecordingFormat::GIF && g_RecordingSaveLocationGIF.size() == 0) || (g_RecordingFormat == RecordingFormat::MP4 && g_RecordingSaveLocation.size() == 0) || (bFolderChanged)) {
 
                 wil::com_ptr<IShellItem> shellItem;
                 wil::unique_cotaskmem_string folderPath;
-                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put())))
-                    g_RecordingSaveLocation = folderPath.get();
+                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put()))) {
+                    if (g_RecordingFormat == RecordingFormat::GIF) {
+                        g_RecordingSaveLocationGIF = folderPath.get();
+                        std::filesystem::path currentPath{ g_RecordingSaveLocationGIF };
+                        g_RecordingSaveLocationGIF = currentPath / DEFAULT_GIF_RECORDING_FILE;
+                    }
+                    else {
+                        g_RecordingSaveLocation = folderPath.get();
+                        if (g_RecordingFormat == RecordingFormat::MP4) {
+                            std::filesystem::path currentPath{ g_RecordingSaveLocation };
+                            g_RecordingSaveLocation = currentPath / DEFAULT_RECORDING_FILE;
+                        }
+                    }
+                }
             }
 
             // Always use appropriate default filename based on current format
-            std::filesystem::path currentPath{ g_RecordingSaveLocation };
-            const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF) ? DEFAULT_GIF_RECORDING_FILE : DEFAULT_RECORDING_FILE;
-            g_RecordingSaveLocation = currentPath.parent_path() / defaultFile;
             auto suggestedName = GetUniqueRecordingFilename();
             saveDialog->SetFileName( suggestedName.c_str() );
 
@@ -3696,9 +3727,15 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         }
         else {
 
-            co_await file.MoveAndReplaceAsync( destFile );
-            g_RecordingSaveLocation = file.Path();
-            SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+            co_await file.MoveAndReplaceAsync(destFile);
+            if (g_RecordingFormat == RecordingFormat::GIF) {
+                g_RecordingSaveLocationGIF = file.Path();
+                SaveToClipboard(g_RecordingSaveLocationGIF.c_str(), hWnd);
+            }
+            else {
+                g_RecordingSaveLocation = file.Path();
+                SaveToClipboard(g_RecordingSaveLocation.c_str(), hWnd);
+            }
         }
         g_bSaveInProgress = false;
 
@@ -3906,6 +3943,7 @@ LRESULT APIENTRY MainWndProc(
     OPENFILENAME	openFileName;
     static TCHAR	filePath[MAX_PATH] = {L"zoomit"};
     NOTIFYICONDATA	tNotifyIconData;
+    static DWORD64  g_TelescopingZoomLastTick = 0ull;
 
     const auto drawAllRightJustifiedLines = [&rc]( long lineHeight, bool doPop = false ) {
         rc.top = textPt.y - static_cast<LONG>(g_TextBufferPreviousLines.size()) * lineHeight;
@@ -3932,6 +3970,97 @@ LRESULT APIENTRY MainWndProc(
         }
     };
 
+    const auto doTelescopingZoomTimer = [hWnd, wParam, lParam, &x, &y]( bool invalidate = true ) {
+        if( zoomTelescopeStep != 0.0f )
+        {
+            zoomLevel *= zoomTelescopeStep;
+            g_TelescopingZoomLastTick = GetTickCount64();
+            if( (zoomTelescopeStep > 1 && zoomLevel >= zoomTelescopeTarget) ||
+                (zoomTelescopeStep < 1 && zoomLevel <= zoomTelescopeTarget) )
+            {
+                zoomLevel = zoomTelescopeTarget;
+
+                g_TelescopingZoomLastTick = 0ull;
+                KillTimer( hWnd, wParam );
+                OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
+                            monInfo.rcMonitor.left,
+                            monInfo.rcMonitor.top,
+                            cursorPos.x,
+                            cursorPos.y );
+                SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
+                             monInfo.rcMonitor.top + cursorPos.y );
+            }
+        }
+        else
+        {
+            // Case where we didn't zoom at all
+            g_TelescopingZoomLastTick = 0ull;
+            KillTimer( hWnd, wParam );
+        }
+        if( wParam == 2 && zoomLevel == 1 )
+        {
+            g_Zoomed = FALSE;
+            if( g_ZoomOnLiveZoom )
+            {
+                GetCursorPos( &cursorPos );
+                cursorPos = ScalePointInRects( cursorPos, monInfo.rcMonitor, g_LiveZoomSourceRect );
+                SetCursorPos( cursorPos.x, cursorPos.y );
+                SendMessage( hWnd, WM_HOTKEY, LIVE_HOTKEY, 0 );
+            }
+            else if( lParam != SHALLOW_ZOOM )
+            {
+                // Figure out where final unzoomed cursor should be
+                if( g_Drawing )
+                {
+                    cursorPos = prevPt;
+                }
+                OutputDebug( L"FINAL MOUSE: x: %d y: %d\n", cursorPos.x, cursorPos.y );
+                GetZoomedTopLeftCoordinates( zoomLevel, &cursorPos, &x, width, &y, height );
+                cursorPos.x = monInfo.rcMonitor.left + x + static_cast<int>((cursorPos.x - x) * zoomLevel);
+                cursorPos.y = monInfo.rcMonitor.top + y + static_cast<int>((cursorPos.y - y) * zoomLevel);
+                SetCursorPos( cursorPos.x, cursorPos.y );
+            }
+            if( hTargetWindow )
+            {
+                SetWindowPos( hTargetWindow, HWND_BOTTOM, rcTargetWindow.left, rcTargetWindow.top, rcTargetWindow.right - rcTargetWindow.left, rcTargetWindow.bottom - rcTargetWindow.top, 0 );
+                hTargetWindow = NULL;
+            }
+            DeleteDrawUndoList( &drawUndoList );
+
+            // Restore live zoom if we came from that mode
+            if( g_ZoomOnLiveZoom )
+            {
+                SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), reinterpret_cast<LPARAM>(&g_LiveZoomSourceRect) );
+                g_ZoomOnLiveZoom = FALSE;
+                forcePenResize = TRUE;
+            }
+
+            SetForegroundWindow( g_ActiveWindow );
+            ClipCursor( NULL );
+            g_HaveDrawn = FALSE;
+            g_TypeMode = TypeModeOff;
+            g_HaveTyped = FALSE;
+            g_Drawing = FALSE;
+            EnableDisableStickyKeys( TRUE );
+            DeleteObject( hTypingFont );
+            DeleteDC( hdcScreen );
+            DeleteDC( hdcScreenCompat );
+            DeleteDC( hdcScreenCursorCompat );
+            DeleteDC( hdcScreenSaveCompat );
+            DeleteObject( hbmpCompat );
+            DeleteObject (hbmpCursorCompat );
+            DeleteObject( hbmpDrawingCompat );
+            DeleteObject( hDrawingPen );
+
+            SetFocus( g_ActiveWindow );
+            ShowWindow( hWnd, SW_HIDE );
+        }
+        if( invalidate )
+        {
+            InvalidateRect( hWnd, NULL, FALSE );
+        }
+    };
+
     switch (message) {
     case WM_CREATE:
 
@@ -3947,8 +4076,10 @@ LRESULT APIENTRY MainWndProc(
         // Set g_RecordScaling based on the current recording format
         if (g_RecordingFormat == RecordingFormat::GIF) {
             g_RecordScaling = g_RecordScalingGIF;
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE;
         } else {
             g_RecordScaling = g_RecordScalingMP4;
+            g_RecordFrameRate = RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
         }
 
         // to support migrating from
@@ -4776,7 +4907,10 @@ LRESULT APIENTRY MainWndProc(
                         zoomTelescopeStep = ZOOM_LEVEL_STEP_IN;
                         zoomTelescopeTarget = g_ZoomLevels[g_SliderZoomLevel];
                         if( g_AnimateZoom )
+                        {
                             zoomLevel = static_cast<float>(1.0) * zoomTelescopeStep;
+                            g_TelescopingZoomLastTick = GetTickCount64();
+                        }
                         else
                             zoomLevel = zoomTelescopeTarget;
                         SetTimer( hWnd, 1, ZOOM_LEVEL_STEP_TIME, NULL );
@@ -4794,6 +4928,7 @@ LRESULT APIENTRY MainWndProc(
                         // Start telescoping zoom.
                         zoomTelescopeStep = ZOOM_LEVEL_STEP_OUT;
                         zoomTelescopeTarget = 1.0;
+                        g_TelescopingZoomLastTick = GetTickCount64();
                         SetTimer( hWnd, 2, ZOOM_LEVEL_STEP_TIME, NULL );
 
                     } else {
@@ -5470,6 +5605,14 @@ LRESULT APIENTRY MainWndProc(
             g_Zoomed, g_Drawing, g_Tracing);
 
         OutputDebug(L"Window visible: %d Topmost: %d\n", IsWindowVisible(hWnd), GetWindowLong(hWnd, GWL_EXSTYLE)& WS_EX_TOPMOST);
+        if( g_Zoomed && g_TelescopingZoomLastTick != 0ull && !g_Drawing && !g_Tracing )
+        {
+            ULONG64 now = GetTickCount64();
+            if( now - g_TelescopingZoomLastTick >= ZOOM_LEVEL_STEP_TIME )
+            {
+                doTelescopingZoomTimer( false );
+            }
+        }
 
         if( g_Zoomed && (g_TypeMode == TypeModeOff) && !g_bSaveInProgress ) {
 
@@ -6228,6 +6371,17 @@ LRESULT APIENTRY MainWndProc(
     {
         // Reload the settings. This message is called from PowerToys after a setting is changed by the user.
         reg.ReadRegSettings(RegSettings);
+        
+        if (g_RecordingFormat == RecordingFormat::GIF)
+        {
+            g_RecordScaling = g_RecordScalingGIF;
+            g_RecordFrameRate = RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE; 
+        }
+        else
+        {
+            g_RecordScaling = g_RecordScalingMP4;
+            g_RecordFrameRate = RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE;
+        }
 
         // Apply tray icon setting
         EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
@@ -6336,12 +6490,10 @@ LRESULT APIENTRY MainWndProc(
                 GetCursorPos(&local_savedCursorPos);
             }
 
-            HBITMAP     hInterimSaveBitmap;
-            HDC         hInterimSaveDc;
-            HBITMAP     hSaveBitmap;
-            HDC         hSaveDc;
-            int         copyX, copyY;
-            int         copyWidth, copyHeight;
+            // Determine the user's desired save area in zoomed viewport coordinates.
+            // This will be the entire viewport if the user does not select a crop
+            // rectangle.
+            int copyX = 0, copyY = 0, copyWidth = width, copyHeight = height;
 
             if ( LOWORD( wParam ) == IDC_SAVE_CROP )
             {
@@ -6356,20 +6508,15 @@ LRESULT APIENTRY MainWndProc(
                     }
                     break;
                 }
+
                 auto copyRc = selectRectangle.SelectedRect();
                 selectRectangle.Stop();
                 g_RecordCropping = FALSE;
+
                 copyX = copyRc.left;
                 copyY = copyRc.top;
                 copyWidth = copyRc.right - copyRc.left;
                 copyHeight = copyRc.bottom - copyRc.top;
-            }
-            else
-            {
-                copyX = 0;
-                copyY = 0;
-                copyWidth = width;
-                copyHeight = height;
             }
             OutputDebug( L"***x: %d, y: %d, width: %d, height: %d\n", copyX, copyY, copyWidth, copyHeight );
 
@@ -6377,34 +6524,35 @@ LRESULT APIENTRY MainWndProc(
             GetClipCursor( &oldClipRect );
             ClipCursor( NULL );
 
-            // Capture the screen before displaying the save dialog
-            hInterimSaveDc = CreateCompatibleDC( hdcScreen );
-            hInterimSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
-            SelectObject( hInterimSaveDc, hInterimSaveBitmap );
+            // Translate the viewport selection into coordinates for the 1:1 source
+            // bitmap hdcScreenCompat.
+            int viewportX, viewportY;
+            GetZoomedTopLeftCoordinates(
+                zoomLevel, &cursorPos, &viewportX, width, &viewportY, height );
 
-            hSaveDc = CreateCompatibleDC( hdcScreen );
-#if SCALE_HALFTONE
-            SetStretchBltMode( hInterimSaveDc, HALFTONE );
-            SetStretchBltMode( hSaveDc, HALFTONE );
-#else
-            // Use HALFTONE for better quality when smooth image is enabled
-            if (g_SmoothImage) {
-                SetStretchBltMode( hInterimSaveDc, HALFTONE );
-                SetStretchBltMode( hSaveDc, HALFTONE );
-            } else {
-                SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
-                SetStretchBltMode( hSaveDc, COLORONCOLOR );
-            }
-#endif
-            StretchBlt( hInterimSaveDc,
-                        0, 0,
-                        copyWidth, copyHeight,
-                        hdcScreen,
-                        monInfo.rcMonitor.left + copyX,
-                        monInfo.rcMonitor.top + copyY,
-                        copyWidth, copyHeight,
-                        SRCCOPY|CAPTUREBLT );
+            int saveX = viewportX + static_cast<int>( copyX / zoomLevel );
+            int saveY = viewportY + static_cast<int>( copyY / zoomLevel );
+            int saveWidth = static_cast<int>( copyWidth / zoomLevel );
+            int saveHeight = static_cast<int>( copyHeight / zoomLevel );
 
+            // Create a pixel-accurate copy of the desired area from the source bitmap.
+            wil::unique_hdc hdcActualSize( CreateCompatibleDC( hdcScreen ) );
+            wil::unique_hbitmap hbmActualSize(
+                CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight ) );
+            // Note: we do not need to restore the existing context later. The objects
+            // are transient and not reused.
+            SelectObject( hdcActualSize.get(), hbmActualSize.get() );
+
+            // Perform a direct 1:1 copy from the backing bitmap.
+            BitBlt( hdcActualSize.get(),
+                    0, 0,
+                    saveWidth, saveHeight,
+                    hdcScreenCompat,
+                    saveX, saveY,
+                    SRCCOPY | CAPTUREBLT );
+
+            // Open the Save As dialog and capture the desired file path and whether to
+            // save the zoomed display or the source bitmap pixels.
             g_bSaveInProgress = true;
             memset( &openFileName, 0, sizeof(openFileName ));
             openFileName.lStructSize       = OPENFILENAME_SIZE_VERSION_400;
@@ -6420,6 +6568,7 @@ LRESULT APIENTRY MainWndProc(
                                              "Actual size PNG\0*.png\0\0";
                                              //"Actual size BMP\0*.bmp\0\0";
             openFileName.lpstrFile			= filePath;
+
             if( GetSaveFileName( &openFileName ) )
             {
                 TCHAR targetFilePath[MAX_PATH];
@@ -6429,42 +6578,47 @@ LRESULT APIENTRY MainWndProc(
                     _tcscat( targetFilePath, L".png" );
                 }
 
-                // Save image at screen size
-                if( openFileName.nFilterIndex == 1 )
+                if( openFileName.nFilterIndex == 2 )
                 {
-                    SavePng( targetFilePath, hInterimSaveBitmap );
+                    // Save at actual size.
+                    SavePng( targetFilePath, hbmActualSize.get() );
                 }
-                // Save image scaled down to actual size
                 else
                 {
-                    int saveWidth = static_cast<int>( copyWidth / zoomLevel );
-                    int saveHeight = static_cast<int>( copyHeight / zoomLevel );
+                    // Save zoomed-in image at screen resolution.
+#if SCALE_HALFTONE
+                    const int bltMode = HALFTONE;
+#else
+                    // Use HALFTONE for better quality when smooth image is enabled
+                    const int bltMode = g_SmoothImage ? HALFTONE : COLORONCOLOR;
+#endif
+                    // Recreate the zoomed-in view by upscaling from our source bitmap.
+                    wil::unique_hdc hdcZoomed( CreateCompatibleDC(hdcScreen) );
+                    wil::unique_hbitmap hbmZoomed(
+                        CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight ) );
+                    SelectObject( hdcZoomed.get(), hbmZoomed.get() );
 
-                    hSaveBitmap = CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
-                    SelectObject( hSaveDc, hSaveBitmap );
+                    SetStretchBltMode( hdcZoomed.get(), bltMode );
 
-                    StretchBlt( hSaveDc,
+                    StretchBlt( hdcZoomed.get(),
+                                0, 0,
+                                copyWidth, copyHeight,
+                                hdcActualSize.get(),
                                 0, 0,
                                 saveWidth, saveHeight,
-                                hInterimSaveDc,
-                                0,
-                                0,
-                                copyWidth, copyHeight,
                                 SRCCOPY | CAPTUREBLT );
 
-                    SavePng( targetFilePath, hSaveBitmap );
+                    SavePng( targetFilePath, hbmZoomed.get() );
                 }
             }
             g_bSaveInProgress = false;
 
-            DeleteDC( hInterimSaveDc );
-            DeleteDC( hSaveDc );
-
             if( lParam != SHALLOW_ZOOM )
             {
-                SetCursorPos(local_savedCursorPos.x, local_savedCursorPos.y);
+                SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
             }
             ClipCursor( &oldClipRect );
+
             break;
         }
 
@@ -6735,88 +6889,7 @@ LRESULT APIENTRY MainWndProc(
 
         case 2:
         case 1:
-            //
-            // Telescoping zoom timer
-            //
-            if( zoomTelescopeStep ) {
-
-                zoomLevel *= zoomTelescopeStep;
-                if( (zoomTelescopeStep > 1 && zoomLevel >= zoomTelescopeTarget ) ||
-                    (zoomTelescopeStep < 1 && zoomLevel <= zoomTelescopeTarget )) {
-
-                    zoomLevel = zoomTelescopeTarget;
-                    KillTimer( hWnd, wParam );
-                    OutputDebug( L"SETCURSOR mon_left: %x mon_top: %x x: %d y: %d\n",
-                            monInfo.rcMonitor.left, monInfo.rcMonitor.top, cursorPos.x, cursorPos.y );
-                    SetCursorPos( monInfo.rcMonitor.left + cursorPos.x,
-                                        monInfo.rcMonitor.top + cursorPos.y );
-                }
-
-            } else {
-
-                // Case where we didn't zoom at all
-                KillTimer( hWnd, wParam );
-            }
-            if( wParam == 2 && zoomLevel == 1 ) {
-
-                g_Zoomed = FALSE;
-                if( g_ZoomOnLiveZoom )
-                {
-                    GetCursorPos( &cursorPos );
-                    cursorPos = ScalePointInRects( cursorPos, monInfo.rcMonitor, g_LiveZoomSourceRect );
-                    SetCursorPos( cursorPos.x, cursorPos.y );
-                    SendMessage(hWnd, WM_HOTKEY, LIVE_HOTKEY, 0);
-                }
-                else if( lParam != SHALLOW_ZOOM )
-                {
-                    // Figure out where final unzoomed cursor should be
-                    if (g_Drawing) {
-                        cursorPos = prevPt;
-                    }
-                    OutputDebug(L"FINAL MOUSE: x: %d y: %d\n", cursorPos.x, cursorPos.y );
-                    GetZoomedTopLeftCoordinates(zoomLevel, &cursorPos, &x, width, &y, height);
-                    cursorPos.x = monInfo.rcMonitor.left + x + static_cast<int>((cursorPos.x - x) * zoomLevel);
-                    cursorPos.y = monInfo.rcMonitor.top + y + static_cast<int>((cursorPos.y - y) * zoomLevel);
-                    SetCursorPos(cursorPos.x, cursorPos.y);
-                }
-                if( hTargetWindow ) {
-
-                    SetWindowPos( hTargetWindow, HWND_BOTTOM, rcTargetWindow.left, rcTargetWindow.top,
-                            rcTargetWindow.right - rcTargetWindow.left,
-                            rcTargetWindow.bottom - rcTargetWindow.top, 0 );
-                    hTargetWindow = NULL;
-                }
-                DeleteDrawUndoList( &drawUndoList );
-
-                // Restore live zoom if we came from that mode
-                if( g_ZoomOnLiveZoom ) {
-
-                    SendMessage( g_hWndLiveZoom, WM_USER_SET_ZOOM, static_cast<WPARAM>(g_LiveZoomLevel), reinterpret_cast<LPARAM>(&g_LiveZoomSourceRect) );
-                    g_ZoomOnLiveZoom = FALSE;
-                    forcePenResize = TRUE;
-                }
-
-                SetForegroundWindow( g_ActiveWindow );
-                ClipCursor( NULL );
-                g_HaveDrawn = FALSE;
-                g_TypeMode = TypeModeOff;
-                g_HaveTyped = FALSE;
-                g_Drawing = FALSE;
-                EnableDisableStickyKeys( TRUE );
-                DeleteObject( hTypingFont );
-                DeleteDC( hdcScreen );
-                DeleteDC( hdcScreenCompat );
-                DeleteDC( hdcScreenCursorCompat );
-                DeleteDC( hdcScreenSaveCompat );
-                DeleteObject( hbmpCompat );
-                DeleteObject( hbmpCursorCompat );
-                DeleteObject( hbmpDrawingCompat );
-                DeleteObject( hDrawingPen );
-
-                SetFocus( g_ActiveWindow );
-                ShowWindow( hWnd, SW_HIDE );
-            }
-            InvalidateRect( hWnd, NULL, FALSE );
+            doTelescopingZoomTimer();
             break;
 
         case 3:

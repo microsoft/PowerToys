@@ -407,6 +407,71 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private double _locationPanelLatitude;
+        private double _locationPanelLongitude;
+
+        public double LocationPanelLatitude
+        {
+            get => _locationPanelLatitude;
+            set
+            {
+                if (_locationPanelLatitude != value)
+                {
+                    _locationPanelLatitude = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(LocationPanelLightTime));
+                }
+            }
+        }
+
+        public double LocationPanelLongitude
+        {
+            get => _locationPanelLongitude;
+            set
+            {
+                if (_locationPanelLongitude != value)
+                {
+                    _locationPanelLongitude = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private int _locationPanelLightTime;
+        private int _locationPanelDarkTime;
+
+        public int LocationPanelLightTimeMinutes
+        {
+            get => _locationPanelLightTime;
+            set
+            {
+                if (_locationPanelLightTime != value)
+                {
+                    _locationPanelLightTime = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(LocationPanelLightTime));
+                }
+            }
+        }
+
+        public int LocationPanelDarkTimeMinutes
+        {
+            get => _locationPanelDarkTime;
+            set
+            {
+                if (_locationPanelDarkTime != value)
+                {
+                    _locationPanelDarkTime = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(LocationPanelDarkTime));
+                }
+            }
+        }
+
+        public TimeSpan LocationPanelLightTime => TimeSpan.FromMinutes(_locationPanelLightTime);
+
+        public TimeSpan LocationPanelDarkTime => TimeSpan.FromMinutes(_locationPanelDarkTime);
+
         public HotkeySettings ToggleThemeActivationShortcut
         {
             get => ModuleSettings.Properties.ToggleThemeHotkey.Value;
@@ -497,7 +562,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 SyncButtonInformation = SelectedCity != null
                     ? SelectedCity.City
-                    : $"{Latitude},{Longitude}";
+                    : $"{Latitude}°,{Longitude}°";
 
                 double lat = double.Parse(ModuleSettings.Properties.Latitude.Value, CultureInfo.InvariantCulture);
                 double lon = double.Parse(ModuleSettings.Properties.Longitude.Value, CultureInfo.InvariantCulture);

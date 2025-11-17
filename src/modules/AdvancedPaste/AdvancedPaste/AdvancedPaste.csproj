@@ -59,10 +59,8 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageReference Include="MessagePack" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Amazon" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.HuggingFace" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.MistralAI" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
