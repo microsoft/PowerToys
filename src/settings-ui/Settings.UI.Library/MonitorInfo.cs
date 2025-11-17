@@ -20,7 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private int _currentBrightness;
         private int _colorTemperature = 6500;
         private bool _isHidden;
-        private bool _enableColorTemperature;
         private bool _enableContrast;
         private bool _enableVolume;
         private string _capabilitiesRaw = string.Empty;
@@ -166,21 +165,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_isHidden != value)
                 {
                     _isHidden = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        [JsonPropertyName("enableColorTemperature")]
-        public bool EnableColorTemperature
-        {
-            get => _enableColorTemperature;
-            set
-            {
-                if (_enableColorTemperature != value)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[MonitorInfo] EnableColorTemperature changing from {_enableColorTemperature} to {value} for monitor {Name}");
-                    _enableColorTemperature = value;
                     OnPropertyChanged();
                 }
             }

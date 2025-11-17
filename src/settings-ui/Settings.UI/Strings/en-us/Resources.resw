@@ -5598,18 +5598,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_ColorTemperature.Header" xml:space="preserve">
     <value>Color Temperature</value>
   </data>
-  <data name="PowerDisplay_Monitor_EnableColorTemperature.Header" xml:space="preserve">
-    <value>Enable color temperature</value>
-  </data>
-  <data name="PowerDisplay_Monitor_EnableColorTemperature.Description" xml:space="preserve">
-    <value>Show color temperature control for this monitor</value>
-  </data>
-  <data name="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch.OnContent" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch.OffContent" xml:space="preserve">
-    <value>Off</value>
-  </data>
   <data name="PowerDisplay_Monitor_EnableContrast.Header" xml:space="preserve">
     <value>Enable contrast</value>
   </data>

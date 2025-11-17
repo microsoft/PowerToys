@@ -157,24 +157,6 @@
                                             </ComboBox>
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard
-                                            x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
-                                            IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
-                                            <tkcontrols:SettingsCard.Description>
-                                                <TextBlock
-                                                    Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind SupportsColorTemperature, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            </tkcontrols:SettingsCard.Description>
-                                            <ToggleSwitch
-                                                x:Uid="PowerDisplay_Monitor_EnableColorTemperature_ToggleSwitch"
-                                                IsOn="{x:Bind EnableColorTemperature, Mode=TwoWay}"
-                                                IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="{x:Bind ColorTemperatureTooltip, Mode=OneWay}" />
-                                                </ToolTipService.ToolTip>
-                                            </ToggleSwitch>
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard
                                             x:Uid="PowerDisplay_Monitor_EnableContrast"
                                             IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
                                             <tkcontrols:SettingsCard.Description>

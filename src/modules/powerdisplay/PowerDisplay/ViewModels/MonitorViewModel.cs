@@ -37,7 +37,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     private bool _isAvailable;
 
     // Visibility settings (controlled by Settings UI)
-    private bool _showColorTemperature;
     private bool _showContrast;
     private bool _showVolume;
 
@@ -283,7 +282,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
 
         // Initialize Show properties based on hardware capabilities
-        _showColorTemperature = monitor.SupportsColorTemperature; // Only show for DDC/CI monitors that support it
         _showContrast = monitor.SupportsContrast;
         _showVolume = monitor.SupportsVolume;
 
@@ -336,21 +334,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public int MaxVolume => _monitor.MaxVolume;
 
     // Advanced control display logic
-    public bool HasAdvancedControls => ShowColorTemperature || ShowContrast || ShowVolume;
-
-    public bool ShowColorTemperature
-    {
-        get => _showColorTemperature;
-        set
-        {
-            if (_showColorTemperature != value)
-            {
-                _showColorTemperature = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasAdvancedControls));
-            }
-        }
-    }
+    public bool HasAdvancedControls => ShowContrast || ShowVolume;
 
     public bool ShowContrast
     {

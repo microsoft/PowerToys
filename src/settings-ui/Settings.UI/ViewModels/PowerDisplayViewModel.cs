@@ -201,7 +201,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (existingMonitors.TryGetValue(monitorKey, out var existingMonitor))
                 {
                     // Preserve user settings from existing monitor
-                    newMonitor.EnableColorTemperature = existingMonitor.EnableColorTemperature;
                     newMonitor.EnableContrast = existingMonitor.EnableContrast;
                     newMonitor.EnableVolume = existingMonitor.EnableVolume;
                     newMonitor.IsHidden = existingMonitor.IsHidden;

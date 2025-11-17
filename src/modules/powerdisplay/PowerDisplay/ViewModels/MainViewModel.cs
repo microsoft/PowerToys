@@ -501,9 +501,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     updateTasks.Add(task);
                 }
 
-                // Apply color temperature if changed and feature is enabled
-                if (monitorVm.ShowColorTemperature &&
-                    monitorSettings.ColorTemperature > 0 &&
+                // Apply color temperature if changed
+                // Note: ColorTemperature is now Settings UI-only (no flyout control)
+                if (monitorSettings.ColorTemperature > 0 &&
                     monitorSettings.ColorTemperature != monitorVm.ColorTemperature)
                 {
                     Logger.LogInfo($"[Settings] Scheduling color temperature update for {hardwareId}: 0x{monitorSettings.ColorTemperature:X2}");
@@ -750,9 +750,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         if (monitorSettings != null)
         {
-            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': ColorTemp={monitorSettings.EnableColorTemperature}, Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}");
+            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}");
 
-            monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature;
             monitorVm.ShowContrast = monitorSettings.EnableContrast;
             monitorVm.ShowVolume = monitorSettings.EnableVolume;
         }
@@ -852,7 +851,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 if (existingMonitorSettings.TryGetValue(vm.HardwareId, out var existingMonitor))
                 {
                     monitorInfo.IsHidden = existingMonitor.IsHidden;
-                    monitorInfo.EnableColorTemperature = existingMonitor.EnableColorTemperature;
                     monitorInfo.EnableContrast = existingMonitor.EnableContrast;
                     monitorInfo.EnableVolume = existingMonitor.EnableVolume;
                 }
