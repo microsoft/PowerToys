@@ -124,7 +124,7 @@
                             <ComboBox.Header>
                                 <TextBlock>
                                     <Run x:Uid="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run
-                                        x:Uid="AdvancedPaste_FL_UseCliToDownloadModels"
+                                        x:Uid="AdvancedPaste_FL_UseCLIToDownloadModels"
                                         FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </TextBlock>
@@ -170,7 +170,7 @@
                 Spacing="8">
                 <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
                 <TextBlock
-                    x:Uid="AdvancedPaste_FL_FLNotAvailableYet"
+                    x:Uid="AdvancedPaste_FL_FLNotavailableYet"
                     HorizontalAlignment="Center"
                     FontWeight="SemiBold"
                     TextAlignment="Center"
