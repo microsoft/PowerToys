@@ -205,7 +205,7 @@ namespace PowerDisplay.Core
                 return BrightnessInfo.Invalid;
             }
 
-            var controller = GetControllerForMonitor(monitor);
+            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
             if (controller == null)
             {
                 return BrightnessInfo.Invalid;
@@ -244,7 +244,7 @@ namespace PowerDisplay.Core
                 return MonitorOperationResult.Failure("Monitor not found");
             }
 
-            var controller = GetControllerForMonitor(monitor);
+            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
             if (controller == null)
             {
                 Logger.LogError($"No controller available for monitor {monitorId}");
@@ -330,7 +330,7 @@ namespace PowerDisplay.Core
                 return BrightnessInfo.Invalid;
             }
 
-            var controller = GetControllerForMonitor(monitor);
+            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
             if (controller == null)
             {
                 return BrightnessInfo.Invalid;
@@ -393,10 +393,18 @@ namespace PowerDisplay.Core
         /// <summary>
         /// Get controller for the monitor
         /// </summary>
-        private IMonitorController? GetControllerForMonitor(Monitor monitor)
+        private async Task<IMonitorController?> GetControllerForMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             // WMI monitors use WmiController, DDC/CI monitors use DdcCiController
-            return _controllers.FirstOrDefault(c => c.CanControlMonitorAsync(monitor).GetAwaiter().GetResult());
+            foreach (var controller in _controllers)
+            {
+                if (await controller.CanControlMonitorAsync(monitor, cancellationToken))
+                {
+                    return controller;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -417,7 +425,7 @@ namespace PowerDisplay.Core
                 return MonitorOperationResult.Failure("Monitor not found");
             }
 
-            var controller = GetControllerForMonitor(monitor);
+            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
             if (controller == null)
             {
                 Logger.LogError($"[MonitorManager] No controller available for monitor {monitorId}");

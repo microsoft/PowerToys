@@ -152,29 +152,54 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             StatusText = "Scanning monitors...";
             IsScanning = true;
+            Logger.LogInfo("[InitializeAsync] Starting monitor discovery");
 
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
+            Logger.LogInfo($"[InitializeAsync] Discovery completed, found {monitors.Count} monitors");
 
             // Update UI on the dispatcher thread
-            _dispatcherQueue.TryEnqueue(() =>
+            Logger.LogInfo("[InitializeAsync] Calling TryEnqueue to update UI");
+            bool enqueued = _dispatcherQueue.TryEnqueue(() =>
             {
-                UpdateMonitorList(monitors);
-                IsScanning = false;
-                IsInitialized = true;
+                Logger.LogInfo("[InitializeAsync] TryEnqueue lambda started");
+                try
+                {
+                    Logger.LogInfo("[InitializeAsync] Calling UpdateMonitorList");
+                    UpdateMonitorList(monitors);
+                    Logger.LogInfo("[InitializeAsync] UpdateMonitorList returned");
 
-                if (monitors.Count > 0)
-                {
-                    StatusText = $"Found {monitors.Count} monitors";
+                    IsScanning = false;
+                    Logger.LogInfo("[InitializeAsync] IsScanning set to false");
+
+                    IsInitialized = true;
+                    Logger.LogInfo("[InitializeAsync] IsInitialized set to true");
+
+                    if (monitors.Count > 0)
+                    {
+                        StatusText = $"Found {monitors.Count} monitors";
+                    }
+                    else
+                    {
+                        StatusText = "No controllable monitors found";
+                    }
+
+                    Logger.LogInfo($"[InitializeAsync] StatusText set to: {StatusText}");
+                    Logger.LogInfo("[InitializeAsync] TryEnqueue lambda completed successfully");
                 }
-                else
+                catch (Exception lambdaEx)
                 {
-                    StatusText = "No controllable monitors found";
+                    Logger.LogError($"[InitializeAsync] Exception in TryEnqueue lambda: {lambdaEx.Message}");
+                    Logger.LogError($"[InitializeAsync] Stack trace: {lambdaEx.StackTrace}");
+                    IsScanning = false;
+                    throw;
                 }
             });
+            Logger.LogInfo($"[InitializeAsync] TryEnqueue returned: {enqueued}");
         }
         catch (Exception ex)
         {
+            Logger.LogError($"[InitializeAsync] Exception in InitializeAsync: {ex.Message}");
             _dispatcherQueue.TryEnqueue(() =>
             {
                 StatusText = $"Scan failed: {ex.Message}";
@@ -216,7 +241,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors)
     {
+        Logger.LogInfo($"[UpdateMonitorList] Starting with {monitors.Count} monitors");
+
         Monitors.Clear();
+        Logger.LogInfo("[UpdateMonitorList] Cleared Monitors collection");
 
         // Load settings to check for hidden monitors
         var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
@@ -224,10 +252,14 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             settings.Properties.Monitors
                 .Where(m => m.IsHidden)
                 .Select(m => m.HardwareId));
+        Logger.LogInfo($"[UpdateMonitorList] Loaded settings, found {hiddenMonitorIds.Count} hidden monitor IDs");
 
         var colorTempTasks = new List<Task>();
+        Logger.LogInfo("[UpdateMonitorList] Starting monitor loop");
         foreach (var monitor in monitors)
         {
+            Logger.LogInfo($"[UpdateMonitorList] Processing monitor: {monitor.Name} (HardwareId: {monitor.HardwareId})");
+
             // Skip monitors that are marked as hidden in settings
             if (hiddenMonitorIds.Contains(monitor.HardwareId))
             {
@@ -235,26 +267,40 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 continue;
             }
 
+            Logger.LogInfo($"[UpdateMonitorList] Creating MonitorViewModel for {monitor.Name}");
             var vm = new MonitorViewModel(monitor, _monitorManager, this);
             Monitors.Add(vm);
+            Logger.LogInfo($"[UpdateMonitorList] Added MonitorViewModel, total count: {Monitors.Count}");
 
             // Asynchronously initialize color temperature for DDC/CI monitors
             if (monitor.SupportsColorTemperature && monitor.CommunicationMethod == "DDC/CI")
             {
+                Logger.LogInfo($"[UpdateMonitorList] Initializing color temperature for {monitor.Name}");
                 var task = InitializeColorTemperatureSafeAsync(monitor.Id, vm);
                 colorTempTasks.Add(task);
+                Logger.LogInfo($"[UpdateMonitorList] Color temp task added, total tasks: {colorTempTasks.Count}");
             }
         }
 
+        Logger.LogInfo("[UpdateMonitorList] Monitor loop completed");
+
+        Logger.LogInfo("[UpdateMonitorList] Calling OnPropertyChanged(HasMonitors)");
         OnPropertyChanged(nameof(HasMonitors));
+        Logger.LogInfo("[UpdateMonitorList] Calling OnPropertyChanged(ShowNoMonitorsMessage)");
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
+        Logger.LogInfo("[UpdateMonitorList] OnPropertyChanged calls completed");
 
         // Save monitor information to settings.json for Settings UI
+        Logger.LogInfo("[UpdateMonitorList] Calling SaveMonitorsToSettings");
         SaveMonitorsToSettings();
+        Logger.LogInfo("[UpdateMonitorList] SaveMonitorsToSettings completed");
 
         // Restore saved settings if enabled (async, don't block)
         // Pass color temperature initialization tasks so we can wait for them if needed
+        Logger.LogInfo($"[UpdateMonitorList] About to call ReloadMonitorSettingsAsync with {colorTempTasks.Count} color temp tasks");
         _ = ReloadMonitorSettingsAsync(colorTempTasks);
+        Logger.LogInfo("[UpdateMonitorList] ReloadMonitorSettingsAsync invoked (fire-and-forget)");
+        Logger.LogInfo("[UpdateMonitorList] Method returning");
     }
 
     public async Task SetAllBrightnessAsync(int brightness)
@@ -542,6 +588,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     /// <param name="colorTempInitTasks">Optional tasks for color temperature initialization to wait for</param>
     public async Task ReloadMonitorSettingsAsync(List<Task>? colorTempInitTasks = null)
     {
+        Logger.LogInfo($"[ReloadMonitorSettingsAsync] Method called with {colorTempInitTasks?.Count ?? 0} color temp tasks");
+
         // Prevent duplicate calls
         if (IsLoading)
         {
@@ -551,9 +599,14 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
+            Logger.LogInfo("[ReloadMonitorSettingsAsync] Setting IsLoading = true");
+
             // Set loading state to block UI interactions
             IsLoading = true;
+            Logger.LogInfo("[ReloadMonitorSettingsAsync] IsLoading set to true");
+
             StatusText = "Loading settings...";
+            Logger.LogInfo("[ReloadMonitorSettingsAsync] StatusText updated");
 
             // Read current settings
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
@@ -636,15 +689,21 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 // Wait for color temperature initialization to complete (if any)
                 if (colorTempInitTasks != null && colorTempInitTasks.Count > 0)
                 {
-                    Logger.LogInfo("[Startup] Waiting for color temperature initialization to complete...");
+                    Logger.LogInfo($"[Startup] Waiting for {colorTempInitTasks.Count} color temperature initialization tasks to complete...");
                     try
                     {
+                        Logger.LogInfo("[Startup] Calling Task.WhenAll on color temp tasks");
                         await Task.WhenAll(colorTempInitTasks);
+                        Logger.LogInfo("[Startup] Task.WhenAll completed successfully");
                     }
                     catch (Exception ex)
                     {
                         Logger.LogWarning($"[Startup] Some color temperature initializations failed: {ex.Message}");
                     }
+                }
+                else
+                {
+                    Logger.LogInfo("[Startup] No color temperature tasks to wait for");
                 }
 
                 foreach (var monitorVm in Monitors)
@@ -667,13 +726,17 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to reload/save settings: {ex.Message}");
+            Logger.LogError($"[ReloadMonitorSettingsAsync] Exception caught: {ex.Message}");
+            Logger.LogError($"[ReloadMonitorSettingsAsync] Stack trace: {ex.StackTrace}");
             StatusText = $"Failed to process settings: {ex.Message}";
         }
         finally
         {
+            Logger.LogInfo("[ReloadMonitorSettingsAsync] In finally block, setting IsLoading = false");
+
             // Clear loading state to enable UI interactions
             IsLoading = false;
+            Logger.LogInfo("[ReloadMonitorSettingsAsync] IsLoading set to false, method exiting");
         }
     }
 
