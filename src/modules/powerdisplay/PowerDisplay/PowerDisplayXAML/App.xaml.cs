@@ -139,20 +139,9 @@ namespace PowerDisplay
                         Environment.Exit(0);
                     });
 
-                NativeEventWaiter.WaitForEventLoop(
-                    RefreshMonitorsEvent,
-                    () =>
-                    {
-                        Logger.LogInfo("Received refresh monitors event");
-                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
-                            {
-                                mainWindow.ViewModel.RefreshCommand?.Execute(null);
-                            }
-                        });
-                    });
-
+                // Note: PowerDisplay.exe should NOT listen to RefreshMonitorsEvent
+                // That event is sent BY PowerDisplay TO Settings UI for one-way notification
+                // Listening to our own event would create an infinite refresh loop
                 NativeEventWaiter.WaitForEventLoop(
                     SettingsUpdatedEvent,
                     () =>

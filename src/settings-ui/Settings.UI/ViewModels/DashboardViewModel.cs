@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -20,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Settings.UI.Library;
@@ -30,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => "Dashboard";
 
-        private Dispatcher dispatcher;
+        private DispatcherQueue dispatcher;
 
         public Func<string, int> SendConfigMSG { get; }
 
@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            dispatcher = Dispatcher.CurrentDispatcher;
+            dispatcher = DispatcherQueue.GetForCurrentThread();
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
@@ -86,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            dispatcher.BeginInvoke(() =>
+            dispatcher.TryEnqueue(() =>
             {
                 var allConflictData = e.Conflicts;
                 foreach (var inAppConflict in allConflictData.InAppConflicts)

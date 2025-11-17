@@ -290,17 +290,71 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
         Logger.LogInfo("[UpdateMonitorList] OnPropertyChanged calls completed");
 
-        // Save monitor information to settings.json for Settings UI
-        Logger.LogInfo("[UpdateMonitorList] Calling SaveMonitorsToSettings");
-        SaveMonitorsToSettings();
-        Logger.LogInfo("[UpdateMonitorList] SaveMonitorsToSettings completed");
+        // Wait for color temperature initialization to complete before saving
+        // This ensures we save the actual scanned values instead of defaults
+        if (colorTempTasks.Count > 0)
+        {
+            Logger.LogInfo($"[UpdateMonitorList] Waiting for {colorTempTasks.Count} color temperature tasks to complete before saving...");
 
-        // Restore saved settings if enabled (async, don't block)
-        // Pass color temperature initialization tasks so we can wait for them if needed
-        Logger.LogInfo($"[UpdateMonitorList] About to call ReloadMonitorSettingsAsync with {colorTempTasks.Count} color temp tasks");
-        _ = ReloadMonitorSettingsAsync(colorTempTasks);
-        Logger.LogInfo("[UpdateMonitorList] ReloadMonitorSettingsAsync invoked (fire-and-forget)");
+            // Use fire-and-forget async method to avoid blocking UI thread
+            _ = WaitForColorTempAndSaveAsync(colorTempTasks);
+        }
+        else
+        {
+            // No color temperature tasks, save immediately
+            Logger.LogInfo("[UpdateMonitorList] No color temperature tasks, calling SaveMonitorsToSettings immediately");
+            SaveMonitorsToSettings();
+            Logger.LogInfo("[UpdateMonitorList] SaveMonitorsToSettings completed");
+
+            // Restore saved settings if enabled (async, don't block)
+            Logger.LogInfo("[UpdateMonitorList] About to call ReloadMonitorSettingsAsync");
+            _ = ReloadMonitorSettingsAsync(null);
+            Logger.LogInfo("[UpdateMonitorList] ReloadMonitorSettingsAsync invoked (fire-and-forget)");
+        }
+
         Logger.LogInfo("[UpdateMonitorList] Method returning");
+    }
+
+    private async Task WaitForColorTempAndSaveAsync(List<Task> colorTempTasks)
+    {
+        try
+        {
+            // Wait for all color temperature initialization tasks to complete
+            await Task.WhenAll(colorTempTasks);
+            Logger.LogInfo("[WaitForColorTempAndSaveAsync] Color temperature tasks completed");
+
+            // Save monitor information to settings.json and reload settings
+            // Must be done on UI thread since these methods access UI properties and observable collections
+            Logger.LogInfo("[WaitForColorTempAndSaveAsync] Dispatching save and reload to UI thread");
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    SaveMonitorsToSettings();
+                    Logger.LogInfo("[WaitForColorTempAndSaveAsync] SaveMonitorsToSettings completed with actual color temp values");
+
+                    // Restore saved settings if enabled (async)
+                    Logger.LogInfo("[WaitForColorTempAndSaveAsync] About to call ReloadMonitorSettingsAsync");
+                    await ReloadMonitorSettingsAsync(null); // Tasks already completed, pass null
+                    Logger.LogInfo("[WaitForColorTempAndSaveAsync] ReloadMonitorSettingsAsync completed");
+                }
+                catch (Exception innerEx)
+                {
+                    Logger.LogError($"[WaitForColorTempAndSaveAsync] Error in UI thread operation: {innerEx.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"[WaitForColorTempAndSaveAsync] Color temperature initialization failed: {ex.Message}");
+
+            // Save anyway with whatever values we have
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                SaveMonitorsToSettings();
+                Logger.LogInfo("[WaitForColorTempAndSaveAsync] SaveMonitorsToSettings completed (after error)");
+            });
+        }
     }
 
     public async Task SetAllBrightnessAsync(int brightness)
@@ -364,8 +418,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
             StatusText = $"Monitor list updated ({Monitors.Count} total)";
 
-            // Save updated monitor list to settings.json for Settings UI
-            SaveMonitorsToSettings();
+            // Note: SaveMonitorsToSettings() is called by UpdateMonitorList() after full scan completes
+            // to avoid double-firing the refresh event during re-scan operations
         });
     }
 
@@ -893,8 +947,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     private void SignalMonitorsRefreshEvent()
     {
-        // TODO: Re-enable when Constants class is properly defined
-        /*
         try
         {
             using (var eventHandle = new System.Threading.EventWaitHandle(
@@ -910,7 +962,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             Logger.LogError($"Failed to signal refresh monitors event: {ex.Message}");
         }
-        */
     }
 
     /// <summary>

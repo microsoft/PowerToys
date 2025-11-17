@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -59,15 +60,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            // TODO: Re-enable monitor refresh events when Logger and Constants are properly defined
             // Listen for monitor refresh events from PowerDisplay.exe
-            // NativeEventWaiter.WaitForEventLoop(
-            //     Constants.RefreshPowerDisplayMonitorsEvent(),
-            //     () =>
-            //     {
-            //         Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
-            //         ReloadMonitorsFromSettings();
-            //     });
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.RefreshPowerDisplayMonitorsEvent(),
+                () =>
+                {
+                    Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
+                    ReloadMonitorsFromSettings();
+                });
         }
 
         private void InitializeEnabledValue()
@@ -438,8 +438,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                // TODO: Re-enable logging when Logger is properly defined
-                // Logger.LogInfo("Reloading monitors from settings file");
+                Logger.LogInfo("Reloading monitors from settings file");
 
                 // Read fresh settings from file
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
@@ -459,11 +458,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Update internal settings reference
                 _settings.Properties.Monitors = updatedMonitors;
 
-                // Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
+                Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Logger.LogError($"Failed to reload monitors from settings: {ex.Message}");
+                Logger.LogError($"Failed to reload monitors from settings: {ex.Message}");
             }
         }
 
