@@ -633,7 +633,7 @@ if ($csprojContent -match $storePropsCommentedPattern) {
     Write-Host "  Uncommenting and updating Store properties..." -ForegroundColor Gray
     
     # Uncomment and update the Store-specific properties
-    $replacement = "<AppxPackageIdentityName>$packageIdentityName</AppxPackageIdentityName>`n    <AppxPackagePublisher>$packageIdentityPublisher</AppxPackagePublisher>`n    <AppxPackageVersion>1.0.0.0</AppxPackageVersion>"
+    $replacement = "<AppxPackageIdentityName>$packageIdentityName</AppxPackageIdentityName>`n    <AppxPackagePublisher>$packageIdentityPublisher</AppxPackagePublisher>`n    <AppxPackageVersion>0.0.1.0</AppxPackageVersion>"
     
     $csprojContent = $csprojContent -replace $storePropsCommentedPattern, $replacement
     $csprojUpdateCount++
