@@ -165,7 +165,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
-            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
+            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
 
             if (!ViewModel.IsNested)
             {

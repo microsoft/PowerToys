@@ -7,6 +7,7 @@
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.1.0-beta" />
     <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.5" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
@@ -51,10 +52,8 @@
     <PackageVersion Include="Microsoft.AI.Foundry.Local" Version="0.3.0" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.66.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.66.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Amazon" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" Version="1.66.0-beta" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.66.0-alpha" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.HuggingFace" Version="1.66.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.MistralAI" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
