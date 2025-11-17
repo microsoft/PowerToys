@@ -1,56 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Hybrid CRT configuration -->
-  <PropertyGroup Condition="'$(HybridCrtConfiguration)'==''">
-    <HybridCrtConfiguration>$(Configuration)</HybridCrtConfiguration>
-  </PropertyGroup>
-
-  <!-- Skip Hybrid CRT for AppContainer/UWP projects as they require MultiThreadedDLL -->
-  <PropertyGroup Condition="'$(AppContainerApplication)'=='true' and '$(_VC_Target_Library_Platform)'!='Desktop'">
-    <HybridCrtConfiguration></HybridCrtConfiguration>
-  </PropertyGroup>
-
-  <ItemDefinitionGroup Condition="'$(HybridCrtConfiguration)'=='Debug'">
-    <ClCompile>
-      <!-- We use MultiThreadedDebug, rather than MultiThreadedDebugDLL, to avoid DLL dependencies on VCRUNTIME140d.dll and MSVCP140d.dll. -->
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
-           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
-           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
-           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrtd.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrtd.lib</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(HybridCrtConfiguration)'=='Release'">
-    <ClCompile>
-      <!-- We use MultiThreaded, rather than MultiThreadedDLL, to avoid DLL dependencies on VCRUNTIME140.dll and MSVCP140.dll. -->
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
-           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
-           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
-           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
-
-  <!-- AppContainer/UWP projects must use MultiThreadedDLL -->
-  <ItemDefinitionGroup Condition="'$(AppContainerApplication)'=='true' and '$(_VC_Target_Library_Platform)'!='Desktop' And '$(Configuration)'=='Debug'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(AppContainerApplication)'=='true' and '$(_VC_Target_Library_Platform)'!='Desktop' And '$(Configuration)'=='Release'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-    </ClCompile>
-  </ItemDefinitionGroup>
 
   <!-- Project configurations -->
   <ItemGroup Label="ProjectConfigurations">
@@ -76,6 +26,7 @@
   <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+    <CAExcludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(CAExcludePath)</CAExcludePath>
   </PropertyGroup>
 
   <!-- C++ source compile-specific things for all configurations -->
@@ -84,7 +35,7 @@
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ReplaceWildcardsInProjectItems>true</ReplaceWildcardsInProjectItems>
-    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(ExternalIncludePath)</ExternalIncludePath>
     <!-- Enable control flow guard for C++ projects that don't consume any C++ files -->
     <!-- This covers the case where a .dll exports a .lib, but doesn't have any ClCompile entries. -->
     <LinkControlFlowGuard>Guard</LinkControlFlowGuard>
@@ -123,6 +74,7 @@
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -132,6 +84,7 @@
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>

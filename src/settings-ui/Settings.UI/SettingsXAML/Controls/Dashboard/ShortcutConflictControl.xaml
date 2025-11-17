@@ -10,7 +10,7 @@
 
     <Grid>
         <Button
-            AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneWay}"
+            x:Uid="ShortcutConflictControl_Automation"
             Click="ShortcutConflictBtn_Click"
             Style="{StaticResource SubtleButtonStyle}">
             <Grid ColumnSpacing="16">
