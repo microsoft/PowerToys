@@ -407,6 +407,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
+        /// Refreshes the ColorTemperature property binding to force UI re-evaluation.
+        /// Called after AvailableColorPresets is populated to sync ComboBox selection.
+        /// </summary>
+        public void RefreshColorTemperatureBinding()
+        {
+            OnPropertyChanged(nameof(ColorTemperature));
+        }
+
+        /// <summary>
         /// Represents a color temperature preset item for VCP code 0x14
         /// </summary>
         public class ColorPresetItem : Observable

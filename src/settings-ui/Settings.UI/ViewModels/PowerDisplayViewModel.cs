@@ -327,9 +327,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Sort by VCP value for consistent ordering
             presetList = presetList.OrderBy(p => p.VcpValue).ToList();
 
-            // Create new collection and assign it - this triggers property setter
-            // which will call UpdateSelectedColorPresetFromTemperature() to sync the selection
+            // Create new collection and assign it
             monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>(presetList);
+
+            // Refresh ColorTemperature binding to force ComboBox to re-evaluate SelectedValue
+            // and match it against the newly populated AvailableColorPresets
+            monitor.RefreshColorTemperatureBinding();
         }
 
         /// <summary>
