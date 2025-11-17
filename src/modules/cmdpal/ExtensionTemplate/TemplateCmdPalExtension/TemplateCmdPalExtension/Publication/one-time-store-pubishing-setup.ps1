@@ -435,6 +435,28 @@ Write-Host ""
 Write-Host "  Summary: " -NoNewline -ForegroundColor Cyan
 Write-Host "$($foundAssets.Count) of $($requiredAssets.Count) assets found" -ForegroundColor White
 
+# Auto-fix: Copy StoreLogo.scale-100.png to StoreLogo.png if needed
+$storeLogoPath = Join-Path $assetsPath "StoreLogo.png"
+$storeLogoScaledPath = Join-Path $assetsPath "StoreLogo.scale-100.png"
+
+if (-not (Test-Path $storeLogoPath) -and (Test-Path $storeLogoScaledPath)) {
+    Write-Host ""
+    Write-Host "  [AUTO-FIX] Creating StoreLogo.png from StoreLogo.scale-100.png..." -ForegroundColor Cyan
+    try {
+        Copy-Item $storeLogoScaledPath -Destination $storeLogoPath -Force -ErrorAction Stop
+        Write-Host "  [SUCCESS] StoreLogo.png created successfully" -ForegroundColor Green
+        
+        # Update the missing/found counts
+        $missingAssets = $missingAssets | Where-Object { $_.Name -ne "StoreLogo.png" }
+        if ($foundAssets -notcontains "StoreLogo.png") {
+            $foundAssets += "StoreLogo.png"
+        }
+    }
+    catch {
+        Write-Host "  [ERROR] Could not copy file: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
 if ($missingAssets.Count -gt 0) {
     Write-Host ""
     Write-Host "  [WARNING] $($missingAssets.Count) asset(s) missing" -ForegroundColor Yellow
@@ -792,6 +814,16 @@ else {
     Write-Host "  Your extension is ready for Microsoft Store publishing!" -ForegroundColor White
     Write-Host "  All configuration and assets are in place." -ForegroundColor Green
 }
+Write-Host ""
+Write-Host "Next Steps:" -ForegroundColor Cyan
+Write-Host "  1. Build MSIX bundles by running:" -ForegroundColor Gray
+Write-Host "     .\build-msix-bundles.ps1" -ForegroundColor White
+Write-Host ""
+Write-Host "  2. Upload the bundle to Microsoft Store Partner Center" -ForegroundColor Gray
+Write-Host "     (Located in Publication\ folder after build)" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "  3. Follow submission instructions at:" -ForegroundColor Gray
+Write-Host "     https://learn.microsoft.com/windows/powertoys/command-palette/publish-extension" -ForegroundColor DarkCyan
 Write-Host ""
 Write-Host "Press any key to exit..." -ForegroundColor Gray
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
