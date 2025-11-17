@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
+using System.Text.Json;
+
 using Wox.Infrastructure.Storage;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace PowerLauncher.ViewModel
 {
@@ -17,22 +19,29 @@ namespace PowerLauncher.ViewModel
         {
             _storage = new WoxJsonStorage<PowerToysRunSettings>();
             Settings = _storage.Load();
-            Settings.PropertyChanged += (s, e) =>
+
+            // Check information file for version mismatch
+            try
             {
-                if (e.PropertyName == nameof(Settings.ActivateTimes))
+                if (_storage.CheckVersionMismatch())
                 {
-                    OnPropertyChanged(nameof(ActivatedTimes));
+                    if (!_storage.TryLoadData())
+                    {
+                        _storage.Clear();
+                    }
                 }
-            };
+            }
+            catch (JsonException e)
+            {
+                Log.Exception($"Error in Load of PowerToysRunSettings: {e.Message}", e, GetType());
+            }
         }
 
-        public PowerToysRunSettings Settings { get; set; }
+        public PowerToysRunSettings Settings { get; }
 
         public void Save()
         {
             _storage.Save();
         }
-
-        public string ActivatedTimes => string.Format(CultureInfo.InvariantCulture, Properties.Resources.about_activate_times, Settings.ActivateTimes);
     }
 }

@@ -154,9 +154,7 @@ namespace Wox.Infrastructure.Hotkey
 
             if (CharKey != Key.None)
             {
-                text += _specialSymbolDictionary.ContainsKey(CharKey)
-                    ? _specialSymbolDictionary[CharKey]
-                    : CharKey.ToString();
+                text += _specialSymbolDictionary.TryGetValue(CharKey, out string value) ? value : CharKey.ToString();
             }
             else if (!string.IsNullOrEmpty(text))
             {

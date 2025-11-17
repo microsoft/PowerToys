@@ -3,5 +3,8 @@
   <PropertyGroup>
     <Version>0.0.1</Version>
     <DevEnvironment>Local</DevEnvironment>
+
+    <!-- Forcing for every DLL on by default -->
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
   </PropertyGroup>
 </Project>

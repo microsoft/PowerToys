@@ -4,6 +4,8 @@
 
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text;
+
 using Wox.Infrastructure;
 using Wox.Plugin;
 
@@ -11,7 +13,9 @@ namespace Microsoft.Plugin.Folder.Sources.Result
 {
     public class FileItemResult : IItemResult
     {
-        private static readonly IShellAction ShellAction = new ShellAction();
+        private static readonly ShellAction ShellAction = new ShellAction();
+
+        private static readonly CompositeFormat WoxPluginFolderSelectFileResultSubtitle = System.Text.CompositeFormat.Parse(Properties.Resources.wox_plugin_folder_select_file_result_subtitle);
 
         private readonly IPath _path;
 
@@ -38,10 +42,11 @@ namespace Microsoft.Plugin.Folder.Sources.Result
                 Title = Title,
 
                 // Using CurrentCulture since this is user facing
-                SubTitle = string.Format(CultureInfo.CurrentCulture, Properties.Resources.wox_plugin_folder_select_file_result_subtitle, FilePath),
+                SubTitle = string.Format(CultureInfo.CurrentCulture, WoxPluginFolderSelectFileResultSubtitle, FilePath),
+                ToolTipData = new ToolTipData(Title, string.Format(CultureInfo.CurrentCulture, WoxPluginFolderSelectFileResultSubtitle, FilePath)),
                 IcoPath = FilePath,
                 Action = c => ShellAction.Execute(FilePath, contextApi),
-                ContextData = new SearchResult { Type = ResultType.File, FullPath = FilePath },
+                ContextData = new SearchResult { Type = ResultType.File, Path = FilePath },
             };
             return result;
         }

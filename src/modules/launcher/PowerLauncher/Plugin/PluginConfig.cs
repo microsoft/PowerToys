@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json;
+
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -37,10 +38,9 @@ namespace PowerLauncher.Plugin
             return PluginMetadatas;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static void ParsePluginConfigs(IEnumerable<string> directories)
         {
-            // todo use linq when diable plugin is implemented since parallel.foreach + list is not thread saft
+            // todo use linq when disable plugin is implemented since parallel.foreach + list is not thread saft
             foreach (var directory in directories)
             {
                 if (File.Exists(Path.Combine(directory, "NeedDelete.txt")))
@@ -65,7 +65,6 @@ namespace PowerLauncher.Plugin
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         private static PluginMetadata GetPluginMetadata(string pluginDirectory)
         {
             string configPath = Path.Combine(pluginDirectory, PluginConfigName);
@@ -79,14 +78,8 @@ namespace PowerLauncher.Plugin
             PluginMetadata metadata;
             try
             {
-                metadata = JsonConvert.DeserializeObject<PluginMetadata>(File.ReadAllText(configPath));
+                metadata = JsonSerializer.Deserialize<PluginMetadata>(File.ReadAllText(configPath));
                 metadata.PluginDirectory = pluginDirectory;
-
-                // for plugins which doesn't has ActionKeywords key
-                metadata.SetActionKeywords(metadata.GetActionKeywords() ?? new List<string> { metadata.ActionKeyword });
-
-                // for plugin still use old ActionKeyword
-                metadata.ActionKeyword = metadata.GetActionKeywords()?[0];
             }
             catch (Exception e)
             {
@@ -97,6 +90,12 @@ namespace PowerLauncher.Plugin
             if (!AllowedLanguage.IsAllowed(metadata.Language))
             {
                 Log.Error($"|PluginConfig.GetPluginMetadata|Invalid language <{metadata.Language}> for config <{configPath}>", MethodBase.GetCurrentMethod().DeclaringType);
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(metadata.IcoPathDark) || string.IsNullOrEmpty(metadata.IcoPathLight))
+            {
+                Log.Error($"|PluginConfig.GetPluginMetadata|couldn't get icon information for config <{configPath}>", MethodBase.GetCurrentMethod().DeclaringType);
                 return null;
             }
 

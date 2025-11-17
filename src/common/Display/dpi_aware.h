@@ -7,10 +7,15 @@ namespace DPIAware
 {
     constexpr inline int DEFAULT_DPI = 96;
 
-    HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi_x, UINT& dpi_y);
-    HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y);
-    void Convert(HMONITOR monitor_handle, int& width, int& height);
-    void InverseConvert(HMONITOR monitor_handle, int& width, int& height);
+    HRESULT GetScreenDPIForMonitor(HMONITOR targetMonitor, UINT& dpi);
+    HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi);
+    HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi);
+    HRESULT GetScreenDPIForCursor(UINT& dpi);
+    void Convert(HMONITOR monitor_handle, float& width, float& height);
+    void Convert(HMONITOR monitor_handle, RECT& rect);
+    void ConvertByCursorPosition(float& width, float& height);
+    void InverseConvert(HMONITOR monitor_handle, float& width, float& height);
+    void InverseConvert(HMONITOR monitor_handle, RECT& rect);
     void EnableDPIAwarenessForThisProcess();
 
     enum AwarenessLevel

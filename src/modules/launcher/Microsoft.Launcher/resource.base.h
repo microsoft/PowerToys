@@ -5,9 +5,9 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys Microsoft.Launcher"
-#define INTERNAL_NAME "Microsoft.Launcher"
-#define ORIGINAL_FILENAME "Microsoft.Launcher.dll"
+#define FILE_DESCRIPTION "PowerToys.Launcher"
+#define INTERNAL_NAME "PowerToys.Launcher"
+#define ORIGINAL_FILENAME "PowerToys.Launcher.dll"
 
 // Non-localizable
 //////////////////////////////

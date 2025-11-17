@@ -5,12 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Windows;
+
 using ManagedCommon;
+using Microsoft.Toolkit.Uwp.Notifications;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
+using Windows.UI.Notifications;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
 using Wox.Plugin;
@@ -21,36 +23,37 @@ namespace Wox
     {
         private readonly SettingWindowViewModel _settingsVM;
         private readonly MainViewModel _mainVM;
+        private readonly Alphabet _alphabet;
         private readonly ThemeManager _themeManager;
         private bool _disposed;
 
-        public event ThemeChangedHandler ThemeChanged;
+        public event Common.UI.ThemeChangedHandler ThemeChanged;
 
-        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, ThemeManager themeManager)
+        public PublicAPIInstance(SettingWindowViewModel settingsVM, MainViewModel mainVM, Alphabet alphabet, ThemeManager themeManager)
         {
             _settingsVM = settingsVM ?? throw new ArgumentNullException(nameof(settingsVM));
             _mainVM = mainVM ?? throw new ArgumentNullException(nameof(mainVM));
+            _alphabet = alphabet ?? throw new ArgumentNullException(nameof(alphabet));
             _themeManager = themeManager ?? throw new ArgumentNullException(nameof(themeManager));
             _themeManager.ThemeChanged += OnThemeChanged;
-            WebRequest.RegisterPrefix("data", new DataWebRequestFactory());
+
+            ToastNotificationManagerCompat.OnActivated += args =>
+            {
+            };
+        }
+
+        public void RemoveUserSelectedItem(Result result)
+        {
+            _mainVM.RemoveUserSelectedRecord(result);
+            _mainVM.ChangeQueryText(_mainVM.QueryText, true);
         }
 
         public void ChangeQuery(string query, bool requery = false)
         {
-            _mainVM.ChangeQueryText(query, requery);
-        }
-
-        public void RestartApp()
-        {
-            _mainVM.MainWindowVisibility = Visibility.Hidden;
-
-            // we must manually save
-            // UpdateManager.RestartApp() will call Environment.Exit(0)
-            // which will cause ungraceful exit
-            SaveAppAllSettings();
-
-            // Todo : Implement logic to restart this app.
-            Environment.Exit(0);
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                _mainVM.ChangeQueryText(query, requery);
+            });
         }
 
         public void CheckForNewUpdate()
@@ -64,6 +67,7 @@ namespace Wox
             _settingsVM.Save();
             PluginManager.Save();
             ImageLoader.Save();
+            _alphabet.Save();
         }
 
         public void ReloadAllPluginData()
@@ -79,9 +83,20 @@ namespace Wox
             });
         }
 
-        public void InstallPlugin(string path)
+        public void ShowNotification(string text, string secondaryText = null)
         {
-            Application.Current.Dispatcher.Invoke(() => PluginManager.InstallPlugin(path));
+            var builder = new ToastContentBuilder().AddText(text);
+
+            if (!string.IsNullOrWhiteSpace(secondaryText))
+            {
+                builder.AddText(secondaryText);
+            }
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var toast = new ToastNotification(builder.GetToastContent().GetXml());
+                ToastNotificationManagerCompat.CreateToastNotifier().Show(toast);
+            });
         }
 
         public List<PluginPair> GetAllPlugins()
@@ -91,7 +106,7 @@ namespace Wox
 
         public Theme GetCurrentTheme()
         {
-            return _themeManager.GetCurrentTheme();
+            return _themeManager.CurrentTheme;
         }
 
         public void Dispose()

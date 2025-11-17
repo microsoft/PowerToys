@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+
 using static Wox.Infrastructure.StringMatcher;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]

@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "CppUnitTest.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameManager.h>
 #include <PowerRenameItem.h>
@@ -8,7 +7,7 @@
 #include "TestFileHelper.h"
 #include "Helpers.h"
 
-#define DEFAULT_FLAGS MatchAllOccurences
+#define DEFAULT_FLAGS 0
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -16,11 +15,11 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
-HINSTANCE g_hInst = HINST_THISCOMPONENT;
+HINSTANCE g_hostHInst = HINST_THISCOMPONENT;
 
 namespace PowerRenameManagerTests
 {
-    TEST_CLASS(SimpleTests)
+    TEST_CLASS (SimpleTests)
     {
     public:
         struct rename_pairs
@@ -69,16 +68,9 @@ namespace PowerRenameManagerTests
                 int itemId = 0;
                 Assert::IsTrue(item->GetId(&itemId) == S_OK);
                 mgr->AddItem(item);
-
-                // Verify the item we added is the same from the event
-                Assert::IsTrue(mockMgrEvents->m_itemAdded != nullptr && mockMgrEvents->m_itemAdded == item);
-                int eventItemId = 0;
-                Assert::IsTrue(mockMgrEvents->m_itemAdded->GetId(&eventItemId) == S_OK);
-                Assert::IsTrue(itemId == eventItemId);
             }
 
             // TODO: Setup match and replace parameters
-            wchar_t newReplaceTerm[MAX_PATH] = { 0 };
             CComPtr<IPowerRenameRegEx> renRegEx;
             Assert::IsTrue(mgr->GetRenameRegEx(&renRegEx) == S_OK);
             renRegEx->PutFlags(flags);
@@ -89,7 +81,7 @@ namespace PowerRenameManagerTests
             bool replaceSuccess = false;
             for (int step = 0; step < 20; step++)
             {
-                replaceSuccess = mgr->Rename(0) == S_OK;
+                replaceSuccess = mgr->Rename(0, true) == S_OK;
                 if (replaceSuccess)
                 {
                     break;
@@ -99,41 +91,45 @@ namespace PowerRenameManagerTests
 
             Assert::IsTrue(replaceSuccess);
 
+            std::vector<std::wstring> shouldRename = { L"not ", L"" };
+
             // Verify the rename occurred
             for (int i = 0; i < numPairs; i++)
             {
-                Assert::IsTrue(testFileHelper.PathExists(renamePairs[i].originalName) == !renamePairs[i].shouldRename);
-                Assert::IsTrue(testFileHelper.PathExists(renamePairs[i].newName) == renamePairs[i].shouldRename);
+                Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(renamePairs[i].originalName) == !renamePairs[i].shouldRename, 
+                               (std::wstring(L"The path: [" +  renamePairs[i].originalName + L"] should ") + shouldRename[!renamePairs[i].shouldRename] + L"exist.").c_str());
+                Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(renamePairs[i].newName) == renamePairs[i].shouldRename,
+                               (std::wstring(L"The path: [" + renamePairs[i].newName + L"] should ") + shouldRename[renamePairs[i].shouldRename] + L"exist.").c_str());
             }
 
             Assert::IsTrue(mgr->Shutdown() == S_OK);
 
             mockMgrEvents->Release();
         }
-        TEST_METHOD(CreateTest)
+        TEST_METHOD (CreateTest)
         {
             CComPtr<IPowerRenameManager> mgr;
             Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);
         }
 
-        TEST_METHOD(CreateAndShutdownTest)
+        TEST_METHOD (CreateAndShutdownTest)
         {
             CComPtr<IPowerRenameManager> mgr;
             Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);
             Assert::IsTrue(mgr->Shutdown() == S_OK);
         }
 
-        TEST_METHOD(AddItemTest)
+        TEST_METHOD (AddItemTest)
         {
             CComPtr<IPowerRenameManager> mgr;
             Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);
             CComPtr<IPowerRenameItem> item;
-            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, SYSTEMTIME{0}, &item);
+            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, SYSTEMTIME{ 0 }, &item);
             mgr->AddItem(item);
             Assert::IsTrue(mgr->Shutdown() == S_OK);
         }
 
-        TEST_METHOD(VerifyRenameManagerEvents)
+        TEST_METHOD (VerifyRenameManagerEvents)
         {
             CComPtr<IPowerRenameManager> mgr;
             Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);
@@ -143,22 +139,17 @@ namespace PowerRenameManagerTests
             DWORD cookie = 0;
             Assert::IsTrue(mgr->Advise(mgrEvents, &cookie) == S_OK);
             CComPtr<IPowerRenameItem> item;
-            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, SYSTEMTIME{0}, &item);
+            CMockPowerRenameItem::CreateInstance(L"foo", L"foo", 0, false, SYSTEMTIME{ 0 }, &item);
             int itemId = 0;
             Assert::IsTrue(item->GetId(&itemId) == S_OK);
             mgr->AddItem(item);
 
-            // Verify the item we added is the same from the event
-            Assert::IsTrue(mockMgrEvents->m_itemAdded != nullptr && mockMgrEvents->m_itemAdded == item);
-            int eventItemId = 0;
-            Assert::IsTrue(mockMgrEvents->m_itemAdded->GetId(&eventItemId) == S_OK);
-            Assert::IsTrue(itemId == eventItemId);
             Assert::IsTrue(mgr->Shutdown() == S_OK);
 
             mockMgrEvents->Release();
         }
 
-        TEST_METHOD(VerifySingleRename)
+        TEST_METHOD (VerifySingleRename)
         {
             // Create a single item and verify rename works as expected
             rename_pairs renamePairs[] = {
@@ -168,7 +159,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
 
-        TEST_METHOD(VerifyMultiRename)
+        TEST_METHOD (VerifyMultiRename)
         {
             // Create a single item and verify rename works as expected
             rename_pairs renamePairs[] = {
@@ -183,7 +174,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
 
-        TEST_METHOD(VerifyFilesOnlyRename)
+        TEST_METHOD (VerifyFilesOnlyRename)
         {
             // Verify only files are renamed when folders match too
             rename_pairs renamePairs[] = {
@@ -194,7 +185,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | ExcludeFolders);
         }
 
-        TEST_METHOD(VerifyFoldersOnlyRename)
+        TEST_METHOD (VerifyFoldersOnlyRename)
         {
             // Verify only folders are renamed when files match too
             rename_pairs renamePairs[] = {
@@ -205,7 +196,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | ExcludeFiles);
         }
 
-        TEST_METHOD(VerifyFileNameOnlyRename)
+        TEST_METHOD (VerifyFileNameOnlyRename)
         {
             // Verify only file name is renamed, not extension
             rename_pairs renamePairs[] = {
@@ -216,7 +207,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | NameOnly);
         }
 
-        TEST_METHOD(VerifyFileExtensionOnlyRename)
+        TEST_METHOD (VerifyFileExtensionOnlyRename)
         {
             // Verify only file extension is renamed, not name
             rename_pairs renamePairs[] = {
@@ -227,7 +218,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | ExtensionOnly);
         }
 
-        TEST_METHOD(VerifySubFoldersRename)
+        TEST_METHOD (VerifySubFoldersRename)
         {
             // Verify subfolders do not get renamed
             rename_pairs renamePairs[] = {
@@ -263,17 +254,51 @@ namespace PowerRenameManagerTests
         TEST_METHOD (VerifyTitlecaseTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo and the to", L"Bar and the To", false, true, 0 },
+                { L"foo And The To", L"Bar and the To", false, true, 0 },
+                { L"foo And The To.txt", L"Bar and the To.txt", true, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
+        }      
+
+        TEST_METHOD (VerifyTitlecaseWithApostropheTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"the foo i'll and i've you're dogs' the i'd it's i'm don't to y'all", L"The Bar I'll and I've You're Dogs' the I'd It's I'm Don't to Y'all", false, true, 0 },
+                { L"'the 'foo' 'i'll' and i've you're dogs' the 'i'd' it's i'm don't to y'all.txt", L"'The 'Bar' 'I'll' and I've You're Dogs' the 'I'd' It's I'm Don't to Y'all.txt", true, true, 0 },
                 { L"Test", L"Test_norename", false, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Titlecase);
         }
 
+        TEST_METHOD (VerifyCapitalizedTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo and the to", L"Bar And The To", false, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Capitalized);
+        }
+
+        TEST_METHOD (VerifyCapitalizedWithApostropheTransform)
+        {
+            rename_pairs renamePairs[] = {
+                { L"foo i'll and i've you're dogs' the i'd it's i'm don't to y'all", L"Bar I'll And I've You're Dogs' The I'd It's I'm Don't To Y'all", false, true, 0 },
+                { L"'foo i'll 'and' i've you're dogs' the i'd it's i'm don't to y'all.txt", L"'Bar I'll 'And' I've You're Dogs' The I'd It's I'm Don't To Y'all.txt", true, true, 0 },
+                { L"Test", L"Test_norename", false, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Capitalized);
+        }
+
         TEST_METHOD (VerifyNameOnlyTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo.txt", L"BAR.txt", false, true, 0 },
+                { L"foo.foo", L"BAR.foo", true, true, 0 },
+                { L"foo.txt", L"BAR.TXT", false, true, 0 },
                 { L"TEST", L"TEST_norename", false, false, 1 }
             };
 
@@ -283,13 +308,13 @@ namespace PowerRenameManagerTests
         TEST_METHOD (VerifyExtensionOnlyTransform)
         {
             rename_pairs renamePairs[] = {
-                { L"foo.FOO", L"foo.bar", false, true, 0 },
-                { L"foo.bar", L"foo.bar_norename", false, false, 0 }
+                { L"foo.FOO", L"foo.bar", true, true, 0 },
+                { L"bar.FOO", L"bar.FOO_norename", false, false, 0 },
+                { L"foo.bar", L"foo.bar_norename", true, false, 0 }
             };
 
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS | Lowercase | ExtensionOnly);
         }
-
 
         TEST_METHOD (VerifyFileAttributesNoPadding)
         {
@@ -309,7 +334,7 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar$YYYY-$MM-$DD-$hh-$mm-$ss-$fff", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
 
-        TEST_METHOD (VerifyFileAttributesMonthandDayNames)
+        TEST_METHOD (VerifyFileAttributesMonthAndDayNames)
         {
             std::locale::global(std::locale(""));
             SYSTEMTIME fileTime = { 2020, 1, 3, 1, 15, 6, 42, 453 };

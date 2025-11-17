@@ -1,11 +1,15 @@
-﻿// Copyright (c) Brice Lambson
+﻿#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+// See the LICENSE file in the project root for more information.
+// Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
 using System.Globalization;
 using System.Text;
 using System.Windows.Data;
+
 using ImageResizer.Properties;
 
 namespace ImageResizer.Views
@@ -16,6 +20,11 @@ namespace ImageResizer.Views
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var type = value?.GetType();
+            if (!type.IsEnum)
+            {
+                return value;
+            }
+
             var builder = new StringBuilder();
 
             builder
@@ -35,7 +44,10 @@ namespace ImageResizer.Views
                     .Append(parameter);
             }
 
-            var targetValue = Resources.ResourceManager.GetString(builder.ToString(), culture);
+            // Fixes #16792 - Looks like culture defaults to en-US, so wrong resource is being fetched.
+#pragma warning disable CA1304 // Specify CultureInfo
+            var targetValue = Resources.ResourceManager.GetString(builder.ToString());
+#pragma warning restore CA1304 // Specify CultureInfo
 
             if (toLower)
             {

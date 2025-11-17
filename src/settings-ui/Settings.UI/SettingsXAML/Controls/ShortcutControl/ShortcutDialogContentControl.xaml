@@ -1,0 +1,334 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutDialogContentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    x:Name="ShortcutContentControl"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BoolToKeyVisualStateConverter x:Key="BoolToKeyVisualStateConverter" />
+        <Style x:Key="CondensedInfoBarStyle" TargetType="InfoBar">
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{ThemeResource InfoBarBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{ThemeResource InfoBarBorderThickness}" />
+            <Setter Property="AutomationProperties.LandmarkType" Value="Custom" />
+            <Setter Property="AutomationProperties.IsDialog" Value="True" />
+            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="InfoBar">
+                        <Border
+                            x:Name="ContentRoot"
+                            VerticalAlignment="Top"
+                            Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <!--  Background is used here so that it overrides the severity status color if set.  -->
+                            <Grid
+                                MinHeight="0"
+                                Padding="8"
+                                HorizontalAlignment="Stretch"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <!--  Icon  -->
+                                    <ColumnDefinition Width="*" />
+                                    <!--  Title, message, and action  -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <!--  Close button  -->
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid
+                                    x:Name="StandardIconArea"
+                                    Margin="0,0,8,0"
+                                    Visibility="Collapsed">
+                                    <TextBlock
+                                        x:Name="IconBackground"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Top"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        FontSize="{StaticResource InfoBarIconFontSize}"
+                                        Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}"
+                                        Text="{StaticResource InfoBarIconBackgroundGlyph}" />
+                                    <TextBlock
+                                        x:Name="StandardIcon"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Top"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        FontSize="{StaticResource InfoBarIconFontSize}"
+                                        Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
+                                        Text="{StaticResource InfoBarInformationalIconGlyph}" />
+                                </Grid>
+                                <Viewbox
+                                    x:Name="UserIconBox"
+                                    Grid.Column="0"
+                                    MaxWidth="{ThemeResource InfoBarIconFontSize}"
+                                    MaxHeight="{ThemeResource InfoBarIconFontSize}"
+                                    Margin="0"
+                                    VerticalAlignment="Top"
+                                    Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"
+                                    Visibility="Collapsed" />
+                                <InfoBarPanel
+                                    Grid.Column="1"
+                                    Margin="0,0,0,0"
+                                    HorizontalOrientationPadding="0"
+                                    VerticalOrientationPadding="0">
+                                    <TextBlock
+                                        x:Name="Title"
+                                        Margin="0,-1,0,0"
+                                        FontSize="{StaticResource InfoBarTitleFontSize}"
+                                        FontWeight="{StaticResource InfoBarTitleFontWeight}"
+                                        Foreground="{ThemeResource InfoBarTitleForeground}"
+                                        InfoBarPanel.HorizontalOrientationMargin="0,0,8,0"
+                                        InfoBarPanel.VerticalOrientationMargin="0,8,0,0"
+                                        Text="{TemplateBinding Title}"
+                                        TextWrapping="WrapWholeWords" />
+                                    <TextBlock
+                                        x:Name="Message"
+                                        Margin="0,-1,0,0"
+                                        FontSize="{StaticResource InfoBarMessageFontSize}"
+                                        FontWeight="{StaticResource InfoBarMessageFontWeight}"
+                                        Foreground="{ThemeResource InfoBarMessageForeground}"
+                                        InfoBarPanel.HorizontalOrientationMargin="0"
+                                        InfoBarPanel.VerticalOrientationMargin="0"
+                                        Text="{TemplateBinding Message}"
+                                        TextWrapping="WrapWholeWords" />
+                                    <ContentPresenter
+                                        Content="{TemplateBinding ActionButton}"
+                                        InfoBarPanel.HorizontalOrientationMargin="16,-2,0,0"
+                                        InfoBarPanel.VerticalOrientationMargin="0,8,0,0" />
+                                </InfoBarPanel>
+                                <ContentPresenter
+                                    x:Name="ContentArea"
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            </Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="SeverityLevels">
+                                    <VisualState x:Name="Informational" />
+                                    <VisualState x:Name="Error">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                            <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                            <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarErrorIconGlyph}" />
+                                            <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Warning">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}" />
+                                            <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconBackground}" />
+                                            <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarWarningIconGlyph}" />
+                                            <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Success">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}" />
+                                            <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}" />
+                                            <Setter Target="StandardIcon.Text" Value="{StaticResource InfoBarSuccessIconGlyph}" />
+                                            <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="IconStates">
+                                    <VisualState x:Name="StandardIconVisible">
+                                        <VisualState.Setters>
+                                            <Setter Target="UserIconBox.Visibility" Value="Collapsed" />
+                                            <Setter Target="StandardIconArea.Visibility" Value="Visible" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="UserIconVisible">
+                                        <VisualState.Setters>
+                                            <Setter Target="UserIconBox.Visibility" Value="Visible" />
+                                            <Setter Target="StandardIconArea.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="NoIconVisible" />
+                                </VisualStateGroup>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="CloseButtonVisible" />
+                                    <VisualState x:Name="CloseButtonCollapsed" />
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="InfoBarVisibility">
+                                    <VisualState x:Name="InfoBarVisible" />
+                                    <VisualState x:Name="InfoBarCollapsed">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentRoot.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="ForegroundNotSet" />
+                                    <VisualState x:Name="ForegroundSet">
+                                        <VisualState.Setters>
+                                            <Setter Target="Title.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}" />
+                                            <Setter Target="Message.Foreground" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Foreground}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="BannerContent" />
+                                    <VisualState x:Name="NoBannerContent">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentArea.(Grid.Row)" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid
+        MinWidth="498"
+        MinHeight="220"
+        RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" MinHeight="104" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <tk7controls:MarkdownTextBlock x:Uid="InvalidShortcutWarningLabel" Background="Transparent" />
+        <Grid
+            Grid.Row="1"
+            Margin="0,16,0,0"
+            Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+            CornerRadius="{StaticResource OverlayCornerRadius}">
+            <ItemsControl
+                x:Name="KeysControl"
+                Height="56"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                ItemsSource="{x:Bind Keys, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:KeyVisual
+                            Padding="20,16"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Content="{Binding}"
+                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            IsTabStop="False"
+                            State="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Error}"
+                            Style="{StaticResource AccentKeyVisualStyle}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextAlignment="Center"
+                Visibility="{x:Bind Keys.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+        </Grid>
+        <StackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="12">
+            <HyperlinkButton
+                x:Name="ResetBtn"
+                x:Uid="Shortcut_ResetBtn"
+                Click="ResetBtn_Click">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="Shortcut_ResetToolTip" TextWrapping="Wrap" />
+                </ToolTipService.ToolTip>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <FontIcon FontSize="10" Glyph="&#xE777;" />
+                    <TextBlock
+                        x:Uid="Shortcut_Reset"
+                        Margin="0,-1,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="12" />
+                </StackPanel>
+            </HyperlinkButton>
+            <HyperlinkButton
+                x:Name="ClearBtn"
+                x:Uid="Shortcut_ClearBtn"
+                Click="ClearBtn_Click"
+                Visibility="{x:Bind Keys.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="Shortcut_ClearToolTip" TextWrapping="Wrap" />
+                </ToolTipService.ToolTip>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <FontIcon FontSize="12" Glyph="&#xE894;" />
+                    <TextBlock
+                        x:Uid="Shortcut_Clear"
+                        Margin="0,-1,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="12" />
+                </StackPanel>
+            </HyperlinkButton>
+        </StackPanel>
+
+        <Grid Grid.Row="3" Margin="0,12,0,0">
+            <InfoBar
+                x:Uid="InvalidShortcut"
+                BorderThickness="0"
+                IsClosable="False"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                Severity="Error"
+                Style="{StaticResource CondensedInfoBarStyle}" />
+            <InfoBar
+                x:Uid="WarningShortcutAltGr"
+                BorderThickness="0"
+                IsClosable="False"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                Severity="Warning"
+                Style="{StaticResource CondensedInfoBarStyle}" />
+            <InfoBar
+                BorderThickness="0"
+                IsClosable="False"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
+                IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
+                Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
+                Severity="Warning"
+                Style="{StaticResource CondensedInfoBarStyle}" />
+            <InfoBar
+                x:Uid="WarningPotentialShortcutConflict"
+                BorderThickness="0"
+                IsClosable="False"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowPotentialConflict, Mode=OneWay}"
+                IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowPotentialConflict, Mode=OneWay}"
+                Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
+                Severity="Warning"
+                Style="{StaticResource CondensedInfoBarStyle}">
+                <InfoBar.ActionButton>
+                    <HyperlinkButton
+                        x:Uid="Shortcut_Conflict_LearnMore"
+                        Padding="0"
+                        Click="LearnMoreBtn_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+        </Grid>
+    </Grid>
+</UserControl>

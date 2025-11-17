@@ -29,15 +29,9 @@ CMockPowerRenameManagerEvents::Release()
 }
 
 // IPowerRenameManagerEvents
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnItemAdded(_In_ IPowerRenameItem* pItem)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRename(_In_ IPowerRenameItem* pItem)
 {
-    m_itemAdded = pItem;
-    return S_OK;
-}
-
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnUpdate(_In_ IPowerRenameItem* pItem)
-{
-    m_itemUpdated = pItem;
+    m_itemRenamed = pItem;
     return S_OK;
 }
 
@@ -47,19 +41,19 @@ IFACEMETHODIMP CMockPowerRenameManagerEvents::OnError(_In_ IPowerRenameItem* pIt
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExStarted(_In_ DWORD threadId)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExStarted(_In_ DWORD /*threadId*/)
 {
     m_regExStarted = true;
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCanceled(_In_ DWORD threadId)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCanceled(_In_ DWORD /*threadId*/)
 {
     m_regExCanceled = true;
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCompleted(_In_ DWORD threadId)
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRegExCompleted(_In_ DWORD /*threadId*/)
 {
     m_regExCompleted = true;
     return S_OK;
@@ -71,22 +65,9 @@ IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRenameStarted()
     return S_OK;
 }
 
-IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRenameCompleted()
+IFACEMETHODIMP CMockPowerRenameManagerEvents::OnRenameCompleted(bool closeUIWindowAfterRenaming)
 {
     m_renameCompleted = true;
+    m_closeUIWindowAfterRenaming = closeUIWindowAfterRenaming;
     return S_OK;
-}
-
-HRESULT CMockPowerRenameManagerEvents::s_CreateInstance(_In_ IPowerRenameManager* psrm, _Outptr_ IPowerRenameUI** ppsrui)
-{
-    *ppsrui = nullptr;
-    CMockPowerRenameManagerEvents* events = new CMockPowerRenameManagerEvents();
-    HRESULT hr = E_OUTOFMEMORY;
-    if (events != nullptr)
-    {
-        hr = events->QueryInterface(IID_PPV_ARGS(ppsrui));
-        events->Release();
-    }
-
-    return hr;
 }

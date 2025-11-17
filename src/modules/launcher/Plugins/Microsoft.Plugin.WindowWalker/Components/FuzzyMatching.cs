@@ -13,7 +13,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// Class housing fuzzy matching methods
     /// </summary>
-    public static class FuzzyMatching
+    internal static class FuzzyMatching
     {
         /// <summary>
         /// Finds the best match (the one with the most
@@ -24,25 +24,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="text">The text to search inside of</param>
         /// <param name="searchText">the text to search for</param>
         /// <returns>returns the index location of each of the letters of the matches</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "matches does not waste space with the current implementation, however this could probably be optimized to store the indices of matches instead of boolean values.  Currently there are no unit tests for this, but we could refactor if memory/perf becomes an issue. ")]
-        public static List<int> FindBestFuzzyMatch(string text, string searchText)
+        internal static List<int> FindBestFuzzyMatch(string text, string searchText)
         {
-            if (searchText == null)
-            {
-                throw new ArgumentNullException(nameof(searchText));
-            }
+            ArgumentNullException.ThrowIfNull(searchText);
 
-            if (text == null)
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
+            ArgumentNullException.ThrowIfNull(text);
 
             // Using CurrentCulture since this is user facing
             searchText = searchText.ToLower(CultureInfo.CurrentCulture);
             text = text.ToLower(CultureInfo.CurrentCulture);
 
             // Create a grid to march matches like
-            // eg.
+            // e.g.
             //   a b c a d e c f g
             // a x     x
             // c     x       x
@@ -85,13 +78,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// a two dimensional array with the first dimension the text and the second
         /// one the search string and each cell marked as an intersection between the two</param>
         /// <returns>a list of the possible combinations that match the search text</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "matches does not waste space with the current implementation, however this could probably be optimized to store the indices of matches instead of boolean values.  Currently there are no unit tests for this, but we could refactor if memory/perf becomes an issue. ")]
-        public static List<List<int>> GetAllMatchIndexes(bool[,] matches)
+        internal static List<List<int>> GetAllMatchIndexes(bool[,] matches)
         {
-            if (matches == null)
-            {
-                throw new ArgumentNullException(nameof(matches));
-            }
+            ArgumentNullException.ThrowIfNull(matches);
 
             List<List<int>> results = new List<List<int>>();
 
@@ -127,12 +116,9 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// </summary>
         /// <param name="matches">the index of the matches</param>
         /// <returns>an integer representing the score</returns>
-        public static int CalculateScoreForMatches(List<int> matches)
+        internal static int CalculateScoreForMatches(List<int> matches)
         {
-            if (matches == null)
-            {
-                throw new ArgumentNullException(nameof(matches));
-            }
+            ArgumentNullException.ThrowIfNull(matches);
 
             var score = 0;
 

@@ -4,17 +4,18 @@
 
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using NUnit.Framework;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
 using Wox.Plugin;
 
 namespace Wox.Test
 {
-    [TestFixture]
+    [TestClass]
     public class WoxTest
     {
         // A Dummy class to test that OnPropertyChanged() is called while we set the variable
-        private class DummyTestClass : BaseModel
+        private sealed class DummyTestClass : BaseModel
         {
             public bool IsFunctionCalled { get; set; }
 
@@ -44,7 +45,7 @@ namespace Wox.Test
             }
         }
 
-        [Test]
+        [TestMethod]
         public void AnyVariableMustCallOnPropertyChangedWhenSet()
         {
             // Arrange

@@ -1,15 +1,14 @@
 #include "pch.h"
 #include "PowerRenameExt.h"
-#include <PowerRenameUI.h>
-#include <PowerRenameItem.h>
-#include <PowerRenameManager.h>
 #include <trace.h>
 #include <Helpers.h>
 #include <common/themes/icon_helpers.h>
 #include <Settings.h>
 #include "Generated Files/resource.h"
 
+#include <common/utils/HDropIterator.h>
 #include <common/utils/resources.h>
+#include <common/utils/package.h>
 #include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;
@@ -23,7 +22,7 @@ struct InvokeStruct
 CPowerRenameMenu::CPowerRenameMenu()
 {
     ModuleAddRef();
-    app_name = GET_RESOURCE_STRING(IDS_POWERRENAME_APP_NAME);
+    context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_POWERRENAME_CONTEXT_MENU_ENTRY, L"Rename with PowerRename");
 }
 
 CPowerRenameMenu::~CPowerRenameMenu()
@@ -47,14 +46,26 @@ HRESULT CPowerRenameMenu::s_CreateInstance(_In_opt_ IUnknown*, _In_ REFIID riid,
 }
 
 // IShellExtInit
-HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE, _In_ IDataObject* pdtobj, HKEY)
+HRESULT CPowerRenameMenu::Initialize(_In_opt_ PCIDLIST_ABSOLUTE idlist, _In_ IDataObject* pdtobj, HKEY)
 {
     // Check if we have disabled ourselves
     if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
     // Cache the data object to be used later
-    m_spdo = pdtobj;
+    if (idlist != NULL)
+    {
+        CComPtr<IShellItemArray> spsia;
+        if (SUCCEEDED(SHCreateShellItemArrayFromIDLists(1, &idlist, &spsia)) && spsia != NULL)
+        {
+            spsia->BindToHandler(NULL, BHID_DataObject, IID_IDataObject, reinterpret_cast<void**>(&m_spdo));
+        }
+    }
+    else
+    {
+        m_spdo = pdtobj;
+    }
+
     return S_OK;
 }
 
@@ -65,19 +76,19 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
     if (!CSettingsInstance().GetEnabled())
         return E_FAIL;
 
-    // Check if we should only be on the extended context menu
-    if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
-        return E_FAIL;
-
     // Check if at least one of the selected items is actually renamable.
     if (!DataObjectContainsRenamableItem(m_spdo))
+        return E_FAIL;
+
+    // Check if we should only be on the extended context menu
+    if (CSettingsInstance().GetExtendedContextMenuOnly() && (!(uFlags & CMF_EXTENDEDVERBS)))
         return E_FAIL;
 
     HRESULT hr = E_UNEXPECTED;
     if (m_spdo && !(uFlags & (CMF_DEFAULTONLY | CMF_VERBSONLY | CMF_OPTIMIZEFORINVOKE)))
     {
-        wchar_t menuName[64] = { 0 };
-        LoadString(g_hInst, IDS_POWERRENAME, menuName, ARRAYSIZE(menuName));
+        wchar_t menuName[128] = { 0 };
+        wcscpy_s(menuName, ARRAYSIZE(menuName), context_menu_caption.c_str());
 
         MENUITEMINFO mii;
         mii.cbSize = sizeof(MENUITEMINFO);
@@ -89,7 +100,7 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
         if (CSettingsInstance().GetShowIconOnMenu())
         {
-            HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0);
+            HICON hIcon = static_cast<HICON>(LoadImage(g_hInst, MAKEINTRESOURCE(IDI_RENAME), IMAGE_ICON, 16, 16, 0));
             if (hIcon)
             {
                 mii.fMask |= MIIM_BITMAP;
@@ -117,94 +128,135 @@ HRESULT CPowerRenameMenu::QueryContextMenu(HMENU hMenu, UINT index, UINT uIDFirs
 
 HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 {
+    return RunPowerRename(pici, nullptr);
+}
+
+HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
+{
+    m_etwTrace.UpdateState(true);
+
     HRESULT hr = E_FAIL;
 
     if (CSettingsInstance().GetEnabled() &&
-        (IS_INTRESOURCE(pici->lpVerb)) &&
+        pici && (IS_INTRESOURCE(pici->lpVerb)) &&
         (LOWORD(pici->lpVerb) == 0))
     {
         Trace::Invoked();
-        InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
-        hr = E_OUTOFMEMORY;
-        if (pInvokeData)
+        // Set the application path based on the location of the dll
+        std::wstring path = get_module_folderpath(g_hInst);
+        path = path + L"\\PowerToys.PowerRename.exe";
+        LPTSTR lpApplicationName = path.data();
+        // Create an anonymous pipe to stream filenames
+        SECURITY_ATTRIBUTES sa;
+        HANDLE hReadPipe;
+        HANDLE hWritePipe;
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.lpSecurityDescriptor = NULL;
+        sa.bInheritHandle = TRUE;
+        if (!CreatePipe(&hReadPipe, &hWritePipe, &sa, 0))
         {
-            pInvokeData->hwndParent = pici->hwnd;
-            hr = CoMarshalInterThreadInterfaceInStream(__uuidof(m_spdo), m_spdo, &(pInvokeData->pstrm));
-            if (SUCCEEDED(hr))
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        if (!SetHandleInformation(hWritePipe, HANDLE_FLAG_INHERIT, 0))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        CAtlFile writePipe(hWritePipe);
+
+        CString commandLine;
+        commandLine.Format(_T("\"%s\""), lpApplicationName);
+
+        int nSize = commandLine.GetLength() + 1;
+        LPTSTR lpszCommandLine = new TCHAR[nSize];
+        _tcscpy_s(lpszCommandLine, nSize, commandLine);
+
+        STARTUPINFO startupInfo;
+        ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.hStdInput = hReadPipe;
+        startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
+
+        PROCESS_INFORMATION processInformation;
+
+        // Start the resizer
+        CreateProcess(
+            NULL,
+            lpszCommandLine,
+            NULL,
+            NULL,
+            TRUE,
+            0,
+            NULL,
+            NULL,
+            &startupInfo,
+            &processInformation);
+        delete[] lpszCommandLine;
+        if (!CloseHandle(processInformation.hProcess))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+        if (!CloseHandle(processInformation.hThread))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+            return hr;
+        }
+
+        // psiItemArray is NULL if called from InvokeCommand. This part is used for the MSI installer. It is not NULL if it is called from Invoke (MSIX).
+        if (!psiItemArray)
+        {
+            if (m_spdo)
             {
-                hr = SHCreateThread(s_PowerRenameUIThreadProc, pInvokeData, CTF_COINIT | CTF_PROCESS_REF, nullptr) ? S_OK : E_FAIL;
-                if (FAILED(hr))
+                // Stream the input files
+                HDropIterator i(m_spdo);
+                for (i.First(); !i.IsDone(); i.Next())
                 {
-                    pInvokeData->pstrm->Release(); // if we failed to create the thread, then we must release the stream
+                    CString fileName(i.CurrentItem());
+                    // File name can't contain '?'
+                    fileName.Append(_T("?"));
+
+                    writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
                 }
             }
-
-            if (FAILED(hr))
+        }
+        else
+        {
+            //m_pdtobj will be NULL when invoked from the MSIX build as Initialize is never called (IShellExtInit functions aren't called in case of MSIX).
+            DWORD fileCount = 0;
+            // Gets the list of files currently selected using the IShellItemArray
+            psiItemArray->GetCount(&fileCount);
+            // Iterate over the list of files
+            for (DWORD i = 0; i < fileCount; i++)
             {
-                delete pInvokeData;
+                IShellItem* shellItem;
+                psiItemArray->GetItemAt(i, &shellItem);
+                LPWSTR itemName;
+                // Retrieves the entire file system path of the file from its shell item
+                shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+                CString fileName(itemName);
+                // File name can't contain '?'
+                fileName.Append(_T("?"));
+                // Write the file path into the input stream for image resizer
+                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
             }
         }
-        Trace::InvokedRet(hr);
+
+        writePipe.Close();
     }
+    Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
 
     return hr;
 }
 
-DWORD WINAPI CPowerRenameMenu::s_PowerRenameUIThreadProc(_In_ void* pData)
-{
-    InvokeStruct* pInvokeData = static_cast<InvokeStruct*>(pData);
-    CComPtr<IUnknown> dataSource;
-    HRESULT hr = CoGetInterfaceAndReleaseStream(pInvokeData->pstrm, IID_PPV_ARGS(&dataSource));
-    if (SUCCEEDED(hr))
-    {
-        // Create the rename manager
-        CComPtr<IPowerRenameManager> spsrm;
-        hr = CPowerRenameManager::s_CreateInstance(&spsrm);
-        if (SUCCEEDED(hr))
-        {
-            // Create the factory for our items
-            CComPtr<IPowerRenameItemFactory> spsrif;
-            hr = CPowerRenameItem::s_CreateInstance(nullptr, IID_PPV_ARGS(&spsrif));
-            if (SUCCEEDED(hr))
-            {
-                // Pass the factory to the manager
-                hr = spsrm->PutRenameItemFactory(spsrif);
-                if (SUCCEEDED(hr))
-                {
-                    // Create the rename UI instance and pass the rename manager
-                    CComPtr<IPowerRenameUI> spsrui;
-                    hr = CPowerRenameUI::s_CreateInstance(spsrm, dataSource, false, &spsrui);
-
-                    if (SUCCEEDED(hr))
-                    {
-                        IDataObject* dummy;
-                        // If we're running on a local COM server, we need to decrement module refcount, which was previously incremented in CPowerRenameMenu::Invoke.
-                        if (SUCCEEDED(dataSource->QueryInterface(IID_IShellItemArray, reinterpret_cast<void**>(&dummy))))
-                        {
-                            ModuleRelease();
-                        }
-                        // Call blocks until we are done
-                        spsrui->Show(pInvokeData->hwndParent);
-                        spsrui->Close();
-                    }
-                }
-            }
-
-            // Need to call shutdown to break circular dependencies
-            spsrm->Shutdown();
-        }
-    }
-
-    delete pInvokeData;
-
-    Trace::UIShownRet(hr);
-
-    return 0;
-}
-
 HRESULT __stdcall CPowerRenameMenu::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    return SHStrDup(app_name.c_str(), ppszName);
+    return SHStrDup(context_menu_caption.c_str(), ppszName);
 }
 
 HRESULT __stdcall CPowerRenameMenu::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
@@ -233,7 +285,7 @@ HRESULT __stdcall CPowerRenameMenu::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CPowerRenameMenu::GetState(IShellItemArray* /*psiItemArray*/, BOOL /*fOkToBeSlow*/, EXPCMDSTATE* pCmdState)
 {
     *pCmdState = CSettingsInstance().GetEnabled() ? ECS_ENABLED : ECS_HIDDEN;
     return S_OK;
@@ -248,6 +300,8 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
     swprintf_s(buffer, L"%d", GetCurrentProcessId());
     MessageBoxW(nullptr, buffer, L"PID", MB_OK);
 #endif
+    m_etwTrace.UpdateState(true);
+
     Trace::Invoked();
     InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
     HRESULT hr = E_OUTOFMEMORY;
@@ -261,9 +315,12 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
         }
         // Prevent Shutting down before PowerRenameUI is created
         ModuleAddRef();
-        hr = SHCreateThread(s_PowerRenameUIThreadProc, pInvokeData, CTF_COINIT | CTF_PROCESS_REF, nullptr) ? S_OK : E_FAIL;
+        hr = RunPowerRename(nullptr, psiItemArray);
     }
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
     return S_OK;
 }
 

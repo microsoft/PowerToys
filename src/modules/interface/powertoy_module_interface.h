@@ -1,6 +1,7 @@
 #pragma once
 
 #include <compare>
+#include <common/utils/gpo.h>
 
 /*
   DLL Interface for PowerToys. The powertoy_create() (see below) must return
@@ -15,7 +16,7 @@
   On the received object, the runner will call:
     - get_key() to get the non localized ID of the PowerToy,
     - enable() to initialize the PowerToy.
-    - get_hotkeys() to register the hotkeys the PowerToy uses.
+    - get_hotkeys() to register the hotkeys that the PowerToy uses.
 
   While running, the runner might call the following methods between create_powertoy()
   and destroy():
@@ -44,8 +45,44 @@ public:
         bool shift = false;
         bool alt = false;
         unsigned char key = 0;
+        // The id is used to identify the hotkey in the module. The order in module interface should be the same as in the settings.
+        int id = 0;
+        // Currently, this is only used by AdvancedPaste to determine if the hotkey is shown in the settings.
+        bool isShown = true;
 
-        std::strong_ordering operator<=>(const Hotkey&) const = default;
+        std::strong_ordering operator<=>(const Hotkey& other) const
+        {
+            // Compare bool fields first
+            if (auto cmp = (win <=> other.win); cmp != 0)
+                return cmp;
+            if (auto cmp = (ctrl <=> other.ctrl); cmp != 0)
+                return cmp;
+            if (auto cmp = (shift <=> other.shift); cmp != 0)
+                return cmp;
+            if (auto cmp = (alt <=> other.alt); cmp != 0)
+                return cmp;
+
+            // Compare key value only
+            return key <=> other.key;
+
+            // Note: Deliberately NOT comparing 'name' field
+        }
+
+        bool operator==(const Hotkey& other) const
+        {
+            return win == other.win &&
+                   ctrl == other.ctrl &&
+                   shift == other.shift &&
+                   alt == other.alt &&
+                   key == other.key;
+        }
+    };
+
+    struct HotkeyEx
+    {
+        WORD modifiersMask = 0;
+        WORD vkCode = 0;
+        int id = 0;
     };
 
     /* Returns the localized name of the PowerToy*/
@@ -61,7 +98,7 @@ public:
     /* Sets the configuration values. */
     virtual void set_config(const wchar_t* config) = 0;
     /* Call custom action from settings screen. */
-    virtual void call_custom_action(const wchar_t* action){};
+    virtual void call_custom_action(const wchar_t* /*action*/){};
     /* Enables the PowerToy. */
     virtual void enable() = 0;
     /* Disables the PowerToy, should free as much memory as possible. */
@@ -76,12 +113,61 @@ public:
      * Modules do not need to override this method, it will return zero by default.
      * This method is called even when the module is disabled.
      */
-    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) { return 0; }
+    virtual size_t get_hotkeys(Hotkey* /*buffer*/, size_t /*buffer_size*/)
+    {
+        return 0;
+    }
+
+    virtual std::optional<HotkeyEx> GetHotkeyEx()
+    {
+        return std::nullopt;
+    }
+
+    virtual void OnHotkeyEx()
+    {
+    }
 
     /* Called when one of the registered hotkeys is pressed. Should return true
      * if the key press is to be swallowed.
      */
-    virtual bool on_hotkey(size_t hotkeyId) { return false; }
+    virtual bool on_hotkey(size_t /*hotkeyId*/)
+    {
+        return false;
+    }
+
+    /* These are for enabling the legacy behavior of showing the shortcut guide after pressing the win key.
+     * keep_track_of_pressed_win_key returns true if the module wants to keep track of the win key being pressed.
+     * milliseconds_win_key_must_be_pressed returns the number of milliseconds the win key should be pressed before triggering the module.
+     * Don't use these for new modules.
+     */
+    virtual bool keep_track_of_pressed_win_key() { return false; }
+    virtual UINT milliseconds_win_key_must_be_pressed() { return 0; }
+
+    virtual void send_settings_telemetry()
+    {
+    }
+
+    virtual bool is_enabled_by_default() const { return true; }
+
+    /* Provides the GPO configuration value for the module. This should be overridden by the module interface to get the proper gpo policy setting. */
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration()
+    {
+        return powertoys_gpo::gpo_rule_configured_not_configured;
+    }
+
+    // Some actions like AdvancedPaste generate new inputs, which we don't want to catch again.
+    // The flag was purposefully chose to not collide with other keyboard manager flags.
+    const static inline ULONG_PTR CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG = 0x110;
+
+protected:
+    HANDLE CreateDefaultEvent(const wchar_t* eventName)
+    {
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.bInheritHandle = false;
+        sa.lpSecurityDescriptor = NULL;
+        return CreateEventW(&sa, FALSE, FALSE, eventName);
+    }
 };
 
 /*

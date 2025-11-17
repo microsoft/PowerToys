@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Windows;
 
 namespace FancyZonesEditor.Models
@@ -14,7 +12,19 @@ namespace FancyZonesEditor.Models
     public class CanvasLayoutModel : LayoutModel
     {
         // Non-localizable strings
-        private const string ModelTypeID = "canvas";
+        public const string ModelTypeID = "canvas";
+
+        // Default distance from the top and left borders to the zone.
+        private const int DefaultOffset = 100;
+
+        // Next created zone will be by OffsetShift value below and to the right of the previous.
+        private const int OffsetShift = 50;
+
+        // Zone size depends on the work area size multiplied by ZoneSizeMultiplier value.
+        private const double ZoneSizeMultiplier = 0.4;
+
+        // Distance from the top and left borders to the zone.
+        private int _topLeft = DefaultOffset;
 
         public Rect CanvasRect { get; private set; }
 
@@ -22,6 +32,13 @@ namespace FancyZonesEditor.Models
             : base(uuid, name, type)
         {
             Zones = zones;
+            TemplateZoneCount = Zones.Count;
+            CanvasRect = new Rect(new Size(width, height));
+        }
+
+        public CanvasLayoutModel(string name, LayoutType type, int width, int height)
+        : base(name, type)
+        {
             CanvasRect = new Rect(new Size(width, height));
         }
 
@@ -35,6 +52,17 @@ namespace FancyZonesEditor.Models
         {
         }
 
+        public CanvasLayoutModel(CanvasLayoutModel other)
+            : base(other)
+        {
+            CanvasRect = new Rect(other.CanvasRect.X, other.CanvasRect.Y, other.CanvasRect.Width, other.CanvasRect.Height);
+
+            foreach (Int32Rect zone in other.Zones)
+            {
+                Zones.Add(zone);
+            }
+        }
+
         // Zones - the list of all zones in this layout, described as independent rectangles
         public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
 
@@ -43,6 +71,7 @@ namespace FancyZonesEditor.Models
         public void RemoveZoneAt(int index)
         {
             Zones.RemoveAt(index);
+            TemplateZoneCount = Zones.Count;
             UpdateLayout();
         }
 
@@ -51,6 +80,83 @@ namespace FancyZonesEditor.Models
         public void AddZone(Int32Rect zone)
         {
             Zones.Add(zone);
+            TemplateZoneCount = Zones.Count;
+            UpdateLayout();
+        }
+
+        public void AddZone()
+        {
+            AddNewZone();
+            TemplateZoneCount = Zones.Count;
+            UpdateLayout();
+        }
+
+        public void ScaleLayout(double workAreaWidth, double workAreaHeight)
+        {
+            if (CanvasRect.Height == 0 || CanvasRect.Width == 0)
+            {
+                return;
+            }
+
+            Int32Rect[] zones = new Int32Rect[Zones.Count];
+            Zones.CopyTo(zones, 0);
+            Zones.Clear();
+
+            foreach (Int32Rect zone in zones)
+            {
+                var x = zone.X * workAreaWidth / CanvasRect.Width;
+                var y = zone.Y * workAreaHeight / CanvasRect.Height;
+                var width = zone.Width * workAreaWidth / CanvasRect.Width;
+                var height = zone.Height * workAreaHeight / CanvasRect.Height;
+
+                Zones.Add(new Int32Rect(x: (int)x, y: (int)y, width: (int)width, height: (int)height));
+            }
+
+            CanvasRect = new Rect(CanvasRect.X, CanvasRect.Y, workAreaWidth, workAreaHeight);
+        }
+
+        private void AddNewZone()
+        {
+            if (Zones.Count == 0)
+            {
+                _topLeft = DefaultOffset;
+            }
+            else if (_topLeft == Zones[Zones.Count - 1].X)
+            {
+                _topLeft += OffsetShift;
+            }
+
+            Rect workingArea = App.Overlay.WorkArea;
+            int topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
+            int width = (int)(workingArea.Width * ZoneSizeMultiplier);
+            int height = (int)(workingArea.Height * ZoneSizeMultiplier);
+
+            if (topLeft + width >= (int)workingArea.Width || topLeft + height >= (int)workingArea.Height)
+            {
+                _topLeft = DefaultOffset;
+                topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
+            }
+
+            Zones.Add(new Int32Rect(topLeft, topLeft, width, height));
+            _topLeft += OffsetShift;
+        }
+
+        // InitTemplateZones
+        // Creates zones based on template zones count
+        public override void InitTemplateZones()
+        {
+            if (Type == LayoutType.Custom || Type == LayoutType.Blank)
+            {
+                return;
+            }
+
+            Zones.Clear();
+            for (int i = 0; i < TemplateZoneCount; i++)
+            {
+                AddNewZone();
+            }
+
+            TemplateZoneCount = Zones.Count;
             UpdateLayout();
         }
 
@@ -71,47 +177,24 @@ namespace FancyZonesEditor.Models
                 layout.Zones.Add(zone);
             }
 
+            layout.SensitivityRadius = SensitivityRadius;
+            layout.CanvasRect = CanvasRect;
             return layout;
         }
 
         public void RestoreTo(CanvasLayoutModel other)
         {
+            base.RestoreTo(other);
+
             other.Zones.Clear();
             foreach (Int32Rect zone in Zones)
             {
                 other.Zones.Add(zone);
             }
-        }
 
-        private struct Zone
-        {
-            public int X { get; set; }
-
-            public int Y { get; set; }
-
-            public int Width { get; set; }
-
-            public int Height { get; set; }
-        }
-
-        private struct CanvasLayoutInfo
-        {
-            public int RefWidth { get; set; }
-
-            public int RefHeight { get; set; }
-
-            public Zone[] Zones { get; set; }
-        }
-
-        private struct CanvasLayoutJson
-        {
-            public string Uuid { get; set; }
-
-            public string Name { get; set; }
-
-            public string Type { get; set; }
-
-            public CanvasLayoutInfo Info { get; set; }
+            other._topLeft = _topLeft;
+            other.CanvasRect = CanvasRect;
+            other.UpdateLayout();
         }
 
         // PersistData
@@ -119,48 +202,6 @@ namespace FancyZonesEditor.Models
         protected override void PersistData()
         {
             AddCustomLayout(this);
-
-            var canvasRect = CanvasRect;
-            if (canvasRect.Width == 0 || canvasRect.Height == 0)
-            {
-                canvasRect = App.Overlay.WorkArea;
-            }
-
-            CanvasLayoutInfo layoutInfo = new CanvasLayoutInfo
-            {
-                RefWidth = (int)canvasRect.Width,
-                RefHeight = (int)canvasRect.Height,
-                Zones = new Zone[Zones.Count],
-            };
-
-            for (int i = 0; i < Zones.Count; ++i)
-            {
-                Zone zone = new Zone
-                {
-                    X = Zones[i].X,
-                    Y = Zones[i].Y,
-                    Width = Zones[i].Width,
-                    Height = Zones[i].Height,
-                };
-
-                layoutInfo.Zones[i] = zone;
-            }
-
-            CanvasLayoutJson jsonObj = new CanvasLayoutJson
-            {
-                Uuid = Uuid,
-                Name = Name,
-                Type = ModelTypeID,
-                Info = layoutInfo,
-            };
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = new DashCaseNamingPolicy(),
-            };
-
-            string jsonString = JsonSerializer.Serialize(jsonObj, options);
-            AddCustomLayoutJson(JsonSerializer.Deserialize<JsonElement>(jsonString));
-            SerializeCreatedCustomZonesets();
         }
     }
 }

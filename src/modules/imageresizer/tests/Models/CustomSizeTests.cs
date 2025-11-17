@@ -1,15 +1,18 @@
-﻿// Copyright (c) Brice Lambson
+#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using ImageResizer.Properties;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Models
 {
+    [TestClass]
     public class CustomSizeTests
     {
-        [Fact]
+        [TestMethod]
         public void NameWorks()
         {
             var size = new CustomSize
@@ -17,7 +20,7 @@ namespace ImageResizer.Models
                 Name = "Ignored",
             };
 
-            Assert.Equal(Resources.Input_Custom, size.Name);
+            Assert.AreEqual(Resources.Input_Custom, size.Name);
         }
     }
 }

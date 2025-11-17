@@ -14,7 +14,6 @@ namespace Microsoft.Plugin.Folder.Sources
         private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly List<string> DriverNames = InitialDriverList().ToList();
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
         private static IEnumerable<string> InitialDriverList()
         {
             // Using InvariantCulture since this is internal

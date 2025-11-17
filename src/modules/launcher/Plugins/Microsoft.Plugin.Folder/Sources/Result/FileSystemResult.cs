@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace Microsoft.Plugin.Folder.Sources.Result
 {
@@ -14,7 +13,7 @@ namespace Microsoft.Plugin.Folder.Sources.Result
         {
         }
 
-        public FileSystemResult([NotNull] IEnumerable<DisplayFileInfo> collection)
+        public FileSystemResult(IEnumerable<DisplayFileInfo> collection)
             : base(collection)
         {
         }

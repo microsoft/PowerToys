@@ -4,1053 +4,570 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows;
+using System.Linq;
 using System.Windows.Controls;
+
 using FancyZonesEditor.Models;
-using FancyZonesEditor.Utils;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
     public class GridData
     {
-        // The sum of row/column percents should be equal to this number
-        private const int _multiplier = 10000;
-
-        public class ResizeInfo
+        // result[k] is the sum of the first k elements of the given list.
+        public static List<int> PrefixSum(List<int> list)
         {
-            public ResizeInfo()
+            var result = new List<int>(list.Count + 1);
+            result.Add(0);
+
+            int sum = 0;
+            for (int i = 0; i < list.Count; i++)
             {
+                sum += list[i];
+                result.Add(sum);
             }
 
-            public int NewPercent { get; set; }
+            return result;
+        }
 
-            public int AdjacentPercent { get; private set; }
-
-            public int TotalPercent { get; private set; }
-
-            public int CurrentPercent { get; set; }
-
-            public double CurrentExtent { get; set; }
-
-            public bool IsResizeAllowed
+        // Opposite of PrefixSum, returns the list containing differences of consecutive elements
+        private static List<int> AdjacentDifference(List<int> list)
+        {
+            if (list.Count <= 1)
             {
-                get
-                {
-                    return (NewPercent > 0) && (NewPercent < TotalPercent);
-                }
+                return new List<int>();
             }
 
-            public void CalcNewPercent(double delta)
+            var result = new List<int>(list.Count - 1);
+
+            for (int i = 0; i < list.Count - 1; i++)
             {
-                double newExtent = CurrentExtent + _adjacentExtent + delta;
-                NewPercent = (int)((CurrentPercent + AdjacentPercent) * newExtent / (CurrentExtent + _adjacentExtent));
+                result.Add(list[i + 1] - list[i]);
             }
 
-            public void CalcAdjacentZones(int index, int size, List<RowColInfo> info, Func<int, bool> indexCmpr)
+            return result;
+        }
+
+        // IEnumerable.Distinct does not guarantee the items will be returned in the same order.
+        // In addition, here each element of the list will occupy a contiguous segment, simplifying
+        // the implementation.
+        private static List<int> Unique(List<int> list)
+        {
+            var result = new List<int>();
+
+            if (list.Count == 0)
             {
-                if (info == null)
-                {
-                    throw new ArgumentNullException(nameof(info));
-                }
+                return result;
+            }
 
-                if (indexCmpr == null)
-                {
-                    throw new ArgumentNullException(nameof(indexCmpr));
-                }
+            int last = list[0];
+            result.Add(last);
 
-                int ind = index;
-                while (ind > 0 && indexCmpr(ind))
+            for (int i = 1; i < list.Count; i++)
+            {
+                if (list[i] != last)
                 {
-                    ind--;
-                    _adjacentExtent += info[ind].Extent;
-                    AdjacentPercent += info[ind].Percent;
-                }
-
-                TotalPercent = CurrentPercent + AdjacentPercent + info[index + 1].Percent;
-
-                ind = index + 2;
-                while (ind < size && indexCmpr(ind))
-                {
-                    TotalPercent += info[ind].Percent;
-                    ind++;
+                    last = list[i];
+                    result.Add(last);
                 }
             }
 
-            public void FixAccuracyError(List<RowColInfo> info, List<int> percents, int index)
+            return result;
+        }
+
+        public struct Zone
+        {
+            public int Index { get; set; }
+
+            public int Left { get; set; }
+
+            public int Top { get; set; }
+
+            public int Right { get; set; }
+
+            public int Bottom { get; set; }
+        }
+
+        public struct Resizer
+        {
+            public Orientation Orientation { get; set; }
+
+            // all zones to the left/up, in order
+            public List<int> NegativeSideIndices { get; set; }
+
+            // all zones to the right/down, in order
+            public List<int> PositiveSideIndices { get; set; }
+        }
+
+        private List<Zone> _zones;
+        private List<Resizer> _resizers;
+
+        public int MinZoneWidth { get; set; }
+
+        public int MinZoneHeight { get; set; }
+
+        private GridLayoutModel _model;
+
+        // The sum of row/column percents should be equal to this number
+        public const int Multiplier = 10000;
+
+        private void ModelToZones(GridLayoutModel model)
+        {
+            int rows = model.Rows;
+            int cols = model.Columns;
+
+            int zoneCount = 0;
+
+            for (int row = 0; row < rows; row++)
             {
-                int total = 0;
-                for (int i = 0; i < info.Count; i++)
+                for (int col = 0; col < cols; col++)
                 {
-                    total += info[i].Percent;
+                    zoneCount = Math.Max(zoneCount, model.CellChildMap[row, col]);
+                }
+            }
+
+            zoneCount++;
+
+            if (zoneCount > rows * cols)
+            {
+                return;
+            }
+
+            var indexCount = Enumerable.Repeat(0, zoneCount).ToList();
+            var indexRowLow = Enumerable.Repeat(int.MaxValue, zoneCount).ToList();
+            var indexRowHigh = Enumerable.Repeat(0, zoneCount).ToList();
+            var indexColLow = Enumerable.Repeat(int.MaxValue, zoneCount).ToList();
+            var indexColHigh = Enumerable.Repeat(0, zoneCount).ToList();
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < cols; col++)
+                {
+                    int index = model.CellChildMap[row, col];
+                    indexCount[index]++;
+                    indexRowLow[index] = Math.Min(indexRowLow[index], row);
+                    indexColLow[index] = Math.Min(indexColLow[index], col);
+                    indexRowHigh[index] = Math.Max(indexRowHigh[index], row);
+                    indexColHigh[index] = Math.Max(indexColHigh[index], col);
+                }
+            }
+
+            for (int index = 0; index < zoneCount; index++)
+            {
+                if (indexCount[index] == 0)
+                {
+                    return;
                 }
 
-                int diff = total - _multiplier;
-                if (diff != 0)
+                if (indexCount[index] != (indexRowHigh[index] - indexRowLow[index] + 1) * (indexColHigh[index] - indexColLow[index] + 1))
                 {
-                    TotalPercent -= diff;
+                    return;
+                }
+            }
 
-                    while (index >= info.Count)
+            if (model.RowPercents.Count != model.Rows || model.ColumnPercents.Count != model.Columns || model.RowPercents.Exists((x) => (x < 1)) || model.ColumnPercents.Exists((x) => (x < 1)))
+            {
+                return;
+            }
+
+            var rowPrefixSum = PrefixSum(model.RowPercents);
+            var colPrefixSum = PrefixSum(model.ColumnPercents);
+
+            if (rowPrefixSum[rows] != Multiplier || colPrefixSum[cols] != Multiplier)
+            {
+                return;
+            }
+
+            _zones = new List<Zone>(zoneCount);
+
+            for (int index = 0; index < zoneCount; index++)
+            {
+                _zones.Add(new Zone
+                {
+                    Index = index,
+                    Left = colPrefixSum[indexColLow[index]],
+                    Right = colPrefixSum[indexColHigh[index] + 1],
+                    Top = rowPrefixSum[indexRowLow[index]],
+                    Bottom = rowPrefixSum[indexRowHigh[index] + 1],
+                });
+            }
+        }
+
+        private void ModelToResizers(GridLayoutModel model)
+        {
+            // Short name, to avoid clutter
+            var grid = model.CellChildMap;
+
+            int rows = model.Rows;
+            int cols = model.Columns;
+
+            _resizers = new List<Resizer>();
+
+            // Horizontal
+            for (int row = 1; row < rows; row++)
+            {
+                for (int startCol = 0; startCol < cols;)
+                {
+                    if (grid[row - 1, startCol] != grid[row, startCol])
                     {
-                        index--;
-                    }
+                        int endCol = startCol;
+                        while (endCol + 1 < cols && grid[row - 1, endCol + 1] != grid[row, endCol + 1])
+                        {
+                            endCol++;
+                        }
 
-                    info[index].Percent -= diff;
-                    percents[index] -= diff;
+                        var resizer = default(Resizer);
+                        resizer.Orientation = Orientation.Horizontal;
+                        var positive = new List<int>();
+                        var negative = new List<int>();
+
+                        for (int col = startCol; col <= endCol; col++)
+                        {
+                            negative.Add(grid[row - 1, col]);
+                            positive.Add(grid[row, col]);
+                        }
+
+                        resizer.PositiveSideIndices = Unique(positive);
+                        resizer.NegativeSideIndices = Unique(negative);
+
+                        _resizers.Add(resizer);
+
+                        startCol = endCol + 1;
+                    }
+                    else
+                    {
+                        startCol++;
+                    }
                 }
             }
 
-            private double _adjacentExtent;
+            // Vertical
+            for (int col = 1; col < cols; col++)
+            {
+                for (int startRow = 0; startRow < rows;)
+                {
+                    if (grid[startRow, col - 1] != grid[startRow, col])
+                    {
+                        int endRow = startRow;
+                        while (endRow + 1 < rows && grid[endRow + 1, col - 1] != grid[endRow + 1, col])
+                        {
+                            endRow++;
+                        }
+
+                        var resizer = default(Resizer);
+                        resizer.Orientation = Orientation.Vertical;
+                        var positive = new List<int>();
+                        var negative = new List<int>();
+
+                        for (int row = startRow; row <= endRow; row++)
+                        {
+                            negative.Add(grid[row, col - 1]);
+                            positive.Add(grid[row, col]);
+                        }
+
+                        resizer.PositiveSideIndices = Unique(positive);
+                        resizer.NegativeSideIndices = Unique(negative);
+
+                        _resizers.Add(resizer);
+
+                        startRow = endRow + 1;
+                    }
+                    else
+                    {
+                        startRow++;
+                    }
+                }
+            }
+        }
+
+        private void FromModel(GridLayoutModel model)
+        {
+            ModelToZones(model);
+            ModelToResizers(model);
         }
 
         public GridData(GridLayoutModel model)
         {
             _model = model;
 
-            int rows = model.Rows;
-            int cols = model.Columns;
-
-            _rowInfo = new List<RowColInfo>(rows);
-            for (int row = 0; row < rows; row++)
-            {
-                _rowInfo.Add(new RowColInfo(model.RowPercents[row]));
-            }
-
-            _colInfo = new List<RowColInfo>(cols);
-            for (int col = 0; col < cols; col++)
-            {
-                _colInfo.Add(new RowColInfo(model.ColumnPercents[col]));
-            }
+            MinZoneWidth = 1;
+            MinZoneHeight = 1;
+            FromModel(model);
         }
 
-        public int ZoneCount
+        public IReadOnlyList<Zone> Zones
         {
-            get
-            {
-                int maxIndex = 0;
-                for (int row = 0; row < _model.Rows; row++)
-                {
-                    for (int col = 0; col < _model.Columns; col++)
-                    {
-                        maxIndex = Math.Max(maxIndex, _model.CellChildMap[row, col]);
-                    }
-                }
-
-                return maxIndex;
-            }
+            get { return _zones; }
         }
 
-        public Tuple<int, int> RowColByIndex(int index)
+        public IReadOnlyList<Resizer> Resizers
         {
-            int foundRow = -1;
-            int foundCol = -1;
+            get { return _resizers; }
+        }
 
-            for (int row = 0; row < _model.Rows && foundRow == -1; row++)
+        // Converts the known list of zones from _zones to the given model. Ignores Zone.Index, so these indices can also be invalid.
+        private void ZonesToModel(GridLayoutModel model)
+        {
+            var xCoords = _zones.Select((zone) => zone.Right).Concat(_zones.Select((zone) => zone.Left)).Distinct().OrderBy((x) => x).ToList();
+            var yCoords = _zones.Select((zone) => zone.Top).Concat(_zones.Select((zone) => zone.Bottom)).Distinct().OrderBy((x) => x).ToList();
+
+            model.Rows = yCoords.Count - 1;
+            model.Columns = xCoords.Count - 1;
+            model.RowPercents = AdjacentDifference(yCoords);
+            model.ColumnPercents = AdjacentDifference(xCoords);
+            model.CellChildMap = new int[model.Rows, model.Columns];
+
+            for (int index = 0; index < _zones.Count; index++)
             {
-                for (int col = 0; col < _model.Columns && foundCol == -1; col++)
+                Zone zone = _zones[index];
+                int startRow = yCoords.IndexOf(zone.Top);
+                int endRow = yCoords.IndexOf(zone.Bottom);
+                int startCol = xCoords.IndexOf(zone.Left);
+                int endCol = xCoords.IndexOf(zone.Right);
+
+                for (int row = startRow; row < endRow; row++)
                 {
-                    if (_model.CellChildMap[row, col] == index)
+                    for (int col = startCol; col < endCol; col++)
                     {
-                        foundRow = row;
-                        foundCol = col;
+                        model.CellChildMap[row, col] = index;
                     }
                 }
             }
-
-            return new Tuple<int, int>(foundRow, foundCol);
         }
 
-        public int GetIndex(int row, int col)
+        // Returns a tuple consisting of the list of indices and the Zone which should replace the zones to be merged.
+        private Tuple<List<int>, Zone> ComputeClosure(List<int> indices)
         {
-            return _model.CellChildMap[row, col];
-        }
+            // First, find the minimum bounding rectangle which doesn't intersect any zone
+            int left = int.MaxValue;
+            int right = int.MinValue;
+            int top = int.MaxValue;
+            int bottom = int.MinValue;
 
-        public double ColumnTop(int column)
-        {
-            return _colInfo[column].Start;
-        }
-
-        public double ColumnBottom(int column)
-        {
-            return _colInfo[column].End;
-        }
-
-        public double RowStart(int row)
-        {
-            return _rowInfo[row].Start;
-        }
-
-        public double RowEnd(int row)
-        {
-            return _rowInfo[row].End;
-        }
-
-        public void SetIndex(int row, int col, int index)
-        {
-            _model.CellChildMap[row, col] = index;
-        }
-
-        public void SplitColumn(int foundCol, int spliteeIndex, int newChildIndex, double space, double offset, double actualWidth)
-        {
-            int rows = _model.Rows;
-            int cols = _model.Columns + 1;
-
-            int[,] cellChildMap = _model.CellChildMap;
-            int[,] newCellChildMap = new int[rows, cols];
-
-            int sourceCol = 0;
-            for (int col = 0; col < cols; col++)
+            if (indices.Count == 0)
             {
-                for (int row = 0; row < rows; row++)
+                return new Tuple<List<int>, Zone>(new List<int>(), new Zone
                 {
-                    if (cellChildMap[row, sourceCol] > spliteeIndex || ((col > foundCol) && (cellChildMap[row, sourceCol] == spliteeIndex)))
-                    {
-                        newCellChildMap[row, col] = cellChildMap[row, sourceCol] + 1;
-                    }
-                    else
-                    {
-                        newCellChildMap[row, col] = cellChildMap[row, sourceCol];
-                    }
-                }
+                    Index = -1,
+                    Left = left,
+                    Right = right,
+                    Top = top,
+                    Bottom = bottom,
+                });
+            }
 
-                if (col != foundCol)
+            void Extend(Zone zone)
+            {
+                left = Math.Min(left, zone.Left);
+                right = Math.Max(right, zone.Right);
+                top = Math.Min(top, zone.Top);
+                bottom = Math.Max(bottom, zone.Bottom);
+            }
+
+            foreach (Index index in indices)
+            {
+                Extend(_zones[index]);
+            }
+
+            bool possiblyBroken = true;
+            while (possiblyBroken)
+            {
+                possiblyBroken = false;
+                foreach (Zone zone in _zones)
                 {
-                    sourceCol++;
+                    int area = (zone.Bottom - zone.Top) * (zone.Right - zone.Left);
+
+                    int cutLeft = Math.Max(left, zone.Left);
+                    int cutRight = Math.Min(right, zone.Right);
+                    int cutTop = Math.Max(top, zone.Top);
+                    int cutBottom = Math.Min(bottom, zone.Bottom);
+
+                    int newArea = Math.Max(0, cutBottom - cutTop) * Math.Max(0, cutRight - cutLeft);
+
+                    if (newArea != 0 && newArea != area)
+                    {
+                        // bad intersection found, extend
+                        Extend(zone);
+                        possiblyBroken = true;
+                    }
                 }
             }
 
-            RowColInfo[] split = _colInfo[foundCol].Split(offset, space);
-
-            _colInfo[foundCol] = split[0];
-            _colInfo.Insert(foundCol + 1, split[1]);
-
-            _model.ColumnPercents[foundCol] = split[0].Percent;
-            _model.ColumnPercents.Insert(foundCol + 1, split[1].Percent);
-
-            double newTotalExtent = actualWidth - (space * (cols + 1));
-            for (int col = 0; col < cols; col++)
+            // Pick zones which are inside this area
+            var resultIndices = _zones.FindAll((zone) =>
             {
-                if (col != foundCol && col != foundCol + 1)
-                {
-                    _colInfo[col].RecalculatePercent(newTotalExtent);
-                }
-            }
+                bool inside = true;
+                inside &= left <= zone.Left && zone.Right <= right;
+                inside &= top <= zone.Top && zone.Bottom <= bottom;
+                return inside;
+            }).Select((zone) => zone.Index).ToList();
 
-            FixAccuracyError(_colInfo, _model.ColumnPercents);
-            _model.CellChildMap = newCellChildMap;
-            _model.Columns++;
+            return new Tuple<List<int>, Zone>(resultIndices, new Zone
+            {
+                Index = -1,
+                Left = left,
+                Right = right,
+                Top = top,
+                Bottom = bottom,
+            });
         }
 
-        public void SplitRow(int foundRow, int spliteeIndex, int newChildIndex, double space, double offset, double actualHeight)
+        public List<int> MergeClosureIndices(List<int> indices)
         {
-            int rows = _model.Rows + 1;
-            int cols = _model.Columns;
-
-            int[,] cellChildMap = _model.CellChildMap;
-            int[,] newCellChildMap = new int[rows, cols];
-
-            int sourceRow = 0;
-            for (int row = 0; row < rows; row++)
-            {
-                for (int col = 0; col < cols; col++)
-                {
-                    if (cellChildMap[sourceRow, col] > spliteeIndex || ((row > foundRow) && (cellChildMap[sourceRow, col] == spliteeIndex)))
-                    {
-                        newCellChildMap[row, col] = cellChildMap[sourceRow, col] + 1;
-                    }
-                    else
-                    {
-                        newCellChildMap[row, col] = cellChildMap[sourceRow, col];
-                    }
-                }
-
-                if (row != foundRow)
-                {
-                    sourceRow++;
-                }
-            }
-
-            RowColInfo[] split = _rowInfo[foundRow].Split(offset, space);
-
-            _rowInfo[foundRow] = split[0];
-            _rowInfo.Insert(foundRow + 1, split[1]);
-
-            _model.RowPercents[foundRow] = split[0].Percent;
-            _model.RowPercents.Insert(foundRow + 1, split[1].Percent);
-
-            double newTotalExtent = actualHeight - (space * (rows + 1));
-            for (int row = 0; row < rows; row++)
-            {
-                if (row != foundRow && row != foundRow + 1)
-                {
-                    _rowInfo[row].RecalculatePercent(newTotalExtent);
-                }
-            }
-
-            FixAccuracyError(_rowInfo, _model.RowPercents);
-            _model.CellChildMap = newCellChildMap;
-            _model.Rows++;
+            return ComputeClosure(indices).Item1;
         }
 
-        public void SplitOnDrag(GridResizer resizer, double delta, double space)
+        public void DoMerge(List<int> indices)
         {
-            if (resizer.Orientation == Orientation.Vertical)
+            Logger.LogTrace();
+
+            if (indices.Count == 0)
             {
-                int rows = _model.Rows;
-                int cols = _model.Columns + 1;
-                int[,] cellChildMap = _model.CellChildMap;
-                int[,] newCellChildMap = new int[rows, cols];
-
-                int draggedResizerStartCol = resizer.StartCol;
-
-                if (delta > 0)
-                {
-                    int sourceCol = 0;
-                    for (int col = 0; col < cols; col++)
-                    {
-                        for (int row = 0; row < rows; row++)
-                        {
-                            if (col == draggedResizerStartCol + 1 && (row < resizer.StartRow || row >= resizer.EndRow))
-                            {
-                                newCellChildMap[row, col] = cellChildMap[row, sourceCol + 1];
-                            }
-                            else
-                            {
-                                newCellChildMap[row, col] = cellChildMap[row, sourceCol];
-                            }
-                        }
-
-                        if (col != draggedResizerStartCol)
-                        {
-                            sourceCol++;
-                        }
-                    }
-
-                    RowColInfo[] split = _colInfo[draggedResizerStartCol + 1].Split(delta, space);
-
-                    _colInfo[draggedResizerStartCol + 1] = split[0];
-                    _colInfo.Insert(draggedResizerStartCol + 2, split[1]);
-
-                    _model.ColumnPercents[draggedResizerStartCol + 1] = split[0].Percent;
-                    _model.ColumnPercents.Insert(draggedResizerStartCol + 2, split[1].Percent);
-                }
-                else
-                {
-                    int sourceCol = 0;
-                    for (int col = 0; col < cols; col++)
-                    {
-                        for (int row = 0; row < rows; row++)
-                        {
-                            if (col == draggedResizerStartCol + 1 && (row >= resizer.StartRow && row < resizer.EndRow))
-                            {
-                                newCellChildMap[row, col] = cellChildMap[row, sourceCol + 1];
-                            }
-                            else
-                            {
-                                newCellChildMap[row, col] = cellChildMap[row, sourceCol];
-                            }
-                        }
-
-                        if (col != draggedResizerStartCol)
-                        {
-                            sourceCol++;
-                        }
-                    }
-
-                    double offset = _colInfo[draggedResizerStartCol].End - _colInfo[draggedResizerStartCol].Start + delta;
-                    RowColInfo[] split = _colInfo[draggedResizerStartCol].Split(offset - space, space);
-
-                    _colInfo[draggedResizerStartCol] = split[1];
-                    _colInfo.Insert(draggedResizerStartCol + 1, split[0]);
-
-                    _model.ColumnPercents[draggedResizerStartCol] = split[1].Percent;
-                    _model.ColumnPercents.Insert(draggedResizerStartCol + 1, split[0].Percent);
-                }
-
-                FixAccuracyError(_colInfo, _model.ColumnPercents);
-                _model.CellChildMap = newCellChildMap;
-                _model.Columns++;
-            }
-            else
-            {
-                int rows = _model.Rows + 1;
-                int cols = _model.Columns;
-                int[,] cellChildMap = _model.CellChildMap;
-                int[,] newCellChildMap = new int[rows, cols];
-
-                int draggedResizerStartRow = resizer.StartRow;
-
-                if (delta > 0)
-                {
-                    int sourceRow = 0;
-                    for (int row = 0; row < rows; row++)
-                    {
-                        for (int col = 0; col < cols; col++)
-                        {
-                            if (row == draggedResizerStartRow + 1 && (col < resizer.StartCol || col >= resizer.EndCol))
-                            {
-                                newCellChildMap[row, col] = cellChildMap[sourceRow + 1, col];
-                            }
-                            else
-                            {
-                                newCellChildMap[row, col] = cellChildMap[sourceRow, col];
-                            }
-                        }
-
-                        if (row != draggedResizerStartRow)
-                        {
-                            sourceRow++;
-                        }
-                    }
-
-                    RowColInfo[] split = _rowInfo[draggedResizerStartRow + 1].Split(delta, space);
-
-                    _rowInfo[draggedResizerStartRow + 1] = split[0];
-                    _rowInfo.Insert(draggedResizerStartRow + 2, split[1]);
-
-                    _model.RowPercents[draggedResizerStartRow + 1] = split[0].Percent;
-                    _model.RowPercents.Insert(draggedResizerStartRow + 2, split[1].Percent);
-                }
-                else
-                {
-                    int sourceRow = 0;
-                    for (int row = 0; row < rows; row++)
-                    {
-                        for (int col = 0; col < cols; col++)
-                        {
-                            if (row == draggedResizerStartRow + 1 && (col >= resizer.StartCol && col < resizer.EndCol))
-                            {
-                                newCellChildMap[row, col] = cellChildMap[sourceRow + 1, col];
-                            }
-                            else
-                            {
-                                newCellChildMap[row, col] = cellChildMap[sourceRow, col];
-                            }
-                        }
-
-                        if (row != draggedResizerStartRow)
-                        {
-                            sourceRow++;
-                        }
-                    }
-
-                    double offset = _rowInfo[draggedResizerStartRow].End - _rowInfo[draggedResizerStartRow].Start + delta;
-                    RowColInfo[] split = _rowInfo[draggedResizerStartRow].Split(offset - space, space);
-
-                    _rowInfo[draggedResizerStartRow] = split[0];
-                    _rowInfo.Insert(draggedResizerStartRow + 1, split[1]);
-
-                    _model.RowPercents[draggedResizerStartRow] = split[0].Percent;
-                    _model.RowPercents.Insert(draggedResizerStartRow + 1, split[1].Percent);
-                }
-
-                FixAccuracyError(_rowInfo, _model.RowPercents);
-                _model.CellChildMap = newCellChildMap;
-                _model.Rows++;
-            }
-        }
-
-        public void RecalculateZones(int spacing, Size arrangeSize)
-        {
-            int rows = _model.Rows;
-            int cols = _model.Columns;
-
-            double totalWidth = arrangeSize.Width - (spacing * (cols + 1));
-            double totalHeight = arrangeSize.Height - (spacing * (rows + 1));
-
-            double top = spacing;
-            for (int row = 0; row < _rowInfo.Count; row++)
-            {
-                double cellHeight = _rowInfo[row].Recalculate(top, totalHeight);
-                top += cellHeight + spacing;
-            }
-
-            double left = spacing;
-            for (int col = 0; col < _colInfo.Count; col++)
-            {
-                double cellWidth = _colInfo[col].Recalculate(left, totalWidth);
-                left += cellWidth + spacing;
-            }
-        }
-
-        public void ArrangeZones(UIElementCollection zones, int spacing)
-        {
-            int rows = _model.Rows;
-            int cols = _model.Columns;
-            int[,] cells = _model.CellChildMap;
-
-            if (cells.Length < rows * cols)
-            {
-                // Merge was not finished yet, rows and cols values are invalid
                 return;
             }
 
-            double left, top;
-            for (int row = 0; row < rows; row++)
+            int lowestIndex = indices.Min();
+
+            // make sure the set of indices is closed.
+            var closure = ComputeClosure(indices);
+            var closureIndices = closure.Item1.ToHashSet();
+            Zone closureZone = closure.Item2;
+
+            // Erase zones with these indices
+            _zones = _zones.FindAll((zone) => !closureIndices.Contains(zone.Index)).ToList();
+
+            _zones.Insert(lowestIndex, closureZone);
+
+            // Restore invariants
+            ZonesToModel(_model);
+            FromModel(_model);
+        }
+
+        public bool CanSplit(int zoneIndex, int position, Orientation orientation)
+        {
+            Zone zone = _zones[zoneIndex];
+
+            if (orientation == Orientation.Horizontal)
             {
-                for (int col = 0; col < cols; col++)
-                {
-                    int i = cells[row, col];
-                    if (((row == 0) || (cells[row - 1, col] != i)) &&
-                        ((col == 0) || (cells[row, col - 1] != i)))
-                    {
-                        // this is not a continuation of a span
-                        GridZone zone = (GridZone)zones[i];
-                        left = _colInfo[col].Start;
-                        top = _rowInfo[row].Start;
-                        Canvas.SetLeft(zone, left);
-                        Canvas.SetTop(zone, top);
-                        zone.LabelID.Content = i + 1;
-
-                        int maxRow = row;
-                        while (((maxRow + 1) < rows) && (cells[maxRow + 1, col] == i))
-                        {
-                            maxRow++;
-                        }
-
-                        zone.HorizontalSnapPoints = null;
-                        if (maxRow > row)
-                        {
-                            zone.HorizontalSnapPoints = new double[maxRow - row];
-                            int pointsIndex = 0;
-                            for (int walk = row; walk < maxRow; walk++)
-                            {
-                                zone.HorizontalSnapPoints[pointsIndex++] = _rowInfo[walk].End + (spacing / 2) - top;
-                            }
-                        }
-
-                        int maxCol = col;
-                        while (((maxCol + 1) < cols) && (cells[row, maxCol + 1] == i))
-                        {
-                            maxCol++;
-                        }
-
-                        zone.VerticalSnapPoints = null;
-                        if (maxCol > col)
-                        {
-                            zone.VerticalSnapPoints = new double[maxCol - col];
-                            int pointsIndex = 0;
-                            for (int walk = col; walk < maxCol; walk++)
-                            {
-                                zone.VerticalSnapPoints[pointsIndex++] = _colInfo[walk].End + (spacing / 2) - left;
-                            }
-                        }
-
-                        zone.MinWidth = _colInfo[maxCol].End - left;
-                        zone.MinHeight = _rowInfo[maxRow].End - top;
-                    }
-                }
+                return zone.Top + MinZoneHeight <= position && position <= zone.Bottom - MinZoneHeight;
+            }
+            else
+            {
+                return zone.Left + MinZoneWidth <= position && position <= zone.Right - MinZoneWidth;
             }
         }
 
-        public void ArrangeResizers(UIElementCollection adornerChildren, int spacing)
+        public void Split(int zoneIndex, int position, Orientation orientation)
         {
-            int rows = _model.Rows;
-            int cols = _model.Columns;
-
-            foreach (GridResizer resizer in adornerChildren)
+            Logger.LogTrace();
+            if (!CanSplit(zoneIndex, position, orientation))
             {
+                return;
+            }
+
+            Zone zone = _zones[zoneIndex];
+            Zone zone1 = zone;
+            Zone zone2 = zone;
+
+            _zones.RemoveAt(zoneIndex);
+
+            if (orientation == Orientation.Horizontal)
+            {
+                zone1.Bottom = position;
+                zone2.Top = position;
+            }
+            else
+            {
+                zone1.Right = position;
+                zone2.Left = position;
+            }
+
+            _zones.Insert(zoneIndex, zone1);
+            _zones.Insert(zoneIndex + 1, zone2);
+
+            // Restore invariants
+            ZonesToModel(_model);
+            FromModel(_model);
+        }
+
+        // Check if some zone becomes too small when the resizer is dragged by amount delta
+        public bool CanDrag(int resizerIndex, int delta)
+        {
+            var resizer = _resizers[resizerIndex];
+
+            int GetSize(int zoneIndex)
+            {
+                Zone zone = _zones[zoneIndex];
+                return resizer.Orientation == Orientation.Vertical ? zone.Right - zone.Left : zone.Bottom - zone.Top;
+            }
+
+            int minZoneSize = resizer.Orientation == Orientation.Vertical ? MinZoneWidth : MinZoneHeight;
+
+            foreach (int zoneIndex in resizer.PositiveSideIndices)
+            {
+                if (GetSize(zoneIndex) - delta < minZoneSize)
+                {
+                    return false;
+                }
+            }
+
+            foreach (int zoneIndex in resizer.NegativeSideIndices)
+            {
+                if (GetSize(zoneIndex) + delta < minZoneSize)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public void Drag(int resizerIndex, int delta)
+        {
+            Logger.LogTrace();
+
+            if (!CanDrag(resizerIndex, delta))
+            {
+                return;
+            }
+
+            var resizer = _resizers[resizerIndex];
+
+            foreach (int zoneIndex in resizer.PositiveSideIndices)
+            {
+                var zone = _zones[zoneIndex];
+
                 if (resizer.Orientation == Orientation.Horizontal)
                 {
-                    if (resizer.EndCol <= cols && resizer.StartRow < rows)
-                    {
-                        // hard coding this as (resizer.ActualHeight / 2) will still evaluate to 0 here ... a layout hasn't yet happened
-                        Canvas.SetTop(resizer, _rowInfo[resizer.StartRow].End + (spacing / 2) - 24);
-                        Canvas.SetLeft(resizer, (_colInfo[resizer.EndCol - 1].End + _colInfo[resizer.StartCol].Start) / 2);
-                    }
+                    zone.Top += delta;
                 }
                 else
                 {
-                    if (resizer.EndRow <= rows && resizer.StartCol < cols)
-                    {
-                        // hard coding this as (resizer.ActualWidth / 2) will still evaluate to 0 here ... a layout hasn't yet happened
-                        Canvas.SetLeft(resizer, _colInfo[resizer.StartCol].End + (spacing / 2) - 24);
-                        Canvas.SetTop(resizer, (_rowInfo[resizer.EndRow - 1].End + _rowInfo[resizer.StartRow].Start) / 2);
-                    }
+                    zone.Left += delta;
                 }
-            }
-        }
 
-        public ResizeInfo CalculateResizeInfo(GridResizer resizer, double delta)
-        {
-            ResizeInfo res = new ResizeInfo();
-
-            int rowIndex = resizer.StartRow;
-            int colIndex = resizer.StartCol;
-            int[,] indices = _model.CellChildMap;
-
-            List<RowColInfo> info;
-            List<int> percents;
-            int index;
-
-            if (resizer.Orientation == Orientation.Vertical)
-            {
-                res.CurrentExtent = _colInfo[colIndex].Extent;
-                res.CurrentPercent = _colInfo[colIndex].Percent;
-
-                info = _colInfo;
-                percents = _model.ColumnPercents;
-                index = colIndex;
-
-                Func<int, bool> indexCmpr = (ind) =>
-                {
-                    bool sameIndices = true;
-                    for (int i = resizer.StartRow; i < resizer.EndRow && sameIndices; i++)
-                    {
-                        sameIndices &= indices[i, ind] == indices[i, ind - 1];
-                    }
-
-                    return sameIndices;
-                };
-
-                res.CalcAdjacentZones(colIndex, _model.Columns, _colInfo, indexCmpr);
-            }
-            else
-            {
-                res.CurrentExtent = _rowInfo[rowIndex].Extent;
-                res.CurrentPercent = _rowInfo[rowIndex].Percent;
-
-                info = _rowInfo;
-                percents = _model.RowPercents;
-                index = rowIndex;
-
-                Func<int, bool> indexCmpr = (ind) =>
-                {
-                    bool sameIndices = true;
-                    for (int i = resizer.StartCol; i < resizer.EndCol && sameIndices; i++)
-                    {
-                        sameIndices &= indices[ind, i] == indices[ind - 1, i];
-                    }
-
-                    return sameIndices;
-                };
-
-                res.CalcAdjacentZones(rowIndex, _model.Rows, _rowInfo, indexCmpr);
+                _zones[zoneIndex] = zone;
             }
 
-            res.FixAccuracyError(info, percents, delta > 0 ? index + 2 : index + 1);
-            res.CalcNewPercent(delta);
-            return res;
-        }
-
-        public void DragResizer(GridResizer resizer, ResizeInfo data)
-        {
-            List<RowColInfo> info;
-            List<int> percents;
-            int index;
-
-            if (resizer.Orientation == Orientation.Vertical)
+            foreach (int zoneIndex in resizer.NegativeSideIndices)
             {
-                info = _colInfo;
-                percents = _model.ColumnPercents;
-                index = resizer.StartCol;
-            }
-            else
-            {
-                info = _rowInfo;
-                percents = _model.RowPercents;
-                index = resizer.StartRow;
-            }
+                var zone = _zones[zoneIndex];
 
-            int nextPercent = data.CurrentPercent + data.AdjacentPercent + info[index + 1].Percent;
-
-            percents[index] = info[index].Percent = data.NewPercent - data.AdjacentPercent;
-            percents[index + 1] = info[index + 1].Percent = nextPercent - data.NewPercent;
-        }
-
-        public bool SwapNegativePercents(Orientation orientation, int startRow, int endRow, int startCol, int endCol)
-        {
-            List<int> percents;
-            int index;
-            Action swapIndicesPrevLine, swapIndicesNextLine;
-
-            if (orientation == Orientation.Vertical)
-            {
-                percents = _model.ColumnPercents;
-                index = startCol;
-
-                swapIndicesPrevLine = () =>
+                if (resizer.Orientation == Orientation.Horizontal)
                 {
-                    for (int row = startRow; row < endRow; row++)
-                    {
-                        _model.CellChildMap[row, startCol] = _model.CellChildMap[row, startCol + 1];
-                    }
-
-                    for (int row = 0; row < _model.Rows; row++)
-                    {
-                        if (row < startRow || row >= endRow)
-                        {
-                            _model.CellChildMap[row, startCol] = _model.CellChildMap[row, startCol - 1];
-                        }
-                    }
-                };
-
-                swapIndicesNextLine = () =>
-                {
-                    for (int row = startRow; row < endRow; row++)
-                    {
-                        _model.CellChildMap[row, startCol + 1] = _model.CellChildMap[row, startCol];
-                    }
-
-                    for (int row = 0; row < _model.Rows; row++)
-                    {
-                        if (row < startRow || row >= endRow)
-                        {
-                            _model.CellChildMap[row, startCol + 1] = _model.CellChildMap[row, startCol + 2];
-                        }
-                    }
-                };
-            }
-            else
-            {
-                percents = _model.RowPercents;
-                index = startRow;
-
-                swapIndicesPrevLine = () =>
-                {
-                    for (int col = startCol; col < endCol; col++)
-                    {
-                        _model.CellChildMap[startRow, col] = _model.CellChildMap[startRow + 1, col];
-                    }
-
-                    for (int col = 0; col < _model.Columns; col++)
-                    {
-                        if (col < startCol || col >= endCol)
-                        {
-                            _model.CellChildMap[startRow, col] = _model.CellChildMap[startRow - 1, col];
-                        }
-                    }
-                };
-
-                swapIndicesNextLine = () =>
-                {
-                    for (int col = startCol; col < endCol; col++)
-                    {
-                        _model.CellChildMap[startRow + 1, col] = _model.CellChildMap[startRow, col];
-                    }
-
-                    for (int col = 0; col < _model.Columns; col++)
-                    {
-                        if (col < startCol || col >= endCol)
-                        {
-                            _model.CellChildMap[startRow + 1, col] = _model.CellChildMap[startRow + 2, col];
-                        }
-                    }
-                };
-            }
-
-            if (percents[index] < 0)
-            {
-                swapIndicesPrevLine();
-
-                percents[index] = -percents[index];
-                percents[index - 1] = percents[index - 1] - percents[index];
-
-                if (orientation == Orientation.Vertical)
-                {
-                    _colInfo[index].Percent = percents[index];
-                    _colInfo[index - 1].Percent = percents[index - 1];
+                    zone.Bottom += delta;
                 }
                 else
                 {
-                    _rowInfo[index].Percent = percents[index];
-                    _rowInfo[index - 1].Percent = percents[index - 1];
+                    zone.Right += delta;
                 }
 
-                return true;
+                _zones[zoneIndex] = zone;
             }
 
-            if (percents[index + 1] < 0)
-            {
-                swapIndicesNextLine();
-
-                percents[index + 1] = -percents[index + 1];
-                percents[index] = percents[index] - percents[index + 1];
-
-                if (orientation == Orientation.Vertical)
-                {
-                    _colInfo[index].Percent = percents[index];
-                    _colInfo[index + 1].Percent = percents[index + 1];
-                }
-                else
-                {
-                    _rowInfo[index].Percent = percents[index];
-                    _rowInfo[index + 1].Percent = percents[index + 1];
-                }
-
-                return true;
-            }
-
-            return false;
+            // Restore invariants
+            ZonesToModel(_model);
+            FromModel(_model);
         }
-
-        public int SwappedIndexAfterResize(GridResizer resizer)
-        {
-            if (resizer.Orientation == Orientation.Horizontal)
-            {
-                for (int i = 0; i < _model.Rows; i++)
-                {
-                    if (_rowInfo[i].Percent < 0)
-                    {
-                        _rowInfo[i].Percent = -_rowInfo[i].Percent;
-                        _rowInfo[i - 1].Percent -= _rowInfo[i].Percent;
-                        _rowInfo[i + 1].Percent -= _rowInfo[i].Percent;
-
-                        _model.RowPercents[i - 1] = _rowInfo[i - 1].Percent;
-                        _model.RowPercents[i] = _rowInfo[i].Percent;
-                        _model.RowPercents[i + 1] = _rowInfo[i + 1].Percent;
-
-                        return i;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 1; i < _model.Columns; i++)
-                {
-                    if (_colInfo[i].Percent < 0)
-                    {
-                        _colInfo[i - 1].Percent += _colInfo[i].Percent;
-                        _colInfo[i].Percent = -_colInfo[i].Percent;
-
-                        _model.ColumnPercents[i - 1] = _colInfo[i - 1].Percent;
-                        _model.ColumnPercents[i] = _colInfo[i].Percent;
-
-                        return i;
-                    }
-                }
-            }
-
-            return -1;
-        }
-
-        public void MergeZones(int startRow, int endRow, int startCol, int endCol, Action<int> deleteAction, int zoneCount)
-        {
-            int[,] cells = _model.CellChildMap;
-            int mergedIndex = cells[startRow, startCol];
-
-            // maintain indices order after merge
-            Dictionary<int, int> indexReplacement = new Dictionary<int, int>();
-            List<int> zoneIndices = new List<int>(zoneCount);
-            for (int i = 0; i < zoneCount; i++)
-            {
-                zoneIndices.Add(i);
-            }
-
-            for (int row = startRow; row <= endRow; row++)
-            {
-                for (int col = startCol; col <= endCol; col++)
-                {
-                    int childIndex = cells[row, col];
-                    if (childIndex != mergedIndex)
-                    {
-                        indexReplacement[childIndex] = mergedIndex;
-                        zoneIndices[childIndex] = -1;
-                    }
-                }
-            }
-
-            for (int i = zoneIndices.Count - 1; i >= 0; i--)
-            {
-                int index = zoneIndices[i];
-                if (index == -1)
-                {
-                    deleteAction(i);
-                    zoneIndices.RemoveAt(i);
-                }
-            }
-
-            for (int i = zoneIndices.Count - 1; i >= 0; i--)
-            {
-                indexReplacement[zoneIndices[i]] = i;
-            }
-
-            ReplaceIndicesToMaintainOrder(indexReplacement);
-            CollapseIndices();
-            FixAccuracyError(_rowInfo, _model.RowPercents);
-            FixAccuracyError(_colInfo, _model.ColumnPercents);
-        }
-
-        public void ReplaceIndicesToMaintainOrder(int zoneCount)
-        {
-            int[,] cells = _model.CellChildMap;
-            Dictionary<int, int> indexReplacement = new Dictionary<int, int>();
-            List<int> zoneIndices = new List<int>(zoneCount);
-            HashSet<int> zoneIndexSet = new HashSet<int>(zoneCount);
-
-            for (int i = 0; i < zoneCount; i++)
-            {
-                zoneIndices.Add(i);
-            }
-
-            for (int row = 0; row < _model.Rows; row++)
-            {
-                for (int col = 0; col < _model.Columns; col++)
-                {
-                    zoneIndexSet.Add(cells[row, col]);
-                }
-            }
-
-            int j = 0;
-            foreach (int index in zoneIndexSet)
-            {
-                indexReplacement[index] = zoneIndices[j];
-                j++;
-            }
-
-            ReplaceIndicesToMaintainOrder(indexReplacement);
-        }
-
-        private void ReplaceIndicesToMaintainOrder(Dictionary<int, int> indexReplacement)
-        {
-            int[,] cells = _model.CellChildMap;
-
-            for (int row = 0; row < _model.Rows; row++)
-            {
-                for (int col = 0; col < _model.Columns; col++)
-                {
-                    cells[row, col] = indexReplacement[cells[row, col]];
-                }
-            }
-        }
-
-        private void CollapseIndices()
-        {
-            List<int> rowsToRemove = new List<int>(), colsToRemove = new List<int>();
-            int[,] cellChildMap = _model.CellChildMap;
-
-            int arrayShift = 0;
-            for (int row = 1; row < _model.Rows; row++)
-            {
-                bool couldBeRemoved = true;
-                for (int col = 0; col < _model.Columns && couldBeRemoved; col++)
-                {
-                    if (cellChildMap[row, col] != cellChildMap[row - 1, col])
-                    {
-                        couldBeRemoved = false;
-                    }
-                }
-
-                if (couldBeRemoved)
-                {
-                    _rowInfo[row - 1 - arrayShift].Percent += _rowInfo[row - arrayShift].Percent;
-                    _rowInfo.RemoveAt(row - arrayShift);
-
-                    _model.RowPercents[row - 1 - arrayShift] += _model.RowPercents[row - arrayShift];
-                    _model.RowPercents.RemoveAt(row - arrayShift);
-
-                    rowsToRemove.Add(row);
-                    arrayShift++;
-                }
-            }
-
-            arrayShift = 0;
-            for (int col = 1; col < _model.Columns; col++)
-            {
-                bool couldBeRemoved = true;
-                for (int row = 0; row < _model.Rows && couldBeRemoved; row++)
-                {
-                    if (cellChildMap[row, col] != cellChildMap[row, col - 1])
-                    {
-                        couldBeRemoved = false;
-                    }
-                }
-
-                if (couldBeRemoved)
-                {
-                    _colInfo[col - 1 - arrayShift].Percent += _colInfo[col - arrayShift].Percent;
-                    _colInfo.RemoveAt(col - arrayShift);
-
-                    _model.ColumnPercents[col - 1 - arrayShift] += _model.ColumnPercents[col - arrayShift];
-                    _model.ColumnPercents.RemoveAt(col - arrayShift);
-
-                    colsToRemove.Add(col);
-                    arrayShift++;
-                }
-            }
-
-            int rows = _model.Rows - rowsToRemove.Count;
-            int cols = _model.Columns - colsToRemove.Count;
-
-            if (rowsToRemove.Count > 0 || colsToRemove.Count > 0)
-            {
-                int[,] newCellChildMap = new int[rows, cols];
-                int dstRow = 0, dstCol = 0;
-
-                int removableRowIndex = 0;
-                int removableRow = -1;
-                if (rowsToRemove.Count > 0)
-                {
-                    removableRow = rowsToRemove[removableRowIndex];
-                }
-
-                for (int row = 0; row < _model.Rows; row++)
-                {
-                    if (row != removableRow)
-                    {
-                        int removableColIndex = 0;
-                        int removableCol = -1;
-                        if (colsToRemove.Count > 0)
-                        {
-                            removableCol = colsToRemove[removableColIndex];
-                        }
-
-                        dstCol = 0;
-                        for (int col = 0; col < _model.Columns; col++)
-                        {
-                            if (col != removableCol)
-                            {
-                                newCellChildMap[dstRow, dstCol] = cellChildMap[row, col];
-                                dstCol++;
-                            }
-                            else
-                            {
-                                removableColIndex++;
-                                if (removableColIndex < colsToRemove.Count)
-                                {
-                                    removableCol = colsToRemove[removableColIndex];
-                                }
-                            }
-                        }
-
-                        dstRow++;
-                    }
-                    else
-                    {
-                        removableRowIndex++;
-                        if (removableRowIndex < rowsToRemove.Count)
-                        {
-                            removableRow = rowsToRemove[removableRowIndex];
-                        }
-                    }
-                }
-
-                _model.CellChildMap = newCellChildMap;
-            }
-
-            _model.Rows = rows;
-            _model.Columns = cols;
-        }
-
-        private void FixAccuracyError(List<RowColInfo> info, List<int> percents)
-        {
-            int total = 0;
-            for (int i = 0; i < info.Count; i++)
-            {
-                total += info[i].Percent;
-            }
-
-            int prefixTotal = 0;
-            for (int i = 0; i < percents.Count; i++)
-            {
-                int first = prefixTotal * _multiplier / total;
-                prefixTotal += info[i].Percent;
-                int last = prefixTotal * _multiplier / total;
-                percents[i] = info[i].Percent = last - first;
-            }
-        }
-
-        private GridLayoutModel _model;
-        private List<RowColInfo> _rowInfo;
-        private List<RowColInfo> _colInfo;
     }
 }

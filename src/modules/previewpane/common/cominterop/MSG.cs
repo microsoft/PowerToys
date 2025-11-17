@@ -11,7 +11,6 @@ namespace Common.ComInterlop
     /// Contains message information from a thread's message queue.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct MSG
     {
         /// <summary>

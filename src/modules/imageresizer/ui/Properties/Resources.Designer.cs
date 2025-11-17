@@ -19,7 +19,7 @@ namespace ImageResizer.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -61,231 +61,6 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to About.
-        /// </summary>
-        public static string Advanced_About {
-            get {
-                return ResourceManager.GetString("Advanced_About", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Create a new size.
-        /// </summary>
-        public static string Advanced_CreateSize {
-            get {
-                return ResourceManager.GetString("Advanced_CreateSize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Delete.
-        /// </summary>
-        public static string Advanced_DeleteSize {
-            get {
-                return ResourceManager.GetString("Advanced_DeleteSize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Encoding.
-        /// </summary>
-        public static string Advanced_Encoding {
-            get {
-                return ResourceManager.GetString("Advanced_Encoding", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _Fallback encoder:.
-        /// </summary>
-        public static string Advanced_FallbackEncoder {
-            get {
-                return ResourceManager.GetString("Advanced_FallbackEncoder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fallback encoder.
-        /// </summary>
-        public static string Advanced_FallbackEncoder_Name {
-            get {
-                return ResourceManager.GetString("Advanced_FallbackEncoder_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File.
-        /// </summary>
-        public static string Advanced_File {
-            get {
-                return ResourceManager.GetString("Advanced_File", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _Filename:.
-        /// </summary>
-        public static string Advanced_FileName {
-            get {
-                return ResourceManager.GetString("Advanced_FileName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Filename.
-        /// </summary>
-        public static string Advanced_FileName_Name {
-            get {
-                return ResourceManager.GetString("Advanced_FileName_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Original filename.
-        /// </summary>
-        public static string Advanced_FileNameToken1 {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameToken1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Size name.
-        /// </summary>
-        public static string Advanced_FileNameToken2 {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameToken2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Selected width.
-        /// </summary>
-        public static string Advanced_FileNameToken3 {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameToken3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Selected height.
-        /// </summary>
-        public static string Advanced_FileNameToken4 {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameToken4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Actual width (pixels).
-        /// </summary>
-        public static string Advanced_FileNameToken5 {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameToken5", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Actual height (pixels).
-        /// </summary>
-        public static string Advanced_FileNameToken6 {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameToken6", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The following parameters can be used..
-        /// </summary>
-        public static string Advanced_FileNameTokens {
-            get {
-                return ResourceManager.GetString("Advanced_FileNameTokens", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _JPEG quality level:.
-        /// </summary>
-        public static string Advanced_JpegQualityLevel {
-            get {
-                return ResourceManager.GetString("Advanced_JpegQualityLevel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to JPEG quality level.
-        /// </summary>
-        public static string Advanced_JpegQualityLevel_Name {
-            get {
-                return ResourceManager.GetString("Advanced_JpegQualityLevel_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _Use original date modified.
-        /// </summary>
-        public static string Advanced_KeepDateModified {
-            get {
-                return ResourceManager.GetString("Advanced_KeepDateModified", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _PNG interlacing:.
-        /// </summary>
-        public static string Advanced_PngInterlaceOption {
-            get {
-                return ResourceManager.GetString("Advanced_PngInterlaceOption", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to PNG interlacing.
-        /// </summary>
-        public static string Advanced_PngInterlaceOption_Name {
-            get {
-                return ResourceManager.GetString("Advanced_PngInterlaceOption_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Sizes.
-        /// </summary>
-        public static string Advanced_Sizes {
-            get {
-                return ResourceManager.GetString("Advanced_Sizes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to _TIFF compression:.
-        /// </summary>
-        public static string Advanced_TiffCompressOption {
-            get {
-                return ResourceManager.GetString("Advanced_TiffCompressOption", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to TIFF compression.
-        /// </summary>
-        public static string Advanced_TiffCompressOption_Name {
-            get {
-                return ResourceManager.GetString("Advanced_TiffCompressOption_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Settings.
-        /// </summary>
-        public static string Advanced_Title {
-            get {
-                return ResourceManager.GetString("Advanced_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to All Files.
         /// </summary>
         public static string AllFilesFilter {
@@ -304,20 +79,20 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to © 2020 Brice Lambson. All rights reserved..
-        /// </summary>
-        public static string Copyright {
-            get {
-                return ResourceManager.GetString("Copyright", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Height.
         /// </summary>
         public static string Height {
             get {
                 return ResourceManager.GetString("Height", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Image sizes.
+        /// </summary>
+        public static string Image_Sizes {
+            get {
+                return ResourceManager.GetString("Image_Sizes", resourceCulture);
             }
         }
         
@@ -340,7 +115,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Select a size.
+        ///   Looks up a localized string similar to Select a size.
         /// </summary>
         public static string Input_Content {
             get {
@@ -358,7 +133,16 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ign_ore the orientation of pictures.
+        ///   Looks up a localized string similar to Gif files with animations may not be correctly resized..
+        /// </summary>
+        public static string Input_GifWarning {
+            get {
+                return ResourceManager.GetString("Input_GifWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignore the _orientation of pictures.
         /// </summary>
         public static string Input_IgnoreOrientation {
             get {
@@ -367,7 +151,16 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to R_esize the original pictures (don&apos;t create copies).
+        ///   Looks up a localized string similar to Remove meta_data that doesn&apos;t affect rendering.
+        /// </summary>
+        public static string Input_RemoveMetadata {
+            get {
+                return ResourceManager.GetString("Input_RemoveMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ov_erwrite files.
         /// </summary>
         public static string Input_Replace {
             get {
@@ -376,20 +169,11 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Resize.
+        ///   Looks up a localized string similar to Resize.
         /// </summary>
         public static string Input_Resize {
             get {
                 return ResourceManager.GetString("Input_Resize", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Settings.
-        /// </summary>
-        public static string Input_ShowAdvanced {
-            get {
-                return ResourceManager.GetString("Input_ShowAdvanced", resourceCulture);
             }
         }
         
@@ -399,6 +183,15 @@ namespace ImageResizer.Properties {
         public static string Input_ShrinkOnly {
             get {
                 return ResourceManager.GetString("Input_ShrinkOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Make pictures smaller but not larger.
+        /// </summary>
+        public static string Input_ShrinkOnly_Content {
+            get {
+                return ResourceManager.GetString("Input_ShrinkOnly.Content", resourceCulture);
             }
         }
         
@@ -435,6 +228,15 @@ namespace ImageResizer.Properties {
         public static string OK_Tooltip {
             get {
                 return ResourceManager.GetString("OK_Tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string Open_settings {
+            get {
+                return ResourceManager.GetString("Open_settings", resourceCulture);
             }
         }
         
@@ -493,7 +295,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to _Stop.
+        ///   Looks up a localized string similar to Stop.
         /// </summary>
         public static string Progress_Stop {
             get {
@@ -723,78 +525,6 @@ namespace ImageResizer.Properties {
         public static string Small {
             get {
                 return ResourceManager.GetString("Small", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CCITT3.
-        /// </summary>
-        public static string TiffCompressOption_Ccitt3 {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_Ccitt3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CCITT4.
-        /// </summary>
-        public static string TiffCompressOption_Ccitt4 {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_Ccitt4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (Default).
-        /// </summary>
-        public static string TiffCompressOption_Default {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_Default", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to LZW.
-        /// </summary>
-        public static string TiffCompressOption_Lzw {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_Lzw", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to None.
-        /// </summary>
-        public static string TiffCompressOption_None {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_None", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to RLE.
-        /// </summary>
-        public static string TiffCompressOption_Rle {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_Rle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ZIP.
-        /// </summary>
-        public static string TiffCompressOption_Zip {
-            get {
-                return ResourceManager.GetString("TiffCompressOption_Zip", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Times Symbol.
-        /// </summary>
-        public static string Times_Symbol {
-            get {
-                return ResourceManager.GetString("Times_Symbol", resourceCulture);
             }
         }
         

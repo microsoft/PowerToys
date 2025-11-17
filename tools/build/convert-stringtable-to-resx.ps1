@@ -24,7 +24,7 @@ foreach ($line in Get-Content $stringTableFile) {
 # Save the text to a file
 Set-Content -Path $tempFile -Value $newLinesForTempFile
 
-# Use resgen to parse the txt to resx. More details at https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#converting-between-resource-file-types
+# Use resgen to parse the txt to resx. More details at https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#converting-between-resource-file-types
 resgen $tempFile $resxFile
 
 # Delete temporary text file used by resgen

@@ -3,20 +3,21 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
-using NUnit.Framework;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
-    [TestFixture]
+    [TestClass]
     public class ListRepositoryTests
     {
-        [Test]
+        [TestMethod]
         public void ContainsShouldReturnTrueWhenListIsInitializedWithItem()
         {
             // Arrange
             var itemName = "originalItem1";
-            IRepository<string> repository = new ListRepository<string>() { itemName };
+            ListRepository<string> repository = new ListRepository<string>() { itemName };
 
             // Act
             var result = repository.Contains(itemName);
@@ -25,11 +26,11 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsTrue(result);
         }
 
-        [Test]
+        [TestMethod]
         public void ContainsShouldReturnTrueWhenListIsUpdatedWithAdd()
         {
             // Arrange
-            IRepository<string> repository = new ListRepository<string>();
+            ListRepository<string> repository = new ListRepository<string>();
 
             // Act
             var itemName = "newItem";
@@ -40,12 +41,12 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsTrue(result);
         }
 
-        [Test]
+        [TestMethod]
         public void ContainsShouldReturnFalseWhenListIsUpdatedWithRemove()
         {
             // Arrange
             var itemName = "originalItem1";
-            IRepository<string> repository = new ListRepository<string>() { itemName };
+            ListRepository<string> repository = new ListRepository<string>() { itemName };
 
             // Act
             repository.Remove(itemName);
@@ -55,7 +56,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Assert.IsFalse(result);
         }
 
-        [Test]
+        [TestMethod]
         public async Task AddShouldNotThrowWhenBeingIterated()
         {
             // Arrange
@@ -94,7 +95,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
 
-        [Test]
+        [TestMethod]
         public async Task RemoveShouldNotThrowWhenBeingIterated()
         {
             // Arrange

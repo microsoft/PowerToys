@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:StringVisibilityConverter
+                x:Key="StringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+            <converters:StringVisibilityConverter
+                x:Key="InvertedStringEmptyVisibilityConverter"
+                EmptyValue="Visible"
+                NotEmptyValue="Collapsed" />
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+            <converters:EmptyStringToObjectConverter
+                x:Key="StringEmptyToBoolConverter"
+                EmptyValue="False"
+                NotEmptyValue="True" />
+            <converters:BoolToObjectConverter
+                x:Key="BoolToOptionConverter"
+                FalseValue="1"
+                TrueValue="0" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1">
+            <Grid Padding="16">
+                <StackPanel
+                    MaxWidth="1000"
+                    HorizontalAlignment="Stretch"
+                    Spacing="{StaticResource SettingsCardSpacing}">
+                    <controls:SettingsCard x:Uid="ExtensionEnableCard">
+                        <controls:SettingsCard.HeaderIcon>
+                            <cpcontrols:ContentIcon>
+                                <cpcontrols:ContentIcon.Content>
+                                    <cpcontrols:IconBox
+                                        Width="20"
+                                        Height="20"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
+                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                </cpcontrols:ContentIcon.Content>
+                            </cpcontrols:ContentIcon>
+                        </controls:SettingsCard.HeaderIcon>
+                        <controls:SettingsCard.Header>
+                            <TextBlock>
+                                <Run x:Uid="ExtensionEnable" Text="Enable" />
+                                <Run Text="{x:Bind ViewModel.DisplayName}" />
+                            </TextBlock>
+                        </controls:SettingsCard.Header>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SwitchPresenter
+                        HorizontalAlignment="Stretch"
+                        TargetType="x:Boolean"
+                        Value="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <controls:Case Value="True">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
+                                            <controls:SettingsExpander
+                                                DataContext="{x:Bind}"
+                                                Description="{x:Bind Subtitle, Mode=OneWay}"
+                                                Header="{x:Bind Title, Mode=OneWay}">
+                                                <controls:SettingsExpander.HeaderIcon>
+                                                    <cpcontrols:ContentIcon>
+                                                        <cpcontrols:ContentIcon.Content>
+                                                            <cpcontrols:IconBox
+                                                                Width="20"
+                                                                Height="20"
+                                                                AutomationProperties.AccessibilityView="Raw"
+                                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                        </cpcontrols:ContentIcon.Content>
+                                                    </cpcontrols:ContentIcon>
+                                                </controls:SettingsExpander.HeaderIcon>
+
+                                                <!--  Content goes here  -->
+                                                <controls:SettingsExpander.Items>
+                                                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard">
+                                                        <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
+                                                    </controls:SettingsCard>
+                                                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard">
+                                                        <TextBox
+                                                            x:Uid="Settings_ExtensionPage_Alias_PlaceholderText"
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                            Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                    </controls:SettingsCard>
+                                                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_AliasActivation_SettingsCard" IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}">
+                                                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind IsDirectAlias, Converter={StaticResource BoolToOptionConverter}, Mode=TwoWay}">
+                                                            <ComboBoxItem x:Uid="Settings_ExtensionPage_Alias_DirectComboBox" />
+                                                            <ComboBoxItem x:Uid="Settings_ExtensionPage_Alias_IndirectComboBox" />
+                                                        </ComboBox>
+                                                    </controls:SettingsCard>
+                                                </controls:SettingsExpander.Items>
+                                            </controls:SettingsExpander>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+
+                                <TextBlock
+                                    x:Uid="ExtensionFallbackCommandsHeader"
+                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
+
+                                <ItemsRepeater
+                                    ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}"
+                                    Layout="{StaticResource VerticalStackLayout}"
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
+                                            <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
+                                                <controls:SettingsCard.HeaderIcon>
+                                                    <cpcontrols:ContentIcon>
+                                                        <cpcontrols:ContentIcon.Content>
+                                                            <cpcontrols:IconBox
+                                                                Width="20"
+                                                                Height="20"
+                                                                AutomationProperties.AccessibilityView="Raw"
+                                                                SourceKey="{x:Bind InitialIcon, Mode=OneWay}"
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                        </cpcontrols:ContentIcon.Content>
+                                                    </cpcontrols:ContentIcon>
+                                                </controls:SettingsCard.HeaderIcon>
+                                                <!--  Content goes here  -->
+                                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                            </controls:SettingsCard>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+
+                                <TextBlock
+                                    x:Uid="ExtensionSettingsHeader"
+                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                                    Visibility="{x:Bind ViewModel.HasSettings}" />
+
+                                <Frame
+                                    x:Name="SettingsFrame"
+                                    Background="{ThemeResource SettingsCardBackground}"
+                                    BorderBrush="{ThemeResource SettingsCardBorderBrush}"
+                                    BorderThickness="{ThemeResource SettingsCardBorderThickness}"
+                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                    Visibility="{x:Bind ViewModel.HasSettings}">
+                                    <controls:SwitchPresenter
+                                        HorizontalAlignment="Stretch"
+                                        TargetType="x:Boolean"
+                                        Value="{x:Bind ViewModel.LoadingSettings, Mode=OneWay}">
+                                        <controls:Case Value="True">
+                                            <ProgressRing
+                                                Width="36"
+                                                Height="36"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                IsIndeterminate="True" />
+                                        </controls:Case>
+                                        <controls:Case Value="False">
+                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                        </controls:Case>
+                                    </controls:SwitchPresenter>
+                                </Frame>
+
+                                <TextBlock
+                                    x:Uid="ExtensionAboutHeader"
+                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                                    Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}" />
+
+                                <controls:SettingsCard
+                                    Description="{x:Bind ViewModel.Extension.Publisher, Mode=OneWay}"
+                                    Header="{x:Bind ViewModel.Extension.PackageDisplayName, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}">
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ViewModel.ExtensionVersion}" />
+                                </controls:SettingsCard>
+                            </StackPanel>
+
+                        </controls:Case>
+
+                        <controls:Case Value="False">
+                            <StackPanel>
+                                <TextBlock x:Uid="ExtensionDisabledHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                                <TextBlock x:Uid="ExtensionDisabledDetails" />
+                            </StackPanel>
+                        </controls:Case>
+                    </controls:SwitchPresenter>
+
+                    <TextBlock
+                        x:Uid="ExtensionAboutHeader"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_Builtin_SettingsCard" Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

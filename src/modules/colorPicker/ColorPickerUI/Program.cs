@@ -6,8 +6,8 @@ using System;
 
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
-
 using ColorPickerUI;
+using ManagedCommon;
 
 namespace ColorPicker
 {
@@ -18,7 +18,17 @@ namespace ColorPicker
         [STAThread]
         public static void Main(string[] args)
         {
+            Logger.InitializeLogger("\\ColorPicker\\Logs");
+
             _args = args;
+            Logger.LogInfo($"Color Picker started with pid={Environment.ProcessId}");
+
+            if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredColorPickerEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                return;
+            }
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             try
             {
@@ -28,9 +38,7 @@ namespace ColorPicker
                     application.Run();
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.LogError("Unhandled exception", ex);
                 CursorManager.RestoreOriginalCursors();
@@ -39,7 +47,15 @@ namespace ColorPicker
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Logger.LogError("Unhandled exception", (e.ExceptionObject is Exception) ? (e.ExceptionObject as Exception) : new Exception());
+            if (e.ExceptionObject is Exception ex)
+            {
+                Logger.LogError("Unhandled exception", ex);
+            }
+            else
+            {
+                Logger.LogError("Unhandled exception");
+            }
+
             CursorManager.RestoreOriginalCursors();
         }
     }

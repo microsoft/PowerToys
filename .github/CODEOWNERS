@@ -1,0 +1,16 @@
+# Protect `.github` folder except the spell-check rules inside it. (The exception happens by not defining any owner user or group for the path.)
+# Protection of the spell-check rules makes no sense as it needs to be changed in nearly every PR.
+/.github/ @microsoft/powertoys-code-owners
+/.github/actions/spell-check/
+
+# locking down pipeline folder
+/.pipelines/ @microsoft/powertoys-code-owners
+
+# locking down nuget config
+nuget.config  @microsoft/powertoys-code-owners
+packages.config  @microsoft/powertoys-code-owners
+
+# locking down files that should not change
+LICENSE @microsoft/powertoys-code-owners
+SECURITY.md @microsoft/powertoys-code-owners
+CODE_OF_CONDUCT.md @microsoft/powertoys-code-owners

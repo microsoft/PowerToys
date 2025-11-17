@@ -10,12 +10,12 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// Contains search result windows with each window including the reason why the result was included
     /// </summary>
-    public class SearchResult
+    internal class SearchResult
     {
         /// <summary>
         /// Gets the actual window reference for the search result
         /// </summary>
-        public Window Result
+        internal Window Result
         {
             get;
             private set;
@@ -24,7 +24,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the list of indexes of the matching characters for the search in the title window
         /// </summary>
-        public List<int> SearchMatchesInTitle
+        internal List<int> SearchMatchesInTitle
         {
             get;
             private set;
@@ -34,7 +34,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Gets the list of indexes of the matching characters for the search in the
         /// name of the process
         /// </summary>
-        public List<int> SearchMatchesInProcessName
+        internal List<int> SearchMatchesInProcessName
         {
             get;
             private set;
@@ -43,7 +43,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the type of match (shortcut, fuzzy or nothing)
         /// </summary>
-        public SearchType SearchResultMatchType
+        internal SearchType SearchResultMatchType
         {
             get;
             private set;
@@ -52,7 +52,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets a score indicating how well this matches what we are looking for
         /// </summary>
-        public int Score
+        internal int Score
         {
             get;
             private set;
@@ -61,7 +61,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Gets the source of where the best score was found
         /// </summary>
-        public TextType BestScoreSource
+        internal TextType BestScoreSource
         {
             get;
             private set;
@@ -71,12 +71,24 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Initializes a new instance of the <see cref="SearchResult"/> class.
         /// Constructor
         /// </summary>
-        public SearchResult(Window window, List<int> matchesInTitle, List<int> matchesInProcessName, SearchType matchType)
+        internal SearchResult(Window window, List<int> matchesInTitle, List<int> matchesInProcessName, SearchType matchType)
         {
             Result = window;
             SearchMatchesInTitle = matchesInTitle;
             SearchMatchesInProcessName = matchesInProcessName;
             SearchResultMatchType = matchType;
+            CalculateScore();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SearchResult"/> class.
+        /// </summary>
+        internal SearchResult(Window window)
+        {
+            Result = window;
+            SearchMatchesInTitle = new List<int>();
+            SearchMatchesInProcessName = new List<int>();
+            SearchResultMatchType = SearchType.Empty;
             CalculateScore();
         }
 
@@ -104,7 +116,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// The type of text that a string represents
         /// </summary>
-        public enum TextType
+        internal enum TextType
         {
             ProcessName,
             WindowTitle,
@@ -113,7 +125,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// The type of search
         /// </summary>
-        public enum SearchType
+        internal enum SearchType
         {
             /// <summary>
             /// the search string is empty, which means all open windows are

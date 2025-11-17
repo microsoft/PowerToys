@@ -9,7 +9,7 @@ using namespace winrt::Windows::Data::Json;
 
 LogSettings::LogSettings()
 {
-    this->logLevel = LogSettings::defaultLogLevel;
+    logLevel = defaultLogLevel;
 }
 
 std::optional<JsonObject> from_file(std::wstring_view file_name)

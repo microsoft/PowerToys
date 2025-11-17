@@ -1,4 +1,5 @@
 #include "windows_colors.h"
+#include "theme_helpers.h"
 
 DWORD WindowsColors::rgb_color(DWORD abgr_color)
 {
@@ -10,7 +11,7 @@ DWORD WindowsColors::rgb_color(DWORD abgr_color)
 }
 DWORD WindowsColors::rgb_color(winrt::Windows::UI::Color color)
 {
-    return ((DWORD)color.R << 16) | ((DWORD)color.G << 8) | ((DWORD)color.B);
+    return static_cast<DWORD>((color.R << 16) | (color.G << 8) | (color.B));
 }
 WindowsColors::Color WindowsColors::get_button_face_color()
 {
@@ -65,7 +66,7 @@ WindowsColors::Color WindowsColors::get_background_color()
 
 bool WindowsColors::is_dark_mode()
 {
-    return rgb_color(get_background_color()) == 0;
+    return ThemeHelpers::GetAppTheme() == Theme::Dark;
 }
 
 bool WindowsColors::update()

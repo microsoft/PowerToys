@@ -117,92 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Advanced_About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="Advanced_CreateSize" xml:space="preserve">
-    <value>Create a new size</value>
-  </data>
-  <data name="Advanced_DeleteSize" xml:space="preserve">
-    <value>Delete</value>
-    <comment>remove a file</comment>
-  </data>
-  <data name="Advanced_Encoding" xml:space="preserve">
-    <value>Encoding</value>
-    <comment>encoding a file to a different format</comment>
-  </data>
-  <data name="Advanced_FallbackEncoder" xml:space="preserve">
-    <value>_Fallback encoder:</value>
-  </data>
-  <data name="Advanced_FallbackEncoder_Name" xml:space="preserve">
-    <value>Fallback encoder</value>
-  </data>
-  <data name="Advanced_File" xml:space="preserve">
-    <value>File</value>
-    <comment>as in file name</comment>
-  </data>
-  <data name="Advanced_FileName" xml:space="preserve">
-    <value>_Filename:</value>
-  </data>
-  <data name="Advanced_FileNameToken1" xml:space="preserve">
-    <value>Original filename</value>
-  </data>
-  <data name="Advanced_FileNameToken2" xml:space="preserve">
-    <value>Size name</value>
-  </data>
-  <data name="Advanced_FileNameToken3" xml:space="preserve">
-    <value>Selected width</value>
-  </data>
-  <data name="Advanced_FileNameToken4" xml:space="preserve">
-    <value>Selected height</value>
-  </data>
-  <data name="Advanced_FileNameToken5" xml:space="preserve">
-    <value>Actual width (pixels)</value>
-  </data>
-  <data name="Advanced_FileNameToken6" xml:space="preserve">
-    <value>Actual height (pixels)</value>
-  </data>
-  <data name="Advanced_FileNameTokens" xml:space="preserve">
-    <value>The following parameters can be used.</value>
-  </data>
-  <data name="Advanced_FileName_Name" xml:space="preserve">
-    <value>Filename</value>
-  </data>
-  <data name="Advanced_JpegQualityLevel" xml:space="preserve">
-    <value>_JPEG quality level:</value>
-  </data>
-  <data name="Advanced_JpegQualityLevel_Name" xml:space="preserve">
-    <value>JPEG quality level</value>
-  </data>
-  <data name="Advanced_KeepDateModified" xml:space="preserve">
-    <value>_Use original date modified</value>
-  </data>
-  <data name="Advanced_PngInterlaceOption" xml:space="preserve">
-    <value>_PNG interlacing:</value>
-  </data>
-  <data name="Advanced_PngInterlaceOption_Name" xml:space="preserve">
-    <value>PNG interlacing</value>
-  </data>
-  <data name="Advanced_Sizes" xml:space="preserve">
-    <value>Sizes</value>
-  </data>
-  <data name="Advanced_TiffCompressOption" xml:space="preserve">
-    <value>_TIFF compression:</value>
-  </data>
-  <data name="Advanced_TiffCompressOption_Name" xml:space="preserve">
-    <value>TIFF compression</value>
-  </data>
-  <data name="Advanced_Title" xml:space="preserve">
-    <value>Settings</value>
-  </data>
   <data name="AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="Copyright" xml:space="preserve">
-    <value>© 2020 Brice Lambson. All rights reserved.</value>
   </data>
   <data name="Height" xml:space="preserve">
     <value>Height</value>
@@ -215,22 +134,22 @@
     <value>(auto)</value>
   </data>
   <data name="Input_Content" xml:space="preserve">
-    <value>_Select a size</value>
+    <value>Select a size</value>
   </data>
   <data name="Input_Custom" xml:space="preserve">
     <value>Custom</value>
   </data>
   <data name="Input_IgnoreOrientation" xml:space="preserve">
-    <value>Ign_ore the orientation of pictures</value>
+    <value>Ignore the _orientation of pictures</value>
+  </data>
+  <data name="Input_GifWarning" xml:space="preserve">
+    <value>Gif files with animations may not be correctly resized.</value>
   </data>
   <data name="Input_Replace" xml:space="preserve">
-    <value>R_esize the original pictures (don't create copies)</value>
+    <value>Ov_erwrite files</value>
   </data>
   <data name="Input_Resize" xml:space="preserve">
-    <value>_Resize</value>
-  </data>
-  <data name="Input_ShowAdvanced" xml:space="preserve">
-    <value>Settings</value>
+    <value>Resize</value>
   </data>
   <data name="Input_ShrinkOnly" xml:space="preserve">
     <value>_Make pictures smaller but not larger</value>
@@ -266,37 +185,47 @@
     <value>Resizing your pictures...</value>
   </data>
   <data name="Progress_Stop" xml:space="preserve">
-    <value>_Stop</value>
+    <value>Stop</value>
   </data>
   <data name="Progress_TimeRemaining_HourMinute" xml:space="preserve">
     <value>About {0} hour, {1} minute remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_HourMinutes" xml:space="preserve">
     <value>About {0} hour, {1} minutes remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_HoursMinute" xml:space="preserve">
     <value>About {0} hours, {1} minute remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_HoursMinutes" xml:space="preserve">
     <value>About {0} hours, {1} minutes remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinuteSecond" xml:space="preserve">
     <value>About {1} minute, {2} second remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinuteSeconds" xml:space="preserve">
     <value>About {1} minute, {2} seconds remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinutesSecond" xml:space="preserve">
     <value>About {1} minutes, {2} second remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_MinutesSeconds" xml:space="preserve">
     <value>About {1} minutes, {2} seconds remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_Second" xml:space="preserve">
     <value>About {2} second remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="Progress_TimeRemaining_Seconds" xml:space="preserve">
     <value>About {2} seconds remaining.</value>
+    <comment>"About" = Approximately, not "on the subject of"</comment>
   </data>
   <data name="ResizeFit_Fill" xml:space="preserve">
     <value>Fill</value>
@@ -343,35 +272,6 @@
   <data name="Small" xml:space="preserve">
     <value>Small</value>
   </data>
-  <data name="TiffCompressOption_Ccitt3" xml:space="preserve">
-    <value>CCITT3</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_Ccitt4" xml:space="preserve">
-    <value>CCITT4</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_Default" xml:space="preserve">
-    <value>(Default)</value>
-  </data>
-  <data name="TiffCompressOption_Lzw" xml:space="preserve">
-    <value>LZW</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_None" xml:space="preserve">
-    <value>None</value>
-  </data>
-  <data name="TiffCompressOption_Rle" xml:space="preserve">
-    <value>RLE</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="TiffCompressOption_Zip" xml:space="preserve">
-    <value>ZIP</value>
-    <comment>Do not loc</comment>
-  </data>
-  <data name="Times_Symbol" xml:space="preserve">
-    <value>Times Symbol</value>
-  </data>
   <data name="Unit" xml:space="preserve">
     <value>Unit</value>
   </data>
@@ -383,5 +283,17 @@
   </data>
   <data name="Width" xml:space="preserve">
     <value>Width</value>
+  </data>
+  <data name="Open_settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Input_RemoveMetadata" xml:space="preserve">
+    <value>Remove meta_data that doesn't affect rendering</value>
+  </data>
+  <data name="Image_Sizes" xml:space="preserve">
+    <value>Image sizes</value>
+  </data>
+  <data name="Input_ShrinkOnly.Content" xml:space="preserve">
+    <value>_Make pictures smaller but not larger</value>
   </data>
 </root>

@@ -68,13 +68,13 @@ int GetHighlightedZoneIdx(const std::vector<RECT>& zones, const POINT& cursorPos
     {
         if (cursorPosition.x >= zones[i].left && cursorPosition.x < zones[i].right)
         {
-            return i;
+            return static_cast<int>(i);
         }
     }
     return -1;
 }
 
-void ShowZoneWindow()
+void ShowZonesOverlay()
 {
     // InvalidateRect will essentially send WM_PAINT to main window.
     UINT flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
@@ -86,7 +86,7 @@ void ShowZoneWindow()
     } }.detach();
 }
 
-void HideZoneWindow()
+void HideZonesOverlay()
 {
     highlighted = std::vector<bool>(ZONE_COUNT, false);
     ShowWindow(mainWindow, SW_HIDE);
@@ -114,7 +114,7 @@ void RefreshMainWindow()
                         highlighted = std::vector<bool>(ZONE_COUNT, false);
                         highlighted[idx] = true;
 
-                        ShowZoneWindow();
+                        ShowZonesOverlay();
                     }
                 }
             }
@@ -138,11 +138,11 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             showZoneLayout = !showZoneLayout;
             if (showZoneLayout)
             {
-                ShowZoneWindow();
+                ShowZonesOverlay();
             }
             else
             {
-                HideZoneWindow();
+                HideZonesOverlay();
             }
             return 1;
         }
@@ -361,7 +361,7 @@ void DrawZone(HDC hdc, const ColorSetting& colorSetting, const RECT& rect, size_
     DrawIndex(hdc, rect, index);
 }
 
-inline BYTE OpacitySettingToAlpha(int opacity)
+constexpr inline BYTE OpacitySettingToAlpha(int opacity)
 {
     return static_cast<BYTE>(opacity * 2.55);
 }

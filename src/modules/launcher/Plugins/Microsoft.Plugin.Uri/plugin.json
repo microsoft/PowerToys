@@ -1,12 +1,13 @@
 {
   "ID": "03276A39D4E9417C8FFD200B0EE5E871",
-  "ActionKeywords": [ "*", "//" ],
+  "ActionKeyword": "//",
+  "IsGlobal": true,
   "Name": "Windows Uri Handler",
-  "Description": "Handles urls",
   "Author": "Microsoft",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "http://aka.ms/PowerToys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Uri.dll",
-  "IcoPath": "Images\\uri.dark.png"
+  "IcoPathDark": "Images\\uri.dark.png",
+  "IcoPathLight": "Images\\uri.light.png"
 }

@@ -1,0 +1,574 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for</value>
+  </data>
+  <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="RegExCheatSheet_StartOfString" xml:space="preserve">
+    <value>Start of the string</value>
+  </data>
+  <data name="RegExCheatSheet_EndOfString" xml:space="preserve">
+    <value>End of the string</value>
+  </data>
+  <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
+    <value>Matches any character</value>
+  </data>
+  <data name="RegExCheatSheet_ZeroOrOne" xml:space="preserve">
+    <value>Matches zero or one of the preceding token</value>
+  </data>
+  <data name="RegExCheatSheet_ZeroOrMore" xml:space="preserve">
+    <value>Matches zero or more of the preceding token</value>
+  </data>
+  <data name="RegExCheatSheet_OneOrMore" xml:space="preserve">
+    <value>Matches one or more of the preceding token</value>
+  </data>
+  <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
+    <value>Any digit, short for [0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonDigit" xml:space="preserve">
+    <value>A non-digit, short for [^0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWS" xml:space="preserve">
+    <value>Any whitespace character</value>
+  </data>
+  <data name="RegExCheatSheet_MatchNonWS" xml:space="preserve">
+    <value>A non-whitespace character, short for [^\s]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
+    <value>A word character, short for [a-zA-Z_0-9]</value>
+  </data>
+  <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
+    <value>Matches a word boundary where a word character is [a-zA-Z0-9_].</value>
+  </data>
+  <data name="RegExCheatSheet_LearnMore.Text" xml:space="preserve">
+    <value>Learn more about RegEx</value>
+  </data>
+  <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
+    <value>Replace with</value>
+  </data>
+  <data name="CounterCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using advanced counter syntax</value>
+  </data>
+  <data name="CounterCheatSheet_Simple" xml:space="preserve">
+    <value>A simple counter that you can use anywhere in a replace string.</value>
+  </data>
+  <data name="CounterCheatSheet_Start" xml:space="preserve">
+    <value>A counter with a customized start value.</value>
+  </data>
+  <data name="CounterCheatSheet_Increment" xml:space="preserve">
+    <value>A counter with a customized increment value.</value>
+  </data>
+  <data name="CounterCheatSheet_Padding" xml:space="preserve">
+    <value>A counter with a customized number of leading padding zeroes.</value>
+  </data>
+  <data name="CounterCheatSheet_Complex" xml:space="preserve">
+    <value>A counter showing multiple customized properties.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using file creation date and time</value>
+  </data>
+  <data name="DateTimeCheatSheet_FullYear" xml:space="preserve">
+    <value>Year represented by a full four or five digits, depending on the calendar used.</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastTwoDigits" xml:space="preserve">
+    <value>Year represented only by the last two digits. A leading zero is added for single-digit years.</value>
+  </data>
+  <data name="DateTimeCheatSheet_YearLastDigit" xml:space="preserve">
+    <value>Year represented only by the last digit.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthName" xml:space="preserve">
+    <value>Name of the month.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthNameAbbr" xml:space="preserve">
+    <value>Abbreviated name of the month.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigitLZero" xml:space="preserve">
+    <value>Month as digits with leading zeros for single-digit months.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MonthDigit" xml:space="preserve">
+    <value>Month as digits without leading zeros for single-digit months.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayName" xml:space="preserve">
+    <value>Name of the day of the week.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayNameAbbr" xml:space="preserve">
+    <value>Abbreviated name of the day of the week.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigitLZero" xml:space="preserve">
+    <value>Day of the month as digits with leading zeros for single-digit days.</value>
+  </data>
+  <data name="DateTimeCheatSheet_DayDigit" xml:space="preserve">
+    <value>Day of the month as digits without leading zeros for single-digit days.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours12LZero" xml:space="preserve">
+    <value>Hours in 12-hour format (01-12) with leading zero.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours12" xml:space="preserve">
+    <value>Hours in 12-hour format (1-12) without leading zero.</value>
+  </data>
+  <data name="DateTimeCheatSheet_AMPMUpperCase" xml:space="preserve">
+    <value>AM/PM indicator in uppercase (AM or PM).</value>
+  </data>
+  <data name="DateTimeCheatSheet_AMPMLowerCase" xml:space="preserve">
+    <value>AM/PM indicator in lowercase (am or pm).</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours24LZero" xml:space="preserve">
+    <value>Hours in 24-hour format (00-23) with leading zero.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours24" xml:space="preserve">
+    <value>Hours in 24-hour format (0-23) without leading zero.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MinutesLZero" xml:space="preserve">
+    <value>Minutes with leading zeros for single-digit minutes.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Minutes" xml:space="preserve">
+    <value>Minutes without leading zeros for single-digit minutes.</value>
+  </data>
+  <data name="DateTimeCheatSheet_SecondsLZero" xml:space="preserve">
+    <value>Seconds with leading zeros for single-digit seconds.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Seconds" xml:space="preserve">
+    <value>Seconds without leading zeros for single-digit seconds.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds3D" xml:space="preserve">
+    <value>Milliseconds represented by full three digits.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds2D" xml:space="preserve">
+    <value>Milliseconds represented only by the first two digit.</value>
+  </data>
+  <data name="DateTimeCheatSheet_MilliSeconds1D" xml:space="preserve">
+    <value>Milliseconds represented only by the first digit.</value>
+  </data>
+  <data name="CheckBox_RegEx.Content" xml:space="preserve">
+    <value>Use regular expressions</value>
+  </data>
+  <data name="CheckBox_MatchAll.Content" xml:space="preserve">
+    <value>Match all occurrences</value>
+  </data>
+  <data name="CheckBox_Case.Content" xml:space="preserve">
+    <value>Case sensitive</value>
+  </data>
+  <data name="TextBox_ApplyTo.Text" xml:space="preserve">
+    <value>Apply to</value>
+  </data>
+  <data name="DocsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="DocsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Documentation</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include files</value>
+  </data>
+  <data name="ToggleButton_IncludeFiles.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Include files</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include folders</value>
+  </data>
+  <data name="ToggleButton_IncludeFolders.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Include folders</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
+  <data name="ToggleButton_IncludeSubFolders.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Include subfolders</value>
+  </data>
+  <data name="TextBlock_TextFormatting.Text" xml:space="preserve">
+    <value>Text formatting</value>
+  </data>
+  <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>lowercase</value>
+  </data>
+  <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Lowercase</value>
+  </data>
+  <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>UPPERCASE</value>
+  </data>
+  <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Uppercase</value>
+  </data>
+  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Title case</value>
+  </data>
+  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Title case</value>
+  </data>
+  <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Capitalize Each Word</value>
+  </data>
+  <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Capitalize each word</value>
+  </data>
+  <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Enumeration features</value>
+  </data>
+  <data name="ToggleButton_EnumItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enumeration features</value>
+  </data>
+  <data name="SelectAllCheckBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Select or deselect all</value>
+  </data>
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="FilterButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="ShowAll.Text" xml:space="preserve">
+    <value>Show all files</value>
+  </data>
+  <data name="ShowOnly.Text" xml:space="preserve">
+    <value>Only show files that will be renamed</value>
+  </data>
+  <data name="TxtBlock_Original.Text" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="TxtBlock_Renamed.Text" xml:space="preserve">
+    <value>Renamed</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TxtBlock_ButtonSettings.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TxtBlock_ButtonApply.Text" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ButtonApply.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="TxtBlock_ButtonApplyAndClose.Text" xml:space="preserve">
+    <value>Apply and close</value>
+  </data>
+  <data name="RegExButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="RegExButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>RegEx help</value>
+  </data>
+  <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Replace terms help</value>
+  </data>
+  <data name="FileCreationButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Replace terms help</value>
+  </data>
+  <data name="ErrorMessage_FileNameTooLong" xml:space="preserve">
+    <value>File name is too long</value>
+  </data>
+  <data name="ErrorMessage_InvalidChar" xml:space="preserve">
+    <value>File name contains invalid character(s):&#xD;&#xA; &gt; &lt; | " : ? * \ /</value>
+  </data>
+  <data name="RenameParts_FilenameAndExtension.Content" xml:space="preserve">
+    <value>Filename + extension</value>
+  </data>
+  <data name="RenameParts_FilenameOnly.Content" xml:space="preserve">
+    <value>Filename only</value>
+  </data>
+  <data name="RenameParts_ExtensionOnly.Content" xml:space="preserve">
+    <value>Extension only</value>
+  </data>
+  <data name="RandomizerCheatSheet_Alnum" xml:space="preserve">
+    <value>Random string with uppercase letters, lowercase letters and 0-9 digits, customized length.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Alpha" xml:space="preserve">
+    <value>Random string with uppercase letters and lowercase letters, customized length.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Digit" xml:space="preserve">
+    <value>Random string with 0-9 digits, customized length.</value>
+  </data>
+  <data name="RandomizerCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using random values</value>
+  </data>
+  <data name="RandomizerCheatSheet_Uuid" xml:space="preserve">
+    <value>Random UUID according to v4 specification.</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Random string features</value>
+  </data>
+  <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Random string features</value>
+  </data>
+  <data name="TextBlock_FileTime.Text" xml:space="preserve">
+    <value>Time used for replacement</value>
+  </data>
+  <data name="TextBlock_MetadataSource.Text" xml:space="preserve">
+    <value>Metadata source for replacement</value>
+  </data>
+  <data name="FileTimeParts_CreationTime.Content" xml:space="preserve">
+    <value>Creation Time</value>
+  </data>
+  <data name="FileTimeParts_ModificationTime.Content" xml:space="preserve">
+    <value>Modification Time</value>
+  </data>
+  <data name="FileTimeParts_AccessTime.Content" xml:space="preserve">
+    <value>Access Time</value>
+  </data>
+  
+  <data name="MetadataSource_EXIF.Content" xml:space="preserve">
+    <value>EXIF Metadata</value>
+  </data>
+  <data name="MetadataSource_XMP.Content" xml:space="preserve">
+    <value>XMP Metadata</value>
+  </data>
+
+  <data name="MetadataCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace with media metadata</value>
+  </data>
+  <data name="MetadataCheatSheet_CameraMake" xml:space="preserve">
+    <value>Camera manufacturer name</value>
+  </data>
+  <data name="MetadataCheatSheet_CameraModel" xml:space="preserve">
+    <value>Camera model name</value>
+  </data>
+  <data name="MetadataCheatSheet_Lens" xml:space="preserve">
+    <value>Lens model name</value>
+  </data>
+  <data name="MetadataCheatSheet_ISO" xml:space="preserve">
+    <value>ISO sensitivity value</value>
+  </data>
+  <data name="MetadataCheatSheet_Aperture" xml:space="preserve">
+    <value>F-number aperture value</value>
+  </data>
+  <data name="MetadataCheatSheet_Shutter" xml:space="preserve">
+    <value>Shutter speed value</value>
+  </data>
+  <data name="MetadataCheatSheet_Focal" xml:space="preserve">
+    <value>Focal length in millimeters</value>
+  </data>
+  <data name="MetadataCheatSheet_Flash" xml:space="preserve">
+    <value>Flash status (On/Off)</value>
+  </data>
+  <data name="MetadataCheatSheet_Width" xml:space="preserve">
+    <value>Image width in pixels</value>
+  </data>
+  <data name="MetadataCheatSheet_Height" xml:space="preserve">
+    <value>Image height in pixels</value>
+  </data>
+  <data name="MetadataCheatSheet_Author" xml:space="preserve">
+    <value>Image author/artist</value>
+  </data>
+  <data name="MetadataCheatSheet_Copyright" xml:space="preserve">
+    <value>Copyright information</value>
+  </data>
+  <data name="MetadataCheatSheet_Latitude" xml:space="preserve">
+    <value>GPS latitude coordinate</value>
+  </data>
+  <data name="MetadataCheatSheet_Longitude" xml:space="preserve">
+    <value>GPS longitude coordinate</value>
+  </data>
+  <data name="MetadataCheatSheet_Altitude" xml:space="preserve">
+    <value>GPS altitude in meters</value>
+  </data>
+  <data name="MetadataCheatSheet_ExposureBias" xml:space="preserve">
+    <value>Exposure compensation value</value>
+  </data>
+  <data name="MetadataCheatSheet_Orientation" xml:space="preserve">
+    <value>Image orientation</value>
+  </data>
+  <data name="MetadataCheatSheet_ColorSpace" xml:space="preserve">
+    <value>Color space information</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenYear4" xml:space="preserve">
+    <value>Year photo was taken (4 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenYear2" xml:space="preserve">
+    <value>Year photo was taken (2 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenMonth" xml:space="preserve">
+    <value>Month photo was taken (01-12)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenDay" xml:space="preserve">
+    <value>Day photo was taken (01-31)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenHour" xml:space="preserve">
+    <value>Hour photo was taken (00-23)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenMinute" xml:space="preserve">
+    <value>Minute photo was taken (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenSecond" xml:space="preserve">
+    <value>Second photo was taken (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateYear4" xml:space="preserve">
+    <value>Year from XMP create date (4 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateYear2" xml:space="preserve">
+    <value>Year from XMP create date (2 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateMonth" xml:space="preserve">
+    <value>Month from XMP create date (01-12)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateDay" xml:space="preserve">
+    <value>Day from XMP create date (01-31)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateHour" xml:space="preserve">
+    <value>Hour from XMP create date (00-23)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateMinute" xml:space="preserve">
+    <value>Minute from XMP create date (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateSecond" xml:space="preserve">
+    <value>Second from XMP create date (00-59)</value>
+  </data>
+
+  <!-- XMP patterns -->
+  <data name="MetadataCheatSheet_CreatorTool" xml:space="preserve">
+    <value>Software used to create/edit</value>
+  </data>
+  
+  <!-- Dublin Core patterns -->
+  <data name="MetadataCheatSheet_DocTitle" xml:space="preserve">
+    <value>Document title</value>
+  </data>
+  <data name="MetadataCheatSheet_DocDescription" xml:space="preserve">
+    <value>Document description</value>
+  </data>
+  <data name="MetadataCheatSheet_DocCreator" xml:space="preserve">
+    <value>Document creator/author</value>
+  </data>
+  <data name="MetadataCheatSheet_DocSubject" xml:space="preserve">
+    <value>Keywords/tags</value>
+  </data>
+  
+  <!-- XMP Rights pattern -->
+  <data name="MetadataCheatSheet_Rights" xml:space="preserve">
+    <value>Copyright/rights information</value>
+  </data>
+
+  <!-- XMP Media Management schema patterns -->
+  <data name="MetadataCheatSheet_DocumentId" xml:space="preserve">
+    <value>Document unique identifier</value>
+  </data>
+  <data name="MetadataCheatSheet_InstanceId" xml:space="preserve">
+    <value>Instance unique identifier</value>
+  </data>
+  <data name="MetadataCheatSheet_OriginalDocumentId" xml:space="preserve">
+    <value>Original document identifier</value>
+  </data>
+  <data name="MetadataCheatSheet_VersionId" xml:space="preserve">
+    <value>Version identifier</value>
+  </data>
+</root>

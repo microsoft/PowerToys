@@ -19,7 +19,7 @@ BEGIN
             VALUE "FileDescription", "$projectname$ Module"
             VALUE "FileVersion", "0.1.0.0"
             VALUE "InternalName", "$projectname$"
-            VALUE "LegalCopyright", "Copyright (C) 2019 Company Name"
+            VALUE "LegalCopyright", "Copyright (C) 2022 Company Name"
             VALUE "OriginalFilename", "$projectname$.dll"
             VALUE "ProductName", "$projectname$"
             VALUE "ProductVersion", "0.1.0.0"

@@ -2,7 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
+using System.Globalization;
+using System.Text;
+
+using FancyZonesEditor.Properties;
 using FancyZonesEditor.ViewModels;
 
 namespace FancyZonesEditor.Utils
@@ -11,14 +16,21 @@ namespace FancyZonesEditor.Utils
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private static readonly CompositeFormat MonitorIndexFormat = CompositeFormat.Parse(Resources.Monitor_Index);
+
         public MonitorInfoModel(int index, int height, int width, int dpi, bool selected = false)
         {
             Index = index;
             ScreenBoundsHeight = height;
             ScreenBoundsWidth = width;
             DPI = dpi;
+            Scaling = string.Format(CultureInfo.InvariantCulture, format: "{0}%", arg0: (int)Math.Round(dpi * 100 / 96.0));
             Selected = selected;
         }
+
+        public string AccessibleName => string.Format(CultureInfo.CurrentCulture, MonitorIndexFormat, Index);
+
+        public string AccessibleHelpText => $"{Resources.Dimensions} {Dimensions}, {Resources.Scaling} {Scaling}";
 
         public int Index { get; set; }
 
@@ -44,6 +56,8 @@ namespace FancyZonesEditor.Utils
 
         public int DPI { get; set; }
 
+        public string Scaling { get; set; }
+
         public string Dimensions
         {
             get
@@ -55,7 +69,7 @@ namespace FancyZonesEditor.Utils
                 }
                 else
                 {
-                    return ScreenBoundsWidth + " x " + ScreenBoundsHeight;
+                    return ScreenBoundsWidth + " × " + ScreenBoundsHeight;
                 }
             }
         }

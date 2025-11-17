@@ -1,10 +1,11 @@
 #include "pch.h"
+#include <array>
+#include <algorithm>
+
 #include "keyboard_layout_impl.h"
 #include "shared_constants.h"
 
-#include <winrt/Windows.UI.Core.h>
-
-using namespace winrt;
+constexpr DWORD numpadOriginBit = 1ull << 31;
 
 LayoutMap::LayoutMap() :
     impl(new LayoutMap::LayoutMapImpl())
@@ -24,6 +25,17 @@ void LayoutMap::UpdateLayout()
 std::wstring LayoutMap::GetKeyName(DWORD key)
 {
     return impl->GetKeyName(key);
+}
+
+DWORD LayoutMap::GetKeyFromName(const std::wstring& name)
+{
+    auto list = impl->GetKeyNameList(false);
+    for (const auto& [value, key] : list)
+    {
+        if (key == name)
+            return value;
+    }
+    return {};
 }
 
 std::vector<DWORD> LayoutMap::GetKeyCodeList(const bool isShortcut)
@@ -56,7 +68,8 @@ bool mapKeycodeToUnicode(const int vCode, HKL layout, const BYTE* keyState, std:
     // Get the scan code from the virtual key code
     const UINT scanCode = MapVirtualKeyExW(vCode, MAPVK_VK_TO_VSC, layout);
     // Get the unicode representation from the virtual key code and scan code pair
-    const int result = ToUnicodeEx(vCode, scanCode, keyState, outBuffer.data(), (int)outBuffer.size(), 0, layout);
+    const UINT wFlags = 1 << 2; // If bit 2 is set, keyboard state is not changed (Windows 10, version 1607 and newer)
+    const int result = ToUnicodeEx(vCode, scanCode, keyState, outBuffer.data(), static_cast<int>(outBuffer.size()), wFlags, layout);
     return result != 0;
 }
 
@@ -104,13 +117,12 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
         }
     }
 
-    // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
+    // Override special key names like Shift, Ctrl, etc. because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
     // To do: localization
     keyboardLayoutMap[VK_CANCEL] = L"Break";
     keyboardLayoutMap[VK_BACK] = L"Backspace";
     keyboardLayoutMap[VK_TAB] = L"Tab";
     keyboardLayoutMap[VK_CLEAR] = L"Clear";
-    keyboardLayoutMap[VK_RETURN] = L"Enter";
     keyboardLayoutMap[VK_SHIFT] = L"Shift";
     keyboardLayoutMap[VK_CONTROL] = L"Ctrl";
     keyboardLayoutMap[VK_MENU] = L"Alt";
@@ -118,20 +130,37 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_CAPITAL] = L"Caps Lock";
     keyboardLayoutMap[VK_ESCAPE] = L"Esc";
     keyboardLayoutMap[VK_SPACE] = L"Space";
+
+    keyboardLayoutMap[VK_LEFT] = L"Left";
+    keyboardLayoutMap[VK_RIGHT] = L"Right";
+    keyboardLayoutMap[VK_UP] = L"Up";
+    keyboardLayoutMap[VK_DOWN] = L"Down";
+    keyboardLayoutMap[VK_INSERT] = L"Insert";
+    keyboardLayoutMap[VK_DELETE] = L"Delete";
     keyboardLayoutMap[VK_PRIOR] = L"PgUp";
     keyboardLayoutMap[VK_NEXT] = L"PgDn";
-    keyboardLayoutMap[VK_END] = L"End";
     keyboardLayoutMap[VK_HOME] = L"Home";
-    keyboardLayoutMap[VK_LEFT] = L"Left";
-    keyboardLayoutMap[VK_UP] = L"Up";
-    keyboardLayoutMap[VK_RIGHT] = L"Right";
-    keyboardLayoutMap[VK_DOWN] = L"Down";
+    keyboardLayoutMap[VK_END] = L"End";
+    keyboardLayoutMap[VK_RETURN] = L"Enter";
+
+    keyboardLayoutMap[VK_LEFT | numpadOriginBit] = L"Left (Numpad)";
+    keyboardLayoutMap[VK_RIGHT | numpadOriginBit] = L"Right (Numpad)";
+    keyboardLayoutMap[VK_UP | numpadOriginBit] = L"Up (Numpad)";
+    keyboardLayoutMap[VK_DOWN | numpadOriginBit] = L"Down (Numpad)";
+    keyboardLayoutMap[VK_INSERT | numpadOriginBit] = L"Insert (Numpad)";
+    keyboardLayoutMap[VK_DELETE | numpadOriginBit] = L"Delete (Numpad)";
+    keyboardLayoutMap[VK_PRIOR | numpadOriginBit] = L"PgUp (Numpad)";
+    keyboardLayoutMap[VK_NEXT | numpadOriginBit] = L"PgDn (Numpad)";
+    keyboardLayoutMap[VK_HOME | numpadOriginBit] = L"Home (Numpad)";
+    keyboardLayoutMap[VK_END | numpadOriginBit] = L"End (Numpad)";
+    keyboardLayoutMap[VK_RETURN | numpadOriginBit] = L"Enter (Numpad)";
+    keyboardLayoutMap[VK_DIVIDE | numpadOriginBit] = L"/ (Numpad)";
+
+    keyboardLayoutMap[VK_SUBTRACT] = L"- (Subtract)";
     keyboardLayoutMap[VK_SELECT] = L"Select";
     keyboardLayoutMap[VK_PRINT] = L"Print";
     keyboardLayoutMap[VK_EXECUTE] = L"Execute";
     keyboardLayoutMap[VK_SNAPSHOT] = L"Print Screen";
-    keyboardLayoutMap[VK_INSERT] = L"Insert";
-    keyboardLayoutMap[VK_DELETE] = L"Delete";
     keyboardLayoutMap[VK_HELP] = L"Help";
     keyboardLayoutMap[VK_LWIN] = L"Win (Left)";
     keyboardLayoutMap[VK_RWIN] = L"Win (Right)";
@@ -212,14 +241,17 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_KANA] = L"IME Kana";
     keyboardLayoutMap[VK_HANGEUL] = L"IME Hangeul";
     keyboardLayoutMap[VK_HANGUL] = L"IME Hangul";
+    keyboardLayoutMap[VK_IME_ON] = L"IME On";
     keyboardLayoutMap[VK_JUNJA] = L"IME Junja";
     keyboardLayoutMap[VK_FINAL] = L"IME Final";
     keyboardLayoutMap[VK_HANJA] = L"IME Hanja";
     keyboardLayoutMap[VK_KANJI] = L"IME Kanji";
+    keyboardLayoutMap[VK_IME_OFF] = L"IME Off";
     keyboardLayoutMap[VK_CONVERT] = L"IME Convert";
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";
     keyboardLayoutMap[VK_MODECHANGE] = L"IME Mode Change";
+    keyboardLayoutMap[VK_DECIMAL] = L". (Numpad)";
     keyboardLayoutMap[CommonSharedConstants::VK_DISABLED] = L"Disable";
 }
 
@@ -273,6 +305,12 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
                     specialKeys.push_back(i);
                 }
             }
+        }
+
+        // Add numpad keys
+        for (auto it = keyboardLayoutMap.rbegin(); it->first & numpadOriginBit; ++it)
+        {
+            keyCodes.push_back(it->first);
         }
 
         // Sort the special keys in alphabetical order

@@ -1,0 +1,38 @@
+name: WinGet submission on release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  winget:
+    name: Publish winget package
+
+    # winget-create is only supported on Windows
+    runs-on: windows-latest
+
+    # winget-create will read the following environment variable to access the GitHub token needed for submitting a PR
+    # See https://aka.ms/winget-create-token
+    env:
+      WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.PT_WINGET }}
+
+    # Only submit stable releases
+    if: ${{ !github.event.release.prerelease }}
+    steps:
+      - name: Submit Microsoft.PowerToys package to Windows Package Manager Community Repository
+        run: |
+          # Get installer info from GitHub release event
+          $assets = '${{ toJSON(github.event.release.assets) }}' | ConvertFrom-Json
+          $x64UserInstallerUrl = $assets | Where-Object -Property name -match 'PowerToysUserSetup.*x64' | Select -ExpandProperty browser_download_url
+          $x64MachineInstallerUrl = $assets | Where-Object -Property name -match 'PowerToysSetup.*x64' | Select -ExpandProperty browser_download_url
+          $arm64UserInstallerUrl = $assets | Where-Object -Property name -match 'PowerToysUserSetup.*arm64' | Select -ExpandProperty browser_download_url
+          $arm64MachineInstallerUrl = $assets | Where-Object -Property name -match 'PowerToysSetup.*arm64' | Select -ExpandProperty browser_download_url
+          $packageVersion = (${{ toJSON(github.event.release.tag_name) }}).Trim('v')
+
+          # Update package using wingetcreate
+          curl.exe -JLO https://aka.ms/wingetcreate/latest
+          .\wingetcreate.exe update Microsoft.PowerToys `
+            --version $packageVersion `
+            --urls "$x64UserInstallerUrl|user" "$x64MachineInstallerUrl|machine" "$arm64UserInstallerUrl|user" "$arm64MachineInstallerUrl|machine" `
+            --submit

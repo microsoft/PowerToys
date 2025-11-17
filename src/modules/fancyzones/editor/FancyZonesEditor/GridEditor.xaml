@@ -5,20 +5,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="Black" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Background" Value="#F2F2F2" />
-            <Setter Property="Width" Value="150" />
-        </Style>
-    </UserControl.Resources>
     <Viewbox Stretch="Uniform">
         <Grid>
             <Canvas x:Name="Preview" />
@@ -27,25 +17,31 @@
                 x:Name="MergePanel"
                 MouseUp="MergePanelMouseUp"
                 Visibility="Collapsed">
+                <Canvas.Effect>
+                    <DropShadowEffect
+                        BlurRadius="6"
+                        Opacity="0.32"
+                        ShadowDepth="2" />
+                </Canvas.Effect>
+                <StackPanel x:Name="MergeButtons" Orientation="Horizontal">
+                    <Border Background="{DynamicResource PrimaryBackgroundBrush}" CornerRadius="4">
 
-                <StackPanel
-                    x:Name="MergeButtons"
-                    Background="Gray"
-                    Orientation="Horizontal">
-                    <Button
-                        Width="134"
-                        Height="36"
-                        Margin="0"
-                        Click="MergeClick">
-                        <StackPanel Orientation="Horizontal">
-                            <Image
-                                Height="16"
-                                Margin="0,0,12,0"
-                                HorizontalAlignment="Left"
-                                Source="images/Merge.png" />
-                            <TextBlock Text="Merge zones" />
-                        </StackPanel>
-                    </Button>
+                        <Button
+                            Width="134"
+                            Height="36"
+                            Margin="0"
+                            Click="MergeClick"
+                            Style="{StaticResource DefaultButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock
+                                    Margin="0,3,8,0"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Text="&#xE746;" />
+                                <TextBlock Foreground="{DynamicResource PrimaryForegroundBrush}" Text="{x:Static props:Resources.Merge_zones}" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
                 </StackPanel>
             </Canvas>
         </Grid>

@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Media.Animation;
+
 using Microsoft.Xaml.Behaviors;
 
 namespace ColorPicker.Behaviors
@@ -19,7 +20,6 @@ namespace ColorPicker.Behaviors
 
         private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
         {
-            Appear();
             AssociatedObject.IsVisibleChanged += AssociatedObject_IsVisibleChanged;
         }
 

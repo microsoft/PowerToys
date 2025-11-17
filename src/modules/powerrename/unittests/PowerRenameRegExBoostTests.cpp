@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "CppUnitTest.h"
 #include "powerrename/lib/Settings.h"
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameRegEx.h>
@@ -9,14 +8,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace PowerRenameRegExBoostTests
 {
-    struct SearchReplaceExpected
-    {
-        PCWSTR search;
-        PCWSTR replace;
-        PCWSTR test;
-        PCWSTR expected;
-    };
-
     TEST_CLASS(SimpleTests)
     {
     public:
@@ -30,247 +21,14 @@ TEST_CLASS_CLEANUP(ClassCleanup)
     CSettingsInstance().SetUseBoostLib(false);
 }
 
-TEST_METHOD(GeneralReplaceTest)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"big") == S_OK);
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
-    Assert::IsTrue(wcscmp(result, L"bigbar") == 0);
-    CoTaskMemFree(result);
-}
-
-TEST_METHOD(ReplaceNoMatch)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->PutSearchTerm(L"notfound") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"big") == S_OK);
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
-    Assert::IsTrue(wcscmp(result, L"foobar") == 0);
-    CoTaskMemFree(result);
-}
-
-TEST_METHOD(ReplaceNoSearchOrReplaceTerm)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
-    Assert::IsTrue(result == nullptr);
-    CoTaskMemFree(result);
-}
-
-TEST_METHOD(ReplaceNoReplaceTerm)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
-    Assert::IsTrue(wcscmp(result, L"bar") == 0);
-    CoTaskMemFree(result);
-}
-
-TEST_METHOD(ReplaceEmptyStringReplaceTerm)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    PWSTR result = nullptr;
-    Assert::IsTrue(renameRegEx->PutSearchTerm(L"foo") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"") == S_OK);
-    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result) == S_OK);
-    Assert::IsTrue(wcscmp(result, L"bar") == 0);
-    CoTaskMemFree(result);
-}
-
-TEST_METHOD(VerifyDefaultFlags)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = 0;
-    Assert::IsTrue(renameRegEx->GetFlags(&flags) == S_OK);
-    Assert::IsTrue(flags == MatchAllOccurences);
-}
-
-TEST_METHOD(VerifyCaseSensitiveSearch)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = CaseSensitive;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"Foo", L"Foo", L"FooBar", L"FooBar" },
-        { L"Foo", L"boo", L"FooBar", L"booBar" },
-        { L"Foo", L"boo", L"foobar", L"foobar" },
-        { L"123", L"654", L"123456", L"654456" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceFirstOnly)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = 0;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"B", L"BB", L"ABA", L"ABBA" },
-        { L"B", L"A", L"ABBBA", L"AABBA" },
-        { L"B", L"BBB", L"ABABAB", L"ABBBABAB" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceAll)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"B", L"BB", L"ABA", L"ABBA" },
-        { L"B", L"A", L"ABBBA", L"AAAAA" },
-        { L"B", L"BBB", L"ABABAB", L"ABBBABBBABBB" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceAllCaseInsensitive)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | CaseSensitive;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"B", L"BB", L"ABA", L"ABBA" },
-        { L"B", L"A", L"ABBBA", L"AAAAA" },
-        { L"B", L"BBB", L"ABABAB", L"ABBBABBBABBB" },
-        { L"b", L"BBB", L"AbABAb", L"ABBBABABBB" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceFirstOnlyUseRegEx)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = UseRegularExpressions;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"B", L"BB", L"ABA", L"ABBA" },
-        { L"B", L"A", L"ABBBA", L"AABBA" },
-        { L"B", L"BBB", L"ABABAB", L"ABBBABAB" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceAllUseRegEx)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"B", L"BB", L"ABA", L"ABBA" },
-        { L"B", L"A", L"ABBBA", L"AAAAA" },
-        { L"B", L"BBB", L"ABABAB", L"ABBBABBBABBB" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceAllUseRegExCaseSensitive)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    SearchReplaceExpected sreTable[] = {
-        { L"B", L"BB", L"ABA", L"ABBA" },
-        { L"B", L"A", L"ABBBA", L"AAAAA" },
-        { L"b", L"BBB", L"AbABAb", L"ABBBABABBB" },
-    };
-
-    for (int i = 0; i < ARRAYSIZE(sreTable); i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
-        CoTaskMemFree(result);
-    }
-}
+#define TESTS_PARTIAL
+#include "CommonRegExTests.h"
 
 TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     // This differs from the Standard Library: .* has two matches (all and nothing).
@@ -285,36 +43,11 @@ TEST_METHOD(VerifyMatchAllWildcardUseRegEx)
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
+        unsigned long index = {};
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result, index) == S_OK);
         Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
         CoTaskMemFree(result);
     }
-}
-
-void VerifyReplaceFirstWildcard(SearchReplaceExpected sreTable[], int tableSize, DWORD flags)
-{
-    CComPtr<IPowerRenameRegEx> renameRegEx;
-    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-
-    for (int i = 0; i < tableSize; i++)
-    {
-        PWSTR result = nullptr;
-        Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
-        Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
-        Assert::AreEqual(sreTable[i].expected, result);
-        CoTaskMemFree(result);
-    }
-}
-
-TEST_METHOD(VerifyReplaceFirstWildCardUseRegex)
-{
-    SearchReplaceExpected sreTable[] = {
-        //search, replace, test, result
-        { L".*", L"Foo", L"AAAAAA", L"Foo" },
-    };
-    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions);
 }
 
 TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurrences)
@@ -325,28 +58,7 @@ TEST_METHOD(VerifyReplaceFirstWildCardUseRegexMatchAllOccurrences)
         { L".*", L"Foo", L"AAAAAA", L"FooFoo" },
         { L".+", L"Foo", L"AAAAAA", L"Foo" },
     };
-    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurences);
-}
-
-TEST_METHOD(VerifyReplaceFirstWildCardMatchAllOccurrences)
-{
-    SearchReplaceExpected sreTable[] = {
-        //search, replace, test, result
-        { L".*", L"Foo", L"AAAAAA", L"AAAAAA" },
-        { L".*", L"Foo", L".*", L"Foo" },
-        { L".*", L"Foo", L".*Bar.*", L"FooBarFoo" },
-    };
-    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), MatchAllOccurences);
-}
-
-TEST_METHOD(VerifyReplaceFirstWildNoFlags)
-{
-    SearchReplaceExpected sreTable[] = {
-        //search, replace, test, result
-        { L".*", L"Foo", L"AAAAAA", L"AAAAAA" },
-        { L".*", L"Foo", L".*", L"Foo" },
-    };
-    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), 0);
+    VerifyReplaceFirstWildcard(sreTable, ARRAYSIZE(sreTable), UseRegularExpressions | MatchAllOccurrences);
 }
 
 TEST_METHOD(VerifyHandleCapturingGroups)
@@ -355,7 +67,7 @@ TEST_METHOD(VerifyHandleCapturingGroups)
     // To use a capturing group followed by numbers as replacement curly braces are needed.
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions | CaseSensitive;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
 
     SearchReplaceExpected sreTable[] = {
@@ -381,7 +93,8 @@ TEST_METHOD(VerifyHandleCapturingGroups)
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
+        unsigned long index = {};
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result, index) == S_OK);
         Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
         CoTaskMemFree(result);
     }
@@ -408,32 +121,59 @@ TEST_METHOD(VerifyLookbehind)
         PWSTR result = nullptr;
         Assert::IsTrue(renameRegEx->PutSearchTerm(sreTable[i].search) == S_OK);
         Assert::IsTrue(renameRegEx->PutReplaceTerm(sreTable[i].replace) == S_OK);
-        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result) == S_OK);
+        unsigned long index = {};
+        Assert::IsTrue(renameRegEx->Replace(sreTable[i].test, &result, index) == S_OK);
         Assert::IsTrue(wcscmp(result, sreTable[i].expected) == 0);
         CoTaskMemFree(result);
     }
 }
 
-TEST_METHOD(VerifyEventsFire)
+TEST_METHOD (Verify12and24HourTimeFormats)
 {
     CComPtr<IPowerRenameRegEx> renameRegEx;
     Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
-    CMockPowerRenameRegExEvents* mockEvents = new CMockPowerRenameRegExEvents();
-    CComPtr<IPowerRenameRegExEvents> regExEvents;
-    Assert::IsTrue(mockEvents->QueryInterface(IID_PPV_ARGS(&regExEvents)) == S_OK);
-    DWORD cookie = 0;
-    Assert::IsTrue(renameRegEx->Advise(regExEvents, &cookie) == S_OK);
-    DWORD flags = MatchAllOccurences | UseRegularExpressions | CaseSensitive;
+    DWORD flags = MatchAllOccurrences | UseRegularExpressions;
     Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
-    Assert::IsTrue(renameRegEx->PutSearchTerm(L"FOO") == S_OK);
-    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"BAR") == S_OK);
-    Assert::IsTrue(renameRegEx->PutFileTime(SYSTEMTIME{0}) == S_OK);
-    Assert::IsTrue(renameRegEx->ResetFileTime() == S_OK);
-    Assert::IsTrue(lstrcmpi(L"FOO", mockEvents->m_searchTerm) == 0);
-    Assert::IsTrue(lstrcmpi(L"BAR", mockEvents->m_replaceTerm) == 0);
-    Assert::IsTrue(flags == mockEvents->m_flags);
-    Assert::IsTrue(renameRegEx->UnAdvise(cookie) == S_OK);
-    mockEvents->Release();
+
+    struct TimeTestCase {
+        SYSTEMTIME time;        // Input time
+        PCWSTR formatString;    // Format pattern
+        PCWSTR expectedResult;  // Expected output
+        PCWSTR description;     // Description of what we're testing
+    };
+
+    struct TimeTestCase testCases[] = {
+        // Midnight (00:00 / 12:00 AM)
+        { { 2025, 4, 4, 10, 0, 0, 0, 0 }, L"[$hh:$mm] [$H:$mm $tt]", L"[00:00] [12:00 am]", L"Midnight formatting" },
+
+        // Noon (12:00 / 12:00 PM)
+        { { 2025, 4, 4, 10, 12, 0, 0, 0 }, L"[$hh:$mm] [$H:$mm $tt]", L"[12:00] [12:00 pm]", L"Noon formatting" },
+
+        // 1:05 AM
+        { { 2025, 4, 4, 10, 1, 5, 0, 0 }, L"[$h:$m] [$H:$m $tt] [$hh:$mm] [$HH:$mm $TT]", 
+          L"[1:5] [1:5 am] [01:05] [01:05 AM]", L"1 AM with various formats" },
+
+        // 11 PM
+        { { 2025, 4, 4, 10, 23, 45, 0, 0 }, L"[$h:$m] [$H:$m $tt] [$hh:$mm] [$HH:$mm $TT]", 
+          L"[23:45] [11:45 pm] [23:45] [11:45 PM]", L"11 PM with various formats" },
+
+        // Mixed formats in complex pattern
+        { { 2025, 4, 4, 10, 14, 30, 0, 0 }, L"Date: $YYYY-$MM-$DD Time: $hh:$mm (24h) / $H:$mm $tt (12h)", 
+          L"Date: 2025-04-10 Time: 14:30 (24h) / 2:30 pm (12h)", L"Complex combined format" },
+    };
+
+    for (int i = 0; i < ARRAYSIZE(testCases); i++)
+    {
+        PWSTR result = nullptr;
+        Assert::IsTrue(renameRegEx->PutSearchTerm(L"test") == S_OK);
+        Assert::IsTrue(renameRegEx->PutReplaceTerm(testCases[i].formatString) == S_OK);
+        Assert::IsTrue(renameRegEx->PutFileTime(testCases[i].time) == S_OK);
+        unsigned long index = {};
+        Assert::IsTrue(renameRegEx->Replace(L"test", &result, index) == S_OK);
+        Assert::IsTrue(wcscmp(result, testCases[i].expectedResult) == 0, 
+                      (std::wstring(L"Failed test case: ") + testCases[i].description).c_str());
+        CoTaskMemFree(result);
+    }
 }
 };
 }

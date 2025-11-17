@@ -13,7 +13,7 @@
 #define PRODUCT_VERSION_STRING FILE_VERSION_STRING
 
 #define COMPANY_NAME "Microsoft Corporation"
-#define COPYRIGHT_NOTE "Copyright (C) 2020 Microsoft Corporation"
+#define COPYRIGHT_NOTE "Copyright (C) Microsoft Corporation. All rights reserved."
 #define PRODUCT_NAME "PowerToys"
 
 #include <string>
@@ -27,11 +27,20 @@ enum class version_architecture
 version_architecture get_current_architecture();
 const wchar_t* get_architecture_string(const version_architecture);
 
-inline std::wstring get_product_version()
+inline std::wstring get_product_version(bool includeV = true)
 {
-    static std::wstring version = L"v" + std::to_wstring(VERSION_MAJOR) +
+    static std::wstring version = (includeV ? L"v" : L"") + std::to_wstring(VERSION_MAJOR) +
                                   L"." + std::to_wstring(VERSION_MINOR) +
                                   L"." + std::to_wstring(VERSION_REVISION);
+
+    return version;
+}
+
+inline std::wstring get_std_product_version(bool includeV = true)
+{
+    static std::wstring version = (includeV ? L"v" : L"") + std::to_wstring(VERSION_MAJOR) +
+                                  L"." + std::to_wstring(VERSION_MINOR) +
+                                  L"." + std::to_wstring(VERSION_REVISION) + L".0";
 
     return version;
 }

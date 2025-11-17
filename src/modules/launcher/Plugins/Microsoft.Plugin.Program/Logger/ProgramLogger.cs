@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
+
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Logger
@@ -18,6 +19,31 @@ namespace Microsoft.Plugin.Program.Logger
     internal static class ProgramLogger
     {
         /// <summary>
+        /// Logs a warning
+        /// </summary>
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        internal static void Warn(string message, Exception ex, Type fullClassName, string loadingProgramPath, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        {
+            string calledMethod = "Not available";
+
+            if (ex != null)
+            {
+                string exceptionCalledMethod = ex.TargetSite != null ? ex.TargetSite.ToString() : ex.StackTrace;
+                if (!string.IsNullOrEmpty(exceptionCalledMethod))
+                {
+                    calledMethod = exceptionCalledMethod;
+                }
+            }
+
+            var msg = $"\n\t\tProgram path: {loadingProgramPath}"
+                      + $"\n\t\tException thrown in called method: {calledMethod}"
+                      + $"\n\t\tPossible interpretation of the error: {message}";
+
+            // removed looping logic since that is inside Log class
+            Log.Warn(msg, fullClassName, methodName, sourceFilePath, sourceLineNumber);
+        }
+
+        /// <summary>
         /// Logs an exception
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -29,7 +55,7 @@ namespace Microsoft.Plugin.Program.Logger
 
             if (IsKnownWinProgramError(ex, methodName) || IsKnownUWPProgramError(ex, methodName))
             {
-                possibleResolution = "Can be ignored and Wox should still continue, however the program may not be loaded";
+                possibleResolution = "Can be ignored and PowerToys Run should still continue, however the program may not be loaded";
                 errorStatus = "KNOWN";
             }
 

@@ -19,7 +19,7 @@ namespace PowerLauncher.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -61,15 +61,6 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have activated Wox {0} times.
-        /// </summary>
-        public static string about_activate_times {
-            get {
-                return ResourceManager.GetString("about_activate_times", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Application Icon.
         /// </summary>
         public static string AppIcon {
@@ -106,6 +97,15 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Appended controls available.
+        /// </summary>
+        public static string ContextMenuItemsAvailable {
+            get {
+                return ResourceManager.GetString("ContextMenuItemsAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Context Menu Items Collection.
         /// </summary>
         public static string ContextMenuItemsCollection {
@@ -117,18 +117,18 @@ namespace PowerLauncher.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Settings will be reset to default and program will continue to function..
         /// </summary>
-        public static string deseralization_error_message {
+        public static string deserialization_error_message {
             get {
-                return ResourceManager.GetString("deseralization_error_message", resourceCulture);
+                return ResourceManager.GetString("deserialization_error_message", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to PowerToys Run deserialization error.
         /// </summary>
-        public static string deseralization_error_title {
+        public static string deserialization_error_title {
             get {
-                return ResourceManager.GetString("deseralization_error_title", resourceCulture);
+                return ResourceManager.GetString("deserialization_error_title", resourceCulture);
             }
         }
         
@@ -142,11 +142,47 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fail to initialize plugins: {0}.
+        /// </summary>
+        public static string FailedToInitializePluginsDescription {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.).
+        /// </summary>
+        public static string FailedToInitializePluginsDescriptionPartTwo {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsDescriptionPartTwo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Run {0} - Plugin Initialization Error.
+        /// </summary>
+        public static string FailedToInitializePluginsTitle {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Last execution time: {0}.
         /// </summary>
         public static string lastExecuteTime {
             get {
                 return ResourceManager.GetString("lastExecuteTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin keywords.
+        /// </summary>
+        public static string PluginKeywords {
+            get {
+                return ResourceManager.GetString("PluginKeywords", resourceCulture);
             }
         }
         
@@ -165,6 +201,15 @@ namespace PowerLauncher.Properties {
         public static string registerHotkeyFailed {
             get {
                 return ResourceManager.GetString("registerHotkeyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Run - Hotkey Error.
+        /// </summary>
+        public static string RegisterHotkeyFailedTitle {
+            get {
+                return ResourceManager.GetString("RegisterHotkeyFailedTitle", resourceCulture);
             }
         }
         

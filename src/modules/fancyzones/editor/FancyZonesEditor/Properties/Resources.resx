@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -120,6 +120,9 @@
   <data name="Add_zone" xml:space="preserve">
     <value>Add new zone</value>
   </data>
+  <data name="New_zone_added" xml:space="preserve">
+    <value>New zone added</value>
+  </data>
   <data name="Apply" xml:space="preserve">
     <value>Apply</value>
   </data>
@@ -132,13 +135,7 @@
   <data name="Grid_Layout_Editor" xml:space="preserve">
     <value>Grid layout editor</value>
   </data>
-  <data name="Choose_Layout" xml:space="preserve">
-    <value>Choose your layout for this desktop</value>
-  </data>
-  <data name="Crash_Report_Message_Box_Text_Part1" xml:space="preserve">
-    <value>Error logged to </value>
-  </data>
-  <data name="Crash_Report_Message_Box_Text_Part2" xml:space="preserve">
+  <data name="Crash_Report_Message_Box_Text" xml:space="preserve">
     <value>Please report the bug to </value>
   </data>
   <data name="Custom" xml:space="preserve">
@@ -147,14 +144,9 @@
   <data name="Custom_Layout_Creator" xml:space="preserve">
     <value>Custom layout creator</value>
   </data>
-  <data name="Custom_Table_Layout" xml:space="preserve">
-    <value>Custom table layout creator</value>
-  </data>
   <data name="Distance_adjacent_zones" xml:space="preserve">
-    <value>Distance to highlight adjacent zones</value>
-  </data>
-  <data name="Edit_Selected_Layout" xml:space="preserve">
-    <value>Edit selected layout</value>
+    <value>Highlight distance</value>
+    <comment>Distance of when an adjacent zone should light up when the window is close to it</comment>
   </data>
   <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -165,11 +157,8 @@
   <data name="Name" xml:space="preserve">
     <value>Name</value>
   </data>
-  <data name="Note_Custom_Table" xml:space="preserve">
-    <value>Note: Hold down Shift Key to change orientation of splitter.  To merge zones, select the zones and click "merge".</value>
-  </data>
   <data name="Save_Apply" xml:space="preserve">
-    <value>Save and apply</value>
+    <value>Save &amp; apply</value>
   </data>
   <data name="Show_Space_Zones" xml:space="preserve">
     <value>Show space around zones</value>
@@ -181,17 +170,10 @@
     <value>Templates</value>
   </data>
   <data name="Zone_Count_Decrement" xml:space="preserve">
-    <value>Decrement number of zones in template layout</value>
+    <value>Decrement number of zones</value>
   </data>
   <data name="Zone_Count_Increment" xml:space="preserve">
-    <value>Increment number of zones in template layout</value>
-  </data>
-  <data name="Custom_Layout_Delete_Button" xml:space="preserve">
-    <value>Delete custom layout</value>
-  </data>
-  <data name="Custom_Layout_Create_New" xml:space="preserve">
-    <value>Create new custom</value>
-    <comment>As in Create new custom layout</comment>
+    <value>Increment number of zones</value>
   </data>
   <data name="Error_Invalid_Arguments" xml:space="preserve">
     <value>FancyZones Editor arguments are invalid.</value>
@@ -219,12 +201,6 @@
   </data>
   <data name="Template_Layout_Rows" xml:space="preserve">
     <value>Rows</value>
-  </data>
-  <data name="Tab_Item_Custom" xml:space="preserve">
-    <value>Custom tab selected, press ctrl + tab to switch to Templates</value>
-  </data>
-  <data name="Tab_Item_Templates" xml:space="preserve">
-    <value>Templates tab selected, press ctrl + tab to switch to Custom</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
@@ -256,5 +232,227 @@
   <data name="Reset_Layout" xml:space="preserve">
     <value>Reset layout</value>
     <comment>as in Reset to a blank value</comment>
+  </data>
+  <data name="Choose_Layout" xml:space="preserve">
+    <value>Choose the layout for this desktop</value>
+  </data>
+  <data name="Choose_layout_type" xml:space="preserve">
+    <value>Choose layout type</value>
+    <comment>Dialog header that allows the user to select a specific layout type</comment>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Create</value>
+    <comment>Button label that creates a new layout</comment>
+  </data>
+  <data name="Create_new_layout" xml:space="preserve">
+    <value>Create new layout</value>
+    <comment>Button label that allows the user to create a new layout</comment>
+  </data>
+  <data name="Custom_Layout_Create_New" xml:space="preserve">
+    <value>Custom layout</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Context menu label that allows the user duplicate a layout</comment>
+  </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+    <comment>Context menu label that allows the user duplicate a layout</comment>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>Context menu label that allows the user edit a layout</comment>
+  </data>
+  <data name="Layout_Canvas_Description" xml:space="preserve">
+    <value>Create layouts that have overlapping zones</value>
+  </data>
+  <data name="Layout_Canvas_Title" xml:space="preserve">
+    <value>Canvas</value>
+  </data>
+  <data name="Layout_Grid_Description" xml:space="preserve">
+    <value>Create layouts that are horizontally or vertically stacked</value>
+  </data>
+  <data name="Layout_Grid_Title" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="Merge_zones" xml:space="preserve">
+    <value>Merge zones</value>
+    <comment>Button label that allows the user to merge 2 or more zones together</comment>
+  </data>
+  <data name="Monitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Monitor_Index" xml:space="preserve">
+    <value>Monitor {0}</value>
+  </data>
+  <data name="Dimensions" xml:space="preserve">
+    <value>Dimensions</value>
+  </data>
+  <data name="Scaling" xml:space="preserve">
+    <value>Scaling</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Template settings</value>
+  </data>
+  <data name="Delete_Layout_Dialog_Announce" xml:space="preserve">
+    <value>Delete layout dialog.</value>
+  </data>
+  <data name="Zone_Name" xml:space="preserve">
+    <value>Zone</value>
+    <comment>The name of the zones.</comment>
+  </data>
+  <data name="Width_Name" xml:space="preserve">
+    <value>Width</value>
+    <comment>The name of dimension called width.</comment>
+  </data>
+  <data name="Height_Name" xml:space="preserve">
+    <value>Height</value>
+    <comment>The name of dimension called height.</comment>
+  </data>
+  <data name="Resizer_Thumb_Announce" xml:space="preserve">
+    <value>Use the arrow keys to resize, delete key to remove.</value>
+    <comment>Keys and key means the keyboard keys.</comment>
+  </data>
+  <data name="Are_You_Sure" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="Are_You_Sure_Description" xml:space="preserve">
+    <value>Are you sure you want to delete this layout?</value>
+  </data>
+  <data name="Edit_zones" xml:space="preserve">
+    <value>Edit zones</value>
+  </data>
+  <data name="No_Custom_Layouts_Message" xml:space="preserve">
+    <value>Create or duplicate a layout to get started</value>
+  </data>
+  <data name="Delete_Zone" xml:space="preserve">
+    <value>Delete zone</value>
+    <comment>A tooltip on a button that allows the user to delete a zone</comment>
+  </data>
+  <data name="Error_Parsing_Data_Title" xml:space="preserve">
+    <value>Editor data parsing error.</value>
+  </data>
+  <data name="Error_Parsing_Applied_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing applied layouts.</value>
+  </data>
+  <data name="Apply_Layout" xml:space="preserve">
+    <value>Apply layout</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="NumberOfZones" xml:space="preserve">
+    <value>Number of zones</value>
+  </data>
+  <data name="Template_Layout_Blank" xml:space="preserve">
+    <value>No layout</value>
+  </data>
+  <data name="Create_Custom_From_Template" xml:space="preserve">
+    <value>Create custom layout</value>
+  </data>
+  <data name="Default_Custom_Layout_Name" xml:space="preserve">
+    <value>Custom layout</value>
+  </data>
+  <data name="MergeDescription" xml:space="preserve">
+    <value>Click and drag across zones.</value>
+    <comment>Click mouse, hold button down and drag across multiple zones in tool</comment>
+  </data>
+  <data name="MergeName" xml:space="preserve">
+    <value>Merge/Delete:</value>
+    <comment>Title for concept behind Merging two zones together or removing a zone</comment>
+  </data>
+  <data name="KeyboardControlsName" xml:space="preserve">
+    <value>Keyboard navigation:</value>
+  </data>
+  <data name="KeyboardControlsDescription" xml:space="preserve">
+    <value>
+• Shift+S to split currently focused zone.
+• Ctrl+Tab to focus zones/resizers.
+• Tab to cycle zones and resizers.
+• Delete to remove the focused resizer.
+• Arrows to move the focused resizer.</value>
+  </data>
+  <data name="KeyboardControlsDescriptionCanvas" xml:space="preserve">
+    <value>
+• Ctrl+Tab to switch focus between dialog and zones.
+• Shift+Arrows to resize the focused zone by 10px (5px per edge).
+• Ctrl+Shift+Arrows to resize the focused zone by 2px (1px per edge).
+• Arrows to move the focused zone by 10px.
+• Ctrl+Arrows to move the focused zone by 1px.</value>
+  </data>
+  <data name="SplitterDescription" xml:space="preserve">
+    <value>Hold Shift key for vertical split.</value>
+    <comment>A segmenter visual for splitting one item into two.  This would be the vertical line. Shift key is referring to key on keyboard</comment>
+  </data>
+  <data name="SplitterName" xml:space="preserve">
+    <value>Splitter:</value>
+    <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
+  </data>
+  <data name="QuickKey_Description" xml:space="preserve">
+    <value>Press Win + Ctrl + Alt + selected key to apply this layout</value>
+  </data>
+  <data name="Quick_Key_None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Number_of_zones" xml:space="preserve">
+    <value>Number of zones</value>
+  </data>
+  <data name="Pixels" xml:space="preserve">
+    <value>px</value>
+    <comment>Abbreviation of pixels</comment>
+  </data>
+  <data name="QuickKey_Title" xml:space="preserve">
+    <value>Layout shortcut</value>
+  </data>
+  <data name="Edit_Template" xml:space="preserve">
+    <value>Edit '{0}'</value>
+  </data>
+  <data name="Edit_Layout_Open_Announce" xml:space="preserve">
+    <value>opened</value>
+  </data>
+  <data name="Layout_Creation_Announce" xml:space="preserve">
+    <value>custom layout was created successfully.</value>
+  </data>
+  <data name="OpenSettings" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="Error_Parsing_Layout_Hotkeys_Message" xml:space="preserve">
+    <value>An error occurred while parsing layout hotkeys.</value>
+  </data>
+  <data name="Error_Parsing_Layout_Templates_Message" xml:space="preserve">
+    <value>An error occurred while parsing template layouts.</value>
+  </data>
+  <data name="Error_Parsing_Custom_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing custom layouts.</value>
+  </data>
+  <data name="Custom_slider_announce" xml:space="preserve">
+    <value>{0} slider. Possible range is from {1} to {2}. Value is {3}.</value>
+  </data>
+  <data name="Pixel_Value" xml:space="preserve">
+    <value>{0} pixels</value>
+  </data>
+  <data name="Template_Zone_Count_Value" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="Zones" xml:space="preserve">
+    <value>zones</value>
+  </data>
+  <data name="Default_Layout_Horizontal" xml:space="preserve">
+    <value>Default layout for horizontal monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Horizontal_Default" xml:space="preserve">
+    <value>Set layout as a default for horizontal monitor orientation</value>
+  </data>
+  <data name="Error_Parsing_Default_Layouts_Message" xml:space="preserve">
+    <value>An error occurred while parsing default layouts.</value>
+  </data>
+  <data name="Default_Layout_Vertical" xml:space="preserve">
+    <value>Default layout for vertical monitor orientation</value>
+  </data>
+  <data name="Set_Layout_As_Vertical_Default" xml:space="preserve">
+    <value>Set layout as a default for vertical monitor orientation</value>
+  </data>
+  <data name="Error_Parsing_Editor_Parameters_Message" xml:space="preserve">
+    <value>An error occurred while parsing editor parameters.</value>
   </data>
 </root>

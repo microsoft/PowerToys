@@ -27,6 +27,9 @@
     <ClInclude Include="logger_settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="call_tracer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logger.cpp">
@@ -36,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="logger_settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="call_tracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -153,9 +153,9 @@
     <value>Press the Color Picker icon to capture a color from your screen.</value>
     <comment>Message that shows when the user launches the window for the first time or when no colors have been selected</comment>
   </data>
-  <data name="OK" xml:space="preserve">
-    <value>OK</value>
-    <comment>OK button content</comment>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
+    <comment>Select button content</comment>
   </data>
   <data name="Open_settings" xml:space="preserve">
     <value>Open settings</value>
@@ -172,6 +172,18 @@
   <data name="Remove" xml:space="preserve">
     <value>Remove</value>
     <comment>Tooltip that shows that the user can remove an item from a list</comment>
+  </data>
+  <data name="Export_by" xml:space="preserve">
+    <value>Export</value>
+    <comment>Tooltip that shows the user can export the selected items to a file</comment>
+  </data>
+  <data name="Export_by_color" xml:space="preserve">
+    <value>Grouped by color</value>
+    <comment>Tooltip that shows the user can export the selected items grouped by color to a file</comment>
+  </data>
+  <data name="Export_by_format" xml:space="preserve">
+    <value>Grouped by format</value>
+    <comment>Tooltip that shows the user can export the selected items grouped by format to a file</comment>
   </data>
   <data name="Saturation_slider" xml:space="preserve">
     <value>Saturation slider</value>
@@ -192,6 +204,33 @@
   <data name="Value_slider" xml:space="preserve">
     <value>Value slider</value>
     <comment>Tool tip that appears when hovering over a slider that represents the color value (from HSV)</comment>
+  </data>
+  <data name="Select_color" xml:space="preserve">
+    <value>Select color</value>
+  </data>
+  <data name="Color_Code" xml:space="preserve">
+    <value>Color code</value>
+  </data>
+  <data name="Color_History" xml:space="preserve">
+    <value>Color history</value>
+  </data>
+  <data name="Color_Palette" xml:space="preserve">
+    <value>Color palette</value>
+  </data>
+  <data name="Color_Picker_Control" xml:space="preserve">
+    <value>Color picker control</value>
+  </data>
+  <data name="Darker_color" xml:space="preserve">
+    <value>Color dark 1</value>
+  </data>
+  <data name="Darkest_color" xml:space="preserve">
+    <value>Color dark 2</value>
+  </data>
+  <data name="Lighter_color" xml:space="preserve">
+    <value>Color light 1</value>
+  </data>
+  <data name="Lightest color" xml:space="preserve">
+    <value>Color light 2</value>
   </data>
   <data name="TEXT_COLOR_WHITE" xml:space="preserve">
     <value>White</value>
@@ -360,5 +399,13 @@
   <data name="TEXT_COLOR_PLUM" xml:space="preserve">
     <value>Plum</value>
     <comment>Plum color</comment>
+  </data>
+  <data name="New_Label" xml:space="preserve">
+    <value>Pick</value>
+    <comment>Button label to pick a new color</comment>
+  </data>
+  <data name="CP_Title" xml:space="preserve">
+    <value>Color Picker</value>
+    <comment>Do not translate product name</comment>
   </data>
 </root>

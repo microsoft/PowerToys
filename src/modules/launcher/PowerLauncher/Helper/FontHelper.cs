@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
+
 using Wox.Plugin.Logger;
 
 namespace PowerLauncher.Helper
@@ -75,10 +76,7 @@ namespace PowerLauncher.Helper
 
         public static FamilyTypeface ChooseRegularFamilyTypeface(this FontFamily family)
         {
-            if (family == null)
-            {
-                throw new ArgumentNullException(nameof(family));
-            }
+            ArgumentNullException.ThrowIfNull(family);
 
             return family.FamilyTypefaces.OrderBy(o =>
             {
@@ -90,10 +88,7 @@ namespace PowerLauncher.Helper
 
         public static FamilyTypeface ConvertFromInvariantStringsOrNormal(this FontFamily family, string style, string weight, string stretch)
         {
-            if (family == null)
-            {
-                throw new ArgumentNullException(nameof(family));
-            }
+            ArgumentNullException.ThrowIfNull(family);
 
             var styleObj = GetFontStyleFromInvariantStringOrNormal(style);
             var weightObj = GetFontWeightFromInvariantStringOrNormal(weight);

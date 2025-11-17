@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Monaco.props" />
+  <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup>
+    <Description>PowerToys FilePreviewCommon</Description>
+    <AssemblyName>PowerToys.FilePreviewCommon</AssemblyName>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig.Signed" />
+    <PackageReference Include="System.Text.Encoding.CodePages" />
+    <PackageReference Include="UTF.Unknown" />
+  </ItemGroup>
+</Project>

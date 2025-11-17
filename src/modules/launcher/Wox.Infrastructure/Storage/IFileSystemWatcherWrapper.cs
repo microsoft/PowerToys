@@ -19,7 +19,6 @@ namespace Wox.Infrastructure.Storage
         event RenamedEventHandler Renamed;
 
         // Properties of File System watcher
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Abstract properties can not have private set")]
         Collection<string> Filters { get; set; }
 
         bool EnableRaisingEvents { get; set; }

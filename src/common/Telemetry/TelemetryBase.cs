@@ -17,10 +17,10 @@ namespace Microsoft.PowerToys.Telemetry
         None = 0,
 
         /// <nodoc/>
-        ProductAndServicePerformance = 0x0u,
+        ProductAndServicePerformance = 1,
 
         /// <nodoc/>
-        ProductAndServiceUsage = 0x0u,
+        ProductAndServiceUsage = 2,
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Telemetry
         public const EventKeywords ProjectKeywordMeasure = (EventKeywords)0x0;
 
         /// <summary>
-        /// Group ID for Powertoys project.
+        /// Group ID for PowerToys project.
         /// </summary>
         private static readonly string[] PowerToysTelemetryTraits = { "ETW_GROUP", "{42749043-438c-46a2-82be-c6cbeb192ff2}" };
 

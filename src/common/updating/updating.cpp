@@ -1,44 +1,61 @@
 #include "pch.h"
 
+#include <common/utils/HttpClient.h>
+#include <common/utils/string_utils.h>
 #include <common/version/version.h>
 #include <common/version/helper.h>
 
-#include "http_client.h"
-#include "notifications.h"
 #include "updating.h"
 
-#include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
-#include <common/notifications/notifications.h>
+#include <common/utils/json.h>
+#include <common/utils/registry.h>
+
+using namespace registry::install_scope;
 
 namespace // Strings in this namespace should not be localized
 {
     const wchar_t LATEST_RELEASE_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases/latest";
     const wchar_t ALL_RELEASES_ENDPOINT[] = L"https://api.github.com/repos/microsoft/PowerToys/releases";
 
+    const wchar_t LOCAL_BUILD_ERROR[] = L"Local build cannot be updated";
+    const wchar_t NETWORK_ERROR[] = L"Network error";
+
     const size_t MAX_DOWNLOAD_ATTEMPTS = 3;
 }
 
 namespace updating
 {
-    std::optional<VersionHelper> extract_version_from_release_object(const json::JsonObject& release_object)
+    Uri extract_release_page_url(const json::JsonObject& release_object)
     {
         try
         {
-            return VersionHelper{ winrt::to_string(release_object.GetNamedString(L"tag_name")) };
+            return Uri{ release_object.GetNamedString(L"html_url") };
         }
         catch (...)
         {
         }
-        return std::nullopt;
+        return nullptr;
+    }
+
+    std::optional<VersionHelper> extract_version_from_release_object(const json::JsonObject& release_object)
+    {
+        return VersionHelper::fromString(release_object.GetNamedString(L"tag_name"));
     }
 
     std::pair<Uri, std::wstring> extract_installer_asset_download_info(const json::JsonObject& release_object)
     {
         const std::wstring_view required_architecture = get_architecture_string(get_current_architecture());
-        constexpr const std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
+        std::wstring_view required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN;
         // Desc-sorted by its priority
         const std::array<std::wstring_view, 2> asset_extensions = { L".exe", L".msi" };
+
+        const InstallScope current_install_scope = get_current_install_scope();
+        if (current_install_scope == InstallScope::PerUser)
+        {
+            required_filename_pattern = updating::INSTALLER_FILENAME_PATTERN_USER;
+        }
+
         for (const auto asset_extension : asset_extensions)
         {
             for (auto asset_elem : release_object.GetNamedArray(L"assets"))
@@ -51,7 +68,7 @@ namespace updating
                 const bool architecture_matched = filename_lower.find(required_architecture) != std::wstring::npos;
                 const bool filename_matched = filename_lower.find(required_filename_pattern) != std::wstring::npos;
                 const bool asset_matched = extension_matched && architecture_matched && filename_matched;
-                if (extension_matched && architecture_matched && filename_matched)
+                if (asset_matched)
                 {
                     return std::make_pair(Uri{ asset.GetNamedString(L"browser_download_url") }, std::move(filename_lower));
                 }
@@ -61,19 +78,33 @@ namespace updating
         throw std::runtime_error("Release object doesn't have the required asset");
     }
 
-    std::future<nonstd::expected<new_version_download_info, std::wstring>> get_new_github_version_info_async(const notifications::strings& strings, const bool prerelease)
+// disabling warning 4702 - unreachable code
+// prevent the warning that may show up depend on the value of the constants (#defines)
+#pragma warning(push)
+#pragma warning(disable : 4702)
+#if USE_STD_EXPECTED
+    std::future<std::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
+#else
+    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
+#endif
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
-        if (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
+        if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
-            co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR);
+#if USE_STD_EXPECTED
+            co_return std::unexpected(LOCAL_BUILD_ERROR);
+#else
+            co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
+#endif
         }
+
         try
         {
             http::HttpClient client;
             json::JsonObject release_object;
             const VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
             VersionHelper github_version = current_version;
+
             if (prerelease)
             {
                 const auto body = co_await client.request(Uri{ ALL_RELEASES_ENDPOINT });
@@ -104,28 +135,25 @@ namespace updating
 
             if (github_version <= current_version)
             {
-                co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_UP_TO_DATE);
+                co_return version_up_to_date{};
             }
 
-            Uri release_page_url{ release_object.GetNamedString(L"html_url") };
-            auto installer_download_url = extract_installer_asset_download_info(release_object);
-            co_return new_version_download_info{ std::move(release_page_url),
+            auto [installer_download_url, installer_filename] = extract_installer_asset_download_info(release_object);
+            co_return new_version_download_info{ extract_release_page_url(release_object),
                                                  std::move(github_version),
-                                                 std::move(installer_download_url.first),
-                                                 std::move(installer_download_url.second) };
+                                                 std::move(installer_download_url),
+                                                 std::move(installer_filename) };
         }
         catch (...)
         {
         }
-        co_return nonstd::make_unexpected(strings.GITHUB_NEW_VERSION_CHECK_ERROR);
+#if USE_STD_EXPECTED
+        co_return std::unexpected(NETWORK_ERROR);
+#else
+        co_return nonstd::make_unexpected(NETWORK_ERROR);
+#endif
     }
-
-    bool could_be_costly_connection()
-    {
-        using namespace winrt::Windows::Networking::Connectivity;
-        ConnectionProfile internetConnectionProfile = NetworkInformation::GetInternetConnectionProfile();
-        return internetConnectionProfile.IsWwanConnectionProfile();
-    }
+#pragma warning(pop)
 
     std::filesystem::path get_pending_updates_path()
     {
@@ -134,80 +162,84 @@ namespace updating
         return { std::move(path_str) };
     }
 
-    std::filesystem::path create_download_path()
+    std::optional<std::filesystem::path> create_download_path()
     {
-        auto installer_download_dst = get_pending_updates_path();
-        std::error_code _;
-        std::filesystem::create_directories(installer_download_dst, _);
-        return installer_download_dst;
+        auto installer_download_path = get_pending_updates_path();
+        std::error_code ec;
+        std::filesystem::create_directories(installer_download_path, ec);
+        return !ec ? std::optional{ installer_download_path } : std::nullopt;
     }
 
-    std::future<void> try_autoupdate(const bool download_updates_automatically, const notifications::strings& strings)
+    std::future<std::optional<std::filesystem::path>> download_new_version(const new_version_download_info& new_version)
     {
-        const auto new_version = co_await get_new_github_version_info_async(strings);
-        if (!new_version)
+        auto installer_download_path = create_download_path();
+        if (!installer_download_path)
         {
-            co_return;
+            co_return std::nullopt;
         }
 
-        if (download_updates_automatically && !could_be_costly_connection())
-        {
-            auto installer_download_dst = create_download_path() / new_version->installer_filename;
-            bool download_success = false;
-            for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
-            {
-                try
-                {
-                    http::HttpClient client;
-                    co_await client.download(new_version->installer_download_url, installer_download_dst);
-                    download_success = true;
-                    break;
-                }
-                catch (...)
-                {
-                    // reattempt to download or do nothing
-                }
-            }
-            if (!download_success)
-            {
-                updating::notifications::show_install_error(new_version.value(), strings);
-                co_return;
-            }
+        *installer_download_path /= new_version.installer_filename;
 
-            updating::notifications::show_version_ready(new_version.value(), strings);
-        }
-        else
+        bool download_success = false;
+        for (size_t i = 0; i < MAX_DOWNLOAD_ATTEMPTS; ++i)
         {
-            updating::notifications::show_visit_github(new_version.value(), strings);
+            try
+            {
+                http::HttpClient client;
+                co_await client.download(new_version.installer_download_url, *installer_download_path);
+                download_success = true;
+                break;
+            }
+            catch (...)
+            {
+                // reattempt to download or do nothing
+            }
         }
+        co_return download_success ? installer_download_path : std::nullopt;
     }
 
-    std::future<std::wstring> download_update(const notifications::strings& strings)
+    void cleanup_updates()
     {
-        const auto new_version = co_await get_new_github_version_info_async(strings);
-        if (!new_version)
+        auto update_dir = updating::get_pending_updates_path();
+        if (std::filesystem::exists(update_dir))
         {
-            co_return L"";
+            // Msi and exe files
+            for (const auto& entry : std::filesystem::directory_iterator(update_dir))
+            {
+                auto entryPath = entry.path().wstring();
+                std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+                if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
+                {
+                    std::error_code err;
+                    std::filesystem::remove(entry, err);
+                    if (err.value())
+                    {
+                        Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                    }
+                }
+            }
         }
 
-        auto installer_download_dst = create_download_path() / new_version->installer_filename;
-        updating::notifications::show_download_start(new_version.value(), strings);
-
-        try
+        // Log files
+        auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
+        auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
+        if (std::filesystem::exists(rootPath))
         {
-            auto progressUpdateHandle = [&](float progress) {
-                updating::notifications::update_download_progress(new_version.value(), progress, strings);
-            };
-
-            http::HttpClient client;
-            co_await client.download(new_version->installer_download_url, installer_download_dst, progressUpdateHandle);
+            for (const auto& entry : std::filesystem::directory_iterator(rootPath))
+            {
+                auto entryPath = entry.path().wstring();
+                std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+                if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
+                {
+                    std::error_code err;
+                    std::filesystem::remove(entry, err);
+                    if (err.value())
+                    {
+                        Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                    }
+                }
+            }
         }
-        catch (...)
-        {
-            updating::notifications::show_install_error(new_version.value(), strings);
-            co_return L"";
-        }
-
-        co_return new_version->installer_filename;
     }
 }

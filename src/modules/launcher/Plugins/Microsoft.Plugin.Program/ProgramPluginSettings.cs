@@ -11,11 +11,13 @@ namespace Microsoft.Plugin.Program
     {
         public DateTime LastIndexTime { get; set; }
 
-        public List<ProgramSource> ProgramSources { get; } = new List<ProgramSource>();
+        public List<ProgramSource> ProgramSources { get; set; } = new List<ProgramSource>();
 
-        public List<DisabledProgramSource> DisabledProgramSources { get; } = new List<DisabledProgramSource>();
+        public List<DisabledProgramSource> DisabledProgramSources { get; set; } = new List<DisabledProgramSource>();
 
-        public List<string> ProgramSuffixes { get; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
+        public List<string> ProgramSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
+
+        public List<string> RunCommandSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
 
         public bool EnableStartMenuSource { get; set; } = true;
 

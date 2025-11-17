@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -17,13 +18,13 @@ namespace FancyZonesEditor
     {
         private static readonly RotateTransform _rotateTransform = new RotateTransform(90, 24, 24);
 
-        public int StartRow { get; set; }
+        public int LeftReferenceZone { get; set; }
 
-        public int EndRow { get; set; }
+        public int RightReferenceZone { get; set; }
 
-        public int StartCol { get; set; }
+        public int TopReferenceZone { get; set; }
 
-        public int EndCol { get; set; }
+        public int BottomReferenceZone { get; set; }
 
         public LayoutModel Model { get; set; }
 
@@ -45,7 +46,7 @@ namespace FancyZonesEditor
             {
                 _orientation = value;
                 ApplyTemplate();
-                StackPanel body = (StackPanel)Template.FindName("Body", this);
+                Border body = (Border)Template.FindName("Body", this);
                 if (value == Orientation.Vertical)
                 {
                     body.RenderTransform = null;

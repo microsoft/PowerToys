@@ -18,12 +18,12 @@ namespace Common.ComInterlop
         /// <summary>
         /// Gets a list of the keyboard shortcuts for the preview host.
         /// </summary>
-        /// <param name="pinfo">A pointer to a <see href="https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/ns-shobjidl_core-previewhandlerframeinfo">PREVIEWHANDLERFRAMEINFO</see> structure
+        /// <param name="pinfo">A pointer to a <see href="https://learn.microsoft.com/windows/win32/api/shobjidl_core/ns-shobjidl_core-previewhandlerframeinfo">PREVIEWHANDLERFRAMEINFO</see> structure
         /// that receives accelerator table information.</param>
         void GetWindowContext(IntPtr pinfo);
 
         /// <summary>
-        /// Directs the host to handle an keyboard shortcut passed from the preview handler.
+        /// Directs the host to handle a keyboard shortcut passed from the preview handler.
         /// </summary>
         /// <param name="pmsg">A reference to <see cref="MSG"/> that corresponds to a keyboard shortcut.</param>
         /// <returns>If the keyboard shortcut is one that the host intends to handle, the host will process it and return S_OK(0); otherwise, it returns S_FALSE(1).</returns>

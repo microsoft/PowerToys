@@ -2,13 +2,15 @@
 
 #include "pch.h"
 #include "ContextMenuHandler.h"
-#include "HDropIterator.h"
-#include "Settings.h"
+
+#include <Settings.h>
+#include <trace.h>
+
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
-
-#include "trace.h"
+#include <common/utils/HDropIterator.h>
+#include <common/utils/package.h>
 
 extern HINSTANCE g_hInst_imageResizer;
 
@@ -16,7 +18,8 @@ CContextMenuHandler::CContextMenuHandler()
 {
     m_pidlFolder = NULL;
     m_pdtobj = NULL;
-    app_name = GET_RESOURCE_STRING(IDS_RESIZE_PICTURES);
+    context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY, L"Resize with Image Resizer");
+    context_menu_caption_here = GET_RESOURCE_STRING_FALLBACK(IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY_HERE, L"Resize with Image Resizer here");
 }
 
 CContextMenuHandler::~CContextMenuHandler()
@@ -36,7 +39,7 @@ void CContextMenuHandler::Uninitialize()
     }
 }
 
-HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY hkeyProgID)
+HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _In_opt_ IDataObject* pdtobj, _In_opt_ HKEY /*hkeyProgID*/)
 {
     Uninitialize();
 
@@ -59,25 +62,40 @@ HRESULT CContextMenuHandler::Initialize(_In_opt_ PCIDLIST_ABSOLUTE pidlFolder, _
     return S_OK;
 }
 
-HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags)
+HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, UINT idCmdFirst, UINT /*idCmdLast*/, UINT uFlags)
 {
     if (uFlags & CMF_DEFAULTONLY)
-    {
         return S_OK;
-    }
+
     if (!CSettingsInstance().GetEnabled())
-    {
         return E_FAIL;
-    }
+
     // NB: We just check the first item. We could iterate through more if the first one doesn't meet the criteria
     HDropIterator i(m_pdtobj);
     i.First();
+    if (i.IsDone())
+    {
+        return S_OK;
+    }
+
 // Suppressing C26812 warning as the issue is in the shtypes.h library
 #pragma warning(suppress : 26812)
     PERCEIVED type;
     PERCEIVEDFLAG flag;
     LPTSTR pszPath = i.CurrentItem();
+    if (nullptr == pszPath)
+    {
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
+
     LPTSTR pszExt = PathFindExtension(pszPath);
+    if (nullptr == pszExt)
+    {
+        free(pszPath);
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
@@ -88,22 +106,16 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     if (type == PERCEIVED_TYPE_IMAGE)
     {
         HRESULT hr = E_UNEXPECTED;
-        wchar_t strResizePictures[64] = { 0 };
+        wchar_t strResizePictures[128] = { 0 };
         // If handling drag-and-drop...
         if (m_pidlFolder)
         {
-            // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-            // Load 'Resize pictures here' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES_HERE, strResizePictures, ARRAYSIZE(strResizePictures));
-            dragDropFlag = true;
+            dragDropFlag=true;
+            wcscpy_s(strResizePictures, ARRAYSIZE(strResizePictures), context_menu_caption_here.c_str());
         }
         else
         {
-            // Suppressing C6031 warning since return value is not required.
-#pragma warning(suppress : 6031)
-            // Load 'Resize pictures' string
-            LoadString(g_hInst_imageResizer, IDS_RESIZE_PICTURES, strResizePictures, ARRAYSIZE(strResizePictures));
+            wcscpy_s(strResizePictures, ARRAYSIZE(strResizePictures), context_menu_caption.c_str());
         }
 
         MENUITEMINFO mii;
@@ -113,7 +125,7 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         mii.fType = MFT_STRING;
         mii.dwTypeData = (PWSTR)strResizePictures;
         mii.fState = MFS_ENABLED;
-        HICON hIcon = (HICON)LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0);
+        HICON hIcon = static_cast<HICON>(LoadImage(g_hInst_imageResizer, MAKEINTRESOURCE(IDI_RESIZE_PICTURES), IMAGE_ICON, 16, 16, 0));
         if (hIcon)
         {
             mii.fMask |= MIIM_BITMAP;
@@ -149,8 +161,13 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
+            m_etwTrace.UpdateState(true);
+
             hr = HRESULT_FROM_WIN32(GetLastError());
             Trace::QueryContextMenuError(hr);
+
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
         }
         else
         {
@@ -162,13 +179,13 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
     return S_OK;
 }
 
-HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* pReserved, LPSTR pszName, UINT cchMax)
+HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
     if (idCmd == ID_RESIZE_PICTURES)
     {
         if (uType == GCS_VERBW)
         {
-            wcscpy_s((LPWSTR)pszName, cchMax, RESIZE_PICTURES_VERBW);
+            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
         }
     }
     else
@@ -181,6 +198,8 @@ HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ U
 
 HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
 {
+    m_etwTrace.UpdateState(true);
+
     BOOL fUnicode = FALSE;
     Trace::Invoked();
     HRESULT hr = E_FAIL;
@@ -194,7 +213,7 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
     }
     else if (fUnicode && HIWORD(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW))
     {
-        if (wcscmp(((CMINVOKECOMMANDINFOEX*)pici)->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
+        if (wcscmp((reinterpret_cast<CMINVOKECOMMANDINFOEX*>(pici))->lpVerbW, RESIZE_PICTURES_VERBW) == 0)
         {
             hr = ResizePictures(pici, nullptr);
         }
@@ -204,6 +223,10 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
         hr = ResizePictures(pici, nullptr);
     }
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
+
     return hr;
 }
 
@@ -212,8 +235,8 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 {
     // Set the application path based on the location of the dll
     std::wstring path = get_module_folderpath(g_hInst_imageResizer);
-    path = path + L"\\ImageResizer.exe";
-    LPTSTR lpApplicationName = (LPTSTR)path.c_str();
+    path = path + L"\\PowerToys.ImageResizer.exe";
+    LPTSTR lpApplicationName = &path[0];
     // Create an anonymous pipe to stream filenames
     SECURITY_ATTRIBUTES sa;
     HANDLE hReadPipe;
@@ -257,7 +280,7 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
     startupInfo.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     if (pici)
     {
-        startupInfo.wShowWindow = pici->nShow;
+        startupInfo.wShowWindow = static_cast<WORD>(pici->nShow);
     }
     else
     {
@@ -331,12 +354,12 @@ HRESULT CContextMenuHandler::ResizePictures(CMINVOKECOMMANDINFO* pici, IShellIte
 
 HRESULT __stdcall CContextMenuHandler::GetTitle(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszName)
 {
-    return SHStrDup(app_name.c_str(), ppszName);
+    return SHStrDup(context_menu_caption.c_str(), ppszName);
 }
 
 HRESULT __stdcall CContextMenuHandler::GetIcon(IShellItemArray* /*psiItemArray*/, LPWSTR* ppszIcon)
 {
-    // Since ImageResizer is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of ImageResizerExt.dll, which can be obtained by passing the HINSTANCE of the dll
+    // Since ImageResizer is registered as a COM SurrogateServer the current module filename would be dllhost.exe. To get the icon we need the path of PowerToys.ImageResizerExt.dll, which can be obtained by passing the HINSTANCE of the dll
     std::wstring iconResourcePath = get_module_filename(g_hInst_imageResizer);
     iconResourcePath += L",-";
     iconResourcePath += std::to_wstring(IDI_RESIZE_PICTURES);
@@ -355,7 +378,7 @@ HRESULT __stdcall CContextMenuHandler::GetCanonicalName(GUID* pguidCommandName)
     return S_OK;
 }
 
-HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
+HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, BOOL /*fOkToBeSlow*/, EXPCMDSTATE* pCmdState)
 {
     if (!CSettingsInstance().GetEnabled())
     {
@@ -369,12 +392,30 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
     PERCEIVED type;
     PERCEIVEDFLAG flag;
     IShellItem* shellItem;
+
     //Check extension of first item in the list (the item which is right-clicked on)
-    psiItemArray->GetItemAt(0, &shellItem);
+    HRESULT getItemAtResult = psiItemArray->GetItemAt(0, &shellItem);
+    if(!SUCCEEDED(getItemAtResult)) {
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
+
     LPTSTR pszPath;
     // Retrieves the entire file system path of the file from its shell item
-    shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+    HRESULT getDisplayResult = shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+    if (S_OK != getDisplayResult || nullptr == pszPath)
+    {
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
+
     LPTSTR pszExt = PathFindExtension(pszPath);
+    if (nullptr == pszExt)
+    {
+        CoTaskMemFree(pszPath);
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
     AssocGetPerceivedType(pszExt, &type, &flag, NULL);
@@ -403,8 +444,14 @@ HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** pp
 // psiItemArray contains the list of files that have been selected when the context menu entry is invoked
 HRESULT __stdcall CContextMenuHandler::Invoke(IShellItemArray* psiItemArray, IBindCtx* /*pbc*/)
 {
+    m_etwTrace.UpdateState(true);
+
     Trace::Invoked();
     HRESULT hr = ResizePictures(nullptr, psiItemArray);
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
+
     return hr;
 }

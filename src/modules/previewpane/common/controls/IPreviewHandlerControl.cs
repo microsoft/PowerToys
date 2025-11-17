@@ -8,13 +8,13 @@ using System.Drawing;
 namespace Common
 {
     /// <summary>
-    /// Interface defining methods requirement by the <see cref="PreviewHandlerBase"/> control.
+    /// Interface defining preview handler control.
     /// </summary>
     public interface IPreviewHandlerControl
     {
         /// <summary>
         /// Directs the preview handler to return the HWND from calling the GetFocus function.
-        /// Source: https://docs.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ipreviewhandler-queryfocus.
+        /// Source: https://learn.microsoft.com/windows/win32/api/shobjidl_core/nf-shobjidl_core-ipreviewhandler-queryfocus.
         /// </summary>
         /// <param name="result">Returns the handle of the window with focus.</param>
         void QueryFocus(out IntPtr result);
@@ -26,7 +26,7 @@ namespace Common
 
         /// <summary>
         /// Sets the font according to the font set in Windows Settings.
-        /// More details: https://docs.microsoft.com/en-us/windows/win32/shell/building-preview-handlers#ipreviewhandlervisualssetfont.
+        /// More details: https://learn.microsoft.com/windows/win32/shell/building-preview-handlers#ipreviewhandlervisualssetfont.
         /// </summary>
         /// <param name="font">Instance of Font.</param>
         void SetFont(Font font);
@@ -58,14 +58,16 @@ namespace Common
         /// Directs the control to change the area within the parent hwnd that it draws into.
         /// </summary>
         /// <param name="windowBounds">Instance of Rectangle defining the area.</param>
-        void SetRect(Rectangle windowBounds);
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
+        bool SetRect(Rectangle windowBounds);
 
         /// <summary>
-        /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window..
+        /// Sets the parent window of the previewer window, as well as the area within the parent to be used for the previewer window.
         /// </summary>
         /// <param name="hwnd">Pointer to the parent window handle.</param>
         /// <param name="rect">Instance of Rectangle defining the area.</param>
-        void SetWindow(IntPtr hwnd, Rectangle rect);
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
+        bool SetWindow(IntPtr hwnd, Rectangle rect);
 
         /// <summary>
         /// Called by Preview Handler to start the preview.

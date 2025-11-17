@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.IO;
 using System.IO.Abstractions;
 
 namespace Wox.Infrastructure.FileSystemHelper

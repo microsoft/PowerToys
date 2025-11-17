@@ -1,5 +1,64 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -77,7 +136,7 @@
     <value>An older version of PowerToys is already running.</value>
   </data>
   <data name="DOWNLOAD_UPDATE_ERROR" xml:space="preserve">
-    <value>Couldn't download PowerToys update! Please report the issue on Github.</value>
+    <value>Couldn't download PowerToys update! Please report the issue on GitHub.</value>
   </data>
   <data name="OLDER_MSIX_UNINSTALLED" xml:space="preserve">
     <value>An older MSIX version of PowerToys was uninstalled.</value>
@@ -89,83 +148,49 @@
     <value>This setting has been disabled by your administrator.</value>
   </data>
   <data name="STARTUP_DISABLED_BY_USER" xml:space="preserve">
-    <value>This setting has been disabled manually via &lt;a href=&quot;https://ms_settings_startupapps&quot; target=&quot;_blank&quot;&gt;Startup Settings&lt;/a&gt;.</value>
+    <value>This setting has been disabled manually via &lt;a href="https://ms_settings_startupapps" target="_blank"&gt;Startup Settings&lt;/a&gt;.</value>
   </data>
   <data name="GITHUB_NEW_VERSION_AVAILABLE" xml:space="preserve">
     <value>An update to PowerToys is available.</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_DOWNLOAD_STARTED" xml:space="preserve">
-    <value>PowerToys download started.</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_READY_TO_INSTALL" xml:space="preserve">
-    <value>An update to PowerToys is ready to install.</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_DOWNLOAD_INSTALL_ERROR" xml:space="preserve">
-    <value>Error: couldn't download PowerToys installer. Visit our GitHub page to update.</value>
-  </data>
   <data name="GITHUB_NEW_VERSION_UPDATE_NOW" xml:space="preserve">
     <value>Update now</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_UPDATE_AFTER_RESTART" xml:space="preserve">
-    <value>At next launch</value>
-  </data>
-  <data name="UNINSTALLATION_UNKNOWN_ERROR" xml:space="preserve">
-    <value>Error: please uninstall the previous version of PowerToys manually.</value>
   </data>
   <data name="GITHUB_NEW_VERSION_AVAILABLE_OFFER_VISIT" xml:space="preserve">
     <value>An update to PowerToys is available. Visit our GitHub page to update.</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_UP_TO_DATE" xml:space="preserve">
-    <value>PowerToys is up to date.</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_VISIT" xml:space="preserve">
-    <value>Visit</value>
-  </data>
   <data name="GITHUB_NEW_VERSION_MORE_INFO" xml:space="preserve">
     <value>More info...</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_ABORT" xml:space="preserve">
-    <value>Abort</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_SNOOZE_TITLE" xml:space="preserve">
-    <value>Click Snooze to be reminded in:</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_UPDATE_SNOOZE_1D" xml:space="preserve">
-    <value>1 day</value>
-  </data>
-  <data name="GITHUB_NEW_VERSION_UPDATE_SNOOZE_5D" xml:space="preserve">
-    <value>5 days</value>
-  </data>
-  <data name="DOWNLOAD_IN_PROGRESS" xml:space="preserve">
-    <value>Downloading...</value>
-  </data>
-  <data name="DOWNLOAD_COMPLETE" xml:space="preserve">
-    <value>Download complete</value>
   </data>
   <data name="TOAST_TITLE" xml:space="preserve">
     <value>PowerToys Update</value>
   </data>
-  <data name="OFFER_UNINSTALL_MSI" xml:space="preserve">
-    <value>We've detected a previous installation of PowerToys. Would you like to remove it?</value>
-  </data>
-  <data name="OFFER_UNINSTALL_MSI_TITLE" xml:space="preserve">
-    <value>PowerToys: uninstall previous version?</value>
-  </data>
-  <data name="SNOOZE_BUTTON" xml:space="preserve">
-    <value>Snooze</value>
+  <data name="QUICK_ACCESS_MENU_TEXT" xml:space="preserve">
+    <value>Quick access\tLeft-click</value>
+    <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu.</comment>
   </data>
   <data name="SETTINGS_MENU_TEXT" xml:space="preserve">
-    <value>Settings</value>
+    <value>Settings\tDouble-click</value>
+    <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu.</comment>
   </data>
-  <data name="EXIT_MENU_TEXT" xml:space="preserve">
-    <value>Exit</value>
-    <comment>Exit as a verb, as in Exit the application</comment>
+  <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
+    <value>Documentation</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_USING_LOCAL_BUILD_ERROR" xml:space="preserve">
-    <value>Updating from a local build is not supported.</value>
-    <comment>User cannot autoupdate from a locally-built PowerToys version</comment>
+  <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
+    <value>Report bug</value>
   </data>
-  <data name="GITHUB_NEW_VERSION_CHECK_ERROR" xml:space="preserve">
-    <value>Failed to connect to the server. Check your network connection or retry later.</value>
+  <data name="BUGREPORT_SUCCESS" xml:space="preserve">
+    <value>Bug report .zip file has been created on your Desktop.</value>
+  </data>
+  <data name="PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART" xml:space="preserve">
+    <value>A new PowerToys version has been installed. Please restart the computer, when possible, to fully reload File Explorer extensions.</value>
+    <comment>File Explorer refers to the Windows File Explorer application.</comment>
+  </data>
+  <data name="TRAY_ICON_ADMIN_TOOLTIP" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="CLOSE_MENU_TEXT" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close as a verb, as in Close the application</comment>
   </data>
 </root>

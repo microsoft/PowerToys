@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
+
 using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -25,7 +25,6 @@ namespace Microsoft.Plugin.Folder
             _context = context;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exception")]
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
             var contextMenus = new List<ContextMenuResult>();
@@ -42,14 +41,14 @@ namespace Microsoft.Plugin.Folder
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.Microsoft_plugin_folder_copy_path,
                     Glyph = "\xE8C8",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control,
                     Action = (context) =>
                     {
                         try
                         {
-                            Clipboard.SetText(record.FullPath);
+                            Clipboard.SetText(record.Path);
                             return true;
                         }
                         catch (Exception e)
@@ -67,7 +66,7 @@ namespace Microsoft.Plugin.Folder
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.Microsoft_plugin_folder_open_in_console,
                     Glyph = "\xE756",
-                    FontFamily = "Segoe MDL2 Assets",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.C,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
 
@@ -77,18 +76,18 @@ namespace Microsoft.Plugin.Folder
                         {
                             if (record.Type == ResultType.File)
                             {
-                                Helper.OpenInConsole(_fileSystem.Path.GetDirectoryName(record.FullPath));
+                                Helper.OpenInConsole(_fileSystem.Path.GetDirectoryName(record.Path));
                             }
                             else
                             {
-                                Helper.OpenInConsole(record.FullPath);
+                                Helper.OpenInConsole(record.Path);
                             }
 
                             return true;
                         }
                         catch (Exception e)
                         {
-                            Log.Exception($"Failed to open {record.FullPath} in console, {e.Message}", e, GetType());
+                            Log.Exception($"Failed to open {record.Path} in console, {e.Message}", e, GetType());
 
                             return false;
                         }
@@ -99,7 +98,6 @@ namespace Microsoft.Plugin.Folder
             return contextMenus;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive, and instead log the exception")]
         private ContextMenuResult CreateOpenContainingFolderResult(SearchResult record)
         {
             return new ContextMenuResult
@@ -107,21 +105,15 @@ namespace Microsoft.Plugin.Folder
                 PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                 Title = Properties.Resources.Microsoft_plugin_folder_open_containing_folder,
                 Glyph = "\xE838",
-                FontFamily = "Segoe MDL2 Assets",
+                FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                 AcceleratorKey = Key.E,
                 AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                 Action = _ =>
                 {
-                    try
+                    if (!Helper.OpenInShell("explorer.exe", $"/select,\"{record.Path}\""))
                     {
-                        Process.Start("explorer.exe", $" /select,\"{record.FullPath}\"");
-                    }
-                    catch (Exception e)
-                    {
-                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.FullPath}";
-                        Log.Exception(message, e, GetType());
+                        var message = $"{Properties.Resources.Microsoft_plugin_folder_file_open_failed} {record.Path}";
                         _context.API.ShowMsg(message);
-
                         return false;
                     }
 

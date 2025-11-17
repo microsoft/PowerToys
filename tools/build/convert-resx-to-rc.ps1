@@ -25,9 +25,6 @@ else
     $initResourceID = 101
 }
 
-# Temporary file created used for resgen
-$tempFile = "temporaryResourceFile.txt"
-
 # Flags to check if the first updated has occurred
 $headerFileUpdated = $false
 $rcFileUpdated = $false
@@ -50,6 +47,7 @@ if (!(Test-Path -Path $generatedFilesFolder))
 # Hash table to get the language codes from the code used in the file name
 $languageHashTable = @{ "en" = @("ENU", "ENGLISH", "ENGLISH_US", "English (United States)");
                         "zh-Hans" =  @("CHS", "CHINESE", "NEUTRAL", "Chinese (Simplified)");
+                        "zh-CN" =  @("CHS", "CHINESE", "NEUTRAL", "Chinese (Simplified)");
                         "cs" = @("CSY", "CZECH", "NEUTRAL", "Czech");
                         "hu" = @("HUN", "HUNGARIAN", "NEUTRAL", "Hungarian");
                         "pl" = @("PLK", "POLISH", "NEUTRAL", "Polish");
@@ -74,6 +72,7 @@ $languageHashTable = @{ "en" = @("ENU", "ENGLISH", "ENGLISH_US", "English (Unite
                         "sv" = @("SVE", "SWEDISH", "NEUTRAL", "Swedish");
                         "pt-PT" = @("PTG", "PORTUGUESE", "PORTUGUESE", "Portuguese (Portugal)");
                         "zh-Hant" = @("CHT", "CHINESE", "CHINESE_TRADITIONAL", "Chinese (Traditional)")
+                        "zh-TW" = @("CHT", "CHINESE", "CHINESE_TRADITIONAL", "Chinese (Traditional)")
                         }
 
 # Store the content to be written to a buffer
@@ -81,14 +80,15 @@ $headerFileContent = ""
 $rcFileContent = ""
 
 # Iterate over all resx files in parent directory
-Get-ChildItem $parentDirectory -Filter *.resx | 
+Get-ChildItem $parentDirectory -Recurse -Filter *.resx | 
 Foreach-Object {
-    # Use resgen to parse resx to txt. More details at https://docs.microsoft.com/en-us/dotnet/framework/tools/resgen-exe-resource-file-generator#converting-between-resource-file-types
+    Write-Host "Processing $($_.FullName)"
+    $xmlDocument = $null
     try {
-        resgen $_.FullName $tempFile
+        $xmlDocument = [xml](Get-Content $_.FullName -ErrorAction:Stop)
     }
     catch {
-        echo "resgen failed to convert resx file"
+        Write-Host "Failed to load $($_.FullName)"
         exit 0
     }
 
@@ -97,48 +97,61 @@ Foreach-Object {
     $tokens = $_.Name -split "\."
     if ($tokens.Count -eq 3) {
         $lang = $tokens[1]
+    } else {
+        $d = $_.Directory.Name
+        If ($d.Contains('-')) { # Looks like a language directory
+            $lang = $d
+        }
     }
+
     $langData = $languageHashTable[$lang]
+    if ($null -eq $langData -and $lang.Contains('-')) {
+        # Modern Localization comes in with language + country tuples;
+        # we want to detect the language alone if we don't support the language-country
+        # version.
+        $lang = ($lang -split "-")[0]
+        $langData = $languageHashTable[$lang]
+    }
+    if ($null -eq $langData) {
+        Write-Warning "Unknown language $lang"
+        Return
+    }
 
     $newLinesForRCFile = ""
     $newLinesForHeaderFile = ""
     $count = $initResourceID
 
     try {        
-        foreach ($line in (Get-Content $tempFile -Encoding unicode)) {
-            # Each line of the resgen text file is of the form ResourceName=ResourceValue with no spaces.
-            $content = $line -split "=", 2
-
+        foreach ($entry in $xmlDocument.root.data) {
             $culture = [System.Globalization.CultureInfo]::GetCultureInfo('en-US')
             # Each resource is named as IDS_ResxResourceName, in uppercase. Escape occurrences of double quotes in the string
-            $lineInRCFormat = "IDS_" + $content[0].ToUpper($culture) + " L`"" + $content[1].Replace("`"", "`"`"") + "`""
+            $lineInRCFormat = "IDS_" + $entry.name.ToUpper($culture) + " L`"" + $entry.value.Replace("`"", "`"`"") + "`""
             $newLinesForRCFile = $newLinesForRCFile + "`r`n    " + $lineInRCFormat
 
             # Resource header file needs to be updated only for one language
             if (!$headerFileUpdated) {
-                $lineInHeaderFormat = "#define IDS_" + $content[0].ToUpper($culture) + " " + $count.ToString()
+                $lineInHeaderFormat = "#define IDS_" + $entry.name.ToUpper($culture) + " " + $count.ToString()
                 $newLinesForHeaderFile = $newLinesForHeaderFile + "`r`n" + $lineInHeaderFormat
                 $count++
             }
         }
     }
     catch {
-        echo "Failed to read temporary file."
+        echo "Failed to read XML document."
         exit 0
     }
 
-    # Delete temporary text file used by resgen
-    Remove-Item $tempFile
+    if ($newLinesForRCFile -ne "") {
+        # Add string table syntax
+        $newLinesForRCFile = "`r`nSTRINGTABLE`r`nBEGIN" + $newLinesForRCFile + "`r`nEND"
 
-    # Add string table syntax
-    $newLinesForRCFile = "`r`nSTRINGTABLE`r`nBEGIN" + $newLinesForRCFile + "`r`nEND"
+        $langStart = "`r`n/////////////////////////////////////////////////////////////////////////////`r`n// " + $langData[3]  + " resources`r`n`r`n"
+        $langStart += "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_" + $langData[0] + ")`r`nLANGUAGE LANG_" + $langData[1] + ", SUBLANG_" + $langData[2] + "`r`n"
 
-    $langStart = "`r`n/////////////////////////////////////////////////////////////////////////////`r`n// " + $langData[3]  + " resources`r`n`r`n"
-    $langStart += "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_" + $langData[0] + ")`r`nLANGUAGE LANG_" + $langData[1] + ", SUBLANG_" + $langData[2] + "`r`n"
+        $langEnd = "`r`n`r`n#endif    // " + $langData[3] + " resources`r`n/////////////////////////////////////////////////////////////////////////////`r`n"
 
-    $langEnd = "`r`n`r`n#endif    // " + $langData[3] + " resources`r`n/////////////////////////////////////////////////////////////////////////////`r`n"
-
-    $newLinesForRCFile = $langStart + $newLinesForRCFile + $langEnd
+        $newLinesForRCFile = $langStart + $newLinesForRCFile + $langEnd
+    }
 
     # Initialize the rc file with an auto-generation warning and content from the base rc
     if (!$rcFileUpdated) {

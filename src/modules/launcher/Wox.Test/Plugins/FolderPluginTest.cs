@@ -3,23 +3,25 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+
 using Microsoft.Plugin.Folder;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using NUnit.Framework;
 using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
-    internal class FolderPluginTest
+    [TestClass]
+    public class FolderPluginTest
     {
-        [Test]
-        public void ContextMenuLoader_ReturnContextMenuForFolderWithOpenInConsole_WhenLoadContextMenusIsCalled()
+        [TestMethod]
+        public void ContextMenuLoaderReturnContextMenuForFolderWithOpenInConsoleWhenLoadContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
             var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-            var searchResult = new SearchResult() { Type = ResultType.Folder, FullPath = "C:/DummyFolder" };
+            var searchResult = new SearchResult() { Type = ResultType.Folder, Path = "C:/DummyFolder" };
             var result = new Result() { ContextData = searchResult };
 
             // Act
@@ -31,14 +33,14 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Microsoft.Plugin.Folder.Properties.Resources.Microsoft_plugin_folder_open_in_console, contextMenuResults[1].Title);
         }
 
-        [Test]
-        public void ContextMenuLoader_ReturnContextMenuForFileWithOpenInConsole_WhenLoadContextMenusIsCalled()
+        [TestMethod]
+        public void ContextMenuLoaderReturnContextMenuForFileWithOpenInConsoleWhenLoadContextMenusIsCalled()
         {
             // Arrange
             var mock = new Mock<IPublicAPI>();
             var pluginInitContext = new PluginInitContext() { API = mock.Object };
             var contextMenuLoader = new ContextMenuLoader(pluginInitContext);
-            var searchResult = new SearchResult() { Type = ResultType.File, FullPath = "C:/DummyFile.cs" };
+            var searchResult = new SearchResult() { Type = ResultType.File, Path = "C:/DummyFile.cs" };
             var result = new Result() { ContextData = searchResult };
 
             // Act

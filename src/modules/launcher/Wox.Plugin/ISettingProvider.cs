@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Windows.Controls;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Wox.Plugin
@@ -11,6 +13,8 @@ namespace Wox.Plugin
     {
         Control CreateSettingPanel();
 
-        void UpdateSettings(PowerLauncherSettings settings);
+        void UpdateSettings(PowerLauncherPluginSettings settings);
+
+        IEnumerable<PluginAdditionalOption> AdditionalOptions { get; }
     }
 }

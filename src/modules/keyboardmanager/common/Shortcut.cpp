@@ -4,17 +4,55 @@
 #include <common/interop/shared_constants.h>
 #include "Helpers.h"
 #include "InputInterface.h"
+#include <string>
+#include <sstream>
 
-// Constructor to initialize Shortcut from it's virtual key code string representation.
+// Function to split a wstring based on a delimiter and return a vector of split strings
+std::vector<std::wstring> Shortcut::splitwstring(const std::wstring& input, wchar_t delimiter)
+{
+    std::wstringstream ss(input);
+    std::wstring item;
+    std::vector<std::wstring> splittedStrings;
+    while (std::getline(ss, item, delimiter))
+    {
+        splittedStrings.push_back(item);
+    }
+
+    return splittedStrings;
+}
+
+// Constructor to initialize Shortcut from its virtual key code string representation.
 Shortcut::Shortcut(const std::wstring& shortcutVK) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
-    auto keys = KeyboardManagerHelper::splitwstring(shortcutVK, ';');
+    auto keys = splitwstring(shortcutVK, ';');
+    SetKeyCodes(ConvertToNumbers(keys));
+}
+
+std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys)
+{
+    std::vector<int32_t> keysAsNumbers;
     for (auto it : keys)
     {
         auto vkKeyCode = std::stoul(it);
-        SetKey(vkKeyCode);
+        keysAsNumbers.push_back(vkKeyCode);
     }
+    return keysAsNumbers;
+}
+
+// Constructor to initialize Shortcut from single key
+Shortcut::Shortcut(const DWORD key)
+{
+    SetKey(key);
+}
+
+// Constructor to initialize Shortcut from its virtual key code string representation.
+Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD secondKeyOfChord) :
+    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+{
+    auto keys = splitwstring(shortcutVK, ';');
+    SetKeyCodes(ConvertToNumbers(keys));
+    secondKey = secondKeyOfChord;
 }
 
 // Constructor to initialize shortcut from a list of keys
@@ -72,26 +110,44 @@ void Shortcut::Reset()
     altKey = ModifierKey::Disabled;
     shiftKey = ModifierKey::Disabled;
     actionKey = NULL;
-}
-
-// Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
-bool Shortcut::IsValidShortcut() const
-{
-    if (actionKey != NULL)
-    {
-        if (winKey != ModifierKey::Disabled || ctrlKey != ModifierKey::Disabled || altKey != ModifierKey::Disabled || shiftKey != ModifierKey::Disabled)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    secondKey = NULL;
+    chordStarted = false;
 }
 
 // Function to return the action key
 DWORD Shortcut::GetActionKey() const
 {
     return actionKey;
+}
+
+bool Shortcut::IsRunProgram() const
+{
+    return operationType == OperationType::RunProgram;
+}
+
+bool Shortcut::IsOpenURI() const
+{
+    return operationType == OperationType::OpenURI;
+}
+
+DWORD Shortcut::GetSecondKey() const
+{
+    return secondKey;
+}
+
+bool Shortcut::HasChord() const
+{
+    return secondKey != NULL;
+}
+
+void Shortcut::SetChordStarted(bool started)
+{
+    chordStarted = started;
+}
+
+bool Shortcut::IsChordStarted() const
+{
+    return chordStarted;
 }
 
 // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
@@ -129,7 +185,7 @@ DWORD Shortcut::GetWinKey(const ModifierKey& input) const
 }
 
 // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetCtrlKey() const
+DWORD Shortcut::GetCtrlKey(const ModifierKey& input) const
 {
     if (ctrlKey == ModifierKey::Disabled)
     {
@@ -145,12 +201,20 @@ DWORD Shortcut::GetCtrlKey() const
     }
     else
     {
+        if (input == ModifierKey::Right)
+        {
+            return VK_RCONTROL;
+        }
+        if (input == ModifierKey::Left)
+        {
+            return VK_LCONTROL;
+        }
         return VK_CONTROL;
     }
 }
 
 // Function to return the virtual key code of the alt key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetAltKey() const
+DWORD Shortcut::GetAltKey(const ModifierKey& input) const
 {
     if (altKey == ModifierKey::Disabled)
     {
@@ -164,6 +228,14 @@ DWORD Shortcut::GetAltKey() const
     {
         return VK_RMENU;
     }
+    if (input == ModifierKey::Right)
+    {
+        return VK_RMENU;
+    }
+    else if (input == ModifierKey::Left || input == ModifierKey::Disabled)
+    {
+        return VK_LMENU;
+    }
     else
     {
         return VK_MENU;
@@ -171,7 +243,7 @@ DWORD Shortcut::GetAltKey() const
 }
 
 // Function to return the virtual key code of the shift key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetShiftKey() const
+DWORD Shortcut::GetShiftKey(const ModifierKey& input) const
 {
     if (shiftKey == ModifierKey::Disabled)
     {
@@ -187,12 +259,20 @@ DWORD Shortcut::GetShiftKey() const
     }
     else
     {
+        if (input == ModifierKey::Right)
+        {
+            return VK_RSHIFT;
+        }
+        if (input == ModifierKey::Left)
+        {
+            return VK_LSHIFT;
+        }
         return VK_SHIFT;
     }
 }
 
 // Function to check if the input key matches the win key expected in the shortcut
-bool Shortcut::CheckWinKey(const DWORD& input) const
+bool Shortcut::CheckWinKey(const DWORD input) const
 {
     if (winKey == ModifierKey::Disabled)
     {
@@ -214,7 +294,7 @@ bool Shortcut::CheckWinKey(const DWORD& input) const
 }
 
 // Function to check if the input key matches the ctrl key expected in the shortcut
-bool Shortcut::CheckCtrlKey(const DWORD& input) const
+bool Shortcut::CheckCtrlKey(const DWORD input) const
 {
     if (ctrlKey == ModifierKey::Disabled)
     {
@@ -236,7 +316,7 @@ bool Shortcut::CheckCtrlKey(const DWORD& input) const
 }
 
 // Function to check if the input key matches the alt key expected in the shortcut
-bool Shortcut::CheckAltKey(const DWORD& input) const
+bool Shortcut::CheckAltKey(const DWORD input) const
 {
     if (altKey == ModifierKey::Disabled)
     {
@@ -258,7 +338,7 @@ bool Shortcut::CheckAltKey(const DWORD& input) const
 }
 
 // Function to check if the input key matches the shift key expected in the shortcut
-bool Shortcut::CheckShiftKey(const DWORD& input) const
+bool Shortcut::CheckShiftKey(const DWORD input) const
 {
     if (shiftKey == ModifierKey::Disabled)
     {
@@ -279,8 +359,18 @@ bool Shortcut::CheckShiftKey(const DWORD& input) const
     }
 }
 
+bool Shortcut::SetSecondKey(const DWORD input)
+{
+    if (secondKey == input)
+    {
+        return false;
+    }
+    secondKey = input;
+    return true;
+}
+
 // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
-bool Shortcut::SetKey(const DWORD& input)
+bool Shortcut::SetKey(const DWORD input)
 {
     // Since there isn't a key for a common Win key we use the key code defined by us
     if (input == CommonSharedConstants::VK_WIN_BOTH)
@@ -392,7 +482,7 @@ bool Shortcut::SetKey(const DWORD& input)
 }
 
 // Function to reset the state of a shortcut key based on the passed key code argument. Since there is no VK_WIN code, use the second argument for setting common win key.
-void Shortcut::ResetKey(const DWORD& input)
+void Shortcut::ResetKey(const DWORD input)
 {
     // Since there isn't a key for a common Win key this is handled with a separate argument.
     if (input == CommonSharedConstants::VK_WIN_BOTH || input == VK_LWIN || input == VK_RWIN)
@@ -411,37 +501,10 @@ void Shortcut::ResetKey(const DWORD& input)
     {
         shiftKey = ModifierKey::Disabled;
     }
-    else
-    {
-        actionKey = NULL;
-    }
-}
 
-// Function to return a vector of hstring for each key in the display order
-std::vector<winrt::hstring> Shortcut::GetKeyVector(LayoutMap& keyboardMap) const
-{
-    std::vector<winrt::hstring> keys;
-    if (winKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetWinKey(ModifierKey::Both)).c_str()));
-    }
-    if (ctrlKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetCtrlKey()).c_str()));
-    }
-    if (altKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetAltKey()).c_str()));
-    }
-    if (shiftKey != ModifierKey::Disabled)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(GetShiftKey()).c_str()));
-    }
-    if (actionKey != NULL)
-    {
-        keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(actionKey).c_str()));
-    }
-    return keys;
+    // we always want to reset these also, I think for now since this got a little weirder when chords
+    actionKey = {};
+    secondKey = {};
 }
 
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
@@ -450,23 +513,28 @@ winrt::hstring Shortcut::ToHstringVK() const
     winrt::hstring output;
     if (winKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring((unsigned int)GetWinKey(ModifierKey::Both)) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetWinKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring((unsigned int)GetCtrlKey()) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetCtrlKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (altKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring((unsigned int)GetAltKey()) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetAltKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring((unsigned int)GetShiftKey()) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetShiftKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (actionKey != NULL)
     {
-        output = output + winrt::to_hstring((unsigned int)GetActionKey()) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetActionKey())) + winrt::to_hstring(L";");
+    }
+
+    if (secondKey != NULL)
+    {
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetSecondKey())) + winrt::to_hstring(L";");
     }
 
     if (!output.empty())
@@ -487,15 +555,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetCtrlKey());
+        keys.push_back(GetCtrlKey(ModifierKey::Both));
     }
     if (altKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetAltKey());
+        keys.push_back(GetAltKey(ModifierKey::Both));
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetShiftKey());
+        keys.push_back(GetShiftKey(ModifierKey::Both));
     }
     if (actionKey != NULL)
     {
@@ -504,21 +572,54 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     return keys;
 }
 
+bool Shortcut::IsActionKey(const DWORD input)
+{
+    auto shortcut = Shortcut();
+    shortcut.SetKey(input);
+    return (shortcut.actionKey != NULL);
+}
+
+bool Shortcut::IsModifier(const DWORD input)
+{
+    auto shortcut = Shortcut();
+    shortcut.SetKey(input);
+    return (shortcut.actionKey == NULL);
+}
+
 // Function to set a shortcut from a vector of key codes
 void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
     Reset();
+
+    bool foundActionKey = false;
     for (int i = 0; i < keys.size(); i++)
     {
         if (keys[i] != -1 && keys[i] != 0)
         {
-            SetKey(keys[i]);
+            Shortcut tempShortcut = Shortcut(keys[i]);
+
+            if (!foundActionKey && tempShortcut.actionKey != NULL)
+            {
+                // last key was an action key, next key is secondKey
+                foundActionKey = true;
+                SetKey(keys[i]);
+            }
+            else if (foundActionKey && tempShortcut.actionKey != NULL)
+            {
+                // already found actionKey, and we found another, add this as the secondKey
+                secondKey = keys[i];
+            }
+            else
+            {
+                // just add whatever it is.
+                SetKey(keys[i]);
+            }
         }
     }
 }
 
 // Function to check if all the modifiers in the shortcut have been pressed down
-bool Shortcut::CheckModifiersKeyboardState(InputInterface& ii) const
+bool Shortcut::CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface& ii) const
 {
     // Check the win key state
     if (winKey == ModifierKey::Both)
@@ -617,13 +718,13 @@ bool Shortcut::CheckModifiersKeyboardState(InputInterface& ii) const
 }
 
 // Helper method for checking if a key is in a range for cleaner code
-bool in_range(DWORD key, DWORD a, DWORD b)
+constexpr bool in_range(DWORD key, DWORD a, DWORD b)
 {
     return (key >= a && key <= b);
 }
 
 // Helper method for checking if a key is equal to a value for cleaner code
-bool equals(DWORD key, DWORD a)
+constexpr bool equals(DWORD key, DWORD a)
 {
     return (key == a);
 }
@@ -642,7 +743,7 @@ bool IgnoreKeyCode(DWORD key)
         return true;
     }
 
-    // As per docs: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+    // As per docs: https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes
     // Undefined keys
     bool isUndefined = equals(key, 0x07) || in_range(key, 0x0E, 0x0F) || in_range(key, 0x3A, 0x40);
 
@@ -669,7 +770,7 @@ bool IgnoreKeyCode(DWORD key)
 }
 
 // Function to check if any keys are pressed down except those in the shortcut
-bool Shortcut::IsKeyboardStateClearExceptShortcut(InputInterface& ii) const
+bool Shortcut::IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const
 {
     // Iterate through all the virtual key codes - 0xFF is set to key down because of the Num Lock
     for (int keyVal = 1; keyVal < 0xFF; keyVal++)
@@ -808,7 +909,7 @@ bool Shortcut::IsKeyboardStateClearExceptShortcut(InputInterface& ii) const
                 }
             }
             // If any other key is pressed check if it is the action key
-            else if (keyVal != actionKey)
+            else if (keyVal != static_cast<int>(actionKey))
             {
                 return false;
             }
@@ -840,56 +941,4 @@ int Shortcut::GetCommonModifiersCount(const Shortcut& input) const
     }
 
     return commonElements;
-}
-
-// Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-KeyboardManagerHelper::ErrorType Shortcut::DoKeysOverlap(const Shortcut& first, const Shortcut& second)
-{
-    if (first.IsValidShortcut() && second.IsValidShortcut())
-    {
-        // If the shortcuts are equal
-        if (first == second)
-        {
-            return KeyboardManagerHelper::ErrorType::SameShortcutPreviouslyMapped;
-        }
-        // action keys match
-        else if (first.actionKey == second.actionKey)
-        {
-            // corresponding modifiers are either both disabled or both not disabled - this ensures that both match in types of modifiers i.e. Ctrl(l/r/c) Shift (l/r/c) A matches Ctrl(l/r/c) Shift (l/r/c) A
-            if (((first.winKey != ModifierKey::Disabled && second.winKey != ModifierKey::Disabled) || (first.winKey == ModifierKey::Disabled && second.winKey == ModifierKey::Disabled)) &&
-                ((first.ctrlKey != ModifierKey::Disabled && second.ctrlKey != ModifierKey::Disabled) || (first.ctrlKey == ModifierKey::Disabled && second.ctrlKey == ModifierKey::Disabled)) &&
-                ((first.altKey != ModifierKey::Disabled && second.altKey != ModifierKey::Disabled) || (first.altKey == ModifierKey::Disabled && second.altKey == ModifierKey::Disabled)) &&
-                ((first.shiftKey != ModifierKey::Disabled && second.shiftKey != ModifierKey::Disabled) || (first.shiftKey == ModifierKey::Disabled && second.shiftKey == ModifierKey::Disabled)))
-            {
-                // If one of the modifier is common
-                if ((first.winKey == ModifierKey::Both || second.winKey == ModifierKey::Both) ||
-                    (first.ctrlKey == ModifierKey::Both || second.ctrlKey == ModifierKey::Both) ||
-                    (first.altKey == ModifierKey::Both || second.altKey == ModifierKey::Both) ||
-                    (first.shiftKey == ModifierKey::Both || second.shiftKey == ModifierKey::Both))
-                {
-                    return KeyboardManagerHelper::ErrorType::ConflictingModifierShortcut;
-                }
-            }
-        }
-    }
-
-    return KeyboardManagerHelper::ErrorType::NoError;
-}
-
-// Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-KeyboardManagerHelper::ErrorType Shortcut::IsShortcutIllegal() const
-{
-    // Win+L
-    if (winKey != ModifierKey::Disabled && ctrlKey == ModifierKey::Disabled && altKey == ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == 0x4C)
-    {
-        return KeyboardManagerHelper::ErrorType::WinL;
-    }
-
-    // Ctrl+Alt+Del
-    if (winKey == ModifierKey::Disabled && ctrlKey != ModifierKey::Disabled && altKey != ModifierKey::Disabled && shiftKey == ModifierKey::Disabled && actionKey == VK_DELETE)
-    {
-        return KeyboardManagerHelper::ErrorType::CtrlAltDel;
-    }
-
-    return KeyboardManagerHelper::ErrorType::NoError;
 }

@@ -1,0 +1,32 @@
+<!doctype Html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Monaco Preview Handler monaco_languages.json generator</title>
+		<script src="monacoSRC/min/vs/loader.js"></script>
+		<script src="monacoSpecialLanguages.js" type="module"></script>
+		<script type="module">
+			import {registerAdditionalLanguages} from "./monacoSpecialLanguages.js"
+			function download(filename, text) {
+				var element = document.createElement('a');
+				element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+				element.setAttribute('download', filename);
+
+				element.style.display = 'none';
+				document.body.appendChild(element);
+
+				element.click();
+
+				document.body.removeChild(element);
+			}
+			require.config({ paths: { vs: 'monacoSRC/min/vs' } });
+			require(['vs/editor/editor.main'], async function () {
+				await registerAdditionalLanguages(monaco);
+				download("monaco_languages.json", "{\"list\":"+ JSON.stringify(monaco.languages.getLanguages())+"}");
+			});
+		</script>
+	</head>
+	<body>
+		<div id="container"></div>
+	</body>
+</html>

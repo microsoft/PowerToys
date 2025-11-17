@@ -2,48 +2,29 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Drawing;
 using System.IO.Abstractions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
+
 using Common;
-using Markdig;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Properties;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
-using PreviewHandlerCommon;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+using Windows.System;
 
 namespace Microsoft.PowerToys.PreviewHandler.Markdown
 {
     /// <summary>
     /// Win Form Implementation for Markdown Preview Handler.
     /// </summary>
-    public class MarkdownPreviewHandlerControl : FormHandlerControl
+    public partial class MarkdownPreviewHandlerControl : FormHandlerControl
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
-
-        /// <summary>
-        /// Extension to modify markdown AST.
-        /// </summary>
-        private readonly HTMLParsingExtension _extension;
-
-        /// <summary>
-        /// Markdig Pipeline builder.
-        /// </summary>
-        private readonly MarkdownPipelineBuilder _pipelineBuilder;
-
-        /// <summary>
-        /// Markdown HTML header.
-        /// </summary>
-        private readonly string htmlHeader = "<!doctype html><style>body{width:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,\"Noto Sans\",sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\",\"Segoe UI Symbol\",\"Noto Color Emoji\";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;text-align:left;background-color:#fff}.container{padding:5%}body img{max-width:100%;height:auto}body h1,body h2,body h3,body h4,body h5,body h6{margin-top:24px;margin-bottom:16px;font-weight:600;line-height:1.25}body h1,body h2{padding-bottom:.3em;border-bottom:1px solid #eaecef}body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji}body h3{font-size:1.25em}body h4{font-size:1em}body h5{font-size:.875em}body h6{font-size:.85em;color:#6a737d}pre{font-family:SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;background-color:#f6f8fa;border-radius:3px;padding:16px;font-size:85%}a{color:#0366d6}strong{font-weight:600}em{font-style:italic}code{padding:.2em .4em;margin:0;font-size:85%;background-color:#f6f8fa;border-radius:3px}hr{border-color:#EEE -moz-use-text-color #FFF;border-style:solid none;border-width:.5px 0;margin:18px 0}table{display:block;width:100%;overflow:auto;border-spacing:0;border-collapse:collapse}tbody{display:table-row-group;vertical-align:middle;border-color:inherit;vertical-align:inherit;border-color:inherit}table tr{background-color:#fff;border-top:1px solid #c6cbd1}tr{display:table-row;vertical-align:inherit;border-color:inherit}table td,table th{padding:6px 13px;border:1px solid #dfe2e5}th{font-weight:600;display:table-cell;vertical-align:inherit;font-weight:bold;text-align:-internal-center}thead{display:table-header-group;vertical-align:middle;border-color:inherit}td{display:table-cell;vertical-align:inherit}code,pre,tt{font-family:SFMono-Regular,Menlo,Monaco,Consolas,\"Liberation Mono\",\"Courier New\",monospace;color:#24292e;overflow-x:auto}pre code{font-size:inherit;color:inherit;word-break:normal}blockquote{background-color:#fff;border-radius:3px;padding:15px;font-size:14px;display:block;margin-block-start:1em;margin-block-end:1em;margin-inline-start:40px;margin-inline-end:40px;padding:0 1em;color:#6a737d;border-left:.25em solid #dfe2e5}</style><body><div class=\"container\">";
-
-        /// <summary>
-        /// Markdown HTML footer.
-        /// </summary>
-        private readonly string htmlFooter = "</div></body></html>";
 
         /// <summary>
         /// RichTextBox control to display if external images are blocked.
@@ -53,7 +34,22 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <summary>
         /// Extended Browser Control to display markdown html.
         /// </summary>
-        private WebBrowserExt _browser;
+        private WebView2 _browser;
+
+        /// <summary>
+        /// WebView2 Environment
+        /// </summary>
+        private CoreWebView2Environment _webView2Environment;
+
+        /// <summary>
+        /// Name of the virtual host
+        /// </summary>
+        public const string VirtualHostName = "PowerToysLocalMarkdown";
+
+        /// <summary>
+        /// URI of the local file saved with the contents
+        /// </summary>
+        private Uri _localFileURI;
 
         /// <summary>
         /// True if external image is blocked, false otherwise.
@@ -61,13 +57,34 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private bool _infoBarDisplayed;
 
         /// <summary>
+        /// Gets the path of the current assembly.
+        /// </summary>
+        /// <remarks>
+        /// Source: https://stackoverflow.com/a/283917/14774889
+        /// </remarks>
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = AppContext.BaseDirectory;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
+        /// <summary>
+        /// Represent WebView2 user data folder path.
+        /// </summary>
+        private string _webView2UserDataFolder = System.Environment.GetEnvironmentVariable("USERPROFILE") +
+                                "\\AppData\\LocalLow\\Microsoft\\PowerToys\\MarkdownPreview-Temp";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MarkdownPreviewHandlerControl"/> class.
         /// </summary>
         public MarkdownPreviewHandlerControl()
         {
-            _extension = new HTMLParsingExtension(ImagesBlockedCallBack);
-            _pipelineBuilder = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseEmojiAndSmiley().UseYamlFrontMatter().UseMathematics();
-            _pipelineBuilder.Extensions.Add(_extension);
+            this.SetBackgroundColor(Settings.BackgroundColor);
         }
 
         /// <summary>
@@ -76,13 +93,27 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <param name="dataSource">Path to the file.</param>
         public override void DoPreview<T>(T dataSource)
         {
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMarkdownPreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                // GPO is disabling this utility. Show an error message instead.
+                _infoBarDisplayed = true;
+                _infoBar = GetTextBoxControl(Resources.GpoDisabledErrorText);
+                Resize += FormResized;
+                Controls.Add(_infoBar);
+                base.DoPreview(dataSource);
+
+                return;
+            }
+
+            FilePreviewCommon.Helper.CleanupTempDir(_webView2UserDataFolder);
+
             _infoBarDisplayed = false;
 
             try
             {
                 if (!(dataSource is string filePath))
                 {
-                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandler)} must be a string but was a '{typeof(T)}'");
+                    throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
                 string fileText = File.ReadAllText(filePath);
@@ -92,48 +123,124 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     _infoBarDisplayed = true;
                 }
 
-                _extension.FilePath = Path.GetDirectoryName(filePath);
-                MarkdownPipeline pipeline = _pipelineBuilder.Build();
-                string parsedMarkdown = Markdig.Markdown.ToHtml(fileText, pipeline);
-                string markdownHTML = $"{htmlHeader}{parsedMarkdown}{htmlFooter}";
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack);
 
-                InvokeOnControlThread(() =>
+                _browser = new WebView2()
                 {
-                    _browser = new WebBrowserExt
-                    {
-                        DocumentText = markdownHTML,
-                        Dock = DockStyle.Fill,
-                        IsWebBrowserContextMenuEnabled = false,
-                        ScriptErrorsSuppressed = true,
-                        ScrollBarsEnabled = true,
-                        AllowNavigation = false,
-                    };
-                    Controls.Add(_browser);
+                    Dock = DockStyle.Fill,
+                    DefaultBackgroundColor = Color.Transparent,
+                };
 
-                    if (_infoBarDisplayed)
+                var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
+                ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
+                        webView2EnvironmentAwaiter = CoreWebView2Environment
+                            .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
+                            .ConfigureAwait(true).GetAwaiter();
+                webView2EnvironmentAwaiter.OnCompleted(async () =>
+                {
+                    try
                     {
-                        _infoBar = GetTextBoxControl(Resources.BlockedImageInfoText);
-                        Resize += FormResized;
-                        Controls.Add(_infoBar);
+                        _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                        await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
+                        _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+                        _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                        _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                        _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                        _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                        _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                        _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                        // Don't load any resources.
+                        _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                        _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                        {
+                            // Show local file we've saved with the markdown contents. Block all else.
+                            if (new Uri(e.Request.Uri) != _localFileURI)
+                            {
+                                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                            }
+                        };
+
+                        _browser.CoreWebView2.ContextMenuRequested += (object sender, CoreWebView2ContextMenuRequestedEventArgs args) =>
+                        {
+                            var menuItems = args.MenuItems;
+
+                            if (!menuItems.IsReadOnly)
+                            {
+                                var copyMenuItem = menuItems.FirstOrDefault(menuItem => menuItem.Name == "copy");
+
+                                menuItems.Clear();
+
+                                if (copyMenuItem != null)
+                                {
+                                    menuItems.Add(copyMenuItem);
+                                }
+                            }
+                        };
+
+                        // WebView2.NavigateToString() limitation
+                        // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                        // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                        if (markdownHTML.Length > 1_500_000)
+                        {
+                            string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                            File.WriteAllText(filename, markdownHTML);
+                            _localFileURI = new Uri(filename);
+                            _browser.Source = _localFileURI;
+                        }
+                        else
+                        {
+                            _browser.NavigateToString(markdownHTML);
+                        }
+
+                        Controls.Add(_browser);
+
+                        _browser.NavigationStarting += async (object sender, CoreWebView2NavigationStartingEventArgs args) =>
+                        {
+                            if (args.Uri != null && args.Uri != _localFileURI?.ToString() && args.IsUserInitiated)
+                            {
+                                args.Cancel = true;
+                                await Launcher.LaunchUriAsync(new Uri(args.Uri));
+                            }
+                        };
+
+                        if (_infoBarDisplayed)
+                        {
+                            _infoBar = GetTextBoxControl(Resources.BlockedImageInfoText);
+                            Resize += FormResized;
+                            Controls.Add(_infoBar);
+                        }
+                    }
+                    catch (NullReferenceException)
+                    {
                     }
                 });
 
-                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
-
-                InvokeOnControlThread(() =>
+                try
                 {
-                    Controls.Clear();
-                    _infoBarDisplayed = true;
-                    _infoBar = GetTextBoxControl(Resources.MarkdownNotPreviewedError);
-                    Resize += FormResized;
-                    Controls.Add(_infoBar);
-                });
+                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
+
+                Controls.Clear();
+                _infoBarDisplayed = true;
+                _infoBar = GetTextBoxControl(Resources.MarkdownNotPreviewedError);
+                Resize += FormResized;
+                Controls.Add(_infoBar);
             }
             finally
             {

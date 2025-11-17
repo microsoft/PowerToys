@@ -23,7 +23,7 @@ There are broadly two different categories of applications:
     5. Common start menu (Applications which are common to all users)
     8. Locations pointed to by the PATH environment variable.
 - To prevent applications and shortcuts present in multiple locations from showing up as duplicate results, we consider apps with the same name, executable name and full path to be the same.
-- The subtitle of the application result is set based on it's application type. It could be one of the following:
+- The subtitle of the application result is set based on its application type. It could be one of the following:
     1. Lnk Shortcuts
     2. Appref files
     3. Internet shortcut - steam and epic games
@@ -41,3 +41,7 @@ There are broadly two different categories of applications:
 
 ### Additional Notes
 - Arguments can be provided to the program plugin by entering them after `--` (a double dash).
+- The localization is done using the `Localization Helper`from `Wox.Plugin.Common` hosted at runtime in a variable of plugin's main class.
+- The `Run commands` differ in two points from the normal `Win32Programs`:
+   - The result title contains the executable type.
+   - The file types `.cpl` and `.msc` are supported too.

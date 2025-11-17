@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -17,7 +18,7 @@ namespace Common.Utilities
     /// </remarks>
     public class ReadonlyStream : Stream
     {
-        private IStream _stream;
+        private IStream? _stream;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReadonlyStream"/> class.
@@ -71,7 +72,7 @@ namespace Common.Utilities
                 CheckDisposed();
                 System.Runtime.InteropServices.ComTypes.STATSTG stat;
 
-                // Stat called with STATFLAG_NONAME. The pwcsName is not required more details https://docs.microsoft.com/en-us/windows/win32/api/wtypes/ne-wtypes-statflag
+                // Stat called with STATFLAG_NONAME. The pwcsName is not required more details https://learn.microsoft.com/windows/win32/api/wtypes/ne-wtypes-statflag
                 _stream.Stat(out stat, 1); // STATFLAG_NONAME
 
                 return stat.cbSize;
@@ -107,7 +108,7 @@ namespace Common.Utilities
 
             if (buffer == null)
             {
-                throw new NullReferenceException("buffer is null");
+                throw new ArgumentNullException(nameof(buffer), "buffer is null");
             }
 
             if (offset < 0 || count < 0 || (offset + count) > buffer.Length)
@@ -153,7 +154,7 @@ namespace Common.Utilities
             CheckDisposed();
             int dwOrigin;
 
-            // Maps the SeekOrigin with dworigin more details: https://docs.microsoft.com/en-us/windows/win32/api/objidl/ne-objidl-stream_seek
+            // Maps the SeekOrigin with dworigin more details: https://learn.microsoft.com/windows/win32/api/objidl/ne-objidl-stream_seek
             switch (origin)
             {
                 case SeekOrigin.Begin:
@@ -238,12 +239,10 @@ namespace Common.Utilities
             }
         }
 
+        [MemberNotNull(nameof(_stream))]
         private void CheckDisposed()
         {
-            if (_stream == null)
-            {
-                throw new ObjectDisposedException(nameof(ReadonlyStream));
-            }
+            ObjectDisposedException.ThrowIf(_stream == null, this);
         }
     }
 }

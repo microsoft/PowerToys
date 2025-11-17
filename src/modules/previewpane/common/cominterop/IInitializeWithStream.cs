@@ -20,7 +20,7 @@ namespace Common.ComInterlop
         /// Initializes a handler with a stream.
         /// </summary>
         /// <param name="pstream">A pointer to an <see cref="IStream" /> interface that represents the stream source.</param>
-        /// <param name="grfMode">One of the <see href="https://docs.microsoft.com/en-us/windows/win32/stg/stgm-constants" >STGM</see> values that indicates the access mode for <paramref name="pstream"/>.</param>
+        /// <param name="grfMode">One of the <see href="https://learn.microsoft.com/windows/win32/stg/stgm-constants" >STGM</see> values that indicates the access mode for <paramref name="pstream"/>.</param>
         void Initialize(IStream pstream, uint grfMode);
     }
 }

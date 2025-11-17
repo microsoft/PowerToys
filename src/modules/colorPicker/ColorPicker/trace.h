@@ -1,8 +1,11 @@
 #pragma once
-class Trace
+
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider();
-    static void UnregisterProvider();
-    static void MyEvent();
+    // Log if ColorPicker is enabled or disabled
+    static void EnableColorPicker(const bool enabled) noexcept;
+
 };

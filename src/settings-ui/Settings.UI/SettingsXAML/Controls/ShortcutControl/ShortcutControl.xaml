@@ -1,0 +1,97 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.ShortcutControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    x:Name="LayoutRoot"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BoolToKeyVisualStateConverter x:Key="BoolToKeyVisualStateConverter" />
+    </UserControl.Resources>
+    <Grid HorizontalAlignment="Right">
+        <Button
+            x:Name="EditButton"
+            Padding="0"
+            HorizontalAlignment="Right"
+            Click="OpenDialogButton_Click"
+            Style="{StaticResource SubtleButtonStyle}">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <ItemsControl
+                    x:Name="PreviewKeysControl"
+                    Margin="2"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
+                    IsTabStop="False"
+                    Visibility="Collapsed">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:KeyVisual
+                                MinWidth="36"
+                                Padding="8,8,8,8"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Content="{Binding}"
+                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                IsTabStop="False"
+                                State="{Binding ElementName=LayoutRoot, Path=KeyVisualShouldShowConflict, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Warning}"
+                                Style="{StaticResource AccentKeyVisualStyle}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <StackPanel
+                    x:Name="PlaceholderPanel"
+                    Padding="8,4"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <controls:IsEnabledTextBlock
+                        VerticalAlignment="Center"
+                        FontFamily="Segoe Fluent Icons"
+                        FontSize="12"
+                        Text="&#xE710;" />
+                    <controls:IsEnabledTextBlock
+                        x:Uid="ConfigureShortcutText"
+                        Margin="0,-1,0,0"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+                <controls:IsEnabledTextBlock
+                    x:Name="EditIcon"
+                    Margin="0,0,4,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    AutomationProperties.Name=""
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="&#xE70F;"
+                    Visibility="Collapsed" />
+            </StackPanel>
+        </Button>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Configured">
+                    <VisualState.Setters>
+                        <Setter Target="PlaceholderPanel.Visibility" Value="Collapsed" />
+                        <Setter Target="PreviewKeysControl.Visibility" Value="Visible" />
+                        <Setter Target="EditIcon.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

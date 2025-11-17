@@ -22,7 +22,8 @@ namespace Wox.Plugin
         public ModifierKeys AcceleratorModifiers { get; set; }
 
         /// <summary>
-        /// Gets or sets return true to hide wox after select result
+        /// Gets or sets the context menu result action.
+        /// Return <c>true</c> to hide PowerToys Run after the context menu result has been selected.
         /// </summary>
         public Func<ActionContext, bool> Action { get; set; }
 

@@ -1,0 +1,7 @@
+{
+    "codebaseName": "PowerToys_main",
+    "notificationAliases": ["powertoys@microsoft.com"],
+    "instanceUrl": "https://microsoft.visualstudio.com",
+    "projectName": "OS",
+    "areaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\PowerToys"
+}

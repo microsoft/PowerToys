@@ -1,0 +1,12 @@
+name: "📚 Documentation Issue"
+description: Report issues in our documentation
+labels: 
+- Issue-Docs
+- Needs-Triage 
+body:
+- type: textarea
+  attributes: 
+    label: Describe the requested doc changes
+    placeholder: Briefly describe which document needs to be corrected and why.
+  validations:
+    required: true

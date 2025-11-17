@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "PowerRenameItem.h"
-#include <common/themes/icon_helpers.h>
 
 int CPowerRenameItem::s_id = 0;
 
@@ -32,6 +31,19 @@ IFACEMETHODIMP CPowerRenameItem::QueryInterface(_In_ REFIID riid, _Outptr_ void*
     return QISearch(this, qit, riid, ppv);
 }
 
+IFACEMETHODIMP CPowerRenameItem::PutPath(_In_opt_ PCWSTR newPath)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    CoTaskMemFree(m_path);
+    m_path = nullptr;
+    HRESULT hr = S_OK;
+    if (newPath != nullptr)
+    {
+        hr = SHStrDup(newPath, &m_path);
+    }
+    return hr;
+}
+
 IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
 {
     *path = nullptr;
@@ -44,12 +56,28 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
+IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
-    HRESULT hr = E_FAIL ;
+    HRESULT hr = E_FAIL;
+    PowerRenameFlags parsedTimeType;
 
-    if (m_isTimeParsed)
+    // Get Time by PowerRenameFlags
+    if (flags & PowerRenameFlags::ModificationTime)
+    {
+        parsedTimeType = PowerRenameFlags::ModificationTime;
+    }
+    else if (flags & PowerRenameFlags::AccessTime)
+    {
+        parsedTimeType = PowerRenameFlags::AccessTime;
+    }
+    else
+    {
+        // Default to modification time if no specific flag is set
+        parsedTimeType = PowerRenameFlags::CreationTime;    
+    }
+
+    if (m_isTimeParsed && parsedTimeType == m_parsedTimeType)
     {
         hr = S_OK;
     }
@@ -58,22 +86,49 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
-            FILETIME CreationTime;
-            if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+            // Use RAII-style scope guard to ensure handle is always closed
+            struct FileHandleCloser
+            {
+                HANDLE handle;
+                ~FileHandleCloser() { if (handle != INVALID_HANDLE_VALUE) CloseHandle(handle); }
+            } scopedHandle{ hFile };
+
+            FILETIME FileTime;
+            bool success = false;
+
+            // Get Time by PowerRenameFlags
+            switch (parsedTimeType)
+            {
+            case PowerRenameFlags::CreationTime:
+                success = GetFileTime(hFile, &FileTime, NULL, NULL);
+                break;
+            case PowerRenameFlags::ModificationTime:
+                success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                break;
+            case PowerRenameFlags::AccessTime:
+                success = GetFileTime(hFile, NULL, &FileTime, NULL);
+                break;
+            default:
+                // Default to modification time if no specific flag is set
+                success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                break;
+            }
+
+            if (success)
             {
                 SYSTEMTIME SystemTime, LocalTime;
-                if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                if (FileTimeToSystemTime(&FileTime, &SystemTime))
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
                         m_time = LocalTime;
                         m_isTimeParsed = true;
+                        m_parsedTimeType = parsedTimeType;
                         hr = S_OK;
                     }
                 }
             }
         }
-        CloseHandle(hFile);
     }
     *time = m_time;
     return hr;
@@ -82,6 +137,19 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
 IFACEMETHODIMP CPowerRenameItem::GetShellItem(_Outptr_ IShellItem** ppsi)
 {
     return SHCreateItemFromParsingName(m_path, nullptr, IID_PPV_ARGS(ppsi));
+}
+
+IFACEMETHODIMP CPowerRenameItem::PutOriginalName(_In_opt_ PCWSTR originalName)
+{
+    CSRWSharedAutoLock lock(&m_lock);
+    CoTaskMemFree(m_originalName);
+    m_originalName = nullptr;
+    HRESULT hr = S_OK;
+    if (originalName != nullptr)
+    {
+        hr = SHStrDup(originalName, &m_originalName);
+    }
+    return hr;
 }
 
 IFACEMETHODIMP CPowerRenameItem::GetOriginalName(_Outptr_ PWSTR* originalName)
@@ -154,16 +222,6 @@ IFACEMETHODIMP CPowerRenameItem::GetId(_Out_ int* id)
     return S_OK;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetIconIndex(_Out_ int* iconIndex)
-{
-    if (m_iconIndex == -1)
-    {
-        GetIconIndexFromPath((PCWSTR)m_path, &m_iconIndex);
-    }
-    *iconIndex = m_iconIndex;
-    return S_OK;
-}
-
 IFACEMETHODIMP CPowerRenameItem::GetDepth(_Out_ UINT* depth)
 {
     *depth = m_depth;
@@ -176,16 +234,28 @@ IFACEMETHODIMP CPowerRenameItem::PutDepth(_In_ int depth)
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameItem::GetStatus(_Out_ PowerRenameItemRenameStatus* status)
+{
+    *status = m_status;
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameItem::PutStatus(_In_ PowerRenameItemRenameStatus status)
+{
+    m_status = status;
+    return S_OK;
+}
+
 IFACEMETHODIMP CPowerRenameItem::ShouldRenameItem(_In_ DWORD flags, _Out_ bool* shouldRename)
 {
     // Should we perform a rename on this item given its
     // state and the options that were set?
-    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0);
+    bool hasChanged = m_newName != nullptr && (lstrcmp(m_originalName, m_newName) != 0) && (lstrcmp(L"", m_newName) != 0);
     bool excludeBecauseFolder = (m_isFolder && (flags & PowerRenameFlags::ExcludeFolders));
     bool excludeBecauseFile = (!m_isFolder && (flags & PowerRenameFlags::ExcludeFiles));
     bool excludeBecauseSubFolderContent = (m_depth > 0 && (flags & PowerRenameFlags::ExcludeSubfolders));
     *shouldRename = (m_selected && m_canRename && hasChanged && !excludeBecauseFile &&
-                     !excludeBecauseFolder && !excludeBecauseSubFolderContent);
+                     !excludeBecauseFolder && !excludeBecauseSubFolderContent && m_status == PowerRenameItemRenameStatus::ShouldRename);
     return S_OK;
 }
 
@@ -223,11 +293,11 @@ HRESULT CPowerRenameItem::s_CreateInstance(_In_opt_ IShellItem* psi, _In_ REFIID
 {
     *resultInterface = nullptr;
 
-    CPowerRenameItem *newRenameItem = new CPowerRenameItem();
+    CPowerRenameItem* newRenameItem = new CPowerRenameItem();
     HRESULT hr = E_OUTOFMEMORY;
     if (newRenameItem)
     {
-        hr = S_OK ;
+        hr = S_OK;
         if (psi != nullptr)
         {
             hr = newRenameItem->_Init(psi);
@@ -274,7 +344,7 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
                 // The shell lets us know if an item should not be renamed
-                // (ex: user profile director, windows dir, etc).
+                // (ex: user profile director, windows dir, etc.).
                 m_canRename = (att & SFGAO_CANRENAME);
             }
         }

@@ -10,7 +10,7 @@ namespace PreviewHandlerCommon.ComInterop
     /// <summary>
     /// Interop methods
     /// </summary>
-    internal class NativeMethods
+    internal sealed class NativeMethods
     {
         /// <summary>
         /// Changes the parent window of the specified child window.
@@ -33,5 +33,12 @@ namespace PreviewHandlerCommon.ComInterop
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetClientRect(IntPtr hWnd, ref Common.ComInterlop.RECT rect);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsWindow(IntPtr hWnd);
     }
 }

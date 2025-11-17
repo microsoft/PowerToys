@@ -5,27 +5,44 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    Background="{StaticResource GridZoneBackgroundBrush}"
-    BorderBrush="{Binding Source={x:Static SystemParameters.WindowGlassBrush}}"
+    ui:ControlHelper.CornerRadius="4"
+    Background="{DynamicResource GridZoneBackgroundBrush}"
+    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
     BorderThickness="1"
-    Opacity="0.8"
+    Focusable="True"
+    IsTabStop="True"
+    Opacity="1"
     mc:Ignorable="d">
+
     <Grid x:Name="Frame">
         <Canvas x:Name="Body" />
-        <Label
-            Name="LabelID"
-            Grid.Row="3"
-            Grid.Column="2"
-            Canvas.Left="10"
-            Canvas.Bottom="10"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center"
-            Content="ID"
-            FontFamily="Segoe UI Light"
-            FontSize="64"
-            Foreground="White" />
+        <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label
+                Name="LabelID"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Content="ID"
+                DockPanel.Dock="Top"
+                FontSize="68"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource PrimaryForegroundBrush}" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                DockPanel.Dock="Bottom"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Foreground="{DynamicResource SecondaryForegroundBrush}">
+                <Run x:Name="WidthLabel" />
+                <Run Text="×" />
+                <Run x:Name="HeightLabel" />
+            </TextBlock>
+
+        </DockPanel>
         <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->
     </Grid>
 </UserControl>

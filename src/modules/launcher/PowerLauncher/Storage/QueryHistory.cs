@@ -5,12 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace PowerLauncher.Storage
 {
     public class QueryHistory
     {
-        public List<HistoryItem> Items { get; } = new List<HistoryItem>();
+        [JsonInclude]
+        public List<HistoryItem> Items { get; private set; } = new List<HistoryItem>();
 
         private readonly int _maxHistory = 300;
 
@@ -37,6 +39,24 @@ namespace PowerLauncher.Storage
                     Query = query,
                     ExecutedDateTime = DateTime.Now,
                 });
+            }
+        }
+
+        public void Update()
+        {
+            for (int i = Items.Count - 1; i >= 0; i--)
+            {
+                if (string.IsNullOrEmpty(Items[i].Query))
+                {
+                    Items.RemoveAt(i);
+                }
+                else
+                {
+                    if (Items[i].ExecutedDateTime == DateTime.MinValue)
+                    {
+                        Items[i].ExecutedDateTime = DateTime.Now;
+                    }
+                }
             }
         }
     }

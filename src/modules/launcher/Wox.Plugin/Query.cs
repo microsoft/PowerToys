@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using Mono.Collections.Generic;
 
 namespace Wox.Plugin
 {
@@ -19,35 +19,89 @@ namespace Wox.Plugin
         /// Initializes a new instance of the <see cref="Query"/> class.
         /// to allow unit tests for plug ins
         /// </summary>
-        public Query(string rawQuery, string search, ReadOnlyCollection<string> terms, string actionKeyword = "")
+        public Query(string query, string actionKeyword = "")
         {
-            Search = search;
-            RawQuery = rawQuery;
-            Terms = terms;
+            _query = query;
             ActionKeyword = actionKeyword;
         }
+
+        private string _rawQuery;
 
         /// <summary>
         /// Gets raw query, this includes action keyword if it has
         /// We didn't recommend use this property directly. You should always use Search property.
         /// </summary>
-        public string RawQuery { get; internal set; }
+        public string RawQuery
+        {
+            get
+            {
+                if (_rawQuery == null)
+                {
+                    _rawQuery = string.Join(Query.TermSeparator, _query.Split(new[] { TermSeparator }, StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                return _rawQuery;
+            }
+        }
+
+        /// <summary>
+        /// Gets the query as entered by the user.
+        /// You should only use this property if you need to process the raw text directly.
+        /// </summary>
+        public string RawUserQuery
+        {
+            get
+            {
+                return _query;
+            }
+        }
+
+        private string _search;
 
         /// <summary>
         /// Gets search part of a query.
-        /// This will not include action keyword if exclusive plugin gets it, otherwise it should be same as RawQuery.
+        /// This will not include action keyword if exclusive plugin gets it; otherwise, it should be same as RawQuery.
         /// Since we allow user to switch a exclusive plugin to generic plugin,
         /// so this property will always give you the "real" query part of the query
         /// </summary>
-        public string Search { get; internal set; }
+        public string Search
+        {
+            get
+            {
+                if (_search == null)
+                {
+                    _search = RawQuery.Substring(ActionKeyword?.Length ?? 0).Trim();
+                }
+
+                return _search;
+            }
+        }
+
+        private ReadOnlyCollection<string> _terms;
 
         /// <summary>
-        /// Gets the raw query splited into a string array.
+        /// Gets the raw query split into a string array.
         /// </summary>
-        public ReadOnlyCollection<string> Terms { get; private set; }
+        public ReadOnlyCollection<string> Terms
+        {
+            get
+            {
+                if (_terms == null)
+                {
+                    var terms = _query
+                        .Trim()
+                        .Substring(ActionKeyword.Length)
+                        .Split(new[] { TermSeparator }, StringSplitOptions.RemoveEmptyEntries);
+
+                    _terms = new ReadOnlyCollection<string>(terms);
+                }
+
+                return _terms;
+            }
+        }
 
         /// <summary>
-        /// Query can be splited into multiple terms by whitespace
+        /// Query can be split into multiple terms by whitespace
         /// </summary>
         public const string TermSeparator = " ";
 
@@ -60,6 +114,8 @@ namespace Wox.Plugin
         /// '*' is used for System Plugin
         /// </summary>
         public const string GlobalPluginWildcardSign = "*";
+
+        public int WeightBoost { get; set; }
 
         public string ActionKeyword { get; set; }
 
@@ -102,7 +158,11 @@ namespace Wox.Plugin
             }
         }
 
+        private string _query;
+
         public override string ToString() => RawQuery;
+
+        public Dictionary<string, UserSelectedRecord.UserSelectedRecordItem> SelectedItems { get; set; }
 
         [Obsolete("Use Search instead, this method will be removed in v1.3.0")]
         public string GetAllRemainingParameter() => Search;

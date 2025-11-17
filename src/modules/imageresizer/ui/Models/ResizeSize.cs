@@ -1,19 +1,23 @@
+﻿#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+// See the LICENSE file in the project root for more information.
+// Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
+
 using ImageResizer.Helpers;
 using ImageResizer.Properties;
-using Newtonsoft.Json;
+using ManagedCommon;
 
 namespace ImageResizer.Models
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    public class ResizeSize : Observable
+    public class ResizeSize : Observable, IHasId
     {
-        private static readonly IDictionary<string, string> _tokens = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> _tokens = new Dictionary<string, string>
         {
             ["$small$"] = Resources.Small,
             ["$medium$"] = Resources.Medium,
@@ -21,6 +25,7 @@ namespace ImageResizer.Models
             ["$phone$"] = Resources.Phone,
         };
 
+        private int _id;
         private string _name;
         private ResizeFit _fit = ResizeFit.Fit;
         private double _width;
@@ -28,8 +33,9 @@ namespace ImageResizer.Models
         private bool _showHeight = true;
         private ResizeUnit _unit = ResizeUnit.Pixel;
 
-        public ResizeSize(string name, ResizeFit fit, double width, double height, ResizeUnit unit)
+        public ResizeSize(int id, string name, ResizeFit fit, double width, double height, ResizeUnit unit)
         {
+            Id = id;
             Name = name;
             Fit = fit;
             Width = width;
@@ -41,14 +47,21 @@ namespace ImageResizer.Models
         {
         }
 
-        [JsonProperty(PropertyName = "name")]
+        [JsonPropertyName("Id")]
+        public int Id
+        {
+            get => _id;
+            set => Set(ref _id, value);
+        }
+
+        [JsonPropertyName("name")]
         public virtual string Name
         {
             get => _name;
             set => Set(ref _name, ReplaceTokens(value));
         }
 
-        [JsonProperty(PropertyName = "fit")]
+        [JsonPropertyName("fit")]
         public ResizeFit Fit
         {
             get => _fit;
@@ -63,14 +76,14 @@ namespace ImageResizer.Models
             }
         }
 
-        [JsonProperty(PropertyName = "width")]
+        [JsonPropertyName("width")]
         public double Width
         {
             get => _width;
             set => Set(ref _width, value);
         }
 
-        [JsonProperty(PropertyName = "height")]
+        [JsonPropertyName("height")]
         public double Height
         {
             get => _height;
@@ -84,9 +97,9 @@ namespace ImageResizer.Models
         }
 
         public bool HasAuto
-            => Width == 0 || Height == 0;
+            => Width == 0 || Height == 0 || double.IsNaN(Width) || double.IsNaN(Height);
 
-        [JsonProperty(PropertyName = "unit")]
+        [JsonPropertyName("unit")]
         public ResizeUnit Unit
         {
             get => _unit;
@@ -125,7 +138,7 @@ namespace ImageResizer.Models
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)
         {
-            if (value == 0)
+            if (value == 0 || double.IsNaN(value))
             {
                 if (Fit == ResizeFit.Fit)
                 {
@@ -152,6 +165,11 @@ namespace ImageResizer.Models
                     Debug.Assert(unit == ResizeUnit.Pixel, "Unexpected unit value: " + unit);
                     return value;
             }
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

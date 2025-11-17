@@ -4,8 +4,9 @@
 
 using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
+
+using Common.ComInterlop;
 using PreviewHandlerCommon.ComInterop;
 
 namespace Common
@@ -16,7 +17,7 @@ namespace Common
     public abstract class FormHandlerControl : Form, IPreviewHandlerControl
     {
         /// <summary>
-        /// Needed to make the form a child window.
+        /// Needed to make the form into a child window.
         /// </summary>
         private static int gwlStyle = -16;
         private static int wsChild = 0x40000000;
@@ -33,7 +34,7 @@ namespace Common
         {
             // Gets the handle of the control to create the control on the VI thread. Invoking the Control.Handle get accessor forces the creation of the underlying window for the control.
             // This is important, because the thread that instantiates the preview handler component and calls its constructor is a single-threaded apartment (STA) thread, but the thread that calls into the interface members later on is a multithreaded apartment (MTA) thread. Windows Forms controls are meant to run on STA threads.
-            // More details: https://docs.microsoft.com/en-us/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
+            // More details: https://learn.microsoft.com/archive/msdn-magazine/2007/january/windows-vista-and-office-writing-your-own-preview-handlers.
             var forceCreation = this.Handle;
 
             this.FormBorderStyle = FormBorderStyle.None;
@@ -50,80 +51,62 @@ namespace Common
         public void QueryFocus(out IntPtr result)
         {
             var getResult = IntPtr.Zero;
-            this.InvokeOnControlThread(() =>
-            {
-                getResult = NativeMethods.GetFocus();
-            });
+            getResult = NativeMethods.GetFocus();
             result = getResult;
         }
 
         /// <inheritdoc />
         public void SetBackgroundColor(Color argbColor)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.BackColor = argbColor;
-            });
+            this.BackColor = argbColor;
         }
 
         /// <inheritdoc />
         public void SetFocus()
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Focus();
-            });
+            this.Focus();
         }
 
         /// <inheritdoc />
         public void SetFont(Font font)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.Font = font;
-            });
+            this.Font = font;
         }
 
         /// <inheritdoc />
-        public void SetRect(Rectangle windowBounds)
+        public bool SetRect(Rectangle windowBounds)
         {
-            this.UpdateWindowBounds(windowBounds);
+            return this.UpdateWindowBounds(parentHwnd, windowBounds);
         }
 
         /// <inheritdoc />
         public void SetTextColor(Color color)
         {
-            this.InvokeOnControlThread(() =>
-            {
-                this.ForeColor = color;
-            });
+            this.ForeColor = color;
         }
 
         /// <inheritdoc />
-        public void SetWindow(IntPtr hwnd, Rectangle rect)
+        public bool SetWindow(IntPtr hwnd, Rectangle rect)
         {
             this.parentHwnd = hwnd;
-            this.UpdateWindowBounds(rect);
+            return this.UpdateWindowBounds(hwnd, rect);
         }
 
         /// <inheritdoc />
         public virtual void Unload()
         {
-            this.InvokeOnControlThread(() =>
+            this.Visible = false;
+            foreach (Control c in this.Controls)
             {
-                this.Visible = false;
-                foreach (Control c in this.Controls)
-                {
-                    c.Dispose();
-                }
+                c.Dispose();
+            }
 
-                this.Controls.Clear();
-            });
+            this.Controls.Clear();
 
-            // Call garbage collection at the time of unloading of Preview. This is to mitigate issue with WebBrowser Control not able to dispose properly.
+            // Call garbage collection at the time of unloading of Preview.
             // Which is preventing prevhost.exe to exit at the time of closing File explorer.
             // Preview Handlers run in a separate process from PowerToys. This will not affect the performance of other modules.
-            // Mitigate the following Github issue: https://github.com/microsoft/PowerToys/issues/1468
+            // Mitigate the following GitHub issue: https://github.com/microsoft/PowerToys/issues/1468
             GC.Collect();
         }
 
@@ -134,32 +117,47 @@ namespace Common
         }
 
         /// <summary>
-        /// Executes the specified delegate on the thread that owns the control's underlying window handle.
-        /// </summary>
-        /// <param name="func">Delegate to run.</param>
-        public void InvokeOnControlThread(MethodInvoker func)
-        {
-            this.Invoke(func);
-        }
-
-        /// <summary>
         /// Update the Form Control window with the passed rectangle.
         /// </summary>
-        /// <param name="windowBounds">An instance of rectangle.</param>
-        private void UpdateWindowBounds(Rectangle windowBounds)
+        public bool UpdateWindowBounds(IntPtr hwnd, Rectangle newBounds)
         {
-            this.InvokeOnControlThread(() =>
+            if (hwnd == IntPtr.Zero || !NativeMethods.IsWindow(hwnd))
             {
-                // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
-                int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
-                if ((windowStyle & wsChild) == 0)
-                {
-                    _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
-                }
+                // If the HWND is IntPtr.Zero the desktop window will be used as parent.
+                return false;
+            }
 
-                NativeMethods.SetParent(Handle, parentHwnd);
-                Bounds = windowBounds;
-            });
+            if (this.Disposing || this.IsDisposed)
+            {
+                // For unclear reasons, this can be called when handling an error and the form has already been disposed.
+                return false;
+            }
+
+            // We must set the WS_CHILD style to change the form to a control within the Explorer preview pane
+            int windowStyle = NativeMethods.GetWindowLong(Handle, gwlStyle);
+            if ((windowStyle & wsChild) == 0)
+            {
+                _ = NativeMethods.SetWindowLong(Handle, gwlStyle, windowStyle | wsChild);
+            }
+
+            if (NativeMethods.SetParent(Handle, hwnd) == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            if (newBounds.IsEmpty)
+            {
+                RECT s = default(RECT);
+                NativeMethods.GetClientRect(hwnd, ref s);
+                newBounds = new Rectangle(s.Left, s.Top, s.Right - s.Left, s.Bottom - s.Top);
+            }
+
+            if (Bounds.Right != newBounds.Right || Bounds.Bottom != newBounds.Bottom || Bounds.Left != newBounds.Left || Bounds.Top != newBounds.Top)
+            {
+                Bounds = newBounds;
+            }
+
+            return true;
         }
     }
 }

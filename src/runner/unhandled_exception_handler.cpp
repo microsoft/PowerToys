@@ -7,7 +7,7 @@
 #include <sstream>
 #include <csignal>
 
-static IMAGEHLP_SYMBOL64* p_symbol = (IMAGEHLP_SYMBOL64*)malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(WCHAR));
+static IMAGEHLP_SYMBOL64* p_symbol = static_cast<IMAGEHLP_SYMBOL64*>(malloc(sizeof(IMAGEHLP_SYMBOL64) + MAX_PATH * sizeof(WCHAR)));
 static IMAGEHLP_LINE64 line;
 static bool processing_exception = false;
 static WCHAR module_path[MAX_PATH];
@@ -82,26 +82,38 @@ void log_stack_trace(std::wstring& generalErrorDescription)
     auto thread = GetCurrentThread();
     STACKFRAME64 stack;
     memset(&stack, 0, sizeof(STACKFRAME64));
+
+#ifdef _M_ARM64
+    stack.AddrPC.Offset = context.Pc;
+    stack.AddrStack.Offset = context.Sp;
+    stack.AddrFrame.Offset = context.Fp;
+#else
     stack.AddrPC.Offset = context.Rip;
-    stack.AddrPC.Mode = AddrModeFlat;
     stack.AddrStack.Offset = context.Rsp;
-    stack.AddrStack.Mode = AddrModeFlat;
     stack.AddrFrame.Offset = context.Rbp;
+#endif
+    stack.AddrPC.Mode = AddrModeFlat;
+    stack.AddrStack.Mode = AddrModeFlat;
     stack.AddrFrame.Mode = AddrModeFlat;
 
     std::wstringstream ss;
     ss << generalErrorDescription << std::endl;
     for (ULONG frame = 0;; frame++)
     {
-        auto result = StackWalk64(IMAGE_FILE_MACHINE_AMD64,
-                                  process,
-                                  thread,
-                                  &stack,
-                                  &context,
-                                  NULL,
-                                  SymFunctionTableAccess64,
-                                  SymGetModuleBase64,
-                                  NULL);
+        auto result = StackWalk64(
+#ifdef _M_ARM64
+            IMAGE_FILE_MACHINE_ARM64,
+#else
+            IMAGE_FILE_MACHINE_AMD64,
+#endif
+            process,
+            thread,
+            &stack,
+            &context,
+            NULL,
+            SymFunctionTableAccess64,
+            SymGetModuleBase64,
+            NULL);
 
         p_symbol->MaxNameLength = MAX_PATH;
         p_symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
@@ -114,7 +126,7 @@ void log_stack_trace(std::wstring& generalErrorDescription)
         auto module_base = SymGetModuleBase64(process, stack.AddrPC.Offset);
         if (module_base)
         {
-            GetModuleFileName((HINSTANCE)module_base, module_path, MAX_PATH);
+            GetModuleFileName(reinterpret_cast<HINSTANCE>(module_base), module_path, MAX_PATH);
         }
         ss << module_path << "!"
            << p_symbol->Name
@@ -155,7 +167,7 @@ LONG WINAPI unhandled_exception_handler(PEXCEPTION_POINTERS info)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-extern "C" void AbortHandler(int signal_number)
+extern "C" void AbortHandler(int /*signal_number*/)
 {
     init_symbols();
     std::wstring ex_description = L"SIGABRT was raised.";

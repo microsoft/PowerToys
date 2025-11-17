@@ -4,35 +4,23 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
+
 using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.ViewModels
 {
     public class MonitorViewModel : INotifyPropertyChanged
     {
-        private const int MaxPreviewDisplaySize = 160;
-        private const int MinPreviewDisplaySize = 98;
+        private const int MaxPreviewDisplaySize = 180;
+        private const int MinPreviewDisplaySize = 120;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public delegate void MonitorChangedEventHandler(MonitorChangedEventArgs args);
+        public delegate void MonitorChangedEvent(MonitorChangedEventArgs args);
 
         public ObservableCollection<MonitorInfoModel> MonitorInfoForViewModel { get; set; }
 
         public static double DesktopPreviewMultiplier { get; private set; }
-
-        public Visibility DesktopsPanelVisibility
-        {
-            get
-            {
-                return App.Overlay.MultiMonitorMode ? Visibility.Visible : Visibility.Collapsed;
-            }
-        }
-
-        public RelayCommand AddCommand { get; set; }
-
-        public RelayCommand DeleteCommand { get; set; }
 
         public RelayCommand<MonitorInfoModel> SelectCommand { get; set; }
 
@@ -47,17 +35,17 @@ namespace FancyZonesEditor.ViewModels
             foreach (var monitor in App.Overlay.Monitors)
             {
                 Device device = monitor.Device;
-                var bounds = device.ScaledBounds;
-                maxDimension = System.Math.Max(System.Math.Max(maxDimension, bounds.Height), bounds.Width);
-                minDimension = System.Math.Min(System.Math.Min(minDimension, bounds.Height), bounds.Width);
+                var size = device.MonitorSize;
+                maxDimension = System.Math.Max(System.Math.Max(maxDimension, size.Height), size.Width);
+                minDimension = System.Math.Min(System.Math.Min(minDimension, size.Height), size.Width);
 
-                MonitorInfoForViewModel.Add(new MonitorInfoModel(i, (int)bounds.Height, (int)bounds.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
+                MonitorInfoForViewModel.Add(new MonitorInfoModel(i, (int)size.Height, (int)size.Width, device.Dpi, App.Overlay.CurrentDesktop == i - 1));
                 i++;
             }
 
             double maxMultiplier = MaxPreviewDisplaySize / maxDimension;
             double minMultiplier = MinPreviewDisplaySize / minDimension;
-            DesktopPreviewMultiplier = (minMultiplier + maxMultiplier) / 2;
+            DesktopPreviewMultiplier = (minMultiplier + maxMultiplier) / 2.5;
         }
 
         private void RaisePropertyChanged(string propertyName)

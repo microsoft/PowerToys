@@ -14,4 +14,10 @@ namespace ManagedCommon
         HighContrastBlack,
         HighContrastWhite,
     }
+
+    public enum AppTheme
+    {
+        Dark = 0,
+        Light = 1,
+    }
 }

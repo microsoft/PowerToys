@@ -5,14 +5,19 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Wox.Infrastructure;
+using System.Windows;
+
+using global::PowerToys.GPOWrapper;
+using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;
-using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -25,24 +30,84 @@ namespace PowerLauncher.Plugin
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
+        private static readonly Lock AllPluginsLock = new Lock();
+
+        private static readonly CompositeFormat FailedToInitializePluginsDescription = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsDescription);
 
         private static IEnumerable<PluginPair> _contextMenuPlugins = new List<PluginPair>();
+
+        private static List<PluginPair> _allPlugins;
+
+        // should be only used in tests
+        public static void SetAllPlugins(List<PluginPair> plugins)
+        {
+            _allPlugins = plugins;
+        }
 
         /// <summary>
         /// Gets directories that will hold Wox plugin directory
         /// </summary>
-        public static List<PluginPair> AllPlugins { get; private set; } = new List<PluginPair>();
+        public static List<PluginPair> AllPlugins
+        {
+            get
+            {
+                if (_allPlugins == null)
+                {
+                    lock (AllPluginsLock)
+                    {
+                        if (_allPlugins == null)
+                        {
+                            _allPlugins = PluginConfig.Parse(Directories)
+                                .Where(x => string.Equals(x.Language, AllowedLanguage.CSharp, StringComparison.OrdinalIgnoreCase))
+                                .GroupBy(x => x.ID) // Deduplicates plugins by ID, choosing for each ID the highest DLL product version. This fixes issues such as https://github.com/microsoft/PowerToys/issues/14701
+                                .Select(g => g.OrderByDescending(x => // , where an upgrade didn't remove older versions of the plugins.
+                                {
+                                    try
+                                    {
+                                        // Return a comparable product version.
+                                        var fileVersion = FileVersionInfo.GetVersionInfo(x.ExecuteFilePath);
+
+                                        // Convert each part to an unsigned 32 bit integer, then extend to 64 bit.
+                                        return ((ulong)(uint)fileVersion.ProductMajorPart << 48)
+                                            | ((ulong)(uint)fileVersion.ProductMinorPart << 32)
+                                            | ((ulong)(uint)fileVersion.ProductBuildPart << 16)
+                                            | (ulong)(uint)fileVersion.ProductPrivatePart;
+                                    }
+                                    catch (System.IO.FileNotFoundException)
+                                    {
+                                        // We'll get an error when loading the DLL later on if there's not a decent version of this plugin.
+                                        return 0U;
+                                    }
+                                }).First())
+                                .Select(x => new PluginPair(x))
+                                .ToList();
+                        }
+                    }
+                }
+
+                return _allPlugins;
+            }
+        }
 
         public static IPublicAPI API { get; private set; }
 
-        public static readonly List<PluginPair> GlobalPlugins = new List<PluginPair>();
-        public static readonly Dictionary<string, PluginPair> NonGlobalPlugins = new Dictionary<string, PluginPair>();
+        public static List<PluginPair> GlobalPlugins
+        {
+            get
+            {
+                return AllPlugins.Where(x => x.Metadata.IsGlobal).ToList();
+            }
+        }
+
+        public static IEnumerable<PluginPair> NonGlobalPlugins
+        {
+            get
+            {
+                return AllPlugins.Where(x => !string.IsNullOrWhiteSpace(x.Metadata.ActionKeyword));
+            }
+        }
+
         private static readonly string[] Directories = { Constant.PreinstalledDirectory, Constant.PluginsDirectory };
-
-        // todo happlebao, this should not be public, the indicator function should be embedded
-        public static PluginSettings Settings { get; set; }
-
-        private static List<PluginMetadata> _metadatas;
 
         private static void ValidateUserDirectory()
         {
@@ -76,106 +141,76 @@ namespace PowerLauncher.Plugin
         }
 
         /// <summary>
-        /// because InitializePlugins needs API, so LoadPlugins needs to be called first
-        /// todo happlebao The API should be removed
-        /// </summary>
-        /// <param name="settings">Plugin settings</param>
-        public static void LoadPlugins(PluginSettings settings)
-        {
-            _metadatas = PluginConfig.Parse(Directories);
-            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            Settings.UpdatePluginSettings(_metadatas);
-            AllPlugins = PluginsLoader.Plugins(_metadatas);
-        }
-
-        /// <summary>
         /// Call initialize for all plugins
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static void InitializePlugins(IPublicAPI api)
         {
             API = api ?? throw new ArgumentNullException(nameof(api));
             var failedPlugins = new ConcurrentQueue<PluginPair>();
             Parallel.ForEach(AllPlugins, pair =>
             {
-                try
+                // Check policy state for the plugin and update metadata
+                var enabledPolicyState = GPOWrapper.GetRunPluginEnabledValue(pair.Metadata.ID);
+                if (enabledPolicyState == GpoRuleConfigured.Enabled)
                 {
-                    var milliseconds = Stopwatch.Debug($"|PluginManager.InitializePlugins|Init method time cost for <{pair.Metadata.Name}>", () =>
-                    {
-                        pair.Plugin.Init(new PluginInitContext
-                        {
-                            CurrentPluginMetadata = pair.Metadata,
-                            API = API,
-                        });
-                    });
-                    pair.Metadata.InitTime += milliseconds;
-                    Log.Info($"Total init cost for <{pair.Metadata.Name}> is <{pair.Metadata.InitTime}ms>", MethodBase.GetCurrentMethod().DeclaringType);
+                    pair.Metadata.Disabled = false;
+                    pair.Metadata.IsEnabledPolicyConfigured = true;
+                    Log.Info($"The plugin <{pair.Metadata.Name}> is enabled by policy.", typeof(PluginManager));
                 }
-                catch (Exception e)
+                else if (enabledPolicyState == GpoRuleConfigured.Disabled)
                 {
-                    Log.Exception($"Fail to Init plugin: {pair.Metadata.Name}", e, MethodBase.GetCurrentMethod().DeclaringType);
                     pair.Metadata.Disabled = true;
+                    pair.Metadata.IsEnabledPolicyConfigured = true;
+                    Log.Info($"The plugin <{pair.Metadata.Name}> is disabled by policy.", typeof(PluginManager));
+                }
+                else if (enabledPolicyState == GpoRuleConfigured.WrongValue)
+                {
+                    Log.Warn($"Wrong policy value for enabled policy for plugin <{pair.Metadata.Name}>.", typeof(PluginManager));
+                }
+
+                if (pair.Metadata.Disabled)
+                {
+                    return;
+                }
+
+                pair.InitializePlugin(API);
+
+                if (!pair.IsPluginInitialized)
+                {
                     failedPlugins.Enqueue(pair);
                 }
             });
 
             _contextMenuPlugins = GetPluginsForInterface<IContextMenu>();
-            foreach (var plugin in AllPlugins)
-            {
-                if (IsGlobalPlugin(plugin.Metadata))
-                {
-                    GlobalPlugins.Add(plugin);
-                }
 
-                // Plugins may have multiple ActionKeywords, eg. WebSearch
-                plugin.Metadata.GetActionKeywords().Where(x => x != Query.GlobalPluginWildcardSign)
-                                                .ToList()
-                                                .ForEach(x => NonGlobalPlugins[x] = plugin);
-            }
-
-            if (failedPlugins.Any())
+            if (!failedPlugins.IsEmpty)
             {
-                var failed = string.Join(",", failedPlugins.Select(x => x.Metadata.Name));
-                API.ShowMsg($"Fail to Init Plugins", $"Plugins: {failed} - fail to load and would be disabled, please contact plugin creator for help", string.Empty, false);
+                string title = Resources.FailedToInitializePluginsTitle.ToString().Replace("{0}", Constant.Version);
+                var failed = string.Join(", ", failedPlugins.Select(x => $"{x.Metadata.Name} ({x.Metadata.ExecuteFileVersion})"));
+                var description = $"{string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsDescription, failed)}\n\n{Resources.FailedToInitializePluginsDescriptionPartTwo}";
+                Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(title, description, string.Empty, false));
             }
         }
 
-        public static void InstallPlugin(string path)
-        {
-            PluginInstaller.Install(path);
-        }
-
-        public static List<PluginPair> ValidPluginsForQuery(Query query)
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-
-            if (NonGlobalPlugins.ContainsKey(query.ActionKeyword))
-            {
-                var plugin = NonGlobalPlugins[query.ActionKeyword];
-                return new List<PluginPair> { plugin };
-            }
-            else
-            {
-                return GlobalPlugins;
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static List<Result> QueryForPlugin(PluginPair pair, Query query, bool delayedExecution = false)
         {
-            if (pair == null)
+            ArgumentNullException.ThrowIfNull(pair);
+
+            if (!pair.IsPluginInitialized)
             {
-                throw new ArgumentNullException(nameof(pair));
+                return new List<Result>();
+            }
+
+            if (string.IsNullOrEmpty(query.ActionKeyword) && string.IsNullOrWhiteSpace(query.Search))
+            {
+                return new List<Result>();
             }
 
             try
             {
                 List<Result> results = null;
                 var metadata = pair.Metadata;
-                var milliseconds = Stopwatch.Debug($"|PluginManager.QueryForPlugin|Cost for {metadata.Name}", () =>
+                var milliseconds = Wox.Infrastructure.Stopwatch.Debug($"PluginManager.QueryForPlugin - Cost for {metadata.Name}", () =>
                 {
                     if (delayedExecution && (pair.Plugin is IDelayedExecutionPlugin))
                     {
@@ -188,10 +223,14 @@ namespace PowerLauncher.Plugin
 
                     if (results != null)
                     {
-                        UpdatePluginMetadata(results, metadata, query);
-                        UpdateResultWithActionKeyword(results, query);
+                        UpdateResults(results, metadata, query);
                     }
                 });
+
+                if (milliseconds > 50)
+                {
+                    Log.Warn($"PluginManager.QueryForPlugin {metadata.Name}. Query cost - {milliseconds} milliseconds", typeof(PluginManager));
+                }
 
                 metadata.QueryCount += 1;
                 metadata.AvgQueryTime = metadata.QueryCount == 1 ? milliseconds : (metadata.AvgQueryTime + milliseconds) / 2;
@@ -200,16 +239,24 @@ namespace PowerLauncher.Plugin
             }
             catch (Exception e)
             {
-                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                // After updating to .NET 9, calling MethodBase.GetCurrentMethod() started crashing when trying
+                // to log methods called from within the OneNote plugin, so we've replaced this instance with typeof(PluginManager).
+                // This should be revised in the future.
+                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, typeof(PluginManager));
 
                 return new List<Result>();
             }
         }
 
-        private static List<Result> UpdateResultWithActionKeyword(List<Result> results, Query query)
+        private static void UpdateResults(List<Result> results, PluginMetadata metadata, Query query)
         {
             foreach (Result result in results)
             {
+                result.PluginDirectory = metadata.PluginDirectory;
+                result.PluginID = metadata.ID;
+                result.OriginQuery = query;
+                result.Metadata = metadata;
+
                 if (string.IsNullOrEmpty(result.QueryTextDisplay))
                 {
                     result.QueryTextDisplay = result.Title;
@@ -221,21 +268,13 @@ namespace PowerLauncher.Plugin
                     result.QueryTextDisplay = string.Format(CultureInfo.CurrentCulture, "{0} {1}", query.ActionKeyword, result.QueryTextDisplay);
                 }
             }
-
-            return results;
         }
 
         public static void UpdatePluginMetadata(List<Result> results, PluginMetadata metadata, Query query)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
+            ArgumentNullException.ThrowIfNull(results);
 
-            if (metadata == null)
-            {
-                throw new ArgumentNullException(nameof(metadata));
-            }
+            ArgumentNullException.ThrowIfNull(metadata);
 
             foreach (var r in results)
             {
@@ -243,11 +282,6 @@ namespace PowerLauncher.Plugin
                 r.PluginID = metadata.ID;
                 r.OriginQuery = query;
             }
-        }
-
-        private static bool IsGlobalPlugin(PluginMetadata metadata)
-        {
-            return metadata.GetActionKeywords().Contains(Query.GlobalPluginWildcardSign);
         }
 
         /// <summary>
@@ -265,7 +299,6 @@ namespace PowerLauncher.Plugin
             return AllPlugins.Where(p => p.Plugin is T);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Suppressing this to enable FxCop. We are logging the exception, and going forward general exceptions should not be caught")]
         public static List<ContextMenuResult> GetContextMenusForPlugin(Result result)
         {
             var pluginPair = _contextMenuPlugins.FirstOrDefault(o => o.Metadata.ID == result.PluginID);
@@ -290,72 +323,6 @@ namespace PowerLauncher.Plugin
             else
             {
                 return new List<ContextMenuResult>();
-            }
-        }
-
-        public static bool ActionKeywordRegistered(string actionKeyword)
-        {
-            if (actionKeyword != Query.GlobalPluginWildcardSign &&
-                NonGlobalPlugins.ContainsKey(actionKeyword))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// used to add action keyword for multiple action keyword plugin
-        /// e.g. web search
-        /// </summary>
-        public static void AddActionKeyword(string id, string newActionKeyword)
-        {
-            var plugin = GetPluginForId(id);
-            if (newActionKeyword == Query.GlobalPluginWildcardSign)
-            {
-                GlobalPlugins.Add(plugin);
-            }
-            else
-            {
-                NonGlobalPlugins[newActionKeyword] = plugin;
-            }
-
-            plugin.Metadata.GetActionKeywords().Add(newActionKeyword);
-        }
-
-        /// <summary>
-        /// used to add action keyword for multiple action keyword plugin
-        /// e.g. web search
-        /// </summary>
-        public static void RemoveActionKeyword(string id, string oldActionkeyword)
-        {
-            var plugin = GetPluginForId(id);
-            if (oldActionkeyword == Query.GlobalPluginWildcardSign
-                && // Plugins may have multiple ActionKeywords that are global, eg. WebSearch
-                plugin.Metadata.GetActionKeywords()
-                                    .Where(x => x == Query.GlobalPluginWildcardSign)
-                                    .ToList()
-                                    .Count == 1)
-            {
-                GlobalPlugins.Remove(plugin);
-            }
-
-            if (oldActionkeyword != Query.GlobalPluginWildcardSign)
-            {
-                NonGlobalPlugins.Remove(oldActionkeyword);
-            }
-
-            plugin.Metadata.GetActionKeywords().Remove(oldActionkeyword);
-        }
-
-        public static void ReplaceActionKeyword(string id, string oldActionKeyword, string newActionKeyword)
-        {
-            if (oldActionKeyword != newActionKeyword)
-            {
-                AddActionKeyword(id, newActionKeyword);
-                RemoveActionKeyword(id, oldActionKeyword);
             }
         }
 

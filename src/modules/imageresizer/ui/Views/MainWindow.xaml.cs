@@ -1,23 +1,39 @@
-﻿// Copyright (c) Brice Lambson
+﻿#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using ImageResizer.ViewModels;
+using ManagedCommon;
 using Microsoft.Win32;
+using Wpf.Ui.Controls;
+
 using AppResources = ImageResizer.Properties.Resources;
 
 namespace ImageResizer.Views
 {
-    public partial class MainWindow : Window, IMainView
+    public partial class MainWindow : FluentWindow, IMainView
     {
         public MainWindow(MainViewModel viewModel)
         {
             DataContext = viewModel;
+
             InitializeComponent();
+
+            if (OSVersionHelper.IsWindows11())
+            {
+                WindowBackdropType = WindowBackdropType.Mica;
+            }
+            else
+            {
+                WindowBackdropType = WindowBackdropType.None;
+            }
+
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType);
         }
 
         public IEnumerable<string> OpenPictureFiles()
@@ -38,8 +54,6 @@ namespace ImageResizer.Views
 
             return openFileDialog.FileNames;
         }
-
-        public void ShowAdvanced(AdvancedViewModel viewModel) => viewModel?.Close(new AdvancedWindow(viewModel).ShowDialog() == true);
 
         void IMainView.Close()
             => Dispatcher.Invoke((Action)Close);

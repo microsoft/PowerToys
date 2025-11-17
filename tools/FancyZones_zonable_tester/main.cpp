@@ -11,7 +11,7 @@ std::wstring get_process_path(DWORD pid) noexcept
   {
     name.resize(MAX_PATH);
     DWORD name_length = static_cast<DWORD>(name.length());
-    if (QueryFullProcessImageNameW(process, 0, (LPWSTR)name.data(), &name_length) == 0)
+    if (QueryFullProcessImageNameW(process, 0, static_cast<LPWSTR>(name.data()), &name_length) == 0)
     {
       name_length = 0;
     }
@@ -185,8 +185,8 @@ bool test_window(HWND window)
 
   auto style = GetWindowLongPtr(window, GWL_STYLE);
   auto exStyle = GetWindowLongPtr(window, GWL_EXSTYLE);
-  std::cout << "style:        0x" << std::hex << style << ": " << window_styles(style) << "\n";
-  std::cout << "exStyle:      0x" << std::hex << exStyle << ": " << window_exstyles(exStyle) << " \n";
+  std::cout << "style:        0x" << std::hex << style << ": " << window_styles(static_cast<LONG>(style)) << "\n";
+  std::cout << "exStyle:      0x" << std::hex << exStyle << ": " << window_exstyles(static_cast<LONG>(exStyle)) << " \n";
   std::array<char, 256> class_name;
   GetClassNameA(window, class_name.data(), static_cast<int>(class_name.size()));
   std::cout << "Window class: '" << class_name.data() << "' equals:\n";

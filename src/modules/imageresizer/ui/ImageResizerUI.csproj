@@ -1,49 +1,37 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  <Import Project="..\..\..\Version.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
   
   <PropertyGroup>
-    <AssemblyTitle>ImageResizer</AssemblyTitle>
-    <AssemblyCompany>Microsoft Corp.</AssemblyCompany>
-    <AssemblyCopyright>Copyright (C) 2019 Microsoft Corp.</AssemblyCopyright>
-    <CodeAnalysisRuleSet>..\..\..\codeAnalysis\Rules.ruleset</CodeAnalysisRuleSet>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\modules\ImageResizer</OutputPath>
+    <AssemblyTitle>PowerToys.ImageResizer</AssemblyTitle>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
-    <Platforms>x64</Platforms>
   </PropertyGroup>
-  
+
   <PropertyGroup>
-    <Platform Condition="'$(Platform)'==''">x64</Platform>
     <ProjectGuid>{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ImageResizer</RootNamespace>
-    <AssemblyName>ImageResizer</AssemblyName>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>PowerToys.ImageResizer</AssemblyName>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <IntermediateOutputPath>$(SolutionDir)$(Platform)\$(Configuration)\obj\$(AssemblyName)\</IntermediateOutputPath>
   </PropertyGroup>
   
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
-    <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
+
+  <PropertyGroup>
+    <ApplicationManifest>ImageResizerUI.dev.manifest</ApplicationManifest>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Optimize>false</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <ApplicationManifest>ImageResizerUI.prod.manifest</ApplicationManifest>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Include="..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -52,31 +40,21 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <AdditionalFiles Include="..\..\..\codeAnalysis\StyleCop.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\ImageResizer.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\ImageResizer.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ControlzEx" Version="4.4.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="System.IO.Abstractions">
-      <Version>12.2.5</Version>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="WPF-UI" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\interop\PowerToysInterop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -85,4 +63,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+  
+  <!-- Ensure Resources directory and ImageResizer.png are available for dependent projects -->
+  <Target Name="CopyResourcesToSharedLocation" AfterTargets="Build">
+    <ItemGroup>
+      <ResourceFiles Include="$(MSBuildProjectDirectory)\Resources\ImageResizer.png" />
+    </ItemGroup>
+    <MakeDir Directories="$(OutputPath)Resources" Condition="!Exists('$(OutputPath)Resources')" />
+    <Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(OutputPath)Resources" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>

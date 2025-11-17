@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Input;
+
 using Wox.Plugin;
 
 namespace PowerLauncher.Helper
 {
-    internal class KeyboardHelper
+    internal sealed class KeyboardHelper
     {
         public static SpecialKeyState CheckModifiers()
         {

@@ -1,6 +1,8 @@
-﻿// Copyright (c) Brice Lambson
+﻿#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
 using System.Collections;
@@ -10,28 +12,37 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Windows.Media.Imaging;
+
 using ImageResizer.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+using ManagedCommon;
 
 namespace ImageResizer.Properties
 {
-    [JsonObject(MemberSerialization.OptIn)]
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            WriteIndented = true,
+        };
+
+        private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
 
         // Used to synchronize access to the settings.json file
         private static Mutex _jsonMutex = new Mutex();
-        private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer", "settings.json");
+        private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
         private int _selectedSizeIndex;
         private bool _replace;
         private bool _ignoreOrientation;
+        private bool _removeMetadata;
         private int _jpegQualityLevel;
         private PngInterlaceOption _pngInterlaceOption;
         private TiffCompressOption _tiffCompressOption;
@@ -46,16 +57,17 @@ namespace ImageResizer.Properties
             ShrinkOnly = false;
             Replace = false;
             IgnoreOrientation = true;
+            RemoveMetadata = false;
             JpegQualityLevel = 90;
             PngInterlaceOption = System.Windows.Media.Imaging.PngInterlaceOption.Default;
             TiffCompressOption = System.Windows.Media.Imaging.TiffCompressOption.Default;
             FileName = "%1 (%2)";
             Sizes = new ObservableCollection<ResizeSize>
             {
-                new ResizeSize("$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
-                new ResizeSize("$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
-                new ResizeSize("$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
-                new ResizeSize("$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+                new ResizeSize(0, "$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ResizeSize(1, "$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ResizeSize(2, "$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ResizeSize(3, "$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
             };
             KeepDateModified = false;
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
@@ -63,6 +75,7 @@ namespace ImageResizer.Properties
             AllSizes = new AllSizesCollection(this);
         }
 
+        [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }
 
         // Using OrdinalIgnoreCase since this is internal and used for comparison with symbols
@@ -78,6 +91,7 @@ namespace ImageResizer.Properties
                     .Replace("%5", "{4}", StringComparison.OrdinalIgnoreCase)
                     .Replace("%6", "{5}", StringComparison.OrdinalIgnoreCase));
 
+        [JsonIgnore]
         public ResizeSize SelectedSize
         {
             get => SelectedSizeIndex >= 0 && SelectedSizeIndex < Sizes.Count
@@ -115,7 +129,7 @@ namespace ImageResizer.Properties
                 if (JpegQualityLevel < 1 || JpegQualityLevel > 100)
                 {
                     // Using CurrentCulture since this is user facing
-                    return string.Format(CultureInfo.CurrentCulture, Resources.ValueMustBeBetween, 1, 100);
+                    return string.Format(CultureInfo.CurrentCulture, ValueMustBeBetween, 1, 100);
                 }
 
                 return string.Empty;
@@ -222,6 +236,7 @@ namespace ImageResizer.Properties
 
         private static Settings defaultInstance = new Settings();
 
+        [JsonIgnore]
         public static Settings Default
         {
             get
@@ -231,7 +246,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_selectedSizeIndex")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_selectedSizeIndex")]
         public int SelectedSizeIndex
         {
             get => _selectedSizeIndex;
@@ -239,10 +255,12 @@ namespace ImageResizer.Properties
             {
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_shrinkOnly")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_shrinkOnly")]
         public bool ShrinkOnly
         {
             get => _shrinkOnly;
@@ -253,7 +271,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_replace")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_replace")]
         public bool Replace
         {
             get => _replace;
@@ -264,7 +283,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_ignoreOrientation")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_ignoreOrientation")]
         public bool IgnoreOrientation
         {
             get => _ignoreOrientation;
@@ -275,7 +295,29 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_jpegQualityLevel")]
+        /// <summary>
+        /// Gets or sets a value indicating whether resizing images removes any metadata that doesn't affect rendering.
+        /// Default is false.
+        /// </summary>
+        /// <remarks>
+        /// Preserved Metadata:
+        /// System.Photo.Orientation,
+        /// System.Image.ColorSpace
+        /// </remarks>
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_removeMetadata")]
+        public bool RemoveMetadata
+        {
+            get => _removeMetadata;
+            set
+            {
+                _removeMetadata = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_jpegQualityLevel")]
         public int JpegQualityLevel
         {
             get => _jpegQualityLevel;
@@ -286,7 +328,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_pngInterlaceOption")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_pngInterlaceOption")]
         public PngInterlaceOption PngInterlaceOption
         {
             get => _pngInterlaceOption;
@@ -297,7 +340,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_tiffCompressOption")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_tiffCompressOption")]
         public TiffCompressOption TiffCompressOption
         {
             get => _tiffCompressOption;
@@ -308,7 +352,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_fileName")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_fileName")]
         public string FileName
         {
             get => _fileName;
@@ -324,10 +369,13 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_sizes")]
+        [JsonInclude]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_sizes")]
         public ObservableCollection<ResizeSize> Sizes { get; private set; }
 
-        [JsonProperty(PropertyName = "imageresizer_keepDateModified")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_keepDateModified")]
         public bool KeepDateModified
         {
             get => _keepDateModified;
@@ -338,8 +386,9 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_fallbackEncoder")]
-        public System.Guid FallbackEncoder
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_fallbackEncoder")]
+        public Guid FallbackEncoder
         {
             get => _fallbackEncoder;
             set
@@ -349,7 +398,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        [JsonProperty(PropertyName = "imageresizer_customSize")]
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_customSize")]
         public CustomSize CustomSize
         {
             get => _customSize;
@@ -372,21 +422,10 @@ namespace ImageResizer.Properties
         public void Save()
         {
             _jsonMutex.WaitOne();
-            string jsonData = "{\"version\":\"1.0\",\"name\":\"ImageResizer\",\"properties\":";
-            string tempJsonData = JsonConvert.SerializeObject(this);
-            JObject tempSettings = JObject.Parse(tempJsonData);
-
-            // Replace the <Value> of the property with { "value": <Value> } to be consistent with PowerToys
-            foreach (var property in tempSettings)
-            {
-                tempSettings[property.Key] = new JObject { { "value", property.Value } };
-            }
-
-            jsonData += tempSettings.ToString(Formatting.None);
-            jsonData += "}";
+            string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
             // Create directory if it doesn't exist
-            IFileInfo file = _fileSystem.FileInfo.FromFileName(SettingsPath);
+            IFileInfo file = _fileSystem.FileInfo.New(SettingsPath);
             file.Directory.Create();
 
             // write string to file
@@ -396,6 +435,14 @@ namespace ImageResizer.Properties
 
         public void Reload()
         {
+            string oldSettingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer");
+            string settingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer");
+
+            if (_fileSystem.Directory.Exists(oldSettingsDir) && !_fileSystem.Directory.Exists(settingsDir))
+            {
+                _fileSystem.Directory.Move(oldSettingsDir, settingsDir);
+            }
+
             _jsonMutex.WaitOne();
             if (!_fileSystem.File.Exists(SettingsPath))
             {
@@ -405,39 +452,51 @@ namespace ImageResizer.Properties
             }
 
             string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
-            JObject imageResizerSettings = JObject.Parse(jsonData);
-
-            // Replace the { "value": <Value> } with <Value> to match the Settings object format
-            foreach (var property in (JObject)imageResizerSettings["properties"])
+            var jsonSettings = new Settings();
+            try
             {
-                imageResizerSettings["properties"][property.Key] = property.Value["value"];
+                jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;
+            }
+            catch (JsonException)
+            {
             }
 
-            Settings jsonSettings = JsonConvert.DeserializeObject<Settings>(imageResizerSettings["properties"].ToString(), new JsonSerializerSettings() { ObjectCreationHandling = ObjectCreationHandling.Replace });
-
-            // Needs to be called on the App UI thread as the properties are bound to the UI.
-            App.Current.Dispatcher.Invoke(() =>
+            if (App.Current?.Dispatcher != null)
             {
-                ShrinkOnly = jsonSettings.ShrinkOnly;
-                Replace = jsonSettings.Replace;
-                IgnoreOrientation = jsonSettings.IgnoreOrientation;
-                JpegQualityLevel = jsonSettings.JpegQualityLevel;
-                PngInterlaceOption = jsonSettings.PngInterlaceOption;
-                TiffCompressOption = jsonSettings.TiffCompressOption;
-                FileName = jsonSettings.FileName;
-                KeepDateModified = jsonSettings.KeepDateModified;
-                FallbackEncoder = jsonSettings.FallbackEncoder;
-                CustomSize = jsonSettings.CustomSize;
-                SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-
-                if (jsonSettings.Sizes.Count > 0)
-                {
-                    Sizes.Clear();
-                    Sizes.AddRange(jsonSettings.Sizes);
-                }
-            });
+                // Needs to be called on the App UI thread as the properties are bound to the UI.
+                App.Current.Dispatcher.Invoke(() => ReloadCore(jsonSettings));
+            }
+            else
+            {
+                ReloadCore(jsonSettings);
+            }
 
             _jsonMutex.ReleaseMutex();
+        }
+
+        private void ReloadCore(Settings jsonSettings)
+        {
+            ShrinkOnly = jsonSettings.ShrinkOnly;
+            Replace = jsonSettings.Replace;
+            IgnoreOrientation = jsonSettings.IgnoreOrientation;
+            RemoveMetadata = jsonSettings.RemoveMetadata;
+            JpegQualityLevel = jsonSettings.JpegQualityLevel;
+            PngInterlaceOption = jsonSettings.PngInterlaceOption;
+            TiffCompressOption = jsonSettings.TiffCompressOption;
+            FileName = jsonSettings.FileName;
+            KeepDateModified = jsonSettings.KeepDateModified;
+            FallbackEncoder = jsonSettings.FallbackEncoder;
+            CustomSize = jsonSettings.CustomSize;
+            SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+
+            if (jsonSettings.Sizes.Count > 0)
+            {
+                Sizes.Clear();
+                Sizes.AddRange(jsonSettings.Sizes);
+
+                // Ensure Ids are unique and handle missing Ids
+                IdRecoveryHelper.RecoverInvalidIds(Sizes);
+            }
         }
     }
 }

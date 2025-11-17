@@ -10,16 +10,18 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
+
 using Point = System.Windows.Point;
 
 namespace PowerLauncher.Helper
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
     public static class WindowsInteropHelper
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
         private const int GWL_STYLE = -16; // WPF's Message code for Title Bar's Style
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Matching COM")]
+        private const int GWL_EX_STYLE = -20;
         private const int WS_SYSMENU = 0x80000; // WPF's Message code for System Menu
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
         private static IntPtr _hwnd_shell;
         private static IntPtr _hwnd_desktop;
 
@@ -111,10 +113,19 @@ namespace PowerLauncher.Helper
 
         public static bool IsWindowFullscreen()
         {
+            // First, check to see if a game is fullscreen, if so, we definitely have
+            // a full-screen window
+            UserNotificationState state;
+            if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out state)) == null &&
+                state == UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN)
+            {
+                return true;
+            }
+
             // get current active window
             IntPtr hWnd = NativeMethods.GetForegroundWindow();
 
-            if (hWnd != null && !hWnd.Equals(IntPtr.Zero))
+            if (hWnd != IntPtr.Zero && !hWnd.Equals(IntPtr.Zero))
             {
                 // if current active window is NOT desktop or shell
                 if (!(hWnd.Equals(HWND_DESKTOP) || hWnd.Equals(HWND_SHELL)))
@@ -142,7 +153,7 @@ namespace PowerLauncher.Helper
                     {
                         IntPtr hWndDesktop = NativeMethods.FindWindowEx(hWnd, IntPtr.Zero, "SHELLDLL_DefView", null);
                         hWndDesktop = NativeMethods.FindWindowEx(hWndDesktop, IntPtr.Zero, "SysListView32", "FolderView");
-                        if (hWndDesktop != null && !hWndDesktop.Equals(IntPtr.Zero))
+                        if (hWndDesktop != IntPtr.Zero && !hWndDesktop.Equals(IntPtr.Zero))
                         {
                             return false;
                         }
@@ -170,6 +181,15 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
+        /// Set WS_EX_TOOLWINDOW to make FancyZones ignoring the Window
+        /// </summary>
+        internal static void SetToolWindowStyle(Window win)
+        {
+            var hwnd = new WindowInteropHelper(win).Handle;
+            _ = NativeMethods.SetWindowLong(hwnd, GWL_EX_STYLE, NativeMethods.GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
+        }
+
+        /// <summary>
         /// Transforms pixels to Device Independent Pixels used by WPF
         /// </summary>
         /// <param name="visual">current window, required to get presentation source</param>
@@ -178,21 +198,23 @@ namespace PowerLauncher.Helper
         /// <returns>point containing device independent pixels</returns>
         public static Point TransformPixelsToDIP(Visual visual, double unitX, double unitY)
         {
-            Matrix matrix;
-            var source = PresentationSource.FromVisual(visual);
-            if (source != null)
+            var matrix = GetCompositionTarget(visual).TransformFromDevice;
+
+            return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
+        }
+
+        private static CompositionTarget GetCompositionTarget(Visual visual)
+        {
+            var presentationSource = PresentationSource.FromVisual(visual);
+            if (presentationSource != null)
             {
-                matrix = source.CompositionTarget.TransformFromDevice;
+                return presentationSource.CompositionTarget;
             }
             else
             {
-                using (var src = new HwndSource(default))
-                {
-                    matrix = src.CompositionTarget.TransformFromDevice;
-                }
+                using var hwndSource = new HwndSource(default);
+                return hwndSource.CompositionTarget;
             }
-
-            return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
         }
 
         [StructLayout(LayoutKind.Sequential)]

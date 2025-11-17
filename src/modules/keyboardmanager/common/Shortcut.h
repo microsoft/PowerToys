@@ -1,102 +1,111 @@
 #pragma once
 #include "ModifierKey.h"
+
+#include <compare>
+#include <tuple>
 #include <variant>
-class InputInterface;
-class LayoutMap;
-namespace KeyboardManagerHelper
+namespace KeyboardManagerInput
 {
-    enum class ErrorType;
+    class InputInterface;
 }
+class LayoutMap;
 
 class Shortcut
 {
 private:
-    ModifierKey winKey;
-    ModifierKey ctrlKey;
-    ModifierKey altKey;
-    ModifierKey shiftKey;
-    DWORD actionKey;
+    // Function to split a wstring based on a delimiter and return a vector of split strings
+    std::vector<std::wstring> splitwstring(const std::wstring& input, wchar_t delimiter);
 
-public:
-    // By default create an empty shortcut
-    Shortcut() :
-        winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+    inline auto comparator() const
     {
+        return std::make_tuple(winKey, ctrlKey, altKey, shiftKey, actionKey, secondKey);
     }
 
-    // Constructor to initialize Shortcut from it's virtual key code string representation.
+    // helper to use the same code in more places.
+    std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys);
+
+public:
+
+    bool exactMatch = false;
+
+    enum ElevationLevel
+    {
+        NonElevated = 0,
+        Elevated = 1,
+        DifferentUser = 2
+    };
+
+    enum OperationType
+    {
+        RemapShortcut = 0,
+        RunProgram = 1,
+        OpenURI = 2
+    };
+
+    enum StartWindowType
+    {
+        Normal = 0,
+        Hidden = 1,
+        Minimized = 2,
+        Maximized = 2
+    };
+
+    enum ProgramAlreadyRunningAction
+    {
+        ShowWindow = 0,
+        StartAnother = 1,
+        DoNothing = 2,
+        Close = 3,
+        EndTask = 4,
+        CloseAndEndTask = 5,
+    };
+
+    ModifierKey winKey = ModifierKey::Disabled;
+    ModifierKey ctrlKey = ModifierKey::Disabled;
+    ModifierKey altKey = ModifierKey::Disabled;
+    ModifierKey shiftKey = ModifierKey::Disabled;
+
+    std::wstring runProgramFilePath;
+    std::wstring runProgramArgs;
+    std::wstring runProgramStartInDir;
+    std::wstring uriToOpen;
+
+    ProgramAlreadyRunningAction alreadyRunningAction = ProgramAlreadyRunningAction::ShowWindow;
+    ElevationLevel elevationLevel = ElevationLevel::NonElevated;
+    OperationType operationType = OperationType::RemapShortcut;
+    StartWindowType startWindowType = StartWindowType::Normal;
+
+    DWORD actionKey = {};
+    DWORD secondKey = {}; // of the chord
+    bool chordStarted = false;
+
+    Shortcut() = default;
+
+    // Constructor to initialize Shortcut from single key
+    Shortcut(const DWORD key);
+
+    // Constructor to initialize Shortcut from its virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
+
+    // Constructor to initialize Shortcut from its virtual key code string representation.
+    Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys
     Shortcut(const std::vector<int32_t>& keys);
 
-    // == operator
-    inline bool operator==(const Shortcut& sc) const
+    inline friend auto operator<=>(const Shortcut& lhs, const Shortcut& rhs) noexcept
     {
-        return (winKey == sc.winKey && ctrlKey == sc.ctrlKey && altKey == sc.altKey && shiftKey == sc.shiftKey && actionKey == sc.actionKey);
+        return lhs.comparator() <=> rhs.comparator();
     }
 
-    // Less than operator must be defined to use with std::map.
-    inline bool operator<(const Shortcut& sc) const
+    inline friend bool operator==(const Shortcut& lhs, const Shortcut& rhs) noexcept
     {
-        // Compare win key first
-        if (winKey < sc.winKey)
-        {
-            return true;
-        }
-        else if (winKey > sc.winKey)
-        {
-            return false;
-        }
-        else
-        {
-            // If win key is equal, then compare ctrl key
-            if (ctrlKey < sc.ctrlKey)
-            {
-                return true;
-            }
-            else if (ctrlKey > sc.ctrlKey)
-            {
-                return false;
-            }
-            else
-            {
-                // If ctrl key is equal, then compare alt key
-                if (altKey < sc.altKey)
-                {
-                    return true;
-                }
-                else if (altKey > sc.altKey)
-                {
-                    return false;
-                }
-                else
-                {
-                    // If alt key is equal, then compare shift key
-                    if (shiftKey < sc.shiftKey)
-                    {
-                        return true;
-                    }
-                    else if (shiftKey > sc.shiftKey)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        // If shift key is equal, then compare action key
-                        if (actionKey < sc.actionKey)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
+        return lhs.comparator() == rhs.comparator();
     }
+
+    static bool Shortcut::IsActionKey(const DWORD input);
+
+    static bool Shortcut::IsModifier(const DWORD input);
 
     // Function to return the number of keys in the shortcut
     int Size() const;
@@ -107,47 +116,62 @@ public:
     // Function to reset all the keys in the shortcut
     void Reset();
 
-    // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
-    bool IsValidShortcut() const;
-
     // Function to return the action key
     DWORD GetActionKey() const;
+
+    // Function to return IsRunProgram
+    bool Shortcut::IsRunProgram() const;
+
+    // Function to return IsOpenURI
+    bool Shortcut::IsOpenURI() const;
+
+    // Function to return the second key (of the chord)
+    DWORD Shortcut::GetSecondKey() const;
+
+    // Function to check if a chord is started for this shortcut
+    bool Shortcut::IsChordStarted() const;
+
+    // Function to check if this shortcut has a chord
+    bool Shortcut::HasChord() const;
+
+    // Function to set that we started a chord
+    void Shortcut::SetChordStarted(bool started);
 
     // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
     DWORD GetWinKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetCtrlKey() const;
+    DWORD GetCtrlKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the alt key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetAltKey() const;
+    DWORD GetAltKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the shift key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetShiftKey() const;
+    DWORD GetShiftKey(const ModifierKey& input) const;
 
     // Function to check if the input key matches the win key expected in the shortcut
-    bool CheckWinKey(const DWORD& input) const;
+    bool CheckWinKey(const DWORD input) const;
 
     // Function to check if the input key matches the ctrl key expected in the shortcut
-    bool CheckCtrlKey(const DWORD& input) const;
+    bool CheckCtrlKey(const DWORD input) const;
 
     // Function to check if the input key matches the alt key expected in the shortcut
-    bool CheckAltKey(const DWORD& input) const;
+    bool CheckAltKey(const DWORD input) const;
 
     // Function to check if the input key matches the shift key expected in the shortcut
-    bool CheckShiftKey(const DWORD& input) const;
+    bool CheckShiftKey(const DWORD input) const;
 
     // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
-    bool SetKey(const DWORD& input);
+    bool SetKey(const DWORD input);
+
+    // Function to SetSecondKey
+    bool SetSecondKey(const DWORD input);
 
     // Function to reset the state of a shortcut key based on the passed key code argument
-    void ResetKey(const DWORD& input);
+    void ResetKey(const DWORD input);
 
     // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
     winrt::hstring ToHstringVK() const;
-
-    // Function to return a vector of hstring for each key in the display order
-    std::vector<winrt::hstring> GetKeyVector(LayoutMap& keyboardMap) const;
 
     // Function to return a vector of key codes in the display order
     std::vector<DWORD> GetKeyCodes();
@@ -156,22 +180,22 @@ public:
     void SetKeyCodes(const std::vector<int32_t>& keys);
 
     // Function to check if all the modifiers in the shortcut have been pressed down
-    bool CheckModifiersKeyboardState(InputInterface& ii) const;
+    bool CheckModifiersKeyboardState(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to check if any keys are pressed down except those in the shortcut
-    bool IsKeyboardStateClearExceptShortcut(InputInterface& ii) const;
+    bool IsKeyboardStateClearExceptShortcut(KeyboardManagerInput::InputInterface& ii) const;
 
     // Function to get the number of modifiers that are common between the current shortcut and the shortcut in the argument
     int GetCommonModifiersCount(const Shortcut& input) const;
-
-    // Function to check if the two shortcuts are equal or cover the same set of keys. Return value depends on type of overlap
-    static KeyboardManagerHelper::ErrorType DoKeysOverlap(const Shortcut& first, const Shortcut& second);
-
-    // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
-    KeyboardManagerHelper::ErrorType IsShortcutIllegal() const;
 };
 
-using KeyShortcutUnion = std::variant<DWORD, Shortcut>;
-using RemapBufferItem = std::vector<KeyShortcutUnion>;
-using RemapBufferRow = std::pair<RemapBufferItem, std::wstring>;
+using KeyShortcutTextUnion = std::variant<DWORD, Shortcut, std::wstring>;
+using RemapBufferItem = std::vector<KeyShortcutTextUnion>;
+
+struct RemapBufferRow
+{
+    RemapBufferItem mapping{};
+    std::wstring appName{};
+};
+
 using RemapBuffer = std::vector<RemapBufferRow>;

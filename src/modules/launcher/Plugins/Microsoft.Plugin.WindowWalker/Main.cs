@@ -4,48 +4,55 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
+using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.Plugin.WindowWalker.Components;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
+using Wox.Plugin.Common.VirtualDesktop.Helper;
 
 namespace Microsoft.Plugin.WindowWalker
 {
-    public class Main : IPlugin, IPluginI18n
+    public class Main : IPlugin, IPluginI18n, ISettingProvider, IContextMenu, IDisposable
     {
-        private static List<SearchResult> _results = new List<SearchResult>();
+        private CancellationTokenSource _cancellationTokenSource = new();
+        private bool _disposed;
 
         private string IconPath { get; set; }
 
+        private string InfoIconPath { get; set; }
+
         private PluginInitContext Context { get; set; }
 
-        static Main()
-        {
-            SearchController.Instance.OnSearchResultUpdateEventHandler += SearchResultUpdated;
-            OpenWindows.Instance.UpdateOpenWindowsList();
-        }
+        public string Name => Properties.Resources.wox_plugin_windowwalker_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_windowwalker_plugin_description;
+
+        public static string PluginID => "F737A9223560B3C6833B5FFB8CDF78E5";
+
+        internal static readonly VirtualDesktopHelper VirtualDesktopHelperInstance = new VirtualDesktopHelper();
 
         public List<Result> Query(Query query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
-            OpenWindows.Instance.UpdateOpenWindowsList();
-            SearchController.Instance.UpdateSearchText(query.Search).Wait();
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
 
-            return _results.Select(x => new Result()
-            {
-                Title = x.Result.Title,
-                IcoPath = IconPath,
-                SubTitle = Properties.Resources.wox_plugin_windowwalker_running + ": " + x.Result.ProcessName,
-                Action = c =>
-                {
-                    x.Result.SwitchToWindow();
-                    return true;
-                },
-            }).ToList();
+            VirtualDesktopHelperInstance.UpdateDesktopList();
+            OpenWindows.Instance.UpdateOpenWindowsList(_cancellationTokenSource.Token);
+            SearchController.Instance.UpdateSearchText(query.Search);
+            List<SearchResult> searchControllerResults = SearchController.Instance.SearchMatches;
+
+            return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query.ActionKeyword), IconPath, InfoIconPath);
+        }
+
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
+        {
+            return ContextMenuHelper.GetContextMenuResults(selectedResult);
         }
 
         public void Init(PluginInitContext context)
@@ -55,16 +62,23 @@ namespace Microsoft.Plugin.WindowWalker
             UpdateIconPath(Context.API.GetCurrentTheme());
         }
 
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions
+        {
+            get { return WindowWalkerSettings.GetAdditionalOptions(); }
+        }
+
         // Todo : Update with theme based IconPath
         private void UpdateIconPath(Theme theme)
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
                 IconPath = "Images/windowwalker.light.png";
+                InfoIconPath = "Images/info.light.png";
             }
             else
             {
                 IconPath = "Images/windowwalker.dark.png";
+                InfoIconPath = "Images/info.dark.png";
             }
         }
 
@@ -83,9 +97,32 @@ namespace Microsoft.Plugin.WindowWalker
             return Properties.Resources.wox_plugin_windowwalker_plugin_description;
         }
 
-        private static void SearchResultUpdated(object sender, SearchController.SearchResultUpdateEventArgs e)
+        public Control CreateSettingPanel()
         {
-            _results = SearchController.Instance.SearchMatches;
+            throw new NotImplementedException();
+        }
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings)
+        {
+            WindowWalkerSettings.Instance.UpdateSettings(settings);
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _cancellationTokenSource?.Dispose();
+                    _disposed = true;
+                }
+            }
         }
     }
 }

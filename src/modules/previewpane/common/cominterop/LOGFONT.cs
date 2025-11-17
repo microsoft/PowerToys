@@ -10,7 +10,6 @@ namespace Common.ComInterlop
     /// Defines the attributes of a font.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Interop")]
     public struct LOGFONT
     {
         /// <summary>

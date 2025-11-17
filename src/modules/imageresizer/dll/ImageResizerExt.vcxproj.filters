@@ -28,18 +28,6 @@
     <ClCompile Include="ContextMenuHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HDropIterator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClInclude Include="trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClCompile Include="ImageResizerExt_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -57,12 +45,6 @@
     <ClInclude Include="ContextMenuHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HDropIterator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImageResizerExt_i.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -72,7 +54,7 @@
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageResizerConstants.h">
+    <ClInclude Include="RuntimeRegistration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,7 +68,6 @@
     <None Include="ContextMenuHandler.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="ImageResizerExt.base.rc">
       <Filter>Resource Files</Filter>
     </None>
@@ -96,6 +77,7 @@
     <None Include="Resources.resx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\ui\Resources\ImageResizer.ico">

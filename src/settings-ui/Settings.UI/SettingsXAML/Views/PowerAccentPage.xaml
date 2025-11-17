@@ -1,0 +1,233 @@
+﻿<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <local:NavigablePage.Resources>
+        <CollectionViewSource
+            x:Name="LanguagesCustomViewSource"
+            IsSourceGrouped="True"
+            Source="{x:Bind ViewModel.LanguageGroups, Mode=OneWay}" />
+        <DataTemplate x:Key="LanguageViewTemplate" x:DataType="Lib:PowerAccentLanguageModel">
+            <TextBlock Text="{x:Bind Language}" />
+        </DataTemplate>
+    </local:NavigablePage.Resources>
+
+    <controls:SettingsPageControl
+        x:Uid="QuickAccent"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/QuickAccent.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="QuickAccentEnableQuickAccent"
+                        x:Uid="QuickAccent_EnableQuickAccent"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="QuickAccentActivationShortcut"
+                        x:Uid="QuickAccent_Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
+                        </ComboBox>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="QuickAccent_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup
+                    x:Name="QuickAccent_Language"
+                    x:Uid="QuickAccent_Language"
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="QuickAccentSelectedLanguage"
+                        x:Uid="QuickAccent_SelectedLanguage"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}"
+                        IsExpanded="False">
+                        <CheckBox
+                            x:Name="QuickAccent_SelectedLanguage_All"
+                            x:Uid="QuickAccent_SelectedLanguage_All"
+                            Checked="QuickAccent_SelectedLanguage_SelectAll"
+                            IsThreeState="True"
+                            Unchecked="QuickAccent_SelectedLanguage_UnselectAll" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <ListView
+                                    x:Name="QuickAccent_Language_Select"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    MinHeight="{StaticResource SettingActionControlMinWidth}"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    ItemTemplate="{StaticResource LanguageViewTemplate}"
+                                    ItemsSource="{x:Bind LanguagesCustomViewSource.View, Mode=OneWay}"
+                                    Loaded="QuickAccent_Language_Select_Loaded"
+                                    ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                    ScrollViewer.HorizontalScrollMode="Enabled"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    SelectionChanged="QuickAccent_SelectedLanguage_SelectionChanged"
+                                    SelectionMode="Multiple">
+                                    <ListView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <ItemsWrapGrid
+                                                MaxWidth="{Binding ElementName=QuickAccent_Language, Path=ActualWidth}"
+                                                ItemWidth="280"
+                                                Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ListView.ItemsPanel>
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ListViewItem">
+                                                        <ListViewItemPresenter
+                                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                            CheckBoxBorderBrush="{ThemeResource CheckBoxBorderThemeBrush}"
+                                                            CheckBoxBrush="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
+                                                            CheckBoxCornerRadius="{ThemeResource ControlCornerRadius}"
+                                                            CheckBoxDisabledBorderBrush="{ThemeResource CheckBoxDisabledBorderThemeBrush}"
+                                                            CheckBoxDisabledBrush="{ThemeResource CheckBoxCheckBackgroundFillUncheckedDisabled}"
+                                                            CheckBoxPointerOverBorderBrush="{ThemeResource CheckBoxPointerOverBorderThemeBrush}"
+                                                            CheckBoxPointerOverBrush="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPointerOver}"
+                                                            CheckBoxPressedBorderBrush="{ThemeResource CheckBoxPressedBorderThemeBrush}"
+                                                            CheckBoxPressedBrush="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPressed}"
+                                                            CheckBoxSelectedBrush="{ThemeResource CheckBoxCheckBackgroundFillChecked}"
+                                                            CheckBoxSelectedDisabledBrush="{ThemeResource CheckBoxCheckBackgroundFillCheckedDisabled}"
+                                                            CheckBoxSelectedPointerOverBrush="{ThemeResource CheckBoxCheckBackgroundFillCheckedPointerOver}"
+                                                            CheckBoxSelectedPressedBrush="{ThemeResource CheckBoxCheckBackgroundFillCheckedPressed}"
+                                                            CheckBrush="{ThemeResource CheckBoxCheckGlyphForegroundChecked}"
+                                                            CheckDisabledBrush="{ThemeResource CheckBoxCheckGlyphForegroundCheckedDisabled}"
+                                                            CheckMode="Inline"
+                                                            CheckPressedBrush="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}"
+                                                            ContentMargin="{TemplateBinding Padding}"
+                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                                                            ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+                                                            SelectionCheckMarkVisualEnabled="True" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.GroupStyle>
+                                        <GroupStyle>
+                                            <GroupStyle.HeaderTemplate>
+                                                <DataTemplate x:DataType="Lib:PowerAccentLanguageGroupModel">
+                                                    <Border AutomationProperties.AccessibilityView="Raw">
+                                                        <TextBlock
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                                                            Text="{x:Bind Group}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </GroupStyle.HeaderTemplate>
+                                        </GroupStyle>
+                                    </ListView.GroupStyle>
+                                </ListView>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="QuickAccentToolbarPosition"
+                        x:Uid="QuickAccent_ToolbarPosition"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Left" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Right" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopRightCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="QuickAccentDescriptionIndicator"
+                        x:Uid="QuickAccent_Description_Indicator"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                        <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowUnicodeDescription, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="QuickAccentSortByUsageFrequencyIndicator"
+                        x:Uid="QuickAccent_SortByUsageFrequency_Indicator"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
+                        <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind ViewModel.SortByUsageFrequency, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="QuickAccentStartSelectionFromTheLeftIndicator"
+                        x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
+                        <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind ViewModel.StartSelectionFromTheLeft, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="QuickAccentInputTimeMs"
+                        x:Uid="QuickAccent_InputTimeMs"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="100"
+                            Minimum="100"
+                            SmallChange="10"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.InputTimeMs, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        Name="QuickAccentExcludedApps"
+                        x:Uid="QuickAccent_ExcludedApps"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://github.com/damienleroy/PowerAccent" Text="Damien Leroy's PowerAccent" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

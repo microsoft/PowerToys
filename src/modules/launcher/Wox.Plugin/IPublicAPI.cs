@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+
+using Common.UI;
 using ManagedCommon;
 
 namespace Wox.Plugin
@@ -23,9 +25,9 @@ namespace Wox.Plugin
         void ChangeQuery(string query, bool requery = false);
 
         /// <summary>
-        /// Restart Wox
+        /// Remove user selected history item and refresh/requery
         /// </summary>
-        void RestartApp();
+        void RemoveUserSelectedItem(Result result);
 
         /// <summary>
         /// Get current theme
@@ -64,14 +66,15 @@ namespace Wox.Plugin
         void ShowMsg(string title, string subTitle = "", string iconPath = "", bool useMainWindowAsOwner = true);
 
         /// <summary>
-        /// Install Wox plugin
-        /// </summary>
-        /// <param name="path">Plugin path (ends with .wox)</param>
-        void InstallPlugin(string path);
-
-        /// <summary>
         /// Get all loaded plugins
         /// </summary>
         List<PluginPair> GetAllPlugins();
+
+        /// <summary>
+        /// Show toast notification
+        /// </summary>
+        /// <param name="text">Notification main text</param>
+        /// <param name="secondaryText">Notification optional text</param>
+        void ShowNotification(string text, string secondaryText = null);
     }
 }

@@ -2,6 +2,8 @@
 
 #include "../utils/json.h"
 
+#include <cwctype>
+
 namespace PowerToysSettings
 {
     class HotkeyObject;
@@ -79,10 +81,11 @@ namespace PowerToysSettings
             m_json.GetNamedObject(L"properties").SetNamedValue(name, prop_value);
         }
 
-        std::optional<bool> get_bool_value(std::wstring_view property_name);
-        std::optional<int> get_int_value(std::wstring_view property_name);
-        std::optional<std::wstring> get_string_value(std::wstring_view property_name);
-        std::optional<json::JsonObject> get_json(std::wstring_view property_name);
+        std::optional<bool> get_bool_value(std::wstring_view property_name) const;
+        std::optional<int> get_int_value(std::wstring_view property_name) const;
+        std::optional<unsigned int> get_uint_value(std::wstring_view property_name) const;
+        std::optional<std::wstring> get_string_value(std::wstring_view property_name) const;
+        std::optional<json::JsonObject> get_json(std::wstring_view property_name) const;
         json::JsonObject get_raw_json();
 
         std::wstring serialize();
@@ -155,7 +158,33 @@ namespace PowerToysSettings
             return get_modifiers_repeat() | MOD_NOREPEAT;
         }
 
-    protected:
+        std::wstring to_string()
+        {
+            std::wstring result = L"";
+            if (shift_pressed())
+            {
+                result += L"shift+";
+            }
+
+            if (ctrl_pressed())
+            {
+                result += L"ctrl+";
+            }
+
+            if (win_pressed())
+            {
+                result += L"win+";
+            }
+
+            if (alt_pressed())
+            {
+                result += L"alt+";
+            }
+
+            result += key_from_code(get_code());
+            return result;
+        }
+
         static std::wstring key_from_code(UINT key_code)
         {
             auto layout = GetKeyboardLayout(0);
@@ -191,7 +220,8 @@ namespace PowerToysSettings
             }
             std::array<BYTE, 256> key_states{}; // Zero-initialize
             std::array<wchar_t, 256> output;
-            auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), (int)output.size() - 1, 0, layout);
+            const UINT wFlags = 1 << 2; // If bit 2 is set, keyboard state is not changed (Windows 10, version 1607 and newer)
+            auto output_bytes = ToUnicodeEx(key_code, scan_code, key_states.data(), output.data(), static_cast<int>(output.size()) - 1, wFlags, layout);
             if (output_bytes <= 0)
             {
                 // If ToUnicodeEx fails (e.g. for F1-F12 keys) use GetKeyNameTextW
@@ -203,12 +233,14 @@ namespace PowerToysSettings
                 if (output_bytes == 1 && output[0] >= 'a' && output[0] <= 'z')
                 {
                     // Make Latin letters keys capital, as it looks better
-                    output[0] = toupper(output[0]);
+                    output[0] = std::towupper(output[0]);
                 }
                 return output.data();
             }
             return L"(Key " + std::to_wstring(key_code) + L")";
         }
+
+    protected:
         HotkeyObject(json::JsonObject hotkey_json) :
             m_json(std::move(hotkey_json))
         {

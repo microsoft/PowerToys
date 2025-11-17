@@ -23,10 +23,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public IEnumerable<FolderLink> GetUserFolderResults(string query)
         {
-            if (query == null)
-            {
-                throw new ArgumentNullException(paramName: nameof(query));
-            }
+            ArgumentNullException.ThrowIfNull(query);
 
             // Using OrdinalIgnoreCase since this is internal
             return _folderLinks.FolderLinks()
@@ -35,13 +32,10 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public bool IsDriveOrSharedFolder(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
             // Using Ordinal this is internal and we're comparing symbols
-            if (search.StartsWith(@"\\", StringComparison.Ordinal))
+            if (search.StartsWith(@"\\", StringComparison.Ordinal) || search.StartsWith(@"//", StringComparison.Ordinal))
             { // share folder
                 return true;
             }
@@ -79,18 +73,25 @@ namespace Microsoft.Plugin.Folder.Sources
 
         public static string Expand(string search)
         {
-            if (search == null)
-            {
-                throw new ArgumentNullException(nameof(search));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
-            // Absolute path of system drive: \Windows\System32
-            if (search[0] == '\\' && (search.Length == 1 || search[1] != '\\'))
+            search = Environment.ExpandEnvironmentVariables(search);
+
+            var validRoots = new char[] { '\\', '/' };
+
+            if (validRoots.Contains(search[0]) && (search.Length == 1 || !validRoots.Contains(search[1])))
             {
+                // Absolute path of system drive: \Windows\System32
                 search = Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), search.Substring(1));
             }
+            else if (search[0] == '~')
+            {
+                // User home
+                var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                search = search.Length > 1 ? Path.Combine(home, search.Substring(2)) : home;
+            }
 
-            return Environment.ExpandEnvironmentVariables(search);
+            return search;
         }
     }
 }

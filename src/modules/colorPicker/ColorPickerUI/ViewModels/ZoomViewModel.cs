@@ -4,6 +4,7 @@
 
 using System.ComponentModel.Composition;
 using System.Windows.Media.Imaging;
+
 using ColorPicker.Common;
 using ColorPicker.ViewModelContracts;
 

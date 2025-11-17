@@ -298,9 +298,9 @@ namespace UnitTestsCommonLib
 
             int actualSize = expectedSize;
             wchar_t* buffer = new wchar_t[expectedSize];
-            bool serizalizationSuccess = settings.serialize_to_buffer(buffer, &actualSize);
+            bool serializationSuccess = settings.serialize_to_buffer(buffer, &actualSize);
 
-            Assert::IsTrue(serizalizationSuccess);
+            Assert::IsTrue(serializationSuccess);
             Assert::AreEqual(expectedSize, actualSize);
 
             auto actualJson = json::JsonObject::Parse(std::wstring(buffer));
@@ -660,19 +660,19 @@ namespace UnitTestsCommonLib
         TEST_METHOD (GetCodeFromJson)
         {
             HotkeyObject object = HotkeyObject::from_json(m_defaultHotkeyJson);
-            Assert::AreEqual(UINT(123), object.get_code());
+            Assert::AreEqual(123U, object.get_code());
         }
 
         TEST_METHOD (GetCodeFromJsonString)
         {
             HotkeyObject object = HotkeyObject::from_json_string(m_defaultHotkeyJson.Stringify());
-            Assert::AreEqual(UINT(123), object.get_code());
+            Assert::AreEqual(123U, object.get_code());
         }
 
         TEST_METHOD (GetCodeFromSettings)
         {
             HotkeyObject object = HotkeyObject::from_settings(true, true, true, true, 123);
-            Assert::AreEqual(UINT(123), object.get_code());
+            Assert::AreEqual(123U, object.get_code());
         }
 
         TEST_METHOD (GetWinPressedFromJson)

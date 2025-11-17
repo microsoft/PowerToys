@@ -4,49 +4,56 @@
 
 using System;
 using System.Windows;
+
 using FancyZonesEditor.Models;
-using MahApps.Metro.Controls;
+using ManagedCommon;
 
 namespace FancyZonesEditor
 {
-    public class EditorWindow : MetroWindow
+    public class EditorWindow : Window
     {
-        protected void OnSaveApplyTemplate(object sender, RoutedEventArgs e)
-        {
-            var mainEditor = App.Overlay;
-            if (mainEditor.CurrentDataContext is LayoutModel model)
-            {
-                // If new custom Canvas layout is created (i.e. edited Blank layout),
-                // it's type needs to be updated
-                if (model.Type == LayoutType.Blank)
-                {
-                    model.Type = LayoutType.Custom;
-                }
+        public LayoutModel EditingLayout { get; set; }
 
-                model.Persist();
+        public EditorWindow(LayoutModel editingLayout)
+        {
+            EditingLayout = editingLayout;
+        }
+
+        protected void OnSave(object sender, RoutedEventArgs e)
+        {
+            Logger.LogTrace();
+
+            // If new custom Canvas layout is created (i.e. edited Blank layout),
+            // its type needs to be updated
+            if (EditingLayout.Type == LayoutType.Blank)
+            {
+                EditingLayout.Type = LayoutType.Custom;
             }
 
-            LayoutModel.SerializeDeletedCustomZoneSets();
+            EditingLayout.Persist();
 
-            _backToLayoutPicker = false;
+            App.FancyZonesEditorIO.SerializeLayoutTemplates();
+            App.FancyZonesEditorIO.SerializeCustomLayouts();
+
             Close();
-            mainEditor.CloseEditor();
         }
 
         protected void OnClosed(object sender, EventArgs e)
         {
-            if (_backToLayoutPicker)
-            {
-                App.Overlay.CloseEditor();
-            }
+            App.Overlay.CloseEditor();
         }
 
         protected void OnCancel(object sender, RoutedEventArgs e)
         {
-            _backToLayoutPicker = true;
+            // restore backup, clean up
+            App.Overlay.EndEditing(EditingLayout);
+
+            // select and draw applied layout
+            var settings = ((App)Application.Current).MainWindowSettings;
+            settings.SetSelectedModel(settings.AppliedModel);
+            App.Overlay.CurrentDataContext = settings.AppliedModel;
+
             Close();
         }
-
-        private bool _backToLayoutPicker = true;
     }
 }

@@ -3,8 +3,7 @@
 #include <map>
 #include "srwlock.h"
 
-#include <lib/PowerRenameManager.h>
-#include <lib/PowerRenameInterfaces.h>
+#include <PowerRenameInterfaces.h>
 
 class CPowerRenameManager :
     public IPowerRenameManager,
@@ -12,18 +11,20 @@ class CPowerRenameManager :
 {
 public:
     // IUnknown
-    IFACEMETHODIMP  QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
+    IFACEMETHODIMP QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
     IFACEMETHODIMP_(ULONG) AddRef();
     IFACEMETHODIMP_(ULONG) Release();
 
     // IPowerRenameManager
-    IFACEMETHODIMP Advise(_In_ IPowerRenameManagerEvents* renameOpEvent, _Out_ DWORD *cookie);
+    IFACEMETHODIMP Advise(_In_ IPowerRenameManagerEvents* renameOpEvent, _Out_ DWORD* cookie);
     IFACEMETHODIMP UnAdvise(_In_ DWORD cookie);
     IFACEMETHODIMP Start();
     IFACEMETHODIMP Stop();
     IFACEMETHODIMP Reset();
     IFACEMETHODIMP Shutdown();
-    IFACEMETHODIMP Rename(_In_ HWND hwndParent);
+    IFACEMETHODIMP Rename(_In_ HWND hwndParent, bool closeWindow);
+    IFACEMETHODIMP UpdateChildrenPath(_In_ int parentId, _In_ size_t oldParentPathSize);
+    IFACEMETHODIMP GetCloseUIWindowAfterRenaming(_Out_ bool* closeUIWindowAfterRenaming);
     IFACEMETHODIMP AddItem(_In_ IPowerRenameItem* pItem);
     IFACEMETHODIMP GetItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
     IFACEMETHODIMP GetVisibleItemByIndex(_In_ UINT index, _COM_Outptr_ IPowerRenameItem** ppItem);
@@ -41,12 +42,15 @@ public:
     IFACEMETHODIMP PutRenameRegEx(_In_ IPowerRenameRegEx* pRegEx);
     IFACEMETHODIMP GetRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
     IFACEMETHODIMP PutRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
-
+    
+    uint32_t GetVisibleItemRealIndex(const uint32_t index) const override;
+    
     // IPowerRenameRegExEvents
     IFACEMETHODIMP OnSearchTermChanged(_In_ PCWSTR searchTerm);
     IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm);
     IFACEMETHODIMP OnFlagsChanged(_In_ DWORD flags);
     IFACEMETHODIMP OnFileTimeChanged(_In_ SYSTEMTIME fileTime);
+    IFACEMETHODIMP OnMetadataChanged();
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameManager** ppsrm);
 
@@ -59,8 +63,7 @@ protected:
 
     void _Cancel();
 
-    void _OnItemAdded(_In_ IPowerRenameItem* renameItem);
-    void _OnUpdate(_In_ IPowerRenameItem* renameItem);
+    void _OnRename(_In_ IPowerRenameItem* renameItem);
     void _OnError(_In_ IPowerRenameItem* renameItem);
     void _OnRegExStarted(_In_ DWORD threadId);
     void _OnRegExCanceled(_In_ DWORD threadId);
@@ -125,6 +128,7 @@ protected:
 
     // Parent HWND used by IFileOperation
     HWND m_hwndParent = nullptr;
+    bool m_closeUIWindowAfterRenaming = true;
 
     HWND m_hwndMessage = nullptr;
 

@@ -1,8 +1,7 @@
 #pragma once
 
+#define NOMINMAX
 #include "targetver.h"
 
 #include <atlbase.h>
-
-// Headers for CppUnitTest
-#include "CppUnitTest.h"
+#include "CppUnitTestInclude.h"

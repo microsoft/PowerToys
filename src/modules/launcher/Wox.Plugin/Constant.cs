@@ -18,7 +18,7 @@ namespace Wox.Plugin
         {
             if (obj == null)
             {
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(obj));
             }
             else
             {
@@ -30,9 +30,10 @@ namespace Wox.Plugin
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IDirectory Directory = FileSystem.Directory;
 
-        public const string ExeFileName = "PowerLauncher";
+        public const string ExeFileName = "PowerToys.PowerLauncher";
         public const string ModuleLocation = "Microsoft\\PowerToys\\PowerToys Run";
-        public const string Plugins = "Plugins";
+        public const string Plugins = "RunPlugins";
+        public const string PluginsDataStorage = "Plugins";
         public const string PortableFolderName = "UserData";
 
         private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
@@ -57,15 +58,13 @@ namespace Wox.Plugin
         }
 
         public static readonly string DataDirectory = DetermineDataDirectory();
-        public static readonly string PluginsDirectory = Path.Combine(DataDirectory, Plugins);
+        public static readonly string PluginsDirectory = Path.Combine(DataDirectory, PluginsDataStorage);
         public static readonly string PreinstalledDirectory = Path.Combine(ProgramDirectory, Plugins);
         public const string Issue = "https://aka.ms/powerToysReportBug";
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location.NonNull()).ProductVersion;
 
         public static readonly int ThumbnailSize = 64;
-        public static readonly string DefaultIcon = Path.Combine(ProgramDirectory, "Images", "app.dark.png");
-        public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Images", "app_error.dark.png");
-        public static readonly string LightThemedDefaultIcon = Path.Combine(ProgramDirectory, "Images", "app.light.png");
-        public static readonly string LightThemedErrorIcon = Path.Combine(ProgramDirectory, "Images", "app_error.light.png");
+        public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Assets", "PowerLauncher", "app_error.dark.png");
+        public static readonly string LightThemedErrorIcon = Path.Combine(ProgramDirectory, "Assets", "PowerLauncher", "app_error.light.png");
     }
 }

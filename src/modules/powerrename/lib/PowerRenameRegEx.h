@@ -1,18 +1,22 @@
 #pragma once
 #include "pch.h"
-#include <vector>
-#include <string>
 #include "srwlock.h"
+
+#include "Enumerating.h"
+
+#include "Randomizer.h"
+#include "MetadataTypes.h"
+#include "MetadataPatternExtractor.h"
 
 #include "PowerRenameInterfaces.h"
 
-#define DEFAULT_FLAGS MatchAllOccurences
+#define DEFAULT_FLAGS 0
 
 class CPowerRenameRegEx : public IPowerRenameRegEx
 {
 public:
     // IUnknown
-    IFACEMETHODIMP  QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
+    IFACEMETHODIMP QueryInterface(_In_ REFIID iid, _Outptr_ void** resultInterface);
     IFACEMETHODIMP_(ULONG) AddRef();
     IFACEMETHODIMP_(ULONG) Release();
 
@@ -20,16 +24,22 @@ public:
     IFACEMETHODIMP Advise(_In_ IPowerRenameRegExEvents* regExEvents, _Out_ DWORD* cookie);
     IFACEMETHODIMP UnAdvise(_In_ DWORD cookie);
     IFACEMETHODIMP GetSearchTerm(_Outptr_ PWSTR* searchTerm);
-    IFACEMETHODIMP PutSearchTerm(_In_ PCWSTR searchTerm);
+    IFACEMETHODIMP PutSearchTerm(_In_ PCWSTR searchTerm, bool forceRenaming);
     IFACEMETHODIMP GetReplaceTerm(_Outptr_ PWSTR* replaceTerm);
-    IFACEMETHODIMP PutReplaceTerm(_In_ PCWSTR replaceTerm);
+    IFACEMETHODIMP PutReplaceTerm(_In_ PCWSTR replaceTerm, bool forceRenaming);
     IFACEMETHODIMP GetFlags(_Out_ DWORD* flags);
     IFACEMETHODIMP PutFlags(_In_ DWORD flags);
     IFACEMETHODIMP PutFileTime(_In_ SYSTEMTIME fileTime);
     IFACEMETHODIMP ResetFileTime();
-    IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result);
+    IFACEMETHODIMP PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns);
+    IFACEMETHODIMP ResetMetadata();
+    IFACEMETHODIMP GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType);
+    IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, unsigned long& enumIndex);
+    
+    // Get current metadata type based on flags
+    PowerRenameLib::MetadataType GetMetadataType() const;
 
-    static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx **renameRegEx);
+    static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx);
 
 protected:
     CPowerRenameRegEx();
@@ -39,6 +49,9 @@ protected:
     void _OnReplaceTermChanged();
     void _OnFlagsChanged();
     void _OnFileTimeChanged();
+    void _OnMetadataChanged();
+    HRESULT _OnEnumerateOrRandomizeItemsChanged();
+    PowerRenameLib::MetadataType _GetMetadataTypeFromFlags() const;
 
     size_t _Find(std::wstring data, std::wstring toSearch, bool caseInsensitive, size_t pos);
 
@@ -46,14 +59,24 @@ protected:
     DWORD m_flags = DEFAULT_FLAGS;
     PWSTR m_searchTerm = nullptr;
     PWSTR m_replaceTerm = nullptr;
+    std::wstring m_RawReplaceTerm; 
 
-    SYSTEMTIME m_fileTime = {0};
+    SYSTEMTIME m_fileTime = { 0 };
     bool m_useFileTime = false;
+
+    PowerRenameLib::MetadataPatternMap m_metadataPatterns;
+    bool m_useMetadata = false;
 
     CSRWLock m_lock;
     CSRWLock m_lockEvents;
 
     DWORD m_cookie = 0;
+
+    std::vector<Enumerator> m_enumerators;
+    std::vector<int32_t> m_replaceWithEnumeratorOffsets;
+
+    std::vector<Randomizer> m_randomizer;
+    std::vector<int32_t> m_replaceWithRandomizerOffsets;
 
     struct RENAME_REGEX_EVENT
     {

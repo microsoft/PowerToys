@@ -1,41 +1,52 @@
 #include "dpi_aware.h"
+
 #include "monitors.h"
 #include <ShellScalingApi.h>
 #include <array>
+#include <cmath>
 
 namespace DPIAware
 {
-    HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi_x, UINT& dpi_y)
+    HRESULT GetScreenDPIForMonitor(HMONITOR targetMonitor, UINT& dpi)
     {
-        auto monitor_handle = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-        dpi_x = 0;
-        dpi_y = 0;
-        if (monitor_handle != nullptr)
+        if (targetMonitor != nullptr)
         {
-            return GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
+            UINT dummy = 0;
+            return GetDpiForMonitor(targetMonitor, MDT_EFFECTIVE_DPI, &dpi, &dummy);
         }
         else
         {
+            dpi = DPIAware::DEFAULT_DPI;
             return E_FAIL;
         }
     }
 
-    HRESULT GetScreenDPIForPoint(POINT p, UINT& dpi_x, UINT& dpi_y)
+    HRESULT GetScreenDPIForWindow(HWND hwnd, UINT& dpi)
     {
-        auto monitor_handle = MonitorFromPoint(p, MONITOR_DEFAULTTONEAREST);
-        dpi_x = 0;
-        dpi_y = 0;
-        if (monitor_handle != nullptr)
-        {
-            return GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y);
-        }
-        else
-        {
-            return E_FAIL;
-        }
+        auto targetMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        return GetScreenDPIForMonitor(targetMonitor, dpi);
     }
 
-    void Convert(HMONITOR monitor_handle, int& width, int& height)
+    HRESULT GetScreenDPIForPoint(POINT point, UINT& dpi)
+    {
+        auto targetMonitor = MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST);
+        return GetScreenDPIForMonitor(targetMonitor, dpi);
+    }
+
+    HRESULT GetScreenDPIForCursor(UINT& dpi)
+    {
+        HMONITOR targetMonitor = nullptr;
+        POINT currentCursorPos{ 0 };
+
+        if (GetCursorPos(&currentCursorPos))
+        {
+            targetMonitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+        }
+
+        return GetScreenDPIForMonitor(targetMonitor, dpi);
+    }
+
+    void Convert(HMONITOR monitor_handle, float& width, float& height)
     {
         if (monitor_handle == NULL)
         {
@@ -46,12 +57,12 @@ namespace DPIAware
         UINT dpi_x, dpi_y;
         if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
         {
-            width = width * static_cast<int>(dpi_x) / DEFAULT_DPI;
-            height = height * static_cast<int>(dpi_y) / DEFAULT_DPI;
+            width = width * dpi_x / DEFAULT_DPI;
+            height = height * dpi_y / DEFAULT_DPI;
         }
     }
 
-    void InverseConvert(HMONITOR monitor_handle, int& width, int& height)
+    void Convert(HMONITOR monitor_handle, RECT& rect)
     {
         if (monitor_handle == NULL)
         {
@@ -62,8 +73,57 @@ namespace DPIAware
         UINT dpi_x, dpi_y;
         if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
         {
-            width = width * DEFAULT_DPI / static_cast<int>(dpi_x);
-            height = height * DEFAULT_DPI / static_cast<int>(dpi_y);
+            rect.left = static_cast<long>(std::round(rect.left * static_cast<float>(dpi_x) / DEFAULT_DPI));
+            rect.right = static_cast<long>(std::round(rect.right * static_cast<float>(dpi_x) / DEFAULT_DPI));
+            rect.top = static_cast<long>(std::round(rect.top * static_cast<float>(dpi_y) / DEFAULT_DPI));
+            rect.bottom = static_cast<long>(std::round(rect.bottom * static_cast<float>(dpi_y) / DEFAULT_DPI));
+        }
+    }
+
+    void ConvertByCursorPosition(float& width, float& height)
+    {
+        HMONITOR targetMonitor = nullptr;
+        POINT currentCursorPos{ 0 };
+
+        if (GetCursorPos(&currentCursorPos))
+        {
+            targetMonitor = MonitorFromPoint(currentCursorPos, MONITOR_DEFAULTTOPRIMARY);
+        }
+        
+        Convert(targetMonitor, width, height);
+    }
+
+    void InverseConvert(HMONITOR monitor_handle, float& width, float& height)
+    {
+        if (monitor_handle == NULL)
+        {
+            const POINT ptZero = { 0, 0 };
+            monitor_handle = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+        }
+
+        UINT dpi_x, dpi_y;
+        if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
+        {
+            width = width * DEFAULT_DPI / dpi_x;
+            height = height * DEFAULT_DPI / dpi_y;
+        }
+    }
+
+    void InverseConvert(HMONITOR monitor_handle, RECT& rect)
+    {
+        if (monitor_handle == NULL)
+        {
+            const POINT ptZero = { 0, 0 };
+            monitor_handle = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+        }
+
+        UINT dpi_x, dpi_y;
+        if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
+        {
+            rect.left = static_cast<long>(std::round(rect.left * static_cast<float>(DEFAULT_DPI) / dpi_x));
+            rect.right = static_cast<long>(std::round(rect.right * static_cast<float>(DEFAULT_DPI) / dpi_x));
+            rect.top = static_cast<long>(std::round(rect.top * static_cast<float>(DEFAULT_DPI) / dpi_y));
+            rect.bottom = static_cast<long>(std::round(rect.bottom * static_cast<float>(DEFAULT_DPI) / dpi_y));
         }
     }
 
@@ -83,7 +143,7 @@ namespace DPIAware
         {
             if (AreDpiAwarenessContextsEqual(levels[i], system_returned_value))
             {
-                return static_cast<AwarenessLevel>(i);
+                return static_cast<DPIAware::AwarenessLevel>(i);
             }
         }
         return AwarenessLevel::UNAWARE;

@@ -2,14 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Abstractions;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Wox.Plugin
 {
-    [JsonObject(MemberSerialization.OptOut)]
     public class PluginMetadata : BaseModel
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
@@ -17,11 +16,8 @@ namespace Wox.Plugin
 
         private string _pluginDirectory;
 
-        private List<string> _actionKeywords;
-
-        public PluginMetadata(List<string> actionKeywords = null)
+        public PluginMetadata()
         {
-            _actionKeywords = actionKeywords;
         }
 
         public string ID { get; set; }
@@ -34,15 +30,22 @@ namespace Wox.Plugin
 
         public string Language { get; set; }
 
-        public string Description { get; set; }
-
         public string Website { get; set; }
 
         public bool Disabled { get; set; }
 
-        public string ExecuteFilePath { get; private set; }
+        // This property is used in PT Run only to decide whether to updated the Disabled property or not.
+        [JsonIgnore]
+        public bool IsEnabledPolicyConfigured { get; set; }
+
+        // Needs to be other than private set in order to be visible to the Json Source Generator
+        [JsonInclude]
+        public string ExecuteFilePath { get; internal set; }
 
         public string ExecuteFileName { get; set; }
+
+        [JsonIgnore]
+        public string ExecuteFileVersion { get; private set; }
 
         public string PluginDirectory
         {
@@ -55,31 +58,26 @@ namespace Wox.Plugin
             {
                 _pluginDirectory = value;
                 ExecuteFilePath = Path.Combine(value, ExecuteFileName);
-                IcoPath = Path.Combine(value, IcoPath);
+                SetExecutableVersion();
             }
         }
 
         public string ActionKeyword { get; set; }
 
-        public List<string> GetActionKeywords()
-        {
-            return _actionKeywords;
-        }
+        public int WeightBoost { get; set; }
 
-        public void SetActionKeywords(List<string> value)
-        {
-            _actionKeywords = value;
-        }
+        public bool IsGlobal { get; set; }
 
-        public string IcoPath { get; set; }
+        public string IcoPathDark { get; set; }
+
+        public string IcoPathLight { get; set; }
+
+        public bool DynamicLoading { get; set; }
 
         public override string ToString()
         {
             return Name;
         }
-
-        [Obsolete("Use IcoPath")]
-        public string FullIcoPath => IcoPath;
 
         /// <summary>
         /// Gets or sets init time include both plugin load time and init time
@@ -92,5 +90,19 @@ namespace Wox.Plugin
 
         [JsonIgnore]
         public int QueryCount { get; set; }
+
+        private void SetExecutableVersion()
+        {
+            // Using version from plugin metadata json as fallback
+            try
+            {
+                var v = FileVersionInfo.GetVersionInfo(ExecuteFilePath).FileVersion;
+                ExecuteFileVersion = (v is null or "0.0.0.0") ? Version : v;
+            }
+            catch (FileNotFoundException)
+            {
+                ExecuteFileVersion = Version;
+            }
+        }
     }
 }

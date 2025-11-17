@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,14 +12,21 @@ namespace FancyZone_HitTest
 {
     public class VisualData
     {
-        public Point RelativeMouseLocation;
-        public Point CenterMass;
-        public Point TopLeft;
-        public double MouseDistanceFromCenter;
-        public int Area;
-        public string Name;
-        public double DistanceFromEdge;
-        public double DistanceFromEdgePercentage;
+        public Point RelativeMouseLocation { get; set; }
+
+        public Point CenterMass { get; set; }
+
+        public Point TopLeft { get; set; }
+
+        public double MouseDistanceFromCenter { get; set; }
+
+        public int Area { get; set; }
+
+        public string Name { get; set; }
+
+        public double DistanceFromEdge { get; set; }
+
+        public double DistanceFromEdgePercentage { get; set; }
 
         public VisualData(Shape item, MouseEventArgs e, Visual root)
         {
@@ -36,7 +47,7 @@ namespace FancyZone_HitTest
             var horDist = (RelativeMouseLocation.X < CenterMass.X) ? RelativeMouseLocation.X : width - mouseX;
             var vertDist = (RelativeMouseLocation.Y < CenterMass.Y) ? RelativeMouseLocation.Y : height - mouseY;
 
-            var isHorCalc = (horDist < vertDist);
+            var isHorCalc = horDist < vertDist;
             DistanceFromEdge = Math.Floor(isHorCalc ? horDist : vertDist);
 
             if (isHorCalc)

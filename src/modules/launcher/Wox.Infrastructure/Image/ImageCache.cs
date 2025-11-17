@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,7 +7,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
+
+using Wox.Infrastructure.Storage;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Image
 {
@@ -18,15 +21,28 @@ namespace Wox.Infrastructure.Image
         private const int PermissibleFactor = 2;
 
         private readonly ConcurrentDictionary<string, ImageSource> _data = new ConcurrentDictionary<string, ImageSource>();
+        private readonly WoxJsonStorage<ConcurrentDictionary<string, int>> _storage;
 
         public ConcurrentDictionary<string, int> Usage { get; private set; } = new ConcurrentDictionary<string, int>();
+
+        public ImageCache()
+        {
+            _storage = new WoxJsonStorage<ConcurrentDictionary<string, int>>("ImageCache");
+            Usage = _storage.Load();
+        }
 
         public ImageSource this[string path]
         {
             get
             {
                 Usage.AddOrUpdate(path, 1, (k, v) => v + 1);
-                var i = _data[path];
+                _data.TryGetValue(path, out ImageSource i);
+
+                if (i == null)
+                {
+                    Log.Warn($"ImageSource is null for path: {path}", GetType());
+                }
+
                 return i;
             }
 
@@ -45,7 +61,7 @@ namespace Wox.Infrastructure.Image
                     foreach (var key in _data.Keys)
                     {
                         // Using Ordinal since this is internal
-                        if (!Usage.TryGetValue(key, out _) && !(key.Equals(Constant.ErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.DefaultIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedDefaultIcon, StringComparison.Ordinal)))
+                        if (!Usage.TryGetValue(key, out _) && !(key.Equals(Constant.ErrorIcon, StringComparison.Ordinal) || key.Equals(Constant.LightThemedErrorIcon, StringComparison.Ordinal)))
                         {
                             _data.TryRemove(key, out _);
                         }
@@ -87,9 +103,9 @@ namespace Wox.Infrastructure.Image
             return new Dictionary<string, int>(Usage);
         }
 
-        public void SetUsageAsDictionary(Dictionary<string, int> usage)
+        public void Save()
         {
-            Usage = new ConcurrentDictionary<string, int>(usage);
+            _storage.Save();
         }
     }
 }

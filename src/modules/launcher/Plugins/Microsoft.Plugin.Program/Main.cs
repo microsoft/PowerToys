@@ -4,25 +4,26 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Microsoft.Plugin.Program.ProgramArgumentParser;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.Plugin.Program.Storage;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
-using Wox.Plugin.Logger;
+using Wox.Plugin.Common;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace Microsoft.Plugin.Program
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IReloadable, IDisposable
+    public class Main : IPlugin, IPluginI18n, IContextMenu, ISavable, IDisposable
     {
         // The order of this array is important! The Parsers will be checked in order (index 0 to index Length-1) and the first parser which is able to parse the Query will be used
-        // NoArgumentsArgumentParser does always succeed and therefor should always be last/fallback
+        // NoArgumentsArgumentParser does always succeed and therefore should always be last/fallback
         private static readonly IProgramArgumentParser[] _programArgumentParsers = new IProgramArgumentParser[]
         {
             new DoubleDashProgramArgumentParser(),
@@ -32,10 +33,18 @@ namespace Microsoft.Plugin.Program
 
         internal static ProgramPluginSettings Settings { get; set; }
 
+        internal static readonly ShellLocalization ShellLocalizationHelper = new();
+
+        public string Name => Properties.Resources.wox_plugin_program_plugin_name;
+
+        public string Description => Properties.Resources.wox_plugin_program_plugin_description;
+
+        public static string PluginID => "791FC278BA414111B8D1886DFE447410";
+
         private static PluginInitContext _context;
         private readonly PluginJsonStorage<ProgramPluginSettings> _settingsStorage;
         private bool _disposed;
-        private PackageRepository _packageRepository = new PackageRepository(new PackageCatalogWrapper(), new BinaryStorage<IList<UWPApplication>>("UWP"));
+        private PackageRepository _packageRepository;
         private static Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
         private static Win32ProgramRepository _win32ProgramRepository;
 
@@ -48,21 +57,7 @@ namespace Microsoft.Plugin.Program
             _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
             // Initialize the Win32ProgramRepository with the settings object
-            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), new BinaryStorage<IList<Programs.Win32Program>>("Win32"), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
-
-            var a = Task.Run(() =>
-            {
-                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Win32Program index cost", _win32ProgramRepository.IndexPrograms);
-            });
-
-            var b = Task.Run(() =>
-            {
-                Stopwatch.Normal("|Microsoft.Plugin.Program.Main|Package index cost", _packageRepository.IndexPrograms);
-            });
-
-            Task.WaitAll(a, b);
-
-            Settings.LastIndexTime = DateTime.Today;
+            _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), Settings, _win32ProgramRepositoryHelper.PathsToWatch);
         }
 
         public void Save()
@@ -98,7 +93,7 @@ namespace Microsoft.Plugin.Program
                 .Where(r => r?.Score > 0)
                 .ToArray();
 
-            if (result.Any())
+            if (result.Length != 0)
             {
                 var maxScore = result.Max(x => x.Score);
                 return result
@@ -112,8 +107,22 @@ namespace Microsoft.Plugin.Program
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _context.API.ThemeChanged += OnThemeChanged;
+            _packageRepository = new PackageRepository(new PackageCatalogWrapper(), _context);
 
-            UpdateUWPIconPath(_context.API.GetCurrentTheme());
+            var a = Task.Run(() =>
+            {
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Win32Program index cost", _win32ProgramRepository.IndexPrograms);
+            });
+
+            var b = Task.Run(() =>
+            {
+                Stopwatch.Normal("Microsoft.Plugin.Program.Main - Package index cost", _packageRepository.IndexPrograms);
+                UpdateUWPIconPath(_context.API.GetCurrentTheme());
+            });
+
+            Task.WaitAll(a, b);
+
+            Settings.LastIndexTime = DateTime.Today;
         }
 
         public void OnThemeChanged(Theme currentTheme, Theme newTheme)
@@ -123,9 +132,12 @@ namespace Microsoft.Plugin.Program
 
         public void UpdateUWPIconPath(Theme theme)
         {
-            foreach (UWPApplication app in _packageRepository)
+            if (_packageRepository != null)
             {
-                app.UpdatePath(theme);
+                foreach (UWPApplication app in _packageRepository)
+                {
+                    app.UpdateLogoPath(theme);
+                }
             }
         }
 
@@ -151,10 +163,7 @@ namespace Microsoft.Plugin.Program
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            if (selectedResult == null)
-            {
-                throw new ArgumentNullException(nameof(selectedResult));
-            }
+            ArgumentNullException.ThrowIfNull(selectedResult);
 
             var menuOptions = new List<ContextMenuResult>();
             if (selectedResult.ContextData is IProgram program)
@@ -165,34 +174,23 @@ namespace Microsoft.Plugin.Program
             return menuOptions;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "We want to keep the process alive and show the user a warning message")]
         public static void StartProcess(Func<ProcessStartInfo, Process> runProcess, ProcessStartInfo info)
         {
             try
             {
-                if (runProcess == null)
-                {
-                    throw new ArgumentNullException(nameof(runProcess));
-                }
+                ArgumentNullException.ThrowIfNull(runProcess);
 
-                if (info == null)
-                {
-                    throw new ArgumentNullException(nameof(info));
-                }
+                ArgumentNullException.ThrowIfNull(info);
 
                 runProcess(info);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ProgramLogger.Exception($"Unable to start ", ex, System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, info?.FileName);
                 var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                 var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {info?.FileName}";
                 _context.API.ShowMsg(name, message, string.Empty);
             }
-        }
-
-        public void ReloadData()
-        {
-            IndexPrograms();
         }
 
         public void Dispose()
@@ -207,8 +205,12 @@ namespace Microsoft.Plugin.Program
             {
                 if (disposing)
                 {
-                    _context.API.ThemeChanged -= OnThemeChanged;
-                    _win32ProgramRepositoryHelper.Dispose();
+                    if (_context != null && _context.API != null)
+                    {
+                        _context.API.ThemeChanged -= OnThemeChanged;
+                    }
+
+                    _win32ProgramRepositoryHelper?.Dispose();
                     _disposed = true;
                 }
             }

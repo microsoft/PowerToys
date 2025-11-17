@@ -1,8 +1,9 @@
 #pragma once
+#include <functional>
 class TwoWayPipeMessageIPC
 {
 public:
-    typedef void (*callback_function)(const std::wstring&);
+    typedef std::function<void(const std::wstring&)>callback_function;
     TwoWayPipeMessageIPC(
         std::wstring _input_pipe_name,
         std::wstring _output_pipe_name,

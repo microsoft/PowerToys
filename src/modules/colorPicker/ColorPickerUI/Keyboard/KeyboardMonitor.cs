@@ -5,14 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Windows.Input;
+
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
-using ColorPicker.Telemetry;
-using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
-using Microsoft.PowerToys.Telemetry;
+
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Keyboard
@@ -22,12 +20,13 @@ namespace ColorPicker.Keyboard
     {
         private readonly AppStateHandler _appStateHandler;
         private readonly IUserSettings _userSettings;
-        private List<string> _previouslyPressedKeys;
+        private List<string> _previouslyPressedKeys = new List<string>();
 
         private List<string> _activationKeys = new List<string>();
         private GlobalKeyboardHook _keyboardHook;
-        private bool disposedValue;
         private bool _activationShortcutPressed;
+        private int keyboardMoveSpeed;
+        private Key lastArrowKeyPressed = Key.None;
 
         [ImportingConstructor]
         public KeyboardMonitor(AppStateHandler appStateHandler, IUserSettings userSettings)
@@ -71,10 +70,42 @@ namespace ColorPicker.Keyboard
             var virtualCode = e.KeyboardData.VirtualCode;
 
             // ESC pressed
-            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape))
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
             {
-                _appStateHandler.HideColorPicker();
-                PowerToysTelemetry.Log.WriteEvent(new ColorPickerCancelledEvent());
+                e.Handled = _appStateHandler.HandleEscPressed();
+                return;
+            }
+
+            if ((virtualCode == KeyInterop.VirtualKeyFromKey(Key.Space) || virtualCode == KeyInterop.VirtualKeyFromKey(Key.Enter)) && (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown))
+            {
+                e.Handled = _appStateHandler.HandleEnterPressed();
+                return;
+            }
+
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Back) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
+            {
+                e.Handled = _appStateHandler.HandleEscPressed();
+                return;
+            }
+
+            if (CheckMoveNeeded(virtualCode, Key.Up, e, 0, -1))
+            {
+                e.Handled = true;
+                return;
+            }
+            else if (CheckMoveNeeded(virtualCode, Key.Down, e, 0, 1))
+            {
+                e.Handled = true;
+                return;
+            }
+            else if (CheckMoveNeeded(virtualCode, Key.Left, e, -1, 0))
+            {
+                e.Handled = true;
+                return;
+            }
+            else if (CheckMoveNeeded(virtualCode, Key.Right, e, 1, 0))
+            {
+                e.Handled = true;
                 return;
             }
 
@@ -107,16 +138,39 @@ namespace ColorPicker.Keyboard
                 if (!_activationShortcutPressed)
                 {
                     _activationShortcutPressed = true;
-                    if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+
+                    _appStateHandler.StartUserSession();
+                }
+            }
+        }
+
+        private bool CheckMoveNeeded(int virtualCode, Key key, GlobalKeyboardHookEventArgs e, int xMove, int yMove)
+        {
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(key))
+            {
+                if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown && _appStateHandler.IsColorPickerVisible())
+                {
+                    if (lastArrowKeyPressed == key)
                     {
-                        _appStateHandler.ShowColorPickerEditor();
+                        keyboardMoveSpeed++;
                     }
                     else
                     {
-                        _appStateHandler.ShowColorPicker();
+                        keyboardMoveSpeed = 1;
                     }
+
+                    lastArrowKeyPressed = key;
+                    _appStateHandler.MoveCursor(keyboardMoveSpeed * xMove, keyboardMoveSpeed * yMove);
+                    return true;
+                }
+                else if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyUp)
+                {
+                    lastArrowKeyPressed = Key.None;
+                    keyboardMoveSpeed = 0;
                 }
             }
+
+            return false;
         }
 
         private static bool ArraysAreSame(List<string> first, List<string> second)
@@ -162,18 +216,7 @@ namespace ColorPicker.Keyboard
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                    _keyboardHook.Dispose();
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
+            _keyboardHook?.Dispose();
         }
 
         public void Dispose()

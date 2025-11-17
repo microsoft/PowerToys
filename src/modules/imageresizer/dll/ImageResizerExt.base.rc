@@ -40,12 +40,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", COMPANY_NAME
-            VALUE "FileDescription", "ImageResizer PowerToy"
+            VALUE "FileDescription", "PowerToys Image Resizer"
             VALUE "FileVersion", FILE_VERSION_STRING
-            VALUE "InternalName", "ImageResizerExt.dll"
+            VALUE "InternalName", "PowerToys.ImageResizerExt.dll"
             VALUE "LegalCopyright", COPYRIGHT_NOTE
-            VALUE "OriginalFilename", "ImageResizerExt.dll"
-            VALUE "ProductName", "ImageResizerExt PowerToy"
+            VALUE "OriginalFilename", "PowerToys.ImageResizerExt.dll"
+            VALUE "ProductName", PRODUCT_NAME
             VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END

@@ -1,15 +1,15 @@
-﻿<Application x:Class="PowerLauncher.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:theming="clr-namespace:Wox.Plugin;assembly=Wox.Plugin"
-             ShutdownMode="OnMainWindowClose"
-             Startup="OnStartup">
+﻿<Application
+    x:Class="PowerLauncher.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    ShutdownMode="OnMainWindowClose"
+    Startup="OnStartup">
     <Application.Resources>
         <ResourceDictionary>
-            <theming:CustomLibraryThemeProvider x:Key="{x:Static theming:CustomLibraryThemeProvider.DefaultInstance}" />
-
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Themes/Dark.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

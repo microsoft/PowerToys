@@ -1,12 +1,21 @@
 #pragma once
+#pragma comment(lib, "Gdi32.lib")
 #include <Windows.h>
+
+#include <compare>
+#include <optional>
 #include <vector>
 
-struct ScreenSize
+// TODO: merge with FZ::Rect
+struct Box
 {
-    explicit ScreenSize(RECT rect) :
-        rect(rect) {}
     RECT rect;
+
+    explicit Box(RECT rect = {}) :
+        rect(rect) {}
+    Box(const Box&) = default;
+    Box& operator=(const Box&) = default;
+
     int left() const { return rect.left; }
     int right() const { return rect.right; }
     int top() const { return rect.top; }
@@ -22,17 +31,46 @@ struct ScreenSize
     POINT bottom_left() const { return { rect.left, rect.bottom }; };
     POINT bottom_middle() const { return { rect.left + width() / 2, rect.bottom }; };
     POINT bottom_right() const { return { rect.right, rect.bottom }; };
+    inline bool inside(const POINT point) const { return PtInRect(&rect, point); }
+
+    inline friend auto operator<=>(const Box& lhs, const Box& rhs)
+    {
+        auto lhs_tuple = std::make_tuple(lhs.rect.left, lhs.rect.right, lhs.rect.top, lhs.rect.bottom);
+        auto rhs_tuple = std::make_tuple(rhs.rect.left, rhs.rect.right, rhs.rect.top, rhs.rect.bottom);
+        return lhs_tuple <=> rhs_tuple;
+    }
 };
 
-struct MonitorInfo : ScreenSize
+class MonitorInfo
 {
-    explicit MonitorInfo(HMONITOR monitor, RECT rect) :
-        handle(monitor), ScreenSize(rect) {}
+public:
+    typedef struct Size
+    {
+        uint32_t width_logical, height_logical;
+        uint32_t width_physical, height_physical;
+        float width_mm, height_mm;
+    } Size;
+
+private:
     HMONITOR handle;
+    MONITORINFOEX info = {};
+
+public:
+    explicit MonitorInfo(HMONITOR h);
+    inline HMONITOR GetHandle() const
+    {
+        return handle;
+    }
+    Box GetScreenSize(const bool includeNonWorkingArea) const;
+    bool IsPrimary() const;
+    Size GetSize() const;
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool includeNonWorkingArea);
     static MonitorInfo GetPrimaryMonitor();
-};
+    static MonitorInfo GetFromWindow(HWND);
+    static MonitorInfo GetFromPoint(int32_t, int32_t);
 
-bool operator==(const ScreenSize& lhs, const ScreenSize& rhs);
+private:
+    static Size GetSize(const MONITORINFOEX&);
+};

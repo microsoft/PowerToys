@@ -3,20 +3,21 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
-using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
     public class QueryInternalDirectory : IQueryInternalDirectory
     {
+        private static readonly SearchValues<char> PathChars = SearchValues.Create("\\/");
         private readonly FolderSettings _settings;
         private readonly IQueryFileSystemInfo _queryFileSystemInfo;
         private readonly IDirectory _directory;
@@ -46,15 +47,14 @@ namespace Microsoft.Plugin.Folder.Sources
             return query.Any(c => c.Equals('>'));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Do not want to change the behavior of the application, but want to enforce static analysis")]
-        private (string search, string incompleteName) Process(string search)
+        private (string Search, string IncompleteName) Process(string search)
         {
             string incompleteName = string.Empty;
             if (HasSpecialChars(search) || !_directory.Exists($@"{search}\"))
             {
                 // if folder doesn't exist, we want to take the last part and use it afterwards to help the user
                 // find the right folder.
-                int index = search.LastIndexOf('\\');
+                int index = search.AsSpan().LastIndexOfAny(PathChars);
 
                 // No slashes found, so probably not a folder
                 if (index <= 0 || index >= search.Length - 1)
@@ -76,7 +76,7 @@ namespace Microsoft.Plugin.Folder.Sources
             {
                 // folder exist, add \ at the end of doesn't exist
                 // Using Ordinal since this is internal and is used for a symbol
-                if (!search.EndsWith(@"\", StringComparison.Ordinal))
+                if (!search.EndsWith('\\'))
                 {
                     search += @"\";
                 }
@@ -85,48 +85,45 @@ namespace Microsoft.Plugin.Folder.Sources
             return (search, incompleteName);
         }
 
-        public IEnumerable<IItemResult> Query(string querySearch)
+        public IEnumerable<IItemResult> Query(string search)
         {
-            if (querySearch == null)
-            {
-                throw new ArgumentNullException(nameof(querySearch));
-            }
+            ArgumentNullException.ThrowIfNull(search);
 
-            var processed = Process(querySearch);
+            var processed = Process(search);
 
             if (processed == default)
             {
                 yield break;
             }
 
-            var (search, incompleteName) = processed;
+            var (querySearch, incompleteName) = processed;
             var isRecursive = RecursiveSearch(incompleteName);
 
             if (isRecursive)
             {
-                // match everything before and after search term using supported wildcard '*', ie. *searchterm*
+                // match everything before and after search term using supported wildcard '*', i.e. *searchterm*
                 if (string.IsNullOrEmpty(incompleteName))
                 {
                     incompleteName = "*";
                 }
                 else
                 {
-                    incompleteName = "*" + incompleteName.Substring(1);
+                    incompleteName = string.Concat("*", incompleteName.AsSpan(1));
                 }
             }
 
-            yield return new CreateOpenCurrentFolderResult(search);
+            yield return new CreateOpenCurrentFolderResult(querySearch);
 
             // Note: Take 1000 is so that you don't search the whole system before you discard
-            var lookup = _queryFileSystemInfo.MatchFileSystemInfo(search, incompleteName, isRecursive)
+            var lookup = _queryFileSystemInfo.MatchFileSystemInfo(querySearch, incompleteName, isRecursive)
                 .Take(1000)
                 .ToLookup(r => r.Type);
 
             var folderList = lookup[DisplayType.Directory].ToImmutableArray();
             var fileList = lookup[DisplayType.File].ToImmutableArray();
 
-            var fileSystemResult = GenerateFolderResults(search, folderList)
-                .Concat<IItemResult>(GenerateFileResults(search, fileList))
+            var fileSystemResult = GenerateFolderResults(querySearch, folderList)
+                .Concat<IItemResult>(GenerateFileResults(querySearch, fileList))
                 .ToImmutableArray();
 
             foreach (var result in fileSystemResult)

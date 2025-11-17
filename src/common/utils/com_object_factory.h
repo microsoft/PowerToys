@@ -32,21 +32,18 @@ public:
     HRESULT __stdcall CreateInstance(IUnknown* punkOuter, const IID& riid, void** ppv)
     {
         *ppv = nullptr;
-        HRESULT hr;
+                
         if (punkOuter)
         {
-            hr = CLASS_E_NOAGGREGATION;
+            return CLASS_E_NOAGGREGATION;
         }
-        else
+
+        T* psrm = new (std::nothrow) T();
+        HRESULT hr = psrm ? S_OK : E_OUTOFMEMORY;
+        if (SUCCEEDED(hr))
         {
-            T* psrm = new (std::nothrow) T();
-            HRESULT hr = psrm ? S_OK : E_OUTOFMEMORY;
-            if (SUCCEEDED(hr))
-            {
-                hr = psrm->QueryInterface(riid, ppv);
-                psrm->Release();
-            }
-            return hr;
+            hr = psrm->QueryInterface(riid, ppv);
+            psrm->Release();
         }
         return hr;
     }

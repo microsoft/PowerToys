@@ -5,16 +5,17 @@
 #include <mutex>
 #include <vector>
 #include <functional>
+#include "hotkey_conflict_detector.h"
 
 #include <common/utils/json.h>
 
 struct PowertoyModuleDeleter
 {
-    void operator()(PowertoyModuleIface* module) const
+    void operator()(PowertoyModuleIface* pt_module) const
     {
-        if (module)
+        if (pt_module)
         {
-            module->destroy();
+            pt_module->destroy();
         }
     }
 };
@@ -31,20 +32,30 @@ struct PowertoyModuleDLLDeleter
 class PowertoyModule
 {
 public:
-    PowertoyModule(PowertoyModuleIface* module, HMODULE handle);
+    PowertoyModule(PowertoyModuleIface* pt_module, HMODULE handle);
 
     inline PowertoyModuleIface* operator->()
     {
-        return module.get();
+        return pt_module.get();
     }
 
     json::JsonObject json_config() const;
 
     void update_hotkeys();
 
+    void UpdateHotkeyEx();
+
+    inline void remove_hotkey_records()
+    {
+        hkmng.RemoveHotkeyByModule(pt_module->get_key());
+    }
+
 private:
+    HotkeyConflictDetector::HotkeyConflictManager& hkmng;
     std::unique_ptr<HMODULE, PowertoyModuleDLLDeleter> handle;
-    std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> module;
+    std::unique_ptr<PowertoyModuleIface, PowertoyModuleDeleter> pt_module;
+
+    
 };
 
 PowertoyModule load_powertoy(const std::wstring_view filename);

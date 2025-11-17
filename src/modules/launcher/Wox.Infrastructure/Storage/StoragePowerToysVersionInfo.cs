@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.IO.Abstractions;
+
+using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
 {
@@ -28,7 +31,7 @@ namespace Wox.Infrastructure.Storage
         }
 
         // To compare the version numbers
-        public static bool Lessthan(string version1, string version2)
+        public static bool LessThan(string version1, string version2)
         {
             string version = "v";
             string period = ".";
@@ -99,16 +102,13 @@ namespace Wox.Infrastructure.Storage
                 suffix = jsonSuffix;
             }
 
-            string filePath = associatedFilePath.Substring(0, associatedFilePath.Length - suffix.Length) + "_version.txt";
+            string filePath = string.Concat(associatedFilePath.AsSpan(0, associatedFilePath.Length - suffix.Length), "_version.txt");
             return filePath;
         }
 
         public StoragePowerToysVersionInfo(string associatedFilePath, int type)
         {
-            if (associatedFilePath == null)
-            {
-                throw new ArgumentNullException(nameof(associatedFilePath));
-            }
+            ArgumentNullException.ThrowIfNull(associatedFilePath);
 
             FilePath = GetFilePath(associatedFilePath, type);
 
@@ -118,7 +118,7 @@ namespace Wox.Infrastructure.Storage
 
             // If the previous version is below a set threshold, then we want to delete the file
             // However, we do not want to delete the cache if the same version of powerToys is being launched
-            if (Lessthan(previousVersion, currentPowerToysVersion))
+            if (LessThan(previousVersion, currentPowerToysVersion))
             {
                 ClearCache = true;
             }
@@ -126,8 +126,15 @@ namespace Wox.Infrastructure.Storage
 
         public void Close()
         {
-            // Update the Version file to the current version of powertoys
-            File.WriteAllText(FilePath, currentPowerToysVersion);
+            try
+            {
+                // Update the Version file to the current version of powertoys
+                File.WriteAllText(FilePath, currentPowerToysVersion);
+            }
+            catch (System.Exception e)
+            {
+                Log.Exception($"Error in saving version at <{FilePath}>", e, GetType());
+            }
         }
     }
 }

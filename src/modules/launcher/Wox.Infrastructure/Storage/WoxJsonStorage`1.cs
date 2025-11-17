@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO.Abstractions;
+
 using Wox.Plugin;
 
 namespace Wox.Infrastructure.Storage
@@ -14,12 +15,16 @@ namespace Wox.Infrastructure.Storage
         private static readonly IPath Path = FileSystem.Path;
 
         public WoxJsonStorage()
+            : this(typeof(T).Name)
+        {
+        }
+
+        public WoxJsonStorage(string fileName)
         {
             var directoryPath = Path.Combine(Constant.DataDirectory, DirectoryName);
             Helper.ValidateDirectory(directoryPath);
 
-            var filename = typeof(T).Name;
-            FilePath = Path.Combine(directoryPath, $"{filename}{FileSuffix}");
+            FilePath = Path.Combine(directoryPath, $"{fileName}{FileSuffix}");
         }
     }
 }

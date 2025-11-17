@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>UnitTests-PdfPreviewHandler</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-PdfPreviewHandler</AssemblyDescription>
+    <AssemblyTitle>UnitTests-PdfPreviewHandler</AssemblyTitle>
+    <Description>PowerToys UnitTests-PdfPreviewHandler</Description>
+    <ProjectGuid>{ECC20689-002A-4354-95A6-B58DF089C6FF}</ProjectGuid>
+    <RootNamespace>PdfPreviewHandlerUnitTests</RootNamespace>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="HelperFiles\dummy-password.pdf" />
+    <None Remove="HelperFiles\dummy.pdf" />
+    <None Remove="HelperFiles\sample.pdf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\PdfPreviewHandler\PdfPreviewHandler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\sample.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TargetName>PowerToys.AllExperiments</TargetName>
+    <MockDirectory>.\Microsoft.VariantAssignment\</MockDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <!-- Experimentation is live, forcing inclusion -->
+  <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
+    <!-- Newtonsoft.Json is included and a version specified in Directory.Packages.props to avoid a vulnerability from older versions. -->
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.VariantAssignment.Client" />
+    <PackageReference Include="Microsoft.VariantAssignment.Contract" />
+    <Compile Remove=".\$(MockDirectory)\Client\*.cs" />
+    <Compile Remove=".\$(MockDirectory)\Contract\*.cs" />
+  </ItemGroup>
+
+</Project>

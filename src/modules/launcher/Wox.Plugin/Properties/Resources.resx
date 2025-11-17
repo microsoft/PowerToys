@@ -117,16 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="filesfolder_copy_failed" xml:space="preserve">
-    <value>Copying path {0} has failed, it will now be deleted for consistency</value>
-    <comment>parameter: targetPath</comment>
+  <data name="FailedToLoadPluginDescription" xml:space="preserve">
+    <value>Fail to load plugin:</value>
   </data>
-  <data name="filesfolder_removefolder_failed" xml:space="preserve">
-    <value>Not able to delete folder {0}, please go to the location and manually delete it</value>
-    <comment>parameter: path</comment>
+  <data name="FailedToLoadPluginDescriptionPartTwo" xml:space="preserve">
+    <value>Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.)</value>
+    <comment>"https://aka.ms/powerToysReportBug" is a web uri.</comment>
   </data>
-  <data name="filesfolder_verifybothfolderfilesequal_failed" xml:space="preserve">
-    <value>Unable to verify folders and files between {0} and {1}</value>
-    <comment>parameters: fromPath, toPath</comment>
+  <data name="FailedToLoadPluginTitle" xml:space="preserve">
+    <value>PowerToys Run {0} - Plugin Loading Error</value>
+    <comment>Don't translate "PowerToys Run". This is a product name.</comment>
+  </data>
+  <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
+    <value>On all Desktops</value>
+    <comment>The window is shown on all desktops.</comment>
+  </data>
+  <data name="VirtualDesktopHelper_Desktop" xml:space="preserve">
+    <value>Desktop {0}</value>
+    <comment>Default name for virtual desktops. Do not translate '{0}' as this is a place holder and will be converted in code.</comment>
   </data>
 </root>

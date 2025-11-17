@@ -20,10 +20,7 @@ namespace FancyZonesEditor.Utils
 
         public RelayCommand(Action<T> execute, Predicate<T> canExecute)
         {
-            if (execute == null)
-            {
-                throw new ArgumentNullException(nameof(execute));
-            }
+            ArgumentNullException.ThrowIfNull(execute);
 
             _execute = execute;
             _canExecute = canExecute;

@@ -19,7 +19,7 @@ namespace Wox.Plugin.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -61,29 +61,47 @@ namespace Wox.Plugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copying path {0} has failed, it will now be deleted for consistency.
+        ///   Looks up a localized string similar to Fail to load plugin:.
         /// </summary>
-        public static string filesfolder_copy_failed {
+        public static string FailedToLoadPluginDescription {
             get {
-                return ResourceManager.GetString("filesfolder_copy_failed", resourceCulture);
+                return ResourceManager.GetString("FailedToLoadPluginDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not able to delete folder {0}, please go to the location and manually delete it.
+        ///   Looks up a localized string similar to Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.).
         /// </summary>
-        public static string filesfolder_removefolder_failed {
+        public static string FailedToLoadPluginDescriptionPartTwo {
             get {
-                return ResourceManager.GetString("filesfolder_removefolder_failed", resourceCulture);
+                return ResourceManager.GetString("FailedToLoadPluginDescriptionPartTwo", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to verify folders and files between {0} and {1}.
+        ///   Looks up a localized string similar to PowerToys Run {0} - Plugin Loading Error.
         /// </summary>
-        public static string filesfolder_verifybothfolderfilesequal_failed {
+        public static string FailedToLoadPluginTitle {
             get {
-                return ResourceManager.GetString("filesfolder_verifybothfolderfilesequal_failed", resourceCulture);
+                return ResourceManager.GetString("FailedToLoadPluginTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On all Desktops.
+        /// </summary>
+        public static string VirtualDesktopHelper_AllDesktops {
+            get {
+                return ResourceManager.GetString("VirtualDesktopHelper_AllDesktops", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Desktop {0}.
+        /// </summary>
+        public static string VirtualDesktopHelper_Desktop {
+            get {
+                return ResourceManager.GetString("VirtualDesktopHelper_Desktop", resourceCulture);
             }
         }
     }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -20,7 +21,8 @@ namespace Wox.Plugin
         private ToolTipData _toolTipData;
         private string _pluginDirectory;
         private string _icoPath;
-        private IList<int> _titleHighlightData;
+
+        public PluginMetadata Metadata { get; set; }
 
         public string Title
         {
@@ -31,15 +33,18 @@ namespace Wox.Plugin
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+                ArgumentNullException.ThrowIfNull(value);
 
                 // Using Ordinal since this is used internally
                 _title = value.Replace("\n", " ", StringComparison.Ordinal);
             }
         }
+
+        public bool FromHistory { get; set; }
+
+        public string HistoryPluginID { get; set; }
+
+        public string HistoryTitle { get; set; }
 
         public string SubTitle { get; set; }
 
@@ -95,38 +100,30 @@ namespace Wox.Plugin
         public IconDelegate Icon { get; set; }
 
         /// <summary>
-        /// Gets or sets return true to hide wox after select result
+        /// Gets or sets the result action.
+        /// Return <c>true</c> to hide PowerToys Run after the result has been selected.
         /// </summary>
+        [JsonIgnore]
         public Func<ActionContext, bool> Action { get; set; }
 
         public int Score { get; set; }
 
+        public int SelectedCount { get; set; }
+
+        public DateTime LastSelected { get; set; } = DateTime.MinValue;
+
         public Result(IList<int> titleHighlightData = null, IList<int> subTitleHighlightData = null)
         {
-            _titleHighlightData = titleHighlightData;
+            TitleHighlightData = titleHighlightData;
             SubTitleHighlightData = subTitleHighlightData;
         }
 
-        /// <summary>
-        /// Gets a list of indexes for the characters to be highlighted in Title
-        /// </summary>
-        public IList<int> GetTitleHighlightData()
-        {
-            return _titleHighlightData;
-        }
+        public IList<int> TitleHighlightData { get; set; }
 
         /// <summary>
-        /// Sets a list of indexes for the characters to be highlighted in Title
+        /// Gets or sets a list of indexes for the characters to be highlighted in SubTitle
         /// </summary>
-        public void SetTitleHighlightData(IList<int> value)
-        {
-            _titleHighlightData = value;
-        }
-
-        /// <summary>
-        /// Gets a list of indexes for the characters to be highlighted in SubTitle
-        /// </summary>
-        public IList<int> SubTitleHighlightData { get; private set; }
+        public IList<int> SubTitleHighlightData { get; set; }
 
         /// <summary>
         /// Gets or sets only results that originQuery match with current query will be displayed in the panel
@@ -161,7 +158,7 @@ namespace Wox.Plugin
             var equality = string.Equals(r?.Title, Title, StringComparison.Ordinal) &&
                            string.Equals(r?.SubTitle, SubTitle, StringComparison.Ordinal) &&
                            string.Equals(r?.IcoPath, IcoPath, StringComparison.Ordinal) &&
-                           GetTitleHighlightData() == r.GetTitleHighlightData() &&
+                           TitleHighlightData == r.TitleHighlightData &&
                            SubTitleHighlightData == r.SubTitleHighlightData;
 
             return equality;
@@ -190,5 +187,20 @@ namespace Wox.Plugin
         /// Gets plugin ID that generated this result
         /// </summary>
         public string PluginID { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether usage based sorting should be applied to this result.
+        /// </summary>
+        public bool DisableUsageBasedScoring { get; set; }
+
+        public int GetSortOrderScore(int selectedItemMultiplier)
+        {
+            if (DisableUsageBasedScoring)
+            {
+                return Metadata.WeightBoost + Score;
+            }
+
+            return Metadata.WeightBoost + Score + (SelectedCount * selectedItemMultiplier);
+        }
     }
 }

@@ -125,4 +125,8 @@
     <value>The markdown could not be preview due to an internal error.</value>
     <comment>This text is displayed if markdown fails to preview</comment>
   </data>
+  <data name="GpoDisabledErrorText" xml:space="preserve">
+    <value>Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.</value>
+    <comment>GPO stands for the Windows Group Policy Object feature.</comment>
+  </data>
 </root>

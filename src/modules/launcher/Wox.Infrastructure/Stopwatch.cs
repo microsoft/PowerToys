@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure
@@ -12,17 +14,14 @@ namespace Wox.Infrastructure
     public static class Stopwatch
     {
         private static readonly Dictionary<string, long> Count = new Dictionary<string, long>();
-        private static readonly object Locker = new object();
+        private static readonly Lock Locker = new Lock();
 
         /// <summary>
         /// This stopwatch will appear only in Debug mode
         /// </summary>
         public static long Debug(string message, Action action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
@@ -36,10 +35,7 @@ namespace Wox.Infrastructure
 
         public static long Normal(string message, Action action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
@@ -53,10 +49,7 @@ namespace Wox.Infrastructure
 
         public static void StartCount(string name, Action action)
         {
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
+            ArgumentNullException.ThrowIfNull(action);
 
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();

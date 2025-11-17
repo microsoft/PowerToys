@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 class __declspec(uuid("0440049F-D1DC-4E46-B27B-98393D79486B")) CPowerRenameMenu :
     public IShellExtInit,
     public IContextMenu,
@@ -49,6 +51,8 @@ public:
         return E_NOTIMPL;
     }
 
+    HRESULT RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray);
+
     // Inherited via IExplorerCommand
     virtual HRESULT __stdcall GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName) override;
     virtual HRESULT __stdcall GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon) override;
@@ -60,10 +64,6 @@ public:
     virtual HRESULT __stdcall EnumSubCommands(IEnumExplorerCommand** ppEnum) override;
 
     static HRESULT s_CreateInstance(_In_opt_ IUnknown* punkOuter, _In_ REFIID riid, _Outptr_ void** ppv);
-    static DWORD WINAPI s_PowerRenameUIThreadProc(_In_ void* pData);
-
-    static bool SetEnabled(_In_ bool enabled);
-    static bool IsEnabled();
 
 private:
     ~CPowerRenameMenu();
@@ -71,5 +71,7 @@ private:
     std::atomic<long> m_refCount = 1;
     HBITMAP m_hbmpIcon = nullptr;
     CComPtr<IDataObject> m_spdo;
-    std::wstring app_name;
+    std::wstring context_menu_caption;
+
+    Shared::Trace::ETWTrace m_etwTrace{ L"PowerRenameExt" };
 };

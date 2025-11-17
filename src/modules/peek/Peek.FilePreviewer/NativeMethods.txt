@@ -1,0 +1,14 @@
+﻿IClassFactory
+CoGetClassObject
+CreateSolidBrush
+CreateWindowEx
+DefWindowProc
+GetDpiForWindow
+InvalidateRect
+RegisterClass
+SetClassLongPtr
+SetLayeredWindowAttributes
+SetWindowPos
+ShowWindow
+UpdateWindow
+SHCreateItemFromParsingName

@@ -10,7 +10,6 @@ namespace Common.ComInterlop
     /// <summary>
     /// Specifies the alpha type of the image.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Interop")]
     public enum WTS_ALPHATYPE : int
     {
         /// <summary>
