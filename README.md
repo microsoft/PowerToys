@@ -108,7 +108,7 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
- - Advanced Paste now supports multiple AI providers instead of being limited to a single OpenAI provider.
+ - Advanced Paste now supports multiple online and on-device AI model providers: Azure OpenAI, OpenAI, Google Gemini, Mistral, Ollama and Foundry Local (o
  - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
  - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
  - Peek can now be activated from the command line.
