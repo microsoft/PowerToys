@@ -72,7 +72,7 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Timer callback to save state when dirty
         /// </summary>
-        private void OnSaveTimerElapsed(object? state)
+        private async void OnSaveTimerElapsed(object? state)
         {
             bool shouldSave = false;
             lock (_lock)
@@ -86,7 +86,7 @@ namespace PowerDisplay.Helpers
 
             if (shouldSave)
             {
-                SaveStateToDisk();
+                await SaveStateToDiskAsync();
             }
         }
 
@@ -295,10 +295,10 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Save current state to disk immediately.
+        /// Save current state to disk immediately (async).
         /// Called by timer after debounce period or on dispose to flush pending changes.
         /// </summary>
-        private void SaveStateToDisk()
+        private async Task SaveStateToDiskAsync()
         {
             try
             {
@@ -334,9 +334,9 @@ namespace PowerDisplay.Helpers
                     }
                 }
 
-                // Write to disk
+                // Write to disk asynchronously
                 var json = JsonSerializer.Serialize(stateFile, AppJsonContext.Default.MonitorStateFile);
-                File.WriteAllText(_stateFilePath, json);
+                await File.WriteAllTextAsync(_stateFilePath, json);
 
                 Logger.LogDebug($"[State] Saved state for {stateFile.Monitors.Count} monitors");
             }
@@ -368,7 +368,7 @@ namespace PowerDisplay.Helpers
             if (wasDirty)
             {
                 Logger.LogInfo("Flushing pending state changes before dispose");
-                SaveStateToDisk();
+                SaveStateToDiskAsync().GetAwaiter().GetResult();
             }
 
             _saveTimer?.Dispose();

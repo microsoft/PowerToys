@@ -404,61 +404,12 @@ namespace PowerDisplay.Native.DDC
                             continue;
                         }
 
-                        // Sometimes Windows returns NULL handles, so we implement retry logic
-                        PHYSICAL_MONITOR[]? physicalMonitors = null;
-                        const int maxRetries = 3;
-                        const int retryDelayMs = 200;
-
-                        for (int attempt = 0; attempt < maxRetries; attempt++)
-                        {
-                            if (attempt > 0)
-                            {
-                                await Task.Delay(retryDelayMs, cancellationToken);
-                            }
-
-                            physicalMonitors = _discoveryHelper.GetPhysicalMonitors(hMonitor);
-
-                            if (physicalMonitors == null || physicalMonitors.Length == 0)
-                            {
-                                if (attempt < maxRetries - 1)
-                                {
-                                    Logger.LogWarning($"DDC: GetPhysicalMonitors returned null/empty on attempt {attempt + 1}, will retry");
-                                }
-
-                                continue;
-                            }
-
-                            // Check if any handle is NULL
-                            bool hasNullHandle = false;
-                            for (int i = 0; i < physicalMonitors.Length; i++)
-                            {
-                                if (physicalMonitors[i].HPhysicalMonitor == IntPtr.Zero)
-                                {
-                                    hasNullHandle = true;
-                                    Logger.LogWarning($"DDC: Physical monitor [{i}] has NULL handle on attempt {attempt + 1}");
-                                    break;
-                                }
-                            }
-
-                            if (!hasNullHandle)
-                            {
-                                // Success! All handles are valid
-                                break;
-                            }
-                            else if (attempt < maxRetries - 1)
-                            {
-                                Logger.LogWarning($"DDC: NULL handle detected, will retry (attempt {attempt + 1}/{maxRetries})");
-                                physicalMonitors = null; // Reset for retry
-                            }
-                            else
-                            {
-                                Logger.LogWarning($"DDC: NULL handle still present after {maxRetries} attempts, continuing anyway");
-                            }
-                        }
+                        // Get physical monitors with retry logic for NULL handle workaround
+                        var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
 
                         if (physicalMonitors == null || physicalMonitors.Length == 0)
                         {
-                            Logger.LogWarning($"DDC: Failed to get physical monitors for hMonitor 0x{hMonitor:X} after {maxRetries} attempts");
+                            Logger.LogWarning($"DDC: Failed to get physical monitors for hMonitor 0x{hMonitor:X} after retries");
                             continue;
                         }
 
@@ -545,6 +496,104 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
+        /// Get physical monitors with retry logic to handle Windows API occasionally returning NULL handles
+        /// </summary>
+        /// <param name="hMonitor">Handle to the monitor</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Array of physical monitors, or null if failed after retries</returns>
+        private async Task<PHYSICAL_MONITOR[]?> GetPhysicalMonitorsWithRetryAsync(
+            IntPtr hMonitor,
+            CancellationToken cancellationToken)
+        {
+            const int maxRetries = 3;
+            const int retryDelayMs = 200;
+
+            for (int attempt = 0; attempt < maxRetries; attempt++)
+            {
+                if (attempt > 0)
+                {
+                    await Task.Delay(retryDelayMs, cancellationToken);
+                }
+
+                var monitors = _discoveryHelper.GetPhysicalMonitors(hMonitor);
+
+                var validationResult = ValidatePhysicalMonitors(monitors, attempt, maxRetries);
+
+                if (validationResult.IsValid)
+                {
+                    return monitors;
+                }
+
+                if (validationResult.ShouldRetry)
+                {
+                    continue;
+                }
+
+                // Last attempt failed, return what we have
+                return monitors;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Validate physical monitors array for null handles
+        /// </summary>
+        /// <returns>Tuple indicating if valid and if should retry</returns>
+        private (bool IsValid, bool ShouldRetry) ValidatePhysicalMonitors(
+            PHYSICAL_MONITOR[]? monitors,
+            int attempt,
+            int maxRetries)
+        {
+            if (monitors == null || monitors.Length == 0)
+            {
+                if (attempt < maxRetries - 1)
+                {
+                    Logger.LogWarning($"DDC: GetPhysicalMonitors returned null/empty on attempt {attempt + 1}, will retry");
+                }
+
+                return (false, true);
+            }
+
+            bool hasNullHandle = HasAnyNullHandles(monitors, out int nullIndex);
+
+            if (!hasNullHandle)
+            {
+                return (true, false); // Valid, don't retry
+            }
+
+            if (attempt < maxRetries - 1)
+            {
+                Logger.LogWarning($"DDC: Physical monitor [{nullIndex}] has NULL handle on attempt {attempt + 1}, will retry");
+                return (false, true); // Invalid, should retry
+            }
+
+            Logger.LogWarning($"DDC: NULL handle still present after {maxRetries} attempts, continuing anyway");
+            return (false, false); // Invalid but no more retries
+        }
+
+        /// <summary>
+        /// Check if any physical monitor has a NULL handle
+        /// </summary>
+        /// <param name="monitors">Array of physical monitors to check</param>
+        /// <param name="nullIndex">Output index of first NULL handle found, or -1 if none</param>
+        /// <returns>True if any NULL handle found</returns>
+        private bool HasAnyNullHandles(PHYSICAL_MONITOR[] monitors, out int nullIndex)
+        {
+            for (int i = 0; i < monitors.Length; i++)
+            {
+                if (monitors[i].HPhysicalMonitor == IntPtr.Zero)
+                {
+                    nullIndex = i;
+                    return true;
+                }
+            }
+
+            nullIndex = -1;
+            return false;
+        }
+
+        /// <summary>
         /// Generic method to get VCP feature value
         /// </summary>
         private async Task<BrightnessInfo> GetVcpFeatureAsync(
@@ -584,7 +633,7 @@ namespace PowerDisplay.Native.DDC
             value = Math.Clamp(value, min, max);
 
             return await Task.Run(
-                () =>
+                async () =>
                 {
                     if (monitor.Handle == IntPtr.Zero)
                     {
@@ -594,7 +643,7 @@ namespace PowerDisplay.Native.DDC
                     try
                     {
                         // Get current value to determine range
-                        var currentInfo = GetVcpFeatureAsync(monitor, vcpCode).Result;
+                        var currentInfo = await GetVcpFeatureAsync(monitor, vcpCode);
                         if (!currentInfo.IsValid)
                         {
                             return MonitorOperationResult.Failure($"Cannot read current value for VCP 0x{vcpCode:X2}");

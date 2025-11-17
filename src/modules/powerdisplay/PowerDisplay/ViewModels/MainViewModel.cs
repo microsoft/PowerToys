@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -152,28 +151,18 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             StatusText = "Scanning monitors...";
             IsScanning = true;
-            Logger.LogInfo("[InitializeAsync] Starting monitor discovery");
 
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
-            Logger.LogInfo($"[InitializeAsync] Discovery completed, found {monitors.Count} monitors");
 
             // Update UI on the dispatcher thread
-            Logger.LogInfo("[InitializeAsync] Calling TryEnqueue to update UI");
-            bool enqueued = _dispatcherQueue.TryEnqueue(() =>
+            _dispatcherQueue.TryEnqueue(() =>
             {
-                Logger.LogInfo("[InitializeAsync] TryEnqueue lambda started");
                 try
                 {
-                    Logger.LogInfo("[InitializeAsync] Calling UpdateMonitorList");
                     UpdateMonitorList(monitors);
-                    Logger.LogInfo("[InitializeAsync] UpdateMonitorList returned");
-
                     IsScanning = false;
-                    Logger.LogInfo("[InitializeAsync] IsScanning set to false");
-
                     IsInitialized = true;
-                    Logger.LogInfo("[InitializeAsync] IsInitialized set to true");
 
                     if (monitors.Count > 0)
                     {
@@ -183,23 +172,18 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     {
                         StatusText = "No controllable monitors found";
                     }
-
-                    Logger.LogInfo($"[InitializeAsync] StatusText set to: {StatusText}");
-                    Logger.LogInfo("[InitializeAsync] TryEnqueue lambda completed successfully");
                 }
                 catch (Exception lambdaEx)
                 {
-                    Logger.LogError($"[InitializeAsync] Exception in TryEnqueue lambda: {lambdaEx.Message}");
-                    Logger.LogError($"[InitializeAsync] Stack trace: {lambdaEx.StackTrace}");
+                    Logger.LogError($"[InitializeAsync] UI update failed: {lambdaEx.Message}");
                     IsScanning = false;
-                    throw;
+                    StatusText = $"UI update failed: {lambdaEx.Message}";
                 }
             });
-            Logger.LogInfo($"[InitializeAsync] TryEnqueue returned: {enqueued}");
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[InitializeAsync] Exception in InitializeAsync: {ex.Message}");
+            Logger.LogError($"[InitializeAsync] Monitor discovery failed: {ex.Message}");
             _dispatcherQueue.TryEnqueue(() =>
             {
                 StatusText = $"Scan failed: {ex.Message}";
@@ -241,10 +225,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors)
     {
-        Logger.LogInfo($"[UpdateMonitorList] Starting with {monitors.Count} monitors");
-
         Monitors.Clear();
-        Logger.LogInfo("[UpdateMonitorList] Cleared Monitors collection");
 
         // Load settings to check for hidden monitors
         var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
@@ -252,67 +233,45 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             settings.Properties.Monitors
                 .Where(m => m.IsHidden)
                 .Select(m => m.HardwareId));
-        Logger.LogInfo($"[UpdateMonitorList] Loaded settings, found {hiddenMonitorIds.Count} hidden monitor IDs");
 
         var colorTempTasks = new List<Task>();
-        Logger.LogInfo("[UpdateMonitorList] Starting monitor loop");
         foreach (var monitor in monitors)
         {
-            Logger.LogInfo($"[UpdateMonitorList] Processing monitor: {monitor.Name} (HardwareId: {monitor.HardwareId})");
-
             // Skip monitors that are marked as hidden in settings
             if (hiddenMonitorIds.Contains(monitor.HardwareId))
             {
-                Logger.LogInfo($"[UpdateMonitorList] Skipping hidden monitor: {monitor.Name} (HardwareId: {monitor.HardwareId})");
                 continue;
             }
 
-            Logger.LogInfo($"[UpdateMonitorList] Creating MonitorViewModel for {monitor.Name}");
             var vm = new MonitorViewModel(monitor, _monitorManager, this);
             Monitors.Add(vm);
-            Logger.LogInfo($"[UpdateMonitorList] Added MonitorViewModel, total count: {Monitors.Count}");
 
             // Asynchronously initialize color temperature for DDC/CI monitors
             if (monitor.SupportsColorTemperature && monitor.CommunicationMethod == "DDC/CI")
             {
-                Logger.LogInfo($"[UpdateMonitorList] Initializing color temperature for {monitor.Name}");
                 var task = InitializeColorTemperatureSafeAsync(monitor.Id, vm);
                 colorTempTasks.Add(task);
-                Logger.LogInfo($"[UpdateMonitorList] Color temp task added, total tasks: {colorTempTasks.Count}");
             }
         }
 
-        Logger.LogInfo("[UpdateMonitorList] Monitor loop completed");
-
-        Logger.LogInfo("[UpdateMonitorList] Calling OnPropertyChanged(HasMonitors)");
         OnPropertyChanged(nameof(HasMonitors));
-        Logger.LogInfo("[UpdateMonitorList] Calling OnPropertyChanged(ShowNoMonitorsMessage)");
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
-        Logger.LogInfo("[UpdateMonitorList] OnPropertyChanged calls completed");
 
         // Wait for color temperature initialization to complete before saving
         // This ensures we save the actual scanned values instead of defaults
         if (colorTempTasks.Count > 0)
         {
-            Logger.LogInfo($"[UpdateMonitorList] Waiting for {colorTempTasks.Count} color temperature tasks to complete before saving...");
-
             // Use fire-and-forget async method to avoid blocking UI thread
             _ = WaitForColorTempAndSaveAsync(colorTempTasks);
         }
         else
         {
             // No color temperature tasks, save immediately
-            Logger.LogInfo("[UpdateMonitorList] No color temperature tasks, calling SaveMonitorsToSettings immediately");
             SaveMonitorsToSettings();
-            Logger.LogInfo("[UpdateMonitorList] SaveMonitorsToSettings completed");
 
             // Restore saved settings if enabled (async, don't block)
-            Logger.LogInfo("[UpdateMonitorList] About to call ReloadMonitorSettingsAsync");
             _ = ReloadMonitorSettingsAsync(null);
-            Logger.LogInfo("[UpdateMonitorList] ReloadMonitorSettingsAsync invoked (fire-and-forget)");
         }
-
-        Logger.LogInfo("[UpdateMonitorList] Method returning");
     }
 
     private async Task WaitForColorTempAndSaveAsync(List<Task> colorTempTasks)
@@ -321,22 +280,17 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Wait for all color temperature initialization tasks to complete
             await Task.WhenAll(colorTempTasks);
-            Logger.LogInfo("[WaitForColorTempAndSaveAsync] Color temperature tasks completed");
 
             // Save monitor information to settings.json and reload settings
             // Must be done on UI thread since these methods access UI properties and observable collections
-            Logger.LogInfo("[WaitForColorTempAndSaveAsync] Dispatching save and reload to UI thread");
             _dispatcherQueue.TryEnqueue(async () =>
             {
                 try
                 {
                     SaveMonitorsToSettings();
-                    Logger.LogInfo("[WaitForColorTempAndSaveAsync] SaveMonitorsToSettings completed with actual color temp values");
 
                     // Restore saved settings if enabled (async)
-                    Logger.LogInfo("[WaitForColorTempAndSaveAsync] About to call ReloadMonitorSettingsAsync");
                     await ReloadMonitorSettingsAsync(null); // Tasks already completed, pass null
-                    Logger.LogInfo("[WaitForColorTempAndSaveAsync] ReloadMonitorSettingsAsync completed");
                 }
                 catch (Exception innerEx)
                 {
@@ -352,7 +306,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             _dispatcherQueue.TryEnqueue(() =>
             {
                 SaveMonitorsToSettings();
-                Logger.LogInfo("[WaitForColorTempAndSaveAsync] SaveMonitorsToSettings completed (after error)");
             });
         }
     }
@@ -606,37 +559,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Apply Settings UI configuration changes (feature visibility toggles only)
-    /// OBSOLETE: Use ApplySettingsFromUI() instead
-    /// </summary>
-    [Obsolete("Use ApplySettingsFromUI() instead - this method only handles UI config, not hardware parameters")]
-    public void ApplySettingsUIConfiguration()
-    {
-        try
-        {
-            Logger.LogInfo("[Settings] Applying Settings UI configuration changes (feature visibility only)");
-
-            // Read current settings
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
-
-            // Update feature visibility for each monitor (UI configuration only)
-            foreach (var monitorVm in Monitors)
-            {
-                ApplyFeatureVisibility(monitorVm, settings);
-            }
-
-            // Trigger UI refresh for configuration changes
-            UIRefreshRequested?.Invoke(this, EventArgs.Empty);
-
-            Logger.LogInfo($"[Settings] Settings UI configuration applied, monitor count: {settings.Properties.Monitors.Count}");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[Settings] Failed to apply Settings UI configuration: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// Reload monitor settings from configuration - ONLY called at startup
     /// </summary>
     /// <param name="colorTempInitTasks">Optional tasks for color temperature initialization to wait for</param>
@@ -653,14 +575,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            Logger.LogInfo("[ReloadMonitorSettingsAsync] Setting IsLoading = true");
-
             // Set loading state to block UI interactions
             IsLoading = true;
-            Logger.LogInfo("[ReloadMonitorSettingsAsync] IsLoading set to true");
-
             StatusText = "Loading settings...";
-            Logger.LogInfo("[ReloadMonitorSettingsAsync] StatusText updated");
 
             // Read current settings
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
@@ -668,19 +585,14 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             if (settings.Properties.RestoreSettingsOnStartup)
             {
                 // Restore saved settings from configuration file
-                Logger.LogInfo("[Startup] RestoreSettingsOnStartup enabled - applying saved settings");
-
                 foreach (var monitorVm in Monitors)
                 {
                     var hardwareId = monitorVm.HardwareId;
-                    Logger.LogInfo($"[Startup] Processing monitor: '{monitorVm.Name}', HardwareId: '{hardwareId}'");
 
                     // Find and apply corresponding saved settings from state file using stable HardwareId
                     var savedState = _stateManager.GetMonitorParameters(hardwareId);
                     if (savedState.HasValue)
                     {
-                        Logger.LogInfo($"[Startup] Restoring state for HardwareId '{hardwareId}': Brightness={savedState.Value.Brightness}, ColorTemp={savedState.Value.ColorTemperature}");
-
                         // Validate and apply saved values (skip invalid values)
                         // Use UpdatePropertySilently to avoid triggering hardware updates during initialization
                         if (savedState.Value.Brightness >= monitorVm.MinBrightness && savedState.Value.Brightness <= monitorVm.MaxBrightness)
@@ -689,7 +601,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                         }
                         else
                         {
-                            Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for HardwareId '{hardwareId}', skipping");
+                            Logger.LogWarning($"[Startup] Invalid brightness value {savedState.Value.Brightness} for HardwareId '{hardwareId}'");
                         }
 
                         // Color temperature: VCP 0x14 preset value (discrete values, no range check needed)
@@ -707,10 +619,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                         {
                             monitorVm.UpdatePropertySilently(nameof(monitorVm.Contrast), savedState.Value.Contrast);
                         }
-                        else if (!monitorVm.ShowContrast)
-                        {
-                            Logger.LogInfo($"[Startup] Contrast not supported on HardwareId '{hardwareId}', skipping");
-                        }
 
                         // Volume validation - only apply if hardware supports it
                         if (monitorVm.ShowVolume &&
@@ -719,14 +627,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                         {
                             monitorVm.UpdatePropertySilently(nameof(monitorVm.Volume), savedState.Value.Volume);
                         }
-                        else if (!monitorVm.ShowVolume)
-                        {
-                            Logger.LogInfo($"[Startup] Volume not supported on HardwareId '{hardwareId}', skipping");
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInfo($"[Startup] No saved state for HardwareId '{hardwareId}' - keeping current hardware values");
                     }
 
                     // Apply feature visibility settings using HardwareId
@@ -738,26 +638,17 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             else
             {
                 // Save current hardware values to configuration file
-                Logger.LogInfo("[Startup] RestoreSettingsOnStartup disabled - saving current hardware values");
-
                 // Wait for color temperature initialization to complete (if any)
                 if (colorTempInitTasks != null && colorTempInitTasks.Count > 0)
                 {
-                    Logger.LogInfo($"[Startup] Waiting for {colorTempInitTasks.Count} color temperature initialization tasks to complete...");
                     try
                     {
-                        Logger.LogInfo("[Startup] Calling Task.WhenAll on color temp tasks");
                         await Task.WhenAll(colorTempInitTasks);
-                        Logger.LogInfo("[Startup] Task.WhenAll completed successfully");
                     }
                     catch (Exception ex)
                     {
                         Logger.LogWarning($"[Startup] Some color temperature initializations failed: {ex.Message}");
                     }
-                }
-                else
-                {
-                    Logger.LogInfo("[Startup] No color temperature tasks to wait for");
                 }
 
                 foreach (var monitorVm in Monitors)
@@ -767,8 +658,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     SaveMonitorSettingDirect(monitorVm.HardwareId, "ColorTemperature", monitorVm.ColorTemperature);
                     SaveMonitorSettingDirect(monitorVm.HardwareId, "Contrast", monitorVm.Contrast);
                     SaveMonitorSettingDirect(monitorVm.HardwareId, "Volume", monitorVm.Volume);
-
-                    Logger.LogInfo($"[Startup] Saved current values for Hardware ID '{monitorVm.HardwareId}': Brightness={monitorVm.Brightness}, ColorTemp={monitorVm.ColorTemperature}");
 
                     // Apply feature visibility settings
                     ApplyFeatureVisibility(monitorVm, settings);
@@ -780,7 +669,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[ReloadMonitorSettingsAsync] Exception caught: {ex.Message}");
+            Logger.LogError($"[ReloadMonitorSettingsAsync] Failed to reload settings: {ex.Message}");
             Logger.LogError($"[ReloadMonitorSettingsAsync] Stack trace: {ex.StackTrace}");
             StatusText = $"Failed to process settings: {ex.Message}";
         }
@@ -881,34 +770,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
             foreach (var vm in Monitors)
             {
-                var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
-                    name: vm.Name,
-                    internalName: vm.Id,
-                    hardwareId: vm.HardwareId,
-                    communicationMethod: vm.CommunicationMethod,
-                    monitorType: vm.IsInternal ? "Internal" : "External",
-                    currentBrightness: vm.Brightness,
-                    colorTemperature: vm.ColorTemperature)
-                {
-                    CapabilitiesRaw = vm.CapabilitiesRaw,
-                    VcpCodes = vm.VcpCapabilitiesInfo?.SupportedVcpCodes
-                        .OrderBy(kvp => kvp.Key)
-                        .Select(kvp => $"0x{kvp.Key:X2}")
-                        .ToList() ?? new List<string>(),
-                    VcpCodesFormatted = vm.VcpCapabilitiesInfo?.SupportedVcpCodes
-                        .OrderBy(kvp => kvp.Key)
-                        .Select(kvp => FormatVcpCodeForDisplay(kvp.Key, kvp.Value))
-                        .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
-                };
-
-                // Preserve user settings from existing monitor if available
-                if (existingMonitorSettings.TryGetValue(vm.HardwareId, out var existingMonitor))
-                {
-                    monitorInfo.IsHidden = existingMonitor.IsHidden;
-                    monitorInfo.EnableContrast = existingMonitor.EnableContrast;
-                    monitorInfo.EnableVolume = existingMonitor.EnableVolume;
-                }
-
+                var monitorInfo = CreateMonitorInfo(vm);
+                ApplyPreservedUserSettings(monitorInfo, existingMonitorSettings);
                 monitors.Add(monitorInfo);
             }
 
@@ -939,6 +802,63 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"Failed to save monitors to settings.json: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Create MonitorInfo object from MonitorViewModel
+    /// </summary>
+    private Microsoft.PowerToys.Settings.UI.Library.MonitorInfo CreateMonitorInfo(MonitorViewModel vm)
+    {
+        return new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
+            name: vm.Name,
+            internalName: vm.Id,
+            hardwareId: vm.HardwareId,
+            communicationMethod: vm.CommunicationMethod,
+            monitorType: vm.IsInternal ? "Internal" : "External",
+            currentBrightness: vm.Brightness,
+            colorTemperature: vm.ColorTemperature)
+        {
+            CapabilitiesRaw = vm.CapabilitiesRaw,
+            VcpCodes = BuildVcpCodesList(vm),
+            VcpCodesFormatted = BuildFormattedVcpCodesList(vm),
+        };
+    }
+
+    /// <summary>
+    /// Build list of VCP codes in hex format
+    /// </summary>
+    private List<string> BuildVcpCodesList(MonitorViewModel vm)
+    {
+        return vm.VcpCapabilitiesInfo?.SupportedVcpCodes
+            .OrderBy(kvp => kvp.Key)
+            .Select(kvp => $"0x{kvp.Key:X2}")
+            .ToList() ?? new List<string>();
+    }
+
+    /// <summary>
+    /// Build list of formatted VCP codes with display info
+    /// </summary>
+    private List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo> BuildFormattedVcpCodesList(MonitorViewModel vm)
+    {
+        return vm.VcpCapabilitiesInfo?.SupportedVcpCodes
+            .OrderBy(kvp => kvp.Key)
+            .Select(kvp => FormatVcpCodeForDisplay(kvp.Key, kvp.Value))
+            .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>();
+    }
+
+    /// <summary>
+    /// Apply preserved user settings from existing monitor settings
+    /// </summary>
+    private void ApplyPreservedUserSettings(
+        Microsoft.PowerToys.Settings.UI.Library.MonitorInfo monitorInfo,
+        Dictionary<string, Microsoft.PowerToys.Settings.UI.Library.MonitorInfo> existingSettings)
+    {
+        if (existingSettings.TryGetValue(monitorInfo.HardwareId, out var existingMonitor))
+        {
+            monitorInfo.IsHidden = existingMonitor.IsHidden;
+            monitorInfo.EnableContrast = existingMonitor.EnableContrast;
+            monitorInfo.EnableVolume = existingMonitor.EnableVolume;
         }
     }
 
@@ -1018,18 +938,25 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             // State is already persisted, no pending changes to wait for.
 
             // Quick cleanup of monitor view models
-            try
+            foreach (var vm in Monitors)
             {
-                foreach (var vm in Monitors)
+                try
                 {
                     vm?.Dispose();
                 }
+                catch (Exception ex)
+                {
+                    Logger.LogDebug($"Error disposing monitor VM: {ex.Message}");
+                }
+            }
 
+            try
+            {
                 Monitors.Clear();
             }
-            catch
+            catch (Exception ex)
             {
-                /* Ignore cleanup errors */
+                Logger.LogDebug($"Error clearing Monitors collection: {ex.Message}");
             }
 
             // Release monitor manager
@@ -1037,9 +964,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 _monitorManager?.Dispose();
             }
-            catch
+            catch (Exception ex)
             {
-                /* Ignore cleanup errors */
+                Logger.LogDebug($"Error disposing MonitorManager: {ex.Message}");
             }
 
             // Release state manager
@@ -1047,9 +974,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 _stateManager?.Dispose();
             }
-            catch
+            catch (Exception ex)
             {
-                /* Ignore cleanup errors */
+                Logger.LogDebug($"Error disposing StateManager: {ex.Message}");
             }
 
             // Finally release cancellation token
@@ -1057,9 +984,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 _cancellationTokenSource?.Dispose();
             }
-            catch
+            catch (Exception ex)
             {
-                /* Ignore cleanup errors */
+                Logger.LogDebug($"Error disposing CancellationTokenSource: {ex.Message}");
             }
 
             GC.SuppressFinalize(this);

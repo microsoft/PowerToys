@@ -35,11 +35,6 @@ namespace PowerDisplay.Configuration
             public const int MaxBrightness = 100;
             public const int DefaultBrightness = 50;
 
-            // Color Temperature (Kelvin)
-            public const int MinColorTemp = 2000;  // Warm
-            public const int MaxColorTemp = 10000; // Cool
-            public const int DefaultColorTemp = 6500; // Neutral
-
             // Contrast
             public const int MinContrast = 0;
             public const int MaxContrast = 100;

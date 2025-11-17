@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using PowerDisplay.Configuration;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
@@ -430,16 +431,10 @@ namespace PowerDisplay
             }
         }
 
-        private async void OnRefreshClick(object sender, RoutedEventArgs e)
+        private void OnRefreshClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Add button press animation
-                if (sender is Button button)
-                {
-                    await AnimateButtonPress(button);
-                }
-
                 // Refresh monitor list
                 if (_viewModel?.RefreshCommand?.CanExecute(null) == true)
                 {
@@ -459,16 +454,10 @@ namespace PowerDisplay
             }
         }
 
-        private async void OnLinkClick(object sender, RoutedEventArgs e)
+        private void OnLinkClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Add button press animation
-                if (sender is Button button)
-                {
-                    await AnimateButtonPress(button);
-                }
-
                 // Link all monitor brightness (synchronized adjustment)
                 if (_viewModel != null && _viewModel.Monitors.Count > 0)
                 {
@@ -483,16 +472,10 @@ namespace PowerDisplay
             }
         }
 
-        private async void OnDisableClick(object sender, RoutedEventArgs e)
+        private void OnDisableClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Add button press animation
-                if (sender is Button button)
-                {
-                    await AnimateButtonPress(button);
-                }
-
                 // Disable/enable all monitor controls
                 if (_viewModel != null)
                 {
@@ -513,72 +496,6 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Get internal monitor name, consistent with SettingsManager logic
-        /// </summary>
-        private async void OnTestClick(object sender, RoutedEventArgs e)
-        {
-            ContentDialog? dlg = null;
-            Core.MonitorManager? manager = null;
-
-            try
-            {
-                // Test monitor discovery functionality
-                dlg = new ContentDialog
-                {
-                    Title = "Monitor Detection Test",
-                    Content = "Starting monitor detection...",
-                    CloseButtonText = "Close",
-                    XamlRoot = this.Content.XamlRoot,
-                };
-
-                _ = dlg.ShowAsync();
-
-                manager = new Core.MonitorManager();
-                var monitors = await manager.DiscoverMonitorsAsync(default(System.Threading.CancellationToken));
-
-                string message = $"Found {monitors.Count} monitors:\n\n";
-                foreach (var monitor in monitors)
-                {
-                    message += $"• {monitor.Name}\n";
-                    message += $"  Communication: {monitor.CommunicationMethod}\n";
-                    message += $"  Brightness: {monitor.CurrentBrightness}%\n\n";
-                }
-
-                if (monitors.Count == 0)
-                {
-                    message = "No monitors found.\n\n";
-                    message += "Possible reasons:\n";
-                    message += "• DDC/CI not supported\n";
-                    message += "• Driver issues\n";
-                    message += "• Permission issues\n";
-                    message += "• Cable doesn't support DDC/CI";
-                }
-
-                dlg.Content = message;
-
-                // Don't dispose manager, use existing manager
-                // Initialize ViewModel and bind to root Grid refresh
-                if (monitors.Count > 0)
-                {
-                    // Use existing refresh command
-                    await _viewModel.RefreshMonitorsAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"OnTestClick failed: {ex}");
-                if (dlg != null)
-                {
-                    dlg.Content = $"Error: {ex.Message}\n\nType: {ex.GetType().Name}";
-                }
-            }
-            finally
-            {
-                manager?.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Configure window properties (synchronous, no data dependency)
         /// </summary>
         private void ConfigureWindow()
@@ -593,7 +510,7 @@ namespace PowerDisplay
                 if (_appWindow != null)
                 {
                     // Set initial window size - will be adjusted later based on content
-                    _appWindow.Resize(new SizeInt32 { Width = 640, Height = 480 });
+                    _appWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 480 });
 
                     // Position window at bottom right corner
                     PositionWindowAtBottomRight(_appWindow);
@@ -692,7 +609,7 @@ namespace PowerDisplay
                 RootGrid.UpdateLayout();
 
                 // Get precise content height
-                var availableWidth = 640.0;
+                var availableWidth = (double)AppConstants.UI.WindowWidth;
                 var contentHeight = GetContentHeight(availableWidth);
 
                 // Account for display scaling
@@ -700,16 +617,13 @@ namespace PowerDisplay
                 var scaledHeight = (int)Math.Ceiling(contentHeight * scale);
 
                 // Only set maximum height for scrollable content
-                scaledHeight = Math.Min(scaledHeight, 650);
+                scaledHeight = Math.Min(scaledHeight, AppConstants.UI.MaxWindowHeight);
 
                 // Check if resize is needed
                 var currentSize = _appWindow.Size;
                 if (Math.Abs(currentSize.Height - scaledHeight) > 1)
                 {
-                    _appWindow.Resize(new SizeInt32 { Width = 640, Height = scaledHeight });
-
-                    // Update clip region to match new window size
-                    UpdateClipRegion(640, scaledHeight / scale);
+                    _appWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = scaledHeight });
 
                     // Reposition to maintain bottom-right position
                     PositionWindowAtBottomRight(_appWindow);
@@ -735,12 +649,6 @@ namespace PowerDisplay
             return RootGrid.DesiredSize.Height + 4; // Small padding for fallback method
         }
 
-        private void UpdateClipRegion(double width, double height)
-        {
-            // Clip region removed to allow automatic sizing
-            // No longer needed as we removed the fixed clip from RootGrid
-        }
-
         private void PositionWindowAtBottomRight(AppWindow appWindow)
         {
             try
@@ -754,7 +662,7 @@ namespace PowerDisplay
 
                     // Calculate bottom-right position, close to taskbar
                     // WorkArea already excludes taskbar area, so use WorkArea bottom directly
-                    int rightMargin = 10; // Small margin from right edge
+                    int rightMargin = AppConstants.UI.WindowRightMargin; // Small margin from right edge
                     int x = workArea.Width - windowSize.Width - rightMargin;
                     int y = workArea.Height - windowSize.Height; // Close to taskbar top, no gap
 
@@ -766,17 +674,6 @@ namespace PowerDisplay
             {
                 // Ignore errors when positioning window
             }
-        }
-
-        /// <summary>
-        /// Animates button press for modern interaction feedback
-        /// </summary>
-        /// <param name="button">The button to animate</param>
-        private async Task AnimateButtonPress(Button button)
-        {
-            // Button animation disabled to avoid compilation errors
-            // Using default button visual states instead
-            await Task.CompletedTask;
         }
 
         /// <summary>

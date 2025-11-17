@@ -25,20 +25,6 @@ namespace PowerDisplay.Native
         public const byte VcpCodeContrast = 0x12;
 
         /// <summary>
-        /// VCP code: Backlight control (0x13)
-        /// OBSOLETE: PowerDisplay now uses only VcpCodeBrightness (0x10).
-        /// </summary>
-        [Obsolete("Use VcpCodeBrightness (0x10) only. PowerDisplay no longer uses fallback codes.")]
-        public const byte VcpCodeBacklightControl = 0x13;
-
-        /// <summary>
-        /// VCP code: White backlight level (0x6B)
-        /// OBSOLETE: PowerDisplay now uses only VcpCodeBrightness (0x10).
-        /// </summary>
-        [Obsolete("Use VcpCodeBrightness (0x10) only. PowerDisplay no longer uses fallback codes.")]
-        public const byte VcpCodeBacklightLevelWhite = 0x6B;
-
-        /// <summary>
         /// VCP code: Audio Speaker Volume (0x62)
         /// Standard VESA MCCS volume control for monitors with built-in speakers.
         /// </summary>
@@ -48,20 +34,6 @@ namespace PowerDisplay.Native
         /// VCP code: Audio mute (0x8D)
         /// </summary>
         public const byte VcpCodeMute = 0x8D;
-
-        /// <summary>
-        /// VCP code: Color Temperature Request (0x0C)
-        /// OBSOLETE: Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.
-        /// </summary>
-        [Obsolete("Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.")]
-        public const byte VcpCodeColorTemperature = 0x0C;
-
-        /// <summary>
-        /// VCP code: Color Temperature Increment (0x0B)
-        /// OBSOLETE: Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.
-        /// </summary>
-        [Obsolete("Not widely supported. Use VcpCodeSelectColorPreset (0x14) instead.")]
-        public const byte VcpCodeColorTemperatureIncrement = 0x0B;
 
         /// <summary>
         /// VCP code: Gamma correction (0x72)
