@@ -121,7 +121,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,166,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,223,306,50,14
-    LTEXT           "ZoomIt v9.20",IDC_VERSION,42,7,73,10
+    LTEXT           "ZoomIt v9.21",IDC_VERSION,42,7,73,10
     LTEXT           "Copyright © 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,231,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
