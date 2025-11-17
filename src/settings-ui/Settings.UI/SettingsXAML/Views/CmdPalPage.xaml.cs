@@ -75,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             // Launch CmdPal window as normal user using explorer
             string launchPath = "explorer.exe";
-            string launchArgs = "x-cmdpal://";
+            string launchArgs = "x-cmdpal:";
             LaunchApp(launchPath, launchArgs);
         }
     }
