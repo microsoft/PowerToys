@@ -220,7 +220,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Consolidated installer builds to produce both machine and user installers simultaneously, reducing build time and complexity.
 - Migrated exclusively to WiX v5 installer infrastructure, removing legacy WiX v3 support.
 - Temporarily removed PowerToys installer path from PATH environment variable to prevent application crashes.
-- Updated installer hashes for release 0.95.1.
 - Added complete OCR UI test coverage with automated tests for activation, settings, language selection, and text extraction.
 - Fixed test input for drive path normalization in bookmark resolver unit tests.
 - Fixed Peek UI tests by restoring Ctrl+Space activation shortcut for test scenarios.
