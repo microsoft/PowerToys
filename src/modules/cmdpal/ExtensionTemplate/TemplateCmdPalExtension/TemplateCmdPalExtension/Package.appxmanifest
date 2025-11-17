@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -8,13 +8,19 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap uap3 rescap">
 
+  <!-- FOR PUBLISHING TO MICROSOFT STORE -->
+  <!-- When you're ready to publish your extension to Microsoft Store,you'll need to 
+    change the values in the Identity & Properties tags below
+      Name = replace with Microsoft Store's Package/Identity/Name 
+      Publisher = replace with Microsoft Store's Package/Identity/Publisher
+      DisplayName = replace with the reserved name from Partner Center
+      PublisherDisplayName = replace with Microsoft Store's Package/Properties/PublisherDisplayName
+      Logo = Confirm that this image exist at the path
+       -->
   <Identity
     Name="TemplateCmdPalExtension"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
-  <!-- When you're ready to publish your extension, you'll need to change the
-       Publisher= to match your own identity -->
-
   <Properties>
     <DisplayName>TemplateDisplayName</DisplayName>
     <PublisherDisplayName>A Lone Developer</PublisherDisplayName>
