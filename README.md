@@ -108,12 +108,12 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
- - Advanced Paste now supports multiple online and on-device AI model providers: Azure OpenAI, OpenAI, Google Gemini, Mistral, Ollama and Foundry Local. See [Advanced Paste documentation](https://learn.microsoft.com/en-us/windows/powertoys/advanced-paste).
+ - Advanced Paste now supports multiple online and on-device AI model providers: Azure OpenAI, OpenAI, Google Gemini, Mistral, Foundry Local and ollama.
  - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
  - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
 
 ### Advanced Paste
- - Advanced Paste now lets you connect to multiple AI providers instead of being limited to a single OpenAI provider.
+ - Advanced Paste now lets you connect to multiple AI providers instead of being limited to a single OpenAI provider. See [Advanced Paste documentation](https://learn.microsoft.com/en-us/windows/powertoys/advanced-paste) for usage.
 
 ### Awake
  - The Awake countdown timer now stays accurate over long periods. Thanks [@daverayment](https://github.com/daverayment).
