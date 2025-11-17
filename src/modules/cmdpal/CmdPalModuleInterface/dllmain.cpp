@@ -14,6 +14,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/interop/shared_constants.h>
 #include <Psapi.h>
+#include <Shlwapi.h>
 #include <TlHelp32.h>
 #include <thread>
 
@@ -48,6 +49,29 @@ private:
 
     // Track if this is the first call to enable
     bool firstEnableCall = true;
+
+    static bool IsUriProtocolRegistered(const std::wstring& protocol)
+    {
+        WCHAR executable[MAX_PATH] = { 0 };
+        DWORD buffer_length = MAX_PATH;
+        
+        // Query if there's an executable associated with this URI protocol
+        HRESULT hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN,
+                                      ASSOCSTR_EXECUTABLE,
+                                      protocol.c_str(),
+                                      nullptr,
+                                      executable,
+                                      &buffer_length);
+        
+        if (SUCCEEDED(hr) && buffer_length > 0)
+        {
+            Logger::trace(L"URI protocol '{}' is registered with executable: {}", protocol, executable);
+            return true;
+        }
+        
+        Logger::trace(L"URI protocol '{}' is not registered. HRESULT: 0x{:X}", protocol, static_cast<unsigned long>(hr));
+        return false;
+    }
 
     static bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, bool silentFail)
     {
@@ -266,6 +290,13 @@ public:
         if (!package::GetRegisteredPackage(packageName, false).has_value())
         {
             Logger::error("Cmdpal is not registered, quit..");
+            return;
+        }
+
+        // Check if x-cmdpal URI protocol handler is registered
+        if (!IsUriProtocolRegistered(L"x-cmdpal"))
+        {
+            Logger::error("x-cmdpal URI protocol handler is not registered. Cannot launch CmdPal.");
             return;
         }
 
