@@ -82,12 +82,20 @@ namespace updating
 // prevent the warning that may show up depend on the value of the constants (#defines)
 #pragma warning(push)
 #pragma warning(disable : 4702)
+#if USE_STD_EXPECTED
+    std::future<std::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
+#else
     std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease)
+#endif
     {
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
+#if USE_STD_EXPECTED
+            co_return std::unexpected(LOCAL_BUILD_ERROR);
+#else
             co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
+#endif
         }
 
         try
@@ -139,7 +147,11 @@ namespace updating
         catch (...)
         {
         }
+#if USE_STD_EXPECTED
+        co_return std::unexpected(NETWORK_ERROR);
+#else
         co_return nonstd::make_unexpected(NETWORK_ERROR);
+#endif
     }
 #pragma warning(pop)
 

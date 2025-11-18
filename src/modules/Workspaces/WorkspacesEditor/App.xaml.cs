@@ -6,9 +6,10 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
-
 using Common.UI;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 
@@ -31,8 +32,12 @@ namespace WorkspacesEditor
 
         private bool _isDisposed;
 
+        private ETWTrace etwTrace = new ETWTrace();
+
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new WorkspacesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             WorkspacesEditorIO = new WorkspacesEditorIO();
         }
 
@@ -135,6 +140,7 @@ namespace WorkspacesEditor
                 {
                     ThemeManager?.Dispose();
                     _instanceMutex?.Dispose();
+                    etwTrace?.Dispose();
                 }
 
                 _isDisposed = true;

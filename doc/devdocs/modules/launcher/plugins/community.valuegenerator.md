@@ -1,6 +1,6 @@
 # Value Generator Plugin
 
-The Value Generator plugin is used to generate hashes for strings, to calculate base64 encodings, escape and encode URLs/URIs and to generate GUIDs versions 1, 3, 4 and 5.
+The Value Generator plugin is used to generate hashes for strings, to calculate base64 encodings, escape and encode URLs/URIs and to generate GUIDs of version 1, 3, 4, 5, and 7.
 
 ![Image of Value Generator plugin](/doc/images/launcher/plugin/community.valuegenerator.png)
 
@@ -34,8 +34,11 @@ The Value Generator plugin is used to generate hashes for strings, to calculate 
 
 ### [`GUIDGenerator`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/Generators/GUID/GUIDGenerator.cs)
 - Utility class for generating or calculating GUIDs
-- Generating GUID versions 1 and 4 is done using builtin APIs. [`UuidCreateSequential`](https://learn.microsoft.com/en-us/windows/win32/api/rpcdce/nf-rpcdce-uuidcreatesequential) for version 1 and `System.Guid.NewGuid()` for version 4
-- Versions 3 and 5 take two parameters, a namespace and a name
+- Generating GUID versions 1, 4, and 7 is done using builtin APIs: 
+  - [`UuidCreateSequential`](https://learn.microsoft.com/en-us/windows/win32/api/rpcdce/nf-rpcdce-uuidcreatesequential) for version 1 
+  - `System.Guid.NewGuid()` for version 4
+  - `System.Guid.CreateVersion7()` for version 7
+- Versions 3 and 5 take two parameters: a namespace and a name
 - The namespace must be a valid GUID or one of the [predefined ones](https://datatracker.ietf.org/doc/html/rfc4122#appendix-C)
 - The `PredefinedNamespaces` dictionary contains aliases for the predefined namespaces
 - The name can be any string
@@ -69,10 +72,10 @@ The Value Generator plugin is used to generate hashes for strings, to calculate 
 ### [`InputParser`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/InputParser.cs)
 - It is responsible only for parsing the query from the user
 - Based on the user query, the `ParseInput()` method must return an object that implements the `IComputeRequest` interface or it must throw one of `FormatException` or `ArgumentException`
-- Throwing an `ArgumentException` should signal the fact the query contains a mistake that the user can fix (eg. an unsupported hash function, an invalid GUID version, an invalid namespace, etc)
+- Throwing an `ArgumentException` should signal the fact that the query contains a mistake that the user can fix (e.g. an unsupported hash function, an invalid GUID version, an invalid namespace, etc.)
 > The error message will be shown to the user and no log message will be created
 - Throwing a `FormatException` should signal either:
-  - that the query may become valid, and so it does not make sense to show an error just yet (eg. the query does not contain a request yet, a hash request without a string to hash)
+  - that the query may become valid, and so it does not make sense to show an error just yet (e.g. the query does not contain a request yet, a hash request without a string to hash)
   - that the query is completely invalid
 > The error message will not be shown to the user but a log message will be created
 

@@ -21,7 +21,9 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -33,6 +35,7 @@ using Timer = System.Windows.Forms.Timer;
 [module: SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#Dispose(System.Boolean)", MessageId = "logoBitmap", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Mobility", "CA1601:DoNotUseTimersThatPreventPowerStateChanges", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#frmMatrix_Shown(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#PaintMyLogo()", Justification = "Dotnet port with style preservation")]
+[module: SuppressMessage("Style", "IDE1006:Naming Styles", Scope = "member", Target = "~M:MouseWithoutBorders.FrmMatrix.M_EnabledChanged(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
 
 namespace MouseWithoutBorders
 {
@@ -75,8 +78,8 @@ namespace MouseWithoutBorders
                 return;
             }
 
-            string[] st = new string[Common.MAX_MACHINE];
-            for (int i = 0; i < Common.MAX_MACHINE; i++)
+            string[] st = new string[MachineStuff.MAX_MACHINE];
+            for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
             {
                 if (machines[i].MachineEnabled)
                 {
@@ -97,7 +100,7 @@ namespace MouseWithoutBorders
                 }
             }
 
-            Common.MachineMatrix = st;
+            MachineStuff.MachineMatrix = st;
             Setting.Values.MatrixOneRow = matrixOneRow = !checkBoxTwoRow.Checked;
 
             if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
@@ -109,7 +112,7 @@ namespace MouseWithoutBorders
             {
                 SocketStuff.InvalidKeyFound = false;
                 showInvalidKeyMessage = false;
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
 
                 for (int i = 0; i < 10; i++)
@@ -123,7 +126,7 @@ namespace MouseWithoutBorders
                     Common.MMSleep(0.2);
                 }
 
-                Common.SendMachineMatrix();
+                MachineStuff.SendMachineMatrix();
             }
 
             buttonOK.Enabled = true;
@@ -131,7 +134,7 @@ namespace MouseWithoutBorders
 
         internal void UpdateKeyTextBox()
         {
-            _ = Common.GetUserName();
+            _ = Helper.GetUserName();
             textBoxEnc.Text = Common.MyKey;
         }
 
@@ -149,13 +152,13 @@ namespace MouseWithoutBorders
             bool meAdded = false;
             string machineName;
 
-            if (Common.MachineMatrix != null && Common.MachineMatrix.Length == Common.MAX_MACHINE)
+            if (MachineStuff.MachineMatrix != null && MachineStuff.MachineMatrix.Length == MachineStuff.MAX_MACHINE)
             {
-                Common.LogDebug("LoadMachines: Machine Matrix: " + Setting.Values.MachineMatrixString);
+                Logger.LogDebug("LoadMachines: Machine Matrix: " + Setting.Values.MachineMatrixString);
 
-                for (int i = 0; i < Common.MAX_MACHINE; i++)
+                for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
                 {
-                    machineName = Common.MachineMatrix[i].Trim();
+                    machineName = MachineStuff.MachineMatrix[i].Trim();
                     machines[i].MachineName = machineName;
 
                     if (string.IsNullOrEmpty(machineName))
@@ -167,7 +170,7 @@ namespace MouseWithoutBorders
                         machines[i].MachineEnabled = true;
                     }
 
-                    bool found = Common.MachinePool.TryFindMachineByName(machineName, out MachineInf machineInfo);
+                    bool found = MachineStuff.MachinePool.TryFindMachineByName(machineName, out MachineInf machineInfo);
                     if (found)
                     {
                         if (machineInfo.Id == Common.MachineID)
@@ -329,8 +332,8 @@ namespace MouseWithoutBorders
             }
             catch (Exception ee)
             {
-                Common.Log(ee);
-                Common.Log(rv.ToString(CultureInfo.CurrentCulture));
+                Logger.Log(ee);
+                Logger.Log(rv.ToString(CultureInfo.CurrentCulture));
             }
         }
 
@@ -339,7 +342,7 @@ namespace MouseWithoutBorders
             string newMachine;
             Machine unUsedMachine;
 
-            foreach (MachineInf inf in Common.MachinePool.ListAllMachines())
+            foreach (MachineInf inf in MachineStuff.MachinePool.ListAllMachines())
             {
                 bool found = false;
                 unUsedMachine = null;
@@ -518,7 +521,7 @@ namespace MouseWithoutBorders
             return true;
         }
 
-        private readonly Machine[] machines = new Machine[Common.MAX_MACHINE];
+        private readonly Machine[] machines = new Machine[MachineStuff.MAX_MACHINE];
         private Machine dragDropMachine;
         private Machine desMachine;
         private Machine desMachineX;
@@ -529,7 +532,7 @@ namespace MouseWithoutBorders
 
         private void CreateMachines()
         {
-            for (int i = 0; i < Common.MAX_MACHINE; i++)
+            for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
             {
                 Machine m = new();
                 m.MouseDown += Machine_MouseDown;
@@ -549,7 +552,7 @@ namespace MouseWithoutBorders
             int dx = (groupBoxMachineMatrix.Width - 40) / 4;
             int yOffset = groupBoxMachineMatrix.Height / 3;
 
-            for (int i = 0; i < Common.MAX_MACHINE; i++)
+            for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
             {
                 machines[i].Left = matrixOneRow ? 22 + (i * dx) : 22 + dx + ((i % 2) * dx);
                 machines[i].Top = matrixOneRow ? yOffset : (yOffset / 2) + (i / 2 * (machines[i].Width + 2));
@@ -648,7 +651,7 @@ namespace MouseWithoutBorders
 
             desMachineX = desMachineY = desMachine;
 
-            for (int i = 0; i < Common.MAX_MACHINE; i++)
+            for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
             {
                 if (machines[i] == dragDropMachine)
                 {
@@ -702,9 +705,9 @@ namespace MouseWithoutBorders
                 dragDropMachine.Top = desMachinePos.Y;
 
                 Machine tmp;
-                for (int i = 0; i < Common.MAX_MACHINE - 1; i++)
+                for (int i = 0; i < MachineStuff.MAX_MACHINE - 1; i++)
                 {
-                    for (int j = 0; j < Common.MAX_MACHINE - 1 - i; j++)
+                    for (int j = 0; j < MachineStuff.MAX_MACHINE - 1 - i; j++)
                     {
                         if (machines[j + 1].Top < machines[j].Top || (machines[j + 1].Top == machines[j].Top && machines[j + 1].Left < machines[j].Left))
                         {
@@ -779,14 +782,14 @@ namespace MouseWithoutBorders
 
             ShowUpdateMessage();
 
-            Common.HasSwitchedMachineSinceLastCopy = true;
+            Clipboard.HasSwitchedMachineSinceLastCopy = true;
         }
 
         private void CheckBoxDisableCAD_CheckedChanged(object sender, EventArgs e)
         {
             if (!Common.RunWithNoAdminRight)
             {
-                Common.ApplyCADSetting();
+                Helper.ApplyCADSetting();
                 ShowUpdateMessage();
             }
         }
@@ -1040,7 +1043,7 @@ namespace MouseWithoutBorders
             {
                 Setting.Values.MatrixCircle = checkBoxCircle.Checked;
                 ShowUpdateMessage();
-                Common.SendMachineMatrix();
+                MachineStuff.SendMachineMatrix();
             }
         }
 
@@ -1162,7 +1165,7 @@ namespace MouseWithoutBorders
 
         private void LinkLabelMiniLog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            string miniLog = Common.GetMiniLog(new[] { groupBoxOtherOptions.Controls, groupBoxShortcuts.Controls });
+            string miniLog = Helper.GetMiniLog(new[] { groupBoxOtherOptions.Controls, groupBoxShortcuts.Controls });
 
             Clipboard.SetText(miniLog);
             Common.ShowToolTip("Log has been placed in the clipboard.", 30000, ToolTipIcon.Info, false);
@@ -1186,8 +1189,8 @@ namespace MouseWithoutBorders
                 ButtonCancel_Click(this, new EventArgs());
                 Setting.Values.FirstRun = true;
                 Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
-                Common.ClearComputerMatrix();
-                Common.ShowSetupForm(true);
+                MachineStuff.ClearComputerMatrix();
+                MachineStuff.ShowSetupForm(true);
             }
         }
 

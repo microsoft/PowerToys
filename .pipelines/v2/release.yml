@@ -33,7 +33,15 @@ parameters:
       - x64
       - arm64
 
+  - name: useVSPreview
+    type: boolean
+    displayName: "Build Using Visual Studio Preview"
+    default: false
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+variables:
+  - template: templates/variables-nuget-package-version.yml
 
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
@@ -42,12 +50,17 @@ extends:
     - 1ES.PT.ViaStartRight
     pool:
       name: SHINE-INT-S
-      image: SHINE-VS17-Latest
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        demands: ImageOverride -equals SHINE-VS17-Preview
       os: windows
     sdl:
       tsa:
         enabled: true
         configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
+      binskim:
+        enabled: true
+        # Exclude every dll/exe in tests/*, as well as all msdia*, covrun* and vcruntime*
+        analyzeTargetGlob: +:file|$(Build.ArtifactStagingDirectory)/**/*.dll;+:file|$(Build.ArtifactStagingDirectory)/**/*.exe;-:file:regex|tests.*\.(dll|exe)$;-:file:regex|(covrun.*)\.dll$;-:file:regex|(msdia.*)\.dll$;-:file:regex|(vcruntime.*)\.dll$
 
     stages:
       - stage: Build
@@ -58,7 +71,10 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                image: SHINE-VS17-Latest
+                demands:
+                  # Our INT agents have a large disk mounted at P:\
+                  - ${{ if eq(parameters.useVSPreview, true) }}:
+                    - ImageOverride -equals SHINE-VS17-Preview
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
@@ -68,6 +84,7 @@ extends:
               buildConfigurations: ${{ parameters.buildConfigurations }}
               versionNumber: ${{ parameters.versionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
+              official: true
               codeSign: true
               runTests: false
               signingIdentity:
@@ -77,8 +94,10 @@ extends:
                 akvName: $(SigningAKVName)
                 authCertName: $(SigningAuthCertName)
                 signCertName: $(SigningSignCertName)
+                useManagedIdentity: $(SigningUseManagedIdentity)
+                clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=true
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
@@ -88,11 +107,34 @@ extends:
                 # Prepare the localizations and telemetry config before the release build
                 - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
 
-                - script: |
-                    call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.0\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+                - pwsh: |-
+                    $ErrorActionPreference = 'Stop'
+                    $PSNativeCommandUseErrorActionPreference = $true
+                    & nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config
+                    Move-Item -Force -Verbose "Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h"
+                    Move-Item -Force -Verbose "Microsoft.PowerToys.Telemetry.*\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs"
                   displayName: Emplace telemetry files
+
+      - stage: Build_SDK
+        displayName: Build SDK
+        dependsOn: []
+        jobs:
+          - template: .pipelines/v2/templates/job-build-sdk.yml@self
+            parameters:
+              pool:
+                name: SHINE-INT-L
+                os: windows
+              official: true
+              codeSign: true
+              signingIdentity:
+                serviceName: $(SigningServiceName)
+                appId: $(SigningAppId)
+                tenantId: $(SigningTenantId)
+                akvName: $(SigningAKVName)
+                authCertName: $(SigningAuthCertName)
+                signCertName: $(SigningSignCertName)
+                useManagedIdentity: $(SigningUseManagedIdentity)
+                clientId: $(SigningOriginalClientId)
 
       - stage: Publish
         displayName: Publish
@@ -102,5 +144,7 @@ extends:
             parameters:
               versionNumber: ${{ parameters.versionNumber }}
               includePublicSymbolServer: ${{ parameters.publishSymbolsToPublic }}
+              ${{ if ne(parameters.publishSymbolsToPublic, true) }}:
+                symbolExpiryTime: 10 # For private builds, expire symbols within 10 days. The default is 100 years.
               subscription: $(SymbolPublishingServiceConnection)
               symbolProject: $(SymbolPublishingProject)

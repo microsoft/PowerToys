@@ -7,6 +7,7 @@ using System.IO.Abstractions;
 using System.Threading;
 
 using Common.UI;
+using HostsEditor.Telemetry;
 using HostsUILib.Helpers;
 using HostsUILib.Settings;
 using HostsUILib.ViewModels;
@@ -17,7 +18,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-
+using PowerToys.Interop;
 using static HostsUILib.Settings.IUserSettings;
 
 using Host = Hosts.Helpers.Host;
@@ -38,6 +39,8 @@ namespace Hosts
         /// </summary>
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new HostEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             string appLanguage = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))
             {
@@ -53,6 +56,7 @@ namespace Hosts
                 {
                     // Core Services
                     services.AddSingleton<IFileSystem, FileSystem>();
+                    services.AddSingleton<IBackupManager, BackupManager>();
                     services.AddSingleton<IHostsService, HostsService>();
                     services.AddSingleton<IUserSettings, Hosts.Settings.UserSettings>();
                     services.AddSingleton<IElevationHelper, ElevationHelper>();
@@ -71,7 +75,7 @@ namespace Hosts
                 }).
                 Build();
 
-            var cleanupBackupThread = new Thread(() =>
+            var deleteBackupThread = new Thread(() =>
             {
                 // Delete old backups only if running elevated
                 if (!Host.GetService<IElevationHelper>().IsElevated)
@@ -81,7 +85,7 @@ namespace Hosts
 
                 try
                 {
-                    Host.GetService<IHostsService>().CleanupBackup();
+                    Host.GetService<IBackupManager>().Delete();
                 }
                 catch (Exception ex)
                 {
@@ -89,10 +93,16 @@ namespace Hosts
                 }
             });
 
-            cleanupBackupThread.IsBackground = true;
-            cleanupBackupThread.Start();
+            deleteBackupThread.IsBackground = true;
+            deleteBackupThread.Start();
 
             UnhandledException += App_UnhandledException;
+
+            Hosts.Helpers.NativeEventWaiter.WaitForEventLoop(Constants.TerminateHostsSharedEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
         /// <summary>
@@ -112,6 +122,7 @@ namespace Hosts
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
                         Logger.LogInfo("PowerToys Runner exited. Exiting Hosts");
+                        EtwTrace?.Dispose();
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
@@ -133,5 +144,7 @@ namespace Hosts
         }
 
         private Window window;
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
     }
 }

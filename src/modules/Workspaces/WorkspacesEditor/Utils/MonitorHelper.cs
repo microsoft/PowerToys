@@ -26,7 +26,7 @@ namespace WorkspacesEditor.Utils
 
         private Screen[] GetDpiUnawareScreenBounds()
         {
-            Thread dpiUnawareThread = new Thread(new ThreadStart(SaveDpiUnawareScreens));
+            Thread dpiUnawareThread = new(new ThreadStart(SaveDpiUnawareScreens));
             dpiUnawareThread.Start();
             dpiUnawareThread.Join();
 
@@ -35,15 +35,15 @@ namespace WorkspacesEditor.Utils
 
         public static Screen[] GetDpiUnawareScreens()
         {
-            MonitorHelper monitorHelper = new MonitorHelper();
+            MonitorHelper monitorHelper = new();
             return monitorHelper.GetDpiUnawareScreenBounds();
         }
 
         internal static double GetScreenDpiFromScreen(Screen screen)
         {
-            var point = new System.Drawing.Point(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
-            var monitor = NativeMethods.MonitorFromPoint(point, NativeMethods._MONITOR_DEFAULTTONEAREST);
-            NativeMethods.GetDpiForMonitor(monitor, NativeMethods.DpiType.EFFECTIVE, out uint dpiX, out uint dpiY);
+            System.Drawing.Point point = new(screen.Bounds.Left + 1, screen.Bounds.Top + 1);
+            nint monitor = NativeMethods.MonitorFromPoint(point, NativeMethods._MONITOR_DEFAULTTONEAREST);
+            _ = NativeMethods.GetDpiForMonitor(monitor, NativeMethods.DpiType.EFFECTIVE, out uint dpiX, out _);
             return dpiX / 96.0;
         }
     }

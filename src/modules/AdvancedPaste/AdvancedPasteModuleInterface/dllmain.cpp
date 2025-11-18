@@ -2,6 +2,7 @@
 #include "pch.h"
 
 #include "AdvancedPasteConstants.h"
+#include "AdvancedPasteProcessManager.h"
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
@@ -15,9 +16,8 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
 
-#include <winrt/Windows.Security.Credentials.h>
-#include <atlfile.h>
-#include <atlstr.h>
+#include <algorithm>
+#include <cwctype>
 #include <vector>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -42,6 +42,7 @@ namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_CUSTOM_ACTIONS[] = L"custom-actions";
+    const wchar_t JSON_KEY_ADDITIONAL_ACTIONS[] = L"additional-actions";
     const wchar_t JSON_KEY_SHORTCUT[] = L"shortcut";
     const wchar_t JSON_KEY_IS_SHOWN[] = L"isShown";
     const wchar_t JSON_KEY_ID[] = L"id";
@@ -54,30 +55,27 @@ namespace
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_JSON_HOTKEY[] = L"paste-as-json-hotkey";
+    const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
+    const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
+    const wchar_t JSON_KEY_PASTE_AI_CONFIGURATION[] = L"paste-ai-configuration";
+    const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
+    const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
+    const wchar_t JSON_KEY_ENABLE_ADVANCED_AI[] = L"enable-advanced-ai";
     const wchar_t JSON_KEY_VALUE[] = L"value";
-
-    const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
-    const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
 }
 
 class AdvancedPaste : public PowertoyModuleIface
 {
 private:
+    
+    AdvancedPasteProcessManager m_process_manager;
     bool m_enabled = false;
 
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
     std::wstring app_key;
-
-    HANDLE m_hProcess;
-
-    std::thread create_pipe_thread;
-    std::unique_ptr<CAtlFile> m_write_pipe;
-
-    // Time to wait for process to close after sending WM_CLOSE signal
-    static const constexpr int MAX_WAIT_MILLISEC = 10000;
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
@@ -86,9 +84,21 @@ private:
     Hotkey m_paste_as_markdown_hotkey{};
     Hotkey m_paste_as_json_hotkey{};
 
-    std::vector<Hotkey> m_custom_action_hotkeys;
-    std::vector<int> m_custom_action_ids;
+    template<class Id>
+    struct ActionData
+    {
+        Id id;
+        Hotkey hotkey;
+    };
 
+    using AdditionalAction = ActionData<std::wstring>;
+    std::vector<AdditionalAction> m_additional_actions;
+
+    using CustomAction = ActionData<int>;
+    std::vector<CustomAction> m_custom_actions;
+
+    bool m_is_ai_enabled = false;
+    bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
 
     Hotkey parse_single_hotkey(const wchar_t* keyName, const winrt::Windows::Data::Json::JsonObject& settingsObject)
@@ -106,7 +116,7 @@ private:
         return {};
     }
 
-    static Hotkey parse_single_hotkey(const winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject)
+    static Hotkey parse_single_hotkey(const winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject, bool isShown = true)
     {
         try
         {
@@ -116,6 +126,7 @@ private:
             hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
             hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
             hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            hotkey.isShown = isShown;
             return hotkey;
         }
         catch (...)
@@ -138,32 +149,46 @@ private:
         return jsonObject;
     }
 
-    static bool open_ai_key_exists()
-    {
-        try
-        {
-            winrt::Windows::Security::Credentials::PasswordVault().Retrieve(OPENAI_VAULT_RESOURCE, OPENAI_VAULT_USERNAME);
-            return true;
-        }
-        catch (const winrt::hresult_error& ex)
-        {
-            // Looks like the only way to access the PasswordVault is through the an API that throws an exception in case the resource doesn't exist.
-            // If the debugger breaks here, just continue.
-            // If you want to disable breaking here in a more permanent way, just add a condition in Visual Studio's Exception Settings to not break on win::hresult_error, but that might make you not hit other exceptions you might want to catch.
-            if (ex.code() == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
-            {
-                return false; // Credential doesn't exist.
-            }
-            Logger::error("Unexpected error while retrieving OpenAI key from vault: {}", winrt::to_string(ex.message()));
-            return false;
-        }
-    }
-
-    bool is_open_ai_enabled()
+    bool is_ai_enabled()
     {
         return gpo_policy_enabled_configuration() != powertoys_gpo::gpo_rule_configured_disabled &&
                powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue() != powertoys_gpo::gpo_rule_configured_disabled &&
-               open_ai_key_exists();
+               m_is_ai_enabled;
+    }
+
+    static std::wstring kebab_to_pascal_case(const std::wstring& kebab_str)
+    {
+        std::wstring result;
+        bool capitalize_next = true;
+
+        for (const auto ch : kebab_str)
+        {
+            if (ch == L'-')
+            {
+                capitalize_next = true;
+            }
+            else
+            {
+                if (capitalize_next)
+                {
+                    result += std::towupper(ch);
+                    capitalize_next = false;
+                }
+                else
+                {
+                    result += ch;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    static std::wstring to_lower_case(const std::wstring& value)
+    {
+        std::wstring result = value;
+        std::transform(result.begin(), result.end(), result.begin(), [](wchar_t ch) { return std::towlower(ch); });
+        return result;
     }
 
     bool migrate_data_and_remove_data_file(Hotkey& old_paste_as_plain_hotkey)
@@ -197,9 +222,99 @@ private:
         return false;
     }
 
-    void parse_hotkeys(PowerToysSettings::PowerToyValues& settings)
+    void process_additional_action(const winrt::hstring& actionName, const winrt::Windows::Data::Json::IJsonValue& actionValue, bool actionsGroupIsShown = true)
     {
-        auto settingsObject = settings.get_raw_json();
+        bool actionIsShown = true;
+
+        if (actionValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+        {
+            return;
+        }
+
+        const auto action = actionValue.GetObjectW();
+
+        if (!action.GetNamedBoolean(JSON_KEY_IS_SHOWN, false) || !actionsGroupIsShown)
+        {
+            actionIsShown = false;
+        }
+
+        if (action.HasKey(JSON_KEY_SHORTCUT))
+        {
+            const AdditionalAction additionalAction
+            {
+                actionName.c_str(),
+                parse_single_hotkey(action.GetNamedObject(JSON_KEY_SHORTCUT), actionIsShown)
+            };
+
+            m_additional_actions.push_back(additionalAction);
+        }
+        else
+        {
+            for (const auto& [subActionName, subAction] : action)
+            {
+                process_additional_action(subActionName, subAction, actionIsShown);
+            }
+        }
+    }
+
+    bool has_advanced_ai_provider(const winrt::Windows::Data::Json::JsonObject& propertiesObject)
+    {
+        if (!propertiesObject.HasKey(JSON_KEY_PASTE_AI_CONFIGURATION))
+        {
+            return false;
+        }
+
+        const auto configValue = propertiesObject.GetNamedValue(JSON_KEY_PASTE_AI_CONFIGURATION);
+        if (configValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+        {
+            return false;
+        }
+
+        const auto configObject = configValue.GetObjectW();
+        if (!configObject.HasKey(JSON_KEY_PROVIDERS))
+        {
+            return false;
+        }
+
+        const auto providersValue = configObject.GetNamedValue(JSON_KEY_PROVIDERS);
+        if (providersValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Array)
+        {
+            return false;
+        }
+
+        const auto providers = providersValue.GetArray();
+        for (const auto providerValue : providers)
+        {
+            if (providerValue.ValueType() != winrt::Windows::Data::Json::JsonValueType::Object)
+            {
+                continue;
+            }
+
+            const auto providerObject = providerValue.GetObjectW();
+            if (!providerObject.GetNamedBoolean(JSON_KEY_ENABLE_ADVANCED_AI, false))
+            {
+                continue;
+            }
+
+            if (!providerObject.HasKey(JSON_KEY_SERVICE_TYPE))
+            {
+                continue;
+            }
+
+            const std::wstring serviceType = providerObject.GetNamedString(JSON_KEY_SERVICE_TYPE, L"").c_str();
+            const auto normalizedServiceType = to_lower_case(serviceType);
+            if (normalizedServiceType == L"openai" || normalizedServiceType == L"azureopenai")
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+        void read_settings(PowerToysSettings::PowerToyValues& settings)
+    {
+        const auto settingsObject = settings.get_raw_json();
 
         // Migrate Paste As Plain text shortcut
         Hotkey old_paste_as_plain_hotkey;
@@ -239,111 +354,81 @@ private:
                     *hotkey = parse_single_hotkey(keyName, settingsObject);
                 }
 
-                m_custom_action_hotkeys.clear();
-                m_custom_action_ids.clear();
+                m_additional_actions.clear();
+                m_custom_actions.clear();
 
                 if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
                     const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
+                    if (propertiesObject.HasKey(JSON_KEY_ADDITIONAL_ACTIONS))
+                    {
+                        const auto additionalActions = propertiesObject.GetNamedObject(JSON_KEY_ADDITIONAL_ACTIONS);
+
+                        // Define the expected order to ensure consistent hotkey ID assignment
+                        const std::vector<winrt::hstring> expectedOrder = {
+                            L"image-to-text",
+                            L"paste-as-file",
+                            L"transcode"
+                        };
+
+                        // Process actions in the predefined order
+                        for (auto& actionKey : expectedOrder)
+                        {
+                            if (additionalActions.HasKey(actionKey))
+                            {
+                                const auto actionValue = additionalActions.GetNamedValue(actionKey);
+                                process_additional_action(actionKey, actionValue);
+                            }
+                        }
+                    }
+
                     if (propertiesObject.HasKey(JSON_KEY_CUSTOM_ACTIONS))
                     {
                         const auto customActions = propertiesObject.GetNamedObject(JSON_KEY_CUSTOM_ACTIONS).GetNamedArray(JSON_KEY_VALUE);
-                        if (customActions.Size() > 0 && is_open_ai_enabled())
+                        if (customActions.Size() > 0 && is_ai_enabled())
                         {
                             for (const auto& customAction : customActions)
                             {
                                 const auto object = customAction.GetObjectW();
+                                bool actionIsShown = object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false);
 
-                                if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
-                                {
-                                    m_custom_action_hotkeys.push_back(parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT)));
-                                    m_custom_action_ids.push_back(static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)));
-                                }
+                                const CustomAction customActionData{
+                                    static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)),
+                                    parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT), actionIsShown)
+                                };
+
+                                m_custom_actions.push_back(customActionData);
                             }
                         }
                     }
                 }
             }
         }
-    }
 
-    bool is_process_running() const
-    {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
-    }
-
-    void launch_process(const std::wstring& pipe_name)
-    {
-        Logger::trace(L"Starting AdvancedPaste process");
-        const unsigned long powertoys_pid = GetCurrentProcessId();
-
-        const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
-
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"WinUI3Apps\\PowerToys.AdvancedPaste.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei))
+        if (settingsObject.GetView().Size())
         {
-            Logger::trace("Successfully started the Advanced Paste process");
-        }
-        else
-        {
-            Logger::error(L"AdvancedPaste failed to start. {}", get_last_error_or_default(GetLastError()));
-        }
+            const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
 
-        TerminateProcess(m_hProcess, 1);
-        m_hProcess = sei.hProcess;
-    }
+            m_is_advanced_ai_enabled = has_advanced_ai_provider(propertiesObject);
 
+            if (propertiesObject.HasKey(JSON_KEY_IS_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else if (propertiesObject.HasKey(JSON_KEY_IS_OPEN_AI_ENABLED))
+            {
+                m_is_ai_enabled = propertiesObject.GetNamedObject(JSON_KEY_IS_OPEN_AI_ENABLED).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
+            else
+            {
+                m_is_ai_enabled = false;
+            }
 
-    std::optional<std::wstring> get_pipe_name(const std::wstring& prefix) const
-    {
-        UUID temp_uuid;
-        wchar_t* uuid_chars = nullptr;
-        if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
-        {
-            const auto val = get_last_error_message(GetLastError());
-            Logger::error(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
-            return std::nullopt;
-        }
-        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
-        {
-            const auto val = get_last_error_message(GetLastError());
-            Logger::error(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
-            return std::nullopt;
-        }
-
-        const auto pipe_name = std::format(L"{}{}", prefix, std::wstring(uuid_chars));
-        RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
-
-        return pipe_name;
-    }
-
-    void launch_process_and_named_pipe()
-    {
-        const auto pipe_name = get_pipe_name(L"powertoys_advanced_paste_");
-
-        if (!pipe_name)
-        {
-            return;
-        }
-
-        create_pipe_thread = std::thread([&] { start_named_pipe_server(pipe_name.value()); });
-        launch_process(pipe_name.value());
-        create_pipe_thread.join();
-    }
-
-    void send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg = L"")
-    {
-        if (m_write_pipe)
-        {
-            const auto message = message_arg.empty() ? std::format(L"{}\r\n", message_type) : std::format(L"{} {}\r\n", message_type, message_arg);
-
-            const CString file_name(message.c_str());
-            m_write_pipe->Write(file_name, file_name.GetLength() * sizeof(TCHAR));
+            if (propertiesObject.HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            {
+                m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+            }
         }
     }
 
@@ -356,13 +441,7 @@ private:
             PowerToysSettings::PowerToyValues settings =
                 PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
 
-            parse_hotkeys(settings);
-
-            auto settingsObject = settings.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
-            {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
-            }
+            read_settings(settings);
         }
         catch (std::exception&)
         {
@@ -595,66 +674,6 @@ private:
         }
     }
 
-    void bring_process_to_front()
-    {
-        auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            HANDLE process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
-
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
-            {
-                SetForegroundWindow(hwnd);
-                return FALSE;
-            }
-            return TRUE;
-        };
-
-        EnumWindows(enum_windows, (LPARAM)m_hProcess);
-    }
-
-    HRESULT start_named_pipe_server(const std::wstring& pipe_name)
-    {
-        const constexpr DWORD BUFSIZE = 4096 * 4;
-
-        const auto full_pipe_name = std::format(L"\\\\.\\pipe\\{}", pipe_name);
-
-        const auto hPipe = CreateNamedPipe(
-                full_pipe_name.c_str(),     // pipe name
-                PIPE_ACCESS_OUTBOUND,       // write access
-                PIPE_TYPE_MESSAGE |         // message type pipe
-                    PIPE_READMODE_MESSAGE | // message-read mode
-                    PIPE_WAIT,              // blocking mode
-                1,                          // max. instances
-                BUFSIZE,                    // output buffer size
-                0,                          // input buffer size
-                0,                          // client time-out
-                NULL);                      // default security attribute
-
-        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
-        {
-            return E_FAIL;
-        }
-
-        // This call blocks until a client process connects to the pipe
-        BOOL connected = ConnectNamedPipe(hPipe, NULL);
-        if (!connected)
-        {
-            if (GetLastError() == ERROR_PIPE_CONNECTED)
-            {
-                return S_OK;
-            }
-            else
-            {
-                CloseHandle(hPipe);
-            }
-            return E_FAIL;
-        }
-
-        m_write_pipe = std::make_unique<CAtlFile>(hPipe);
-        return S_OK;
-    }
-
 public:
     AdvancedPaste()
     {
@@ -675,6 +694,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        Disable(false);
+
         Logger::trace("AdvancedPaste::destroy()");
         delete this;
     }
@@ -722,12 +743,12 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            parse_hotkeys(values);
+            read_settings(values);
 
-            const auto settingsObject = values.get_raw_json();
-            if (settingsObject.GetView().Size() && settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).HasKey(JSON_KEY_SHOW_CUSTOM_PREVIEW))
+            std::unordered_map<std::wstring, Hotkey> additionalActionMap;
+            for (const auto& action : m_additional_actions)
             {
-                m_preview_custom_format_output = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
+                additionalActionMap[kebab_to_pascal_case(action.id)] = action.hotkey;
             }
 
             // order of args matter
@@ -735,7 +756,9 @@ public:
                                                    m_advanced_paste_ui_hotkey,
                                                    m_paste_as_markdown_hotkey,
                                                    m_paste_as_json_hotkey,
-                                                   m_preview_custom_format_output);
+                                                   m_is_advanced_ai_enabled,
+                                                   m_preview_custom_format_output,
+                                                   additionalActionMap);
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
@@ -754,25 +777,28 @@ public:
         Logger::trace("AdvancedPaste::enable()");
         Trace::AdvancedPaste_Enable(true);
         m_enabled = true;
-
-        launch_process_and_named_pipe();
+        m_process_manager.start();
     };
+
+    void Disable(bool traceEvent)
+    {
+        if (m_enabled)
+        {
+            m_process_manager.stop();
+
+            if (traceEvent)
+            {
+                Trace::AdvancedPaste_Enable(false);
+            }
+        }
+
+        m_enabled = false;
+    }
 
     virtual void disable()
     {
         Logger::trace("AdvancedPaste::disable()");
-        if (m_enabled)
-        {
-            m_write_pipe = nullptr;
-
-            TerminateProcess(m_hProcess, 1);
-            Trace::AdvancedPaste_Enable(false);
-
-            CloseHandle(m_hProcess);
-            m_hProcess = 0;
-        }
-
-        m_enabled = false;
+        Disable(true);
     }
 
     virtual bool on_hotkey(size_t hotkeyId) override
@@ -780,11 +806,7 @@ public:
         Logger::trace(L"AdvancedPaste hotkey pressed");
         if (m_enabled)
         {
-            if (!is_process_running())
-            {
-                Logger::trace(L"Launching new process");
-                launch_process_and_named_pipe();
-            }
+            m_process_manager.start();
 
             // hotkeyId in same order as set by get_hotkeys
             if (hotkeyId == 0)
@@ -805,35 +827,48 @@ public:
             { // m_advanced_paste_ui_hotkey
                 Logger::trace(L"Setting start up event");
 
-                bring_process_to_front();
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+                m_process_manager.bring_to_front();
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
                 return true;
             }
             if (hotkeyId == 2)
             { // m_paste_as_markdown_hotkey
                 Logger::trace(L"Starting paste as markdown directly");
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"MarkdownDirect");
                 return true;
             }
             if (hotkeyId == 3)
             { // m_paste_as_json_hotkey
                 Logger::trace(L"Starting paste as json directly");
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
                 Trace::AdvancedPaste_Invoked(L"JsonDirect");
                 return true;
             }
 
-            const auto custom_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
 
-            if (custom_action_index < m_custom_action_ids.size())
+            const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
+            if (additional_action_index < m_additional_actions.size())
             {
-                const auto id = m_custom_action_ids.at(custom_action_index);
+                const auto& id = m_additional_actions.at(additional_action_index).id;
+
+                Logger::trace(L"Starting additional action id={}", id);
+
+                Trace::AdvancedPaste_Invoked(std::format(L"{}Direct", kebab_to_pascal_case(id)));
+
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
+                return true;
+            }
+
+            const auto custom_action_index = additional_action_index - m_additional_actions.size();
+            if (custom_action_index < m_custom_actions.size())
+            {
+                const auto id = m_custom_actions.at(custom_action_index).id;
 
                 Logger::trace(L"Starting custom action id={}", id);
 
-                send_named_pipe_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
                 Trace::AdvancedPaste_Invoked(L"CustomActionDirect");
                 return true;
             }
@@ -844,7 +879,7 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        const size_t num_hotkeys = NUM_DEFAULT_HOTKEYS + m_custom_action_hotkeys.size();
+        const size_t num_hotkeys = NUM_DEFAULT_HOTKEYS + m_additional_actions.size() + m_custom_actions.size();
 
         if (hotkeys && buffer_size >= num_hotkeys)
         {
@@ -852,9 +887,11 @@ public:
                                                  m_advanced_paste_ui_hotkey,
                                                  m_paste_as_markdown_hotkey,
                                                  m_paste_as_json_hotkey };
-
             std::copy(default_hotkeys.begin(), default_hotkeys.end(), hotkeys);
-            std::copy(m_custom_action_hotkeys.begin(), m_custom_action_hotkeys.end(), hotkeys + NUM_DEFAULT_HOTKEYS);
+
+            const auto get_action_hotkey = [](const auto& action) { return action.hotkey; };
+            std::transform(m_additional_actions.begin(), m_additional_actions.end(), hotkeys + NUM_DEFAULT_HOTKEYS, get_action_hotkey);
+            std::transform(m_custom_actions.begin(), m_custom_actions.end(), hotkeys + NUM_DEFAULT_HOTKEYS + m_additional_actions.size(), get_action_hotkey);
         }
 
         return num_hotkeys;

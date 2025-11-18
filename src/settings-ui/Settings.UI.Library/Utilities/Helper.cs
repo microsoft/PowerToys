@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Security.Principal;
+
 using Microsoft.PowerToys.Settings.UI.Library.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
@@ -53,16 +53,39 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return sendCustomAction.ToJsonString();
         }
 
-        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback)
+        public static IFileSystemWatcher GetFileWatcher(string path, Action onChangedCallback, IFileSystem fileSystem = null)
         {
-            var path = FileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+            fileSystem ??= FileSystem;
 
-            if (!FileSystem.Directory.Exists(path))
+            var dirPath = Path.GetDirectoryName(path);
+            if (!fileSystem.Directory.Exists(dirPath))
             {
-                FileSystem.Directory.CreateDirectory(path);
+                return null;
             }
 
-            var watcher = FileSystem.FileSystemWatcher.CreateNew();
+            var watcher = fileSystem.FileSystemWatcher.New();
+            watcher.Path = dirPath;
+            watcher.Filter = Path.GetFileName(path);
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
+            watcher.EnableRaisingEvents = true;
+
+            watcher.Changed += (o, e) => onChangedCallback();
+
+            return watcher;
+        }
+
+        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback, IFileSystem fileSystem = null)
+        {
+            fileSystem ??= FileSystem;
+
+            var path = fileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+
+            if (!fileSystem.Directory.Exists(path))
+            {
+                fileSystem.Directory.CreateDirectory(path);
+            }
+
+            var watcher = fileSystem.FileSystemWatcher.New();
             watcher.Path = path;
             watcher.Filter = fileName;
             watcher.NotifyFilter = NotifyFilters.LastWrite;

@@ -5,6 +5,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/interop/shared_constants.h>
 
 #include <FancyZonesLib/Generated Files/resource.h>
 #include <FancyZonesLib/FancyZonesData.h>
@@ -19,6 +20,14 @@ FancyZonesApp::FancyZonesApp(const std::wstring& appName, const std::wstring& ap
         
     InitializeWinhookEventIds();
     m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), std::bind(&FancyZonesApp::DisableModule, this));
+
+    m_mainThreadId = GetCurrentThreadId();
+    m_exitEventWaiter = EventWaiter(CommonSharedConstants::FZE_EXIT_EVENT, [&](int err) {
+        if (err == ERROR_SUCCESS)
+        {
+            DisableModule();
+        }
+    });
 
     InitHooks();
 
@@ -111,7 +120,7 @@ void FancyZonesApp::InitHooks()
 
 void FancyZonesApp::DisableModule() noexcept
 {
-    PostQuitMessage(0);
+    PostThreadMessage(m_mainThreadId, WM_QUIT, 0, 0);
 }
 
 void FancyZonesApp::HandleWinHookEvent(WinHookEvent* data) noexcept

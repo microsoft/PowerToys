@@ -16,9 +16,9 @@ namespace WorkspacesEditor.Models
             PropertyChanged?.Invoke(this, e);
         }
 
-        public string MonitorInfo { get => MonitorName; }
+        public string MonitorInfo => MonitorName;
 
-        public string MonitorInfoWithResolution { get => $"{MonitorName}    {MonitorDpiAwareBounds.Width}x{MonitorDpiAwareBounds.Height}"; }
+        public string MonitorInfoWithResolution => $"{MonitorName}    {MonitorDpiAwareBounds.Width}x{MonitorDpiAwareBounds.Height}";
 
         public MonitorSetup(string monitorName, string monitorInstanceId, int number, int dpi, Rect dpiAwareBounds, Rect dpiUnawareBounds)
             : base(monitorName, monitorInstanceId, number, dpi, dpiAwareBounds, dpiUnawareBounds)

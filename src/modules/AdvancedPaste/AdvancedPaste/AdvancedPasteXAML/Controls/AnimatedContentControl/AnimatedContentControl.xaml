@@ -1,4 +1,4 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
@@ -11,7 +11,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:AnimatedContentControl">
@@ -28,6 +28,7 @@
                                 Background="Transparent"
                                 BorderThickness="4"
                                 CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
                                 Visibility="Collapsed">
                                 <!--  CornerRadius needs to be > 0  -->
                                 <Grid.BorderBrush>

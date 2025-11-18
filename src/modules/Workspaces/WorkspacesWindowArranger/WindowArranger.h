@@ -5,12 +5,19 @@
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/IPCHelper.h>
 #include <WorkspacesLib/LaunchingStatus.h>
+#include <WorkspacesLib/PwaHelper.h>
 #include <WorkspacesLib/WorkspacesData.h>
+
+struct WindowWithDistance
+{
+    int distance;
+    HWND window;
+};
 
 class WindowArranger
 {
 public:
-    WindowArranger(WorkspacesData::WorkspacesProject project, const IPCHelper& ipcHelper);
+    WindowArranger(WorkspacesData::WorkspacesProject project);
     ~WindowArranger() = default;
 
 private:
@@ -19,12 +26,16 @@ private:
     const std::vector<WorkspacesData::WorkspacesProject::Monitor> m_monitors;
     const Utils::Apps::AppList m_installedApps;
     //const WindowCreationHandler m_windowCreationHandler;
-    const IPCHelper& m_ipcHelper;
-    WorkspacesData::LaunchingAppStateMap m_launchingApps{};
-    
+    IPCHelper m_ipcHelper;
+    LaunchingStatus m_launchingStatus;
+    std::optional<WindowWithDistance> GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper);
+    bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
+
     //void onWindowCreated(HWND window);
-    void processWindow(HWND window);
+    bool processWindows(bool processAll);
+    bool processWindow(HWND window);
     bool moveWindow(HWND window, const WorkspacesData::WorkspacesProject::Application& app);
 
-    bool allWindowsFound() const;
+    void receiveIpcMessage(const std::wstring& message);
+    void sendUpdatedState(const WorkspacesData::LaunchingAppState& data) const;
 };

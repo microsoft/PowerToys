@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AppUtils.h"
+#include "SteamHelper.h"
 
 #include <atlbase.h>
 #include <propvarutil.h>
@@ -30,6 +31,12 @@ namespace Utils
             constexpr const wchar_t* PowerToysSettingsUpper = L"POWERTOYS.SETTINGS.EXE";
             constexpr const wchar_t* PowerToysSettings = L"PowerToys.Settings.exe";
             constexpr const wchar_t* ApplicationFrameHost = L"APPLICATIONFRAMEHOST.EXE";
+            constexpr const wchar_t* Exe = L".EXE";
+
+            constexpr const wchar_t* EdgeFilename = L"msedge.exe";
+            constexpr const wchar_t* ChromeFilename = L"chrome.exe";
+
+            constexpr const wchar_t* SteamUrlProtocol = L"steam:";
         }
 
         AppList IterateAppsFolder()
@@ -134,6 +141,34 @@ namespace Utils
                                 else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
                                 {
                                     data.installPath = propVariantString.m_pData;
+
+                                    if (!data.installPath.empty())
+                                    {
+                                        const bool isSteamProtocol = data.installPath.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
+
+                                        if (isSteamProtocol)
+                                        {
+                                            Logger::info(L"Found steam game: protocol path: {}", data.installPath);
+                                            data.protocolPath = data.installPath;
+
+                                            try
+                                            {
+                                                auto gameId = Steam::GetGameIdFromUrlProtocolPath(data.installPath);
+                                                auto gameFolder = Steam::GetSteamGameInfoFromAcfFile(gameId);
+
+                                                if (gameFolder)
+                                                {
+                                                    data.installPath = gameFolder->gameInstallationPath;
+                                                    Logger::info(L"Found steam game: physical path: {}", data.installPath);
+                                                }
+                                            }
+                                            catch (std::exception ex)
+                                            {
+                                                Logger::error(L"Failed to get installPath for game {}", data.installPath);
+                                                Logger::error("Error: {}", ex.what());
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -213,7 +248,7 @@ namespace Utils
             std::wstring appPathUpper(appPath);
             std::transform(appPathUpper.begin(), appPathUpper.end(), appPathUpper.begin(), towupper);
 
-            // filter out ApplicationFrameHost.exe   
+            // filter out ApplicationFrameHost.exe
             if (appPathUpper.ends_with(NonLocalizable::ApplicationFrameHost))
             {
                 return std::nullopt;
@@ -248,6 +283,7 @@ namespace Utils
             }
 
             // search in apps list
+            std::optional<AppData> appDataPlanB{ std::nullopt };
             for (const auto& appData : apps)
             {
                 if (!appData.installPath.empty())
@@ -257,16 +293,30 @@ namespace Utils
 
                     if (appPathUpper.contains(installPathUpper))
                     {
+                        // Update the install path to keep .exe in the path
+                        if (!installPathUpper.ends_with(NonLocalizable::Exe))
+                        {
+                            auto settingsAppData = appData;
+                            settingsAppData.installPath = appPath;
+                            return settingsAppData;
+                        }
+
                         return appData;
                     }
 
                     // edge case, some apps (e.g., Gitkraken) have different .exe files in the subfolders.
                     // apps list contains only one path, so in this case app is not found
+                    // remember the match and return it in case the loop is over and there are no direct matches
                     if (std::filesystem::path(appPath).filename() == std::filesystem::path(appData.installPath).filename())
                     {
-                        return appData;
+                        appDataPlanB = appData;
                     }
                 }
+            }
+
+            if (appDataPlanB.has_value())
+            {
+                return appDataPlanB.value();
             }
 
             // try by name if path not found
@@ -316,7 +366,7 @@ namespace Utils
                     }
                 }
             }
-            
+
             return AppData{
                 .name = std::filesystem::path(appPath).stem(),
                 .installPath = appPath
@@ -326,11 +376,62 @@ namespace Utils
         std::optional<AppData> GetApp(HWND window, const AppList& apps)
         {
             std::wstring processPath = get_process_path(window);
-            
+
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
             return Utils::Apps::GetApp(processPath, pid, apps);
+        }
+
+        bool UpdateAppVersion(WorkspacesData::WorkspacesProject::Application& app, const AppList& installedApps)
+        {
+            auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const AppData& val) { return val.name == app.name; });
+            if (installedApp == installedApps.end())
+            {
+                return false;
+            }
+
+            // Packaged apps have version in the path, it will be outdated after update.
+            // We need make sure the current package is up to date.
+            if (!app.packageFullName.empty())
+            {
+                if (app.packageFullName != installedApp->packageFullName)
+                {
+                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
+                    app.packageFullName = installedApp->packageFullName;
+                    app.path = installedApp->installPath + L"\\" + exeFileName;
+                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool UpdateWorkspacesApps(WorkspacesData::WorkspacesProject& workspace, const AppList& installedApps)
+        {
+            bool updated = false;
+            for (auto& app : workspace.apps)
+            {
+                updated |= UpdateAppVersion(app, installedApps);
+            }
+
+            return updated;
+        }
+
+        bool AppData::IsEdge() const
+        {
+            return installPath.ends_with(NonLocalizable::EdgeFilename);
+        }
+
+        bool AppData::IsChrome() const
+        {
+            return installPath.ends_with(NonLocalizable::ChromeFilename);
+        }
+
+        bool AppData::IsSteamGame() const
+        {
+            return protocolPath.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
         }
     }
 }

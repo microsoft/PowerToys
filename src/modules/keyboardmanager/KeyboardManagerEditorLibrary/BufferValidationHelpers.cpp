@@ -139,7 +139,7 @@ namespace BufferValidationHelpers
                 }
                 else if (selectedKeyCode == CommonSharedConstants::VK_DISABLED && dropDownIndex)
                 {
-                    // Disable can not be selected if one modifier key has already been selected
+                    // Disable cannot be selected if one modifier key has already been selected
                     errorType = ShortcutErrorType::ShortcutDisableAsActionKey;
                 }
                 // If none of the above, then the action key will be set

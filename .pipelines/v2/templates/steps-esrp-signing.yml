@@ -19,4 +19,6 @@ steps:
       AuthAKVName: ${{ parameters.signingIdentity.akvName }}
       AuthCertName: ${{ parameters.signingIdentity.authCertName }}
       AuthSignCertName: ${{ parameters.signingIdentity.signCertName }}
+      UseMSIAuthentication: ${{ coalesce(parameters.signingIdentity.useManagedIdentity, 'false') }}
+      EsrpClientId: ${{ parameters.signingIdentity.clientId }}
       ${{ insert }}: ${{ parameters.inputs }}

@@ -24,7 +24,7 @@ namespace PowerOCR.Settings
         private const int SettingsReadOnChangeDelayInMs = 300;
 
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new();
+        private readonly Lock _loadingSettingsLock = new();
 
         [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)

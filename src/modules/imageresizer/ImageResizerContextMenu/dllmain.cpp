@@ -7,6 +7,7 @@
 #include <shobjidl_core.h>
 #include <string>
 
+#include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -20,6 +21,7 @@
 using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
+Shared::Trace::ETWTrace trace(L"ImageResizerContextMenu");
 
 #define BUFSIZE 4096 * 4
 
@@ -134,6 +136,7 @@ public:
     IFACEMETHODIMP Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
     try
     {
+        trace.UpdateState(true);
 
         Trace::Invoked();
         HRESULT hr = S_OK;
@@ -144,6 +147,9 @@ public:
         }
 
         Trace::InvokedRet(hr);
+
+        trace.UpdateState(false);
+        trace.Flush();
 
         return hr;
     }
@@ -222,12 +228,12 @@ private:
         if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
         {
             auto val = get_last_error_message(GetLastError());
-            Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
+            Logger::warn(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
         }
         else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(& uuid_chars)) != RPC_S_OK)
         {
             auto val = get_last_error_message(GetLastError());
-            Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+            Logger::warn(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
         }
 
         if (uuid_chars != nullptr)
@@ -252,14 +258,20 @@ private:
             for (DWORD i = 0; i < fileCount; i++)
             {
                 IShellItem* shellItem;
-                psiItemArray->GetItemAt(i, &shellItem);
-                LPWSTR itemName;
-                // Retrieves the entire file system path of the file from its shell item
-                shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
-                CString fileName(itemName);
-                fileName.Append(_T("\r\n"));
-                // Write the file path into the input stream for image resizer
-                writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                HRESULT getItemAtResult = psiItemArray->GetItemAt(i, &shellItem);
+                if (SUCCEEDED(getItemAtResult))
+                {
+                    LPWSTR itemName;
+                    // Retrieves the entire file system path of the file from its shell item
+                    HRESULT getDisplayResult = shellItem->GetDisplayName(SIGDN_FILESYSPATH, &itemName);
+                    if (SUCCEEDED(getDisplayResult))
+                    {
+                        CString fileName(itemName);
+                        fileName.Append(_T("\r\n"));
+                        // Write the file path into the input stream for image resizer
+                        writePipe.Write(fileName, fileName.GetLength() * sizeof(TCHAR));
+                    }
+                }
             }
             writePipe.Close();
         }

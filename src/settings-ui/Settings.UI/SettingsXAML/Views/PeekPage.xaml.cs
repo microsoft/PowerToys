@@ -9,16 +9,21 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PeekPage : Page, IRefreshablePage
+    public sealed partial class PeekPage : NavigablePage, IRefreshablePage
     {
         private PeekViewModel ViewModel { get; set; }
 
         public PeekPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PeekViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new PeekViewModel(
+                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                ShellPage.SendDefaultIPCMessage,
+                DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

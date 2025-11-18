@@ -9,7 +9,7 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:ColorFormatConverter x:Key="ColorFormatConverter" />
@@ -32,7 +32,8 @@
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind Description}"
                     TextTrimming="CharacterEllipsis"
-                    TextWrapping="NoWrap" />
+                    TextWrapping="NoWrap"
+                    ToolTipService.ToolTip="{x:Bind Description}" />
             </Grid>
         </DataTemplate>
 
@@ -60,7 +61,7 @@
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="ItemPanelTemplate">
-            <tk7controls:WrapPanel
+            <tkcontrols:WrapPanel
                 HorizontalSpacing="20"
                 Orientation="Horizontal"
                 VerticalSpacing="4" />

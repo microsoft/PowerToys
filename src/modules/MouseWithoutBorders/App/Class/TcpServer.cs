@@ -11,6 +11,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using MouseWithoutBorders.Core;
+
 // <summary>
 //     TCP Server implementation.
 // </summary>
@@ -20,6 +22,8 @@ using System.Threading.Tasks;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Exceptions;
+
+using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.TcpServer.#Close()", Justification = "Dotnet port with style preservation")]
 
@@ -33,7 +37,7 @@ namespace MouseWithoutBorders.Class
 
         internal TcpServer(int port, ParameterizedThreadStart job)
         {
-            Common.Log($"TCP listening on port: {port}");
+            Logger.Log($"TCP listening on port: {port}");
             Name = port.ToString(CultureInfo.CurrentCulture);
             server = TcpListener.Create(port);
             StartServer(job);
@@ -79,7 +83,7 @@ namespace MouseWithoutBorders.Class
                     }
                     else
                     {
-                        Common.TelemetryLogTrace($"Error listening on: {server.LocalEndpoint}: {e.ErrorCode}/{e.Message}", SeverityLevel.Error);
+                        Logger.TelemetryLogTrace($"Error listening on: {server.LocalEndpoint}: {e.ErrorCode}/{e.Message}", SeverityLevel.Error);
                         throw;
                     }
                 }
@@ -99,7 +103,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 

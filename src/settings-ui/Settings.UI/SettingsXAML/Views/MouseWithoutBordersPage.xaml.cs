@@ -13,13 +13,15 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.ApplicationModel.DataTransfer;
 using WinRT;
+
 using static Microsoft.PowerToys.Settings.UI.ViewModels.MouseWithoutBordersViewModel;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MouseWithoutBordersPage : Page, IRefreshablePage
+    public sealed partial class MouseWithoutBordersPage : NavigablePage, IRefreshablePage
     {
         private const string MouseWithoutBordersDragDropCheckString = "MWB Device Drag Drop";
 
@@ -45,12 +47,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OnConfigFileUpdate()
         {
             // Note: FileSystemWatcher raise notification multiple times for single update operation.
-            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
+            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration every time since we will be updating the UI only if something is changed.
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 if (ViewModel.LoadUpdatedSettings())

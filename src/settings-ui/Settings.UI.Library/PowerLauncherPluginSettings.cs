@@ -14,7 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string Description { get; set; }
 
+        public string Version { get; set; }
+
         public string Author { get; set; }
+
+        public string Website { get; set; }
 
         public bool Disabled { get; set; }
 

@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Threading;
+
 using global::Windows.System;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -132,6 +134,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case ModuleType.CmdPal: // Show CmdPal
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
                 default:
                     moduleRun = false;
                     break;
@@ -167,12 +177,21 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             });
         }
 
-        private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
+        internal void ReportBugBtn_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.StartBugReport();
 
             // Closing manually the flyout since no window will steal the focus
             App.GetFlyoutWindow()?.Hide();
+        }
+
+        private void UpdateInfoBar_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            // Hide the flyout before opening settings window
+            App.GetFlyoutWindow()?.Hide();
+
+            // Open Settings window directly to General page where update controls are located
+            App.OpenSettingsWindow(typeof(GeneralPage));
         }
     }
 }

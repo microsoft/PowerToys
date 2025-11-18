@@ -11,7 +11,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,12 +23,20 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
+
+        private static readonly string _unsavedFileIndicator = "* ";
+        private static readonly char[] _unsavedFileIndicatorChars = [' ', '*'];
+        private static SemaphoreSlim _dialogSemaphore = new(1);
+
+        private string lastKeyPath;
+
         public delegate void UpdateWindowTitleFunction(string title);
 
         /// <summary>
         /// Method that opens and processes the passed in file name; expected to be an absolute path and a first time open
         /// </summary>
-        private bool OpenRegistryFile(string filename)
+        private async Task<bool> OpenRegistryFile(string filename)
         {
             // clamp to prevent attempts to open a file larger than 10MB
             try
@@ -46,7 +56,7 @@ namespace RegistryPreviewUILib
 
             // Disable parts of the UI that can cause trouble when loading
             ChangeCursor(gridPreview, true);
-            textBox.Text = string.Empty;
+            await MonacoEditor.SetTextAsync(string.Empty);
 
             // clear the treeView and dataGrid no matter what
             treeView.RootNodes.Clear();
@@ -55,7 +65,7 @@ namespace RegistryPreviewUILib
             // update the current window's title with the current filename
             _updateWindowTitleFunction(filename);
 
-            // Load in the whole file in one call and plop it all into textBox
+            // Load in the whole file in one call and plop it all into editor
             FileStream fileStream = null;
             try
             {
@@ -68,15 +78,18 @@ namespace RegistryPreviewUILib
                 StreamReader streamReader = new StreamReader(fileStream);
 
                 string filenameText = streamReader.ReadToEnd();
-                textBox.Text = filenameText;
+                await MonacoEditor.SetTextAsync(filenameText);
                 streamReader.Close();
             }
             catch
             {
-                // restore TextChanged handler to make for clean UI
-                textBox.TextChanged += TextBox_TextChanged;
+                // Set default value for empty opening
+                await MonacoEditor.SetTextAsync(NEWFILEHEADER);
 
-                // Reset the cursor but leave textBox disabled as no content got loaded
+                // restore TextChanged handler to make for clean UI
+                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+
+                // Reset the cursor but leave editor disabled as no content got loaded
                 ChangeCursor(gridPreview, false);
                 return false;
             }
@@ -89,8 +102,8 @@ namespace RegistryPreviewUILib
                 }
             }
 
-            // now that the file is loaded and in textBox, parse the data
-            ParseRegistryFile(textBox.Text);
+            // now that the file is loaded and in editor, parse the data
+            ParseRegistryFile(MonacoEditor.Text);
 
             // Getting here means that the entire REG file was parsed without incident
             // so select the root of the tree and celebrate
@@ -106,7 +119,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Method that re-opens and processes the filename the app already knows about; expected to not be a first time open
+        /// Method that re-opens and processes the filename that the app already knows about; expected to not be a first time open
         /// </summary>
         private void RefreshRegistryFile()
         {
@@ -120,8 +133,8 @@ namespace RegistryPreviewUILib
             treeView.RootNodes.Clear();
             ClearTable();
 
-            // the existing text is still in textBox so parse the data again
-            ParseRegistryFile(textBox.Text);
+            // the existing text is still in editor so parse the data again
+            ParseRegistryFile(MonacoEditor.Text);
 
             // check to see if there was a key in treeView before the refresh happened
             if (currentNode != null)
@@ -163,8 +176,27 @@ namespace RegistryPreviewUILib
             ChangeCursor(gridPreview, false);
         }
 
+        private async void ResetEditorAndFile()
+        {
+            // Disable parts of the UI that can cause trouble when loading
+            ChangeCursor(gridPreview, true);
+
+            // clear the treeView and dataGrid no matter what
+            treeView.RootNodes.Clear();
+            ClearTable();
+
+            // update the current window's title with the current filename
+            _updateWindowTitleFunction(string.Empty);
+
+            // Set default value for empty opening
+            await MonacoEditor.SetTextAsync(NEWFILEHEADER);
+
+            // Reset the cursor but leave editor disabled as no content got loaded
+            ChangeCursor(gridPreview, false);
+        }
+
         /// <summary>
-        /// Parses the text that is passed in, which should be the same text that's in textBox
+        /// Parses the text that is passed in, which should be the same text that's in editor
         /// </summary>
         private bool ParseRegistryFile(string filenameText)
         {
@@ -181,10 +213,10 @@ namespace RegistryPreviewUILib
             // As we'll be processing the text one line at a time, this string will be the current line
             string registryLine;
 
-            // Brute force editing: for textBox to show Cr-Lf corrected, we need to strip out the \n's
+            // Brute force editing: for editor to show Cr-Lf corrected, we need to strip out the \n's
             filenameText = filenameText.Replace("\r\n", "\r");
 
-            // split apart all of the text in textBox, where one element in the array represents one line
+            // split apart all of the text in editor, where one element in the array represents one line
             string[] registryLines = filenameText.Split("\r");
             if (registryLines.Length <= 1)
             {
@@ -193,7 +225,7 @@ namespace RegistryPreviewUILib
                 return false;
             }
 
-            // REG files have to start with one of two headers and it's case insensitive
+            // REG files have to start with one of two headers and it's case-insensitive
             registryLine = registryLines[0];
             registryLine = registryLine.ToLowerInvariant();
 
@@ -229,7 +261,7 @@ namespace RegistryPreviewUILib
                 }
                 else if (registryLine.StartsWith("@=", StringComparison.InvariantCulture))
                 {
-                    // This is the a Value called "(Default)" so we tweak the line for the UX
+                    // This is the Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
                 }
 
@@ -258,6 +290,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     treeViewNode = AddTextToTree(registryLine, imageName);
+                    lastKeyPath = registryLine;
                 }
                 else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
@@ -268,7 +301,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     // Create a new listview item that will be used to display the delete value and store it
-                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
+                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty, lastKeyPath);
                     SetValueToolTip(registryValue);
 
                     // store the ListViewItem, if we have a valid Key to attach to
@@ -307,7 +340,7 @@ namespace RegistryPreviewUILib
                     value = value.Trim();
 
                     // Create a new listview item that will be used to display the value
-                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
+                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty, lastKeyPath);
 
                     // if the first character is a " then this is a string value, so find the last most " which will avoid comments
                     if (value.StartsWith('"'))
@@ -474,6 +507,7 @@ namespace RegistryPreviewUILib
                         case "REG_NONE":
                             if (value.Length <= 0)
                             {
+                                registryValue.IsEmptyBinary = true;
                                 value = resourceLoader.GetString("ZeroLength");
                             }
                             else
@@ -550,19 +584,10 @@ namespace RegistryPreviewUILib
                                 var bytes = value.Split(',').Select(
                                     c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
 
-                                if (registryValue.Type == "REG_MULTI_SZ")
-                                {
-                                    // Replace zeros (00,00) with spaces
-                                    for (int i = 0; i < bytes.Length; i += 2)
-                                    {
-                                        if (bytes[i] == 0 && bytes[i + 1] == 0)
-                                        {
-                                            bytes[i] = 0x20;
-                                        }
-                                    }
-                                }
-
                                 value = Encoding.Unicode.GetString(bytes);
+
+                                // Correctly format line breaks and remove trailing line breaks. (GitHub PowerToys #36629)
+                                value = value.Replace('\0', '\r').TrimEnd('\r');
                             }
                             catch
                             {
@@ -655,8 +680,8 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Enable command bar buttons and textBox.
-        /// Note that writeButton and textBox all update with the same value on purpose
+        /// Enable command bar buttons
+        /// Note that writeButton and editor all update with the same value on purpose
         /// </summary>
         private void UpdateToolBarAndUI(bool enableWrite, bool enableRefresh, bool enableEdit)
         {
@@ -776,21 +801,34 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void ShowMessageBox(string title, string content, string closeButtonText)
         {
-            ContentDialog contentDialog = new ContentDialog()
+            if (_dialogSemaphore.CurrentCount == 0)
             {
-                Title = title,
-                Content = content,
-                CloseButtonText = closeButtonText,
-            };
-
-            // Use this code to associate the dialog to the appropriate AppWindow by setting
-            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
-            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-            {
-                contentDialog.XamlRoot = this.Content.XamlRoot;
+                return;
             }
 
-            await contentDialog.ShowAsync();
+            try
+            {
+                await _dialogSemaphore.WaitAsync();
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = title,
+                    Content = content,
+                    CloseButtonText = closeButtonText,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                await contentDialog.ShowAsync();
+            }
+            finally
+            {
+                _dialogSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -798,42 +836,66 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void HandleDirtyClosing(string title, string content, string primaryButtonText, string secondaryButtonText, string closeButtonText)
         {
-            ContentDialog contentDialog = new ContentDialog()
+            if (_dialogSemaphore.CurrentCount == 0)
             {
-                Title = title,
-                Content = content,
-                PrimaryButtonText = primaryButtonText,
-                SecondaryButtonText = secondaryButtonText,
-                CloseButtonText = closeButtonText,
-                DefaultButton = ContentDialogButton.Primary,
-            };
-
-            // Use this code to associate the dialog to the appropriate AppWindow by setting
-            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
-            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-            {
-                contentDialog.XamlRoot = this.Content.XamlRoot;
+                return;
             }
 
-            ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
-
-            switch (contentDialogResult)
+            try
             {
-                case ContentDialogResult.Primary:
-                    // Save, then close
-                    SaveFile();
-                    break;
-                case ContentDialogResult.Secondary:
-                    // Don't save, and then close!
-                    saveButton.IsEnabled = false;
-                    break;
-                default:
-                    // Cancel closing!
-                    return;
-            }
+                await _dialogSemaphore.WaitAsync();
 
-            // if we got here, we should try to close again
-            Application.Current.Exit();
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = title,
+                    Content = content,
+                    PrimaryButtonText = primaryButtonText,
+                    SecondaryButtonText = secondaryButtonText,
+                    CloseButtonText = closeButtonText,
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Save, then close
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
+                        break;
+                    case ContentDialogResult.Secondary:
+                        // Don't save, and then close!
+                        UpdateUnsavedFileState(false);
+                        break;
+                    default:
+                        // Cancel closing!
+                        return;
+                }
+
+                // if we got here, we should try to close again
+                Application.Current.Exit();
+            }
+            catch
+            {
+                // Normally nothing to catch here.
+                // But for safety the try-catch ensures that we always release the content dialog lock and exit correctly.
+            }
+            finally
+            {
+                _dialogSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -893,11 +955,71 @@ namespace RegistryPreviewUILib
             type.InvokeMember("ProtectedCursor", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance, null, uiElement, new object[] { cursor }, CultureInfo.InvariantCulture);
         }
 
-        /// <summary>
-        /// Wrapper method that saves the current file in place, using the current text in textBox.
-        /// </summary>
-        private void SaveFile()
+        public void UpdateUnsavedFileState(bool unsavedChanges)
         {
+            // get, cut and analyze the current title
+            string currentTitle = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
+            bool titleContainsIndicator = currentTitle.StartsWith(_unsavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
+
+            // update window title and save button state
+            if (unsavedChanges)
+            {
+                saveButton.IsEnabled = true;
+
+                if (!titleContainsIndicator)
+                {
+                    _updateWindowTitleFunction(_unsavedFileIndicator + currentTitle);
+                }
+            }
+            else
+            {
+                saveButton.IsEnabled = false;
+
+                if (titleContainsIndicator)
+                {
+                    _updateWindowTitleFunction(currentTitle.TrimStart(_unsavedFileIndicatorChars));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ask the user for the file path if it is unknown because of an unsaved file
+        /// </summary>
+        /// <param name="fileName">If not empty always ask for a file path and use the value as name.</param>
+        /// <returns>Returns true if user selected a path; otherwise, false</returns>
+        public bool AskFileName(string fileName)
+        {
+            if (string.IsNullOrEmpty(_appFileName) || !string.IsNullOrEmpty(fileName) )
+            {
+                string fName = string.IsNullOrEmpty(fileName) ? resourceLoader.GetString("SuggestFileName") : fileName;
+
+                // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
+                // called while running as admin
+                IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
+                string filename = SaveFilePicker.ShowDialog(
+                    windowHandle,
+                    fName,
+                    resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
+                    resourceLoader.GetString("SaveDialogTitle"));
+
+                if (filename == string.Empty)
+                {
+                    return false;
+                }
+
+                _appFileName = filename;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Wrapper method that saves the current file in place, using the current text in editor.
+        /// </summary>
+        private bool SaveFile()
+        {
+            bool saveSuccess = true;
+
             ChangeCursor(gridPreview, true);
 
             // set up the FileStream for all writing
@@ -914,17 +1036,20 @@ namespace RegistryPreviewUILib
                 fileStream = new FileStream(_appFileName, fileStreamOptions);
                 StreamWriter streamWriter = new StreamWriter(fileStream, System.Text.Encoding.Unicode);
 
-                // if we get here, the file is open and writable so dump the whole contents of textBox
-                string filenameText = textBox.Text;
+                // if we get here, the file is open and writable so dump the whole contents of editor
+                string filenameText = MonacoEditor.Text;
                 streamWriter.Write(filenameText);
                 streamWriter.Flush();
                 streamWriter.Close();
 
                 // only change when the save is successful
-                saveButton.IsEnabled = false;
+                UpdateUnsavedFileState(false);
+                _updateWindowTitleFunction(_appFileName);
             }
             catch (UnauthorizedAccessException ex)
             {
+                saveSuccess = false;
+
                 // this exception is thrown if the file is there but marked as read only
                 ShowMessageBox(
                     resourceLoader.GetString("ErrorDialogTitle"),
@@ -933,6 +1058,8 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                saveSuccess = false;
+
                 // this catch handles all other exceptions thrown when trying to write the file out
                 ShowMessageBox(
                     resourceLoader.GetString("ErrorDialogTitle"),
@@ -950,6 +1077,8 @@ namespace RegistryPreviewUILib
 
             // restore the cursor
             ChangeCursor(gridPreview, false);
+
+            return saveSuccess;
         }
 
         /// <summary>
@@ -958,12 +1087,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private string StripFirstAndLast(string line)
         {
-            if (line.Length > 1)
-            {
-                line = line.Remove(line.Length - 1, 1);
-                line = line.Remove(0, 1);
-            }
-
+            line = ParseHelper.StripFirstAndLast(line);
             return line;
         }
 
@@ -1031,27 +1155,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
         {
-            // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
-            int lastBracket = registryLine.LastIndexOf(']');
-            if (lastBracket == -1)
-            {
-                // since we don't have a last bracket yet, add an extra space and continue processing
-                registryLine += " ";
-                imageName = ERRORIMAGE;
-            }
-            else
-            {
-                // having found the last ] and there is text after it, drop the rest of the string on the floor
-                if (lastBracket < registryLine.Length - 1)
-                {
-                    registryLine = registryLine.Substring(0, lastBracket + 1);
-                }
-
-                if (CheckForKnownGoodBranches(registryLine) == false)
-                {
-                    imageName = ERRORIMAGE;
-                }
-            }
+            ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
         }
 
         /// <summary>
@@ -1068,41 +1172,6 @@ namespace RegistryPreviewUILib
             }
 
             return value.TrimEnd();
-        }
-
-        /// <summary>
-        /// Make sure the root of a full path start with one of the five "hard coded" roots.  Throw an error for the branch if it doesn't.
-        /// </summary>
-        private bool CheckForKnownGoodBranches(string key)
-        {
-            if ((key.StartsWith("[HKEY_CLASSES_ROOT]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_USER]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_USERS]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_LOCAL_MACHINE]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_CONFIG]", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith(@"[HKEY_CLASSES_ROOT\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_USER\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_USERS\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_LOCAL_MACHINE\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith("[HKCR]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKCU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKLM]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKCC]", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith(@"[HKCR\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCU\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKU\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKLM\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCC\", StringComparison.InvariantCultureIgnoreCase) == false))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

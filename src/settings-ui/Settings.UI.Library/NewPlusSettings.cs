@@ -7,39 +7,33 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Settings.UI.Library.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class NewPlusSettings : ISettingsConfig
+    public class NewPlusSettings : BasePTModuleSettings, ISettingsConfig
     {
         public const string ModuleName = "NewPlus";
+        public const string ModuleVersion = "1.0";
 
-        public void InitializeWithDefaultSettings()
+        [JsonPropertyName("properties")]
+        public NewPlusProperties Properties { get; set; }
+
+        public NewPlusSettings()
         {
-            // This code path should never happen
+            Name = ModuleName;
+            Version = ModuleVersion;
+            Properties = new NewPlusProperties();
         }
-
-        public string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
-
-        [JsonPropertyName("HideFileExtension")]
-        public bool HideFileExtension { get; set; }
-
-        [JsonPropertyName("HideStartingDigits")]
-        public bool HideStartingDigits { get; set; }
-
-        [JsonPropertyName("TemplateLocation")]
-        public string TemplateLocation { get; set; }
 
         public string GetModuleName()
         {
-            return ModuleName;
+            return Name;
         }
 
+        // This can be utilized in the future if the settings.json file is to be modified/deleted.
         public bool UpgradeSettingsConfiguration()
         {
             return false;

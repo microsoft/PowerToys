@@ -10,13 +10,10 @@ namespace WorkspacesEditor.Utils
     {
         public static string UpperCamelCaseToDashCase(this string str)
         {
-            // If it's single letter variable, leave it as it is
-            if (str.Length == 1)
-            {
-                return str;
-            }
-
-            return string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "-" + x.ToString() : x.ToString())).ToLowerInvariant();
+            // If it's a single letter variable, leave it as it is
+            return str.Length == 1
+                ? str
+                : string.Concat(str.Select((x, i) => i > 0 && char.IsUpper(x) ? "-" + x.ToString() : x.ToString())).ToLowerInvariant();
         }
     }
 }

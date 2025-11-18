@@ -1,0 +1,61 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants>Version=$(Version)</DefineConstants>
+    <Name>PowerToysVNextBootstrapper</Name>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
+    <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
+    <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
+    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputType>Bundle</OutputType>
+    <SuppressAclReset>True</SuppressAclReset>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
+    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
+    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="PowerToys.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" />
+    <PackageReference Include="WixToolset.UI.wixext" />
+    <PackageReference Include="WixToolset.NetFx.wixext" />
+    <PackageReference Include="WixToolset.Bal.wixext" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CustomDialogs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="SilentFilesInUseBA\SilentFilesInUseBAFunction.vcxproj">
+      <Project>{F8B9F842-F5C3-4A2D-8C85-7F8B9E2B4F1D}</Project>
+      <Name>SilentFilesInUseBAFunction</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- Prevents NU1503 -->
+  <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+    <ItemGroup>
+      <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="Restore" />
+</Project>

@@ -22,7 +22,8 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* i
 {
     return SHStrDup(this->template_entry->get_menu_title(
         !utilities::get_newplus_setting_hide_extension(),
-        !utilities::get_newplus_setting_hide_starting_digits()
+        !utilities::get_newplus_setting_hide_starting_digits(),
+        utilities::get_newplus_setting_resolve_variables()
     ).c_str(), title);
 }
 
@@ -63,39 +64,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* s
 
 IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _In_opt_ IBindCtx*) noexcept
 {
-    try
-    {
-        // Determine target path of where context menu was displayed
-        const auto target_path_name = utilities::get_path_from_unknown_site(site_of_folder);
-
-        // Determine initial filename
-        std::filesystem::path source_fullpath = template_entry->path;
-        std::filesystem::path target_fullpath = std::wstring(target_path_name) 
-            + L"\\" 
-            + this->template_entry->get_target_filename(!utilities::get_newplus_setting_hide_starting_digits());
-
-        // Copy file and determine final filename
-        std::filesystem::path target_final_fullpath = this->template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
-
-        Trace::EventCopyTemplate(target_final_fullpath.extension().c_str());
-
-        // Refresh folder items
-        SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
-
-        // Enter rename mode
-        this->template_entry->enter_rename_mode(site_of_folder, target_final_fullpath);
-
-        Trace::EventCopyTemplateResult(S_OK);
-
-        return S_OK;
-    }
-    catch (const std::exception& ex)
-    {
-        Trace::EventCopyTemplateResult(S_FALSE);
-        Logger::error(ex.what());
-    }
-
-    return S_FALSE;
+    return newplus::utilities::copy_template(template_entry, site_of_folder);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
@@ -127,6 +96,7 @@ IFACEMETHODIMP separator_context_menu_item::GetIcon(_In_opt_ IShellItemArray*, _
 
 IFACEMETHODIMP separator_context_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
 {
+    // Separators no longer work on Windows 11 regular context menu. They do still work on the extended context menu.
     *returned_flags = ECF_ISSEPARATOR;
     return S_OK;
 }
@@ -152,9 +122,5 @@ IFACEMETHODIMP template_folder_context_menu_item::GetIcon(_In_opt_ IShellItemArr
 
 IFACEMETHODIMP template_folder_context_menu_item::Invoke(_In_opt_ IShellItemArray* selection, _In_opt_ IBindCtx*) noexcept
 {
-    Logger::info(L"Open templates folder");
-    const std::wstring verb_hardcoded_do_not_change = L"open";
-    ShellExecute(nullptr, verb_hardcoded_do_not_change.c_str(), shell_template_folder.c_str(), NULL, NULL, SW_SHOWNORMAL);
-
-    return S_OK;
+    return newplus::utilities::open_template_folder(shell_template_folder);
 }

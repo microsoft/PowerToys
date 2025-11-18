@@ -13,6 +13,7 @@ namespace Microsoft.Plugin.Program.Programs
     public interface IAppxFactory
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Implements COM Interface")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Implements COM Interface")]
         void _VtblGap0_2(); // skip 2 methods
 
         IAppxManifestReader CreateManifestReader(IStream inputStream);

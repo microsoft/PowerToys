@@ -168,6 +168,9 @@
   <data name="generator_description_uuidv5" xml:space="preserve">
     <value>Generate a version 5 (SHA1): Namespace and name based UUID</value>
   </data>
+  <data name="generator_description_uuidv7" xml:space="preserve">
+    <value>Generate a version 7: Time-ordered randomly generated UUID</value>
+  </data>
   <data name="generator_description_your_input" xml:space="preserve">
     <value>your input</value>
     <comment>Usage example: "md5 &lt;your input&gt;"</comment>

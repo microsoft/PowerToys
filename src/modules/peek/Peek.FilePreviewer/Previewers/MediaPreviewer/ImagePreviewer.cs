@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -57,6 +59,12 @@ namespace Peek.FilePreviewer.Previewers
         private bool IsQoi() => Item.Extension == ".qoi";
 
         private DispatcherQueue Dispatcher { get; }
+
+        private static readonly HashSet<string> _supportedFileTypes =
+            BitmapDecoder.GetDecoderInformationEnumerator()
+                .SelectMany(di => di.FileExtensions)
+                .Union([".svg", ".qoi"])
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         public static bool IsItemSupported(IFileSystemItem item)
         {
@@ -199,74 +207,5 @@ namespace Peek.FilePreviewer.Previewers
                 });
             });
         }
-
-        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
-        {
-                // Image types
-                ".bmp",
-                ".gif",
-                ".jpg",
-                ".jfif",
-                ".jfi",
-                ".jif",
-                ".jpeg",
-                ".jpe",
-                ".png",
-                ".tif",  // very slow for large files: no thumbnail?
-                ".tiff", // NEED TO TEST
-                ".dib",  // NEED TO TEST
-                ".heic",
-                ".heif",
-                ".hif",  // NEED TO TEST
-                ".avif", // NEED TO TEST
-                ".jxr",
-                ".wdp",
-                ".ico",  // NEED TO TEST
-                ".thumb", // NEED TO TEST
-                ".webp",
-
-                // Raw types
-                ".arw",
-                ".cr2",
-                ".crw",
-                ".erf",
-                ".kdc", // NEED TO TEST
-                ".mrw",
-                ".nef",
-                ".nrw",
-                ".orf",
-                ".pef",
-                ".raf",
-                ".raw",
-                ".rw2",
-                ".rwl",
-                ".sr2",
-                ".srw",
-                ".srf",
-                ".dcs", // NEED TO TEST
-                ".dcr",
-                ".drf", // NEED TO TEST
-                ".k25",
-                ".3fr",
-                ".ari", // NEED TO TEST
-                ".bay", // NEED TO TEST
-                ".cap", // NEED TO TEST
-                ".iiq",
-                ".eip", // NEED TO TEST
-                ".fff",
-                ".mef",
-
-                // ".mdc", // Crashes in GetFullBitmapFromPathAsync
-                ".mos",
-                ".R3D",
-                ".rwz", // NEED TO TEST
-                ".x3f",
-                ".ori",
-                ".cr3",
-
-                ".svg",
-
-                ".qoi",
-        };
     }
 }

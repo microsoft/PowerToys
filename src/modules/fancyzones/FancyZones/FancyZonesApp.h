@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/hooks/LowlevelKeyboardEvent.h>
+#include <common/utils/EventWaiter.h>
 
 #include <FancyZonesLib/FancyZones.h>
 
@@ -15,10 +16,13 @@ public:
 private:
     static inline FancyZonesApp* s_instance = nullptr;
     static inline HHOOK s_llKeyboardHook = nullptr;
-    
+
     winrt::com_ptr<IFancyZones> m_app;
     HWINEVENTHOOK m_objectLocationWinEventHook = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks;
+
+    EventWaiter m_exitEventWaiter;
+    DWORD m_mainThreadId;
 
     void DisableModule() noexcept;
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- This file is read by XES, which we use in our Release builds. -->
+  <PropertyGroup Label="Version">
+    <XesUseOneStoreVersioning>true</XesUseOneStoreVersioning>
+    <XesBaseYearForStoreVersion>2025</XesBaseYearForStoreVersion>
+    <VersionMajor>0</VersionMajor>
+    <VersionMinor>7</VersionMinor>
+    <VersionInfoProductName>Microsoft Command Palette</VersionInfoProductName>
+  </PropertyGroup>
+</Project>

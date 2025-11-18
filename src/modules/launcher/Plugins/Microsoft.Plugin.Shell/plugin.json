@@ -6,7 +6,7 @@
   "Author": "qianlifeng",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Shell.dll",
   "IcoPathDark": "Images\\shell.dark.png",
   "IcoPathLight": "Images\\shell.light.png"

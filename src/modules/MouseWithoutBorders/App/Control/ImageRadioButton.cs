@@ -16,6 +16,7 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("The bounding rectangle of the check image in local co-ordinates")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Point ImageLocation
         {
             get => _imageLocation;
@@ -28,6 +29,7 @@ namespace MouseWithoutBorders
 
         private Point _textLocation;
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Point TextLocation
         {
             get => _textLocation;
@@ -47,6 +49,7 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("Image to show when Mouse is pressed on button")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Image CheckedImage
         {
             get => _checkedImage;
@@ -61,6 +64,7 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("Image to show when button is in normal state")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Image UncheckedImage
         {
             get => _uncheckedImage;

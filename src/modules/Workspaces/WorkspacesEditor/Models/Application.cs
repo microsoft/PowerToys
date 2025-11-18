@@ -1,29 +1,25 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Windows.Media.Imaging;
-
-using ManagedCommon;
-using Windows.Management.Deployment;
+using WorkspacesCsharpLibrary.Models;
 
 namespace WorkspacesEditor.Models
 {
-    public class Application : INotifyPropertyChanged, IDisposable
+    public enum WindowPositionKind
+    {
+        Custom = 0,
+        Maximized = 1,
+        Minimized = 2,
+    }
+
+    public class Application : BaseApplication, IDisposable
     {
         private bool _isInitialized;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public Application()
         {
@@ -31,11 +27,13 @@ namespace WorkspacesEditor.Models
 
         public Application(Application other)
         {
+            Id = other.Id;
             AppName = other.AppName;
             AppPath = other.AppPath;
             AppTitle = other.AppTitle;
             PackageFullName = other.PackageFullName;
             AppUserModelId = other.AppUserModelId;
+            PwaAppId = other.PwaAppId;
             CommandLineArguments = other.CommandLineArguments;
             IsElevated = other.IsElevated;
             CanLaunchElevated = other.CanLaunchElevated;
@@ -43,6 +41,7 @@ namespace WorkspacesEditor.Models
             Maximized = other.Maximized;
             Position = other.Position;
             MonitorNumber = other.MonitorNumber;
+            Version = other.Version;
 
             Parent = other.Parent;
             IsNotFound = other.IsNotFound;
@@ -78,7 +77,7 @@ namespace WorkspacesEditor.Models
                 return left.X != right.X || left.Y != right.Y || left.Width != right.Width || left.Height != right.Height;
             }
 
-            public override bool Equals(object obj)
+            public override readonly bool Equals(object obj)
             {
                 if (obj == null || GetType() != obj.GetType())
                 {
@@ -89,15 +88,15 @@ namespace WorkspacesEditor.Models
                 return X == pos.X && Y == pos.Y && Width == pos.Width && Height == pos.Height;
             }
 
-            public override int GetHashCode()
+            public override readonly int GetHashCode()
             {
                 return base.GetHashCode();
             }
         }
 
-        public string AppName { get; set; }
+        public string Id { get; set; }
 
-        public string AppPath { get; set; }
+        public string AppName { get; set; }
 
         public string AppTitle { get; set; }
 
@@ -135,35 +134,23 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        private bool _minimized;
+        public bool Minimized { get; set; }
 
-        public bool Minimized
+        public bool Maximized { get; set; }
+
+        public bool EditPositionEnabled => !Minimized && !Maximized;
+
+        public int PositionComboboxIndex
         {
-            get => _minimized;
+            get => Maximized ? (int)WindowPositionKind.Maximized : Minimized ? (int)WindowPositionKind.Minimized : (int)WindowPositionKind.Custom;
             set
             {
-                _minimized = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Minimized)));
+                Maximized = value == (int)WindowPositionKind.Maximized;
+                Minimized = value == (int)WindowPositionKind.Minimized;
                 OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
                 RedrawPreviewImage();
             }
         }
-
-        private bool _maximized;
-
-        public bool Maximized
-        {
-            get => _maximized;
-            set
-            {
-                _maximized = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Maximized)));
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
-                RedrawPreviewImage();
-            }
-        }
-
-        public bool EditPositionEnabled { get => !Minimized && !Maximized; }
 
         private string _appMainParams;
 
@@ -182,27 +169,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool IsAppMainParamVisible { get => !string.IsNullOrWhiteSpace(_appMainParams); }
-
-        private bool _isNotFound;
-
-        [JsonIgnore]
-        public bool IsNotFound
-        {
-            get
-            {
-                return _isNotFound;
-            }
-
-            set
-            {
-                if (_isNotFound != value)
-                {
-                    _isNotFound = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsNotFound)));
-                }
-            }
-        }
+        public bool IsAppMainParamVisible => !string.IsNullOrWhiteSpace(_appMainParams);
 
         [JsonIgnore]
         public bool IsHighlighted { get; set; }
@@ -211,107 +178,7 @@ namespace WorkspacesEditor.Models
         public int RepeatIndex { get; set; }
 
         [JsonIgnore]
-        public string RepeatIndexString
-        {
-            get
-            {
-                return RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
-            }
-        }
-
-        [JsonIgnore]
-        private Icon _icon = null;
-
-        [JsonIgnore]
-        public Icon Icon
-        {
-            get
-            {
-                if (_icon == null)
-                {
-                    try
-                    {
-                        if (IsPackagedApp)
-                        {
-                            Uri uri = GetAppLogoByPackageFamilyName();
-                            var bitmap = new Bitmap(uri.LocalPath);
-                            var iconHandle = bitmap.GetHicon();
-                            _icon = Icon.FromHandle(iconHandle);
-                        }
-                        else
-                        {
-                            _icon = Icon.ExtractAssociatedIcon(AppPath);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        Logger.LogWarning($"Icon not found on app path: {AppPath}. Using default icon");
-                        IsNotFound = true;
-                        _icon = new Icon(@"images\DefaultIcon.ico");
-                    }
-                }
-
-                return _icon;
-            }
-        }
-
-        public Uri GetAppLogoByPackageFamilyName()
-        {
-            var pkgManager = new PackageManager();
-            var pkg = pkgManager.FindPackagesForUser(string.Empty, PackagedId).FirstOrDefault();
-
-            if (pkg == null)
-            {
-                return null;
-            }
-
-            return pkg.Logo;
-        }
-
-        private BitmapImage _iconBitmapImage;
-
-        public BitmapImage IconBitmapImage
-        {
-            get
-            {
-                if (_iconBitmapImage == null)
-                {
-                    try
-                    {
-                        Bitmap previewBitmap = new Bitmap(32, 32);
-                        using (Graphics graphics = Graphics.FromImage(previewBitmap))
-                        {
-                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                            graphics.DrawIcon(Icon, new Rectangle(0, 0, 32, 32));
-                        }
-
-                        using (var memory = new MemoryStream())
-                        {
-                            previewBitmap.Save(memory, ImageFormat.Png);
-                            memory.Position = 0;
-
-                            var bitmapImage = new BitmapImage();
-                            bitmapImage.BeginInit();
-                            bitmapImage.StreamSource = memory;
-                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmapImage.EndInit();
-                            bitmapImage.Freeze();
-
-                            _iconBitmapImage = bitmapImage;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError($"Exception while drawing icon for app with path: {AppPath}. Exception message: {e.Message}");
-                    }
-                }
-
-                return _iconBitmapImage;
-            }
-        }
+        public string RepeatIndexString => RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);
 
         private WindowPosition _position;
 
@@ -355,94 +222,15 @@ namespace WorkspacesEditor.Models
         {
             get
             {
-                if (_monitorSetup == null)
-                {
-                    _monitorSetup = Parent.Monitors.Where(x => x.MonitorNumber == MonitorNumber).FirstOrDefault();
-                    if (_monitorSetup == null)
-                    {
-                        // monitors changed: try to determine monitor id based on middle point
-                        int middleX = Position.X + (Position.Width / 2);
-                        int middleY = Position.Y + (Position.Height / 2);
-                        var monitorCandidate = Parent.Monitors.Where(x =>
-                            (x.MonitorDpiUnawareBounds.Left < middleX) &&
-                            (x.MonitorDpiUnawareBounds.Right > middleX) &&
-                            (x.MonitorDpiUnawareBounds.Top < middleY) &&
-                            (x.MonitorDpiUnawareBounds.Bottom > middleY)).FirstOrDefault();
-                        if (monitorCandidate != null)
-                        {
-                            _monitorSetup = monitorCandidate;
-                            MonitorNumber = monitorCandidate.MonitorNumber;
-                        }
-                        else
-                        {
-                            // monitors and even the app's area unknown, set the main monitor (which is closer to (0,0)) as the app's monitor
-                            monitorCandidate = Parent.Monitors.OrderBy(x => Math.Abs(x.MonitorDpiUnawareBounds.Left) + Math.Abs(x.MonitorDpiUnawareBounds.Top)).FirstOrDefault();
-                            if (monitorCandidate != null)
-                            {
-                                _monitorSetup = monitorCandidate;
-                                MonitorNumber = monitorCandidate.MonitorNumber;
-                            }
-                            else
-                            {
-                                // no monitors defined at all.
-                                Logger.LogError($"Wrong workspace setup. No monitors defined for the workspace: {Parent.Name}.");
-                            }
-                        }
-                    }
-                }
+                _monitorSetup ??= Parent.GetMonitorForApp(this);
 
                 return _monitorSetup;
             }
         }
 
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
         public void InitializationFinished()
         {
             _isInitialized = true;
-        }
-
-        private bool? _isPackagedApp;
-
-        public string PackagedId { get; set; }
-
-        public string PackagedName { get; set; }
-
-        public string PackagedPublisherID { get; set; }
-
-        public string Aumid { get; set; }
-
-        public bool IsPackagedApp
-        {
-            get
-            {
-                if (_isPackagedApp == null)
-                {
-                    if (!AppPath.StartsWith("C:\\Program Files\\WindowsApps\\", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        _isPackagedApp = false;
-                    }
-                    else
-                    {
-                        string appPath = AppPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
-                        Regex packagedAppPathRegex = new Regex(@"(?<APPID>[^_]*)_\d+.\d+.\d+.\d+_x64__(?<PublisherID>[^\\]*)", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                        Match match = packagedAppPathRegex.Match(appPath);
-                        _isPackagedApp = match.Success;
-                        if (match.Success)
-                        {
-                            PackagedName = match.Groups["APPID"].Value;
-                            PackagedPublisherID = match.Groups["PublisherID"].Value;
-                            PackagedId = $"{PackagedName}_{PackagedPublisherID}";
-                            Aumid = $"{PackagedId}!App";
-                        }
-                    }
-                }
-
-                return _isPackagedApp.Value;
-            }
         }
 
         private bool _isExpanded;
@@ -460,7 +248,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public string DeleteButtonContent { get => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack; }
+        public string DeleteButtonContent => _isIncluded ? Properties.Resources.Delete : Properties.Resources.AddBack;
 
         private bool _isIncluded = true;
 
@@ -482,25 +270,12 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
-
         internal void CommandLineTextChanged(string newCommandLineValue)
         {
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
         }
 
-        internal void MaximizedChecked()
-        {
-            Minimized = false;
-        }
-
-        internal void MinimizedChecked()
-        {
-            Maximized = false;
-        }
+        public string Version { get; set; }
     }
 }

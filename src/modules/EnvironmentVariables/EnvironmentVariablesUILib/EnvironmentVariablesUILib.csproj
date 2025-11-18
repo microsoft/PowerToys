@@ -53,4 +53,5 @@
     <PackageReference Include="System.Text.Json" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+
 </Project>

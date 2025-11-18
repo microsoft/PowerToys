@@ -15,6 +15,7 @@ namespace DPIAware
     void Convert(HMONITOR monitor_handle, RECT& rect);
     void ConvertByCursorPosition(float& width, float& height);
     void InverseConvert(HMONITOR monitor_handle, float& width, float& height);
+    void InverseConvert(HMONITOR monitor_handle, RECT& rect);
     void EnableDPIAwarenessForThisProcess();
 
     enum AwarenessLevel

@@ -82,8 +82,9 @@ namespace Wox.Plugin
 
                     if (!IsPluginInitialized)
                     {
-                        string description = $"{Resources.FailedToLoadPluginDescription} {Metadata.Name}\n\n{Resources.FailedToLoadPluginDescriptionPartTwo}";
-                        Application.Current.Dispatcher.InvokeAsync(() => api.ShowMsg(Resources.FailedToLoadPluginTitle, description, string.Empty, false));
+                        string title = Resources.FailedToLoadPluginTitle.ToString().Replace("{0}", Constant.Version);
+                        string description = $"{Resources.FailedToLoadPluginDescription} {Metadata.Name} ({Metadata.ExecuteFileVersion})\n\n{Resources.FailedToLoadPluginDescriptionPartTwo}";
+                        Application.Current.Dispatcher.InvokeAsync(() => api.ShowMsg(title, description, string.Empty, false));
                     }
                 }
                 else
@@ -223,7 +224,7 @@ namespace Wox.Plugin
         {
             if (Plugin == null)
             {
-                Log.Warn($"Can not initialize {Metadata.Name} plugin as it was not loaded", GetType());
+                Log.Warn($"Cannot initialize {Metadata.Name} plugin as it was not loaded", GetType());
                 return false;
             }
 

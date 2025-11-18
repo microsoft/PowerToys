@@ -1,6 +1,8 @@
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
 using System.Collections.Concurrent;
@@ -8,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
+using ImageResizer.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
@@ -99,7 +101,9 @@ namespace ImageResizer.Models
         private static ResizeBatch CreateBatch(Action<string> executeAction)
         {
             var mock = new Mock<ResizeBatch> { CallBase = true };
-            mock.Protected().Setup("Execute", ItExpr.IsAny<string>()).Callback(executeAction);
+            mock.Protected()
+                .Setup("Execute", ItExpr.IsAny<string>(), ItExpr.IsAny<Settings>())
+                .Callback((string file, Settings settings) => executeAction(file));
 
             return mock.Object;
         }

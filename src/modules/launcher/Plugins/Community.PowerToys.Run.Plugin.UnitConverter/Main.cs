@@ -14,6 +14,7 @@ using System.Windows.Input;
 
 using ManagedCommon;
 using Wox.Plugin;
+using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
@@ -72,12 +73,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
+                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException ex)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            Log.Exception("Copy failed", ex, GetType());
+                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);
@@ -104,12 +106,13 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.Format, CultureInfo.CurrentCulture));
+                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException ex)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            Log.Exception("Copy failed", ex, GetType());
+                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);

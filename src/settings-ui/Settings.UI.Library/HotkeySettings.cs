@@ -4,16 +4,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public record HotkeySettings : ICmdLineRepresentable
+    public record HotkeySettings : ICmdLineRepresentable, INotifyPropertyChanged
     {
         private const int VKTAB = 0x09;
+        private bool _hasConflict;
+        private string _conflictDescription;
+        private bool _isSystemConflict;
+        private bool _ignoreConflict;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public HotkeySettings()
         {
@@ -22,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Alt = false;
             Shift = false;
             Code = 0;
+
+            HasConflict = false;
         }
 
         /// <summary>
@@ -39,6 +55,68 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Alt = alt;
             Shift = shift;
             Code = code;
+            HasConflict = false;
+        }
+
+        [JsonIgnore]
+        public bool IgnoreConflict
+        {
+            get => _ignoreConflict;
+            set
+            {
+                if (_ignoreConflict != value)
+                {
+                    _ignoreConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool HasConflict
+        {
+            get => _hasConflict;
+            set
+            {
+                if (_hasConflict != value)
+                {
+                    _hasConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public string ConflictDescription
+        {
+            get => _ignoreConflict ? null : _conflictDescription;
+            set
+            {
+                if (_conflictDescription != value)
+                {
+                    _conflictDescription = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool IsSystemConflict
+        {
+            get => _isSystemConflict;
+            set
+            {
+                if (_isSystemConflict != value)
+                {
+                    _isSystemConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public virtual void UpdateConflictStatus()
+        {
+            Logger.LogInfo($"{this.ToString()}");
         }
 
         [JsonPropertyName("win")]
@@ -119,9 +197,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (Shift)
             {
-                shortcutList.Add("Shift");
-
-                // shortcutList.Add(16); // The Shift key or button.
+                shortcutList.Add(16); // The Shift key or button.
             }
 
             if (Code > 0)

@@ -94,7 +94,7 @@ namespace WorkspacesEditor.Utils
             FileStream fileStream = new FileStream(path, FileMode.CreateNew);
             using (var memoryStream = new MemoryStream())
             {
-                icon.Save(memoryStream, ImageFormat.Png);
+                WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(icon, memoryStream);
 
                 BinaryWriter iconWriter = new BinaryWriter(fileStream);
                 if (fileStream != null && iconWriter != null)

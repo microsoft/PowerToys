@@ -6,28 +6,18 @@ using System.Windows;
 
 namespace WorkspacesEditor.Models
 {
-    public class Monitor
+    public class Monitor(string monitorName, string monitorInstanceId, int number, int dpi, Rect dpiAwareBounds, Rect dpiUnawareBounds)
     {
-        public string MonitorName { get; private set; }
+        public string MonitorName { get; private set; } = monitorName;
 
-        public string MonitorInstanceId { get; private set; }
+        public string MonitorInstanceId { get; private set; } = monitorInstanceId;
 
-        public int MonitorNumber { get; private set; }
+        public int MonitorNumber { get; private set; } = number;
 
-        public int Dpi { get; private set; }
+        public int Dpi { get; private set; } = dpi;
 
-        public Rect MonitorDpiUnawareBounds { get; private set; }
+        public Rect MonitorDpiUnawareBounds { get; private set; } = dpiUnawareBounds;
 
-        public Rect MonitorDpiAwareBounds { get; private set; }
-
-        public Monitor(string monitorName, string monitorInstanceId, int number, int dpi, Rect dpiAwareBounds, Rect dpiUnawareBounds)
-        {
-            MonitorName = monitorName;
-            MonitorInstanceId = monitorInstanceId;
-            MonitorNumber = number;
-            Dpi = dpi;
-            MonitorDpiAwareBounds = dpiAwareBounds;
-            MonitorDpiUnawareBounds = dpiUnawareBounds;
-        }
+        public Rect MonitorDpiAwareBounds { get; private set; } = dpiAwareBounds;
     }
 }

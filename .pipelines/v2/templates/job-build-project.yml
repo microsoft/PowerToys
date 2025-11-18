@@ -11,6 +11,9 @@ parameters:
     default:
       - x64
       - arm64
+  - name: official
+    type: boolean
+    default: false
   - name: codeSign
     type: boolean
     default: false
@@ -47,13 +50,30 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
-
+  - name: buildTests
+    type: boolean
+    default: true
+  - name: useVSPreview
+    type: boolean
+    default: false
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: useLatestWinAppSDK
+    type: boolean
+    default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
   - name: csProjectsToPublish
     type: object
     default:
@@ -64,6 +84,12 @@ parameters:
       - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
       - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
       - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+  - name: timeoutInMinutes
+    type: number
+    default: 240
+  - name: cancelTimeoutInMinutes
+    type: number
+    default: 1
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -85,6 +111,8 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
+    NUGET_PACKAGES: 'C:\NuGetPackages' # Some of our build steps cache these here... and it was apparently part of the global environment
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
@@ -95,19 +123,27 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.runTests, true) }}:
+    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
+    ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
+      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages"'
+    ${{ else }}:
+      RestoreAdditionalProjectSourcesArg: ''
   displayName: Build
-  timeoutInMinutes: 240
-  cancelTimeoutInMinutes: 1
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
   templateContext: # Required when this template is hosted in 1ES PT
     outputs:
     - output: pipelineArtifact
       artifactName: $(JobOutputArtifactName)
       targetPath: $(Build.ArtifactStagingDirectory)
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
+      targetPath: $(LogOutputDirectory)
+      condition: or(failed(), canceled())
   steps:
   - checkout: self
     clean: true
@@ -123,21 +159,29 @@ jobs:
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
         $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        # Cache read-only policy controlled by parameter
+        $cacheIsReadOnly = "${{ parameters.msBuildCacheIsReadOnly }}"
+        if ($cacheIsReadOnly -eq "True") {
+          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=true"
+        }
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    # Only required if we're using ESRP
-    - template: steps-ensure-dotnet-version.yml
-      parameters:
-        sdk: true
-        version: '6.0'
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '6.0' # .NET 6.0 is required in CI for ESRP code signing tasks. Please do not remove.
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
       version: '8.0'
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '9.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
@@ -145,13 +189,18 @@ jobs:
 
   - pwsh: |-
       & '.pipelines/applyXamlStyling.ps1' -Passive
+    displayName: Verify XAML formatting
+
+  - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    displayName: Verify Nuget package versions for PowerToys.sln
+
+  - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
-    displayName: Verify formatting, nuget, and ARM64 configurations
+    displayName: Verify ARM64 configurations
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
@@ -171,16 +220,29 @@ jobs:
            "packages.config" | "$(Agent.OS)"
            "packages.config"
         path: packages
-
-  - template: .\steps-restore-nuget.yml
+  
+  - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
+    - template: .\steps-update-winappsdk-and-restore-nuget.yml
+      parameters:
+        versionNumber: ${{ parameters.winAppSDKVersionNumber }}
+        useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+  
+  - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
+    - template: .\steps-restore-nuget.yml
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
     displayName: Work around DD-1541167 (VCToolsVersion)
+    ${{ if eq(parameters.useVSPreview, true) }}:
+      env:
+        VCWhereExtraVersionTarget: '-prerelease'
 
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
-    displayName: Download and install WiX 3.14 development build
+  - ${{ if eq(parameters.official, true) }}:
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\cmdpal
+
+
 
   - ${{ parameters.beforeBuildSteps }}
 
@@ -200,6 +262,7 @@ jobs:
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         /t:$(MSBuildMainBuildTargets)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -208,90 +271,68 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign Utilities
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'src/modules'
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_abstracted_utils_dll.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-
   - task: VSBuild@1
-    displayName: Create Hosts File Editor package
+    displayName: Generate DSC artifacts for ARM64
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
-      solution: '**\HostsUILib.csproj'
+      solution: PowerToys.sln
       vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-hosts.binlog
+      msbuildArgs: >-
+        -restore
+        /p:Configuration=$(BuildConfiguration)
+        /p:Platform=x64
+        /t:DSC\PowerToys_Settings_DSC_Schema_Generator
+        /bl:$(LogOutputDirectory)\build-dsc-generator.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
+      platform: x64
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
   - task: VSBuild@1
-    displayName: Create Environment Variables Editor package
+    displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
+    condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
     inputs:
-      solution: '**\EnvironmentVariablesUILib.csproj'
-      vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
+      solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
+      msbuildArgs: /t:Build /m /restore
+      platform: x64
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-  - task: VSBuild@1
-    displayName: Create Registry Preview package
-    inputs:
-      solution: '**\RegistryPreviewUILib.csproj'
-      vsVersion: 17.0
-      msbuildArgs: /p:CIBuild=true;NoBuild=true -t:pack /bl:$(LogOutputDirectory)\build-registry-preview.binlog
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  # Generate DSC manifests using PowerToys.DSC.exe
+  - pwsh: |-
+      & '.pipelines/generateDscManifests.ps1' -BuildPlatform '$(BuildPlatform)' -BuildConfiguration '$(BuildConfiguration)' -RepoRoot '$(Build.SourcesDirectory)'
+    displayName: Generate DSC manifests
 
   - task: CopyFiles@2
-    displayName: Stage NuGet packages
+    displayName: Stage SDK/build
     inputs:
-      contents: "**/bin/Release/PowerToys*.nupkg"
+      contents: |-
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.props"
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.targets"
       flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/nupkg
+      targetFolder: $(JobOutputDirectory)/sdk/build
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign NuGet packages
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: $(JobOutputDirectory)/nupkg
-          Pattern: '*.nupkg'
-          UseMinimatch: true
-          signConfigType: inlineSignParams
-          inlineOperation: >-
-            [
-                {
-                    "KeyCode": "CP-401405",
-                    "OperationCode": "NuGetSign",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-401405",
-                    "OperationCode": "NuGetVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
+  - task: CopyFiles@2
+    displayName: Stage SDK/lib
+    inputs:
+      contents: |-
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.dll"
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.deps.json"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/lib/net8.0-windows10.0.19041.0
+
+  - task: CopyFiles@2
+    displayName: Stage SDK/winmd
+    inputs:
+      contents: |-
+        "**/Microsoft.CommandPalette.Extensions/$(BuildPlatform)/release/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.winmd"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/winmd
 
   - task: VSBuild@1
     displayName: Build BugReportTool
@@ -305,26 +346,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-bug-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Build WebcamReportTool
-    inputs:
-      solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
-      vsVersion: 17.0
-      msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-webcam-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -345,6 +367,7 @@ jobs:
         /bl:$(LogOutputDirectory)\build-styles-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -366,11 +389,28 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
+          /p:TargetFramework=net9.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
+          $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         msbuildArchitecture: x64
         maximumCpuCount: true
+
+  ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
+  - task: CopyFiles@2
+    displayName: HACK Copy core WebView2 ARM64 dll to output directory
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
+    inputs:
+      contents: packages/Microsoft.Web.WebView2.1.0.2903.40/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
+      targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
+      flattenFolders: True
+      OverWrite: True
+
+  # Check if all projects (located in src sub-folder) import common props
+  - pwsh: |-
+      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
+    displayName: Audit shared common props for CSharp projects in src sub-folder
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
@@ -386,9 +426,11 @@ jobs:
       & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
     displayName: Audit WinAppSDK applications path asset conflicts
 
-  - pwsh: |-
-      & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
-    displayName: Verify NOTICE.md and NuGet packages match
+  # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
+  - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
+    - pwsh: |-
+        & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
+      displayName: Verify NOTICE.md and NuGet packages match
 
   - ${{ if eq(parameters.runTests, true) }}:
     # Publish test results which ran in MSBuild
@@ -397,11 +439,11 @@ jobs:
       inputs:
         testResultsFormat: VSTest
         testResultsFiles: '**/*.trx'
-      condition: ne(variables['BuildPlatform'],'arm64')
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64'))
 
     # Native dlls
     - task: VSTest@2
-      condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
+      condition: and(succeeded(), ne(variables['BuildPlatform'], 'arm64')) # No arm64 agents to run the tests.
       displayName: 'Native Tests'
       inputs:
         platform: '$(BuildPlatform)'
@@ -410,18 +452,64 @@ jobs:
         testAssemblyVer2: |
           **\KeyboardManagerEngineTest.dll
           **\KeyboardManagerEditorTest.dll
-          **\UnitTests-CommonLib.dll
-          **\PowerRenameUnitTests.dll
-          **\UnitTests-FancyZones.dll
+          **\*UnitTest*.dll
           !**\obj\**
 
+  - pwsh: |-
+      $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
+      Write-Host "Found $($Packages.Count) CmdPal MSIX package(s):"
+      foreach ($pkg in $Packages) {
+          Write-Host "  - $($pkg.FullName)"
+      }
+      
+      if ($Packages.Count -gt 0) {
+          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fall back to any
+          $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.UI_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+          if ($PlatformPackage) {
+              $Package = $PlatformPackage
+              Write-Host "Using platform-specific package: $($Package.FullName)"
+          } else {
+              $Package = $Packages | Select-Object -First 1
+              Write-Host "Using first available package: $($Package.FullName)"
+          }
+          
+          $PackageFilename = $Package.FullName
+          Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+      } else {
+          Write-Warning "No CmdPal MSIX packages found!"
+      }
+    displayName: Locate the CmdPal MSIX
+
   - ${{ if eq(parameters.codeSign, true) }}:
+    - pwsh: |-
+        & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
+      displayName: Unpack the MSIX for signing
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign CmdPal MSIX content
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(JobOutputDirectory)/CmdPalPackageContents'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - pwsh: |-
+        $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
+        $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
+        & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
+        Copy-Item -Force $PackageFilename "$(CmdPalPackagePath)"
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/CmdPalPackageContents" -ErrorAction:Ignore
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
+      displayName: Re-pack the new CmdPal package after signing
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)' # Video conf uses x86 and x64.
+          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
@@ -436,34 +524,22 @@ jobs:
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign x86 DirectShow VCM
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'x86/$(BuildConfiguration)' # Video conf uses x86 and x64.
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_vcm.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+  - pwsh: |-
+      Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
+    displayName: Stage the final CmdPal package
 
-  - template: steps-build-installer.yml
+
+
+  - template: steps-build-installer-vnext.yml
     parameters:
       codeSign: ${{ parameters.codeSign }}
       signingIdentity: ${{ parameters.signingIdentity }}
       versionNumber: ${{ parameters.versionNumber }}
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-
-  - template: steps-build-installer.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
-  # - All .pdbs from any static libs .libs (which were only used during linking)
+  # - All .pdb files from any static libs .libs (which were only used during linking)
   - pwsh: |-
       $binDir = '$(Build.SourcesDirectory)'
       $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
@@ -479,60 +555,73 @@ jobs:
   - task: CopyFiles@2
     displayName: Stage Installers
     inputs:
-      contents: "**/PowerToys*Setup-*.exe"
+      contents: |-
+        **/PowerToys*Setup-*.exe
+        !**/PowerToysSetupVNext/obj/**
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
-  - task: CopyFiles@2
-    displayName: Stage Symbols
-    inputs:
-      contents: |-
-        **\*.pdb
-        !**\vc143.pdb
-        !**\*test*.pdb
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
+  - pwsh: |-
+      $Symbols = Get-ChildItem "$(BuildPlatform)" -Recurse -Filter *.pdb -Exclude "vc143.pdb","*test*.pdb" |
+          Group-Object Name | ForEach-Object { $_.Group[0] }
+      $OutDir = "$(JobOutputDirectory)/symbols-$(BuildPlatform)"
+      New-Item -Type Directory $OutDir -EA:Ignore
+      Write-Host "Linking $($Symbols.Length) symbols into place at $OutDir"
+      ForEach($s in $Symbols) {
+        New-Item -Type HardLink -Target $s.FullName (Join-Path $OutDir $s.Name)
+      }
+    displayName: Stage Unique Symbols (as hard links)
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
-      $userHash = ((Get-Item $p\PowerToysUserSetup*.exe | Get-FileHash).Hash);
-      $machineHash = ((Get-Item $p\PowerToysSetup*.exe | Get-FileHash).Hash);
-      $userPlat = "hash_user_$(BuildPlatform).txt";
-      $machinePlat = "hash_machine_$(BuildPlatform).txt";
-      $combinedUserPath = $p + $userPlat;
-      $combinedMachinePath = $p + $machinePlat;
       
-      echo $p
-
-      echo $userPlat
-      echo $userHash
-      echo $combinedUserPath
-
-      echo $machinePlat
-      echo $machineHash
-      echo $combinedMachinePath
+      # Calculate hashes for installers
+      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe"
+      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
       
-      $userHash | out-file -filepath $combinedUserPath
-      $machineHash | out-file -filepath $combinedMachinePath
-    displayName: Calculate file hashes
+      if ($userSetupFiles.Count -gt 0) {
+          $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
+          $userPlat = "hash_user_$(BuildPlatform).txt";
+          $combinedUserPath = $p + $userPlat;
+          echo "User: $userHash"
+          $userHash | out-file -filepath $combinedUserPath
+      }
+      
+      if ($machineSetupFiles.Count -gt 0) {
+          $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
+          $machinePlat = "hash_machine_$(BuildPlatform).txt";
+          $combinedMachinePath = $p + $machinePlat;
+          echo "Machine: $machineHash"
+          $machineHash | out-file -filepath $combinedMachinePath
+      }
+    displayName: Calculate file hashes for all installers
 
   # Publishing the GPO files
   - pwsh: |-
-      New-Item "$(JobOutputDirectory)/gpo" -Type Directory
-      Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
+      $GpoArchive = "$(JobOutputDirectory)\GroupPolicyObjectFiles-${{ parameters.versionNumber }}.zip"
+      tar -c -v --format=zip -C .\src\gpo\assets -f $GpoArchive *
     displayName: Stage GPO files
 
-  # Running the tests may result in future jobs consuming artifacts out of this build
-  - ${{ if eq(parameters.runTests, true) }}:
-    - task: CopyFiles@2
-      displayName: Stage entire build output
-      inputs:
-        sourceFolder: '$(Build.SourcesDirectory)'
-        contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
+    # Running the tests may result in future jobs consuming artifacts out of this build
+    # Instead of running an expensive file copy step, move everything over since the build is totally done.
+    - pwsh: |-
+        # It seems weird, but this is for compatibility. Our artifacts historically contained the folder x64/Release/x64/Release (for example).
+        $FinalOutputRoot = "$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)\$(BuildPlatform)"
+        $ProjectBuildRoot = "$(Build.SourcesDirectory)\$(BuildPlatform)"
+        $ProjectBuildDirectory = "$ProjectBuildRoot\$(BuildConfiguration)"
+
+        New-Item -Type Directory $FinalOutputRoot -EA:Ignore
+        Move-Item $ProjectBuildDirectory $FinalOutputRoot
+      displayName: Move entire output directory into artifacts
 
   - ${{ if eq(parameters.publishArtifacts, true) }}:
     - publish: $(JobOutputDirectory)
       artifact: $(JobOutputArtifactName)
       displayName: Publish all outputs
-      condition: always()
+      condition: succeeded()
+
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
+      displayName: Publish failure logs
+      condition: or(failed(), canceled())

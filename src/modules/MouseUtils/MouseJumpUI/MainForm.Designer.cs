@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace MouseJumpUI;
 
-partial class MainForm
+internal sealed partial class MainForm
 {
 
     /// <summary>

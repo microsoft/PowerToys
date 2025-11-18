@@ -9,10 +9,12 @@ namespace WindowFilter
     {
         auto style = GetWindowLong(window, GWL_STYLE);
         bool isPopup = WindowUtils::HasStyle(style, WS_POPUP);
-        bool hasThickFrame = WindowUtils::HasStyle(style, WS_THICKFRAME);
         bool hasCaption = WindowUtils::HasStyle(style, WS_CAPTION);
         bool hasMinimizeMaximizeButtons = WindowUtils::HasStyle(style, WS_MINIMIZEBOX) || WindowUtils::HasStyle(style, WS_MAXIMIZEBOX);
-        if (isPopup && !(hasThickFrame && (hasCaption || hasMinimizeMaximizeButtons)))
+
+        Logger::info("Style for window: {}, {:#x}", reinterpret_cast<void*>(window), style);
+
+        if (isPopup && !(hasCaption || hasMinimizeMaximizeButtons))
         {
             // popup windows we want to snap: e.g. Calculator, Telegram
             // popup windows we don't want to snap: start menu, notification popup, tray window, etc.
@@ -47,11 +49,6 @@ namespace WindowFilter
         if (!WindowUtils::IsRoot(window))
         {
             // child windows such as buttons, combo boxes, etc.
-            return false;
-        }
-
-        if (WindowFilter::FilterPopup(window))
-        {
             return false;
         }
 

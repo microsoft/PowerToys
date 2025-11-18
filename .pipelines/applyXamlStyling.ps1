@@ -41,6 +41,9 @@ Write-Output ""
 Write-Output "Restoring dotnet tools..."
 dotnet tool restore --disable-parallel --no-cache
 
+# Use Regex syntax
+$PathExcludes = "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)|(\\RegistryPreviewUILib\\Controls\\HexBox\\)"
+
 if (-not $Passive)
 {
     # Look for unstaged changed files by default
@@ -87,7 +90,7 @@ if (-not $Passive)
     }
 
     Write-Output "Running Git Diff: $gitDiffCommand"
-    $files = Invoke-Expression $gitDiffCommand | Select-String -Pattern "\.xaml$"
+    $files = Invoke-Expression $gitDiffCommand | Select-String -Pattern "\.xaml$" | Where-Object { $_ -notmatch $PathExcludes }
 
     if (-not $Passive -and -not $Main -and -not $Unstaged -and -not $Staged -and -not $LastCommit)
     {
@@ -97,7 +100,7 @@ if (-not $Passive)
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -c "$PSScriptRoot\..\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
     }
     else
     {
@@ -107,17 +110,20 @@ if (-not $Passive)
 else 
 {
     Write-Output "Checking all files (passively)"
-    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)" }
+    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch $PathExcludes }
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -p -c "$PSScriptRoot\..\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -p -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
 
         if ($lastExitCode -eq 1)
         {
             Write-Error 'XAML Styling is incorrect, please run `.\.pipelines\applyXamlStyling.ps1 -Main` locally.'
         }
-
+        if ($lastExitCode -lt 0)
+        {
+            Write-Error "Error running dotnet tool run, with the exit code $lastExitCode. Please verify logs and running environment."
+        }
         # Return XAML Styler Status
         exit $lastExitCode
     }

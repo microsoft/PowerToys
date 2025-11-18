@@ -1,5 +1,6 @@
 #pragma once
 #include "Shortcut.h"
+#include "RemapShortcut.h"
 
 class LayoutMap;
 
@@ -19,6 +20,7 @@ namespace Helpers
     DWORD EncodeKeyNumpadOrigin(const DWORD key, const bool extended);
     DWORD ClearKeyNumpadOrigin(const DWORD key);
     bool IsNumpadOriginated(const DWORD key);
+    bool IsNumpadKeyThatIsAffectedByShift(const DWORD vkCode);
     DWORD GetNumpadOriginEncodingBit();
 
     // Function to check if the key is a modifier key
@@ -46,11 +48,12 @@ namespace Helpers
     std::wstring GetCurrentApplication(bool keepPath);
 
     // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
-    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const ModifierKey& winKeyInvoked, std::vector<INPUT>& keyEventArray, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
+    void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const Modifiers& modifiersKeys, std::vector<INPUT>& keyEventArray, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);
+
 
     // Function to filter the key codes for artificial key codes
     int32_t FilterArtificialKeys(const int32_t& key);
 
-    // Function to sort a vector of shortcuts based on it's size
+    // Function to sort a vector of shortcuts based on its size
     void SortShortcutVectorBasedOnSize(std::vector<Shortcut>& shortcutVector);
 }

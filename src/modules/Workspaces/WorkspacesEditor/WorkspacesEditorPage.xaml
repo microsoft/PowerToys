@@ -51,6 +51,8 @@
                 MouseLeave="AppBorder_MouseLeave">
                 <Expander
                     Margin="0,0,20,0"
+                    AutomationProperties.AutomationId="{Binding AppName}"
+                    AutomationProperties.Name="{Binding AppName}"
                     FlowDirection="RightToLeft"
                     IsEnabled="{Binding IsIncluded, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     IsExpanded="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -80,7 +82,7 @@
                                 Margin="10"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Source="{Binding IconBitmapImage}" />
+                                Source="{Binding IconBitmapImage, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock
                                 Grid.Column="2"
                                 Width="20"
@@ -156,24 +158,33 @@
                                 Content="{x:Static props:Resources.LaunchAsAdmin}"
                                 IsChecked="{Binding IsElevated, Mode=TwoWay}"
                                 IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}" />
-                            <CheckBox
-                                MinWidth="10"
-                                Margin="15,0,0,0"
-                                Checked="MaximizedChecked"
-                                Content="{x:Static props:Resources.Maximized}"
-                                IsChecked="{Binding Maximized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            <CheckBox
-                                MinWidth="10"
-                                Margin="15,0,0,0"
-                                Checked="MinimizedChecked"
-                                Content="{x:Static props:Resources.Minimized}"
-                                IsChecked="{Binding Minimized, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
                         <StackPanel
                             Grid.Row="2"
                             Margin="100,5,0,0"
                             Orientation="Horizontal">
                             <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource TextBlockEnabledStyle}"
+                                Text="{x:Static props:Resources.WindowPosition}" />
+                            <ComboBox
+                                Margin="15,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource SecondaryBackgroundBrush}"
+                                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                                BorderThickness="2"
+                                FontSize="14"
+                                FontWeight="Normal"
+                                SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem Content="{x:Static props:Resources.Custom}" />
+                                <ComboBoxItem Content="{x:Static props:Resources.Maximized}" />
+                                <ComboBoxItem Content="{x:Static props:Resources.Minimized}" />
+                            </ComboBox>
+                            <TextBlock
+                                Margin="15,0,0,0"
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 FontWeight="Normal"
@@ -267,14 +278,12 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <Button
-                Margin="0,20,0,20"
+                Margin="0,10,0,20"
                 VerticalAlignment="Center"
                 Background="Transparent"
                 Click="CancelButtonClicked">
@@ -300,27 +309,8 @@
                 Foreground="{DynamicResource PrimaryForegroundBrush}"
                 Text="{Binding EditorWindowTitle}" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Orientation="Vertical">
-            <TextBlock
-                FontSize="14"
-                FontWeight="Normal"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                Text="{x:Static props:Resources.WorkspaceName}" />
-            <TextBox
-                x:Name="EditNameTextBox"
-                Width="320"
-                Margin="0,6,0,6"
-                HorizontalAlignment="Left"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                BorderThickness="2"
-                GotFocus="EditNameTextBox_GotFocus"
-                KeyDown="EditNameTextBoxKeyDown"
-                Text="{Binding Name, Mode=TwoWay}"
-                TextChanged="EditNameTextBox_TextChanged" />
-        </StackPanel>
         <Border
-            Grid.Row="2"
+            Grid.Row="1"
             HorizontalAlignment="Stretch"
             Background="{DynamicResource MonitorViewBackgroundBrush}"
             CornerRadius="5">
@@ -361,8 +351,47 @@
                     DockPanel.Dock="Right" />
             </DockPanel>
         </Border>
+        <DockPanel Grid.Row="2" HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Vertical">
+                <TextBlock
+                    Margin="0,10,0,0"
+                    FontSize="14"
+                    FontWeight="Normal"
+                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Text="{x:Static props:Resources.WorkspaceName}" />
+                <TextBox
+                    x:Name="EditNameTextBox"
+                    Width="300"
+                    Margin="0,6,0,6"
+                    HorizontalAlignment="Left"
+                    Background="{DynamicResource SecondaryBackgroundBrush}"
+                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                    BorderThickness="2"
+                    GotFocus="EditNameTextBox_GotFocus"
+                    KeyDown="EditNameTextBoxKeyDown"
+                    Text="{Binding Name, Mode=TwoWay}"
+                    TextChanged="EditNameTextBox_TextChanged" />
+            </StackPanel>
+            <StackPanel
+                HorizontalAlignment="Right"
+                DockPanel.Dock="Right"
+                Orientation="Horizontal">
+                <CheckBox
+                    Margin="20,0,0,0"
+                    VerticalAlignment="Bottom"
+                    Content="{x:Static props:Resources.CreateShortcut}"
+                    FontSize="14"
+                    IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <CheckBox
+                    Margin="20,0,0,0"
+                    VerticalAlignment="Bottom"
+                    Content="{x:Static props:Resources.MoveIfExist}"
+                    FontSize="14"
+                    IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
+            </StackPanel>
+        </DockPanel>
         <ScrollViewer
-            Grid.Row="4"
+            Grid.Row="3"
             Margin="0,10,0,0"
             PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
             VerticalScrollBarVisibility="Auto">
@@ -372,57 +401,40 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ItemsControl ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}" ItemsSource="{Binding ApplicationsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ItemsControl
+                        x:Name="CapturedAppList"
+                        AutomationProperties.Name="Captured Application List"
+                        ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}"
+                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
             </StackPanel>
         </ScrollViewer>
         <StackPanel
-            Grid.Row="5"
-            Margin="0,5,0,0"
-            Orientation="Horizontal"
-            Visibility="Collapsed">
-            <CheckBox
-                Margin="0,0,0,0"
-                VerticalAlignment="Center"
-                Content="{x:Static props:Resources.MoveIfExist}"
-                FontSize="14"
-                FontWeight="Normal"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                IsChecked="{Binding MoveExistingWindows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            Grid.Row="4"
+            Margin="40,20,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                x:Name="CancelButton"
+                Height="36"
+                Margin="20,0,0,0"
+                Padding="24,0,24,0"
+                AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                BorderBrush="{DynamicResource PrimaryBorderBrush}"
+                BorderThickness="2"
+                Click="CancelButtonClicked"
+                Content="{x:Static props:Resources.Cancel}" />
+            <Button
+                x:Name="SaveButton"
+                Height="36"
+                Margin="20,0,0,0"
+                Padding="24,0,24,0"
+                AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
+                Click="SaveButtonClicked"
+                Content="{x:Static props:Resources.Save_Workspace}"
+                IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
+                Style="{StaticResource AccentButtonStyle}" />
         </StackPanel>
-        <DockPanel Grid.Row="6" Margin="0,20,0,20">
-            <CheckBox
-                Content="{x:Static props:Resources.CreateShortcut}"
-                DockPanel.Dock="Left"
-                FontSize="14"
-                IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <StackPanel
-                Margin="40,0,0,0"
-                HorizontalAlignment="Right"
-                DockPanel.Dock="Right"
-                Orientation="Horizontal">
-                <Button
-                    x:Name="CancelButton"
-                    Height="36"
-                    Margin="20,0,0,0"
-                    Padding="24,0,24,0"
-                    AutomationProperties.Name="{x:Static props:Resources.Cancel}"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
-                    Click="CancelButtonClicked"
-                    Content="{x:Static props:Resources.Cancel}" />
-                <Button
-                    x:Name="SaveButton"
-                    Height="36"
-                    Margin="20,0,0,0"
-                    Padding="24,0,24,0"
-                    AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
-                    Click="SaveButtonClicked"
-                    Content="{x:Static props:Resources.Save_Workspace}"
-                    IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
-                    Style="{StaticResource AccentButtonStyle}" />
-            </StackPanel>
-        </DockPanel>
     </Grid>
 </Page>

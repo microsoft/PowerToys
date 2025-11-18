@@ -38,7 +38,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
+        Trace::Workspaces::RegisterProvider();
         break;
 
     case DLL_THREAD_ATTACH:
@@ -46,7 +46,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
         break;
 
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
+        Trace::Workspaces::UnregisterProvider();
         break;
     }
     return TRUE;

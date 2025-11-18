@@ -16,6 +16,8 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
+using MouseWithoutBorders.Core;
+
 // Disable the warning to preserve original code
 #pragma warning disable CA1716
 namespace MouseWithoutBorders.Class
@@ -107,12 +109,12 @@ namespace MouseWithoutBorders.Class
                         }
                         catch (NullReferenceException)
                         {
-                            Common.Log($"{nameof(Common.MouseCursorForm)} has been set to null by another thread.");
+                            Logger.Log($"{nameof(Common.MouseCursorForm)} has been set to null by another thread.");
                             Common.MouseCursorForm = new FrmMouseCursor();
                         }
                         catch (ObjectDisposedException)
                         {
-                            Common.Log($"{nameof(Common.MouseCursorForm)} has been disposed.");
+                            Logger.Log($"{nameof(Common.MouseCursorForm)} has been disposed.");
                             Common.MouseCursorForm = new FrmMouseCursor();
                         }
                     },
@@ -134,11 +136,11 @@ namespace MouseWithoutBorders.Class
                     }
                     catch (NullReferenceException)
                     {
-                        Common.Log($"{nameof(Common.MouseCursorForm)} has already been set to null by another thread!");
+                        Logger.Log($"{nameof(Common.MouseCursorForm)} has already been set to null by another thread!");
                     }
                     catch (ObjectDisposedException)
                     {
-                        Common.Log($"{nameof(Common.MouseCursorForm)} has already been disposed!");
+                        Logger.Log($"{nameof(Common.MouseCursorForm)} has already been disposed!");
                     }
 
                     Common.MouseCursorForm = null;

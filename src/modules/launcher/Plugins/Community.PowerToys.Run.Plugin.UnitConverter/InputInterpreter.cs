@@ -44,7 +44,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'.
+        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2", etc.) to 'x foot in cm'.
         /// </summary>
         public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture)
         {
@@ -259,6 +259,12 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
         }
 
+        public static void SquareHandler(ref string[] split)
+        {
+            split[1] = Regex.Replace(split[1], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
+            split[3] = Regex.Replace(split[3], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
+        }
+
         public static ConvertModel Parse(Query query)
         {
             string[] split = query.Search.Split(' ');
@@ -279,6 +285,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             InputInterpreter.KPHHandler(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.OunceHandler(ref split, CultureInfo.CurrentCulture);
+            InputInterpreter.SquareHandler(ref split);
             if (!double.TryParse(split[0], out double value))
             {
                 return null;

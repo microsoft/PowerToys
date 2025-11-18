@@ -6,7 +6,7 @@
   "Author": "davidegiacometti",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.PowerToys.dll",
   "IcoPathDark": "Images\\PowerToys.dark.png",
   "IcoPathLight": "Images\\PowerToys.light.png"

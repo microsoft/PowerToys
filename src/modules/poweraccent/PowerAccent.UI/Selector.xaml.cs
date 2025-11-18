@@ -44,7 +44,6 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         Application.Current.MainWindow.ShowActivated = false;
-        Application.Current.MainWindow.Topmost = true;
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -65,6 +64,9 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
+        // Topmost is conditionally set here to address hybrid graphics issues on laptops.
+        this.Topmost = isActive;
+
         CharacterNameVisibility = _powerAccent.ShowUnicodeDescription ? Visibility.Visible : Visibility.Collapsed;
 
         if (isActive)
@@ -103,6 +105,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     protected override void OnClosed(EventArgs e)
     {
+        _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
         base.OnClosed(e);
     }

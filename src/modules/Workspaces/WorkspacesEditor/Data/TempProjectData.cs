@@ -8,13 +8,7 @@ namespace WorkspacesEditor.Data
 {
     public class TempProjectData : ProjectData
     {
-        public static string File
-        {
-            get
-            {
-                return FolderUtils.DataFolder() + "\\temp-workspaces.json";
-            }
-        }
+        public static string File => FolderUtils.DataFolder() + "\\temp-workspaces.json";
 
         public static void DeleteTempFile()
         {

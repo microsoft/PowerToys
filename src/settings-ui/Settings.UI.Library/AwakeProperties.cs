@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public DateTimeOffset ExpirationDateTime { get; set; }
 
         [JsonPropertyName("customTrayTimes")]
-        [CmdConfigureIgnoreAttribute]
-        public Dictionary<string, int> CustomTrayTimes { get; set; }
+        [CmdConfigureIgnore]
+        public Dictionary<string, uint> CustomTrayTimes { get; set; }
     }
 }

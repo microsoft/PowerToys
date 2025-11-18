@@ -117,7 +117,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
         }
     }
 
-    // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
+    // Override special key names like Shift, Ctrl, etc. because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
     // To do: localization
     keyboardLayoutMap[VK_CANCEL] = L"Break";
     keyboardLayoutMap[VK_BACK] = L"Backspace";
@@ -241,10 +241,12 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_KANA] = L"IME Kana";
     keyboardLayoutMap[VK_HANGEUL] = L"IME Hangeul";
     keyboardLayoutMap[VK_HANGUL] = L"IME Hangul";
+    keyboardLayoutMap[VK_IME_ON] = L"IME On";
     keyboardLayoutMap[VK_JUNJA] = L"IME Junja";
     keyboardLayoutMap[VK_FINAL] = L"IME Final";
     keyboardLayoutMap[VK_HANJA] = L"IME Hanja";
     keyboardLayoutMap[VK_KANJI] = L"IME Kanji";
+    keyboardLayoutMap[VK_IME_OFF] = L"IME Off";
     keyboardLayoutMap[VK_CONVERT] = L"IME Convert";
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";

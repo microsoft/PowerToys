@@ -10,8 +10,6 @@
 
 #include <common/utils/winapi_error.h>
 
-#include <WorkspacesLib/AppUtils.h>
-
 #include <RegistryUtils.h>
 
 using namespace winrt;
@@ -20,24 +18,14 @@ using namespace Windows::Management::Deployment;
 
 namespace AppLauncher
 {
-    void UpdatePackagedApps(std::vector<WorkspacesData::WorkspacesProject::Application>& apps, const Utils::Apps::AppList& installedApps)
+    namespace NonLocalizable
     {
-        for (auto& app : apps)
-        {
-            // Packaged apps have version in the path, it will be outdated after update.
-            // We need make sure the current package is up to date.
-            if (!app.packageFullName.empty())
-            {
-                auto installedApp = std::find_if(installedApps.begin(), installedApps.end(), [&](const Utils::Apps::AppData& val) { return val.name == app.name; });
-                if (installedApp != installedApps.end() && app.packageFullName != installedApp->packageFullName)
-                {
-                    std::wstring exeFileName = app.path.substr(app.path.find_last_of(L"\\") + 1);
-                    app.packageFullName = installedApp->packageFullName;
-                    app.path = installedApp->installPath + L"\\" + exeFileName;
-                    Logger::trace(L"Updated package full name for {}: {}", app.name, app.packageFullName);
-                }
-            }
-        }
+        const std::wstring EdgeFilename = L"msedge.exe";
+        const std::wstring EdgePwaFilename = L"msedge_proxy.exe";
+        const std::wstring ChromeFilename = L"chrome.exe";
+        const std::wstring ChromePwaFilename = L"chrome_proxy.exe";
+        const std::wstring PwaCommandLineAddition = L"--profile-directory=Default --app-id=";
+        const std::wstring SteamProtocolPrefix = L"steam:";
     }
 
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
@@ -135,8 +123,23 @@ namespace AppLauncher
         // usage example: elevated Terminal
         if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
         {
-            Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+            Logger::trace(L"Launching {} as {} - {app.packageFullName}", app.name, app.appUserModelId, app.packageFullName);
             auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            if (res.isOk())
+            {
+                launched = true;
+            }
+            else
+            {
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+            }
+        }
+
+        // protocol launch for steam
+        if (!launched && !app.appUserModelId.empty() && app.appUserModelId.contains(NonLocalizable::SteamProtocolPrefix))
+        {
+            Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+            auto res = LaunchApp(app.appUserModelId, app.commandLineArgs, app.isElevated);
             if (res.isOk())
             {
                 launched = true;
@@ -155,55 +158,86 @@ namespace AppLauncher
             launched = LaunchPackagedApp(app.packageFullName, launchErrors);
         }
 
+        std::wstring appPathFinal;
+        std::wstring commandLineArgsFinal;
+        appPathFinal = app.path;
+        commandLineArgsFinal = app.commandLineArgs;
+
+        if (!launched && !app.pwaAppId.empty())
+        {
+            int version = 0;
+
+            if (app.version != L"")
+            {
+                try
+                {
+                    version = std::stoi(app.version);
+                }
+                catch (const std::invalid_argument&)
+                {
+                    Logger::error(L"Invalid version format: {}", app.version);
+                    version = 0;
+                }
+                catch (const std::out_of_range&)
+                {
+                    Logger::error(L"Version out of range: {}", app.version);
+                    version = 0;
+                }
+            }
+
+            if (version >= 1)
+            {
+                auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+                if (res.isOk())
+                {
+                    launched = true;
+                }
+                else
+                {
+                    launchErrors.push_back({ app.appUserModelId, res.error() });
+                }
+            }
+
+            if (!launched)
+            {
+                std::filesystem::path appPath(app.path);
+                if (appPath.filename() == NonLocalizable::EdgeFilename)
+                {
+                    appPathFinal = appPath.parent_path() / NonLocalizable::EdgePwaFilename;
+                    commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+                }
+                if (appPath.filename() == NonLocalizable::ChromeFilename)
+                {
+                    appPathFinal = appPath.parent_path() / NonLocalizable::ChromePwaFilename;
+                    commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+                }
+            }
+        }
+
         if (!launched)
         {
-            Logger::trace(L"Launching {} at {}", app.name, app.path);
+            Logger::trace(L"Launching {} at {}", app.name, appPathFinal);
 
-            DWORD dwAttrib = GetFileAttributesW(app.path.c_str());
+            DWORD dwAttrib = GetFileAttributesW(appPathFinal.c_str());
             if (dwAttrib == INVALID_FILE_ATTRIBUTES)
             {
-                Logger::error(L"File not found at {}", app.path);
-                launchErrors.push_back({ std::filesystem::path(app.path).filename(), L"File not found" });
+                Logger::error(L"File not found at {}", appPathFinal);
+                launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), L"File not found" });
                 return false;
             }
 
-            auto res = LaunchApp(app.path, app.commandLineArgs, app.isElevated);
+            auto res = LaunchApp(appPathFinal, commandLineArgsFinal, app.isElevated);
             if (res.isOk())
             {
                 launched = true;
             }
             else
             {
-                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+                launchErrors.push_back({ std::filesystem::path(appPathFinal).filename(), res.error() });
             }
         }
 
-        Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), app.path);
+        Logger::trace(L"{} {} at {}", app.name, (launched ? L"launched" : L"not launched"), appPathFinal);
         return launched;
-    }
-
-    bool Launch(WorkspacesData::WorkspacesProject& project, LaunchingStatus& launchingStatus, ErrorList& launchErrors)
-    {
-        bool launchedSuccessfully{ true };
-
-        auto installedApps = Utils::Apps::GetAppsList();
-        UpdatePackagedApps(project.apps, installedApps);
-
-        // Launch apps
-        for (auto& app : project.apps)
-        {
-            if (!Launch(app, launchErrors))
-            {
-                Logger::error(L"Failed to launch {}", app.name);
-                launchingStatus.Update(app, LaunchingState::Failed);
-                launchedSuccessfully = false;
-            }
-            else
-            {
-                launchingStatus.Update(app, LaunchingState::Launched);
-            }
-        }
-
-        return launchedSuccessfully;
     }
 }

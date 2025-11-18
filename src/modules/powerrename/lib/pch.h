@@ -28,7 +28,17 @@
 #include <charconv>
 #include <string>
 #include <random>
-
-#include <ProjectTelemetry.h>
+#include <map>
+#include <memory>
+#include <fstream>
+#include <chrono>
+#include <mutex>
+#include <unordered_map>
 
 #include <winrt/base.h>
+
+// Windows Imaging Component (WIC) headers
+#include <wincodec.h>
+#include <wincodecsdk.h>
+#include <propkey.h>
+#include <propvarutil.h>

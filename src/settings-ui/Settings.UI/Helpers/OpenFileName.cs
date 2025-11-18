@@ -33,4 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         public IntPtr Hook = IntPtr.Zero;
         public string Template;
     }
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/commdlg/ns-commdlg-openfilenamea
+    public enum OpenFileNameFlags
+    {
+        OFN_NOCHANGEDIR = 0x00000008,
+    }
 }

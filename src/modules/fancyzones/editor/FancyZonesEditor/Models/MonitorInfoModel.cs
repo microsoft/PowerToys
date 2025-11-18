@@ -5,7 +5,9 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text;
 
+using FancyZonesEditor.Properties;
 using FancyZonesEditor.ViewModels;
 
 namespace FancyZonesEditor.Utils
@@ -13,6 +15,8 @@ namespace FancyZonesEditor.Utils
     public class MonitorInfoModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private static readonly CompositeFormat MonitorIndexFormat = CompositeFormat.Parse(Resources.Monitor_Index);
 
         public MonitorInfoModel(int index, int height, int width, int dpi, bool selected = false)
         {
@@ -23,6 +27,10 @@ namespace FancyZonesEditor.Utils
             Scaling = string.Format(CultureInfo.InvariantCulture, format: "{0}%", arg0: (int)Math.Round(dpi * 100 / 96.0));
             Selected = selected;
         }
+
+        public string AccessibleName => string.Format(CultureInfo.CurrentCulture, MonitorIndexFormat, Index);
+
+        public string AccessibleHelpText => $"{Resources.Dimensions} {Dimensions}, {Resources.Scaling} {Scaling}";
 
         public int Index { get; set; }
 

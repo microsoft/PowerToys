@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     }
 
 #pragma warning disable SA1402 // File may only contain a single type
-    public class IndexedObservableCollection<T> : ObservableCollection<IndexedItem<T>>
+    public partial class IndexedObservableCollection<T> : ObservableCollection<IndexedItem<T>>
 #pragma warning restore SA1402 // File may only contain a single type
     {
         public IndexedObservableCollection(IEnumerable<T> items)

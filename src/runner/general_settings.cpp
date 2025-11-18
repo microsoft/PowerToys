@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "general_settings.h"
 #include "auto_start_helper.h"
+#include "tray_icon.h"
 #include "Generated files/resource.h"
+#include "hotkey_conflict_detector.h"
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include "powertoy_module.h"
@@ -12,18 +14,72 @@
 #include <common/version/version.h>
 #include <common/utils/resources.h>
 
+namespace
+{
+    json::JsonValue create_empty_shortcut_array_value()
+    {
+        return json::JsonValue::Parse(L"[]");
+    }
+
+    void ensure_ignored_conflict_properties_shape(json::JsonObject& obj)
+    {
+        if (!json::has(obj, L"ignored_shortcuts", json::JsonValueType::Array))
+        {
+            obj.SetNamedValue(L"ignored_shortcuts", create_empty_shortcut_array_value());
+        }
+    }
+
+    json::JsonObject create_default_ignored_conflict_properties()
+    {
+        json::JsonObject obj;
+        ensure_ignored_conflict_properties_shape(obj);
+        return obj;
+    }
+
+    DashboardSortOrder parse_dashboard_sort_order(const json::JsonObject& obj, DashboardSortOrder fallback)
+    {
+        if (json::has(obj, L"dashboard_sort_order", json::JsonValueType::Number))
+        {
+            const auto raw_value = static_cast<int>(obj.GetNamedNumber(L"dashboard_sort_order", static_cast<double>(static_cast<int>(fallback))));
+            return raw_value == static_cast<int>(DashboardSortOrder::ByStatus) ? DashboardSortOrder::ByStatus : DashboardSortOrder::Alphabetical;
+        }
+
+        if (json::has(obj, L"dashboard_sort_order", json::JsonValueType::String))
+        {
+            const auto raw = obj.GetNamedString(L"dashboard_sort_order");
+            if (raw == L"ByStatus")
+            {
+                return DashboardSortOrder::ByStatus;
+            }
+
+            if (raw == L"Alphabetical")
+            {
+                return DashboardSortOrder::Alphabetical;
+            }
+        }
+
+        return fallback;
+    }
+}
+
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
+static bool show_tray_icon = true;
 static bool run_as_elevated = false;
 static bool show_new_updates_toast_notification = true;
 static bool download_updates_automatically = true;
 static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
 static bool enable_warnings_elevated_apps = true;
+static DashboardSortOrder dashboard_sort_order = DashboardSortOrder::Alphabetical;
+static json::JsonObject ignored_conflict_properties = create_default_ignored_conflict_properties();
 
 json::JsonObject GeneralSettings::to_json()
 {
     json::JsonObject result;
+
+    auto ignoredProps = ignoredConflictProperties;
+    ensure_ignored_conflict_properties_shape(ignoredProps);
 
     result.SetNamedValue(L"startup", json::value(isStartupEnabled));
     if (!startupDisabledReason.empty())
@@ -38,17 +94,20 @@ json::JsonObject GeneralSettings::to_json()
     }
     result.SetNamedValue(L"enabled", std::move(enabled));
 
+    result.SetNamedValue(L"show_tray_icon", json::value(showSystemTrayIcon));
     result.SetNamedValue(L"is_elevated", json::value(isElevated));
     result.SetNamedValue(L"run_elevated", json::value(isRunElevated));
     result.SetNamedValue(L"show_new_updates_toast_notification", json::value(showNewUpdatesToastNotification));
     result.SetNamedValue(L"download_updates_automatically", json::value(downloadUpdatesAutomatically));
     result.SetNamedValue(L"show_whats_new_after_updates", json::value(showWhatsNewAfterUpdates));
     result.SetNamedValue(L"enable_experimentation", json::value(enableExperimentation));
+    result.SetNamedValue(L"dashboard_sort_order", json::value(static_cast<int>(dashboardSortOrder)));
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"enable_warnings_elevated_apps", json::value(enableWarningsElevatedApps));
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
+    result.SetNamedValue(L"ignored_conflict_properties", json::value(ignoredProps));
 
     return result;
 }
@@ -65,8 +124,20 @@ json::JsonObject load_general_settings()
     show_new_updates_toast_notification = loaded.GetNamedBoolean(L"show_new_updates_toast_notification", true);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
-    enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
+    enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+    dashboard_sort_order = parse_dashboard_sort_order(loaded, dashboard_sort_order);
+
+    if (json::has(loaded, L"ignored_conflict_properties", json::JsonValueType::Object))
+    {
+        ignored_conflict_properties = loaded.GetNamedObject(L"ignored_conflict_properties");
+    }
+    else
+    {
+        ignored_conflict_properties = create_default_ignored_conflict_properties();
+    }
+
+    ensure_ignored_conflict_properties_shape(ignored_conflict_properties);
 
     return loaded;
 }
@@ -74,7 +145,9 @@ json::JsonObject load_general_settings()
 GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
-    GeneralSettings settings{
+    GeneralSettings settings
+    {
+        .showSystemTrayIcon = show_tray_icon,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
         .isAdmin = is_user_admin,
@@ -83,10 +156,14 @@ GeneralSettings get_general_settings()
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .showWhatsNewAfterUpdates = show_whats_new_after_updates,
         .enableExperimentation = enable_experimentation,
+    .dashboardSortOrder = dashboard_sort_order,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
-        .powerToysVersion = get_product_version()
+        .powerToysVersion = get_product_version(),
+        .ignoredConflictProperties = ignored_conflict_properties
     };
+
+    ensure_ignored_conflict_properties_shape(settings.ignoredConflictProperties);
 
     settings.isStartupEnabled = is_auto_start_task_active_for_this_user();
 
@@ -111,10 +188,23 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     show_whats_new_after_updates = general_configs.GetNamedBoolean(L"show_whats_new_after_updates", true);
 
     enable_experimentation = general_configs.GetNamedBoolean(L"enable_experimentation", true);
+    dashboard_sort_order = parse_dashboard_sort_order(general_configs, dashboard_sort_order);
+
+    // apply_general_settings is called by the runner's WinMain, so we can just force the run at startup gpo rule here.
+    auto gpo_run_as_startup = powertoys_gpo::getConfiguredRunAtStartupValue();
 
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
-        const bool startup = general_configs.GetNamedBoolean(L"startup");
+        bool startup = general_configs.GetNamedBoolean(L"startup");
+
+        if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled)
+        {
+            startup = true;
+        }
+        else if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_disabled)
+        {
+            startup = false;
+        }
 
         if (startup)
         {
@@ -147,7 +237,10 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     else
     {
         delete_auto_start_task_for_this_user();
-        create_auto_start_task_for_this_user(run_as_elevated);
+        if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled || gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_not_configured)
+        {
+            create_auto_start_task_for_this_user(run_as_elevated);
+        }
     }
 
     if (json::has(general_configs, L"enabled"))
@@ -184,11 +277,15 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             {
                 Logger::info(L"apply_general_settings: Enabling powertoy {}", name);
                 powertoy->enable();
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                hkmng.EnableHotkeyByModule(name);
             }
             else
             {
                 Logger::info(L"apply_general_settings: Disabling powertoy {}", name);
                 powertoy->disable();
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                hkmng.DisableHotkeyByModule(name);
             }
             // Sync the hotkey state with the module state, so it can be removed for disabled modules.
             powertoy.UpdateHotkeyEx();
@@ -198,6 +295,19 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     if (json::has(general_configs, L"theme", json::JsonValueType::String))
     {
         settings_theme = general_configs.GetNamedString(L"theme");
+    }
+
+    if (json::has(general_configs, L"show_tray_icon", json::JsonValueType::Boolean))
+    {
+        show_tray_icon = general_configs.GetNamedBoolean(L"show_tray_icon");
+        // Update tray icon visibility when setting is toggled
+        set_tray_icon_visible(show_tray_icon);
+    }
+
+    if (json::has(general_configs, L"ignored_conflict_properties", json::JsonValueType::Object))
+    {
+        ignored_conflict_properties = general_configs.GetNamedObject(L"ignored_conflict_properties");
+        ensure_ignored_conflict_properties_shape(ignored_conflict_properties);
     }
 
     if (save)
@@ -241,8 +351,7 @@ void start_enabled_powertoys()
             {
                 std::wstring disable_module_name{ static_cast<std::wstring_view>(disabled_element.Key()) };
 
-                if (powertoys_gpo_configuration.find(disable_module_name)!=powertoys_gpo_configuration.end() 
-                    && (powertoys_gpo_configuration[disable_module_name]==powertoys_gpo::gpo_rule_configured_enabled || powertoys_gpo_configuration[disable_module_name]==powertoys_gpo::gpo_rule_configured_disabled))
+                if (powertoys_gpo_configuration.find(disable_module_name) != powertoys_gpo_configuration.end() && (powertoys_gpo_configuration[disable_module_name] == powertoys_gpo::gpo_rule_configured_enabled || powertoys_gpo_configuration[disable_module_name] == powertoys_gpo::gpo_rule_configured_disabled))
                 {
                     // If gpo forces the enabled setting, no need to check the setting for this PowerToy. It will be applied later on this function.
                     continue;
@@ -289,6 +398,8 @@ void start_enabled_powertoys()
         {
             Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);
             powertoy->enable();
+            auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+            hkmng.EnableHotkeyByModule(name);
             powertoy.UpdateHotkeyEx();
         }
     }

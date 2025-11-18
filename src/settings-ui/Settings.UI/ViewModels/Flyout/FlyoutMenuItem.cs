@@ -5,11 +5,12 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
 using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class FlyoutMenuItem : INotifyPropertyChanged
+    public partial class FlyoutMenuItem : INotifyPropertyChanged
     {
         private bool _visible;
         private bool _isEnabled;

@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -15,7 +16,7 @@ using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class EnvironmentVariablesViewModel : Observable
+    public partial class EnvironmentVariablesViewModel : Observable
     {
         private bool _isElevated;
         private GpoRuleConfigured _enabledGpoRuleConfiguration;

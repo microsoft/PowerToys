@@ -1,9 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #include "winrt/Windows.UI.Xaml.h"
 #include "winrt/Windows.UI.Xaml.Markup.h"
 #include "winrt/Windows.UI.Xaml.Interop.h"
 #include "winrt/Windows.UI.Xaml.Controls.Primitives.h"
+
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 
 #include "MainWindow.g.h"
 #include "PatternSnippet.h"
@@ -18,6 +20,8 @@
 #include <PowerRenameManager.h>
 #include <PowerRenameInterfaces.h>
 #include <PowerRenameMRU.h>
+#include <MetadataTypes.h>
+#include <MetadataPatternExtractor.h>
 
 namespace winrt::PowerRenameUI::implementation
 {
@@ -86,6 +90,7 @@ namespace winrt::PowerRenameUI::implementation
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> DateTimeShortcuts() { return m_dateTimeShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> CounterShortcuts() { return m_CounterShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> RandomizerShortcuts() { return m_RandomizerShortcuts; }
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> MetadataShortcuts() { return m_metadataShortcuts; }
 
         hstring OriginalCount();
         void OriginalCount(hstring value);
@@ -109,6 +114,7 @@ namespace winrt::PowerRenameUI::implementation
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_dateTimeShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_CounterShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_RandomizerShortcuts;
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_metadataShortcuts;
 
         // Used by PowerRenameManagerEvents
         HRESULT OnRename(_In_ IPowerRenameItem* renameItem);
@@ -142,6 +148,11 @@ namespace winrt::PowerRenameUI::implementation
         HRESULT OpenSettingsApp();
         void SetCheckboxesFromFlags(DWORD flags);
         void UpdateCounts();
+        void UpdateMetadataShortcuts(PowerRenameLib::MetadataType metadataType);
+        std::wstring ConvertPatternToResourceKey(const std::wstring& pattern);
+        void UpdateMetadataSourceFlags(int selectedIndex);
+
+        Shared::Trace::ETWTrace m_etwTrace{};
 
         HWND m_window{};
 
@@ -163,6 +174,8 @@ namespace winrt::PowerRenameUI::implementation
     public:
         void RegExItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);
         void DateTimeItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);
+        void MetadataItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);
+        void MetadataSourceComboBox_SelectionChanged(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const& e);
         void button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const& sender, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const& args);
         void MenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void OpenDocs(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
@@ -175,3 +188,4 @@ namespace winrt::PowerRenameUI::factory_implementation
     {
     };
 }
+

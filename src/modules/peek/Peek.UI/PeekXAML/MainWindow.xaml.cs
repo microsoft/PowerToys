@@ -3,18 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
+using Peek.UI.Models;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
@@ -29,6 +33,13 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private readonly ThemeListener? themeListener;
+
+        /// <summary>
+        /// Whether the delete confirmation dialog is currently open. Used to ensure only one
+        /// dialog is open at a time.
+        /// </summary>
+        private bool _isDeleteInProgress;
+        private bool _exitAfterClose;
 
         public MainWindow()
         {
@@ -48,30 +59,90 @@ namespace Peek.UI
             ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
-            AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            ExtendsContentIntoTitleBar = true;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
             AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
             AppWindow.Closing += AppWindow_Closing;
         }
 
+        private async void Content_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Delete)
+            {
+                e.Handled = true;
+                await DeleteItem();
+            }
+        }
+
+        private async Task DeleteItem()
+        {
+            if (ViewModel.CurrentItem == null || _isDeleteInProgress)
+            {
+                return;
+            }
+
+            try
+            {
+                _isDeleteInProgress = true;
+
+                if (Application.Current.GetService<IUserSettings>().ConfirmFileDelete)
+                {
+                    if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
+                    {
+                        // Delete after asking for confirmation. Persist the "Don't warn again" choice if set.
+                        ViewModel.DeleteItem(DeleteDontWarnCheckbox.IsChecked, this.GetWindowHandle());
+                    }
+                }
+                else
+                {
+                    // Delete without confirmation.
+                    ViewModel.DeleteItem(true, this.GetWindowHandle());
+                }
+            }
+            finally
+            {
+                _isDeleteInProgress = false;
+            }
+        }
+
+        private async Task<ContentDialogResult> ShowDeleteConfirmationDialogAsync()
+        {
+            DeleteDontWarnCheckbox.IsChecked = false;
+            DeleteConfirmationDialog.XamlRoot = Content.XamlRoot;
+
+            return await DeleteConfirmationDialog.ShowAsync();
+        }
+
         /// <summary>
         /// Toggling the window visibility and querying files when necessary.
         /// </summary>
-        public void Toggle(bool firstActivation, Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        public void Toggle(bool firstActivation, SelectedItem selectedItem, bool exitAfterClose)
         {
+            if (exitAfterClose)
+            {
+                _exitAfterClose = true;
+            }
+
             if (firstActivation)
             {
                 Activate();
-                Initialize(foregroundWindowHandle);
+                Initialize(selectedItem);
                 return;
+            }
+
+            if (DeleteConfirmationDialog.Visibility == Visibility.Visible)
+            {
+                DeleteConfirmationDialog.Hide();
             }
 
             if (AppWindow.IsVisible)
             {
-                if (IsNewSingleSelectedItem(foregroundWindowHandle))
+                if (IsNewSingleSelectedItem(selectedItem))
                 {
-                    Initialize(foregroundWindowHandle);
+                    Initialize(selectedItem);
+                    Activate(); // Brings existing window into focus in case it was previously minimized
                 }
                 else
                 {
@@ -80,7 +151,7 @@ namespace Peek.UI
             }
             else
             {
-                Initialize(foregroundWindowHandle);
+                Initialize(selectedItem);
             }
         }
 
@@ -118,13 +189,14 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        private void Initialize(SelectedItem selectedItem)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            ViewModel.Initialize(foregroundWindowHandle);
+            ViewModel.Initialize(selectedItem);
             ViewModel.ScalingFactor = this.GetMonitorScale();
+            this.Content.KeyUp += Content_KeyUp;
 
             bootTime.Stop();
 
@@ -138,6 +210,15 @@ namespace Peek.UI
 
             ViewModel.Uninitialize();
             ViewModel.ScalingFactor = 1;
+
+            this.Content.KeyUp -= Content_KeyUp;
+
+            ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
+
+            if (_exitAfterClose)
+            {
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>
@@ -147,7 +228,7 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            var foregroundWindowHandle = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
 
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
             var monitorScale = foregroundWindowHandle.GetMonitorScale();
@@ -203,20 +284,11 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private bool IsNewSingleSelectedItem(Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        private bool IsNewSingleSelectedItem(SelectedItem selectedItem)
         {
             try
             {
-                var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
-                var selectedItemsCount = selectedItems?.GetCount() ?? 0;
-                if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
-                {
-                    return false;
-                }
-
-                var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
-                var currentItemPath = ViewModel.CurrentItem?.Path;
-                return fileExplorerSelectedItemPath != null && currentItemPath != null && fileExplorerSelectedItemPath != currentItemPath;
+                return selectedItem.Matches(ViewModel.CurrentItem?.Path);
             }
             catch (Exception ex)
             {

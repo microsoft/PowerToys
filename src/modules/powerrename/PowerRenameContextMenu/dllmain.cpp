@@ -18,6 +18,7 @@
 
 #include "Generated Files/resource.h"
 
+#include <common/telemetry/EtwTrace/EtwTrace.h>
 #include <common/utils/elevation.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -32,6 +33,7 @@
 using namespace Microsoft::WRL;
 
 HINSTANCE g_hInst = 0;
+Shared::Trace::ETWTrace trace(L"PowerRenameContextMenu");
 
 #define BUFSIZE 4096 * 4
 
@@ -203,6 +205,8 @@ private:
     {
         if (CSettingsInstance().GetEnabled())
         {
+            trace.UpdateState(true);
+
             Trace::Invoked();
             // Set the application path based on the location of the dll
             std::wstring path = get_module_folderpath(g_hInst);
@@ -214,12 +218,12 @@ private:
             if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
             {
                 auto val = get_last_error_message(GetLastError());
-                Logger::warn(L"UuidCreate can not create guid. {}", val.has_value() ? val.value() : L"");
+                Logger::warn(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
             }
             else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(& uuid_chars)) != RPC_S_OK)
             {
                 auto val = get_last_error_message(GetLastError());
-                Logger::warn(L"UuidToString can not convert to string. {}", val.has_value() ? val.value() : L"");
+                Logger::warn(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
             }
 
             if (uuid_chars != nullptr)
@@ -257,6 +261,9 @@ private:
             }
         }
         Trace::InvokedRet(S_OK);
+
+        trace.Flush();
+        trace.UpdateState(false);
 
         return S_OK;
     }

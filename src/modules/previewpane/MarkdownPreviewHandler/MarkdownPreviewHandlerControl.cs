@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
     /// <summary>
     /// Win Form Implementation for Markdown Preview Handler.
     /// </summary>
-    public class MarkdownPreviewHandlerControl : FormHandlerControl
+    public partial class MarkdownPreviewHandlerControl : FormHandlerControl
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         {
             get
             {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
+                string codeBase = AppContext.BaseDirectory;
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);

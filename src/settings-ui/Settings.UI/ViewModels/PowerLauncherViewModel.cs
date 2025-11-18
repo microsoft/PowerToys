@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -12,14 +13,16 @@ using System.Text.Json;
 using System.Windows.Input;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerLauncherViewModel : Observable
+    public partial class PowerLauncherViewModel : PageViewModelBase, IDisposable
     {
         private int _themeIndex;
         private int _monitorPositionIndex;
@@ -35,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public delegate void SendCallback(PowerLauncherSettings settings);
 
+        protected override string ModuleName => PowerLauncherSettings.ModuleName;
+
         private readonly SendCallback callback;
 
         private readonly Func<bool> isDark;
@@ -49,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (settings == null)
             {
-                throw new ArgumentException("settings argument can not be null");
+                throw new ArgumentException("settings argument cannot be null");
             }
 
             this.settings = settings;
@@ -73,7 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         CultureInfo.InvariantCulture,
                         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                         PowerLauncherSettings.ModuleName,
-                        JsonSerializer.Serialize(s)));
+                        JsonSerializer.Serialize(s, SourceGenerationContextContext.Default.PowerLauncherSettings)));
             };
 
             switch (settings.Properties.Theme)
@@ -102,7 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     break;
             }
 
-            SearchPluginsCommand = new RelayCommand(SearchPlugins);
+            SearchPluginsCommand = new Library.ViewModels.Commands.RelayCommand(SearchPlugins);
         }
 
         private void InitializeEnabledValue()
@@ -118,6 +123,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.PowerLauncher;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [OpenPowerLauncher],
+            };
+
+            return hotkeysDict;
         }
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)

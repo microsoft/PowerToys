@@ -3,17 +3,23 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Models;
+using AdvancedPaste.Services;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
@@ -33,6 +39,15 @@ namespace AdvancedPaste
     public partial class App : Application, IDisposable
     {
         public IHost Host { get; private set; }
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
+
+        private static readonly Dictionary<string, PasteFormats> AdditionalActionIPCKeys =
+                 typeof(PasteFormats).GetFields()
+                                     .Where(field => field.IsLiteral)
+                                     .Select(field => (Format: (PasteFormats)field.GetRawConstantValue(), field.GetCustomAttribute<PasteFormatMetadataAttribute>().IPCKey))
+                                     .Where(field => field.IPCKey != null)
+                                     .ToDictionary(field => field.IPCKey, field => field.Format);
 
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private readonly OptionsViewModel viewModel;
@@ -56,12 +71,20 @@ namespace AdvancedPaste
                 Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
             }
 
-            this.InitializeComponent();
+            InitializeComponent();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
-                services.AddSingleton<OptionsViewModel>();
+                services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IUserSettings, UserSettings>();
+                services.AddSingleton<IAICredentialsProvider, EnhancedVaultCredentialsProvider>();
+                services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
+                services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
+                services.AddSingleton<IPasteAIProviderFactory, PasteAIProviderFactory>();
+                services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
+                services.AddSingleton<IKernelService, AdvancedAIKernelService>();
+                services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
+                services.AddSingleton<OptionsViewModel>();
             }).Build();
 
             viewModel = GetService<OptionsViewModel>();
@@ -98,7 +121,11 @@ namespace AdvancedPaste
                 {
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
-                        Environment.Exit(0);
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            Dispose();
+                            Environment.Exit(0);
+                        });
                     });
                 }
             }
@@ -111,35 +138,40 @@ namespace AdvancedPaste
 
         private void ProcessNamedPipe(string pipeName)
         {
-            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(() => OnNamedPipeMessage(message));
+            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
 
-            Task.Run(async () =>
-            {
-                var connectTimeout = TimeSpan.FromSeconds(10);
-                await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout, OnMessage, CancellationToken.None);
-            });
+            Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout: TimeSpan.FromSeconds(10), OnMessage, CancellationToken.None));
         }
 
-        private void OnNamedPipeMessage(string message)
+        private async Task OnNamedPipeMessage(string message)
         {
             var messageParts = message.Split();
             var messageType = messageParts.First();
 
             if (messageType == PowerToys.Interop.Constants.AdvancedPasteShowUIMessage())
             {
-                OnAdvancedPasteHotkey();
+                await ShowWindow();
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
             {
-                OnAdvancedPasteMarkdownHotkey();
+                await viewModel.ExecutePasteFormatAsync(PasteFormats.Markdown, PasteActionSource.GlobalKeyboardShortcut);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
             {
-                OnAdvancedPasteJsonHotkey();
+                await viewModel.ExecutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
+            {
+                await OnAdvancedPasteAdditionalActionHotkey(messageParts);
             }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
             {
-                OnAdvancedPasteCustomActionHotkey(messageParts);
+                await OnAdvancedPasteCustomActionHotkey(messageParts);
+            }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteTerminateAppMessage())
+            {
+                Dispose();
+                Environment.Exit(0);
             }
         }
 
@@ -148,24 +180,27 @@ namespace AdvancedPaste
             Logger.LogError("Unhandled exception", e.Exception);
         }
 
-        private void OnAdvancedPasteJsonHotkey()
+        private async Task OnAdvancedPasteAdditionalActionHotkey(string[] messageParts)
         {
-            viewModel.ReadClipboard();
-            viewModel.ToJsonFunction(true);
+            if (messageParts.Length != 2)
+            {
+                Logger.LogWarning("Unexpected additional action message");
+            }
+            else
+            {
+                if (!AdditionalActionIPCKeys.TryGetValue(messageParts[1], out PasteFormats pasteFormat))
+                {
+                    Logger.LogWarning($"Unexpected additional action type {messageParts[1]}");
+                }
+                else
+                {
+                    await ShowWindow();
+                    await viewModel.ExecutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut);
+                }
+            }
         }
 
-        private void OnAdvancedPasteMarkdownHotkey()
-        {
-            viewModel.ReadClipboard();
-            viewModel.ToMarkdownFunction(true);
-        }
-
-        private void OnAdvancedPasteHotkey()
-        {
-            ShowWindow();
-        }
-
-        private void OnAdvancedPasteCustomActionHotkey(string[] messageParts)
+        private async Task OnAdvancedPasteCustomActionHotkey(string[] messageParts)
         {
             if (messageParts.Length != 2)
             {
@@ -179,16 +214,15 @@ namespace AdvancedPaste
                 }
                 else
                 {
-                    ShowWindow();
-                    viewModel.ReadClipboard();
-                    viewModel.ExecuteCustomActionWithPaste(customActionId);
+                    await ShowWindow();
+                    await viewModel.ExecuteCustomActionAsync(customActionId, PasteActionSource.GlobalKeyboardShortcut);
                 }
             }
         }
 
-        private void ShowWindow()
+        private async Task ShowWindow()
         {
-            viewModel.OnShow();
+            await viewModel.OnShowAsync();
 
             if (window is null)
             {
@@ -229,7 +263,8 @@ namespace AdvancedPaste
             {
                 if (disposing)
                 {
-                    window.Dispose();
+                    EtwTrace?.Dispose();
+                    window?.Dispose();
                 }
 
                 disposedValue = true;

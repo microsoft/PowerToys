@@ -282,6 +282,15 @@
   <data name="Monitor" xml:space="preserve">
     <value>Monitor</value>
   </data>
+  <data name="Monitor_Index" xml:space="preserve">
+    <value>Monitor {0}</value>
+  </data>
+  <data name="Dimensions" xml:space="preserve">
+    <value>Dimensions</value>
+  </data>
+  <data name="Scaling" xml:space="preserve">
+    <value>Scaling</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Template settings</value>
   </data>
@@ -350,7 +359,7 @@
   </data>
   <data name="MergeName" xml:space="preserve">
     <value>Merge/Delete:</value>
-    <comment>Title for concept behind Merging two zones together or removing an zone</comment>
+    <comment>Title for concept behind Merging two zones together or removing a zone</comment>
   </data>
   <data name="KeyboardControlsName" xml:space="preserve">
     <value>Keyboard navigation:</value>

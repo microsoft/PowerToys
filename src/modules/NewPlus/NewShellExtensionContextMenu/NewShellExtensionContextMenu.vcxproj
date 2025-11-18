@@ -114,6 +114,9 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="dll_main.h" />
+    <ClInclude Include="Helpers.h" />
+    <ClInclude Include="helpers_filesystem.h" />
+    <ClInclude Include="helpers_variables.h" />
     <ClInclude Include="shell_context_menu.h" />
     <ClInclude Include="shell_context_sub_menu.h" />
     <ClInclude Include="shell_context_sub_menu_item.h" />
@@ -121,6 +124,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="new_utilities.h" />
+    <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="template_folder.h" />
     <ClInclude Include="pch.h" />
@@ -128,6 +132,8 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="template_item.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="new_utilities.cpp" />
     <ClCompile Include="shell_context_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu_item.cpp" />
@@ -166,6 +172,9 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
@@ -224,7 +233,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
-      <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

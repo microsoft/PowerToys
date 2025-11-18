@@ -5,13 +5,12 @@
 #include <WorkspacesLib/WorkspacesData.h>
 #include <workspaces-common/InvokePoint.h>
 
+#include <common/Telemetry/TraceBase.h>
+
 class Trace
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
-    class Workspaces
+    class Workspaces : public telemetry::TraceBase
     {
     public:
         static void Enable(bool enabled) noexcept;

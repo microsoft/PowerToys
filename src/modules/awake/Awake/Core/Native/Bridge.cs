@@ -89,9 +89,6 @@ namespace Awake.Core.Native
         internal static extern bool GetCursorPos(out Point lpPoint);
 
         [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool ScreenToClient(IntPtr hWnd, ref Point lpPoint);
-
-        [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool GetMessage(out Msg lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -106,5 +103,8 @@ namespace Awake.Core.Native
 
         [DllImport("ntdll.dll")]
         internal static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ProcessBasicInformation processInformation, int processInformationLength, out int returnLength);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int RegisterWindowMessage(string lpString);
     }
 }

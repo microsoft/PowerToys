@@ -7,9 +7,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+
 using ManagedCommon;
+using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
+using WorkspacesLauncherUI.Utils;
 
 namespace WorkspacesLauncherUI.ViewModels
 {
@@ -19,7 +22,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private StatusWindow _snapshotWindow;
         private int launcherProcessID;
-        private bool _exiting;
+        private PwaHelper _pwaHelper;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -30,7 +33,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public MainViewModel()
         {
-            _exiting = false;
+            _pwaHelper = new PwaHelper();
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -50,18 +53,17 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private void HandleAppLaunchingState(AppLaunchData.AppLaunchDataWrapper appLaunchData)
         {
-            if (_exiting)
-            {
-                return;
-            }
-
             launcherProcessID = appLaunchData.LauncherProcessID;
             List<AppLaunching> appLaunchingList = new List<AppLaunching>();
             foreach (var app in appLaunchData.AppLaunchInfos.AppLaunchInfoList)
             {
                 appLaunchingList.Add(new AppLaunching()
                 {
-                    Application = app.Application,
+                    Name = app.Application.Application,
+                    AppPath = app.Application.ApplicationPath,
+                    PackagedName = app.Application.PackageFullName,
+                    Aumid = app.Application.AppUserModelId,
+                    PwaAppId = app.Application.PwaAppId,
                     LaunchState = app.State,
                 });
             }
@@ -90,9 +92,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
         internal void CancelLaunch()
         {
-            _exiting = true;
-            Process proc = Process.GetProcessById(launcherProcessID);
-            proc.Kill();
+            App.SendIPCMessage("cancel");
         }
     }
 }

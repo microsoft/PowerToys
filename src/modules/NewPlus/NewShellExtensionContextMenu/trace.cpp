@@ -10,19 +10,9 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 void Trace::EventToggleOnOff(_In_ const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "NewPlus_EventToggleOnOff",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -32,7 +22,7 @@ void Trace::EventToggleOnOff(_In_ const bool enabled) noexcept
 
 void Trace::EventChangedTemplateLocation() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "NewPlus_ChangedTemplateLocation",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -41,7 +31,7 @@ void Trace::EventChangedTemplateLocation() noexcept
 
 void Trace::EventShowTemplateItems(const size_t number_of_templates) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "NewPlus_EventShowTemplateItems",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -51,7 +41,7 @@ void Trace::EventShowTemplateItems(const size_t number_of_templates) noexcept
 
 void Trace::EventCopyTemplate(_In_ const std::wstring template_file_extension) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "NewPlus_EventCopyTemplate",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -61,10 +51,19 @@ void Trace::EventCopyTemplate(_In_ const std::wstring template_file_extension) n
 
 void Trace::EventCopyTemplateResult(_In_ const HRESULT hr) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "NewPlus_EventCopyTemplateResult",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingHResult(hr),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::EventOpenTemplates() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "NewPlus_EventOpenTemplates",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }

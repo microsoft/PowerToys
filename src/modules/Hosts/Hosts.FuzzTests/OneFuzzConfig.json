@@ -1,0 +1,178 @@
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "method": "FuzzValidIPv4",
+        "FuzzingTargetBinaries": [
+          "PowerToys.Hosts.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "Hosts",
+          "targetName": "Hosts-dotnet-fuzzer-Ipv4"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    },
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "method": "FuzzValidIPv6",
+        "FuzzingTargetBinaries": [
+          "PowerToys.Hosts.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "Hosts",
+          "targetName": "Hosts-dotnet-fuzzer-Ipv6"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    },
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "method": "FuzzValidHosts",
+        "FuzzingTargetBinaries": [
+          "PowerToys.Hosts.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "Hosts",
+          "targetName": "Hosts-dotnet-fuzzer-hosts"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    },
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "method": "FuzzWriteAsync",
+        "FuzzingTargetBinaries": [
+          "PowerToys.Hosts.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "Hosts",
+          "targetName": "Hosts-dotnet-fuzzer-WriteAsync"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "Castle.Core.dll",
+        "CommunityToolkit.Mvvm.dll",
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "Moq.dll",
+        "System.IO.Abstractions.dll",
+        "System.IO.Abstractions.TestingHelpers.dll",
+        "TestableIO.System.IO.Abstractions.dll",
+        "TestableIO.System.IO.Abstractions.TestingHelpers.dll",
+        "TestableIO.System.IO.Abstractions.Wrappers.dll",
+        "Testably.Abstractions.FileSystem.Interface.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    }
+  ]
+}

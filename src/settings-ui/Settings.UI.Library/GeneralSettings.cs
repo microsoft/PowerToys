@@ -5,6 +5,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -12,11 +13,21 @@ using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
+    public enum DashboardSortOrder
+    {
+        Alphabetical,
+        ByStatus,
+    }
+
     public class GeneralSettings : ISettingsConfig
     {
         // Gets or sets a value indicating whether run powertoys on start-up.
         [JsonPropertyName("startup")]
         public bool Startup { get; set; }
+
+        // Gets or sets a value indicating whether the powertoys system tray icon should be hidden.
+        [JsonPropertyName("show_tray_icon")]
+        public bool ShowSysTrayIcon { get; set; }
 
         // Gets or sets a value indicating whether the powertoy elevated.
         [CmdConfigureIgnoreAttribute]
@@ -71,15 +82,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enable_experimentation")]
         public bool EnableExperimentation { get; set; }
 
+        [JsonPropertyName("dashboard_sort_order")]
+        public DashboardSortOrder DashboardSortOrder { get; set; }
+
+        [JsonPropertyName("ignored_conflict_properties")]
+        public ShortcutConflictProperties IgnoredConflictProperties { get; set; }
+
         public GeneralSettings()
         {
             Startup = false;
+            ShowSysTrayIcon = true;
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = false;
             EnableExperimentation = true;
+            DashboardSortOrder = DashboardSortOrder.Alphabetical;
             Theme = "system";
             SystemTheme = "light";
             try
@@ -94,6 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             Enabled = new EnabledModules();
             CustomActionName = string.Empty;
+            IgnoredConflictProperties = new ShortcutConflictProperties();
         }
 
         // converts the current to a json string.
@@ -129,6 +149,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             catch (FormatException)
             {
                 // If there is an issue with the version number format, don't migrate settings.
+            }
+
+            // Ensure IgnoredConflictProperties is initialized (for backward compatibility)
+            if (IgnoredConflictProperties == null)
+            {
+                IgnoredConflictProperties = new ShortcutConflictProperties();
+                return true; // Indicate that settings were upgraded
             }
 
             return false;

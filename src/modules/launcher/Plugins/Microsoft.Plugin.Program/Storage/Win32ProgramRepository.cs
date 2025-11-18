@@ -33,6 +33,8 @@ namespace Microsoft.Plugin.Program.Storage
 
         private static ConcurrentQueue<string> commonEventHandlingQueue = new ConcurrentQueue<string>();
 
+        public static readonly int OnRenamedEventWaitTime = 1000;
+
         public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, ProgramPluginSettings settings, string[] pathsToWatch)
         {
             _fileSystemWatcherHelpers = fileSystemWatcherHelpers;
@@ -91,10 +93,16 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        private void OnAppRenamed(object sender, RenamedEventArgs e)
+        private async Task DoOnAppRenamedAsync(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
             string newPath = e.FullPath;
+
+            // fix for https://github.com/microsoft/PowerToys/issues/34391
+            // the msi installer creates a shortcut, which is detected by the PT Run and ends up in calling this OnAppRenamed method
+            // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it; otherwise, the lock causes
+            // in the issue scenario that a warning is popping up during the msi install process.
+            await Task.Delay(OnRenamedEventWaitTime).ConfigureAwait(false);
 
             string extension = Path.GetExtension(newPath);
             Win32Program.ApplicationType oldAppType = Win32Program.GetAppTypeFromPath(oldPath);
@@ -118,7 +126,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Exception($"OnAppRenamed-{extension} Program|{e.OldName}|Unable to create program from {oldPath}", ex, GetType());
+                Log.Exception($"DoOnAppRenamedAsync-{extension} Program|{e.OldName}|Unable to create program from {oldPath}", ex, GetType());
             }
 
             // To remove the old app which has been renamed and to add the new application.
@@ -138,6 +146,21 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 Add(newApp);
             }
+        }
+
+        private void OnAppRenamed(object sender, RenamedEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await DoOnAppRenamedAsync(sender, e).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Log.Exception($"OnAppRenamed throw exception.", e, e.GetType());
+                }
+            }).ConfigureAwait(false);
         }
 
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
@@ -180,12 +203,12 @@ namespace Microsoft.Plugin.Program.Storage
         }
 
         // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on current culture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
         private Win32Program GetAppWithSameNameAndExecutable(string name, string executableName)
         {
             foreach (Win32Program app in Items)
             {
-                // Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
+                // Using CurrentCultureIgnoreCase since application names could be dependent on current culture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
                 if (name.Equals(app.Name, StringComparison.CurrentCultureIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return app;

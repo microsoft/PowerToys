@@ -14,10 +14,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesCsharpLibrary;
 using WorkspacesEditor.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
@@ -39,6 +39,8 @@ namespace WorkspacesEditor.ViewModels
         private MainWindow _mainWindow;
         private Timer lastUpdatedTimer;
         private WorkspacesSettings settings;
+        private PwaHelper _pwaHelper;
+        private bool _isExistingProjectLaunched;
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -147,6 +149,7 @@ namespace WorkspacesEditor.ViewModels
             settings = Utils.Settings.ReadSettings();
             _orderByIndex = (int)settings.Properties.SortBy;
             _workspacesEditorIO = workspacesEditorIO;
+            _pwaHelper = new PwaHelper();
             lastUpdatedTimer = new System.Timers.Timer();
             lastUpdatedTimer.Interval = 1000;
             lastUpdatedTimer.Elapsed += LastUpdatedTimerElapsed;
@@ -190,26 +193,28 @@ namespace WorkspacesEditor.ViewModels
             ApplyShortcut(editedProject);
         }
 
+        private string GetDesktopShortcutAddress(Project project) => Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
+
+        private string GetShortcutStoreAddress(Project project)
+        {
+            var dataFolder = FolderUtils.DataFolder();
+            Directory.CreateDirectory(dataFolder);
+            var shortcutStoreFolder = Path.Combine(dataFolder, "WorkspacesIcons");
+            Directory.CreateDirectory(shortcutStoreFolder);
+            return Path.Combine(shortcutStoreFolder, project.Id + ".ico");
+        }
+
         private void ApplyShortcut(Project project)
         {
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), project.Id + ".ico");
-
             if (!project.IsShortcutNeeded)
             {
-                if (File.Exists(shortcutIconFilename))
-                {
-                    File.Delete(shortcutIconFilename);
-                }
-
-                if (File.Exists(shortcutAddress))
-                {
-                    File.Delete(shortcutAddress);
-                }
-
+                RemoveShortcut(project);
                 return;
             }
+
+            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var shortcutAddress = GetDesktopShortcutAddress(project);
+            var shortcutIconFilename = GetShortcutStoreAddress(project);
 
             Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
             WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
@@ -254,12 +259,12 @@ namespace WorkspacesEditor.ViewModels
         {
             CancelSnapshot();
 
-            await Task.Run(() => RunSnapshotTool());
+            await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
 
             Project project = _workspacesEditorIO.ParseTempProject();
             if (project != null)
             {
-                if (editedProject != null)
+                if (_isExistingProjectLaunched)
                 {
                     project.UpdateAfterLaunchAndEdit(projectBeforeLaunch);
                     project.EditorWindowTitle = Properties.Resources.EditWorkspace;
@@ -357,8 +362,8 @@ namespace WorkspacesEditor.ViewModels
 
         private void RemoveShortcut(Project selectedProject)
         {
-            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), selectedProject.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), selectedProject.Id + ".ico");
+            string shortcutAddress = GetDesktopShortcutAddress(selectedProject);
+            string shortcutIconFilename = GetShortcutStoreAddress(selectedProject);
 
             if (File.Exists(shortcutIconFilename))
             {
@@ -398,6 +403,11 @@ namespace WorkspacesEditor.ViewModels
 
         public async void LaunchProject(Project project, bool exitAfterLaunch = false)
         {
+            if (project == null)
+            {
+                return;
+            }
+
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
@@ -424,15 +434,16 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        private void RunSnapshotTool(string filename = null)
+        private void RunSnapshotTool(bool isExistingProjectLaunched)
         {
             Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(@".\PowerToys.WorkspacesSnapshotTool.exe");
+
+            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
+            var snapshotUtilsPath = Path.Combine(exeDir, "PowerToys.WorkspacesSnapshotTool.exe");
+
+            process.StartInfo = new ProcessStartInfo(snapshotUtilsPath);
             process.StartInfo.CreateNoWindow = true;
-            if (!string.IsNullOrEmpty(filename))
-            {
-                process.StartInfo.Arguments = filename;
-            }
+            process.StartInfo.Arguments = isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty;
 
             try
             {
@@ -477,6 +488,7 @@ namespace WorkspacesEditor.ViewModels
 
         internal void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
+            _isExistingProjectLaunched = isExistingProjectLaunched;
             _mainWindow.WindowState = System.Windows.WindowState.Minimized;
             _overlayWindows.Clear();
             foreach (var screen in MonitorHelper.GetDpiUnawareScreens())

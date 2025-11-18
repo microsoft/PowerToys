@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
+
 using Common.UI;
 using ManagedCommon;
 using PowerToys.Interop;
@@ -35,6 +36,14 @@ namespace WorkspacesLauncherUI
 
         public App()
         {
+        }
+
+        public static void SendIPCMessage(string message)
+        {
+            if (ipcmanager != null)
+            {
+                ipcmanager.Send(message);
+            }
         }
 
         private void OnStartup(object sender, StartupEventArgs e)

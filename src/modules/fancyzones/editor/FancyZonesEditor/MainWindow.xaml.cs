@@ -13,11 +13,12 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-
 using Common.UI;
+using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
@@ -69,6 +70,8 @@ namespace FancyZonesEditor
 
             // reinit considering work area rect
             _settings.InitModels();
+
+            PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void BringToFront()
@@ -226,7 +229,9 @@ namespace FancyZonesEditor
             }
 
             LayoutNameText.Text = defaultNamePrefix + " " + (++maxCustomIndex);
+
             GridLayoutRadioButton.IsChecked = true;
+            CanvasLayoutRadioButton.IsChecked = false;
             GridLayoutRadioButton.Focus();
             await NewLayoutDialog.ShowAsync();
         }
@@ -485,10 +490,12 @@ namespace FancyZonesEditor
                     }
                 }
 
+                model.Delete();
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
                 App.FancyZonesEditorIO.SerializeDefaultLayouts();
-                model.Delete();
+                App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+                App.FancyZonesEditorIO.SerializeLayoutTemplates();
             }
         }
 

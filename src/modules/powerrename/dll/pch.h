@@ -8,7 +8,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <windows.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 #include <shlwapi.h>
 #include <atlbase.h>
 #include <atlcom.h>

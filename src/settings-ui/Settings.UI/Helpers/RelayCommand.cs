@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    public class RelayCommand : ICommand
+    public partial class RelayCommand : ICommand
     {
         private readonly Action _execute;
         private readonly Func<bool> _canExecute;
@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "abstract T and abstract")]
-    public class RelayCommand<T> : ICommand
+    public partial class RelayCommand<T> : ICommand
     {
         private readonly Action<T> execute;
 

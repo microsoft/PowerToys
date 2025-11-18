@@ -102,7 +102,7 @@ namespace ColorPicker.Views
         private void HistoryColors_ItemClick(object sender, ItemClickEventArgs e)
         {
             // Note: it does not handle clicking on the same color.
-            // More appropriate event would be SelectionChanged but we can not distinguish between user action and program action inside of it.
+            // More appropriate event would be SelectionChanged but we cannot distinguish between user action and program action inside of it.
             SessionEventHelper.Event.EditorHistoryColorPicked = true;
         }
         */

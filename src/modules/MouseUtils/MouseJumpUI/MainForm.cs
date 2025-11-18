@@ -9,15 +9,15 @@ using System.Linq;
 using System.Windows.Forms;
 
 using ManagedCommon;
-using MouseJumpUI.Common.Helpers;
-using MouseJumpUI.Common.Imaging;
-using MouseJumpUI.Common.Models.Drawing;
-using MouseJumpUI.Common.Models.Layout;
+using MouseJump.Common.Helpers;
+using MouseJump.Common.Imaging;
+using MouseJump.Common.Models.Drawing;
+using MouseJump.Common.Models.Layout;
 using MouseJumpUI.Helpers;
 
 namespace MouseJumpUI;
 
-internal partial class MainForm : Form
+internal sealed partial class MainForm : Form
 {
     public MainForm(SettingsHelper settingsHelper)
     {
@@ -166,6 +166,7 @@ internal partial class MainForm : Form
 
             // move mouse pointer
             Logger.LogInfo($"clicked location = {clickedLocation}");
+            Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpTeleportCursorEvent());
             MouseHelper.SetCursorPosition(clickedLocation);
         }
 
@@ -182,12 +183,9 @@ internal partial class MainForm : Form
         var appSettings = this.SettingsHelper.CurrentSettings ?? throw new InvalidOperationException();
         var screens = ScreenHelper.GetAllScreens().Select(screen => screen.DisplayArea).ToList();
         var activatedLocation = MouseHelper.GetCursorPosition();
+
         this.PreviewLayout = LayoutHelper.GetPreviewLayout(
-            previewStyle: StyleHelper.LegacyPreviewStyle.WithCanvasSize(
-                new(
-                    appSettings.Properties.ThumbnailSize.Width,
-                    appSettings.Properties.ThumbnailSize.Height
-                )),
+            previewStyle: SettingsHelper.GetActivePreviewStyle(appSettings),
             screens: screens,
             activatedLocation: activatedLocation);
 
@@ -201,6 +199,8 @@ internal partial class MainForm : Form
             this.OnPreviewImageUpdated);
 
         stopwatch.Stop();
+
+        Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.MouseJumpShowEvent());
 
         // we have to activate the form to make sure the deactivate event fires
         this.Activate();
@@ -217,7 +217,7 @@ internal partial class MainForm : Form
         this.Thumbnail.Image = null;
         tmp.Dispose();
 
-        // force preview image memory to be released, otherwise
+        // force preview image memory to be released; otherwise,
         // all the disposed images can pile up without being GC'ed
         GC.Collect();
     }
@@ -250,7 +250,7 @@ internal partial class MainForm : Form
         if (!this.Visible)
         {
             // we seem to need to turn off topmost and then re-enable it again
-            // when we show the form, otherwise it doesn't always get shown topmost...
+            // when we show the form; otherwise, it doesn't always get shown topmost...
             this.TopMost = false;
             this.TopMost = true;
             this.Show();

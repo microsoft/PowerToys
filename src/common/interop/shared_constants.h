@@ -12,6 +12,9 @@ namespace CommonSharedConstants
 
     const wchar_t APPDATA_PATH[] = L"Microsoft\\PowerToys";
 
+    // Path to the event used by runner to terminate Settings app
+    const wchar_t TERMINATE_SETTINGS_SHARED_EVENT[] = L"Local\\PowerToysRunnerTerminateSettingsEvent-c34cb661-2e69-4613-a1f8-4e39c25d7ef6";
+
     // Path to the event used by PowerLauncher
     const wchar_t POWER_LAUNCHER_SHARED_EVENT[] = L"Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab";
 
@@ -32,10 +35,16 @@ namespace CommonSharedConstants
 
     const wchar_t ADVANCED_PASTE_JSON_MESSAGE[] = L"PasteJson";
 
+    const wchar_t ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE[] = L"AdditionalAction";
+    
     const wchar_t ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE[] = L"CustomAction";
+
+    const wchar_t ADVANCED_PASTE_TERMINATE_APP_MESSAGE[] = L"TerminateApp";
 
     // Path to the event used to show Color Picker
     const wchar_t SHOW_COLOR_PICKER_SHARED_EVENT[] = L"Local\\ShowColorPickerEvent-8c46be2a-3e05-4186-b56b-4ae986ef2525";
+
+    const wchar_t TERMINATE_COLOR_PICKER_SHARED_EVENT[] = L"Local\\TerminateColorPickerEvent-3d676258-c4d5-424e-a87a-4be22020e813";
 
     const wchar_t SHORTCUT_GUIDE_TRIGGER_EVENT[] = L"Local\\ShortcutGuide-TriggerEvent-d4275ad3-2531-4d19-9252-c0becbd9b496";
 
@@ -51,11 +60,15 @@ namespace CommonSharedConstants
 
     const wchar_t SHOW_HOSTS_ADMIN_EVENT[] = L"Local\\Hosts-ShowHostsAdminEvent-60ff44e2-efd3-43bf-928a-f4d269f98bec";
 
+    const wchar_t TERMINATE_HOSTS_EVENT[] = L"Local\\Hosts-TerminateHostsEvent-d5410d5e-45a6-4d11-bbf0-a4ec2d064888";
+
     // Path to the event used by Awake
     const wchar_t AWAKE_EXIT_EVENT[] = L"Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
     
     // Path to the event used by AlwaysOnTop
     const wchar_t ALWAYS_ON_TOP_PIN_EVENT[] = L"Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8";
+
+    const wchar_t ALWAYS_ON_TOP_TERMINATE_EVENT[] = L"Local\\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae";
 
     // Path to the event used by PowerAccent
     const wchar_t POWERACCENT_EXIT_EVENT[] = L"Local\\PowerToysPowerAccentExitEvent-53e93389-d19a-4fbb-9b36-1981c8965e17";
@@ -63,8 +76,12 @@ namespace CommonSharedConstants
     // Path to the event used by PowerOCR
     const wchar_t SHOW_POWEROCR_SHARED_EVENT[] = L"Local\\PowerOCREvent-dc864e06-e1af-4ecc-9078-f98bee745e3a";
 
+    const wchar_t TERMINATE_POWEROCR_SHARED_EVENT[] = L"Local\\TerminatePowerOCREvent-08e5de9d-15df-4ea8-8840-487c13435a67";
+
     // Path to the events used by Mouse Jump
     const wchar_t MOUSE_JUMP_SHOW_PREVIEW_EVENT[] = L"Local\\MouseJumpEvent-aa0be051-3396-4976-b7ba-1a9cc7d236a5";
+
+    const wchar_t TERMINATE_MOUSE_JUMP_SHARED_EVENT[] = L"Local\\TerminateMouseJumpEvent-252fa337-317f-4c37-a61f-99464c3f9728";
 
     // Path to the event used by RegistryPreview
     const wchar_t REGISTRY_PREVIEW_TRIGGER_EVENT[] = L"Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";
@@ -74,6 +91,9 @@ namespace CommonSharedConstants
 
     // Path to the event used by GcodePreviewHandler
     const wchar_t GCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysGcodePreviewResizeEvent-6ff1f9bd-ccbd-4b24-a79f-40a34fb0317d";
+
+    // Path to the event used by BgcodePreviewHandler
+    const wchar_t BGCODE_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysBgcodePreviewResizeEvent-1a76a553-919a-49e0-8179-776582d8e476";
 
     // Path to the event used by QoiPreviewHandler
     const wchar_t QOI_PREVIEW_RESIZE_EVENT[] = L"Local\\PowerToysQoiPreviewResizeEvent-579518d1-8c8b-494f-8143-04f43d761ead";
@@ -92,6 +112,11 @@ namespace CommonSharedConstants
 
     // Path to the event used to show Peek
     const wchar_t SHOW_PEEK_SHARED_EVENT[] = L"Local\\ShowPeekEvent";
+    // Path to the event used to terminate Peek
+    const wchar_t TERMINATE_PEEK_SHARED_EVENT[] = L"Local\\TerminatePeekEvent-267149fe-7ed2-427d-a3ad-9e18203c037c";
+
+    // Path to the event used to terminate KBM
+    const wchar_t TERMINATE_KBM_SHARED_EVENT[] = L"Local\\TerminateKBMSharedEvent-a787c967-55b6-47de-94d9-56f39fed839e";
 
     // Path to the events used by CropAndLock
     const wchar_t CROP_AND_LOCK_REPARENT_EVENT[] = L"Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
@@ -101,6 +126,14 @@ namespace CommonSharedConstants
     // Path to the events used by EnvironmentVariables
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_EVENT[] = L"Local\\PowerToysEnvironmentVariables-ShowEnvironmentVariablesEvent-1021f616-e951-4d64-b231-a8f972159978";
     const wchar_t SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT[] = L"Local\\PowerToysEnvironmentVariables-EnvironmentVariablesAdminEvent-8c95d2ad-047c-49a2-9e8b-b4656326cfb2";
+
+    // Path to the events used by ZoomIt
+    const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
+    const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
+
+    // used from quick access window
+    const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
+    const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

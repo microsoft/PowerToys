@@ -6,7 +6,7 @@
   "Author": "htcfreek",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.TimeDate.dll",
   "IcoPathDark": "Images\\timeDate.dark.png",
   "IcoPathLight": "Images\\timeDate.light.png"

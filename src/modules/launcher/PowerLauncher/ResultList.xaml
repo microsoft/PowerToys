@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerLauncher.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    xmlns:viewmodel="clr-namespace:PowerLauncher.ViewModel"
+    xmlns:viewModel="clr-namespace:PowerLauncher.ViewModel"
     d:DesignHeight="300"
     d:DesignWidth="720"
     mc:Ignorable="d">
@@ -33,6 +33,8 @@
         x:Name="SuggestionsList"
         x:FieldModifier="public"
         AutomationProperties.Name="{x:Static p:Resources.Results}"
+        Background="Transparent"
+        BorderBrush="Transparent"
         ItemsSource="{Binding Results.Results, Mode=OneWay}"
         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
         ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -117,13 +119,13 @@
                             FontSize="{DynamicResource TitleFontSize}"
                             IsHitTestVisible="False"
                             TextTrimming="CharacterEllipsis">
-                            <viewmodel:ResultsViewModel.FormattedText>
+                            <viewModel:ResultsViewModel.FormattedText>
                                 <MultiBinding Converter="{StaticResource highlightTextConverter}">
                                     <Binding Path="Result.Title" />
                                     <Binding Path="Result.TitleHighlightData" />
                                     <Binding Path="IsSelected" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}" />
                                 </MultiBinding>
-                            </viewmodel:ResultsViewModel.FormattedText>
+                            </viewModel:ResultsViewModel.FormattedText>
                         </TextBlock>
                         <TextBlock
                             x:Name="Path"
@@ -181,10 +183,11 @@
                                         </ToolTip>
                                     </ToolTipService.ToolTip>
                                     <Button.Content>
-                                        <ui:FontIcon
+                                        <TextBlock
                                             AutomationProperties.Name="{x:Static p:Resources.ContextMenuIcon}"
                                             FontFamily="{Binding FontFamily}"
-                                            Glyph="{Binding Glyph}" />
+                                            FontSize="14"
+                                            Text="{Binding Glyph}" />
                                     </Button.Content>
                                 </Button>
                             </DataTemplate>

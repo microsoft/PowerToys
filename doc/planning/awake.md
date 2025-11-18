@@ -10,8 +10,9 @@ The build ID can be found in `Core\Constants.cs` in the `BuildId` variable - it 
 
 The build ID moniker is made up of two components - a reference to a [Halo](https://en.wikipedia.org/wiki/Halo_(franchise)) character, and the date when the work on the specific build started in the format of `MMDDYYYY`.
 
-| Build ID                                                           | Build Date         |
+| Build ID                                                           | Build Date        |
 |:-------------------------------------------------------------------|:------------------|
+| [`TILLSON_11272024`](#TILLSON_11272024-november-27-2024)           | November 27, 2024 |
 | [`PROMETHEAN_09082024`](#PROMETHEAN_09082024-september-8-2024)     | September 8, 2024 |
 | [`VISEGRADRELAY_08152024`](#VISEGRADRELAY_08152024-august-15-2024) | August 15, 2024   |
 | [`DAISY023_04102024`](#DAISY023_04102024-april-10-2024)            | April 10, 2024    |
@@ -19,13 +20,28 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 | [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022)          | March 20, 2022    |
 | `ARBITER_01312022`                                                 | January 31, 2022  |
 
+### `TILLSON_11272024` (November 27, 2024)
+
+>[!NOTE]
+>See pull request: [Awake - `TILLSON_11272024`](https://github.com/microsoft/PowerToys/pull/36049)
+
+- [#35250](https://github.com/microsoft/PowerToys/issues/35250) Updates the icon retry policy, making sure that the icon consistently and correctly renders in the tray.
+- [#35848](https://github.com/microsoft/PowerToys/issues/35848) Fixed a bug where custom tray time shortcuts for longer than 24 hours would be parsed as zero hours/zero minutes.
+- [#34716](https://github.com/microsoft/PowerToys/issues/34716) Properly recover the state icon in the tray after an `explorer.exe` crash.
+- Added configuration safeguards to make sure that invalid values for timed keep-awake times do not result in exceptions.
+- Updated the tray initialization logic, making sure we wait for it to be properly created before setting icons.
+- Expanded logging capabilities to track invoking functions.
+- Added command validation logic to make sure that incorrect command line arguments display an error.
+- Display state now shown in the tray tooltip.
+- When timed mode is used, changing the display setting will no longer reset the timer.
+
 ### `PROMETHEAN_09082024` (September 8, 2024)
 
 >[!NOTE]
 >See pull request: [Awake - `PROMETHEAN_09082024`](https://github.com/microsoft/PowerToys/pull/34717)
 
 - Updating the initialization logic to make sure that settings are respected for proper group policy and single-instance detection.
-- [#34148] Fixed a bug from the previous release that incorrectly synchronized threads for shell icon creation and initialized parent PID when it was not parented.
+- [#34148](https://github.com/microsoft/PowerToys/issues/34148) Fixed a bug from the previous release that incorrectly synchronized threads for shell icon creation and initialized parent PID when it was not parented.
 
 ### `VISEGRADRELAY_08152024` (August 15, 2024)
 

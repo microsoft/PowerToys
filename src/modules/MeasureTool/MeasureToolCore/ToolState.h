@@ -31,8 +31,23 @@ struct CommonState
 
     Measurement::Unit units = Measurement::Unit::Pixel;
 
-    POINT cursorPosSystemSpace = {}; // updated atomically
+    #pragma warning(push)
+    #pragma warning(disable : 4324)
+    alignas(8) POINT cursorPosSystemSpace = {}; // updated atomically
+    #pragma warning(pop)
+
     std::atomic_bool closeOnOtherMonitors = false;
+
+    float GetPhysicalPx2MmRatio(HWND window) const
+    {
+        auto ratio = -1.0f;
+        auto size = MonitorInfo::GetFromWindow(window).GetSize();
+        if (size.width_physical > 0u)
+        {
+            ratio = size.width_mm / static_cast<float>(size.width_physical);
+        }
+        return ratio;
+    }
 };
 
 struct CursorDrag

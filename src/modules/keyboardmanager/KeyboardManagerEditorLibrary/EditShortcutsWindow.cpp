@@ -6,6 +6,8 @@
 #include <common/utils/winapi_error.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include "KeyboardManagerState.h"
 #include "Dialog.h"
 #include "KeyDropDownControl.h"
@@ -447,11 +449,15 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
 void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration, std::wstring keysForShortcutToEdit, std::wstring action)
 {
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
+
     // Move implementation into the separate method so resources get destroyed correctly
     CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, mappingConfiguration, keysForShortcutToEdit, action);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
+    trace.Flush();
     Logger::trace("Terminating process {}", GetCurrentProcessId());
     Logger::flush();
     TerminateProcess(GetCurrentProcess(), 0);
@@ -517,7 +523,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     }
     break;
     default:
-        // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
+        // If the Xaml Bridge object exists, then use its message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
         {
             return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);

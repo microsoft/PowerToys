@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -13,7 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ImageResizerPage : Page, IRefreshablePage
+    public sealed partial class ImageResizerPage : NavigablePage, IRefreshablePage
     {
         public ImageResizerViewModel ViewModel { get; set; }
 
@@ -21,11 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            Func<string, string> loader = (string name) =>
-            {
-                return resourceLoader.GetString(name);
-            };
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            Func<string, string> loader = resourceLoader.GetString;
 
             ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, loader);
             DataContext = ViewModel;
@@ -68,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             try
             {
-                ViewModel.AddRow(Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix"));
+                ViewModel.AddImageSize();
             }
             catch (Exception ex)
             {

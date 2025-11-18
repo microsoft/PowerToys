@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -16,6 +16,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <ItemsControl
+            x:Name="ShortcutsControl"
             VerticalAlignment="Center"
             AutomationProperties.AccessibilityView="Raw"
             IsTabStop="False"
@@ -28,18 +29,30 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:KeyVisual
-                        VerticalAlignment="Center"
+                        Padding="12,8,12,8"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
+                        FontSize="12"
                         IsTabStop="False"
-                        VisualType="SmallOutline" />
+                        Style="{StaticResource DefaultKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <tk7controls:MarkdownTextBlock
+        <tkcontrols:MarkdownTextBlock
+            x:Name="LabelControl"
             Grid.Column="1"
             VerticalAlignment="Center"
-            Background="Transparent"
             Text="{x:Bind Text}" />
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LabelPlacementStates">
+                <VisualState x:Name="LabelAfter" />
+                <VisualState x:Name="LabelBefore">
+                    <VisualState.Setters>
+                        <Setter Target="LabelControl.(Grid.Column)" Value="0" />
+                        <Setter Target="ShortcutsControl.(Grid.Column)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

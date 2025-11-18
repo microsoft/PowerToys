@@ -19,17 +19,17 @@ namespace
     {
         switch (mode)
         {
-            case MeasureToolState::Mode::Cross:
-                return { true, true };
+        case MeasureToolState::Mode::Cross:
+            return { true, true };
 
-            case MeasureToolState::Mode::Vertical:
-                return { false, true };
+        case MeasureToolState::Mode::Vertical:
+            return { false, true };
 
-            case MeasureToolState::Mode::Horizontal:
-                return { true, false };
+        case MeasureToolState::Mode::Horizontal:
+            return { true, false };
 
-            default:
-                throw std::runtime_error("Unknown MeasureToolState Mode");
+        default:
+            throw std::runtime_error("Unknown MeasureToolState Mode");
         }
     }
 
@@ -77,7 +77,7 @@ namespace
         CopyToClipboard(window, *toolState);
 
         auto& perScreen = toolState->perScreen[window];
-        
+
         const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000;
         if (shiftPress && perScreen.measuredEdges)
         {
@@ -144,10 +144,10 @@ namespace
 
         const auto [crossSymbolPos, measureStringBufLen] =
             measurement.Print(text.buffer.data(),
-                                text.buffer.size(),
-                                drawHorizontalCrossLine,
-                                drawVerticalCrossLine,
-                                commonState.units);
+                              text.buffer.size(),
+                              drawHorizontalCrossLine,
+                              drawVerticalCrossLine,
+                              commonState.units | Measurement::Unit::Pixel); // Always show pixels.
 
         d2dState.DrawTextBox(text.buffer.data(),
                              measureStringBufLen,

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -40,6 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("auto_activate")]
         public BoolProperty AutoActivate { get; set; }
 
+        [JsonPropertyName("spotlight_mode")]
+        public BoolProperty SpotlightMode { get; set; }
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -51,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HighlightFadeDelayMs = new IntProperty(500);
             HighlightFadeDurationMs = new IntProperty(250);
             AutoActivate = new BoolProperty(false);
+            SpotlightMode = new BoolProperty(false);
         }
     }
 }

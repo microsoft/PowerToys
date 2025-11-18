@@ -15,6 +15,6 @@ extern UINT WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE; // Scheduled when the watched a
 extern UINT WM_PRIV_DEFAULT_LAYOUTS_FILE_UPDATE; // Scheduled when the watched default-layouts.json file is updated
 extern UINT WM_PRIV_SNAP_HOTKEY; // Scheduled when we receive a snap hotkey key down press
 extern UINT WM_PRIV_QUICK_LAYOUT_KEY; // Scheduled when we receive a key down press to quickly apply a layout
-extern UINT WM_PRIV_SETTINGS_CHANGED; // Scheduled when the a watched settings file is updated
+extern UINT WM_PRIV_SETTINGS_CHANGED; // Scheduled when a watched settings file is updated
 
 void InitializeWinhookEventIds();

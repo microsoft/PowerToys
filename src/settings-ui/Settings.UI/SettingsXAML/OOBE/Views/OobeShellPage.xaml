@@ -78,6 +78,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
                     Tag="ColorPicker" />
                 <NavigationViewItem
+                    x:Uid="Shell_CmdPal"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
+                    Tag="CmdPal" />
+                <NavigationViewItem
                     x:Uid="Shell_CmdNotFound"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
                     Tag="CmdNotFound" />
@@ -113,6 +117,10 @@
                     x:Uid="Shell_KeyboardManager"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}"
                     Tag="KBM" />
+                <NavigationViewItem
+                    x:Uid="Shell_LightSwitch"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
+                    Tag="LightSwitch" />
                 <NavigationViewItem
                     x:Uid="Shell_MouseUtilities"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}"
@@ -158,13 +166,13 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     Tag="TextExtractor" />
                 <NavigationViewItem
-                    x:Uid="Shell_VideoConference"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
-                    Tag="VideoConference" />
-                <NavigationViewItem
                     x:Uid="Shell_Workspaces"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
                     Tag="Workspaces" />
+                <NavigationViewItem
+                    x:Uid="Shell_ZoomIt"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
+                    Tag="ZoomIt" />
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem

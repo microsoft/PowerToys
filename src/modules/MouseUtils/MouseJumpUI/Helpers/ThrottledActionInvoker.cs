@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using System.Windows.Threading;
 
 namespace MouseJumpUI.Helpers;
 
 internal sealed class ThrottledActionInvoker
 {
-    private readonly object _invokerLock = new();
+    private readonly Lock _invokerLock = new();
     private readonly DispatcherTimer _timer;
 
     private Action? _actionToRun;

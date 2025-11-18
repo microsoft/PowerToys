@@ -5,13 +5,15 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-
 using Common.UI;
+using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace FancyZonesEditor
 {
@@ -56,6 +58,8 @@ namespace FancyZonesEditor
 
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             var languageTag = LanguageHelper.LoadLanguage();
 
             if (!string.IsNullOrEmpty(languageTag))

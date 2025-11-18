@@ -11,6 +11,11 @@ template_folder::template_folder(const std::filesystem::path newplus_template_fo
     this->template_folder_path = newplus_template_folder;
 }
 
+template_folder::~template_folder()
+{
+    list_of_templates.clear();
+}
+
 void template_folder::init()
 {
     rescan_template_folder();
@@ -30,7 +35,7 @@ void template_folder::rescan_template_folder()
         }
         else
         {
-            if (!utilities::is_hidden(entry.path()))
+            if (!helpers::filesystem::is_hidden(entry.path()))
             {
                 files.push_back({ entry.path().wstring(), new template_item(entry) });
             }

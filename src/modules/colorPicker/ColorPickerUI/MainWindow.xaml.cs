@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Interop;
 
 using ColorPicker.ViewModelContracts;
-using Wpf.Ui.Controls;
 
 namespace ColorPicker
 {
@@ -20,7 +19,6 @@ namespace ColorPicker
         {
             Closing += MainWindow_Closing;
             Bootstrapper.InitializeContainer(this);
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, WindowBackdropType.None);
             InitializeComponent();
             DataContext = this;
             Show(); // Call show just to make sure source is initialized at startup.

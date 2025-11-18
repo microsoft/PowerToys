@@ -31,6 +31,12 @@
     <ClCompile Include="trace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="new_utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="template_folder.h">
@@ -70,6 +76,15 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers_filesystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers_variables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeRegistration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -122,9 +137,6 @@
     </None>
     <None Include="AppxManifest.xml">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="Assets\NewPlus\New.ico">
-      <Filter>Asset Files</Filter>
     </None>
     <None Include="Assets\NewPlus\SmallTile.png">
       <Filter>Asset Files</Filter>
@@ -190,14 +202,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="TemplateExamples\Example folder\Another example txt file.txt">
-      <Filter>Template Examples\Example folder</Filter>
-    </Text>
-    <Text Include="TemplateExamples\Example folder\Example txt file.txt">
-      <Filter>Template Examples\Example folder</Filter>
-    </Text>
-    <Text Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt">
-      <Filter>Template Examples</Filter>
-    </Text>
+    <CopyFileToFolders Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt" />
+    <CopyFileToFolders Include="TemplateExamples\Example folder\Example txt file.txt" />
+    <CopyFileToFolders Include="TemplateExamples\Example folder\Another example txt file.txt" />
   </ItemGroup>
 </Project>

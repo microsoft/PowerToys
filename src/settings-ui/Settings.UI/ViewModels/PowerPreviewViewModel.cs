@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -12,7 +13,7 @@ using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerPreviewViewModel : Observable
+    public partial class PowerPreviewViewModel : Observable
     {
         private const string ModuleName = PowerPreviewSettings.ModuleName;
 
@@ -94,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _monacoMaxFileSize = Settings.Properties.MonacoPreviewMaxFileSize.Value;
             _monacoFontSize = Settings.Properties.MonacoPreviewFontSize.Value;
             _monacoStickyScroll = Settings.Properties.MonacoPreviewStickyScroll;
+            _monacoMinimap = Settings.Properties.MonacoPreviewMinimap;
 
             _pdfRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfPreviewEnabledValue();
             if (_pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
@@ -121,6 +123,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
+            }
+
+            _bgcodeRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredBgcodePreviewEnabledValue();
+            if (_bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _bgcodeRenderEnabledStateIsGPOConfigured = true;
+                _bgcodeRenderIsEnabled = _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _bgcodeRenderIsGpoEnabled = _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _bgcodeRenderIsGpoDisabled = _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _bgcodeRenderIsEnabled = Settings.Properties.EnableBgcodePreview;
             }
 
             _qoiRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiPreviewEnabledValue();
@@ -179,6 +195,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _gcodeThumbnailIsEnabled = Settings.Properties.EnableGcodeThumbnail;
             }
 
+            _bgcodeThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredBgcodeThumbnailsEnabledValue();
+            if (_bgcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _bgcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _bgcodeThumbnailEnabledStateIsGPOConfigured = true;
+                _bgcodeThumbnailIsEnabled = _bgcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _bgcodeThumbnailIsGpoEnabled = _bgcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _bgcodeThumbnailIsGpoDisabled = _bgcodeThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _bgcodeThumbnailIsEnabled = Settings.Properties.EnableBgcodeThumbnail;
+            }
+
             _stlThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredStlThumbnailsEnabledValue();
             if (_stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _stlThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -235,6 +265,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _monacoMaxFileSize;
         private bool _monacoStickyScroll;
         private int _monacoFontSize;
+        private bool _monacoMinimap;
 
         private GpoRuleConfigured _pdfRenderEnabledGpoRuleConfiguration;
         private bool _pdfRenderEnabledStateIsGPOConfigured;
@@ -247,6 +278,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _gcodeRenderIsGpoEnabled;
         private bool _gcodeRenderIsGpoDisabled;
         private bool _gcodeRenderIsEnabled;
+
+        private GpoRuleConfigured _bgcodeRenderEnabledGpoRuleConfiguration;
+        private bool _bgcodeRenderEnabledStateIsGPOConfigured;
+        private bool _bgcodeRenderIsGpoEnabled;
+        private bool _bgcodeRenderIsGpoDisabled;
+        private bool _bgcodeRenderIsEnabled;
 
         private GpoRuleConfigured _qoiRenderEnabledGpoRuleConfiguration;
         private bool _qoiRenderEnabledStateIsGPOConfigured;
@@ -272,6 +309,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _gcodeThumbnailIsGpoDisabled;
         private bool _gcodeThumbnailIsEnabled;
 
+        private GpoRuleConfigured _bgcodeThumbnailEnabledGpoRuleConfiguration;
+        private bool _bgcodeThumbnailEnabledStateIsGPOConfigured;
+        private bool _bgcodeThumbnailIsGpoEnabled;
+        private bool _bgcodeThumbnailIsGpoDisabled;
+        private bool _bgcodeThumbnailIsEnabled;
+
         private GpoRuleConfigured _stlThumbnailEnabledGpoRuleConfiguration;
         private bool _stlThumbnailEnabledStateIsGPOConfigured;
         private bool _stlThumbnailIsGpoEnabled;
@@ -291,7 +334,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _svgRenderEnabledStateIsGPOConfigured || _mdRenderEnabledStateIsGPOConfigured
                     || _monacoRenderEnabledStateIsGPOConfigured || _pdfRenderEnabledStateIsGPOConfigured
-                    || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured;
+                    || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured
+                    || _bgcodeRenderEnabledStateIsGPOConfigured;
             }
         }
 
@@ -301,7 +345,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _svgThumbnailEnabledStateIsGPOConfigured || _pdfThumbnailEnabledStateIsGPOConfigured
                     || _gcodeThumbnailEnabledStateIsGPOConfigured || _stlThumbnailEnabledStateIsGPOConfigured
-                    || _qoiThumbnailEnabledStateIsGPOConfigured;
+                    || _qoiThumbnailEnabledStateIsGPOConfigured || _bgcodeThumbnailEnabledStateIsGPOConfigured;
             }
         }
 
@@ -617,6 +661,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool MonacoPreviewMinimap
+        {
+            get => _monacoMinimap;
+            set
+            {
+                if (_monacoMinimap != value)
+                {
+                    _monacoMinimap = value;
+                    Settings.Properties.MonacoPreviewMinimap = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public int MonacoPreviewFontSize
         {
             get
@@ -761,6 +819,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool BGCODERenderIsEnabled
+        {
+            get
+            {
+                return _bgcodeRenderIsEnabled;
+            }
+
+            set
+            {
+                if (_bgcodeRenderEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (value != _bgcodeRenderIsEnabled)
+                {
+                    _bgcodeRenderIsEnabled = value;
+                    Settings.Properties.EnableBgcodePreview = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool BGCODERenderIsGpoEnabled
+        {
+            get
+            {
+                return _bgcodeRenderIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool BGCODERenderIsGpoDisabled
+        {
+            get
+            {
+                return _bgcodeRenderIsGpoDisabled;
+            }
+        }
+
         public bool GCODEThumbnailIsEnabled
         {
             get
@@ -800,6 +900,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _gcodeThumbnailIsGpoDisabled;
+            }
+        }
+
+        public bool BGCODEThumbnailIsEnabled
+        {
+            get
+            {
+                return _bgcodeThumbnailIsEnabled;
+            }
+
+            set
+            {
+                if (_bgcodeThumbnailEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (value != _bgcodeThumbnailIsEnabled)
+                {
+                    _bgcodeThumbnailIsEnabled = value;
+                    Settings.Properties.EnableBgcodeThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool BGCODEThumbnailIsGpoEnabled
+        {
+            get
+            {
+                return _bgcodeThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool BGCODEThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _bgcodeThumbnailIsGpoDisabled;
             }
         }
 

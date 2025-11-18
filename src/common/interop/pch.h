@@ -6,7 +6,7 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 // add headers that you want to pre-compile here
-#include <unknwn.h>
+#include <Unknwn.h>
 #include <winrt/base.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>

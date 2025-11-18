@@ -52,6 +52,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
             return V3AndV5(uuidNamespace, uuidName, 5);
         }
 
+        public static Guid V7()
+        {
+            return Guid.CreateVersion7();
+        }
+
         private static Guid V3AndV5(Guid uuidNamespace, string uuidName, short version)
         {
             byte[] namespaceBytes = uuidNamespace.ToByteArray();

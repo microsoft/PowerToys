@@ -26,18 +26,16 @@ namespace WorkspacesEditor.Utils
         {
             if (_fileSystem.File.Exists(fileName))
             {
-                var attempts = 0;
+                int attempts = 0;
                 while (attempts < 10)
                 {
                     try
                     {
-                        using (Stream inputStream = _fileSystem.File.Open(fileName, FileMode.Open))
-                        using (StreamReader reader = new StreamReader(inputStream))
-                        {
-                            string data = reader.ReadToEnd();
-                            inputStream.Close();
-                            return data;
-                        }
+                        using FileSystemStream inputStream = _fileSystem.File.Open(fileName, FileMode.Open);
+                        using StreamReader reader = new(inputStream);
+                        string data = reader.ReadToEnd();
+                        inputStream.Close();
+                        return data;
                     }
                     catch (Exception)
                     {

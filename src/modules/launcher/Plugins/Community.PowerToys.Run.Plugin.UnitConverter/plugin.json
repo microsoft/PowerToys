@@ -6,7 +6,7 @@
     "Author": "ThiefZero",
     "Version": "0.0.1",
     "Language": "csharp",
-    "Website": "https://github.com/ThiefZero",
+    "Website": "https://aka.ms/PowerToys",
     "IcoPathDark": "Images\\unitconverter.dark.png",
     "IcoPathLight": "Images\\unitconverter.light.png",
     "ExecuteFileName": "Community.PowerToys.Run.Plugin.UnitConverter.dll"

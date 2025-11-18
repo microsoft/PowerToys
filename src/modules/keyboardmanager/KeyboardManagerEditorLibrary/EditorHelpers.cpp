@@ -49,7 +49,7 @@ namespace EditorHelpers
         return numberOfSameType > 1;
     }
 
-    // Function to return true if the shortcut is valid. A valid shortcut has atleast one modifier, as well as an action key
+    // Function to return true if the shortcut is valid. A valid shortcut has at least one modifier, as well as an action key
     bool IsValidShortcut(Shortcut shortcut)
     {
         if (shortcut.operationType == Shortcut::OperationType::RunProgram && shortcut.runProgramFilePath.length() > 0)
@@ -117,15 +117,15 @@ namespace EditorHelpers
         }
         if (shortcut.ctrlKey != ModifierKey::Disabled)
         {
-            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetCtrlKey()).c_str()));
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetCtrlKey(ModifierKey::Both)).c_str()));
         }
         if (shortcut.altKey != ModifierKey::Disabled)
         {
-            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetAltKey()).c_str()));
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetAltKey(ModifierKey::Both)).c_str()));
         }
         if (shortcut.shiftKey != ModifierKey::Disabled)
         {
-            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetShiftKey()).c_str()));
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetShiftKey(ModifierKey::Both)).c_str()));
         }
         if (shortcut.actionKey != NULL)
         {

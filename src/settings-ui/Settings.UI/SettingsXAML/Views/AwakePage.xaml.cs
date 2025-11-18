@@ -11,12 +11,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Controls;
 using PowerToys.GPOWrapper;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AwakePage : Page, IRefreshablePage
+    public sealed partial class AwakePage : NavigablePage, IRefreshablePage
     {
         private readonly string _appName = "Awake";
         private readonly SettingsUtils _settingsUtils;
@@ -53,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var settingsPath = _settingsUtils.GetSettingsFilePath(_appName);
 
-            _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
+            _fileSystemWatcher = _fileSystem.FileSystemWatcher.New();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(settingsPath);
             _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(settingsPath);
             _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
@@ -163,7 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // Get the enabled state from GPO.
                 ViewModel.IsEnabledGpoConfigured = true;
-                ViewModel.IsEnabled = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
             {

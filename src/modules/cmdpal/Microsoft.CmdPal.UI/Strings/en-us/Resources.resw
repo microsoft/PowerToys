@@ -1,0 +1,526 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppNameCan" xml:space="preserve">
+    <value>Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppNamePre" xml:space="preserve">
+    <value>Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppStoreName" xml:space="preserve">
+    <value>Windows Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppStoreNameDev" xml:space="preserve">
+    <value>Windows Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppStoreNameCan" xml:space="preserve">
+    <value>Windows Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}. "Canary" in this context means an unstable or nightly build of a software product, not the bird.</comment>
+  </data>
+  <data name="AppStoreNamePre" xml:space="preserve">
+    <value>Windows Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppShortNameCan" xml:space="preserve">
+    <value>Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortNamePre" xml:space="preserve">
+    <value>Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>The Windows Command Palette</value>
+  </data>
+  <data name="AppDescriptionDev" xml:space="preserve">
+    <value>A dev build of the Command Palette</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppDescriptionCan" xml:space="preserve">
+    <value>The Windows Command Palette (Canary build)</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="AppDescriptionPre" xml:space="preserve">
+    <value>The Windows Command Palette (Preview build)</value>
+  </data>
+  <data name="StartupTaskName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="StartupTaskNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="Activation_Shortcut_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Activation_Shortcut_Description" xml:space="preserve">
+    <value>Press a combination of keys to change this shortcut</value>
+  </data>
+  <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
+    <value>Press a combination of keys to change this shortcut.
+Right-click to remove the key combination, thereby deactivating the shortcut.</value>
+  </data>
+  <data name="Activation_Shortcut_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Activation_Shortcut_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Activation_Shortcut_Title" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="InvalidShortcut.Title" xml:space="preserve">
+    <value>Invalid shortcut</value>
+  </data>
+  <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
+    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+    <value>Possible shortcut interference with Alt Gr</value>
+    <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
+  </data>
+  <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
+    <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
+  </data>
+  <data name="CmdPalSettingsHeader.Text" xml:space="preserve">
+    <value>Command Palette settings</value>
+    <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
+  </data>
+  <data name="AboutSettingsHeader.Text" xml:space="preserve">
+    <value>About</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionAboutHeader.Text" xml:space="preserve">
+    <value>About</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionSettingsHeader.Text" xml:space="preserve">
+    <value>Extension settings</value>
+    <comment>A section header for extension-specific settings.</comment>
+  </data>
+  <data name="ExtensionCommandsHeader.Text" xml:space="preserve">
+    <value>Commands</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionFallbackCommandsHeader.Text" xml:space="preserve">
+    <value>Fallback commands</value>
+    <comment>A section header for information about the commands presented to the user when the search text doesn't exactly match the name of a command.</comment>
+  </data>
+  <data name="ExtensionDisabledHeader.Text" xml:space="preserve">
+    <value>This extension is disabled</value>
+    <comment>A header to inform the user that an extension is not currently active</comment>
+  </data>
+  <data name="ExtensionDisabledDetails.Text" xml:space="preserve">
+    <value>Enable this extension to view commands and settings</value>
+    <comment>Additional details for when an extension is disabled. Displayed under ExtensionDisabledHeader.Text</comment>
+  </data>
+  <data name="ExtensionDisabledText" xml:space="preserve">
+    <value>Disabled</value>
+    <comment>Displayed when an extension is disabled</comment>
+  </data>
+  <data name="ExtensionEnable.Text" xml:space="preserve">
+    <value>Enable</value>
+    <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
+  </data>
+  <data name="ExtensionEnableCard.Description" xml:space="preserve">
+    <value>Load commands and settings from this extension</value>
+    <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
+  </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>Command Palette Settings</value>
+    <comment>The title of the settings window for the app</comment>
+  </data>
+  <data name="ToastWindowTitle" xml:space="preserve">
+    <value>Command Palette Toast</value>
+    <comment>The title of the toast window for the command palette</comment>
+  </data>
+  <data name="DefaultSearchPlaceholderText" xml:space="preserve">
+    <value>Type here to search...</value>
+  </data>
+  <data name="Run_PositionHeader.Header" xml:space="preserve">
+    <value>Preferred monitor position</value>
+    <comment>as in Show Command Palette on primary monitor</comment>
+  </data>
+  <data name="Run_PositionHeader.Description" xml:space="preserve">
+    <value>If multiple monitors are in use, Command Palette can be launched on the desired monitor</value>
+    <comment>as in Show Command Palette on primary monitor</comment>
+  </data>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Monitor with mouse cursor</value>
+  </data>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
+  </data>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Primary monitor</value>
+  </data>
+  <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
+    <value>Don't move</value>
+  </data>
+  <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="ConfirmationDialog_CancelButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Header" xml:space="preserve">
+    <value>Global hotkey</value>
+  </data>
+  <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Description" xml:space="preserve">
+    <value>Directly open Command Palette to this command.</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.Header" xml:space="preserve">
+    <value>Alias</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
+    <value>A short keyword used to navigate to this command.</value>
+  </data>
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
+    <value>Alias activation</value>
+  </data>
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
+    <value>Choose when the alias runs. Direct runs as soon as you type the alias. Indirect runs after a trailing space.</value>
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
+    <value>Built-in</value>
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Description" xml:space="preserve">
+    <value>These commands are built-in to the Windows Command Palette.</value>
+  </data>
+  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Header" xml:space="preserve">
+    <value>Activation key</value>
+  </data>
+  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Description" xml:space="preserve">
+    <value>This key will open the Command Palette.</value>
+  </data>
+  <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Header" xml:space="preserve">
+    <value>Use low-level keyboard hook</value>
+  </data>
+  <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
+    <value>Try this if there are issues with the shortcut (Command Palette might not get focus when triggered from an elevated window)</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Header" xml:space="preserve">
+    <value>Ignore shortcut in fullscreen mode</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
+    <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
+  </data>
+  <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Go home when activated</value>
+  </data>
+  <data name="Settings_GeneralPage_GoHome_SettingsCard.Description" xml:space="preserve">
+    <value>Automatically opens the home page upon activation</value>
+  </data>
+  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
+    <value>Highlight search on activate</value>
+  </data>
+  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
+    <value>Selects the previous search text at launch</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
+    <value>Show app details</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Description" xml:space="preserve">
+    <value>Controls if app details are automatically expanded or not.</value>
+  </data>
+  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Header" xml:space="preserve">
+    <value>Backspace goes back</value>
+  </data>
+  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Description" xml:space="preserve">
+    <value>If the search field is empty, backspace returns to the previous page</value>
+  </data>
+  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Header" xml:space="preserve">
+    <value>Single-click activation</value>
+  </data>
+  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
+    <value>Choose how to interact with list items: single-click to activate, or single-click to select and double-click to activate</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
+    <value>Windows Command Palette</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
+    <value>© 2025. All rights reserved.</value>
+  </data>
+  <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
+    <value>View GitHub repository</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SDKDocs_Hyperlink.Content" xml:space="preserve">
+    <value>Extension SDK docs</value>
+  </data>
+  <data name="Settings_GeneralPage_SendFeedback_Hyperlink.Content" xml:space="preserve">
+    <value>Send feedback</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_General.Content" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open Command Palette settings</value>
+  </data>
+  <data name="ActivationSettingsHeader.Text" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
+    <value>Search commands...</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
+    <value>Choose if Command Palette is visible in the system tray</value>
+  </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Header" xml:space="preserve">
+    <value>Disable animations</value>
+  </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
+    <value>Disable animations when switching between pages</value>
+  </data>
+  <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back (Alt + Left arrow)</value>
+  </data>
+  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
+    <value>Last position</value>
+    <comment>Reopen the window where it was last closed</comment>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close as a verb, as in Close the application</comment>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_DirectComboBox.Content" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_InDirectComboBox.Content" xml:space="preserve">
+    <value>Indirect</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
+    <value>Enter alias</value>
+  </data>
+  <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show status messages</value>
+  </data>
+  <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show status messages</value>
+  </data>
+  <data name="NavigationPaneClosed" xml:space="preserve">
+    <value>Navigation pane closed</value>
+  </data>
+  <data name="NavigationPaneOpened" xml:space="preserve">
+    <value>Navigation page opened</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
+    <value>Enable external reload</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
+    <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
+  </data>
+  <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
+    <value>For developers</value>
+  </data>
+  <data name="UntitledPageTitle" xml:space="preserve">
+    <value>an untitled</value>
+  </data>
+  <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
+    <value>Navigated to {0} page</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings (Ctrl+,)</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Primary.Text" xml:space="preserve">
+    <value>No extensions found</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Secondary.Text" xml:space="preserve">
+    <value>Try a different search term</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Reload extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
+    <value>Reloading extensions..</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+    <value>Discover more extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+    <value>Find more extensions on the Microsoft Store or WinGet.</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
+    <value>Learn how to create your own extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on the Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on WinGet</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Search extensions</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
+    <value>Command Palette has encountered a fatal error and must close.</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
+    <value>Command Palette - Fatal error</value>
+  </data>
+</root>

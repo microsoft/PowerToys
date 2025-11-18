@@ -21,16 +21,22 @@ Pbgra
 WHITEONBLACK
 
 
+# COUNTRIES
+RUS
+
 # FILES
 
 AYUV
 bak
 Bcl
+bgcode
+Deflatealgorithm
 exa
 exabyte
 Gbits
 Gbps
 gcode
+Heatshrink
 Mbits
 MBs
 mkv
@@ -50,6 +56,8 @@ YVU
 YVYU
 zipfolder
 CODEOWNERS
+VNext
+vnext
 
 # FONTS
 
@@ -75,18 +83,43 @@ sinclairinat
 stylecop
 uipi
 yinwang
-
+myaccess
+onmicrosoft
+aep
+epsf
+howto
+onefuzzconfig
+oip
+onefuzzingestionpreparationtool
+OTP
+Yubi
+Yubico
+Perplexity
+svgl
 
 # KEYS
 
 altdown
 BUTTONUP
+bafunctions
+Baf
+Bitness
+BUILDARCHSHORT
 CTRLALTDEL
 Ctrls
+CSilent
+CBal
+CREATEBAFUNCTIONS
+CPrereq
+dirutil
+DUtil
+Editbox
 EXSEL
 HOLDENTER
 HOLDESC
 HOLDSPACE
+HOLDBACKSPACE
+IDIGNORE
 KBDLLHOOKSTRUCT
 keyevent
 LAlt
@@ -98,12 +131,16 @@ LCONTROL
 LCtrl
 LEFTDOWN
 LEFTUP
+locutil
+logutil
+msimg
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
 MIDDLEDOWN
 MIDDLEUP
+memutil
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
@@ -116,8 +153,18 @@ RCONTROL
 RCtrl
 RIGHTDOWN
 RIGHTUP
+Richedit
+rgwz
+resrutil
+srd
+scz
+shelutil
+thmutil
+uriutil
 VKTAB
+wcautil
 winkey
+wininet
 WMKEYDOWN
 WMKEYUP
 WMSYSKEYDOWN
@@ -127,6 +174,10 @@ XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
 XDOWN
+xmlutil
+
+# Prefix
+pcs
 
 # User32.SYSTEM_METRICS_INDEX.cs
 
@@ -215,14 +266,65 @@ SWAPBUTTON
 SYSTEMDOCKED
 TABLETPC
 
+# Units
+nmi
+
 # MATH
 
 artanh
 arsinh
 arcosh
+roundf
 
 # Linux
 
 dbus
 anypass
+github
 gpg
+https
+ssh
+ubuntu
+workarounds
+
+# For upgrade to check-spelling v0.0.24
+pwa
+
+# .NET
+
+AOT
+Aot
+
+# YML
+onefuzz
+
+# NameInCode
+leilzh
+mengyuanchen
+
+# DllName
+testhost
+Testably
+
+#Tools
+OIP
+xef
+xes
+PACKAGEVERSIONNUMBER
+APPXMANIFESTVERSION
+
+# MRU lists
+CACHEWRITE
+MRUCMPPROC
+MRUINFO
+REGSTR
+
+# Misc Win32 APIs and PInvokes
+INVOKEIDLIST
+
+# PowerRename metadata pattern abbreviations (used in tests and regex patterns)
+DDDD
+FFF
+HHH
+riday
+YYY

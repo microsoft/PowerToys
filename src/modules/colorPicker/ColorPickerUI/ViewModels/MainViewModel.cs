@@ -16,6 +16,7 @@ using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using PowerToys.Interop;
 
 namespace ColorPicker.ViewModels
@@ -58,6 +59,12 @@ namespace ColorPicker.ViewModels
             _keyboardMonitor = keyboardMonitor;
 
             NativeEventWaiter.WaitForEventLoop(
+                Constants.TerminateColorPickerSharedEvent(),
+                Application.Current.Shutdown,
+                Application.Current.Dispatcher,
+                exitToken);
+
+            NativeEventWaiter.WaitForEventLoop(
                 Constants.ShowColorPickerSharedEvent(),
                 _appStateHandler.StartUserSession,
                 Application.Current.Dispatcher,
@@ -73,9 +80,10 @@ namespace ColorPicker.ViewModels
             {
                 SetColorDetails(mouseInfoProvider.CurrentColor);
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
-                mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
+                mouseInfoProvider.OnPrimaryMouseDown += MouseInfoProvider_OnPrimaryMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
                 mouseInfoProvider.OnSecondaryMouseUp += MouseInfoProvider_OnSecondaryMouseUp;
+                mouseInfoProvider.OnMiddleMouseDown += MouseInfoProvider_OnMiddleMouseDown;
             }
 
             _userSettings.ShowColorName.PropertyChanged += (s, e) => { OnPropertyChanged(nameof(ShowColorName)); };
@@ -107,7 +115,7 @@ namespace ColorPicker.ViewModels
 
         private void AppStateHandler_EnterPressed(object sender, EventArgs e)
         {
-            MouseInfoProvider_OnMouseDown(null, default(System.Drawing.Point));
+            MouseInfoProvider_OnPrimaryMouseDown(null, default);
         }
 
         /// <summary>
@@ -161,18 +169,50 @@ namespace ColorPicker.ViewModels
             SetColorDetails(color);
         }
 
-        /// <summary>
-        /// Tell the color picker that the user have press a mouse button (after release the button)
-        /// </summary>
-        /// <param name="sender">The sender of this event</param>
-        /// <param name="p">The current <see cref="System.Drawing.Point"/> of the mouse cursor</param>
-        private void MouseInfoProvider_OnMouseDown(object sender, System.Drawing.Point p)
+        private void MouseInfoProvider_OnPrimaryMouseDown(object sender, IntPtr wParam)
         {
-            ClipboardHelper.CopyToClipboard(ColorText);
+            HandleMouseClickAction(_userSettings.PrimaryClickAction.Value);
+        }
 
-            var color = GetColorString();
+        private void MouseInfoProvider_OnMiddleMouseDown(object sender, IntPtr wParam)
+        {
+            HandleMouseClickAction(_userSettings.MiddleClickAction.Value);
+        }
 
-            var oldIndex = _userSettings.ColorHistory.IndexOf(color);
+        private void MouseInfoProvider_OnSecondaryMouseUp(object sender, IntPtr wParam)
+        {
+            HandleMouseClickAction(_userSettings.SecondaryClickAction.Value);
+        }
+
+        private void HandleMouseClickAction(ColorPickerClickAction action)
+        {
+            switch (action)
+            {
+                case ColorPickerClickAction.PickColorThenEditor:
+                    ClipboardHelper.CopyToClipboard(ColorText);
+                    UpdateColorHistory(GetColorString());
+
+                    _appStateHandler.OpenColorEditor();
+
+                    break;
+
+                case ColorPickerClickAction.PickColorAndClose:
+                    ClipboardHelper.CopyToClipboard(ColorText);
+                    UpdateColorHistory(GetColorString());
+
+                    _appStateHandler.EndUserSession();
+
+                    break;
+
+                case ColorPickerClickAction.Close:
+                    _appStateHandler.EndUserSession();
+                    break;
+            }
+        }
+
+        private void UpdateColorHistory(string color)
+        {
+            int oldIndex = _userSettings.ColorHistory.IndexOf(color);
             if (oldIndex != -1)
             {
                 _userSettings.ColorHistory.Move(oldIndex, 0);
@@ -186,13 +226,6 @@ namespace ColorPicker.ViewModels
             {
                 _userSettings.ColorHistory.RemoveAt(_userSettings.ColorHistory.Count - 1);
             }
-
-            _appStateHandler.OnColorPickerMouseDown();
-        }
-
-        private void MouseInfoProvider_OnSecondaryMouseUp(object sender, IntPtr wParam)
-        {
-            _appStateHandler.EndUserSession();
         }
 
         private string GetColorString()

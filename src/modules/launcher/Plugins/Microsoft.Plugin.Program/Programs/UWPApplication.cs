@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            // To set the title to always be the displayname of the packaged application
+            // To set the title to always be the display name of the packaged application
             result.Title = DisplayName;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
@@ -252,10 +252,10 @@ namespace Microsoft.Plugin.Program.Programs
             logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
-            CanRunElevated = IfApplicationcanRunElevated();
+            CanRunElevated = IfApplicationCanRunElevated();
         }
 
-        private bool IfApplicationcanRunElevated()
+        private bool IfApplicationCanRunElevated()
         {
             if (EntryPoint == "Windows.FullTrustApplication")
             {
@@ -596,7 +596,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                // for C:\Windows\MiracastView etc
+                // for C:\Windows\MiracastView, etc.
                 path = Path.Combine(Package.Location, "Assets", uri);
             }
 

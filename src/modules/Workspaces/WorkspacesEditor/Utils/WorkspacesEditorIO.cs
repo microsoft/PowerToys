@@ -24,7 +24,7 @@ namespace WorkspacesEditor.Utils
         {
             try
             {
-                WorkspacesData parser = new WorkspacesData();
+                WorkspacesData parser = new();
                 if (!File.Exists(parser.File))
                 {
                     Logger.LogWarning($"Workspaces storage file not found: {parser.File}");
@@ -56,14 +56,14 @@ namespace WorkspacesEditor.Utils
         {
             try
             {
-                ProjectData parser = new ProjectData();
+                ProjectData parser = new();
                 if (!File.Exists(TempProjectData.File))
                 {
                     Logger.LogWarning($"ParseProject method. Workspaces storage file not found: {TempProjectData.File}");
                     return null;
                 }
 
-                Project project = new Project(parser.Read(TempProjectData.File));
+                Project project = new(parser.Read(TempProjectData.File));
                 return project;
             }
             catch (Exception e)
@@ -75,13 +75,13 @@ namespace WorkspacesEditor.Utils
 
         public void SerializeWorkspaces(List<Project> workspaces, bool useTempFile = false)
         {
-            WorkspacesData serializer = new WorkspacesData();
-            WorkspacesData.WorkspacesListWrapper workspacesWrapper = new WorkspacesData.WorkspacesListWrapper { };
-            workspacesWrapper.Workspaces = new List<ProjectData.ProjectWrapper>();
+            WorkspacesData serializer = new();
+            WorkspacesData.WorkspacesListWrapper workspacesWrapper = new() { };
+            workspacesWrapper.Workspaces = [];
 
             foreach (Project project in workspaces)
             {
-                ProjectData.ProjectWrapper wrapper = new ProjectData.ProjectWrapper
+                ProjectData.ProjectWrapper wrapper = new()
                 {
                     Id = project.Id,
                     Name = project.Name,
@@ -89,22 +89,25 @@ namespace WorkspacesEditor.Utils
                     IsShortcutNeeded = project.IsShortcutNeeded,
                     MoveExistingWindows = project.MoveExistingWindows,
                     LastLaunchedTime = project.LastLaunchedTime,
-                    Applications = new List<ProjectData.ApplicationWrapper> { },
-                    MonitorConfiguration = new List<ProjectData.MonitorConfigurationWrapper> { },
+                    Applications = [],
+                    MonitorConfiguration = [],
                 };
 
-                foreach (var app in project.Applications.Where(x => x.IsIncluded))
+                foreach (Application app in project.Applications.Where(x => x.IsIncluded))
                 {
                     wrapper.Applications.Add(new ProjectData.ApplicationWrapper
                     {
+                        Id = app.Id,
                         Application = app.AppName,
                         ApplicationPath = app.AppPath,
                         Title = app.AppTitle,
                         PackageFullName = app.PackageFullName,
                         AppUserModelId = app.AppUserModelId,
+                        PwaAppId = app.PwaAppId,
                         CommandLineArguments = app.CommandLineArguments,
                         IsElevated = app.IsElevated,
                         CanLaunchElevated = app.CanLaunchElevated,
+                        Version = app.Version,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
                         Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper
@@ -118,7 +121,7 @@ namespace WorkspacesEditor.Utils
                     });
                 }
 
-                foreach (var monitor in project.Monitors)
+                foreach (MonitorSetup monitor in project.Monitors)
                 {
                     wrapper.MonitorConfiguration.Add(new ProjectData.MonitorConfigurationWrapper
                     {
@@ -148,7 +151,7 @@ namespace WorkspacesEditor.Utils
 
             try
             {
-                IOUtils ioUtils = new IOUtils();
+                IOUtils ioUtils = new();
                 ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
             }
             catch (Exception e)
@@ -160,7 +163,7 @@ namespace WorkspacesEditor.Utils
 
         private bool AddWorkspaces(MainViewModel mainViewModel, WorkspacesData.WorkspacesListWrapper workspaces)
         {
-            foreach (var project in workspaces.Workspaces)
+            foreach (ProjectData.ProjectWrapper project in workspaces.Workspaces)
             {
                 mainViewModel.Workspaces.Add(new Project(project));
             }
@@ -171,13 +174,13 @@ namespace WorkspacesEditor.Utils
 
         private bool SetWorkspaces(MainViewModel mainViewModel, WorkspacesData.WorkspacesListWrapper workspaces)
         {
-            mainViewModel.Workspaces = new System.Collections.ObjectModel.ObservableCollection<Project> { };
+            mainViewModel.Workspaces = [];
             return AddWorkspaces(mainViewModel, workspaces);
         }
 
         internal void SerializeTempProject(Project project)
         {
-            SerializeWorkspaces(new List<Project>() { project }, true);
+            SerializeWorkspaces([project], true);
         }
     }
 }

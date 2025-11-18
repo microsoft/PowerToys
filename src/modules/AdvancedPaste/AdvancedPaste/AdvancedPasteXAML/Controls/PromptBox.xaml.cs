@@ -3,30 +3,26 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Net;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
-using AdvancedPaste.Helpers;
-using AdvancedPaste.Settings;
+using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace AdvancedPaste.Controls
 {
     public sealed partial class PromptBox : Microsoft.UI.Xaml.Controls.UserControl
     {
-        // Minimum time to show spinner when generating custom format using forcePasteCustom
-        private static readonly TimeSpan MinTaskTime = TimeSpan.FromSeconds(2);
-
-        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        private readonly IUserSettings _userSettings;
-
         public OptionsViewModel ViewModel { get; private set; }
+
+        private bool _syncingProviderSelection;
 
         public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register(
             nameof(PlaceholderText),
@@ -48,108 +44,83 @@ namespace AdvancedPaste.Controls
 
         public object Footer
         {
-            get => (object)GetValue(FooterProperty);
+            get => GetValue(FooterProperty);
             set => SetValue(FooterProperty, value);
+        }
+
+        public static readonly DependencyProperty ModelSelectorProperty = DependencyProperty.Register(
+            nameof(ModelSelector),
+            typeof(object),
+            typeof(PromptBox),
+            new PropertyMetadata(defaultValue: null));
+
+        public object ModelSelector
+        {
+            get => GetValue(ModelSelectorProperty);
+            set => SetValue(ModelSelectorProperty, value);
         }
 
         public PromptBox()
         {
-            this.InitializeComponent();
-
-            _userSettings = App.GetService<IUserSettings>();
+            InitializeComponent();
 
             ViewModel = App.GetService<OptionsViewModel>();
-            ViewModel.CustomActionActivated += (_, e) => GenerateCustom(e.ForcePasteCustom);
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            ViewModel.PreviewRequested += ViewModel_PreviewRequested;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(ViewModel.IsBusy) or nameof(ViewModel.PasteActionError))
+            {
+                var state = ViewModel.IsBusy ? "LoadingState" : ViewModel.PasteActionError.HasText ? "ErrorState" : "DefaultState";
+                VisualStateManager.GoToState(this, state, true);
+            }
+
+            if (e.PropertyName is nameof(ViewModel.ActiveAIProvider) or nameof(ViewModel.AIProviders))
+            {
+                SyncProviderSelection();
+            }
+        }
+
+        private void ViewModel_PreviewRequested(object sender, EventArgs e)
+        {
+            Logger.LogTrace();
+
+            PreviewGrid.Width = InputTxtBox.ActualWidth;
+            PreviewFlyout.ShowAt(InputTxtBox);
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
             InputTxtBox.Focus(FocusState.Programmatic);
+            SyncProviderSelection();
         }
 
         [RelayCommand]
-        private void GenerateCustom() => GenerateCustom(false);
-
-        private void GenerateCustom(bool forcePasteCustom)
-        {
-            Logger.LogTrace();
-
-            VisualStateManager.GoToState(this, "LoadingState", true);
-            string inputInstructions = ViewModel.Query;
-            ViewModel.SaveQuery(inputInstructions);
-
-            var customFormatTask = ViewModel.GenerateCustomFunction(inputInstructions);
-            var delayTask = forcePasteCustom ? Task.Delay(MinTaskTime) : Task.CompletedTask;
-            Task.WhenAll(customFormatTask, delayTask)
-                .ContinueWith(
-                _ =>
-                {
-                    _dispatcherQueue.TryEnqueue(() =>
-                    {
-                        ViewModel.CustomFormatResult = customFormatTask.Result;
-
-                        if (ViewModel.ApiRequestStatus == (int)HttpStatusCode.OK)
-                        {
-                            VisualStateManager.GoToState(this, "DefaultState", true);
-                            if (_userSettings.ShowCustomPreview && !forcePasteCustom)
-                            {
-                                PreviewGrid.Width = InputTxtBox.ActualWidth;
-                                PreviewFlyout.ShowAt(InputTxtBox);
-                            }
-                            else
-                            {
-                                ViewModel.PasteCustom();
-                                InputTxtBox.Text = string.Empty;
-                            }
-                        }
-                        else
-                        {
-                            VisualStateManager.GoToState(this, "ErrorState", true);
-                        }
-                    });
-                },
-                TaskScheduler.Default);
-        }
+        private async Task GenerateCustomAIAsync() => await ViewModel.ExecuteCustomAIFormatFromCurrentQueryAsync(PasteActionSource.PromptBox);
 
         [RelayCommand]
-        private void Recall()
+        private async Task CancelPasteActionAsync() => await ViewModel.CancelPasteActionAsync();
+
+        private async void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            Logger.LogTrace();
-
-            InputTxtBox.IsEnabled = true;
-
-            var lastQuery = ViewModel.RecallPreviousCustomQuery();
-            if (lastQuery != null)
+            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIAvailable)
             {
-                InputTxtBox.Text = lastQuery.Query;
-            }
-
-            ClipboardHelper.SetClipboardTextContent(lastQuery.ClipboardData);
-        }
-
-        private void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter && InputTxtBox.Text.Length > 0 && ViewModel.IsCustomAIEnabled)
-            {
-                GenerateCustom();
+                await GenerateCustomAIAsync();
             }
         }
 
-        private void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
+        private async void PreviewPasteBtn_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.PasteCustom();
-            InputTxtBox.Text = string.Empty;
+            await ViewModel.PasteCustomAsync();
         }
 
         private void ThumbUpDown_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
+            if (sender is Button btn && bool.TryParse(btn.CommandParameter as string, out bool result))
             {
-                bool result;
-                if (bool.TryParse(btn.CommandParameter as string, out result))
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteCustomFormatOutputThumbUpDownEvent(result));
-                }
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteCustomFormatOutputThumbUpDownEvent(result));
             }
         }
 
@@ -161,6 +132,58 @@ namespace AdvancedPaste.Controls
         internal void IsLoading(bool loading)
         {
             Loader.IsLoading = loading;
+        }
+
+        private void SyncProviderSelection()
+        {
+            if (AIProviderListView is null)
+            {
+                return;
+            }
+
+            try
+            {
+                _syncingProviderSelection = true;
+                AIProviderListView.SelectedItem = ViewModel.ActiveAIProvider;
+            }
+            finally
+            {
+                _syncingProviderSelection = false;
+            }
+        }
+
+        private void AIProviderFlyout_Opened(object sender, object e)
+        {
+            SyncProviderSelection();
+        }
+
+        private async void AIProviderListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_syncingProviderSelection)
+            {
+                return;
+            }
+
+            var flyout = FlyoutBase.GetAttachedFlyout(AIProviderButton);
+
+            if (AIProviderListView.SelectedItem is not PasteAIProviderDefinition provider)
+            {
+                return;
+            }
+
+            if (string.Equals(ViewModel.ActiveAIProvider?.Id, provider.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                flyout?.Hide();
+                return;
+            }
+
+            if (ViewModel.SetActiveProviderCommand.CanExecute(provider))
+            {
+                await ViewModel.SetActiveProviderCommand.ExecuteAsync(provider);
+                SyncProviderSelection();
+            }
+
+            flyout?.Hide();
         }
     }
 }

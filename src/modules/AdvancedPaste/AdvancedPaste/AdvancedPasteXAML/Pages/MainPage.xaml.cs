@@ -68,11 +68,22 @@ namespace AdvancedPaste.Pages
                             if (item.Content.Contains(StandardDataFormats.Text))
                             {
                                 string text = await item.Content.GetTextAsync();
-                                items.Add(new ClipboardItem { Content = text, Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Content = text,
+                                    Format = ClipboardFormat.Text,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                             else if (item.Content.Contains(StandardDataFormats.Bitmap))
                             {
-                                items.Add(new ClipboardItem { Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Format = ClipboardFormat.Image,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                         }
                     }
@@ -130,15 +141,15 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void ListView_Click(object sender, ItemClickEventArgs e)
+        private async void PasteFormat_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is PasteFormat format)
             {
-                ViewModel.ExecutePasteFormat(format);
+                await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
             }
         }
 
-        private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        private async void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
             if (GetMainWindow()?.Visible is false)
             {
@@ -171,7 +182,7 @@ namespace AdvancedPaste.Pages
                 case VirtualKey.Number7:
                 case VirtualKey.Number8:
                 case VirtualKey.Number9:
-                    ViewModel.ExecutePasteFormat(sender.Key);
+                    await ViewModel.ExecutePasteFormatAsync(sender.Key);
                     break;
 
                 default:
@@ -187,21 +198,19 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ClipboardHistory_ItemClick(object sender, ItemClickEventArgs e)
+        private async void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
         {
-            var item = e.ClickedItem as ClipboardItem;
-            if (item is not null)
+            if (args.InvokedItem is ClipboardItem item)
             {
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))
                 {
-                    ClipboardHelper.SetClipboardTextContent(item.Content);
+                    ClipboardHelper.SetTextContent(item.Content);
                 }
                 else if (item.Image is not null)
                 {
-                    RandomAccessStreamReference image = null;
-                    image = await item.Item.Content.GetBitmapAsync();
-                    ClipboardHelper.SetClipboardImageContent(image);
+                    RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
+                    ClipboardHelper.SetImageContent(image);
                 }
             }
         }

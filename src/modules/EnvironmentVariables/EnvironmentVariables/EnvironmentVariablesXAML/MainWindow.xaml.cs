@@ -4,22 +4,19 @@
 
 using System;
 using System.Runtime.InteropServices;
-
 using EnvironmentVariables.Win32;
 using EnvironmentVariablesUILib;
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 
 namespace EnvironmentVariables
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
         private EnvironmentVariablesMainPage MainPage { get; }
@@ -34,12 +31,14 @@ namespace EnvironmentVariables
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+
             Title = title;
-            AppTitleTextBlock.Text = title;
+            titleBar.Title = title;
 
             var handle = this.GetWindowHandle();
             RegisterWindow(handle);
 
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(handle);
             WindowHelpers.BringToForeground(handle);
 
             MainPage = App.GetService<EnvironmentVariablesMainPage>();
@@ -87,6 +86,11 @@ namespace EnvironmentVariables
             }
 
             return NativeMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
+        }
+
+        private void Window_Closed(object sender, WindowEventArgs args)
+        {
+            (App.Current as EnvironmentVariables.App).EtwTrace?.Dispose();
         }
     }
 }

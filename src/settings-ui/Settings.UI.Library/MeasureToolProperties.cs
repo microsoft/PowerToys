@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 using Settings.UI.Library.Enumerations;
 
@@ -37,7 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool PerColorChannelEdgeDetection { get; set; }
 
-        [CmdConfigureIgnore]
         public IntProperty UnitsOfMeasure { get; set; }
 
         public IntProperty PixelTolerance { get; set; }

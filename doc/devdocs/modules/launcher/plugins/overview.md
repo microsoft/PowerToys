@@ -32,7 +32,7 @@ Each plugin implements the `IPlugin` interface which comprises of the `Init()` a
 ### Score
 - The user query is executed against each of the plugins and the result list view is updated with results from each of the plugins.
 - The ordering of the results is based on the `Score` of each Result.
-- Each plugin assigns a score to a result based on it's relevance. The results with higher scores are displayed higher in the list view and vice versa.
+- Each plugin assigns a score to a result based on its relevance. The results with higher scores are displayed higher in the list view and vice versa.
 
 ## Plugin settings 
 Plugin settings that are editable from the settings are stored in `PowerToys Run\settings.json`. In the very first run, those settings are populated from plugin' `plugin.json` file. Unlike Wox we do not support multiple action keywords. Instead, we have `ActionKeyword` and `IsGlobal` options.

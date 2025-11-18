@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "shell_context_sub_menu.h"
 #include "trace.h"
+#include "new_utilities.h"
 
 using namespace Microsoft::WRL;
 
@@ -35,8 +36,9 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
 
     current_command = explorer_menu_item_commands.cbegin();
 
-    // Log that context menu was shown and with how many items
-    Trace::EventShowTemplateItems(number_of_templates);
+    // Save how many item templates we have so it can be sent later when we do something with New+.
+    // We don't send it here or it would send an event every time we open a context menu.
+    newplus::utilities::set_saved_number_of_templates(static_cast<size_t>(number_of_templates));
 }
 
 // IEnumExplorerCommand

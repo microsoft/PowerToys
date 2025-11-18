@@ -42,6 +42,9 @@ namespace ManagedCommon
         [DllImport("user32.dll")]
         internal static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
+        [DllImport("dwmapi")]
+        internal static extern IntPtr DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset);
+
         [StructLayout(LayoutKind.Sequential)]
         public struct INPUT
         {
@@ -50,7 +53,7 @@ namespace ManagedCommon
 
             internal static int Size
             {
-                get { return Marshal.SizeOf(typeof(INPUT)); }
+                get { return Marshal.SizeOf<INPUT>(); }
             }
         }
 
@@ -99,6 +102,15 @@ namespace ManagedCommon
             INPUT_MOUSE = 0,
             INPUT_KEYBOARD = 1,
             INPUT_HARDWARE = 2,
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct MARGINS
+        {
+            public int cxLeftWidth;
+            public int cxRightWidth;
+            public int cyTopHeight;
+            public int cyBottomHeight;
         }
     }
 }

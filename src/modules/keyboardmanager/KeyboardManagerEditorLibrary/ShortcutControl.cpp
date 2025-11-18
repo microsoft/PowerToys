@@ -472,9 +472,9 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     deleteShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
 
     // Add tooltip for delete button which would appear on hover
-    ToolTip deleteShortcuttoolTip;
-    deleteShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
-    ToolTipService::SetToolTip(deleteShortcut, deleteShortcuttoolTip);
+    ToolTip deleteShortcutToolTip;
+    deleteShortcutToolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+    ToolTipService::SetToolTip(deleteShortcut, deleteShortcutToolTip);
 
     StackPanel deleteShortcutContainer = StackPanel();
     deleteShortcutContainer.Name(L"deleteShortcutContainer");
@@ -496,11 +496,11 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
         {
             // not sure why by we need to add the current item in here, so we have it even if does not change.
             auto newShortcut = std::get<Shortcut>(newKeys);
-            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), newShortcut }, std::wstring(targetAppName) });
+            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ originalKeys, newShortcut }, std::wstring(targetAppName) });
         }
         else
         {
-            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ Shortcut(), Shortcut() }, std::wstring(targetAppName) });
+            shortcutRemapBuffer.push_back(RemapBufferRow{ RemapBufferItem{ originalKeys, newKeys }, std::wstring(targetAppName) });
         }
 
         KeyDropDownControl::AddShortcutToControl(originalKeys, parent, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->shortcutDropDownVariableSizedWrapGrid.as<VariableSizedWrapGrid>(), *keyboardManagerState, 0, keyboardRemapControlObjects[keyboardRemapControlObjects.size() - 1][0]->keyDropDownControlObjects, shortcutRemapBuffer, row, targetAppTextBox, false, false);
@@ -956,11 +956,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
             shortcut = std::get<Shortcut>(shortcutRemapBuffer[rowIndex].mapping[1]);
         }
 
-        if (!shortcut.IsEmpty() && shortcut.HasChord())
+        keyboardManagerState.AllowChord = false;
+        keyboardManagerState.exactMatch = false;
+        if (!shortcut.IsEmpty())
         {
-            keyboardManagerState.AllowChord = true;
-        } else {
-            keyboardManagerState.AllowChord = false;
+            keyboardManagerState.AllowChord = shortcut.HasChord();
+            keyboardManagerState.exactMatch = shortcut.exactMatch;
         }
     }
 
@@ -969,6 +970,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
     // ContentDialog for detecting shortcuts. This is the parent UI element.
     ContentDialog detectShortcutBox;
     ToggleSwitch allowChordSwitch;
+    ToggleSwitch exactMatchSwitch;
 
     // ContentDialog requires manually setting the XamlRoot (https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.contentdialog#contentdialog-in-appwindow-or-xaml-islands)
     detectShortcutBox.XamlRoot(xamlRoot);
@@ -1038,6 +1040,11 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         allowChordSwitch.IsOn(keyboardManagerState.AllowChord);
     };
 
+    auto onReleaseBack = [&keyboardManagerState,
+                         exactMatchSwitch] {
+        keyboardManagerState.exactMatch = !keyboardManagerState.exactMatch;
+        exactMatchSwitch.IsOn(keyboardManagerState.exactMatch);
+    };
     auto onAccept = [onPressEnter,
                      onReleaseEnter] {
         onPressEnter();
@@ -1109,6 +1116,17 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
                     });
             },
             nullptr);
+        keyboardManagerState.RegisterKeyDelay(
+            VK_BACK,
+            selectDetectedShortcutAndResetKeys,
+            [onReleaseBack, detectShortcutBox](DWORD) {
+                detectShortcutBox.Dispatcher().RunAsync(
+                    Windows::UI::Core::CoreDispatcherPriority::Normal,
+                    [onReleaseBack] {
+                        onReleaseBack();
+                    });
+            },
+            nullptr);
     }
 
     // Cancel button
@@ -1157,6 +1175,7 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
 
     // Detect Chord
     Windows::UI::Xaml::Controls::StackPanel chordStackPanel;
+    Windows::UI::Xaml::Controls::StackPanel exactMatchStackPanel;
 
     if (isOrigShortcut)
     {
@@ -1189,6 +1208,32 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         };
 
         allowChordSwitch.Toggled(toggleHandler);
+
+        TextBlock exactMatchText;
+        exactMatchText.Text(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_EXACT_MATCH));
+        exactMatchText.FontSize(12);
+        exactMatchText.Margin({ 0, 12 + verticalMargin, 0, 0 });
+        exactMatchText.TextAlignment(TextAlignment::Center);
+        exactMatchStackPanel.VerticalAlignment(VerticalAlignment::Center);
+        exactMatchStackPanel.Orientation(Orientation::Horizontal);
+
+        exactMatchSwitch.OnContent(nullptr);
+        exactMatchSwitch.OffContent(nullptr);
+        exactMatchSwitch.Margin({ 12, verticalMargin, 0, 0 });
+        exactMatchSwitch.IsOn(keyboardManagerState.exactMatch);
+
+        exactMatchStackPanel.Children().Append(exactMatchText);
+        exactMatchStackPanel.Children().Append(exactMatchSwitch);
+
+        stackPanel.Children().Append(exactMatchStackPanel);
+        exactMatchSwitch.IsOn(keyboardManagerState.exactMatch);
+
+        auto toggleHandlerExactMatch = [exactMatchSwitch, &keyboardManagerState, rowIndex, &remapBuffer](auto const& sender, auto const& e) {
+            Shortcut& shortcut = std::get<Shortcut>(remapBuffer[rowIndex].mapping[0]);
+            shortcut.exactMatch = exactMatchSwitch.IsOn();
+        };
+
+        exactMatchSwitch.Toggled(toggleHandlerExactMatch);
     }
 
     TextBlock holdEscInfo;
@@ -1211,6 +1256,12 @@ void ShortcutControl::CreateDetectShortcutWindow(winrt::Windows::Foundation::IIn
         holdSpaceInfo.FontSize(12);
         holdSpaceInfo.Margin({ 0, 0, 0, 0 });
         stackPanel.Children().Append(holdSpaceInfo);
+
+        TextBlock holdCtrInfo;
+        holdCtrInfo.Text(GET_RESOURCE_STRING(IDS_TYPE_HOLDBACKSPACE));
+        holdCtrInfo.FontSize(12);
+        holdCtrInfo.Margin({ 0, 0, 0, 0 });
+        stackPanel.Children().Append(holdCtrInfo);
     }
 
     try

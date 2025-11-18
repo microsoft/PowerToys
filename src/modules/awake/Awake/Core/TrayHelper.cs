@@ -6,9 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Core.Threading;
@@ -28,19 +31,24 @@ namespace Awake.Core
     internal static class TrayHelper
     {
         private static NotifyIconData _notifyIconData;
-        private static IntPtr _trayMenu;
-        private static IntPtr _hiddenWindowHandle;
         private static SingleThreadSynchronizationContext? _syncContext;
         private static Thread? _mainThread;
+        private static uint _taskbarCreatedMessage;
 
-        private static IntPtr TrayMenu { get => _trayMenu; set => _trayMenu = value; }
+        private static IntPtr TrayMenu { get; set; }
 
-        internal static IntPtr HiddenWindowHandle { get => _hiddenWindowHandle; private set => _hiddenWindowHandle = value; }
+        internal static IntPtr WindowHandle { get; private set; }
+
+        internal static readonly Icon DefaultAwakeIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/awake.ico"));
+        internal static readonly Icon TimedIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/timed.ico"));
+        internal static readonly Icon ExpirableIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/expirable.ico"));
+        internal static readonly Icon IndefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
+        internal static readonly Icon DisabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
 
         static TrayHelper()
         {
             TrayMenu = IntPtr.Zero;
-            HiddenWindowHandle = IntPtr.Zero;
+            WindowHandle = IntPtr.Zero;
         }
 
         private static void ShowContextMenu(IntPtr hWnd)
@@ -53,12 +61,11 @@ namespace Awake.Core
 
             Bridge.SetForegroundWindow(hWnd);
 
-            // Get cursor position and convert it to client coordinates
+            // Get cursor position in screen coordinates
             Bridge.GetCursorPos(out Models.Point cursorPos);
-            Bridge.ScreenToClient(hWnd, ref cursorPos);
 
             // Set menu information
-            var menuInfo = new MenuInfo
+            MenuInfo menuInfo = new()
             {
                 CbSize = (uint)Marshal.SizeOf<MenuInfo>(),
                 FMask = Native.Constants.MIM_STYLE,
@@ -76,8 +83,10 @@ namespace Awake.Core
                   IntPtr.Zero);
         }
 
-        public static void InitializeTray(Icon icon, string text)
+        public static Task InitializeTray(Icon icon, string text)
         {
+            TaskCompletionSource<bool> trayInitialized = new();
+
             IntPtr hWnd = IntPtr.Zero;
 
             // Start the message loop asynchronously
@@ -88,53 +97,63 @@ namespace Awake.Core
 
                 RunOnMainThread(() =>
                 {
-                    WndClassEx wcex = new()
+                    try
                     {
-                        CbSize = (uint)Marshal.SizeOf(typeof(WndClassEx)),
-                        Style = 0,
-                        LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
-                        CbClsExtra = 0,
-                        CbWndExtra = 0,
-                        HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
-                        HIcon = IntPtr.Zero,
-                        HCursor = IntPtr.Zero,
-                        HbrBackground = IntPtr.Zero,
-                        LpszMenuName = string.Empty,
-                        LpszClassName = Constants.TrayWindowId,
-                        HIconSm = IntPtr.Zero,
-                    };
+                        WndClassEx wcex = new()
+                        {
+                            CbSize = (uint)Marshal.SizeOf<WndClassEx>(),
+                            Style = 0,
+                            LpfnWndProc = Marshal.GetFunctionPointerForDelegate<Bridge.WndProcDelegate>(WndProc),
+                            CbClsExtra = 0,
+                            CbWndExtra = 0,
+                            HInstance = Marshal.GetHINSTANCE(typeof(Program).Module),
+                            HIcon = IntPtr.Zero,
+                            HCursor = IntPtr.Zero,
+                            HbrBackground = IntPtr.Zero,
+                            LpszMenuName = string.Empty,
+                            LpszClassName = Constants.TrayWindowId,
+                            HIconSm = IntPtr.Zero,
+                        };
 
-                    Bridge.RegisterClassEx(ref wcex);
+                        Bridge.RegisterClassEx(ref wcex);
 
-                    hWnd = Bridge.CreateWindowEx(
-                        0,
-                        Constants.TrayWindowId,
-                        text,
-                        0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
-                        0,
-                        0,
-                        0,
-                        0,
-                        unchecked(-3),
-                        IntPtr.Zero,
-                        Marshal.GetHINSTANCE(typeof(Program).Module),
-                        IntPtr.Zero);
+                        hWnd = Bridge.CreateWindowEx(
+                            0,
+                            Constants.TrayWindowId,
+                            text,
+                            0x00CF0000 | 0x00000001 | 0x00000008, // WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MINIMIZEBOX
+                            0,
+                            0,
+                            0,
+                            0,
+                            IntPtr.Zero,
+                            IntPtr.Zero,
+                            Marshal.GetHINSTANCE(typeof(Program).Module),
+                            IntPtr.Zero);
 
-                    if (hWnd == IntPtr.Zero)
-                    {
-                        int errorCode = Marshal.GetLastWin32Error();
-                        throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+                        if (hWnd == IntPtr.Zero)
+                        {
+                            int errorCode = Marshal.GetLastWin32Error();
+                            throw new Win32Exception(errorCode, "Failed to add tray icon. Error code: " + errorCode);
+                        }
+
+                        // Keep this as a reference because we will need it when we update
+                        // the tray icon in the future.
+                        WindowHandle = hWnd;
+
+                        Bridge.ShowWindow(hWnd, 0); // SW_HIDE
+                        Bridge.UpdateWindow(hWnd);
+                        Logger.LogInfo($"Created HWND for the window: {hWnd}");
+
+                        SetShellIcon(hWnd, text, icon);
+
+                        trayInitialized.SetResult(true);
                     }
-
-                    // Keep this as a reference because we will need it when we update
-                    // the tray icon in the future.
-                    HiddenWindowHandle = hWnd;
-
-                    Bridge.ShowWindow(hWnd, 0); // SW_HIDE
-                    Bridge.UpdateWindow(hWnd);
-                    Logger.LogInfo($"Created HWND for the window: {hWnd}");
-
-                    SetShellIcon(hWnd, text, icon);
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to properly initialize the tray. {ex.Message}");
+                        trayInitialized.SetException(ex);
+                    }
                 });
 
                 RunOnMainThread(() =>
@@ -147,9 +166,11 @@ namespace Awake.Core
 
             _mainThread.IsBackground = true;
             _mainThread.Start();
+
+            return trayInitialized.Task;
         }
 
-        internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add)
+        internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add, [CallerMemberName] string callerName = "")
         {
             if (hWnd != IntPtr.Zero && icon != null)
             {
@@ -168,11 +189,11 @@ namespace Awake.Core
                         break;
                 }
 
-                if (action == TrayIconAction.Add || action == TrayIconAction.Update)
+                if (action is TrayIconAction.Add or TrayIconAction.Update)
                 {
                     _notifyIconData = new NotifyIconData
                     {
-                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
                         UId = 1000,
                         UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
@@ -185,19 +206,32 @@ namespace Awake.Core
                 {
                     _notifyIconData = new NotifyIconData
                     {
-                        CbSize = Marshal.SizeOf(typeof(NotifyIconData)),
+                        CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
                         UId = 1000,
                         UFlags = 0,
                     };
                 }
 
-                if (!Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+                for (int attempt = 1; attempt <= 3; attempt++)
                 {
-                    int errorCode = Marshal.GetLastWin32Error();
-                    Logger.LogInfo($"Could not set the shell icon. Action: {action} and error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}");
+                    if (Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
 
-                    throw new Win32Exception(errorCode, $"Failed to change tray icon. Action: {action} and error code: {errorCode}");
+                        if (attempt == 3)
+                        {
+                            Logger.LogError($"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}. Invoked by {callerName}.");
+                            break;
+                        }
+
+                        Thread.Sleep(100);
+                    }
                 }
 
                 if (action == TrayIconAction.Delete)
@@ -227,10 +261,17 @@ namespace Awake.Core
             switch (message)
             {
                 case Native.Constants.WM_USER:
-                    if (lParam == (IntPtr)Native.Constants.WM_LBUTTONDOWN || lParam == (IntPtr)Native.Constants.WM_RBUTTONDOWN)
+                    if (lParam is Native.Constants.WM_LBUTTONDOWN or Native.Constants.WM_RBUTTONDOWN)
                     {
                         // Show the context menu associated with the tray icon
                         ShowContextMenu(hWnd);
+                    }
+
+                    break;
+
+                case Native.Constants.WM_CREATE:
+                    {
+                        _taskbarCreatedMessage = (uint)Bridge.RegisterWindowMessage("TaskbarCreated");
                     }
 
                     break;
@@ -239,7 +280,7 @@ namespace Awake.Core
                     Bridge.PostQuitMessage(0);
                     break;
                 case Native.Constants.WM_COMMAND:
-                    int trayCommandsSize = Enum.GetNames(typeof(TrayCommands)).Length;
+                    int trayCommandsSize = Enum.GetNames<TrayCommands>().Length;
 
                     long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
 
@@ -281,7 +322,7 @@ namespace Awake.Core
                                     }
 
                                     int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                                    uint targetTime = (uint)settings.Properties.CustomTrayTimes.ElementAt(index).Value;
+                                    uint targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
                                     Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
                                 }
 
@@ -291,6 +332,12 @@ namespace Awake.Core
 
                     break;
                 default:
+                    if (message == _taskbarCreatedMessage)
+                    {
+                        Logger.LogInfo("Taskbar re-created");
+                        Manager.SetModeShellIcon(forceAdd: true);
+                    }
+
                     // Let the default window procedure handle other messages
                     return Bridge.DefWindowProc(hWnd, message, wParam, lParam);
             }
@@ -325,7 +372,7 @@ namespace Awake.Core
                 startedFromPowerToys);
         }
 
-        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, int> trayTimeShortcuts, bool startedFromPowerToys)
+        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, uint> trayTimeShortcuts, bool startedFromPowerToys)
         {
             ClearExistingTrayMenu();
             CreateNewTrayMenu(startedFromPowerToys, keepDisplayOn, mode);
@@ -381,7 +428,7 @@ namespace Awake.Core
             Bridge.InsertMenu(TrayMenu, (uint)position, Native.Constants.MF_BYPOSITION | Native.Constants.MF_SEPARATOR, 0, string.Empty);
         }
 
-        private static void EnsureDefaultTrayTimeShortcuts(Dictionary<string, int> trayTimeShortcuts)
+        private static void EnsureDefaultTrayTimeShortcuts(Dictionary<string, uint> trayTimeShortcuts)
         {
             if (trayTimeShortcuts.Count == 0)
             {
@@ -389,15 +436,15 @@ namespace Awake.Core
             }
         }
 
-        private static void CreateAwakeTimeSubMenu(Dictionary<string, int> trayTimeShortcuts, bool isChecked = false)
+        private static void CreateAwakeTimeSubMenu(Dictionary<string, uint> trayTimeShortcuts, bool isChecked = false)
         {
-            var awakeTimeMenu = Bridge.CreatePopupMenu();
+            nint awakeTimeMenu = Bridge.CreatePopupMenu();
             for (int i = 0; i < trayTimeShortcuts.Count; i++)
             {
                 Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
             }
 
-            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked == true ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
+            Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);
         }
 
         private static void InsertAwakeModeMenuItems(AwakeMode mode)

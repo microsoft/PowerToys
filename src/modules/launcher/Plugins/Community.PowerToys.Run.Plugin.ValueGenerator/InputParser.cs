@@ -94,7 +94,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
 
                     if (!int.TryParse(versionQuery, null, out version))
                     {
-                        throw new FormatException("Could not determine requested GUID version. Supported versions are 1, 3, 4 and 5");
+                        throw new FormatException("Could not determine requested GUID version. Supported versions are 1, 3, 4, 5, and 7");
                     }
                 }
 
@@ -146,7 +146,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     // This is only for single chars
                     if (content.Length > 1)
                     {
-                        throw new ArgumentException($"Invalid Query: {query.RawUserQuery} (To many characters.)");
+                        throw new ArgumentException($"Invalid Query: {query.RawUserQuery} (Too many characters.)");
                     }
                     else if (content.Length == 0)
                     {

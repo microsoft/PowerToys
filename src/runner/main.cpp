@@ -14,6 +14,7 @@
 
 #include <common/comUtils/comUtils.h>
 #include <common/display/dpi_aware.h>
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/notifications/notifications.h>
 #include <common/notifications/dont_show_again.h>
 #include <common/updating/installer.h>
@@ -24,6 +25,7 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
+#include <common/utils/clean_video_conference.h>
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
@@ -88,6 +90,7 @@ void open_menu_from_another_instance(std::optional<std::string> settings_window)
         msg = static_cast<LPARAM>(ESettingsWindowNames_from_string(settings_window.value()));
     }
     PostMessageW(hwnd_main, WM_COMMAND, ID_SETTINGS_MENU_COMMAND, msg);
+    SetForegroundWindow(hwnd_main); // Bring the settings window to the front
 }
 
 int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow, bool openOobe, bool openScoobe, bool showRestartNotificationAfterUpdate)
@@ -102,6 +105,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
     start_tray_icon(isProcessElevated);
+    set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
     int result = -1;
@@ -131,12 +135,21 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         } }.detach();
 
         chdir_current_executable();
-        // Load Powertoys DLLs
+
+        // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
+        // When running elevated, we try to clean up the device registration from previous installations.
+        // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
+        if (isProcessElevated)
+        {
+            clean_video_conference();
+        }
+
+        // Load PowerToys DLLs
 
         std::vector<std::wstring_view> knownModules = {
             L"PowerToys.FancyZonesModuleInterface.dll",
             L"PowerToys.powerpreview.dll",
-            L"PowerToys.ImageResizerExt.dll",
+            L"WinUI3Apps/PowerToys.ImageResizerExt.dll",
             L"PowerToys.KeyboardManager.dll",
             L"PowerToys.Launcher.dll",
             L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
@@ -148,6 +161,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.MouseJump.dll",
             L"PowerToys.AlwaysOnTopModuleInterface.dll",
             L"PowerToys.MousePointerCrosshairs.dll",
+            L"PowerToys.CursorWrap.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
@@ -162,13 +176,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CropAndLockModuleInterface.dll",
             L"PowerToys.CmdNotFoundModuleInterface.dll",
             L"PowerToys.WorkspacesModuleInterface.dll",
+            L"PowerToys.CmdPalModuleInterface.dll",
+            L"PowerToys.ZoomItModuleInterface.dll",
+            L"PowerToys.LightSwitchModuleInterface.dll",
         };
-        const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
-        if (const auto mf = LoadLibraryA("mf.dll"))
-        {
-            FreeLibrary(mf);
-            knownModules.emplace_back(VCM_PATH);
-        }
 
         for (auto moduleSubdir : knownModules)
         {
@@ -181,10 +192,19 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
                 errorMessage += moduleSubdir;
+                
+#ifdef _DEBUG
+                // In debug mode, simply log the warning and continue execution.
+                // This contrasts with the past approach where developers had to build all modules
+                // without errors before debugging—slowing down quick clone-and-fix iterations.
+                Logger::warn(L"Debug mode: {}", errorMessage);
+#else
+                // In release mode, show error dialog as before
                 MessageBoxW(NULL,
                             errorMessage.c_str(),
                             L"PowerToys",
                             MB_OK | MB_ICONERROR);
+#endif
             }
         }
         // Start initial powertoys
@@ -274,6 +294,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
     const std::wstring_view couldnt_toggle_powerpreview_modules_disable = L"couldnt_toggle_powerpreview_modules_disable/";
     const std::wstring_view open_settings = L"open_settings/";
+    const std::wstring_view open_overview = L"open_overview/";
     const std::wstring_view update_now = L"update_now/";
 
     if (param == cant_drag_elevated_disable)
@@ -295,6 +316,11 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
         open_menu_from_another_instance(std::nullopt);
         return toast_notification_handler_result::exit_success;
     }
+    else if (param == open_overview)
+    {
+        open_menu_from_another_instance("Overview");
+        return toast_notification_handler_result::exit_success;
+    }
     else
     {
         return toast_notification_handler_result::exit_error;
@@ -303,11 +329,15 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
 
 int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR lpCmdLine, int /*nCmdShow*/)
 {
+    Shared::Trace::ETWTrace trace{};
+    trace.UpdateState(true);
+
     Gdiplus::GdiplusStartupInput gpStartupInput;
     ULONG_PTR gpToken;
     GdiplusStartup(&gpToken, &gpStartupInput, NULL);
 
     winrt::init_apartment();
+
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
         L"G:BA" // Group: Builtin (local) administrator
@@ -437,6 +467,13 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
             openScoobe = false;
         }
 
+        bool dataDiagnosticsDisabledByGpo = powertoys_gpo::getAllowDataDiagnosticsValue() == powertoys_gpo::gpo_rule_configured_disabled;
+        if (dataDiagnosticsDisabledByGpo)
+        {
+            Logger::info(L"Data diagnostics: Data diagnostics is disabled by GPO.");
+            PTSettingsHelper::save_data_diagnostics(false);
+        }
+
         if (elevated && with_dont_elevate_arg && !run_elevated_setting)
         {
             Logger::info("Scheduling restart as non elevated");
@@ -473,6 +510,9 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         result = -1;
     }
 
+    trace.Flush();
+    trace.UpdateState(false);
+
     // We need to release the mutexes to be able to restart the application
     if (msi_mutex)
     {
@@ -481,6 +521,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     if (is_restart_scheduled())
     {
+        modules().clear();
         if (!restart_if_scheduled())
         {
             // If it's not possible to restart non-elevated due to some condition in the user's configuration, user should start PowerToys manually.
@@ -488,5 +529,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         }
     }
     stop_tray_icon();
+
     return result;
 }

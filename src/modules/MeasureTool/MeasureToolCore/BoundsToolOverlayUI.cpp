@@ -9,7 +9,7 @@
 
 namespace
 {
-    Measurement GetMeasurement(const CursorDrag& currentBounds, POINT cursorPos)
+    Measurement GetMeasurement(const CursorDrag& currentBounds, POINT cursorPos, float px2mmRatio)
     {
         D2D1_RECT_F rect;
         std::tie(rect.left, rect.right) =
@@ -17,7 +17,7 @@ namespace
         std::tie(rect.top, rect.bottom) =
             std::minmax(static_cast<float>(cursorPos.y), currentBounds.startPos.y);
 
-        return Measurement(rect);
+        return Measurement(rect, px2mmRatio);
     }
 
     void CopyToClipboard(HWND window, const BoundsToolState& toolState, POINT cursorPos)
@@ -29,7 +29,8 @@ namespace
 
             if (handle == window && perScreen.currentBounds)
             {
-                allMeasurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos));
+                auto px2mmRatio = toolState.commonState->GetPhysicalPx2MmRatio(window);
+                allMeasurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos, px2mmRatio));
             }
         }
 
@@ -85,7 +86,8 @@ namespace
 
         if (const bool shiftPress = GetKeyState(VK_SHIFT) & 0x80000; shiftPress && perScreen.currentBounds)
         {
-            perScreen.measurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos));
+            auto px2mmRatio = toolState->commonState->GetPhysicalPx2MmRatio(window);
+            perScreen.measurements.push_back(GetMeasurement(*perScreen.currentBounds, cursorPos, px2mmRatio));
         }
 
         perScreen.currentBounds = std::nullopt;
@@ -274,7 +276,7 @@ namespace
                               text.buffer.size(),
                               true,
                               true,
-                              commonState.units);
+                              commonState.units | Measurement::Unit::Pixel); // Always show pixels.
 
         D2D_POINT_2F textBoxPos;
         if (textBoxCenter)
@@ -314,6 +316,7 @@ void DrawBoundsToolTick(const CommonState& commonState,
         D2D1_RECT_F rect;
         std::tie(rect.left, rect.right) = std::minmax(perScreen.currentBounds->startPos.x, perScreen.currentBounds->currentPos.x);
         std::tie(rect.top, rect.bottom) = std::minmax(perScreen.currentBounds->startPos.y, perScreen.currentBounds->currentPos.y);
-        DrawMeasurement(Measurement{ rect }, commonState, window, d2dState, perScreen.currentBounds->currentPos);
+        auto px2mmRatio = toolState.commonState->GetPhysicalPx2MmRatio(window);
+        DrawMeasurement(Measurement{ rect, px2mmRatio }, commonState, window, d2dState, perScreen.currentBounds->currentPos);
     }
 }

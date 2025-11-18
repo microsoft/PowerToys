@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-
-using Workspaces.Data;
 using WorkspacesEditor.Utils;
 
 using static WorkspacesEditor.Data.ProjectData;
@@ -14,13 +12,7 @@ namespace WorkspacesEditor.Data
 {
     public class WorkspacesData : WorkspacesEditorData<WorkspacesListWrapper>
     {
-        public string File
-        {
-            get
-            {
-                return FolderUtils.DataFolder() + "\\workspaces.json";
-            }
-        }
+        public string File => FolderUtils.DataFolder() + "\\workspaces.json";
 
         public struct WorkspacesListWrapper
         {

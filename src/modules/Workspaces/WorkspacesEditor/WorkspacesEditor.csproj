@@ -23,16 +23,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationIcon>images\Workspaces.ico</ApplicationIcon>
+    <ApplicationIcon>..\Assets\Workspaces\Workspaces.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>PowerToys.WorkspacesEditor</AssemblyName>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="images\DefaultIcon.ico" />
-    <None Remove="images\Workspaces.ico" />
-  </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
       <WrapperTool>tlbimp</WrapperTool>
@@ -54,10 +50,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="images\DefaultIcon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="..\Assets\**\*.*">
+      <Link>Assets\Workspaces\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="images\Workspaces.ico" />
   </ItemGroup>
  
   <ItemGroup>
@@ -69,7 +65,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ControlzEx" />
     <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
@@ -81,6 +76,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -99,8 +95,5 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <_DeploymentManifestIconFile Remove="images\Workspaces.ico" />
   </ItemGroup>
 </Project>

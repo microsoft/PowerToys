@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -29,9 +30,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("spotlight_color")]
         public StringProperty SpotlightColor { get; set; }
-
-        [JsonPropertyName("overlay_opacity")]
-        public IntProperty OverlayOpacity { get; set; }
 
         [JsonPropertyName("spotlight_radius")]
         public IntProperty SpotlightRadius { get; set; }
@@ -60,9 +58,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IncludeWinKey = new BoolProperty(false);
             ActivationShortcut = DefaultActivationShortcut;
             DoNotActivateOnGameMode = new BoolProperty(true);
-            BackgroundColor = new StringProperty("#000000");
-            SpotlightColor = new StringProperty("#FFFFFF");
-            OverlayOpacity = new IntProperty(50);
+            BackgroundColor = new StringProperty("#80000000"); // ARGB (#AARRGGBB)
+            SpotlightColor = new StringProperty("#80FFFFFF");
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
             SpotlightInitialZoom = new IntProperty(9);

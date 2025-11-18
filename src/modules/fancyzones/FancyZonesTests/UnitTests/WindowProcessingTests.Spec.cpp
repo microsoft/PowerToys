@@ -197,7 +197,7 @@ namespace FancyZonesUnitTests
 
         TEST_METHOD (ExcludedApp_ByUser)
         {
-            // case sensitive, should be uppercase
+            // case-sensitive, should be uppercase
             FancyZonesSettings::instance().SetSettings(Settings{ .excludedAppsArray = { L"TEST_EXCLUDED" } });
 
             // exclude by window title

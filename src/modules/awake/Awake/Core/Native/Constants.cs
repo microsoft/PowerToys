@@ -11,6 +11,7 @@ namespace Awake.Core.Native
         internal const uint WM_COMMAND = 0x0111;
         internal const uint WM_USER = 0x0400U;
         internal const uint WM_CLOSE = 0x0010;
+        internal const int WM_CREATE = 0x0001;
         internal const int WM_DESTROY = 0x0002;
         internal const int WM_LBUTTONDOWN = 0x0201;
         internal const int WM_RBUTTONDOWN = 0x0204;

@@ -60,6 +60,21 @@
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
 
+        <RichTextBlock
+            x:Name="VideoWarningMessage"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            Visibility="{x:Bind IsWarningMessageVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <Paragraph>
+                <Run Text="{x:Bind GetWarningMessage(VideoPreviewer.MissingCodecName), Mode=OneWay}" />
+                <Hyperlink Click="CodecSearchHyperlink_Click">
+                    <Run x:Uid="VideoCodecStoreLink" />
+                </Hyperlink>
+            </Paragraph>
+        </RichTextBlock>
+
+
         <controls:AudioControl
             x:Name="AudioPreview"
             Source="{x:Bind AudioPreviewer.Preview, Mode=OneWay}"
@@ -102,6 +117,16 @@
             LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"
             Source="{x:Bind UnsupportedFilePreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsUnsupportedPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
+
+        <TextBlock
+            x:Name="NoMoreFiles"
+            x:Uid="NoMoreFiles"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            AutomationProperties.HeadingLevel="1"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            Visibility="Collapsed" />
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator
