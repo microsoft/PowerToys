@@ -158,6 +158,14 @@ public sealed partial class DockViewModel : IDisposable,
 }
 
 #pragma warning disable SA1402 // File may only contain a single type
+
+public enum DockPinSide
+{
+    None,
+    Start,
+    End,
+}
+
 // public class DockSettingsViewModel : ObservableObject
 // {
 //     private readonly DockSettings _settingsModel;
@@ -194,26 +202,14 @@ public partial class DockBandSettingsViewModel : ObservableObject
         set => _dockSettingsModel.ShowLabels = value; // TODO! save settings
     }
 
-    public string PinSide
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PinSideIndex))]
+    private partial DockPinSide PinSide { get; set; } // TODO! persist to settings
+
+    public int PinSideIndex
     {
-        // returns "Start", "End" or "None"
-        get
-        {
-            var dockSettings = _settingsModel.DockSettings;
-            var inStart = dockSettings.StartBands.Any(b => b.Id == _dockSettingsModel.Id);
-            if (inStart)
-            {
-                return "Start";
-            }
-
-            var inEnd = dockSettings.EndBands.Any(b => b.Id == _dockSettingsModel.Id);
-            if (inEnd)
-            {
-                return "End";
-            }
-
-            return "None";
-        }
+        get => (int)PinSide;
+        set => PinSide = (DockPinSide)value;
     }
 
     public DockBandSettingsViewModel(
@@ -224,6 +220,25 @@ public partial class DockBandSettingsViewModel : ObservableObject
         _dockSettingsModel = dockSettingsModel;
         _adapter = adapter;
         _settingsModel = settingsModel;
+        PinSide = FetchPinSide();
+    }
+
+    private DockPinSide FetchPinSide()
+    {
+        var dockSettings = _settingsModel.DockSettings;
+        var inStart = dockSettings.StartBands.Any(b => b.Id == _dockSettingsModel.Id);
+        if (inStart)
+        {
+            return DockPinSide.Start;
+        }
+
+        var inEnd = dockSettings.EndBands.Any(b => b.Id == _dockSettingsModel.Id);
+        if (inEnd)
+        {
+            return DockPinSide.End;
+        }
+
+        return DockPinSide.None;
     }
 }
 #pragma warning restore SA1402 // File may only contain a single type
