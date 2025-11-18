@@ -17,9 +17,8 @@ using Settings.UI.Library;
 internal sealed class Program
 {
     private static readonly SettingsUtils _settingsUtils = new();
-    private static GeneralSettings _generalSettings = _settingsUtils.GetSettings<GeneralSettings>();
 
-    public static GeneralSettings GeneralSettings => _generalSettings;
+    internal static GeneralSettings GeneralSettings => _settingsUtils.GetSettings<GeneralSettings>();
 
     private static void Main(string[] args)
     {
@@ -46,13 +45,13 @@ internal sealed class Program
 
         bool isElevated = ElevationHelper.IsProcessElevated();
         bool hasDontElevateArgument = args.Contains("--dont-elevate");
-        bool runElevatedSetting = _generalSettings.RunElevated;
+        bool runElevatedSetting = GeneralSettings.RunElevated;
         bool hasRestartedElevatedArgment = args.Contains("--restartedElevated");
 
         Action afterInitializationAction = () => { };
         Version version = Assembly.GetExecutingAssembly().GetName().Version!;
 
-        if ($"v{version.Major}.{version.Minor}.{version.Build}" != _settingsUtils.GetSettings<LastVersionRunSettings>(fileName: "last_version_run.json").LastVersion && (!_generalSettings.ShowWhatsNewAfterUpdates || GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() != GpoRuleConfigured.Disabled))
+        if ($"v{version.Major}.{version.Minor}.{version.Build}" != _settingsUtils.GetSettings<LastVersionRunSettings>(fileName: "last_version_run.json").LastVersion && (!GeneralSettings.ShowWhatsNewAfterUpdates || GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() != GpoRuleConfigured.Disabled))
         {
             afterInitializationAction += () =>
             {
@@ -68,6 +67,14 @@ internal sealed class Program
             };
         }
 
+        if (shouldOpenSettings)
+        {
+            afterInitializationAction += () =>
+            {
+                SettingsHelper.OpenSettingsWindow(additionalArguments: shouldOpenSettingsToSpecificPage ? args.First(s => s.StartsWith("--open-settings=", StringComparison.InvariantCulture)).Replace("--open-settings=", string.Empty, StringComparison.InvariantCulture) : null);
+            };
+        }
+
         // Set last version run
         _settingsUtils.SaveSettings(new LastVersionRunSettings() { LastVersion = $"v{version.Major}.{version.Minor}.{version.Build}" }.ToJsonString(), fileName: "last_version_run.json");
 
@@ -80,14 +87,18 @@ internal sealed class Program
             case (_, _, false, _):
             case (_, true, _, _):
             case (false, _, _, true):
-                _ = Runner.Run(afterInitializationAction);
+                GeneralSettings tempGeneralSettings = GeneralSettings;
+                tempGeneralSettings.IsElevated = isElevated;
+                _settingsUtils.SaveSettings(tempGeneralSettings.ToJsonString());
 
-                // Todo: Save settings
+                _ = Runner.Run(afterInitializationAction);
                 break;
             default:
-                // Todo: scheudle restart as elevated
-                throw new NotImplementedException();
+                ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevated;
+                break;
         }
+
+        ElevationHelper.RestartIfScheudled();
     }
 
     private static SpecialMode ShouldRunInSpecialMode(string[] args)

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace ManagedCommon
 {
-    internal static class NativeMethods
+    internal static partial class NativeMethods
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
@@ -20,6 +20,13 @@ namespace ManagedCommon
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern bool QueryFullProcessImageName(IntPtr hProcess, uint dwFlags, System.Text.StringBuilder lpExeName, ref uint lpdwSize);
+
+        [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial IntPtr CreateEventW(IntPtr lpEventAttributes, [MarshalAs(UnmanagedType.Bool)] bool bManualReset, [MarshalAs(UnmanagedType.Bool)] bool bInitialState, string lpName);
+
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool SetEvent(IntPtr hEvent);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);

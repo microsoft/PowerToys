@@ -44,7 +44,7 @@ namespace RunnerV2.Helpers
             Shell_NotifyIcon(NIMDELETE, ref notifyicondata);
         }
 
-        private enum TrayButton : uint
+        internal enum TrayButton : uint
         {
             Settings = 1,
             Documentation,
@@ -102,6 +102,8 @@ namespace RunnerV2.Helpers
             }
         }
 
+        internal static bool IsBugReportToolRunning { get; set; }
+
         internal static void ProcessTrayMenuCommand(nuint commandId)
         {
             switch ((TrayButton)commandId)
@@ -132,9 +134,11 @@ namespace RunnerV2.Helpers
                     {
                         bugReportProcess.Dispose();
                         EnableMenuItem(_trayIconMenu, (uint)TrayButton.ReportBug, 0x00000000);
+                        IsBugReportToolRunning = false;
                     };
 
                     bugReportProcess.Start();
+                    IsBugReportToolRunning = true;
 
                     break;
                 case TrayButton.Close:

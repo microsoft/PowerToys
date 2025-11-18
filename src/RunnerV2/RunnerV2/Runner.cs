@@ -36,7 +36,6 @@ namespace RunnerV2
 
         internal static bool Run(Action afterInitializationAction)
         {
-            // Todo: Start tray icon
             TrayIconManager.StartTrayIcon();
             FrozenSet<string> modulesToLoad = ["PowerToys.AlwaysOnTopModuleInterface.dll", "WinUI3Apps\\PowerToys.Hosts.dll"];
 
@@ -78,21 +77,24 @@ namespace RunnerV2
 
         private static void MessageLoop()
         {
-            while (true)
+            while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) != 0)
             {
-                if (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) != 0)
-                {
-                    TranslateMessage(ref msg);
-                    DispatchMessageW(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessageW(ref msg);
 
-                    HandleMessage(msg.HWnd, msg.Message, (nint)msg.WParam, (nint)msg.LParam);
-                }
+                HandleMessage(msg.HWnd, msg.Message, (nint)msg.WParam, (nint)msg.LParam);
             }
+
+            Close();
         }
 
         [DoesNotReturn]
         internal static void Close()
         {
+            TrayIconManager.StopTrayIcon();
+            SettingsHelper.CloseSettingsWindow();
+            ElevationHelper.RestartIfScheudled();
+
             foreach (IPowerToysModule module in _successfullyAddedModules)
             {
                 try
@@ -193,12 +195,21 @@ namespace RunnerV2
             }
         }
 
+        private static bool _handledShortcut;
+
         private static IntPtr HandleMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)
             {
                 case (uint)WindowMessages.HOTKEY:
+                    if (_handledShortcut)
+                    {
+                        _handledShortcut = false;
+                        break;
+                    }
+
                     HotkeyManager.ProcessHotkey((nuint)wParam);
+                    _handledShortcut = true;
                     break;
                 case (uint)WindowMessages.ICON_NOTIFY:
                     TrayIconManager.ProcessTrayIconMessage(lParam);
@@ -210,7 +221,7 @@ namespace RunnerV2
                     TrayIconManager.StartTrayIcon();
                     break;
                 case (uint)WindowMessages.DESTROY:
-                    TrayIconManager.StopTrayIcon();
+                    Close();
                     break;
                 default:
                     if (msg == _taskbarCreatedMessage)

@@ -12,9 +12,9 @@ using PowerToys.GPOWrapper;
 
 namespace AlwaysOnTopModuleInterface
 {
-    public class ModuleInterface : IPowerToysModule
+    public partial class ModuleInterface : IPowerToysModule, IDisposable
     {
-        public bool Enabled => true;
+        public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
 
         public string Name => "AlwaysOnTop";
 
@@ -22,24 +22,22 @@ namespace AlwaysOnTopModuleInterface
 
         private Process? _process;
 
-        private IntPtr pinEvent = CreateEventW(IntPtr.Zero, false, false, "Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8");
+        private InteropEvent? _pinEventWrapper;
 
         public void Disable()
         {
-            if (_process is not null && !_process.HasExited)
-            {
-                _process.Kill();
-            }
-
-            if (pinEvent != IntPtr.Zero)
-            {
-                CloseHandle(pinEvent);
-                pinEvent = IntPtr.Zero;
-            }
+            InteropEvent terminateEventWrapper = new(InteropEvent.AlwaysOnTopTerminate);
+            terminateEventWrapper.Fire();
+            terminateEventWrapper.Dispose();
+            _process?.Dispose();
+            _pinEventWrapper?.Dispose();
+            _pinEventWrapper = null;
         }
 
         public void Enable()
         {
+            _pinEventWrapper = new InteropEvent(InteropEvent.AlwaysOnTopPin);
+
             var psi = new ProcessStartInfo
             {
                 FileName = "PowerToys.AlwaysOnTop.exe",
@@ -54,19 +52,17 @@ namespace AlwaysOnTopModuleInterface
 
         public Action OnHotkey => () =>
         {
-            if (_process is not null && !_process.HasExited && pinEvent != IntPtr.Zero)
+            if (!_process?.HasExited ?? false)
             {
-                _ = SetEvent(pinEvent);
+                _pinEventWrapper?.Fire();
             }
         };
 
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern IntPtr CreateEventW(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern bool CloseHandle(IntPtr hObject);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern bool SetEvent(IntPtr hEvent);
+        public void Dispose()
+        {
+            _process?.Dispose();
+            _pinEventWrapper?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

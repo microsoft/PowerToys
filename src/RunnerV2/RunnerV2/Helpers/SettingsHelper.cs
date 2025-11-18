@@ -112,8 +112,31 @@ namespace RunnerV2.Helpers
             {
                 switch (property.Name)
                 {
+                    case "action":
+                        _settingsUtils.SaveSettings(property.Value.GetProperty("general").ToString(), string.Empty);
+                        switch (property.Value.GetProperty("general").GetProperty("action_name").GetString())
+                        {
+                            case "restart_elevation":
+                                ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevatedWithOpenSettings;
+                                Runner.Close();
+                                break;
+                            case "request_update_state_date":
+                                // Todo:
+                                break;
+                        }
+
+                        break;
                     case "get_all_hotkey_conflicts":
                         // Todo: Handle hotkey conflict
+                        break;
+                    case "bugreport":
+                        TrayIconManager.ProcessTrayMenuCommand((nuint)TrayIconManager.TrayButton.ReportBug);
+                        break;
+                    case "bug_report_status":
+                        _ipc?.Send($@"{{""bug_report_running:"" {(TrayIconManager.IsBugReportToolRunning ? "true" : "false")}");
+                        break;
+                    case "killrunner":
+                        Runner.Close();
                         break;
                     case "general":
                         _settingsUtils.SaveSettings(property.Value.ToString(), string.Empty);
@@ -124,25 +147,38 @@ namespace RunnerV2.Helpers
                         }
 
                         break;
-                    case string s:
-                        _settingsUtils.SaveSettings(property.Value.ToString(), s);
+                    case "powertoys":
+                        foreach (var powertoysSettingsPart in property.Value.EnumerateObject())
+                        {
+                            _settingsUtils.SaveSettings(property.Value.ToString(), powertoysSettingsPart.Name);
 
-                        if (Runner.LoadedModules.Find(m => m.Name == s) is IPowerToysModule moduleFound)
-                        {
-                            moduleFound.OnSettingsChanged(s, property.Value);
-                        }
-                        else
-                        {
-                            // If no specific module was found, notify all enabled modules
-                            foreach (IPowerToysModule module in Runner.LoadedModules.Where(m => m.Enabled))
+                            if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModule module)
                             {
-                                module.OnSettingsChanged(s, property.Value);
+                                module.OnSettingsChanged(powertoysSettingsPart.Name, powertoysSettingsPart.Value);
+                            }
+                            else
+                            {
+                                // If no specific module was found, notify all enabled modules
+                                foreach (IPowerToysModule module2 in Runner.LoadedModules.Where(m => m.Enabled))
+                                {
+                                    module2.OnSettingsChanged(powertoysSettingsPart.Name, powertoysSettingsPart.Value);
+                                }
                             }
                         }
 
                         break;
+                    default:
+                        Console.WriteLine($"Unknown message received from Settings: {property.Name}");
+                        break;
                 }
             }
+        }
+
+        public static void CloseSettingsWindow()
+        {
+            InteropEvent closeEventWrapper = new(InteropEvent.SettingsTerminate);
+            closeEventWrapper.Fire();
+            closeEventWrapper.Dispose();
         }
     }
 }
