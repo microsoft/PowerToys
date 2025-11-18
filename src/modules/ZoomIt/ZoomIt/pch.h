@@ -7,6 +7,7 @@
 #include <shlobj.h>
 #include <tchar.h>
 #include <wincodec.h>
+#include <shcore.h>
 #include <magnification.h>
 #include <Uxtheme.h>
 #include <math.h>
@@ -41,12 +42,15 @@
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Media.Core.h>
+#include <winrt/Windows.Media.Editing.h>
+#include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Media.Transcoding.h>
 #include <winrt/Windows.Media.MediaProperties.h>
 #include <winrt/Windows.Media.Devices.h>
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.Storage.Pickers.h>
+#include <winrt/Windows.Storage.FileProperties.h>
 #include <winrt/Windows.Devices.Enumeration.h>
 
 #include <filesystem>
@@ -69,6 +73,9 @@
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
 #include <d2d1_3.h>
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
 
 
 // STL

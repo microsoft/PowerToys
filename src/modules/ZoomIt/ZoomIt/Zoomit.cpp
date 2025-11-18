@@ -3636,82 +3636,121 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         winrt::StorageFile destFile = nullptr;
         HRESULT hr = S_OK;
         try {
-            auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
-            FILEOPENDIALOGOPTIONS options;
-            if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
-                saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
-            wil::com_ptr<IShellItem> videosItem;
-            if( SUCCEEDED ( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_IShellItem, (void**) videosItem.put() ) ) )
-                saveDialog->SetDefaultFolder( videosItem.get() );
+			// Show trim dialog option and save dialog
+			std::wstring trimmedFilePath;
+			auto suggestedName = GetUniqueRecordingFilename();
+			auto finalPath = VideoRecordingSession::ShowSaveDialogWithTrim(
+				hWnd,
+				suggestedName,
+				std::wstring{ file.Path() },
+				trimmedFilePath
+			);
 
-            // Set file type based on the recording format
-            if (g_RecordingFormat == RecordingFormat::GIF)
-            {
-                saveDialog->SetDefaultExtension( L".gif" );
-                COMDLG_FILTERSPEC fileTypes[] = {
-                    { L"GIF Animation", L"*.gif" }
-                };
-                saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
-            }
-            else
-            {
-                saveDialog->SetDefaultExtension( L".mp4" );
-                COMDLG_FILTERSPEC fileTypes[] = {
-                    { L"MP4 Video", L"*.mp4" }
-                };
-                saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
-            }
+			if (!finalPath.empty())
+			{
+				auto path = std::filesystem::path(finalPath);
+				winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
+				destFile = co_await folder.CreateFileAsync(path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting);
 
-            // Peek the folder Windows has chosen to display
-            static std::filesystem::path lastSaveFolder;
-            wil::unique_cotaskmem_string chosenFolderPath;
-            wil::com_ptr<IShellItem> currentSelectedFolder;
-            bool bFolderChanged = false; 
-            if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
-            {
-                if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
-                {
-                    if (lastSaveFolder != chosenFolderPath.get())
-                    {
-                        lastSaveFolder = chosenFolderPath.get() ? chosenFolderPath.get() : std::filesystem::path{};
-                        bFolderChanged = true;
-                    }
-                }
-            }
+				// If user trimmed, use the trimmed file; otherwise use original
+				winrt::StorageFile sourceFile = file;
+				if (!trimmedFilePath.empty())
+				{
+					sourceFile = co_await winrt::StorageFile::GetFileFromPathAsync(trimmedFilePath);
+				}
 
-            if( (g_RecordingFormat == RecordingFormat::GIF && g_RecordingSaveLocationGIF.size() == 0) || (g_RecordingFormat == RecordingFormat::MP4 && g_RecordingSaveLocation.size() == 0) || (bFolderChanged)) {
+				co_await sourceFile.MoveAndReplaceAsync(destFile);
+				g_RecordingSaveLocation = destFile.Path().c_str();
+				SaveToClipboard(const_cast<WCHAR*>(g_RecordingSaveLocation.c_str()), hWnd);
 
-                wil::com_ptr<IShellItem> shellItem;
-                wil::unique_cotaskmem_string folderPath;
-                if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put()))) {
-                    if (g_RecordingFormat == RecordingFormat::GIF) {
-                        g_RecordingSaveLocationGIF = folderPath.get();
-                        std::filesystem::path currentPath{ g_RecordingSaveLocationGIF };
-                        g_RecordingSaveLocationGIF = currentPath / DEFAULT_GIF_RECORDING_FILE;
-                    }
-                    else {
-                        g_RecordingSaveLocation = folderPath.get();
-                        if (g_RecordingFormat == RecordingFormat::MP4) {
-                            std::filesystem::path currentPath{ g_RecordingSaveLocation };
-                            g_RecordingSaveLocation = currentPath / DEFAULT_RECORDING_FILE;
-                        }
-                    }
-                }
-            }
+				// Clean up temp files
+				if (sourceFile != file)
+				{
+					try { co_await file.DeleteAsync(); } catch (...) {}
+				}
+			}
+			else
+			{
+				// User cancelled
+				hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
+			}
 
-            // Always use appropriate default filename based on current format
-            auto suggestedName = GetUniqueRecordingFilename();
-            saveDialog->SetFileName( suggestedName.c_str() );
+            //auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
+            //FILEOPENDIALOGOPTIONS options;
+            //if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
+            //    saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+            //wil::com_ptr<IShellItem> videosItem;
+            //if( SUCCEEDED ( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_IShellItem, (void**) videosItem.put() ) ) )
+            //    saveDialog->SetDefaultFolder( videosItem.get() );
 
-            THROW_IF_FAILED( saveDialog->Show( hWnd ) );
-            wil::com_ptr<IShellItem> shellItem;
-            THROW_IF_FAILED(saveDialog->GetResult(shellItem.put()));
-            wil::unique_cotaskmem_string filePath;
-            THROW_IF_FAILED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, filePath.put()));
-            auto path = std::filesystem::path( filePath.get() );
+            //// Set file type based on the recording format
+            //if (g_RecordingFormat == RecordingFormat::GIF)
+            //{
+            //    saveDialog->SetDefaultExtension( L".gif" );
+            //    COMDLG_FILTERSPEC fileTypes[] = {
+            //        { L"GIF Animation", L"*.gif" }
+            //    };
+            //    saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            //}
+            //else
+            //{
+            //    saveDialog->SetDefaultExtension( L".mp4" );
+            //    COMDLG_FILTERSPEC fileTypes[] = {
+            //        { L"MP4 Video", L"*.mp4" }
+            //    };
+            //    saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            //}
 
-            winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync( path.parent_path().c_str() ) };
-            destFile = co_await folder.CreateFileAsync( path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting );
+            //// Peek the folder Windows has chosen to display
+            //static std::filesystem::path lastSaveFolder;
+            //wil::unique_cotaskmem_string chosenFolderPath;
+            //wil::com_ptr<IShellItem> currentSelectedFolder;
+            //bool bFolderChanged = false; 
+            //if (SUCCEEDED(saveDialog->GetFolder(currentSelectedFolder.put())))
+            //{
+            //    if (SUCCEEDED(currentSelectedFolder->GetDisplayName(SIGDN_FILESYSPATH, chosenFolderPath.put())))
+            //    {
+            //        if (lastSaveFolder != chosenFolderPath.get())
+            //        {
+            //            lastSaveFolder = chosenFolderPath.get() ? chosenFolderPath.get() : std::filesystem::path{};
+            //            bFolderChanged = true;
+            //        }
+            //    }
+            //}
+
+            //if( (g_RecordingFormat == RecordingFormat::GIF && g_RecordingSaveLocationGIF.size() == 0) || (g_RecordingFormat == RecordingFormat::MP4 && g_RecordingSaveLocation.size() == 0) || (bFolderChanged)) {
+
+            //    wil::com_ptr<IShellItem> shellItem;
+            //    wil::unique_cotaskmem_string folderPath;
+            //    if (SUCCEEDED(saveDialog->GetFolder(shellItem.put())) && SUCCEEDED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, folderPath.put()))) {
+            //        if (g_RecordingFormat == RecordingFormat::GIF) {
+            //            g_RecordingSaveLocationGIF = folderPath.get();
+            //            std::filesystem::path currentPath{ g_RecordingSaveLocationGIF };
+            //            g_RecordingSaveLocationGIF = currentPath / DEFAULT_GIF_RECORDING_FILE;
+            //        }
+            //        else {
+            //            g_RecordingSaveLocation = folderPath.get();
+            //            if (g_RecordingFormat == RecordingFormat::MP4) {
+            //                std::filesystem::path currentPath{ g_RecordingSaveLocation };
+            //                g_RecordingSaveLocation = currentPath / DEFAULT_RECORDING_FILE;
+            //            }
+            //        }
+            //    }
+            //}
+
+            //// Always use appropriate default filename based on current format
+            //auto suggestedName = GetUniqueRecordingFilename();
+            //saveDialog->SetFileName( suggestedName.c_str() );
+
+            //THROW_IF_FAILED( saveDialog->Show( hWnd ) );
+            //wil::com_ptr<IShellItem> shellItem;
+            //THROW_IF_FAILED(saveDialog->GetResult(shellItem.put()));
+            //wil::unique_cotaskmem_string filePath;
+            //THROW_IF_FAILED(shellItem->GetDisplayName(SIGDN_FILESYSPATH, filePath.put()));
+            //auto path = std::filesystem::path( filePath.get() );
+
+            //winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync( path.parent_path().c_str() ) };
+            //destFile = co_await folder.CreateFileAsync( path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting );
         }
         catch( const wil::ResultException& error ) {
 
