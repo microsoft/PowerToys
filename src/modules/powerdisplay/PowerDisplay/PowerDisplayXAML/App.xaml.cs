@@ -31,6 +31,7 @@ namespace PowerDisplay
         private const string TerminatePowerDisplayEvent = "Local\\PowerToysPowerDisplay-TerminateEvent-7b9c2e1f-8a5d-4c3e-9f6b-2a1d8c5e3b7a";
         private const string RefreshMonitorsEvent = "Local\\PowerToysPowerDisplay-RefreshMonitorsEvent-a3f5c8e7-9d1b-4e2f-8c6a-3b5d7e9f1a2c";
         private const string SettingsUpdatedEvent = "Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
+        private const string ApplyColorTemperatureEvent = "Local\\PowerToysPowerDisplay-ApplyColorTemperatureEvent-4b7e9f2a-3c6d-5a8e-7f1b-9d2e4c6a8b0d";
 
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
@@ -152,6 +153,20 @@ namespace PowerDisplay
                             if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
                             {
                                 mainWindow.ViewModel.ApplySettingsFromUI();
+                            }
+                        });
+                    });
+
+                NativeEventWaiter.WaitForEventLoop(
+                    ApplyColorTemperatureEvent,
+                    () =>
+                    {
+                        Logger.LogInfo("Received apply color temperature event");
+                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                            {
+                                mainWindow.ViewModel.ApplyColorTemperatureFromSettings();
                             }
                         });
                     });

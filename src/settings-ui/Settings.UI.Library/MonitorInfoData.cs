@@ -24,9 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("communicationMethod")]
         public string CommunicationMethod { get; set; } = string.Empty;
 
-        [JsonPropertyName("monitorType")]
-        public string MonitorType { get; set; } = string.Empty;
-
         [JsonPropertyName("currentBrightness")]
         public int CurrentBrightness { get; set; }
 

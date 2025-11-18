@@ -21,6 +21,18 @@ namespace PowerDisplay.Serialization
     [JsonSerializable(typeof(MonitorStateFile))]
     [JsonSerializable(typeof(MonitorStateEntry))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
+
+    // MonitorInfo and related types (Settings.UI.Library)
+    [JsonSerializable(typeof(MonitorInfo))]
+    [JsonSerializable(typeof(VcpCodeDisplayInfo))]
+    [JsonSerializable(typeof(VcpValueInfo))]
+
+    // Generic collection types
+    [JsonSerializable(typeof(List<string>))]
+    [JsonSerializable(typeof(List<MonitorInfo>))]
+    [JsonSerializable(typeof(List<VcpCodeDisplayInfo>))]
+    [JsonSerializable(typeof(List<VcpValueInfo>))]
+
     [JsonSourceGenerationOptions(
         WriteIndented = true,
         PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,

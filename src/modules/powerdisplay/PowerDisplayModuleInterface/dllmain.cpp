@@ -61,6 +61,7 @@ private:
     HANDLE m_hTerminateEvent = nullptr;
     HANDLE m_hRefreshEvent = nullptr;
     HANDLE m_hSettingsUpdatedEvent = nullptr;
+    HANDLE m_hApplyColorTemperatureEvent = nullptr;
 
     void parse_hotkey_settings(PowerToysSettings::PowerToyValues settings)
     {
@@ -197,8 +198,9 @@ public:
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT);
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
         m_hSettingsUpdatedEvent = CreateDefaultEvent(CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT);
+        m_hApplyColorTemperatureEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
 
-        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent)
+        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent)
         {
             Logger::error(L"Failed to create one or more event handles");
         }
@@ -236,6 +238,11 @@ public:
         {
             CloseHandle(m_hSettingsUpdatedEvent);
             m_hSettingsUpdatedEvent = nullptr;
+        }
+        if (m_hApplyColorTemperatureEvent)
+        {
+            CloseHandle(m_hApplyColorTemperatureEvent);
+            m_hApplyColorTemperatureEvent = nullptr;
         }
     }
 
@@ -305,6 +312,19 @@ public:
                 else
                 {
                     Logger::warn(L"Refresh event handle is null");
+                }
+            }
+            else if (action_object.get_name() == L"ApplyColorTemperature")
+            {
+                Logger::trace(L"ApplyColorTemperature action received");
+                if (m_hApplyColorTemperatureEvent)
+                {
+                    Logger::trace(L"Signaling apply color temperature event");
+                    SetEvent(m_hApplyColorTemperatureEvent);
+                }
+                else
+                {
+                    Logger::warn(L"Apply color temperature event handle is null");
                 }
             }
         }

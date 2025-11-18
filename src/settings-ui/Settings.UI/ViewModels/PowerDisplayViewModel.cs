@@ -26,8 +26,10 @@ using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PowerDisplayViewModel : Observable
+    public partial class PowerDisplayViewModel : PageViewModelBase
     {
+        protected override string ModuleName => PowerDisplaySettings.ModuleName;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ISettingsUtils SettingsUtils { get; set; }
@@ -49,10 +51,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Initialize monitors collection using property setter for proper subscription setup
             // Parse capabilities for each loaded monitor to ensure UI displays correctly
             var loadedMonitors = _settings.Properties.Monitors;
+
+            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings");
+
             foreach (var monitor in loadedMonitors)
             {
+                // Parse capabilities to determine feature support
                 ParseFeatureSupportFromCapabilities(monitor);
-                PopulateColorPresetsForMonitor(monitor);
             }
 
             Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
@@ -72,30 +77,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            _isPowerDisplayEnabled = GeneralSettingsConfig.Enabled.PowerDisplay;
+            _isEnabled = GeneralSettingsConfig.Enabled.PowerDisplay;
         }
 
-        public bool IsPowerDisplayEnabled
+        public bool IsEnabled
         {
-            get => _isPowerDisplayEnabled;
+            get => _isEnabled;
             set
             {
-                if (_isPowerDisplayEnabled != value)
+                if (_isEnabled != value)
                 {
-                    _isPowerDisplayEnabled = value;
-                    OnPropertyChanged(nameof(IsPowerDisplayEnabled));
+                    _isEnabled = value;
+                    OnPropertyChanged(nameof(IsEnabled));
 
                     GeneralSettingsConfig.Enabled.PowerDisplay = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
                 }
             }
-        }
-
-        public bool IsLaunchAtStartupEnabled
-        {
-            get => _settings.Properties.LaunchAtStartup;
-            set => SetSettingsProperty(_settings.Properties.LaunchAtStartup, value, v => _settings.Properties.LaunchAtStartup = v);
         }
 
         public bool RestoreSettingsOnStartup
@@ -194,9 +193,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Parse capabilities to determine feature support
                 ParseFeatureSupportFromCapabilities(newMonitor);
 
-                // Populate color temperature presets if supported
-                PopulateColorPresetsForMonitor(newMonitor);
-
                 // Check if we have an existing monitor with the same key
                 if (existingMonitors.TryGetValue(monitorKey, out var existingMonitor))
                 {
@@ -276,88 +272,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             monitor.SupportsVolume = vcpCodeInts.Contains(0x62);
         }
 
-        /// <summary>
-        /// Populate color temperature presets for a monitor from VcpCodesFormatted
-        /// Builds the ComboBox items from VCP code 0x14 supported values
-        /// </summary>
-        private void PopulateColorPresetsForMonitor(MonitorInfo monitor)
-        {
-            if (monitor == null)
-            {
-                return;
-            }
-
-            if (!monitor.SupportsColorTemperature)
-            {
-                // Create new empty collection to trigger property change notification
-                monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>();
-                return;
-            }
-
-            // Find VCP code 0x14 in the formatted list
-            var colorTempVcp = monitor.VcpCodesFormatted?.FirstOrDefault(v =>
-            {
-                if (int.TryParse(v.Code?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int code))
-                {
-                    return code == 0x14;
-                }
-
-                return false;
-            });
-
-            if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)
-            {
-                // No supported values found, create new empty collection
-                monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>();
-                return;
-            }
-
-            // Build preset list from supported values
-            var presetList = new List<MonitorInfo.ColorPresetItem>();
-            foreach (var valueInfo in colorTempVcp.ValueList)
-            {
-                if (int.TryParse(valueInfo.Value?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int vcpValue))
-                {
-                    // Format display name for Settings UI
-                    var displayName = FormatColorTemperatureDisplayName(valueInfo.Name, vcpValue);
-                    presetList.Add(new MonitorInfo.ColorPresetItem(vcpValue, displayName));
-                }
-            }
-
-            // Sort by VCP value for consistent ordering
-            presetList = presetList.OrderBy(p => p.VcpValue).ToList();
-
-            // Create new collection and assign it
-            monitor.AvailableColorPresets = new ObservableCollection<MonitorInfo.ColorPresetItem>(presetList);
-
-            // Refresh ColorTemperature binding to force ComboBox to re-evaluate SelectedValue
-            // and match it against the newly populated AvailableColorPresets
-            monitor.RefreshColorTemperatureBinding();
-        }
-
-        /// <summary>
-        /// Format color temperature display name for Settings UI
-        /// Examples:
-        /// - Undefined values: "Manufacturer Defined (0x05)"
-        /// - Predefined values: "6500K (0x05)", "sRGB (0x01)"
-        /// </summary>
-        private string FormatColorTemperatureDisplayName(string name, int vcpValue)
-        {
-            var hexValue = $"0x{vcpValue:X2}";
-
-            // Check if name is undefined (null or empty)
-            // GetName now returns null for unknown values instead of hex string
-            if (string.IsNullOrEmpty(name))
-            {
-                return $"Manufacturer Defined ({hexValue})";
-            }
-
-            // For predefined names, append the hex value in parentheses
-            // Examples: "6500K (0x05)", "sRGB (0x01)"
-            return $"{name} ({hexValue})";
-        }
-
-        public void Dispose()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
+        public override void Dispose()
         {
             // Unsubscribe from monitor property changes
             UnsubscribeFromItemPropertyChanged(_monitors);
@@ -367,6 +283,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
+
+            base.Dispose();
         }
 
         /// <summary>
@@ -432,6 +350,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
+        /// Trigger PowerDisplay.exe to apply color temperature from settings file
+        /// Called after user confirms color temperature change in Settings UI
+        /// </summary>
+        public void TriggerApplyColorTemperature()
+        {
+            var actionMessage = new PowerDisplayActionMessage
+            {
+                Action = new PowerDisplayActionMessage.ActionData
+                {
+                    PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
+                    {
+                        ActionName = "ApplyColorTemperature",
+                        Value = string.Empty,
+                    },
+                },
+            };
+
+            SendConfigMSG(JsonSerializer.Serialize(actionMessage));
+        }
+
+        /// <summary>
         /// Reload monitor list from settings file (called when PowerDisplay.exe signals monitor changes)
         /// </summary>
         private void ReloadMonitorsFromSettings()
@@ -444,16 +383,52 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
                 var updatedMonitors = updatedSettings.Properties.Monitors;
 
+                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
+
                 // Parse capabilities for each monitor
                 foreach (var monitor in updatedMonitors)
                 {
                     ParseFeatureSupportFromCapabilities(monitor);
-                    PopulateColorPresetsForMonitor(monitor);
                 }
 
-                // Update the monitors collection
-                // This will trigger UI update through property change notification
-                Monitors = new ObservableCollection<MonitorInfo>(updatedMonitors);
+                // Update existing MonitorInfo objects instead of replacing the collection
+                // This preserves XAML x:Bind bindings which reference specific object instances
+                if (Monitors == null)
+                {
+                    // First time initialization - create new collection
+                    Monitors = new ObservableCollection<MonitorInfo>(updatedMonitors);
+                }
+                else
+                {
+                    // Create a dictionary for quick lookup by InternalName
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.InternalName, m => m);
+
+                    // Update existing monitors or remove ones that no longer exist
+                    for (int i = Monitors.Count - 1; i >= 0; i--)
+                    {
+                        var existingMonitor = Monitors[i];
+                        if (updatedMonitorsDict.TryGetValue(existingMonitor.InternalName, out var updatedMonitor))
+                        {
+                            // Monitor still exists - update its properties in place
+                            Logger.LogInfo($"[ReloadMonitors] Updating existing monitor: {existingMonitor.InternalName}");
+                            existingMonitor.UpdateFrom(updatedMonitor);
+                            updatedMonitorsDict.Remove(existingMonitor.InternalName);
+                        }
+                        else
+                        {
+                            // Monitor no longer exists - remove from collection
+                            Logger.LogInfo($"[ReloadMonitors] Removing monitor: {existingMonitor.InternalName}");
+                            Monitors.RemoveAt(i);
+                        }
+                    }
+
+                    // Add any new monitors that weren't in the existing collection
+                    foreach (var newMonitor in updatedMonitorsDict.Values)
+                    {
+                        Logger.LogInfo($"[ReloadMonitors] Adding new monitor: {newMonitor.InternalName}");
+                        Monitors.Add(newMonitor);
+                    }
+                }
 
                 // Update internal settings reference
                 _settings.Properties.Monitors = updatedMonitors;
@@ -468,7 +443,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private bool _isPowerDisplayEnabled;
+        private bool _isEnabled;
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
@@ -476,7 +451,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void RefreshEnabledState()
         {
             InitializeEnabledValue();
-            OnPropertyChanged(nameof(IsPowerDisplayEnabled));
+            OnPropertyChanged(nameof(IsEnabled));
         }
 
         private bool SetSettingsProperty<T>(T currentValue, T newValue, Action<T> setter, [CallerMemberName] string propertyName = null)

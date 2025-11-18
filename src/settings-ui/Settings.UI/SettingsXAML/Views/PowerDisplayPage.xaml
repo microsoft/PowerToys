@@ -18,10 +18,10 @@
                 <tkcontrols:SettingsCard
                     x:Uid="PowerDisplay_Enable_PowerDisplay"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
-                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </tkcontrols:SettingsCard>
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
@@ -29,19 +29,13 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_Configuration_GroupSettings" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerDisplay_Configuration_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
                         IsClickEnabled="True" />
-
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_LaunchAtStartup"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B5;}">
-                        <ToggleSwitch x:Uid="PowerDisplay_LaunchAtStartup_ToggleSwitch" IsOn="{x:Bind ViewModel.IsLaunchAtStartupEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_RestoreSettingsOnStartup"
@@ -60,12 +54,12 @@
 
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <!-- Empty state hint -->
                     <InfoBar
                         x:Uid="PowerDisplay_NoMonitorsDetected"
                         IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}"
                         Severity="Informational">
                         <InfoBar.IconSource>
@@ -110,14 +104,8 @@
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_InternalName">
                                             <TextBlock Text="{x:Bind InternalName, Mode=OneWay}" />
                                         </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Type">
-                                            <TextBlock Text="{x:Bind MonitorType, Mode=OneWay}" />
-                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_CommunicationMethod">
                                             <TextBlock Text="{x:Bind CommunicationMethod, Mode=OneWay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Brightness">
-                                            <TextBlock Text="{x:Bind CurrentBrightness, Mode=OneWay}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard
                                             x:Uid="PowerDisplay_Monitor_ColorTemperature"
@@ -143,14 +131,14 @@
                                             <ComboBox
                                                 x:Name="ColorTemperatureComboBox"
                                                 MinWidth="200"
-                                                ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
-                                                SelectedValue="{x:Bind ColorTemperature, Mode=OneWay}"
+                                                ItemsSource="{Binding ColorPresetsForDisplay, Mode=OneWay}"
+                                                SelectedValue="{Binding ColorTemperature, Mode=TwoWay}"
                                                 SelectedValuePath="VcpValue"
                                                 DisplayMemberPath="DisplayName"
                                                 PlaceholderText="Not available"
-                                                IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}"
+                                                IsEnabled="{Binding SupportsColorTemperature, Mode=OneWay}"
                                                 SelectionChanged="ColorTemperatureComboBox_SelectionChanged"
-                                                Tag="{x:Bind}">
+                                                Tag="{Binding}">
                                                 <ToolTipService.ToolTip>
                                                     <TextBlock Text="Changing this setting requires confirmation" />
                                                 </ToolTipService.ToolTip>

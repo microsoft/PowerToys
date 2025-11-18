@@ -16,7 +16,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerDisplayProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
-            LaunchAtStartup = false;
             BrightnessUpdateRate = "1s";
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = true;
@@ -27,9 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
-
-        [JsonPropertyName("launch_at_startup")]
-        public bool LaunchAtStartup { get; set; }
 
         [JsonPropertyName("brightness_update_rate")]
         public string BrightnessUpdateRate { get; set; }

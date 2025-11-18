@@ -135,8 +135,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (result == ContentDialogResult.Primary)
                 {
                     // User confirmed, apply the change
+                    // Setting the property will trigger save to settings file via OnPropertyChanged
                     monitor.ColorTemperature = newValue.Value;
                     _previousColorTemperatureValues[monitor.HardwareId] = newValue.Value;
+
+                    // Trigger custom action to apply color temperature to hardware
+                    // This is separate from the settings save to avoid unwanted hardware updates
+                    // when other settings (like RestoreSettingsOnStartup) change
+                    ViewModel.TriggerApplyColorTemperature();
                 }
                 else
                 {

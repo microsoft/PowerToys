@@ -396,15 +396,20 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
+            // Read current color temperature from hardware
             await _monitorManager.InitializeColorTemperatureAsync(monitorId);
 
-            // Update UI on dispatcher thread - get the monitor from manager
+            // Get the monitor and use the hardware value as-is
             var monitor = _monitorManager.GetMonitor(monitorId);
             if (monitor != null)
             {
+                Logger.LogInfo($"[{monitorId}] Read color temperature from hardware: {monitor.CurrentColorTemperature}");
+
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     // Update color temperature without triggering hardware write
+                    // Use the hardware value directly, even if not in the preset list
+                    // This will also update monitor_state.json via MonitorStateManager
                     vm.UpdatePropertySilently(nameof(vm.ColorTemperature), monitor.CurrentColorTemperature);
                 });
             }
@@ -424,10 +429,12 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Apply all settings changes from Settings UI (IPC event handler entry point)
-    /// Coordinates both UI configuration and hardware parameter updates
+    /// Apply settings changes from Settings UI (IPC event handler entry point)
+    /// Only applies UI configuration changes. Hardware parameter changes (e.g., color temperature)
+    /// should be triggered via custom actions to avoid unwanted side effects when non-hardware
+    /// settings (like RestoreSettingsOnStartup) are changed.
     /// </summary>
-    public async void ApplySettingsFromUI()
+    public void ApplySettingsFromUI()
     {
         try
         {
@@ -435,11 +442,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
 
-            // 1. Apply UI configuration changes (synchronous, lightweight)
+            // Apply UI configuration changes only (feature visibility toggles, etc.)
+            // Hardware parameters (brightness, color temperature) are applied via custom actions
             ApplyUIConfiguration(settings);
-
-            // 2. Apply hardware parameter changes (asynchronous, may involve DDC/CI calls)
-            await ApplyHardwareParametersAsync(settings);
 
             Logger.LogInfo("[Settings] Settings update complete");
         }
@@ -472,6 +477,58 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[Settings] Failed to apply UI configuration: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Apply color temperature from settings (triggered by custom action from Settings UI)
+    /// This is called when user explicitly changes color temperature in Settings UI,
+    /// NOT when other settings change. Reads current settings and applies only color temperature.
+    /// </summary>
+    public async void ApplyColorTemperatureFromSettings()
+    {
+        try
+        {
+            Logger.LogInfo("[Settings] Processing color temperature update from Settings UI");
+
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+            var updateTasks = new List<Task>();
+
+            foreach (var monitorVm in Monitors)
+            {
+                var hardwareId = monitorVm.HardwareId;
+                var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m => m.HardwareId == hardwareId);
+
+                if (monitorSettings == null)
+                {
+                    continue;
+                }
+
+                // Apply color temperature if changed
+                if (monitorSettings.ColorTemperature > 0 &&
+                    monitorSettings.ColorTemperature != monitorVm.ColorTemperature)
+                {
+                    Logger.LogInfo($"[Settings] Applying color temperature for {hardwareId}: 0x{monitorSettings.ColorTemperature:X2}");
+
+                    var task = ApplyColorTemperatureAsync(monitorVm, monitorSettings.ColorTemperature);
+                    updateTasks.Add(task);
+                }
+            }
+
+            // Wait for all updates to complete
+            if (updateTasks.Count > 0)
+            {
+                await Task.WhenAll(updateTasks);
+                Logger.LogInfo($"[Settings] Completed {updateTasks.Count} color temperature updates");
+            }
+            else
+            {
+                Logger.LogInfo("[Settings] No color temperature changes detected");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to apply color temperature from settings: {ex.Message}");
         }
     }
 
@@ -810,19 +867,26 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     private Microsoft.PowerToys.Settings.UI.Library.MonitorInfo CreateMonitorInfo(MonitorViewModel vm)
     {
-        return new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
+        var monitorInfo = new Microsoft.PowerToys.Settings.UI.Library.MonitorInfo(
             name: vm.Name,
             internalName: vm.Id,
             hardwareId: vm.HardwareId,
             communicationMethod: vm.CommunicationMethod,
-            monitorType: vm.IsInternal ? "Internal" : "External",
             currentBrightness: vm.Brightness,
             colorTemperature: vm.ColorTemperature)
         {
             CapabilitiesRaw = vm.CapabilitiesRaw,
             VcpCodes = BuildVcpCodesList(vm),
             VcpCodesFormatted = BuildFormattedVcpCodesList(vm),
+
+            // Infer support flags from VCP capabilities
+            // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x62 (98) = Volume
+            SupportsContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
+            SupportsColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
+            SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
         };
+
+        return monitorInfo;
     }
 
     /// <summary>
