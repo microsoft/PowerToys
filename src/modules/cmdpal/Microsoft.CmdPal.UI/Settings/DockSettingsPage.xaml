@@ -1,14 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.DockSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dockVm="using:Microsoft.CmdPal.UI.ViewModels.Dock"
+    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
@@ -85,6 +87,30 @@
                             <ComboBoxItem Content="Acrylic" />
                         </ComboBox>
                     </controls:SettingsCard>
+
+                    <!--  Bands Section  -->
+                    <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="dockVm:DockBandSettingsViewModel">
+                                <controls:SettingsCard Description="{x:Bind ProviderId, Mode=OneWay}" Header="{x:Bind Title, Mode=OneWay}">
+                                    <controls:SettingsCard.HeaderIcon>
+                                        <cpControls:ContentIcon>
+                                            <cpControls:ContentIcon.Content>
+                                                <cpControls:IconBox
+                                                    Width="20"
+                                                    Height="20"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                            </cpControls:ContentIcon.Content>
+                                        </cpControls:ContentIcon>
+                                    </controls:SettingsCard.HeaderIcon>
+                                </controls:SettingsCard>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
 
                 </StackPanel>
             </Grid>

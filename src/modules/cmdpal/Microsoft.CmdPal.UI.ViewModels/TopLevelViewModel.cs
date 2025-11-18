@@ -158,9 +158,37 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
+    // Dock properties
+    public bool IsDockBand { get; private set; }
+
+    public DockBandSettings? DockBandSettings
+    {
+        get
+        {
+            if (!IsDockBand)
+            {
+                return null;
+            }
+
+            var bandSettings = _settings.DockSettings.StartBands
+                .Concat(_settings.DockSettings.EndBands)
+                .FirstOrDefault(band => band.Id == this.Id);
+            if (bandSettings is null)
+            {
+                return new DockBandSettings()
+                {
+                    Id = this.Id,
+                    ShowLabels = true,
+                };
+            }
+
+            return bandSettings;
+        }
+    }
+
     public TopLevelViewModel(
         CommandItemViewModel item,
-        bool isFallback,
+        TopLevelType topLevelType,
         CommandPaletteHost extensionHost,
         string commandProviderId,
         SettingsModel settings,
@@ -173,7 +201,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
 
-        IsFallback = isFallback;
+        IsFallback = topLevelType == TopLevelType.Fallback;
+        IsDockBand = topLevelType == TopLevelType.DockBand;
         ExtensionHost = extensionHost;
 
         item.PropertyChanged += Item_PropertyChanged;
@@ -435,7 +464,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         return new TopLevelViewModel(
             _commandItemViewModel,
-            isFallback: false,
+            TopLevelType.DockBand,
             ExtensionHost,
             _commandProviderId,
             _settings,
@@ -527,4 +556,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             _dockViewModel.UpdateSettings(_settings.DockSettings);
         }
     }
+}
+
+public enum TopLevelType
+{
+    Normal,
+    Fallback,
+    DockBand,
 }

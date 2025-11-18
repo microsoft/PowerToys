@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common;
@@ -29,6 +30,8 @@ public sealed partial class DockViewModel : IDisposable,
     public ObservableCollection<DockBandViewModel> StartItems { get; } = new();
 
     public ObservableCollection<DockBandViewModel> EndItems { get; } = new();
+
+    public ObservableCollection<TopLevelViewModel> AllItems => _topLevelCommandManager.DockBands;
 
     public DockViewModel(
         TopLevelCommandManager tlcManager,
@@ -154,4 +157,32 @@ public sealed partial class DockViewModel : IDisposable,
     }
 }
 
+#pragma warning disable SA1402 // File may only contain a single type
+// public class DockSettingsViewModel : ObservableObject
+// {
+//     private readonly DockSettings _settingsModel;
+//     public DockSettingsViewModel(DockSettings settingsModel)
+//     {
+//         _settingsModel = settingsModel;
+//     }
+// }
+public partial class DockBandSettingsViewModel : ObservableObject
+{
+    private readonly DockBandSettings _settingsModel;
+    private readonly TopLevelViewModel _adapter;
+
+    public string Title => _adapter.Title;
+
+    public string ProviderId => _adapter.CommandProviderId;
+
+    public IconInfoViewModel Icon => _adapter.ItemViewModel.Icon;
+
+    public bool ShowLabels => _settingsModel.ShowLabels ?? true; // TODO! deal with the fact it might be null
+
+    public DockBandSettingsViewModel(DockBandSettings settingsModel, TopLevelViewModel adapter)
+    {
+        _settingsModel = settingsModel;
+        _adapter = adapter;
+    }
+}
 #pragma warning restore SA1402 // File may only contain a single type

@@ -203,18 +203,24 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private record TopLevelObjects(ICommandItem[]? Commands, IFallbackCommandItem[]? Fallbacks, ICommandItem[]? DockBands);
+    private record TopLevelObjects(
+        ICommandItem[]? Commands,
+        IFallbackCommandItem[]? Fallbacks,
+        ICommandItem[]? DockBands);
 
-    private void InitializeCommands(TopLevelObjects objects, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(
+        TopLevelObjects objects,
+        IServiceProvider serviceProvider,
+        WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, bool, TopLevelViewModel> make = (ICommandItem? i, bool fallback) =>
+        Func<ICommandItem?, TopLevelType, TopLevelViewModel> make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
@@ -222,14 +228,14 @@ public sealed class CommandProviderWrapper
         if (objects.Commands is not null)
         {
             TopLevelItems = objects.Commands
-                .Select(c => make(c, false))
+                .Select(c => make(c, TopLevelType.Normal))
                 .ToArray();
         }
 
         if (objects.Fallbacks is not null)
         {
             FallbackItems = objects.Fallbacks
-                .Select(c => make(c, true))
+                .Select(c => make(c, TopLevelType.Fallback))
                 .ToArray();
         }
 
@@ -238,7 +244,7 @@ public sealed class CommandProviderWrapper
             List<TopLevelViewModel> bands = new();
             foreach (var b in objects.DockBands)
             {
-                var bandVm = make(b, false);
+                var bandVm = make(b, TopLevelType.DockBand);
                 bands.Add(bandVm);
             }
 
@@ -249,7 +255,7 @@ public sealed class CommandProviderWrapper
                     if (pinnedId == c.Id)
                     {
                         var bandModel = c.ToDockBandItem();
-                        var bandVm = make(bandModel, false);
+                        var bandVm = make(bandModel, TopLevelType.DockBand);
                         bands.Add(bandVm);
                         break;
                     }

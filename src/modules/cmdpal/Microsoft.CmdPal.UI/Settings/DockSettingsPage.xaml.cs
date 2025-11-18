@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
@@ -14,6 +15,8 @@ public sealed partial class DockSettingsPage : Page
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private readonly SettingsViewModel viewModel;
+
+    public List<DockBandSettingsViewModel> AllDockBandItems => GetAllBandSettings();
 
     public DockSettingsPage()
     {
@@ -103,4 +106,40 @@ public sealed partial class DockSettingsPage : Page
         2 => DockBackdrop.Acrylic,
         _ => DockBackdrop.Acrylic,
     };
+
+    private List<TopLevelViewModel> GetAllBands()
+    {
+        var allBands = new List<TopLevelViewModel>();
+
+        var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+
+        foreach (var item in tlcManager.DockBands)
+        {
+            if (item.IsDockBand)
+            {
+                allBands.Add(item);
+            }
+        }
+
+        return allBands;
+    }
+
+    private List<DockBandSettingsViewModel> GetAllBandSettings()
+    {
+        var allSettings = new List<DockBandSettingsViewModel>();
+
+        // var allBands = GetAllBands();
+        var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var allBands = tlcManager.DockBands;
+        foreach (var band in allBands)
+        {
+            var setting = band.DockBandSettings;
+            if (setting is not null)
+            {
+                allSettings.Add(new(setting, band));
+            }
+        }
+
+        return allSettings;
+    }
 }
