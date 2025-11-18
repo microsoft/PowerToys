@@ -114,9 +114,24 @@
                                         Spacing="8">
                                         <TextBlock VerticalAlignment="Center" Text="Pin to" />
                                         <ComboBox MinWidth="100" SelectedIndex="{x:Bind PinSideIndex, Mode=TwoWay}">
-                                            <ComboBoxItem Content="None" />
-                                            <ComboBoxItem Content="Start" />
-                                            <ComboBoxItem Content="End" />
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon Glyph="&#xED1A;" />
+                                                    <TextBlock Text="None" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <SymbolIcon Symbol="AlignLeft" />
+                                                    <TextBlock Text="Start" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
+                                            <ComboBoxItem>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <SymbolIcon Symbol="AlignRight" />
+                                                    <TextBlock Text="End" />
+                                                </StackPanel>
+                                            </ComboBoxItem>
                                         </ComboBox>
                                         <ToggleSwitch
                                             IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
