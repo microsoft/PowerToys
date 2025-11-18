@@ -166,6 +166,13 @@ public enum DockPinSide
     End,
 }
 
+public enum ShowLabelsOption
+{
+    Default,
+    ShowLabels,
+    HideLabels,
+}
+
 // public class DockSettingsViewModel : ObservableObject
 // {
 //     private readonly DockSettings _settingsModel;
@@ -188,6 +195,8 @@ public partial class DockBandSettingsViewModel : ObservableObject
         {
             // TODO! we should have a way of saying "pinned from {extension}" vs
             // just a band that's from an extension
+            //
+            // TODO! add the number of items in the band
             return $"{_adapter.ExtensionName}";
         }
     }
@@ -196,10 +205,37 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public IconInfoViewModel Icon => _adapter.IconViewModel;
 
-    public bool ShowLabels
+    public ShowLabelsOption ShowLabels
     {
-        get => _dockSettingsModel.ShowLabels ?? true; // TODO! deal with the fact it might be null
-        set => _dockSettingsModel.ShowLabels = value; // TODO! save settings
+        get
+        {
+            if (_dockSettingsModel.ShowLabels == null)
+            {
+                return ShowLabelsOption.Default;
+            }
+
+            return _dockSettingsModel.ShowLabels.Value ? ShowLabelsOption.ShowLabels : ShowLabelsOption.HideLabels;
+        }
+
+        set
+        {
+            _dockSettingsModel.ShowLabels = value switch
+            {
+                ShowLabelsOption.Default => null,
+                ShowLabelsOption.ShowLabels => true,
+                ShowLabelsOption.HideLabels => false,
+                _ => null,
+            };
+
+            // TODO! save settings
+        }
+    }
+
+    // used to map to ComboBox selection
+    public int ShowLabelsIndex
+    {
+        get => (int)ShowLabels;
+        set => ShowLabels = (ShowLabelsOption)value;
     }
 
     [ObservableProperty]

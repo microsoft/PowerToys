@@ -23,6 +23,8 @@ public class DockSettings
     public List<DockBandSettings> StartBands { get; set; } = [];
 
     public List<DockBandSettings> EndBands { get; set; } = [];
+
+    public bool ShowLabels { get; set; } = true;
 }
 
 public class DockBandSettings
@@ -30,6 +32,8 @@ public class DockBandSettings
     public string Id { get; set; } = string.Empty;
 
     public bool? ShowLabels { get; set; }
+
+    public bool ResolveShowLabels(bool defaultValue) => ShowLabels ?? defaultValue;
 }
 
 public enum DockSide

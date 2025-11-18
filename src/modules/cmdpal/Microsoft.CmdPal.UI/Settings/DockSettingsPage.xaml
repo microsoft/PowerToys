@@ -88,6 +88,19 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!--  Show Labels  -->
+                    <controls:SettingsCard Header="Show Labels">
+                        <controls:SettingsCard.Description>
+                            Choose whether to show labels for dock items by default.
+                        </controls:SettingsCard.Description>
+
+                        <ToggleSwitch
+                            IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
+                            OffContent="Hide labels"
+                            OnContent="Show Labels" />
+
+                    </controls:SettingsCard>
+
                     <!--  Bands Section  -->
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
@@ -133,10 +146,11 @@
                                                 </StackPanel>
                                             </ComboBoxItem>
                                         </ComboBox>
-                                        <ToggleSwitch
-                                            IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
-                                            OffContent="Hide labels"
-                                            OnContent="Show Labels" />
+                                        <ComboBox MinWidth="120" SelectedIndex="{x:Bind ShowLabelsIndex, Mode=TwoWay}">
+                                            <ComboBoxItem Content="Default" />
+                                            <ComboBoxItem Content="Show Labels" />
+                                            <ComboBoxItem Content="Hide Labels" />
+                                        </ComboBox>
                                     </StackPanel>
                                 </controls:SettingsCard>
                             </DataTemplate>

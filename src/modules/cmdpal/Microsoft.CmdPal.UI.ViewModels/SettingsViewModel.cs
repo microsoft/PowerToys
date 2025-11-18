@@ -168,6 +168,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool Dock_ShowLabels
+    {
+        get => _settings.DockSettings.ShowLabels;
+        set
+        {
+            _settings.DockSettings.ShowLabels = value;
+            Save();
+        }
+    }
+
     public bool EnableDock
     {
         get => _settings.EnableDock;
