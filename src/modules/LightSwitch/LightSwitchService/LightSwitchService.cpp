@@ -13,10 +13,12 @@
 #include <utils/logger_helper.h>
 #include "LightSwitchStateManager.h"
 #include <LightSwitchUtils.h>
+#include <NightLightRegistryObserver.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
+static LightSwitchStateManager* g_stateManagerPtr = nullptr;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
@@ -199,14 +201,39 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     // Initialization
     // ────────────────────────────────────────────────────────────────
     static LightSwitchStateManager stateManager;
+    g_stateManagerPtr = &stateManager;
 
     LightSwitchSettings::instance().InitFileWatcher();
 
     HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
     HANDLE hSettingsChanged = LightSwitchSettings::instance().GetSettingsChangedEvent();
 
+    static std::unique_ptr<NightLightRegistryObserver> g_nightLightWatcher;
+
     LightSwitchSettings::instance().LoadSettings();
     const auto& settings = LightSwitchSettings::instance().settings();
+
+    // after loading settings:
+    bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+
+    if (nightLightNeeded && !g_nightLightWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
+
+        g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+            HKEY_CURRENT_USER,
+            L"Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate",
+            []() {
+                if (g_stateManagerPtr)
+                    g_stateManagerPtr->OnNightLightChange();
+            });
+    }
+    else if (!nightLightNeeded && g_nightLightWatcher)
+    {
+        Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
+        g_nightLightWatcher->Stop();
+        g_nightLightWatcher.reset();
+    }
 
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -274,6 +301,31 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             ResetEvent(hSettingsChanged);
             LightSwitchSettings::instance().LoadSettings();
             stateManager.OnSettingsChanged();
+
+            const auto& settings = LightSwitchSettings::instance().settings();
+            bool nightLightNeeded = (settings.scheduleMode == ScheduleMode::FollowNightLight);
+
+            if (nightLightNeeded && !g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Starting Night Light registry watcher...");
+
+                g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
+                    HKEY_CURRENT_USER,
+                    L"Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate",
+                    []() {
+                        if (g_stateManagerPtr)
+                            g_stateManagerPtr->OnNightLightChange();
+                    });
+
+                stateManager.OnNightLightChange();
+            }
+            else if (!nightLightNeeded && g_nightLightWatcher)
+            {
+                Logger::info(L"[LightSwitchService] Stopping Night Light registry watcher...");
+                g_nightLightWatcher->Stop();
+                g_nightLightWatcher.reset();
+            }
+
             continue;
         }
     }
@@ -285,6 +337,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         CloseHandle(hManualOverride);
     if (hParent)
         CloseHandle(hParent);
+    if (g_nightLightWatcher)
+    {
+        g_nightLightWatcher->Stop();
+        g_nightLightWatcher.reset();
+    }
 
     Logger::info(L"[LightSwitchService] Worker thread exiting cleanly.");
     return 0;

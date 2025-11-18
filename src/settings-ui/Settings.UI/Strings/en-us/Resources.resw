@@ -5781,4 +5781,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
+  <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
+    <value>Follow Night Light</value>
+  </data>
+  <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
+    <value>Following Night Light settings.</value>
+  </data>
+  <data name="LightSwitch_NightLightSettingsButton.Text" xml:space="preserve">
+    <value>Personalize your Night Light settings.</value>
+  </data>
 </root>

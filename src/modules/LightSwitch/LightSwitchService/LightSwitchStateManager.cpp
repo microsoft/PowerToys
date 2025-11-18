@@ -56,6 +56,29 @@ void LightSwitchStateManager::OnManualOverride()
     EvaluateAndApplyIfNeeded();
 }
 
+// Runs with the registry observer detects a change in Night Light settings.
+void LightSwitchStateManager::OnNightLightChange()
+{
+    std::lock_guard<std::mutex> lock(_stateMutex);
+
+    bool newNightLightState = IsNightLightEnabled();
+
+    if (newNightLightState != _state.isNightLightActive)
+    {
+        Logger::info(L"[LightSwitchStateManager] Night Light toggled to {}",
+                     newNightLightState ? L"ON" : L"OFF");
+
+        _state.isNightLightActive = newNightLightState;
+    }
+    else
+    {
+        Logger::debug(L"[LightSwitchStateManager] Night Light change event fired, but no actual change.");
+    }
+
+    EvaluateAndApplyIfNeeded();
+}
+
+
 // Helpers
 bool LightSwitchStateManager::CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon)
 {
@@ -194,7 +217,15 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
     _state.lastAppliedMode = _currentSettings.scheduleMode;
 
-    bool shouldBeLight = ShouldBeLight(now, _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
+    bool shouldBeLight = false;
+    if (_currentSettings.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        shouldBeLight = !_state.isNightLightActive;
+    }
+    else
+    {
+        shouldBeLight = ShouldBeLight(now, _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
+    }
 
     bool appsNeedsToChange = _currentSettings.changeApps && (_state.isAppsLightActive != shouldBeLight);
     bool systemNeedsToChange = _currentSettings.changeSystem && (_state.isSystemLightActive != shouldBeLight);

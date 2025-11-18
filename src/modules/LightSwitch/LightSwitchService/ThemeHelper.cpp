@@ -109,3 +109,30 @@ bool GetCurrentAppsTheme()
 
     return value == 1; // true = light, false = dark
 }
+
+bool IsNightLightEnabled()
+{
+    HKEY hKey;
+    const wchar_t* path =
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate";
+
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, path, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
+        return false;
+
+    DWORD size = 0;
+    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, nullptr, &size) != ERROR_SUCCESS || size < 25)
+    {
+        RegCloseKey(hKey);
+        return false;
+    }
+
+    std::vector<BYTE> data(size);
+    if (RegGetValueW(hKey, nullptr, L"Data", RRF_RT_REG_BINARY, nullptr, data.data(), &size) != ERROR_SUCCESS)
+    {
+        RegCloseKey(hKey);
+        return false;
+    }
+
+    RegCloseKey(hKey);
+    return data[23] == 0x10 && data[24] == 0x00;
+}
