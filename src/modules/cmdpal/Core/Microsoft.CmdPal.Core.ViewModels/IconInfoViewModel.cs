@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -27,6 +28,10 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 
     public bool IsSet => _model.Unsafe is not null;
+
+    public bool IsThumbnail => ThumbnailMode != ThumbnailDisplayMode.Icon;
+
+    public ThumbnailDisplayMode ThumbnailMode { get; private set; }
 
     IIconData? IIconInfo.Dark => Dark;
 
@@ -53,5 +58,18 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
 
         Dark = new(model.Dark);
         Dark.InitializeProperties();
+
+        // Get extended properties once and hold onto them
+        if (model is IExtendedAttributesProvider eap)
+        {
+            var props = eap.GetProperties();
+            if (props?.TryGetValue("mode", out var mode) == true && mode is int modeInt)
+            {
+                if (Enum.IsDefined(typeof(ThumbnailDisplayMode), modeInt))
+                {
+                    ThumbnailMode = (ThumbnailDisplayMode)modeInt;
+                }
+            }
+        }
     }
 }

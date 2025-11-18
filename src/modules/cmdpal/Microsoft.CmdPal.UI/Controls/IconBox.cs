@@ -10,7 +10,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -21,6 +21,8 @@ namespace Microsoft.CmdPal.UI.Controls;
 public partial class IconBox : ContentControl
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
+
+    private bool _canHaveShadow;
 
     /// <summary>
     /// Gets or sets the <see cref="IconSource"/> to display within the <see cref="IconBox"/>. Overwritten, if <see cref="SourceKey"/> is used instead.
@@ -49,6 +51,19 @@ public partial class IconBox : ContentControl
         DependencyProperty.Register(nameof(SourceKey), typeof(object), typeof(IconBox), new PropertyMetadata(null, OnSourceKeyPropertyChanged));
 
     /// <summary>
+    /// Gets or sets a value indicating whether the icon should have a shadow. Shadow is applied to entire rectangle, so
+    /// it's not advisable to use this with non-square icons.
+    /// </summary>
+    public bool HasShadow
+    {
+        get => (bool)GetValue(HasShadowProperty);
+        set => SetValue(HasShadowProperty, value);
+    }
+
+    public static readonly DependencyProperty HasShadowProperty = DependencyProperty.Register(
+        nameof(HasShadow), typeof(bool), typeof(IconBox), new PropertyMetadata(false, OnHasShadowPropertyChanged));
+
+    /// <summary>
     /// Gets or sets the <see cref="SourceRequested"/> event handler to provide the value of the <see cref="IconSource"/> for the <see cref="Source"/> property from the provided <see cref="SourceKey"/>.
     /// </summary>
     public event TypedEventHandler<IconBox, SourceRequestedEventArgs>? SourceRequested;
@@ -63,34 +78,47 @@ public partial class IconBox : ContentControl
 
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is IconBox @this)
+        if (d is not IconBox @this)
         {
-            switch (e.NewValue)
-            {
-                case null:
-                    @this.Content = null;
-                    break;
-                case FontIconSource fontIco:
-                    fontIco.FontSize = double.IsNaN(@this.Width) ? @this.Height : @this.Width;
-
-                    // For inexplicable reasons, FontIconSource.CreateIconElement
-                    // doesn't work, so do it ourselves
-                    // TODO: File platform bug?
-                    IconSourceElement elem = new()
-                    {
-                        IconSource = fontIco,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                    };
-                    @this.Content = elem;
-                    break;
-                case IconSource source:
-                    @this.Content = source.CreateIconElement();
-                    break;
-                default:
-                    throw new InvalidOperationException($"New value of {e.NewValue} is not of type IconSource.");
-            }
+            return;
         }
+
+        switch (e.NewValue)
+        {
+            case null:
+                @this.Content = null;
+                @this._canHaveShadow = false;
+                break;
+            case FontIconSource fontIco:
+                fontIco.FontSize =
+                    !double.IsNaN(@this.Width) ? @this.Width :
+                    !double.IsNaN(@this.Height) ? @this.Height :
+                    @this.MinWidth > 0 ? @this.MinWidth :
+                    @this.MinHeight > 0 ? @this.MinHeight :
+                    12;
+
+                // For inexplicable reasons, FontIconSource.CreateIconElement
+                // doesn't work, so do it ourselves
+                // TODO: File platform bug?
+                IconSourceElement elem = new()
+                {
+                    IconSource = fontIco,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                @this.Content = elem;
+                @this._canHaveShadow = false;
+                break;
+            case IconSource source:
+                var iconElement = source.CreateIconElement();
+                @this.Content = iconElement;
+                @this._canHaveShadow = true;
+                break;
+            default:
+                throw new InvalidOperationException($"New value of {e.NewValue} is not of type IconSource.");
+        }
+
+        @this.UpdateShadow();
     }
 
     private static void OnSourceKeyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -173,5 +201,21 @@ public partial class IconBox : ContentControl
                 });
             }
         }
+    }
+
+    private static void OnHasShadowPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        (d as IconBox)?.UpdateShadow();
+    }
+
+    private void UpdateShadow()
+    {
+        if (Content is not UIElement iconElement)
+        {
+            return;
+        }
+
+        iconElement.Shadow = HasShadow && _canHaveShadow ? new ThemeShadow() : (Shadow?)null;
+        iconElement.Translation = Translation;
     }
 }

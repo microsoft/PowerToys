@@ -16,12 +16,12 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -282,6 +282,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         {
                             ViewModel.Details = message.Details;
                             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasThumbnail)));
                             ViewModel.IsDetailsVisible = true;
                             return;
                         }
@@ -298,6 +299,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                                 // Trigger a re-evaluation of whether we have a hero image based on
                                 // the current theme
                                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasThumbnail)));
                             },
                             interval: TimeSpan.FromMilliseconds(50),
                             immediate: ViewModel.IsDetailsVisible == false);
@@ -463,7 +465,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             ViewModel.CurrentPage = page;
         }
 
-        if (e.Content is Page element)
+        if (e.Content is Microsoft.UI.Xaml.Controls.Page element)
         {
             element.Loaded += FocusAfterLoaded;
         }
@@ -471,7 +473,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void FocusAfterLoaded(object sender, RoutedEventArgs e)
     {
-        var page = (Page)sender;
+        var page = (Microsoft.UI.Xaml.Controls.Page)sender;
         page.Loaded -= FocusAfterLoaded;
 
         AnnounceNavigationToPage(page);
@@ -517,7 +519,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void AnnounceNavigationToPage(Page page)
+    private void AnnounceNavigationToPage(Microsoft.UI.Xaml.Controls.Page page)
     {
         var pageTitle = page switch
         {
@@ -547,7 +549,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             var requestedTheme = ActualTheme;
             var iconInfoVM = ViewModel.Details?.HeroImage;
-            return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
+            return iconInfoVM?.HasIcon(requestedTheme == ElementTheme.Light) == true && !iconInfoVM.IsThumbnail;
+        }
+    }
+
+    public bool HasThumbnail
+    {
+        get
+        {
+            var requestedTheme = ActualTheme;
+            var iconInfoVM = ViewModel.Details?.HeroImage;
+            return iconInfoVM?.HasIcon(requestedTheme == ElementTheme.Light) == true && iconInfoVM.IsThumbnail;
         }
     }
 
@@ -628,5 +640,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    private bool ShouldIconHaveShadow(IconInfoViewModel iconInfoViewModel)
+    {
+        return iconInfoViewModel.ThumbnailMode == ThumbnailDisplayMode.PhotoThumbnail;
     }
 }

@@ -69,6 +69,61 @@ internal sealed partial class SampleListPageWithDetails : ListPage
             },
             new ListItem(new NoOpCommand())
             {
+                Title = "This one has a hero symbol",
+                Tags = [],
+                Details = new Details()
+                {
+                    Title = "Hero Image Example",
+                    HeroImage = new IconInfo("\uE716"),
+                    Body = "A symbol or character turned into a hero image",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "This one has a hero emoji",
+                Tags = [],
+                Details = new Details()
+                {
+                    Title = "Hero Image Example",
+                    HeroImage = new IconInfo("🧙🏼‍♂️"),
+                    Body = "An emoji turned into a hero image",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "This one has a thumbnail image",
+                Tags = [],
+                Details = new Details()
+                {
+                    Title = "Thumbnail Example",
+                    HeroImage = new ThumbnailInfo("https://m.media-amazon.com/images/M/MV5BNDBkMzVmNGQtYTM2OC00OWRjLTk5OWMtNzNkMDI4NjFjNTZmXkEyXkFqcGdeQXZ3ZXNsZXk@._V1_QL75_UX500_CR0,0,500,281_.jpg", ThumbnailDisplayMode.PhotoThumbnail),
+                    Body = "This one turned the hero (image) into a thumbnail",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "This one has a thumbnail symbol",
+                Tags = [],
+                Details = new Details()
+                {
+                    Title = "Thumbnail Example",
+                    HeroImage = new ThumbnailInfo("\uE716"),
+                    Body = "This one turned the hero (image) into a thumbnail",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "This one has a thumbnail emoji",
+                Tags = [],
+                Details = new Details()
+                {
+                    Title = "Thumbnail Example",
+                    HeroImage = new ThumbnailInfo("🧙🏼‍♂️"),
+                    Body = "This one turned the hero (image) into a thumbnail",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
                 Title = "This one has metadata",
                 Tags = [],
                 Details = new Details()

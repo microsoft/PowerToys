@@ -16,7 +16,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1824;CA1416;CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CA1824;CA1416;CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049;NU1510</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -40,7 +40,7 @@
   <!-- this may need to be removed on future CsWinRT upgrades-->
   <Target Name="RemoveCsWinRTPackageAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />	  
+      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />
     </ItemGroup>
   </Target>
 </Project>

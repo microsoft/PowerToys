@@ -158,15 +158,28 @@
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
+
             <tkcontrols:MarkdownThemes
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
                 H3FontWeight="Normal" />
             <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
+
             <tkcontrols:MarkdownConfig
                 x:Key="DefaultMarkdownConfig"
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
+            <Style x:Key="PreviewPanelStyle" TargetType="Border">
+                <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Height" Value="Auto" />
+                <Setter Property="MaxHeight" Value="200" />
+                <Setter Property="MinHeight" Value="100" />
+            </Style>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -413,50 +426,85 @@
                             To="24,0,0"
                             Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <StackPanel Orientation="Vertical">
+                        <Border
+                            x:Name="ThumbnailPanel"
+                            Style="{StaticResource PreviewPanelStyle}"
+                            Visibility="{x:Bind HasThumbnail, Mode=OneWay}">
+                            <Grid>
+                                <Border
+                                    MinWidth="64"
+                                    MinHeight="100"
+                                    MaxHeight="200"
+                                    Margin="16"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                    <cpcontrols:IconBox
+                                        MinHeight="64"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        HasShadow="{x:Bind ShouldIconHaveShadow(ViewModel.Details.HeroImage), Mode=OneWay }"
+                                        SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
+                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                </Border>
+                                <StackPanel
+                                    x:Name="ThumbnailCommandsBar"
+                                    Margin="8"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Bottom"
+                                    Orientation="Vertical">
+                                    <Button Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" ToolTipService.ToolTip="Preview">
+                                        <FontIcon Glyph="&#xE890;" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Grid Margin="16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                        <cpcontrols:IconBox
-                            x:Name="HeroImageBorder"
-                            Width="64"
-                            Margin="0,0,16,16"
-                            HorizontalAlignment="Left"
-                            AutomationProperties.AccessibilityView="Raw"
-                            SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
-                            Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
+                            <cpcontrols:IconBox
+                                x:Name="HeroImageBorder"
+                                Width="64"
+                                Margin="0,0,16,16"
+                                HorizontalAlignment="Left"
+                                AutomationProperties.AccessibilityView="Raw"
+                                SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                                Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
-                        <TextBlock
-                            Grid.Row="1"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                            TextWrapping="WrapWholeWords"
-                            Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Row="1"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
+                                TextWrapping="WrapWholeWords"
+                                Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                        <tkcontrols:MarkdownTextBlock
-                            Grid.Row="2"
-                            Margin="0,4,0,24"
-                            Background="Transparent"
-                            Config="{StaticResource DefaultMarkdownConfig}"
-                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
-                            UseEmphasisExtras="True"
-                            UsePipeTables="True" />
+                            <tkcontrols:MarkdownTextBlock
+                                Grid.Row="2"
+                                Margin="0,4,0,24"
+                                Background="Transparent"
+                                Config="{StaticResource DefaultMarkdownConfig}"
+                                Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                                UseEmphasisExtras="True"
+                                UsePipeTables="True" />
 
-                        <ItemsRepeater
-                            Grid.Row="3"
-                            ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
-                            ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Spacing="12" />
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </Grid>
+                            <ItemsRepeater
+                                Grid.Row="3"
+                                ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
+                                ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="12" />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </Grid>
+                    </StackPanel>
                 </ScrollViewer>
                 <!--  /DetailsContent  -->
             </Grid>
@@ -481,13 +529,13 @@
 
         <!--
             Horrifying: You may ask yourself - why is there a Background on this InfoBar?
-            
+
             Well, as it turns out, the Informational InfoBar has a transparent
             background. It just cannot be bothered. So, we need to manually give
             it one to actually obscure the text beneath it. And you can't just give
             the InfoBar itself a Background, because then the other Severity's
             won't get colorized.
-            
+
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
