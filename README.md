@@ -126,7 +126,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - The Command Palette settings page has been reorganized. Activation-key options are grouped under an expander and extension settings are framed for improved readability.
  - When you modify a command, its alias, hotkey, and tags now update in the top-level list, keeping the displayed information in sync. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Press `Ctrl + ,` to open Command Palette settings from anywhere. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - You can use `Page Up` and `Page Down` to navigate the list while focus is in the search box. Thanks [@samrueby](https://github.com/samrueby).
+ - You can use `Page Up` and `Page Down` to navigate the list while focus is in the search box. Thanks [@samrueby](https://github.com/samrueby)!
  - Fixed an issue where the search box could disappear when navigating pages. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Ensured search text is selected when *Go home when activated* and *Highlight search on activate* are both enabled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed an issue where Command Palette window occasionally appeared on the taskbar under certain Windows settings. Thanks [@jiripolasek](https://github.com/jiripolasek)!
@@ -147,7 +147,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Bookmarks: Improved migration of bookmarks from older versions and fixed an issue where aliases or keyboard shortcuts could be lost after restart. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Clipboard history: Items shown in Command Palette’s clipboard history now include helpful metadata. For example, image items show dimensions, text files show names and sizes, web links include page titles, and text entries display word counts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - File search: Added filter buttons to show *all items*, *files only*, or *folders only*. Selecting a filter adds `kind:folders` or `kind:not folders` to narrow results.
- - System commands: Replaced the `:red_circle:` placeholder with an actual red-circle emoji so the correct icon appears in the UI. Thanks [@samrueby](https://github.com/samrueby).
+ - System commands: Replaced the `:red_circle:` placeholder with an actual red-circle emoji so the correct icon appears in the UI. Thanks [@samrueby](https://github.com/samrueby)!
  - WinGet: Search performance feels more responsive because typed input is now processed via a task queue rather than complex cancellation tokens!
  - Window Walker: UWP apps no longer show a "not responding" label when suspended. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Window Walker: Now displays the actual icon of each window rather than using the process icon, improving recognition of PWAs and Python GUIs. Thanks [@Lee-WonJun](https://github.com/Lee-WonJun)!
