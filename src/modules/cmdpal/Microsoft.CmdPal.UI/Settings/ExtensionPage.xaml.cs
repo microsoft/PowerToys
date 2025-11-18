@@ -26,8 +26,8 @@ public sealed partial class ExtensionPage : Page
             : throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
     }
 
-    private void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void RankButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        FallbackRankerFlyout.ShowAt((Microsoft.UI.Xaml.FrameworkElement)e.OriginalSource);
+        await FallbackRankerDialog.ShowAsync();
     }
 }
