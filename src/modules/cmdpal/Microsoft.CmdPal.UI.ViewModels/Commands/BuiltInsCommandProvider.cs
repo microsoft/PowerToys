@@ -49,7 +49,7 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider, IExtended
     {
         var rootPage = _rootPageService.GetRootPage();
         List<ICommandItem> bandItems = new();
-        bandItems.Add(new WrappedDockItem(rootPage));
+        bandItems.Add(new WrappedDockItem(rootPage, "Open Command Palette")); // TODO!loc
 
         return new PropertySet()
         {

@@ -98,7 +98,7 @@ public sealed partial class DockWindow : WindowEx,
         // and our **WindProc will explode**.
         _customWndProc = CustomWndProc;
 
-        _callbackMessageId = PInvoke.RegisterWindowMessage("AppBarMessage");
+        _callbackMessageId = PInvoke.RegisterWindowMessage($"CmdPal_ABM_{_hwnd}");
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our

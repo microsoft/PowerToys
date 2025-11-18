@@ -254,7 +254,7 @@ public sealed class CommandProviderWrapper
                 {
                     if (pinnedId == c.Id)
                     {
-                        var bandModel = c.ToDockBandItem();
+                        var bandModel = c.ToPinnedDockBandItem();
                         var bandVm = make(bandModel, TopLevelType.DockBand);
                         bands.Add(bandVm);
                         break;

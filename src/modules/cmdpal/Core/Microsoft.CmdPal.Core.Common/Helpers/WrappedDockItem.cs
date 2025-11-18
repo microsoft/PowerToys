@@ -11,25 +11,45 @@ namespace Microsoft.CmdPal.Core.Common.Helpers;
 
 public partial class WrappedDockItem : CommandItem
 {
-    public override string Title => $"{_itemTitle} (Pinned)";
+    public override string Title => _itemTitle;
 
     public override IIconInfo? Icon => _icon;
 
     private readonly string _itemTitle;
     private readonly IIconInfo? _icon;
 
-    public WrappedDockItem(ICommand command)
+    public WrappedDockItem(
+        ICommand command,
+        string displayTitle)
     {
         Command = new WrappedDockList(command);
-        _itemTitle = command.Name;
+        _itemTitle = string.IsNullOrEmpty(displayTitle) ? command.Name : displayTitle;
         _icon = command.Icon;
     }
 
-    public WrappedDockItem(ICommandItem item, string id)
+    public WrappedDockItem(
+        ICommandItem item,
+        string id,
+        string displayTitle)
     {
         Command = new WrappedDockList(item, id);
-        _itemTitle = item.Title;
+        _itemTitle = string.IsNullOrEmpty(displayTitle) ? item.Title : displayTitle;
         _icon = item.Icon;
+    }
+}
+
+public partial class PinnedDockItem : WrappedDockItem
+{
+    public override string Title => $"{base.Title} (Pinned)"; // TODO! localization
+
+    public PinnedDockItem(ICommand command)
+        : base(command, command.Name)
+    {
+    }
+
+    public PinnedDockItem(ICommandItem item, string id)
+        : base(item, id, item.Title)
+    {
     }
 }
 

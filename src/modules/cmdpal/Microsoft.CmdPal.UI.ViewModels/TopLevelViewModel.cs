@@ -457,9 +457,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         return contextItems.ToArray();
     }
 
-    internal ICommandItem ToDockBandItem()
+    internal ICommandItem ToPinnedDockBandItem()
     {
-        var item = new WrappedDockItem(this, this.Id);
+        var item = new PinnedDockItem(item: this, id: Id);
 
         return item;
     }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -57,9 +58,14 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider, IExtende
 
     public IDictionary<string, object> GetProperties()
     {
+        var wrappedBand = new WrappedDockItem(
+            _bandItem,
+            "com.microsoft.cmdpal.timedate.dockband",
+            "Clock"); // TODO! loc
+
         return new PropertySet()
         {
-            { "DockBands", new ICommandItem[] { _bandItem } },
+            { "DockBands", new ICommandItem[] { wrappedBand } },
         };
     }
 }
