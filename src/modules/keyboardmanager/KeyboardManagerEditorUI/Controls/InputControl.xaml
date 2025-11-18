@@ -23,9 +23,13 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Margin="0,12,0,0" Text="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_OriginalKeys')}" />
+            <TextBlock
+                x:Uid="InputControlOriginalKeysTextBlock"
+                Margin="0,12,0,0" />
             <Grid Grid.Column="2">
-                <TextBlock Margin="0,12,0,0" Text="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_NewKeys')}" />
+                <TextBlock 
+                    x:Uid="InputControlNewKeysTextBlock"
+                    Margin="0,12,0,0" />
             </Grid>
             <Grid Grid.Row="1" Margin="0,8,0,0">
                 <ToggleButton
@@ -102,12 +106,11 @@
 
         <CheckBox
             x:Name="AllAppsCheckBox"
-            Margin="0,24,0,12"
-            Content="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsCheckboxText')}" />
+            x:Uid="InputControlAllAppsCheckBox"
+            Margin="0,24,0,12" />
         <TextBox
             x:Name="AppNameTextBox"
-            Header="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsTextboxHeader')}"
-            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}"
-            PlaceholderText="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsTextboxPlaceholder')}" />
+            x:Uid="InputControlAppNameTextBox"
+            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}" />
     </StackPanel>
 </UserControl>

@@ -15,20 +15,24 @@
         <StackPanel Orientation="Vertical" Spacing="12">
             <TextBlock
                 x:Name="RemapInstruction"
+                x:Uid="RemappingsPageInstructionTextBlock"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_Instruction')}"
                 TextWrapping="Wrap" />
             <Button
                 x:Name="NewRemappingBtn"
                 Height="36"
                 Margin="0,12,0,0"
                 Click="NewRemappingBtn_Click">
-                <StackPanel Orientation="Horizontal" Spacing="8">
+                <StackPanel 
+                    Orientation="Horizontal" 
+                    Spacing="8">
                     <FontIcon
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock VerticalAlignment="Center" Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_NewRemapping')}" />
+                    <TextBlock
+                        x:Uid="RemappingsPageNewTextBlock"
+                        VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
             <Grid
@@ -48,33 +52,33 @@
                     <ColumnDefinition Width="84" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
+                    x:Uid="RemappingsPageOriginalKeysTextBlock"
                     Grid.Column="0"
                     Margin="16,-2,0,0"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_OriginalKeys')}" />
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <AppBarSeparator
                     Grid.Column="1"
                     Margin="-6,4,0,4"
                     HorizontalAlignment="Left" />
                 <TextBlock
+                    x:Uid="RemappingsPageNewKeysTextBlock"
                     Grid.Column="1"
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_NewKeys')}" />
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <AppBarSeparator
                     Grid.Column="2"
                     Margin="-6,4,0,4"
                     HorizontalAlignment="Left" />
                 <TextBlock
+                    x:Uid="RemmapingsPageApplicableAppsTextBlock"
                     Grid.Column="2"
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_ApplicableApps')}" />
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
 
                 <Rectangle
                     Grid.ColumnSpan="4"
@@ -160,6 +164,7 @@
                                     FontSize="12"
                                     Text="{x:Bind AppName}" />
                                 <Button
+                                    x:Uid="RemappingsPageDeleteButton"
                                     Grid.Column="3"
                                     Margin="0,0,4,0"
                                     Padding="8,4"
@@ -168,8 +173,7 @@
                                     AutomationProperties.Name="Delete remapping"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Click="DeleteButton_Click"
-                                    ToolTipService.ToolTip="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DeleteTooltip')}">
+                                    Click="DeleteButton_Click">
                                     <FontIcon
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         FontSize="16"
@@ -184,24 +188,20 @@
         </StackPanel>
         <ContentDialog
             x:Name="KeyDialog"
-            Title="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DialogTitle')}"
+            x:Uid="RemappingsPageKeyDialog"
             MinWidth="600"
             MaxWidth="600"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-            PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DialogPrimary')}"
-            SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DialogSecondary')}">
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <Grid>
                 <controls:InputControl x:Name="RemappingControl" />
             </Grid>
         </ContentDialog>
         <TeachingTip
             x:Name="OrphanedKeysTeachingTip"
-            Title="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_OrphanedTipTitle')}"
+            x:Uid="RemmapingsPageOrphanedKeysTeachingTip"
             ActionButtonClick="OrphanedKeysTeachingTip_ActionButtonClick"
-            ActionButtonContent="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_OrphanedTipAction')}"
             ActionButtonStyle="{StaticResource AccentButtonStyle}"
             CloseButtonClick="OrphanedKeysTeachingTip_CloseButtonClick"
-            CloseButtonContent="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_OrphanedTipClose')}"
             IsLightDismissEnabled="False"
             PreferredPlacement="Center">
             <TeachingTip.IconSource>
@@ -210,8 +210,8 @@
         </TeachingTip>
         <TeachingTip
             x:Name="ValidationTeachingTip"
+            x:Uid="RemappingsPageValidationTeachingTip"
             CloseButtonClick="ValidationTeachingTip_CloseButtonClick"
-            CloseButtonContent="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_ValidationTipClose')}"
             IsLightDismissEnabled="True"
             PreferredPlacement="Center">
             <TeachingTip.IconSource>

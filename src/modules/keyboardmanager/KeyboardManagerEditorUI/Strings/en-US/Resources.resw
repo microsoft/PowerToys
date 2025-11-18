@@ -117,43 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="RemappingsPage_ApplicableApps" xml:space="preserve">
+  <data name="RemappingsPageApplicableAppsTextBlock.Text" xml:space="preserve">
     <value>Applicable apps</value>
   </data>
-  <data name="RemappingsPage_DeleteTooltip" xml:space="preserve">
+  <data name="RemappingsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Delete remapping</value>
   </data>
-  <data name="RemappingsPage_DialogPrimary" xml:space="preserve">
+  <data name="RemappingsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="RemappingsPage_DialogSecondary" xml:space="preserve">
+  <data name="RemappingsPageKeyDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="RemappingsPage_DialogTitle" xml:space="preserve">
+  <data name="RemappingsPageKeyDialog.Title" xml:space="preserve">
     <value>Remappings</value>
   </data>
-  <data name="RemappingsPage_Instruction" xml:space="preserve">
+  <data name="RemappingsPageInstructionTextBlock.Text" xml:space="preserve">
     <value>Remappings allow you to reconfigure a single key or shortcut to a new key or shortcut</value>
   </data>
-  <data name="RemappingsPage_NewRemapping" xml:space="preserve">
+  <data name="RemappingsPageNewTextBlock.Text" xml:space="preserve">
     <value>New</value>
   </data>
-  <data name="RemappingsPage_OriginalKeys" xml:space="preserve">
+  <data name="RemappingsPageOriginalKeysTextBlock.Text" xml:space="preserve">
     <value>Original key(s)</value>
   </data>
-  <data name="RemappingsPage_OrphanedTipAction" xml:space="preserve">
+  <data name="RemmapingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
     <value>Continue anyway</value>
   </data>
-  <data name="RemappingsPage_OrphanedTipClose" xml:space="preserve">
+  <data name="RemmapingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="RemappingsPage_OrphanedTipTitle" xml:space="preserve">
+  <data name="RemmapingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
     <value>Orphaned Keys Warning</value>
   </data>
-  <data name="RemappingsPage_ValidationTipClose" xml:space="preserve">
+  <data name="RemappingsPageValidationTeachingTip.CloseButtonContent" xml:space="preserve">
     <value>OK</value>
   </data>
-  <data name="RemappingsPage_NewKeys" xml:space="preserve">
+  <data name="RemappingsPageNewKeysTextBlock.Text" xml:space="preserve">
     <value>New key(s)</value>
   </data>
   <data name="TextPageInstructionTextBlock.Text" xml:space="preserve">
@@ -279,19 +279,19 @@
   <data name="UrlPage_UrlVal" xml:space="preserve">
     <value>https://www.bing.com</value>
   </data>
-  <data name="InputControl_OriginalKeys" xml:space="preserve">
+  <data name="InputControlOriginalKeysTextBlock.Text" xml:space="preserve">
     <value>Original key(s)</value>
   </data>
-  <data name="InputControl_NewKeys" xml:space="preserve">
+  <data name="InputControlNewKeysTextBlock.Text" xml:space="preserve">
     <value>New key(s)</value>
   </data>
-  <data name="InputControl_AllAppsCheckboxText" xml:space="preserve">
+  <data name="InputControlAllAppsCheckBox.Content" xml:space="preserve">
     <value>Only apply this remapping to a specific application</value>
   </data>
-  <data name="InputControl_AllAppsTextboxPlaceholder" xml:space="preserve">
+  <data name="InputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
     <value>e.g.: outlook.exe</value>
   </data>
-  <data name="InputControl_AllAppsTextboxHeader" xml:space="preserve">
+  <data name="InputControlAllAppsTextBox.Header" xml:space="preserve">
     <value>Application name</value>
   </data>
   <data name="TextPageInputControlShortcutKeysTextBlock.Text" xml:space="preserve">
