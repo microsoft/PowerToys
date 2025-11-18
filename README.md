@@ -174,7 +174,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Peek
 - Fixed media files remaining locked after preview window closes. Thanks [@daverayment](https://github.com/daverayment)!
-- Added a command-line interface for file previewing. See the [Peek documentation](https://learn.microsoft.com/en-us/windows/powertoys/peek) for usage. Thanks [@prochan2](https://github.com/prochan2)!
+- Added a command-line interface for file previewing. See the [Peek documentation](https://learn.microsoft.com/windows/powertoys/peek) for usage. Thanks [@prochan2](https://github.com/prochan2)!
 
 ### PowerRename
 - PowerRename no longer crashes due to a missing resources file.
