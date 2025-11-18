@@ -24,6 +24,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class ZoomItViewModel : Observable
     {
+        private const string FormatGif = "GIF";
+        private const string FormatMp4 = "MP4";
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -648,6 +651,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _zoomItSettings.Properties.RecordScaling.Value = newValue;
                     OnPropertyChanged(nameof(RecordScalingIndex));
                     NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int RecordFormatIndex
+        {
+            get
+            {
+                if (_zoomItSettings.Properties.RecordFormat.Value == FormatGif)
+                {
+                    return 0;
+                }
+
+                if (_zoomItSettings.Properties.RecordFormat.Value == FormatMp4)
+                {
+                    return 1;
+                }
+
+                return 0;
+            }
+
+            set
+            {
+                int format = 0;
+                if (_zoomItSettings.Properties.RecordFormat.Value == FormatGif)
+                {
+                    format = 0;
+                }
+
+                if (_zoomItSettings.Properties.RecordFormat.Value == FormatMp4)
+                {
+                    format = 1;
+                }
+
+                if (format != value)
+                {
+                    _zoomItSettings.Properties.RecordFormat.Value = value == 0 ? FormatGif : FormatMp4;
+                    OnPropertyChanged(nameof(RecordFormatIndex));
+                    NotifySettingsChanged();
+
+                    // Reload settings to get the new format's scaling value
+                    var reloadedSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
+                    var reloaded = JsonSerializer.Deserialize<ZoomItSettings>(reloadedSettings, _serializerOptions);
+                    if (reloaded != null && reloaded.Properties != null)
+                    {
+                        _zoomItSettings.Properties.RecordScaling.Value = reloaded.Properties.RecordScaling.Value;
+                        OnPropertyChanged(nameof(RecordScalingIndex));
+                    }
                 }
             }
         }

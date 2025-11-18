@@ -196,10 +196,10 @@ public:
         m_enabled = true;
         Trace::EnableCursorWrap(true);
         
-        if (m_autoActivate)
-        {
-            StartMouseHook();
-        }
+        // Always start the mouse hook when the module is enabled
+        // This ensures cursor wrapping is active immediately after enabling
+        StartMouseHook();
+        Logger::info("CursorWrap enabled - mouse hook started");
     }
 
     // Disable the powertoy
@@ -208,6 +208,7 @@ public:
         m_enabled = false;
         Trace::EnableCursorWrap(false);
         StopMouseHook();
+        Logger::info("CursorWrap disabled - mouse hook stopped");
     }
 
     // Returns if the powertoys is enabled

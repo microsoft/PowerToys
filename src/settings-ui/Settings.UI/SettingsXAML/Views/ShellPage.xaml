@@ -285,6 +285,9 @@
                     AutomationProperties.AutomationId="InputOutputNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/InputOutput.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="KeyboardManagerNavigationItem"
@@ -299,7 +302,11 @@
                             x:Uid="Shell_MouseUtilities"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
                             AutomationProperties.AutomationId="MouseUtilitiesNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="MouseWithoutBordersNavigationItem"
                             x:Uid="Shell_MouseWithoutBorders"
