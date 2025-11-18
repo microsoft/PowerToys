@@ -94,7 +94,7 @@
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="dockVm:DockBandSettingsViewModel">
-                                <controls:SettingsCard Description="{x:Bind ProviderId, Mode=OneWay}" Header="{x:Bind Title, Mode=OneWay}">
+                                <controls:SettingsCard Description="{x:Bind Description, Mode=OneWay}" Header="{x:Bind Title, Mode=OneWay}">
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpControls:ContentIcon>
                                             <cpControls:ContentIcon.Content>
@@ -107,6 +107,17 @@
                                             </cpControls:ContentIcon.Content>
                                         </cpControls:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
+
+                                    <StackPanel
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                        <TextBlock VerticalAlignment="Center" Text="{x:Bind PinSide, Mode=OneWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
+                                            OffContent="Hide labels"
+                                            OnContent="Show Labels" />
+                                    </StackPanel>
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

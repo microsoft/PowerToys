@@ -168,21 +168,62 @@ public sealed partial class DockViewModel : IDisposable,
 // }
 public partial class DockBandSettingsViewModel : ObservableObject
 {
-    private readonly DockBandSettings _settingsModel;
+    private readonly SettingsModel _settingsModel;
+    private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
 
     public string Title => _adapter.Title;
 
+    public string Description
+    {
+        get
+        {
+            // TODO! we should have a way of saying "pinned from {extension}" vs
+            // just a band that's from an extension
+            return $"{_adapter.ExtensionName}";
+        }
+    }
+
     public string ProviderId => _adapter.CommandProviderId;
 
-    public IconInfoViewModel Icon => _adapter.ItemViewModel.Icon;
+    public IconInfoViewModel Icon => _adapter.IconViewModel;
 
-    public bool ShowLabels => _settingsModel.ShowLabels ?? true; // TODO! deal with the fact it might be null
-
-    public DockBandSettingsViewModel(DockBandSettings settingsModel, TopLevelViewModel adapter)
+    public bool ShowLabels
     {
-        _settingsModel = settingsModel;
+        get => _dockSettingsModel.ShowLabels ?? true; // TODO! deal with the fact it might be null
+        set => _dockSettingsModel.ShowLabels = value; // TODO! save settings
+    }
+
+    public string PinSide
+    {
+        // returns "Start", "End" or "None"
+        get
+        {
+            var dockSettings = _settingsModel.DockSettings;
+            var inStart = dockSettings.StartBands.Any(b => b.Id == _dockSettingsModel.Id);
+            if (inStart)
+            {
+                return "Start";
+            }
+
+            var inEnd = dockSettings.EndBands.Any(b => b.Id == _dockSettingsModel.Id);
+            if (inEnd)
+            {
+                return "End";
+            }
+
+            return "None";
+        }
+    }
+
+    public DockBandSettingsViewModel(
+        DockBandSettings dockSettingsModel,
+        TopLevelViewModel adapter,
+        SettingsModel settingsModel)
+    {
+        _dockSettingsModel = dockSettingsModel;
         _adapter = adapter;
+        _settingsModel = settingsModel;
     }
 }
 #pragma warning restore SA1402 // File may only contain a single type

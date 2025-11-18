@@ -11,16 +11,25 @@ namespace Microsoft.CmdPal.Core.Common.Helpers;
 
 public partial class WrappedDockItem : CommandItem
 {
-    public override string Title => string.Empty;
+    public override string Title => $"{_itemTitle} (Pinned)";
+
+    public override IIconInfo? Icon => _icon;
+
+    private readonly string _itemTitle;
+    private readonly IIconInfo? _icon;
 
     public WrappedDockItem(ICommand command)
     {
         Command = new WrappedDockList(command);
+        _itemTitle = command.Name;
+        _icon = command.Icon;
     }
 
     public WrappedDockItem(ICommandItem item, string id)
     {
         Command = new WrappedDockList(item, id);
+        _itemTitle = item.Title;
+        _icon = item.Icon;
     }
 }
 

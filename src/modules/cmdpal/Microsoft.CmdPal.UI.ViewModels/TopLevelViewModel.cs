@@ -48,18 +48,22 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public CommandPaletteHost ExtensionHost { get; private set; }
 
+    public string ExtensionName => ExtensionHost.Extension?.ExtensionDisplayName ?? "Built-in"; // TODO! loc
+
     public CommandViewModel CommandViewModel => _commandItemViewModel.Command;
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
     public string CommandProviderId => _commandProviderId;
 
+    public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
+
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
 
     public string Subtitle => _commandItemViewModel.Subtitle;
 
-    public IIconInfo Icon => _commandItemViewModel.Icon;
+    public IIconInfo Icon => (IIconInfo)IconViewModel;
 
     public IIconInfo InitialIcon => _initialIcon ?? _commandItemViewModel.Icon;
 
@@ -258,7 +262,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             return;
         }
 
-        _initialIcon = _commandItemViewModel.Icon;
+        _initialIcon = (IIconInfo?)_commandItemViewModel.Icon;
 
         if (raiseNotification)
         {
