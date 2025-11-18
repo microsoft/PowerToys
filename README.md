@@ -108,7 +108,7 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
- - Advanced Paste now supports multiple online and on-device AI model providers: Azure OpenAI, OpenAI, Google Gemini, Mistral, Foundry Local and ollama.
+ - Advanced Paste now supports multiple online and on-device AI model providers: Azure OpenAI, OpenAI, Google Gemini, Mistral, Foundry Local and Ollama.
  - Command Palette received extensive improvements including file search filters, better clipboard history metadata, context-menu styling, and dozens of bug fixes and enhancements.
  - PowerRename can now extract and use photo metadata (EXIF, XMP) in renaming patterns like `%Camera`, `%Lens`, and `%ExposureTime`.
 
@@ -116,61 +116,61 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Advanced Paste now lets you connect to multiple AI providers instead of being limited to a single OpenAI provider. See [Advanced Paste documentation](https://learn.microsoft.com/en-us/windows/powertoys/advanced-paste) for usage.
 
 ### Awake
- - The Awake countdown timer now stays accurate over long periods. Thanks [@daverayment](https://github.com/daverayment).
- - Fixed Awake context menu positioning. The fix removed the conversion of the mouse cursor from screen to client-window coordinates, instead using the raw screen coordinates returned by GetCursorPos; the context menu now appears at the correct screen position. Thanks [@lzandman](https://github.com/lzandman).
+ - The Awake countdown timer now stays accurate over long periods. Thanks [@daverayment](https://github.com/daverayment)!
+ - Fixed Awake context menu positioning. The fix removed the conversion of the mouse cursor from screen to client-window coordinates, instead using the raw screen coordinates returned by GetCursorPos; the context menu now appears at the correct screen position. Thanks [@lzandman](https://github.com/lzandman)!
 
 ### Command Palette
  - The search field in context menus now matches the look of the Command Palette, with a smoke backdrop and improved padding.
- - Fallback items such as math calculations or the Run command now appear in results more quickly. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Ensures the command bar updates correctly after navigating to another page and commands are displayed correctly. — Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - Fallback items such as math calculations or the Run command now appear in results more quickly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensures the command bar updates correctly after navigating to another page and commands are displayed correctly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - The Command Palette settings page has been reorganized. Activation-key options are grouped under an expander and extension settings are framed for improved readability.
- - When you modify a command, its alias, hotkey, and tags now update in the top-level list, keeping the displayed information in sync. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Press `Ctrl + ,` to open Command Palette settings from anywhere. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - You can use `Page Up` and `Page Down` to navigate the list while focus is in the search box. — Thanks [@samrueby](https://github.com/samrueby).
- - Fixed an issue where the search box could disappear when navigating pages. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Ensured search text is selected when *Go home when activated* and *Highlight search on activate* are both enabled. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Fixed an issue where Command Palette window occasionally appeared on the taskbar under certain Windows settings. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Ensures that labels and icons of list items and menu items update when they change. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Fixed visibility of list filters when navigating to a content page. — Thanks [@DevLGuilherme](https://github.com/DevLGuilherme).
- - Added search to the extension list and a link to extensions on the Microsoft Store. — Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - When you modify a command, its alias, hotkey, and tags now update in the top-level list, keeping the displayed information in sync. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Press `Ctrl + ,` to open Command Palette settings from anywhere. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - You can use `Page Up` and `Page Down` to navigate the list while focus is in the search box. Thanks [@samrueby](https://github.com/samrueby).
+ - Fixed an issue where the search box could disappear when navigating pages. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensured search text is selected when *Go home when activated* and *Highlight search on activate* are both enabled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed an issue where Command Palette window occasionally appeared on the taskbar under certain Windows settings. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensured that labels and icons of list items and menu items update when they change. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed visibility of list filters when navigating to a content page. Thanks [@DevLGuilherme](https://github.com/DevLGuilherme)!
+ - Added search to the extension list and a link to extensions on the Microsoft Store. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added options to open the Command Palette window at its last position or re-center it.
  - The Command Palette now remembers its window size after restarting.
- - Added a global error handler that logs fatal errors and provides feedback when unexpected failures force Command Palette to close. — Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - Added a global error handler that logs fatal errors and provides feedback when unexpected failures force Command Palette to close. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed forms and extension settings not showing on some machines due to a missing VC++ runtime.
- - Restored ranking of fallback commands for built-in extensions (Sleep, Shutdown, Windows settings, Web search, etc.). — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Improved and unified labels and texts across the application.
- - Maintainance: Resolved numerous build warnings in Command Palette projects; no user-visible impact. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Maintainance: Fixed a logging issue so exception messages are properly recorded instead of placeholder text, improving troubleshooting. — Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - Restored ranking of fallback commands for built-in extensions (Sleep, Shutdown, Windows settings, Web search, etc.). Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - Improved and unified labels and texts across the application!
+ - Maintainance: Resolved numerous build warnings in Command Palette projects; no user-visible impact. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Maintainance: Fixed a logging issue so exception messages are properly recorded instead of placeholder text, improving troubleshooting. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Command Palette Extensions
- - Bookmarks: Added hints about bookmark placeholders to the Add/Edit Bookmark form. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Bookmarks: Improved migration of bookmarks from older versions and fixed an issue where aliases or keyboard shortcuts could be lost after restart. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Clipboard history: Items shown in Command Palette’s clipboard history now include helpful metadata. For example, image items show dimensions, text files show names and sizes, web links include page titles, and text entries display word counts. — Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - Bookmarks: Added hints about bookmark placeholders to the Add/Edit Bookmark form. — Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Bookmarks: Improved migration of bookmarks from older versions and fixed an issue where aliases or keyboard shortcuts could be lost after restart. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Clipboard history: Items shown in Command Palette’s clipboard history now include helpful metadata. For example, image items show dimensions, text files show names and sizes, web links include page titles, and text entries display word counts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - File search: Added filter buttons to show *all items*, *files only*, or *folders only*. Selecting a filter adds `kind:folders` or `kind:not folders` to narrow results.
- - System commands: Replaced the `:red_circle:` placeholder with an actual red-circle emoji so the correct icon appears in the UI. — Thanks [@samrueby](https://github.com/samrueby).
- - WinGet: Search performance feels more responsive because typed input is now processed via a task queue rather than complex cancellation tokens.
- - Window Walker: UWP apps no longer show a "not responding" label when suspended. — Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Window Walker: Now displays the actual icon of each window rather than using the process icon, improving recognition of PWAs and Python GUIs. — Thanks [@Lee-WonJun](https://github.com/Lee-WonJun).
-- Windows Terminal profiles: Fixed a rare crash in the Windows Terminal extension when the `LOCALAPPDATA` environment variable was missing. The path is now retrieved via a reliable API. — Thanks [@jiripolasek](https://github.com/jiripolasek).
+ - System commands: Replaced the `:red_circle:` placeholder with an actual red-circle emoji so the correct icon appears in the UI. Thanks [@samrueby](https://github.com/samrueby).
+ - WinGet: Search performance feels more responsive because typed input is now processed via a task queue rather than complex cancellation tokens!
+ - Window Walker: UWP apps no longer show a "not responding" label when suspended. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Window Walker: Now displays the actual icon of each window rather than using the process icon, improving recognition of PWAs and Python GUIs. Thanks [@Lee-WonJun](https://github.com/Lee-WonJun)!
+- Windows Terminal profiles: Fixed a rare crash in the Windows Terminal extension when the `LOCALAPPDATA` environment variable was missing. The path is now retrieved via a reliable API. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Find My Mouse
  - Activating Find My Mouse no longer makes the cursor change to the busy (hourglass) icon or steals focus from your active application.
 
 ### Hosts File Editor
- - Added customizable backup settings allowing users to configure backup frequency, location, and auto-deletion policies. Thanks [@davidegiacometti](https://github.com/davidegiacometti).
+ - Added customizable backup settings allowing users to configure backup frequency, location, and auto-deletion policies. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Image Resizer
- - Fixed settings consistency during batch resize operations by capturing settings once before processing. Thanks [@daverayment](https://github.com/daverayment)
+ - Fixed settings consistency during batch resize operations by capturing settings once before processing. Thanks [@daverayment](https://github.com/daverayment)!
 
 ### Light Switch
 - Introduces new UI to allow users to manually enter their latitude and longitude in Sunrise to Sunset mode.
 - Refactored service with cleaner state management for stability.
 
 ### Mouse Pointer Crosshairs
- - Enabled switching between Mouse Pointer Crosshairs and Gliding Cursor modes. Thanks [@mikehall-ms](https://github.com/mikehall-ms).
+ - Enabled switching between Mouse Pointer Crosshairs and Gliding Cursor modes. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
 
 ### Mouse Without Borders
- - Added horizontal scrolling support. Thanks [@MasonBergstrom](https://github.com/MasonBergstrom).
+ - Added horizontal scrolling support. Thanks [@MasonBergstrom](https://github.com/MasonBergstrom)!
 
 ### Peek
 - Fixed media files remaining locked after preview window closes. Thanks [@daverayment](https://github.com/daverayment)!
@@ -178,19 +178,19 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### PowerRename
 - PowerRename no longer crashes due to a missing resources file.
-- Added photo metadata extraction support using EXIF and XMP for pattern-based renaming with camera info, GPS coordinates, and date taken.
+- Added photo metadata extraction support using EXIF and XMP for pattern-based renaming with camera info, GPS coordinates, and date taken. See [PowerRename Documentation](https://learn.microsoft.com/en-us/windows/powertoys/powerrename).
 
 ### PowerToys Run
- - Added retry logic with exponential backoff to handle DWM composition errors during theme changes. Thanks [@jiripolasek](https://github.com/jiripolasek).
- - Update OneNote png icons to new core10 design. Thanks [@trevorNgo](https://github.com/trevorNgo).
+ - Added retry logic with exponential backoff to handle DWM composition errors during theme changes. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Update OneNote png icons to new core10 design. Thanks [@trevorNgo](https://github.com/trevorNgo)!
 
  ### Quick Accent
- - Added diameter symbol (⌀) for Shift+O in Special Characters mode, thanks to [@anselumjuju](https://github.com/anselumjuju).
+ - Added diameter symbol (⌀) for Shift+O in Special Characters mode, thanks to [@anselumjuju](https://github.com/anselumjuju)!
 
 ### Zoomit
- - Smooth out zoom-animation in ZoomIt by coalescing mouse-move and timer events, thanks to [@foxmsft](https://github.com/foxmsft).
- - Enable GIF support for ZoomIt, thanks to [@MarioHewardt](https://github.com/MarioHewardt).
- - Fix spelling mistakes, and refactored some literal strings to string constants, thanks to [@lzandman](https://github.com/lzandman).
+ - Smooth out zoom-animation in ZoomIt by coalescing mouse-move and timer events, thanks to [@foxmsft](https://github.com/foxmsft)!
+ - Enable GIF support for ZoomIt, thanks to [@MarioHewardt](https://github.com/MarioHewardt)!
+ - Fix spelling mistakes, and refactored some literal strings to string constants, thanks to [@lzandman](https://github.com/lzandman)!
 
 ### Settings
 - Fixed title bar overlapping issue at smaller window sizes.
@@ -250,4 +250,3 @@ The application logs basic diagnostic data (telemetry). For more privacy informa
 [privacy-link]: http://go.microsoft.com/fwlink/?LinkId=521839 
 [loc-bug]: https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=&template=translation_issue.md&title= 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
-
