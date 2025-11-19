@@ -17,6 +17,7 @@ namespace PowerDisplay.Native.DDC
     {
         // Mapping: deviceKey -> physical handle
         private readonly Dictionary<string, IntPtr> _deviceKeyToHandleMap = new();
+        private readonly object _lock = new();
         private bool _disposed;
 
         /// <summary>
@@ -24,11 +25,14 @@ namespace PowerDisplay.Native.DDC
         /// </summary>
         public IntPtr GetPhysicalHandle(Monitor monitor)
         {
-            // Primary lookup: use stable deviceKey from EnumDisplayDevices
-            if (!string.IsNullOrEmpty(monitor.DeviceKey) &&
-                _deviceKeyToHandleMap.TryGetValue(monitor.DeviceKey, out var handle))
+            lock (_lock)
             {
-                return handle;
+                // Primary lookup: use stable deviceKey from EnumDisplayDevices
+                if (!string.IsNullOrEmpty(monitor.DeviceKey) &&
+                    _deviceKeyToHandleMap.TryGetValue(monitor.DeviceKey, out var handle))
+                {
+                    return handle;
+                }
             }
 
             // Fallback: use direct handle from monitor object
@@ -51,18 +55,21 @@ namespace PowerDisplay.Native.DDC
                 return (newHandle, false);
             }
 
-            // Try to reuse existing handle if it's still valid
-            if (_deviceKeyToHandleMap.TryGetValue(deviceKey, out var existingHandle) &&
-                existingHandle != IntPtr.Zero &&
-                DdcCiNative.ValidateDdcCiConnection(existingHandle))
+            lock (_lock)
             {
-                // Destroy the newly created handle since we're using the old one
-                if (newHandle != existingHandle && newHandle != IntPtr.Zero)
+                // Try to reuse existing handle if it's still valid
+                if (_deviceKeyToHandleMap.TryGetValue(deviceKey, out var existingHandle) &&
+                    existingHandle != IntPtr.Zero &&
+                    DdcCiNative.ValidateDdcCiConnection(existingHandle))
                 {
-                    DestroyPhysicalMonitor(newHandle);
-                }
+                    // Destroy the newly created handle since we're using the old one
+                    if (newHandle != existingHandle && newHandle != IntPtr.Zero)
+                    {
+                        DestroyPhysicalMonitor(newHandle);
+                    }
 
-                return (existingHandle, true);
+                    return (existingHandle, true);
+                }
             }
 
             return (newHandle, false);
@@ -73,14 +80,17 @@ namespace PowerDisplay.Native.DDC
         /// </summary>
         public void UpdateHandleMap(Dictionary<string, IntPtr> newHandleMap)
         {
-            // Clean up unused handles before updating
-            CleanupUnusedHandles(newHandleMap);
-
-            // Update the device key map
-            _deviceKeyToHandleMap.Clear();
-            foreach (var kvp in newHandleMap)
+            lock (_lock)
             {
-                _deviceKeyToHandleMap[kvp.Key] = kvp.Value;
+                // Clean up unused handles before updating
+                CleanupUnusedHandles(newHandleMap);
+
+                // Update the device key map
+                _deviceKeyToHandleMap.Clear();
+                foreach (var kvp in newHandleMap)
+                {
+                    _deviceKeyToHandleMap[kvp.Key] = kvp.Value;
+                }
             }
         }
 

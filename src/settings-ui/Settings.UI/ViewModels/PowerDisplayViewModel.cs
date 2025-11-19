@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -72,7 +73,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
                     ReloadMonitorsFromSettings();
-                });
+                },
+                _cancellationTokenSource.Token);
         }
 
         private void InitializeEnabledValue()
@@ -284,6 +286,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
 
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            GC.SuppressFinalize(this);
+
             base.Dispose();
         }
 
@@ -447,6 +453,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public void RefreshEnabledState()
         {

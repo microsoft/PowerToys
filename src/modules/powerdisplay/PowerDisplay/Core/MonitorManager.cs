@@ -104,9 +104,12 @@ namespace PowerDisplay.Core
                 var results = await Task.WhenAll(discoveryTasks);
 
                 // Collect all discovered monitors
+                var allMonitors = new List<Monitor>();
+
                 foreach (var (controller, monitors) in results)
                 {
-                    foreach (var monitor in monitors)
+                    // Initialize monitors in parallel
+                    var initTasks = monitors.Select(async monitor =>
                     {
                         // Verify if monitor can be controlled
                         if (await controller.CanControlMonitorAsync(monitor, cancellationToken))
@@ -165,9 +168,14 @@ namespace PowerDisplay.Core
                                 }
                             }
 
-                            newMonitors.Add(monitor);
+                            return monitor;
                         }
-                    }
+
+                        return null;
+                    });
+
+                    var initializedMonitors = await Task.WhenAll(initTasks);
+                    newMonitors.AddRange(initializedMonitors.Where(m => m != null));
                 }
 
                 // Update monitor list

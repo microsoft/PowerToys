@@ -19,15 +19,16 @@ namespace PowerDisplay.Helpers
         /// </summary>
         /// <param name="eventName">Name of the Windows Event to wait for</param>
         /// <param name="callback">Callback to invoke when event is signaled</param>
-        public static void WaitForEventLoop(string eventName, Action callback)
+        /// <param name="cancellationToken">Token to cancel the wait loop</param>
+        public static void WaitForEventLoop(string eventName, Action callback, CancellationToken cancellationToken)
         {
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             var t = new Thread(() =>
             {
-                var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
-                while (true)
+                using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (eventHandle.WaitOne())
+                    if (eventHandle.WaitOne(500))
                     {
                         dispatcherQueue.TryEnqueue(() => callback());
                     }
