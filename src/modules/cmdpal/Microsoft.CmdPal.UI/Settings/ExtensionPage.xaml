@@ -243,14 +243,14 @@
             Width="420"
             MinWidth="420"
             PrimaryButtonText="OK">
-            <Grid>
+            <Grid Width="420" MinWidth="420">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="You can rank fallbacks commands to blabla"
+                    Text="Drag items to set which fallback commands run first; commands at the top take priority."
                     TextWrapping="Wrap" />
                 <cpcontrols:FallbackRanker
                     x:Name="FallbackRanker"

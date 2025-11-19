@@ -14,7 +14,7 @@
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
-    <Grid MinWidth="360">
+    <Grid>
         <ListView
             Padding="12,0,24,0"
             AllowDrop="True"
@@ -25,26 +25,36 @@
             SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:FallbackSettingsViewModel">
-                    <controls:SettingsCard
-                        MinHeight="0"
-                        Padding="8"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        Header="{x:Bind DisplayName}"
-                        ToolTipService.ToolTip="{x:Bind Id}">
-                        <controls:SettingsCard.HeaderIcon>
-                            <cpcontrols:ContentIcon>
-                                <cpcontrols:ContentIcon.Content>
-                                    <cpcontrols:IconBox
-                                        Width="20"
-                                        Height="20"
-                                        AutomationProperties.AccessibilityView="Raw"
-                                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
-                                </cpcontrols:ContentIcon.Content>
-                            </cpcontrols:ContentIcon>
-                        </controls:SettingsCard.HeaderIcon>
-                    </controls:SettingsCard>
+                    <Grid Padding="4,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Height="20">
+                            <PathIcon Data="M15.5 17C16.3284 17 17 17.6716 17 18.5C17 19.3284 16.3284 20 15.5 20C14.6716 20 14 19.3284 14 18.5C14 17.6716 14.6716 17 15.5 17ZM8.5 17C9.32843 17 10 17.6716 10 18.5C10 19.3284 9.32843 20 8.5 20C7.67157 20 7 19.3284 7 18.5C7 17.6716 7.67157 17 8.5 17ZM15.5 10C16.3284 10 17 10.6716 17 11.5C17 12.3284 16.3284 13 15.5 13C14.6716 13 14 12.3284 14 11.5C14 10.6716 14.6716 10 15.5 10ZM8.5 10C9.32843 10 10 10.6716 10 11.5C10 12.3284 9.32843 13 8.5 13C7.67157 13 7 12.3284 7 11.5C7 10.6716 7.67157 10 8.5 10ZM15.5 3C16.3284 3 17 3.67157 17 4.5C17 5.32843 16.3284 6 15.5 6C14.6716 6 14 5.32843 14 4.5C14 3.67157 14.6716 3 15.5 3ZM8.5 3C9.32843 3 10 3.67157 10 4.5C10 5.32843 9.32843 6 8.5 6C7.67157 6 7 5.32843 7 4.5C7 3.67157 7.67157 3 8.5 3Z" />
+                        </Viewbox>
+                        <controls:SettingsCard
+                            Grid.Column="1"
+                            MinHeight="0"
+                            Padding="8"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            Header="{x:Bind DisplayName}"
+                            ToolTipService.ToolTip="{x:Bind Id}">
+                            <controls:SettingsCard.HeaderIcon>
+                                <cpcontrols:ContentIcon>
+                                    <cpcontrols:ContentIcon.Content>
+                                        <cpcontrols:IconBox
+                                            Width="20"
+                                            Height="20"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                    </cpcontrols:ContentIcon.Content>
+                                </cpcontrols:ContentIcon>
+                            </controls:SettingsCard.HeaderIcon>
+                        </controls:SettingsCard>
+                    </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
             <!--  Customize Size of Item Container from ListView  -->
