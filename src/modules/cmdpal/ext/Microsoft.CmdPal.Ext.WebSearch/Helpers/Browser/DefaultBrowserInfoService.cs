@@ -49,18 +49,19 @@ internal class DefaultBrowserInfoService : IBrowserInfoService
     /// Updates only if at least more than 3000ms has passed since the last update, to avoid multiple calls to <see cref="UpdateCore"/>.
     /// (because of multiple plugins calling update at the same time.)
     /// </summary>
-    public void UpdateIfTimePassed()
+    private void UpdateIfTimePassed()
     {
-        var curTickCount = Environment.TickCount64;
-        if (curTickCount - _lastUpdateTickCount < UpdateTimeout && _defaultBrowser != null)
-        {
-            return;
-        }
-
-        _lastUpdateTickCount = curTickCount;
         lock (_updateLock)
         {
-            _defaultBrowser = UpdateCore();
+            var curTickCount = Environment.TickCount64;
+            if (curTickCount - _lastUpdateTickCount < UpdateTimeout && _defaultBrowser != null)
+            {
+                return;
+            }
+
+            var newDefaultBrowser = UpdateCore();
+            _defaultBrowser = newDefaultBrowser;
+            _lastUpdateTickCount = curTickCount;
         }
     }
 
