@@ -355,11 +355,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Trigger PowerDisplay.exe to apply color temperature from settings file
+        /// Trigger PowerDisplay.exe to apply color temperature to a specific monitor
         /// Called after user confirms color temperature change in Settings UI
         /// </summary>
-        public void TriggerApplyColorTemperature()
+        /// <param name="monitorInternalName">Internal name (ID) of the monitor</param>
+        /// <param name="colorTemperature">Color temperature value to apply</param>
+        public void ApplyColorTemperatureToMonitor(string monitorInternalName, int colorTemperature)
         {
+            // Set the pending operation in settings
+            _settings.Properties.PendingColorTemperatureOperation = new ColorTemperatureOperation
+            {
+                MonitorId = monitorInternalName,
+                ColorTemperature = colorTemperature,
+            };
+
+            // Save settings to persist the operation
+            SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);
+
+            // Send IPC message to trigger PowerDisplay to process the operation
             var actionMessage = new PowerDisplayActionMessage
             {
                 Action = new PowerDisplayActionMessage.ActionData
@@ -368,6 +381,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         ActionName = "ApplyColorTemperature",
                         Value = string.Empty,
+                        MonitorId = monitorInternalName,
+                        ColorTemperature = colorTemperature,
                     },
                 },
             };

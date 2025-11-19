@@ -21,6 +21,7 @@ namespace PowerDisplay.Serialization
     [JsonSerializable(typeof(MonitorStateFile))]
     [JsonSerializable(typeof(MonitorStateEntry))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
+    [JsonSerializable(typeof(ColorTemperatureOperation))]
 
     // MonitorInfo and related types (Settings.UI.Library)
     [JsonSerializable(typeof(MonitorInfo))]

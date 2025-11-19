@@ -481,49 +481,47 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Apply color temperature from settings (triggered by custom action from Settings UI)
-    /// This is called when user explicitly changes color temperature in Settings UI,
-    /// NOT when other settings change. Reads current settings and applies only color temperature.
+    /// Apply color temperature to a specific monitor (triggered by custom action from Settings UI)
+    /// This is called when user explicitly changes color temperature in Settings UI.
+    /// Reads the pending operation from settings and applies it directly.
     /// </summary>
     public async void ApplyColorTemperatureFromSettings()
     {
         try
         {
-            Logger.LogInfo("[Settings] Processing color temperature update from Settings UI");
-
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
-            var updateTasks = new List<Task>();
 
-            foreach (var monitorVm in Monitors)
+            // Check if there's a pending color temperature operation
+            var pendingOp = settings.Properties.PendingColorTemperatureOperation;
+
+            if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.MonitorId))
             {
-                var hardwareId = monitorVm.HardwareId;
-                var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m => m.HardwareId == hardwareId);
+                Logger.LogInfo($"[Settings] Processing pending color temperature operation: Monitor '{pendingOp.MonitorId}' -> 0x{pendingOp.ColorTemperature:X2}");
 
-                if (monitorSettings == null)
+                // Find the monitor by internal name (ID)
+                var monitorVm = Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
+
+                if (monitorVm != null)
                 {
-                    continue;
+                    // Apply color temperature directly
+                    await ApplyColorTemperatureAsync(monitorVm, pendingOp.ColorTemperature);
+                    Logger.LogInfo($"[Settings] Successfully applied color temperature to monitor '{pendingOp.MonitorId}'");
+                }
+                else
+                {
+                    Logger.LogWarning($"[Settings] Monitor not found: {pendingOp.MonitorId}");
                 }
 
-                // Apply color temperature if changed
-                if (monitorSettings.ColorTemperature > 0 &&
-                    monitorSettings.ColorTemperature != monitorVm.ColorTemperature)
-                {
-                    Logger.LogInfo($"[Settings] Applying color temperature for {hardwareId}: 0x{monitorSettings.ColorTemperature:X2}");
-
-                    var task = ApplyColorTemperatureAsync(monitorVm, monitorSettings.ColorTemperature);
-                    updateTasks.Add(task);
-                }
-            }
-
-            // Wait for all updates to complete
-            if (updateTasks.Count > 0)
-            {
-                await Task.WhenAll(updateTasks);
-                Logger.LogInfo($"[Settings] Completed {updateTasks.Count} color temperature updates");
+                // Clear the pending operation
+                settings.Properties.PendingColorTemperatureOperation = null;
+                _settingsUtils.SaveSettings(
+                    System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                    PowerDisplaySettings.ModuleName);
+                Logger.LogInfo("[Settings] Cleared pending color temperature operation");
             }
             else
             {
-                Logger.LogInfo("[Settings] No color temperature changes detected");
+                Logger.LogInfo("[Settings] No pending color temperature operation");
             }
         }
         catch (Exception ex)

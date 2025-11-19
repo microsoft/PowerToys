@@ -139,10 +139,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     monitor.ColorTemperature = newValue.Value;
                     _previousColorTemperatureValues[monitor.HardwareId] = newValue.Value;
 
-                    // Trigger custom action to apply color temperature to hardware
-                    // This is separate from the settings save to avoid unwanted hardware updates
-                    // when other settings (like RestoreSettingsOnStartup) change
-                    ViewModel.TriggerApplyColorTemperature();
+                    // Send IPC message to PowerDisplay with monitor ID and new color temperature value
+                    // PowerDisplay will apply it directly to the specified monitor only
+                    ViewModel.ApplyColorTemperatureToMonitor(monitor.InternalName, newValue.Value);
                 }
                 else
                 {

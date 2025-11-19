@@ -35,5 +35,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("restore_settings_on_startup")]
         public bool RestoreSettingsOnStartup { get; set; }
+
+        /// <summary>
+        /// Pending color temperature operation from Settings UI.
+        /// This is cleared after PowerDisplay processes it.
+        /// </summary>
+        [JsonPropertyName("pending_color_temperature_operation")]
+        public ColorTemperatureOperation PendingColorTemperatureOperation { get; set; }
     }
 }
