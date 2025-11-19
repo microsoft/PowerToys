@@ -1,7 +1,7 @@
 # TEMPLATE: Extension EXE Installer Build and Release Workflow
 # 
 # To use this template for a new extension:
-# 1. Copy this file to a new workflow file (e.g., release-myextension-exe.yml)
+# 1. Copy this file to a new workflow file (e.g., release-extension-exe.yml)
 # 2. Update Global constants with your data:
 # - GITHUB_REPO_URL with your GitHub repository URL (e.g., https://github.com/yourusername/YourRepository)
 # - DISPLAY_NAME with your display name (e.g., My Extension)
