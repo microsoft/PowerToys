@@ -62,6 +62,12 @@ namespace Peek.UI
         [ObservableProperty]
         private IFileSystemItem? _currentItem;
 
+        /// <summary>
+        /// Work around missing navigation when peeking from CLI.
+        /// TODO: Implement navigation when peeking from CLI.
+        /// </summary>
+        private bool _isFromCli;
+
         partial void OnCurrentItemChanged(IFileSystemItem? value)
         {
             WindowTitle = value != null
@@ -129,7 +135,24 @@ namespace Peek.UI
             NavigationThrottleTimer.Interval = TimeSpan.FromMilliseconds(NavigationThrottleDelayMs);
         }
 
-        public void Initialize(HWND foregroundWindowHandle)
+        public void Initialize(SelectedItem selectedItem)
+        {
+            switch (selectedItem)
+            {
+                case SelectedItemByPath selectedItemByPath:
+                    InitializeFromCli(selectedItemByPath.Path);
+                    break;
+
+                case SelectedItemByWindowHandle selectedItemByWindowHandle:
+                    InitializeFromExplorer(selectedItemByWindowHandle.WindowHandle);
+                    break;
+
+                default:
+                    throw new NotImplementedException($"Invalid type of selected item: '{selectedItem.GetType().FullName}'");
+            }
+        }
+
+        private void InitializeFromExplorer(HWND foregroundWindowHandle)
         {
             try
             {
@@ -141,8 +164,18 @@ namespace Peek.UI
             }
 
             _currentIndex = DisplayIndex = 0;
+            _isFromCli = false;
 
             CurrentItem = (Items != null && Items.Count > 0) ? Items[0] : null;
+        }
+
+        private void InitializeFromCli(string path)
+        {
+            // TODO: implement navigation
+            _isFromCli = true;
+            Items = null;
+            _currentIndex = DisplayIndex = 0;
+            CurrentItem = new FileItem(path, Path.GetFileName(path));
         }
 
         public void Uninitialize()
@@ -153,6 +186,7 @@ namespace Peek.UI
             Items = null;
             _navigationDirection = NavigationDirection.Forwards;
             IsErrorVisible = false;
+            _isFromCli = false;
         }
 
         public void AttemptPreviousNavigation() => Navigate(NavigationDirection.Backwards);
@@ -162,6 +196,12 @@ namespace Peek.UI
         private void Navigate(NavigationDirection direction, bool isAfterDelete = false)
         {
             if (NavigationThrottleTimer.IsEnabled)
+            {
+                return;
+            }
+
+            // TODO: implement navigation.
+            if (_isFromCli)
             {
                 return;
             }

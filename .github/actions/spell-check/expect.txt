@@ -22,6 +22,7 @@ ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
+adjacents
 ADMINS
 adml
 admx
@@ -34,6 +35,7 @@ AFX
 AGGREGATABLE
 AHK
 AHybrid
+AIUI
 akv
 ALarger
 ALIGNRIGHT
@@ -63,6 +65,7 @@ APIIs
 Apm
 APPBARDATA
 APPEXECLINK
+appext
 APPLICATIONFRAMEHOST
 appmanifest
 APPMODEL
@@ -98,7 +101,6 @@ ATX
 ATRIOX
 aumid
 authenticode
-Authenticode
 AUTOBUDDY
 AUTOCHECKBOX
 AUTOHIDE
@@ -112,6 +114,9 @@ AValid
 AWAYMODE
 azcliversion
 azman
+azureaiinference
+azureinference
+azureopenai
 bbwe
 BCIE
 bck
@@ -136,7 +141,7 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-Blt
+blt
 BLURBEHIND
 BLURREGION
 bmi
@@ -182,6 +187,7 @@ CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
 CAtl
+CBN
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -204,6 +210,7 @@ CIBUILD
 cidl
 CIELCh
 cim
+claude
 CImage
 cla
 CLASSDC
@@ -236,6 +243,7 @@ CODENAME
 codereview
 Codespaces
 Coen
+cognitiveservices
 COINIT
 colid
 colorconv
@@ -250,6 +258,7 @@ cominterop
 commandnotfound
 commandpalette
 compmgmt
+COMPOSITIONDISABLED
 COMPOSITIONFULL
 CONFIGW
 CONFLICTINGMODIFIERKEY
@@ -306,6 +315,7 @@ CURRENTDIR
 CURSORINFO
 cursorpos
 CURSORSHOWING
+CURSORWRAP
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -405,6 +415,9 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downsampled
+downsampling
+Downsampled
 downscale
 DPICHANGED
 DPIs
@@ -420,7 +433,7 @@ DROPFILES
 DSTINVERT
 DString
 DSVG
-DTo
+dto
 DUMMYUNIONNAME
 dutil
 DVASPECT
@@ -454,7 +467,6 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
-ekus
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -551,6 +563,7 @@ FIXEDSYS
 flac
 flyouts
 FMask
+foundrylocal
 fmtid
 FOF
 FOFX
@@ -589,6 +602,7 @@ getfilesiginforedist
 geolocator
 GETHOTKEY
 GETICON
+GETLBTEXT
 GETMINMAXINFO
 GETNONCLIENTMETRICS
 GETPROPERTYSTOREFLAGS
@@ -596,6 +610,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+GIFs
 gitmodules
 GHND
 GMEM
@@ -606,6 +621,7 @@ GPOCA
 gpp
 gpu
 gradians
+grctlext
 Gridcustomlayout
 GSM
 gtm
@@ -615,6 +631,8 @@ GValue
 gwl
 GWLP
 GWLSTYLE
+googleai
+googlegemini
 hangeul
 Hanzi
 Hardlines
@@ -1136,10 +1154,10 @@ NONCLIENTMETRICSW
 NONELEVATED
 nonspace
 nonstd
-nullrefs
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
+NPU
 NOREDIRECTIONBITMAP
 NOREDRAW
 NOREMOVE
@@ -1175,8 +1193,8 @@ ntfs
 NTSTATUS
 NTSYSAPI
 NULLCURSOR
-nullref
 nullonfailure
+nullref
 numberbox
 nwc
 ocr
@@ -1199,6 +1217,9 @@ opencode
 OPENFILENAME
 opensource
 openxmlformats
+ollama
+Olllama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1388,6 +1409,8 @@ pwsz
 pwtd
 QDC
 qit
+QNN
+Qualcomm
 QITAB
 QITABENT
 qoi
@@ -1850,6 +1873,7 @@ UPDATENOW
 UPDATEREGISTRY
 updown
 UPGRADINGPRODUCTCODE
+upscaling
 Uptool
 urld
 Usb
@@ -1936,6 +1960,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WCT
+WCRAPI
 WDA
 wdm
 wdp
@@ -1979,6 +2004,8 @@ WINL
 winlogon
 winmd
 WINNT
+windowsml
+winml
 winres
 winrt
 winsdk

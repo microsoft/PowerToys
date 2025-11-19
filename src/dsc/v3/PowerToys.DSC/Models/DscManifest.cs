@@ -13,7 +13,7 @@ namespace PowerToys.DSC.Models;
 public sealed class DscManifest
 {
     private const string Schema = "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.vscode.json";
-    private const string Executable = @"PowerToys.DSC.exe";
+    private const string Executable = @"..\PowerToys.DSC.exe";
 
     private readonly string _type;
     private readonly string _version;

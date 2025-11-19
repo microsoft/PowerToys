@@ -68,7 +68,6 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         _noSearchEmptyContent = new CommandItem(new NoOpCommand())
         {
             Icon = Icon,
-            Title = Resources.Indexer_Subtitle,
             Subtitle = Resources.Indexer_NoSearchQueryMessageTip,
         };
 

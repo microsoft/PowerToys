@@ -13,6 +13,12 @@ using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
+    public enum DashboardSortOrder
+    {
+        Alphabetical,
+        ByStatus,
+    }
+
     public class GeneralSettings : ISettingsConfig
     {
         // Gets or sets a value indicating whether run powertoys on start-up.
@@ -76,6 +82,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enable_experimentation")]
         public bool EnableExperimentation { get; set; }
 
+        [JsonPropertyName("dashboard_sort_order")]
+        public DashboardSortOrder DashboardSortOrder { get; set; }
+
         [JsonPropertyName("ignored_conflict_properties")]
         public ShortcutConflictProperties IgnoredConflictProperties { get; set; }
 
@@ -89,6 +98,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = false;
             EnableExperimentation = true;
+            DashboardSortOrder = DashboardSortOrder.Alphabetical;
             Theme = "system";
             SystemTheme = "light";
             try
