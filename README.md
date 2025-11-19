@@ -163,7 +163,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Fixed settings consistency during batch resize operations by capturing settings once before processing. Thanks [@daverayment](https://github.com/daverayment)!
 
 ### Light Switch
-- Introduces new UI to allow users to manually enter their latitude and longitude in Sunrise to Sunset mode.
+- Introduced new UI to allow users to manually enter their latitude and longitude in Sunrise to Sunset mode.
 - Refactored service with cleaner state management for stability.
 - Removed logs from every tick, only logging key events to largely reduce log size.
 
