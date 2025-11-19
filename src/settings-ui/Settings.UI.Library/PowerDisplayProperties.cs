@@ -19,7 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             BrightnessUpdateRate = "1s";
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = true;
-            CurrentProfile = "Custom";
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
@@ -36,12 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("restore_settings_on_startup")]
         public bool RestoreSettingsOnStartup { get; set; }
-
-        /// <summary>
-        /// Current active profile name (e.g., "Custom", "Profile1", "Profile2")
-        /// </summary>
-        [JsonPropertyName("current_profile")]
-        public string CurrentProfile { get; set; }
 
         /// <summary>
         /// Pending color temperature operation from Settings UI.

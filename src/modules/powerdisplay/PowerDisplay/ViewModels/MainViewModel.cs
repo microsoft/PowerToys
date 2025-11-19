@@ -17,6 +17,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using PowerDisplay.Commands;
+using PowerDisplay.Configuration;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Core.Models;
@@ -555,9 +556,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     // Apply profile settings to monitors
                     await ApplyProfileAsync(pendingOp.ProfileName, pendingOp.MonitorSettings);
 
-                    // Update current profile in profiles.json
-                    _profileManager.SetCurrentProfile(pendingOp.ProfileName);
-
+                    // Note: We no longer track "current profile" - profiles are just templates
                     Logger.LogInfo($"[Profile] Successfully applied profile '{pendingOp.ProfileName}'");
                 }
                 else
@@ -640,56 +639,14 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Called when user modifies monitor parameters through PowerDisplay UI
-    /// Switches to Custom profile if currently on a non-Custom profile
+    /// Note: Profiles are now templates, not states. Parameter changes are automatically
+    /// saved to monitor_state.json without any profile state tracking.
     /// </summary>
     public void OnMonitorParameterChanged(string hardwareId, string propertyName, int value)
     {
-        try
-        {
-            // Check if we're currently on a non-Custom profile
-            if (_profileManager.IsOnNonCustomProfile())
-            {
-                var currentProfileName = _profileManager.GetCurrentProfileName();
-                Logger.LogInfo($"[Profile] Parameter changed while on profile '{currentProfileName}', switching to Custom");
-
-                // Create Custom profile from current state
-                var customSettings = new List<ProfileMonitorSetting>();
-
-                foreach (var monitorVm in Monitors)
-                {
-                    var setting = new ProfileMonitorSetting(
-                        monitorVm.HardwareId,
-                        monitorVm.Brightness,
-                        monitorVm.ColorTemperature,
-                        monitorVm.ShowContrast ? monitorVm.Contrast : null,
-                        monitorVm.ShowVolume ? monitorVm.Volume : null);
-
-                    customSettings.Add(setting);
-                }
-
-                // Save as Custom profile
-                _profileManager.CreateCustomProfileFromCurrent(customSettings);
-
-                // Set current profile to Custom
-                _profileManager.SetCurrentProfile(PowerDisplayProfiles.CustomProfileName);
-
-                // Update settings.json to reflect Custom profile
-                var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-                settings.Properties.CurrentProfile = PowerDisplayProfiles.CustomProfileName;
-                _settingsUtils.SaveSettings(
-                    System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
-                    PowerDisplaySettings.ModuleName);
-
-                Logger.LogInfo("[Profile] Switched to Custom profile");
-
-                // Notify Settings UI to refresh
-                NotifySettingsUIRefresh();
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[Profile] Failed to handle parameter change: {ex.Message}");
-        }
+        // Parameters are already saved to monitor_state.json via SaveMonitorsToSettings
+        // No profile state management needed - profiles are just quick-apply templates
+        Logger.LogDebug($"[Profile] Parameter '{propertyName}' changed for monitor '{hardwareId}' to {value}");
     }
 
     /// <summary>
@@ -821,35 +778,8 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             // Read current settings
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
 
-            // Check if we should apply a profile on startup
-            var currentProfileName = _profileManager.GetCurrentProfileName();
-            if (!string.IsNullOrEmpty(currentProfileName) &&
-                !currentProfileName.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase))
-            {
-                Logger.LogInfo($"[Startup] Applying saved profile: {currentProfileName}");
-
-                var currentProfile = _profileManager.GetCurrentProfile();
-                if (currentProfile != null && currentProfile.IsValid())
-                {
-                    // Wait for color temperature initialization if needed
-                    if (colorTempInitTasks != null && colorTempInitTasks.Count > 0)
-                    {
-                        await Task.WhenAll(colorTempInitTasks);
-                    }
-
-                    // Apply profile settings
-                    await ApplyProfileAsync(currentProfileName, currentProfile.MonitorSettings);
-
-                    StatusText = $"Profile '{currentProfileName}' applied";
-                    IsLoading = false;
-                    return;
-                }
-                else
-                {
-                    Logger.LogWarning($"[Startup] Profile '{currentProfileName}' not found or invalid, falling back to saved state");
-                }
-            }
-
+            // Note: Profiles are now quick-apply templates, not startup states
+            // We only restore from monitor_state.json, not from profiles
             if (settings.Properties.RestoreSettingsOnStartup)
             {
                 // Restore saved settings from configuration file
@@ -1002,11 +932,11 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             if (monitorVm != null)
             {
                 // Apply default values
-                monitorVm.Brightness = 30;
+                monitorVm.Brightness = AppConstants.MonitorDefaults.DefaultBrightness;
 
                 // ColorTemperature is now read-only in flyout UI - controlled via Settings UI only
-                monitorVm.Contrast = 50;
-                monitorVm.Volume = 50;
+                monitorVm.Contrast = AppConstants.MonitorDefaults.DefaultContrast;
+                monitorVm.Volume = AppConstants.MonitorDefaults.DefaultVolume;
 
                 StatusText = $"Monitor {monitorVm.Name} reset to default values";
             }

@@ -54,8 +54,11 @@ namespace PowerDisplay.Helpers
 
                         if (profiles != null)
                         {
+                            // Clean up any legacy Custom profiles
+                            profiles.Profiles.RemoveAll(p => p.Name.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase));
+
                             _cachedProfiles = profiles;
-                            Logger.LogInfo($"Loaded {profiles.Profiles.Count} profiles, current: {profiles.CurrentProfile}");
+                            Logger.LogInfo($"Loaded {profiles.Profiles.Count} profiles");
                             return profiles;
                         }
                     }
@@ -82,73 +85,20 @@ namespace PowerDisplay.Helpers
             {
                 try
                 {
+                    // Clean up any Custom profiles before saving
+                    profiles.Profiles.RemoveAll(p => p.Name.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase));
+
                     profiles.LastUpdated = DateTime.UtcNow;
                     var json = JsonSerializer.Serialize(profiles, AppJsonContext.Default.PowerDisplayProfiles);
                     File.WriteAllText(_profilesFilePath, json);
                     _cachedProfiles = profiles;
 
-                    Logger.LogInfo($"Saved {profiles.Profiles.Count} profiles, current: {profiles.CurrentProfile}");
+                    Logger.LogInfo($"Saved {profiles.Profiles.Count} profiles");
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError($"Failed to save profiles: {ex.Message}");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets the currently active profile
-        /// </summary>
-        public PowerDisplayProfile? GetCurrentProfile()
-        {
-            var profiles = LoadProfiles();
-            return profiles.GetCurrentProfile();
-        }
-
-        /// <summary>
-        /// Sets the current profile by name
-        /// </summary>
-        public void SetCurrentProfile(string profileName)
-        {
-            lock (_lock)
-            {
-                var profiles = LoadProfiles();
-
-                // Validate profile exists (unless it's Custom)
-                if (!profileName.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase))
-                {
-                    var profile = profiles.GetProfile(profileName);
-                    if (profile == null)
-                    {
-                        Logger.LogWarning($"Cannot set current profile: '{profileName}' not found");
-                        return;
-                    }
-                }
-
-                profiles.CurrentProfile = profileName;
-                SaveProfiles(profiles);
-
-                Logger.LogInfo($"Current profile set to: {profileName}");
-            }
-        }
-
-        /// <summary>
-        /// Creates or updates the Custom profile from current monitor states
-        /// </summary>
-        public void CreateCustomProfileFromCurrent(List<ProfileMonitorSetting> monitorSettings)
-        {
-            lock (_lock)
-            {
-                var profiles = LoadProfiles();
-
-                var customProfile = new PowerDisplayProfile(
-                    PowerDisplayProfiles.CustomProfileName,
-                    monitorSettings);
-
-                profiles.SetProfile(customProfile);
-                SaveProfiles(profiles);
-
-                Logger.LogInfo($"Custom profile created/updated with {monitorSettings.Count} monitors");
             }
         }
 
@@ -204,24 +154,6 @@ namespace PowerDisplay.Helpers
         {
             var profiles = LoadProfiles();
             return profiles.Profiles.ToList();
-        }
-
-        /// <summary>
-        /// Gets the current profile name
-        /// </summary>
-        public string GetCurrentProfileName()
-        {
-            var profiles = LoadProfiles();
-            return profiles.CurrentProfile;
-        }
-
-        /// <summary>
-        /// Checks if currently on a non-Custom profile
-        /// </summary>
-        public bool IsOnNonCustomProfile()
-        {
-            var currentProfileName = GetCurrentProfileName();
-            return !currentProfileName.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

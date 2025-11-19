@@ -153,5 +153,97 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
         }
+
+        // Profile button event handlers
+        private void ProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is PowerDisplayProfile profile)
+            {
+                ViewModel.ApplyProfile(profile);
+            }
+        }
+
+        private async void AddProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.Monitors == null || ViewModel.Monitors.Count == 0)
+            {
+                return;
+            }
+
+            var defaultName = GenerateDefaultProfileName();
+            var dialog = new ProfileEditorDialog(ViewModel.Monitors, defaultName);
+            dialog.XamlRoot = this.XamlRoot;
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
+            {
+                ViewModel.CreateProfile(dialog.ResultProfile);
+            }
+        }
+
+        private async void RenameProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuFlyoutItem;
+            if (menuItem?.Tag is PowerDisplayProfile profile)
+            {
+                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name);
+                dialog.XamlRoot = this.XamlRoot;
+
+                // Pre-fill with existing profile settings
+                dialog.PreFillProfile(profile);
+
+                var result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
+                {
+                    ViewModel.UpdateProfile(profile.Name, dialog.ResultProfile);
+                }
+            }
+        }
+
+        private async void DeleteProfile_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuFlyoutItem;
+            if (menuItem?.Tag is PowerDisplayProfile profile)
+            {
+                var dialog = new ContentDialog
+                {
+                    XamlRoot = this.XamlRoot,
+                    Title = "Delete Profile",
+                    Content = $"Are you sure you want to delete '{profile.Name}'?",
+                    PrimaryButtonText = "Delete",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Close,
+                };
+
+                var result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    ViewModel.DeleteProfile(profile.Name);
+                }
+            }
+        }
+
+        private string GenerateDefaultProfileName()
+        {
+            var existingNames = new HashSet<string>();
+            foreach (var profile in ViewModel.Profiles)
+            {
+                existingNames.Add(profile.Name);
+            }
+
+            int counter = 1;
+            string name;
+            do
+            {
+                name = $"Profile {counter}";
+                counter++;
+            }
+            while (existingNames.Contains(name));
+
+            return name;
+        }
     }
 }

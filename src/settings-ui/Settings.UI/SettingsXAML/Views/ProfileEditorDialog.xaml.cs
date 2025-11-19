@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -38,6 +39,42 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void ContentDialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             ResultProfile = null;
+        }
+
+        /// <summary>
+        /// Pre-fill the dialog with existing profile data
+        /// </summary>
+        public void PreFillProfile(PowerDisplayProfile profile)
+        {
+            if (profile == null || ViewModel == null)
+            {
+                return;
+            }
+
+            // Set profile name
+            ViewModel.ProfileName = profile.Name;
+
+            // Pre-fill monitor settings from existing profile
+            foreach (var monitorSetting in profile.MonitorSettings)
+            {
+                var monitorItem = ViewModel.Monitors.FirstOrDefault(m => m.Monitor.HardwareId == monitorSetting.HardwareId);
+                if (monitorItem != null)
+                {
+                    monitorItem.IsSelected = true;
+                    monitorItem.Brightness = monitorSetting.Brightness;
+                    monitorItem.ColorTemperature = monitorSetting.ColorTemperature;
+
+                    if (monitorSetting.Contrast.HasValue)
+                    {
+                        monitorItem.Contrast = monitorSetting.Contrast.Value;
+                    }
+
+                    if (monitorSetting.Volume.HasValue)
+                    {
+                        monitorItem.Volume = monitorSetting.Volume.Value;
+                    }
+                }
+            }
         }
     }
 }

@@ -16,13 +16,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     /// </summary>
     public class PowerDisplayProfiles
     {
+        // NOTE: Custom profile concept has been removed. Profiles are now templates, not states.
+        // This constant is kept for backward compatibility (cleaning up legacy Custom profiles).
         public const string CustomProfileName = "Custom";
 
         [JsonPropertyName("profiles")]
         public List<PowerDisplayProfile> Profiles { get; set; }
-
-        [JsonPropertyName("currentProfile")]
-        public string CurrentProfile { get; set; }
 
         [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdated { get; set; }
@@ -30,7 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerDisplayProfiles()
         {
             Profiles = new List<PowerDisplayProfile>();
-            CurrentProfile = CustomProfileName;
             LastUpdated = DateTime.UtcNow;
         }
 
@@ -40,14 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerDisplayProfile? GetProfile(string name)
         {
             return Profiles.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        /// <summary>
-        /// Gets the currently active profile
-        /// </summary>
-        public PowerDisplayProfile? GetCurrentProfile()
-        {
-            return GetProfile(CurrentProfile);
         }
 
         /// <summary>
@@ -76,24 +66,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public bool RemoveProfile(string name)
         {
-            // Cannot remove the Custom profile
-            if (name.Equals(CustomProfileName, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
             var profile = GetProfile(name);
             if (profile != null)
             {
                 Profiles.Remove(profile);
                 LastUpdated = DateTime.UtcNow;
-
-                // If the removed profile was current, switch to Custom
-                if (CurrentProfile.Equals(name, StringComparison.OrdinalIgnoreCase))
-                {
-                    CurrentProfile = CustomProfileName;
-                }
-
                 return true;
             }
 
@@ -124,12 +101,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool IsNameAvailable(string name, string? excludeName = null)
         {
             if (string.IsNullOrWhiteSpace(name))
-            {
-                return false;
-            }
-
-            // Custom is reserved
-            if (name.Equals(CustomProfileName, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

@@ -56,42 +56,67 @@
 
                 <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_CurrentProfile"
+                        x:Uid="PowerDisplay_QuickProfiles"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <ComboBox
-                                ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
-                                SelectedItem="{x:Bind ViewModel.SelectedProfile, Mode=TwoWay}"
-                                MinWidth="180" />
-                            <Button
-                                x:Uid="PowerDisplay_AddProfile_Button"
-                                Command="{x:Bind ViewModel.AddProfileCommand}"
-                                ToolTipService.ToolTip="Add new profile">
-                                <FontIcon Glyph="&#xE710;" FontSize="16" />
-                            </Button>
-                            <Button
-                                x:Uid="PowerDisplay_DeleteProfile_Button"
-                                Command="{x:Bind ViewModel.DeleteProfileCommand}"
-                                IsEnabled="{x:Bind ViewModel.CanModifySelectedProfile, Mode=OneWay}"
-                                ToolTipService.ToolTip="Delete selected profile">
-                                <FontIcon Glyph="&#xE74D;" FontSize="16" />
-                            </Button>
-                            <Button
-                                x:Uid="PowerDisplay_SaveAsProfile_Button"
-                                Command="{x:Bind ViewModel.SaveAsProfileCommand}"
-                                ToolTipService.ToolTip="Save current settings as new profile">
-                                <FontIcon Glyph="&#xE74E;" FontSize="16" />
-                            </Button>
-                        </StackPanel>
-                    </tkcontrols:SettingsCard>
+                        <StackPanel Spacing="8">
+                            <!-- Profile buttons row -->
+                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation="Horizontal" Spacing="8"/>
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="library:PowerDisplayProfile">
+                                        <Button
+                                            Click="ProfileButton_Click"
+                                            Tag="{x:Bind}"
+                                            ToolTipService.ToolTip="Apply this profile">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <FontIcon Glyph="&#xE81E;" FontSize="14"/>
+                                                <TextBlock Text="{x:Bind Name}"/>
+                                            </StackPanel>
 
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_ProfileStatus"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.CurrentProfile, Mode=OneWay}"
-                            FontWeight="SemiBold"
-                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                            <Button.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        Text="Rename"
+                                                        Click="RenameProfile_Click"
+                                                        Tag="{x:Bind}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xE8AC;"/>
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
+                                                    <MenuFlyoutItem
+                                                        Text="Delete"
+                                                        Click="DeleteProfile_Click"
+                                                        Tag="{x:Bind}">
+                                                        <MenuFlyoutItem.Icon>
+                                                            <FontIcon Glyph="&#xE74D;"/>
+                                                        </MenuFlyoutItem.Icon>
+                                                    </MenuFlyoutItem>
+                                                </MenuFlyout>
+                                            </Button.ContextFlyout>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+
+                            <!-- Add profile button -->
+                            <Button
+                                Click="AddProfileButton_Click"
+                                ToolTipService.ToolTip="Save current settings as new profile">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE710;" FontSize="14"/>
+                                    <TextBlock x:Uid="PowerDisplay_AddProfile_Text"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Help text -->
+                            <TextBlock
+                                x:Uid="PowerDisplay_ProfilesHelpText"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"/>
+                        </StackPanel>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
