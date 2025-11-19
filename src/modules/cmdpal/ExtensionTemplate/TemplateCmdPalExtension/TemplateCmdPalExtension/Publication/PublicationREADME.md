@@ -6,7 +6,7 @@ This folder contains tools to help you prepare your CmdPal extension for publica
 
 ### Scripts
 
-- **`one-time-store-pubishing-setup.ps1`** - Configure your project for Microsoft Store publishing (run once)
+- **`one-time-store-publishing-setup.ps1`** - Configure your project for Microsoft Store publishing (run once)
 - **`build-msix-bundles.ps1`** - Build MSIX packages and create bundles for Store submission
 - **`one-time-winget-publishing-setup.ps1`** - Configure your project for WinGet publishing (run once)
 
@@ -32,7 +32,7 @@ This folder contains tools to help you prepare your CmdPal extension for publica
 2. Run the one-time setup script:
 
    ```powershell
-   .\one-time-store-pubishing-setup.ps1
+   .\one-time-store-publishing-setup.ps1
    ```
 
 3. Follow the prompts to enter your Microsoft Store information from Partner Center:
