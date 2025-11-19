@@ -192,7 +192,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Smooth out zoom-animation in ZoomIt by coalescing mouse-move and timer events, thanks to [@foxmsft](https://github.com/foxmsft)!
  - Enable GIF support for ZoomIt, thanks to [@MarioHewardt](https://github.com/MarioHewardt)!
  - Fix spelling mistakes, and refactored some literal strings to string constants, thanks to [@lzandman](https://github.com/lzandman)!
- - Fixes inaccurate "actual size" screenshots in ZoomIt and resolves a GDI handle leak, improving capture fidelity and long-session stability. thanks to [@daverayment](https://github.com/daverayment)!
+ - Fixed inaccurate "actual size" screenshots in ZoomIt and resolves a GDI handle leak, improving capture fidelity and long-session stability. thanks to [@daverayment](https://github.com/daverayment)!
 
 ### Settings
 - Fixed title bar overlapping issue at smaller window sizes.
@@ -201,8 +201,8 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Made update notification InfoBar in flyout clickable for direct navigation to update page.
 - Expanded installation instructions by default in README.
 - Improved accessibility for shortcut conflict button with static resource-based automation properties.
-- Add ScrollViewer to Command Palette page in PowerToys Settings. Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fix module list glitches and Sort Status checkmark issue. Thanks [@daverayment](https://github.com/daverayment)!
+- Added ScrollViewer to Command Palette page in PowerToys Settings. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed module list glitches and Sort Status checkmark issue. Thanks [@daverayment](https://github.com/daverayment)!
 
 ### Development
 - Fixed accessibility by associating controls with labels for screen readers.
@@ -227,7 +227,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Added complete OCR UI test coverage with automated tests for activation, settings, language selection, and text extraction.
 - Fixed test input for drive path normalization in bookmark resolver unit tests.
 - Fixed Peek UI tests by restoring Ctrl+Space activation shortcut for test scenarios.
-- Hide apps in PowerToys.SpareApps package from Start Menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Hided apps in PowerToys.SpareApps package from Start Menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ## 🛣️ Roadmap 
 We are planning some nice new features and improvements for the next releases – a revamped Keyboard Manager UI, custom endpoint and local model support for Advanced Paste, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.96][github-next-release-work]!
