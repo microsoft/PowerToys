@@ -558,7 +558,7 @@
                                 <TextBlock
                                     x:Uid="AIProvidersFlyoutHeader"
                                     Grid.Row="0"
-                                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <ListView
                                     x:Name="AIProviderListView"
                                     Grid.Row="1"
