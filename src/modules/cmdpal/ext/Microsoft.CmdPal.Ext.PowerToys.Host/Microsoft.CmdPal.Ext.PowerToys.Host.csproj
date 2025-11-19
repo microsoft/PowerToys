@@ -1,0 +1,162 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+
+	<PropertyGroup>
+		<RootNamespace>Microsoft.CmdPal.Ext.PowerToys.Host</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Nullable>enable</Nullable>
+		<PublishAot>true</PublishAot>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
+		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Assets\PowerToys.svg" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Update="Assets\PowerToys.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Assets\PowerToys.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ColorPicker.png">
+			<Link>Assets\ColorPicker.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\FancyZones.png">
+			<Link>Assets\FancyZones.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\CropAndLock.png">
+			<Link>Assets\CropAndLock.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Hosts.png">
+			<Link>Assets\Hosts.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\TextExtractor.png">
+			<Link>Assets\PowerOcr.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\RegistryPreview.png">
+			<Link>Assets\RegistryPreview.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ScreenRuler.png">
+			<Link>Assets\ScreenRuler.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ShortcutGuide.png">
+			<Link>Assets\ShortcutGuide.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\EnvironmentVariables.png">
+			<Link>Assets\EnvironmentVariables.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Workspaces.png">
+			<Link>Assets\Workspaces.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Awake.png">
+			<Link>Assets\Awake.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\PowerRename.png">
+			<Link>Assets\PowerRename.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\PowerToysRun.png">
+			<Link>Assets\PowerToysRun.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ImageResizer.png">
+			<Link>Assets\ImageResizer.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\KeyboardManager.png">
+			<Link>Assets\KeyboardManager.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\MouseUtils.png">
+			<Link>Assets\MouseUtils.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\AdvancedPaste.png">
+			<Link>Assets\AdvancedPaste.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\CmdPal.png">
+			<Link>Assets\CmdPal.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\ZoomIt.png">
+			<Link>Assets\ZoomIt.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\FileExplorerPreview.png">
+			<Link>Assets\FileExplorerPreview.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\FileLocksmith.png">
+			<Link>Assets\FileLockSmith.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\NewPlus.png">
+			<Link>Assets\NewPlus.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Peek.png">
+			<Link>Assets\Peek.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\AlwaysOnTop.png">
+			<Link>Assets\AlwaysOnTop.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\CommandNotFound.png">
+			<Link>Assets\CommandNotFound.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\MouseWithoutBorders.png">
+			<Link>Assets\MouseWithoutBorders.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\QuickAccent.png">
+			<Link>Assets\QuickAccent.png</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="System.Drawing.Common" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+	</ItemGroup>
+</Project>

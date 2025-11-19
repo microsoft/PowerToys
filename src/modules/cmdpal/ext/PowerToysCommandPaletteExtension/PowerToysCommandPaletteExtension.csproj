@@ -54,12 +54,10 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.csproj" />
+    <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CmdPal.Ext.PowerToys.Host\Microsoft.CmdPal.Ext.PowerToys.Host.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+  </ItemGroup>  <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>

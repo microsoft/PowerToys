@@ -8,7 +8,7 @@ using System.Threading;
 using Microsoft.CmdPal.Ext.PowerToys.Host;
 using Microsoft.CommandPalette.Extensions;
 
-namespace PowerToysCommandPaletteExtension;
+namespace Microsoft.CmdPal.Ext.PowerToys;
 
 [ComVisible(true)]
 [Guid("F0A8B809-CE2C-475A-935F-64A0348B1D29")]

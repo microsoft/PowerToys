@@ -651,7 +651,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Extensions", "Sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMonitorExtension", "src\modules\cmdpal\ext\ProcessMonitorExtension\ProcessMonitorExtension.csproj", "{C846F7A7-792A-47D9-B0CB-417C900EE03D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerToysCommandPaletteExtension", "src\modules\cmdpal\ext\PowerToysCommandPaletteExtension\PowerToysCommandPaletteExtension.csproj", "{F24B5A9E-5681-4C4C-9C50-57DA32AF5D54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CmdPal.Ext.PowerToys", "src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.csproj", "{F24B5A9E-5681-4C4C-9C50-57DA32AF5D54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamplePagesExtension", "src\modules\cmdpal\ext\SamplePagesExtension\SamplePagesExtension.csproj", "{C831231F-891C-4572-9694-45062534B42A}"
 EndProject
@@ -731,7 +731,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CalculatorEngineCommon", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCsWin32", "src\common\ManagedCsWin32\ManagedCsWin32.csproj", "{14AFD976-B4D2-49D0-9E6C-AA93CC061B8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.PowerToys", "src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.csproj", "{DDF8565C-B67A-9B79-6156-A2544408BCF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.PowerToys.Host", "src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.PowerToys.Host\Microsoft.CmdPal.Ext.PowerToys.Host.csproj", "{DDF8565C-B67A-9B79-6156-A2544408BCF7}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerRename.UITests", "src\modules\powerrename\PowerRenameUITest\PowerRename.UITests.csproj", "{9D3F3793-EFE3-4525-8782-238015DABA62}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"

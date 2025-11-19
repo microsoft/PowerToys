@@ -65,7 +65,7 @@
       </uap:VisualElements>
     </Application>
     <Application Id="CmdPalExt.PowerToys"
-                 Executable="WinUI3Apps\CmdPalExtensions\PowerToysCommandPaletteExtension\PowerToysCommandPaletteExtension.exe"
+                 Executable="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.exe"
                  EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys Command Palette Extension"
@@ -78,7 +78,7 @@
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="WinUI3Apps\CmdPalExtensions\PowerToysCommandPaletteExtension\PowerToysCommandPaletteExtension.exe"
+            <com:ExeServer Executable="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.exe"
                             Arguments="-RegisterProcessAsComServer"
                             DisplayName="PowerToys Command Palette Extension">
               <com:Class Id="F0A8B809-CE2C-475A-935F-64A0348B1D29"
@@ -89,7 +89,7 @@
         <uap3:Extension Category="windows.appExtension">
           <uap3:AppExtension Name="com.microsoft.commandpalette"
                              Id="PowerToys"
-                             PublicFolder="WinUI3Apps\CmdPalExtensions\PowerToysCommandPaletteExtension\Public"
+                             PublicFolder="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Public"
                              DisplayName="PowerToys"
                              Description="Surface PowerToys commands inside Command Palette">
             <uap3:Properties>
