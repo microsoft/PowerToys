@@ -532,6 +532,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss.Content" xml:space="preserve">
     <value>Hide window and go home</value>
   </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide.Content" xml:space="preserve">
+    <value>Hide window</value>
+  </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
     <value>Escape key behavior</value>
   </data>

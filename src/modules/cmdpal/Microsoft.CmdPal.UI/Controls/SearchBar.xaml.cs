@@ -7,6 +7,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -142,6 +143,10 @@ public sealed partial class SearchBar : UserControl,
 
                 case EscapeKeyBehavior.AlwaysDismiss:
                     WeakReferenceMessenger.Default.Send<DismissMessage>(new(ForceGoHome: true));
+                    break;
+
+                case EscapeKeyBehavior.AlwaysHide:
+                    WeakReferenceMessenger.Default.Send<HideWindowMessage>(new());
                     break;
 
                 case EscapeKeyBehavior.ClearSearchFirstThenGoBack:

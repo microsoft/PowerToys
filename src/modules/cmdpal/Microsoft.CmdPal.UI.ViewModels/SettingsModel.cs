@@ -221,4 +221,5 @@ public enum EscapeKeyBehavior
     ClearSearchFirstThenGoBack = 0,
     AlwaysGoBack = 1,
     AlwaysDismiss = 2,
+    AlwaysHide = 3,
 }

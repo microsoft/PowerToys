@@ -84,6 +84,7 @@
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide" />
                         </ComboBox>
                     </controls:SettingsCard>
 
