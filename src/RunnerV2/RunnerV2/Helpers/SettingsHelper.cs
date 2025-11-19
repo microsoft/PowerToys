@@ -150,7 +150,7 @@ namespace RunnerV2.Helpers
                     case "powertoys":
                         foreach (var powertoysSettingsPart in property.Value.EnumerateObject())
                         {
-                            _settingsUtils.SaveSettings(property.Value.ToString(), powertoysSettingsPart.Name);
+                            _settingsUtils.SaveSettings(powertoysSettingsPart.Value.ToString(), powertoysSettingsPart.Name);
 
                             if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModule module)
                             {

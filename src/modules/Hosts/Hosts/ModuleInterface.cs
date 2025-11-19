@@ -15,7 +15,7 @@ namespace Hosts
     {
         public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.Hosts;
 
-        public GpoRuleConfigured GpoRuleConfigured => GpoRuleConfigured.NotConfigured;
+        public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
 
         public string Name => "Hosts";
 

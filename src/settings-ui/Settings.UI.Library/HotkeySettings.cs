@@ -316,5 +316,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             result = result.Replace(" ", null);
             return true;
         }
+
+        public static implicit operator HotkeyEx(HotkeySettings settings)
+        {
+            ushort modifiers = 0;
+            if (settings.Ctrl)
+            {
+                modifiers += 0x0002;
+            }
+
+            if (settings.Alt)
+            {
+                modifiers += 0x0001;
+            }
+
+            if (settings.Shift)
+            {
+                modifiers += 0x0004;
+            }
+
+            if (settings.Win)
+            {
+                modifiers += 0x0008;
+            }
+
+            return new HotkeyEx(modifiers, (ushort)settings.Code);
+        }
     }
 }

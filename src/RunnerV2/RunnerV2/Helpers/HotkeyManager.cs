@@ -6,7 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Windows.System;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers
@@ -15,6 +18,7 @@ namespace RunnerV2.Helpers
     {
         private static readonly Dictionary<HotkeyEx, Action> _hotkeyActions = [];
 
+        [STAThread]
         public static void EnableHotkey(HotkeyEx hotkey, Action onHotkey)
         {
             if (_hotkeyActions.ContainsKey(hotkey))

@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using ManagedCommon;
 using RunnerV2.Helpers;
@@ -37,7 +38,12 @@ namespace RunnerV2
         internal static bool Run(Action afterInitializationAction)
         {
             TrayIconManager.StartTrayIcon();
-            FrozenSet<string> modulesToLoad = ["PowerToys.AlwaysOnTopModuleInterface.dll", "WinUI3Apps\\PowerToys.Hosts.dll"];
+            FrozenSet<string> modulesToLoad =
+            [
+                "PowerToys.AlwaysOnTopModuleInterface.dll",
+                "WinUI3Apps\\PowerToys.Hosts.dll",
+                "PowerAccent.Core.dll",
+            ];
 
             List<string> failedModuleLoads = [];
 
@@ -152,6 +158,9 @@ namespace RunnerV2
             }
         }
 
+        public static Thread? WindowThread { get; set; }
+
+        [STAThread]
         private static void InitializeTrayWindow()
         {
             IntPtr hInstance = Process.GetCurrentProcess().MainModule!.BaseAddress;
