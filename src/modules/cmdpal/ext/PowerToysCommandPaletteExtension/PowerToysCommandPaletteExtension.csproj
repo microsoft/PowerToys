@@ -20,8 +20,6 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <Import Project="..\Microsoft.CmdPal.Ext.PowerToys\PowerToysExtensionAssets.props" />
-
   <ItemGroup>
     <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\SplashScreen.scale-200.png">
       <Link>Assets\SplashScreen.scale-200.png</Link>

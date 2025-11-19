@@ -36,6 +36,7 @@
 #include <RestartManager.h>
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
+#include "cmdpal_rpc_server.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -107,6 +108,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
     start_tray_icon(isProcessElevated);
     set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
+    CmdPalRpcServer cmdPalRpcServer;
 
     int result = -1;
     try
@@ -209,6 +211,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         }
         // Start initial powertoys
         start_enabled_powertoys();
+        cmdPalRpcServer.Start();
         std::wstring product_version = get_product_version();
         Trace::EventLaunch(product_version, isProcessElevated);
         PTSettingsHelper::save_last_version_run(product_version);

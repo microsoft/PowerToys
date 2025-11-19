@@ -97,4 +97,44 @@ public static class PowerToysResourcesHelper
             _ => throw new NotImplementedException(),
         };
     }
+
+    public static string ModuleKey(this SettingsWindow module)
+    {
+        return module switch
+        {
+            SettingsWindow.Dashboard => "Dashboard",
+            SettingsWindow.Overview => "Overview",
+            SettingsWindow.AlwaysOnTop => "AlwaysOnTop",
+            SettingsWindow.Awake => "Awake",
+            SettingsWindow.ColorPicker => "ColorPicker",
+            SettingsWindow.CmdNotFound => "CmdNotFound",
+            SettingsWindow.LightSwitch => "LightSwitch",
+            SettingsWindow.FancyZones => "FancyZones",
+            SettingsWindow.FileLocksmith => "FileLocksmith",
+            SettingsWindow.Run => "Run",
+            SettingsWindow.ImageResizer => "ImageResizer",
+            SettingsWindow.KBM => "KBM",
+            SettingsWindow.MouseUtils => "MouseUtils",
+            SettingsWindow.MouseWithoutBorders => "MouseWithoutBorders",
+            SettingsWindow.Peek => "Peek",
+            SettingsWindow.PowerAccent => "PowerAccent",
+            SettingsWindow.PowerLauncher => "PowerLauncher",
+            SettingsWindow.PowerPreview => "PowerPreview",
+            SettingsWindow.PowerRename => "PowerRename",
+            SettingsWindow.FileExplorer => "FileExplorer",
+            SettingsWindow.ShortcutGuide => "ShortcutGuide",
+            SettingsWindow.Hosts => "Hosts",
+            SettingsWindow.MeasureTool => "MeasureTool",
+            SettingsWindow.PowerOCR => "PowerOcr",
+            SettingsWindow.Workspaces => "Workspaces",
+            SettingsWindow.RegistryPreview => "RegistryPreview",
+            SettingsWindow.CropAndLock => "CropAndLock",
+            SettingsWindow.EnvironmentVariables => "EnvironmentVariables",
+            SettingsWindow.AdvancedPaste => "AdvancedPaste",
+            SettingsWindow.NewPlus => "NewPlus",
+            SettingsWindow.CmdPal => "CmdPal",
+            SettingsWindow.ZoomIt => "ZoomIt",
+            _ => throw new NotImplementedException(),
+        };
+    }
 }

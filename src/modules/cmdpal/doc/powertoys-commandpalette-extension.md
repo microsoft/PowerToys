@@ -305,6 +305,8 @@ typedef const char* (__stdcall *describe_fn)(void);
 __declspec(dllexport) int __stdcall PT_GetModule(IPTModule** out);
 ```
 
+PowerToys ships a helper implementation in `PowertoyModuleIface`. Each module inherits default `describe` / `invoke` implementations so that, at a minimum, a `navigateToSettings` verb is exposed. Modules can override those members to add richer metadata or behaviors, but no module can opt out of providing at least the settings deep link.
+
 9.2 Method routing
 
 * Module receives method and params JSON; validate and route to a function:
