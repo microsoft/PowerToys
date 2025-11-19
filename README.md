@@ -122,7 +122,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### Command Palette
  - The search field in context menus now matches the look of the Command Palette, with a smoke backdrop and improved padding.
  - Fallback items such as math calculations or the Run command now appear in results more quickly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Ensures the command bar updates correctly after navigating to another page and commands are displayed correctly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensured the command bar updates correctly after navigating to another page and commands are displayed correctly. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - The Command Palette settings page has been reorganized. Activation-key options are grouped under an expander and extension settings are framed for improved readability.
  - When you modify a command, its alias, hotkey, and tags now update in the top-level list, keeping the displayed information in sync. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Press `Ctrl + ,` to open Command Palette settings from anywhere. Thanks [@jiripolasek](https://github.com/jiripolasek)!
