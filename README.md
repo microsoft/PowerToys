@@ -165,6 +165,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### Light Switch
 - Introduces new UI to allow users to manually enter their latitude and longitude in Sunrise to Sunset mode.
 - Refactored service with cleaner state management for stability.
+- Removed logs from every tick, only logging key events to largely reduce log size.
 
 ### Mouse Pointer Crosshairs
  - Enabled switching between Mouse Pointer Crosshairs and Gliding Cursor modes. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
