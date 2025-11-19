@@ -6,28 +6,25 @@
 		<RootNamespace>ScreencastModeUI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;ARM64</Platforms>
-		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<RuntimeIdentifiers Condition="'$(Platform)'=='x86'">win-x86</RuntimeIdentifiers>
+		<RuntimeIdentifiers Condition="'$(Platform)'=='x64'">win-x64</RuntimeIdentifiers>
+		<RuntimeIdentifiers Condition="'$(Platform)'=='ARM64'">win-arm64</RuntimeIdentifiers>
 		<UseWinUI>true</UseWinUI>
-		<Nullable>enable</Nullable>
+		<EnableMsixTooling>true</EnableMsixTooling>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Manifest Include="$(ApplicationManifest)" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 	</ItemGroup>
+
 	<ItemGroup>
-		<None Update="OverlayWindow.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</None>
-	</ItemGroup>
-	<ItemGroup>
-		<Page Include="OverlayWindow.xaml">
-			<SubType>Designer</SubType>
+		<Page Include="**\*.xaml" Exclude="App.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+		<ApplicationDefinition Include="App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</ApplicationDefinition>
 	</ItemGroup>
 </Project>
