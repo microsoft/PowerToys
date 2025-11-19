@@ -10,6 +10,7 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using PowerDisplay.Commands;
+using PowerDisplay.Configuration;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Models;
 using PowerDisplay.Helpers;
@@ -27,9 +28,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     private readonly MainViewModel? _mainViewModel;
 
     // Simple debouncers for each property (KISS principle - simpler than complex queue)
-    private readonly SimpleDebouncer _brightnessDebouncer = new(300);
-    private readonly SimpleDebouncer _contrastDebouncer = new(300);
-    private readonly SimpleDebouncer _volumeDebouncer = new(300);
+    private readonly SimpleDebouncer _brightnessDebouncer = new(AppConstants.UI.SliderDebounceDelayMs);
+    private readonly SimpleDebouncer _contrastDebouncer = new(AppConstants.UI.SliderDebounceDelayMs);
+    private readonly SimpleDebouncer _volumeDebouncer = new(AppConstants.UI.SliderDebounceDelayMs);
 
     private int _brightness;
     private int _contrast;
@@ -196,7 +197,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Brightness", brightness);
-                Logger.LogTrace($"[{HardwareId}] Brightness applied and saved");
             }
             else
             {
@@ -223,7 +223,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Contrast", contrast);
-                Logger.LogTrace($"[{HardwareId}] Contrast applied and saved");
             }
             else
             {
@@ -250,7 +249,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, "Volume", volume);
-                Logger.LogTrace($"[{HardwareId}] Volume applied and saved");
             }
             else
             {

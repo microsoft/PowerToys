@@ -114,7 +114,8 @@ namespace PowerDisplay
                         {
                             Logger.LogError($"[EVENT] _mainWindow type mismatch, actual type: {_mainWindow?.GetType().Name}");
                         }
-                    });
+                    },
+                    CancellationToken.None);
 
                 NativeEventWaiter.WaitForEventLoop(
                     TogglePowerDisplayEvent,
@@ -130,7 +131,8 @@ namespace PowerDisplay
                         {
                             Logger.LogError($"[EVENT] _mainWindow type mismatch for toggle");
                         }
-                    });
+                    },
+                    CancellationToken.None);
 
                 NativeEventWaiter.WaitForEventLoop(
                     TerminatePowerDisplayEvent,
@@ -138,7 +140,8 @@ namespace PowerDisplay
                     {
                         Logger.LogInfo("Received terminate event - exiting immediately");
                         Environment.Exit(0);
-                    });
+                    },
+                    CancellationToken.None);
 
                 // Note: PowerDisplay.exe should NOT listen to RefreshMonitorsEvent
                 // That event is sent BY PowerDisplay TO Settings UI for one-way notification
@@ -155,7 +158,8 @@ namespace PowerDisplay
                                 mainWindow.ViewModel.ApplySettingsFromUI();
                             }
                         });
-                    });
+                    },
+                    CancellationToken.None);
 
                 NativeEventWaiter.WaitForEventLoop(
                     ApplyColorTemperatureEvent,
@@ -169,7 +173,8 @@ namespace PowerDisplay
                                 mainWindow.ViewModel.ApplyColorTemperatureFromSettings();
                             }
                         });
-                    });
+                    },
+                    CancellationToken.None);
 
                 // Monitor Runner process (backup exit mechanism)
                 if (_powerToysRunnerPid > 0)

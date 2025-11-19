@@ -140,8 +140,6 @@ namespace PowerDisplay.Helpers
 
                 // Reset timer to debounce rapid updates (e.g., during slider drag)
                 _saveTimer.Change(SaveDebounceMs, Timeout.Infinite);
-
-                Logger.LogTrace($"[State] Updated {property}={value} for monitor HardwareId='{hardwareId}', save scheduled");
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows.Input;
+using ManagedCommon;
 
 namespace PowerDisplay.Commands
 {
@@ -23,9 +24,35 @@ namespace PowerDisplay.Commands
 
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+        public bool CanExecute(object? parameter)
+        {
+            if (_canExecute == null)
+            {
+                return true;
+            }
 
-        public void Execute(object? parameter) => _execute();
+            try
+            {
+                return _canExecute.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"CanExecute failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        public void Execute(object? parameter)
+        {
+            try
+            {
+                _execute();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Command execution failed: {ex.Message}");
+            }
+        }
 
         public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -47,9 +74,35 @@ namespace PowerDisplay.Commands
 
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter) => _canExecute?.Invoke((T?)parameter) ?? true;
+        public bool CanExecute(object? parameter)
+        {
+            if (_canExecute == null)
+            {
+                return true;
+            }
 
-        public void Execute(object? parameter) => _execute((T?)parameter);
+            try
+            {
+                return _canExecute.Invoke((T?)parameter);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"CanExecute<T> failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        public void Execute(object? parameter)
+        {
+            try
+            {
+                _execute((T?)parameter);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Command<T> execution failed: {ex.Message}");
+            }
+        }
 
         public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }

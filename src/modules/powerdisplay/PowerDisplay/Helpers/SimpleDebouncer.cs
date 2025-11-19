@@ -34,43 +34,9 @@ namespace PowerDisplay.Helpers
         /// Debounce an async action. Cancels previous invocation if still pending.
         /// </summary>
         /// <param name="action">Async action to execute after delay</param>
-        public async void Debounce(Func<Task> action)
+        public void Debounce(Func<Task> action)
         {
-            if (_disposed)
-            {
-                return;
-            }
-
-            CancellationTokenSource cts;
-
-            lock (_lock)
-            {
-                // Cancel previous invocation
-                _cts?.Cancel();
-                _cts = new CancellationTokenSource();
-                cts = _cts;
-            }
-
-            try
-            {
-                // Wait for quiet period
-                await Task.Delay(_delayMs, cts.Token);
-
-                // Execute action if not cancelled
-                if (!cts.Token.IsCancellationRequested)
-                {
-                    await action();
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when debouncing - a newer call cancelled this one
-                Logger.LogTrace("Debounced action cancelled (replaced by newer call)");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Debounced action failed: {ex.Message}");
-            }
+            _ = DebounceAsync(action);
         }
 
         /// <summary>
@@ -78,11 +44,66 @@ namespace PowerDisplay.Helpers
         /// </summary>
         public void Debounce(Action action)
         {
-            Debounce(() =>
+            _ = DebounceAsync(() =>
             {
                 action();
                 return Task.CompletedTask;
             });
+        }
+
+        private async Task DebounceAsync(Func<Task> action)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            CancellationTokenSource cts;
+            CancellationTokenSource? oldCts = null;
+
+            lock (_lock)
+            {
+                // Store old CTS to dispose later
+                oldCts = _cts;
+
+                // Create new CTS
+                _cts = new CancellationTokenSource();
+                cts = _cts;
+            }
+
+            // Dispose old CTS outside the lock to avoid blocking
+            if (oldCts != null)
+            {
+                try
+                {
+                    oldCts.Cancel();
+                    oldCts.Dispose();
+                }
+                catch
+                {
+                    // Ignore disposal errors
+                }
+            }
+
+            try
+            {
+                // Wait for quiet period
+                await Task.Delay(_delayMs, cts.Token).ConfigureAwait(false);
+
+                // Execute action if not cancelled
+                if (!cts.Token.IsCancellationRequested)
+                {
+                    await action().ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when debouncing - a newer call cancelled this one
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Debounced action failed: {ex.Message}");
+            }
         }
 
         public void Dispose()

@@ -175,7 +175,8 @@ namespace PowerDisplay.Core
                     });
 
                     var initializedMonitors = await Task.WhenAll(initTasks);
-                    newMonitors.AddRange(initializedMonitors.Where(m => m != null));
+                    var validMonitors = initializedMonitors.Where(m => m != null).Cast<Monitor>();
+                    newMonitors.AddRange(validMonitors);
                 }
 
                 // Update monitor list

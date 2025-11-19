@@ -772,8 +772,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             // This is thread-safe - _stateManager has internal locking
             // No UI thread operations, no ObservableCollection access
             _stateManager.UpdateMonitorParameter(hardwareId, property, value);
-
-            Logger.LogTrace($"[State] Queued setting change for HardwareId '{hardwareId}': {property}={value}");
         }
         catch (Exception ex)
         {

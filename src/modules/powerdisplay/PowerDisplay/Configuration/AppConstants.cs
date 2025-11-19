@@ -60,6 +60,11 @@ namespace PowerDisplay.Configuration
             public const int AnimationDelayMs = 100;
             public const int LayoutUpdateDelayMs = 50;
             public const int MonitorDiscoveryDelayMs = 200;
+
+            /// <summary>
+            /// Debounce delay for slider controls in milliseconds
+            /// </summary>
+            public const int SliderDebounceDelayMs = 300;
         }
 
         /// <summary>

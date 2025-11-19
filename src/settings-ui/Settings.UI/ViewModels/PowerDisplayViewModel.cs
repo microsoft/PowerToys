@@ -73,8 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
                     ReloadMonitorsFromSettings();
-                },
-                _cancellationTokenSource.Token);
+                });
         }
 
         private void InitializeEnabledValue()
