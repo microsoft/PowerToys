@@ -56,6 +56,8 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring TerminatePowerDisplayEvent();
         static hstring RefreshPowerDisplayMonitorsEvent();
         static hstring SettingsUpdatedPowerDisplayEvent();
+        static hstring ApplyColorTemperaturePowerDisplayEvent();
+        static hstring ApplyProfilePowerDisplayEvent();
     };
 }
 

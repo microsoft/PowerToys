@@ -29,6 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerDisplayViewModel : PageViewModelBase
     {
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
+
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -65,6 +67,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // Load profiles
+            LoadProfiles();
 
             // Listen for monitor refresh events from PowerDisplay.exe
             NativeEventWaiter.WaitForEventLoop(
@@ -469,6 +474,83 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _hasMonitors;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
+        // Profile-related fields
+        private ObservableCollection<string> _profiles = new ObservableCollection<string>();
+        private string _selectedProfile = PowerDisplayProfiles.CustomProfileName;
+        private string _currentProfile = PowerDisplayProfiles.CustomProfileName;
+        private string _profilesFilePath = string.Empty;
+
+        /// <summary>
+        /// Collection of available profile names (including Custom)
+        /// </summary>
+        public ObservableCollection<string> Profiles
+        {
+            get => _profiles;
+            set
+            {
+                if (_profiles != value)
+                {
+                    _profiles = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Currently selected profile in the ComboBox
+        /// </summary>
+        public string SelectedProfile
+        {
+            get => _selectedProfile;
+            set
+            {
+                if (_selectedProfile != value && !string.IsNullOrEmpty(value))
+                {
+                    _selectedProfile = value;
+                    OnPropertyChanged();
+
+                    // Apply the selected profile
+                    ApplyProfile(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Currently active profile (read from settings, may differ from selected during transition)
+        /// </summary>
+        public string CurrentProfile
+        {
+            get => _currentProfile;
+            set
+            {
+                if (_currentProfile != value)
+                {
+                    _currentProfile = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsCustomProfile));
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if current profile is Custom
+        /// </summary>
+        public bool IsCustomProfile => _currentProfile?.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase) ?? true;
+
+        /// <summary>
+        /// True if a non-Custom profile is selected (enables delete/rename)
+        /// </summary>
+        public bool CanModifySelectedProfile => !string.IsNullOrEmpty(_selectedProfile) &&
+                                                  !_selectedProfile.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase);
+
+        public ButtonClickCommand AddProfileCommand => new ButtonClickCommand(AddProfile);
+
+        public ButtonClickCommand DeleteProfileCommand => new ButtonClickCommand(DeleteProfile);
+
+        public ButtonClickCommand RenameProfileCommand => new ButtonClickCommand(RenameProfile);
+
+        public ButtonClickCommand SaveAsProfileCommand => new ButtonClickCommand(SaveAsProfile);
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValue();
@@ -486,6 +568,323 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(propertyName);
             NotifySettingsChanged();
             return true;
+        }
+
+        /// <summary>
+        /// Load profiles from disk
+        /// </summary>
+        private void LoadProfiles()
+        {
+            try
+            {
+                var settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var powerToysPath = Path.Combine(settingsPath, "Microsoft", "PowerToys", "PowerDisplay");
+                _profilesFilePath = Path.Combine(powerToysPath, "profiles.json");
+
+                var profilesData = LoadProfilesFromDisk();
+
+                // Build profile names list
+                var profileNames = new List<string> { PowerDisplayProfiles.CustomProfileName };
+                profileNames.AddRange(profilesData.Profiles.Select(p => p.Name));
+
+                Profiles = new ObservableCollection<string>(profileNames);
+
+                // Set current profile from settings
+                CurrentProfile = _settings.Properties.CurrentProfile ?? PowerDisplayProfiles.CustomProfileName;
+                _selectedProfile = CurrentProfile;
+                OnPropertyChanged(nameof(SelectedProfile));
+
+                Logger.LogInfo($"Loaded {profilesData.Profiles.Count} profiles, current: {CurrentProfile}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load profiles: {ex.Message}");
+                Profiles = new ObservableCollection<string> { PowerDisplayProfiles.CustomProfileName };
+                CurrentProfile = PowerDisplayProfiles.CustomProfileName;
+            }
+        }
+
+        /// <summary>
+        /// Load profiles data from disk
+        /// </summary>
+        private PowerDisplayProfiles LoadProfilesFromDisk()
+        {
+            if (File.Exists(_profilesFilePath))
+            {
+                var json = File.ReadAllText(_profilesFilePath);
+                var profiles = JsonSerializer.Deserialize<PowerDisplayProfiles>(json);
+                return profiles ?? new PowerDisplayProfiles();
+            }
+
+            return new PowerDisplayProfiles();
+        }
+
+        /// <summary>
+        /// Save profiles data to disk
+        /// </summary>
+        private void SaveProfilesToDisk(PowerDisplayProfiles profiles)
+        {
+            try
+            {
+                profiles.LastUpdated = DateTime.UtcNow;
+                var json = JsonSerializer.Serialize(profiles, _jsonSerializerOptions);
+                File.WriteAllText(_profilesFilePath, json);
+                Logger.LogInfo($"Saved profiles to disk: {_profilesFilePath}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to save profiles: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Apply a profile
+        /// </summary>
+        private void ApplyProfile(string profileName)
+        {
+            try
+            {
+                Logger.LogInfo($"Applying profile: {profileName}");
+
+                var profilesData = LoadProfilesFromDisk();
+                var profile = profilesData.GetProfile(profileName);
+
+                if (profile == null || !profile.IsValid())
+                {
+                    Logger.LogWarning($"Profile '{profileName}' not found or invalid");
+                    return;
+                }
+
+                // Create pending operation
+                var operation = new ProfileOperation(profileName, profile.MonitorSettings);
+                _settings.Properties.PendingProfileOperation = operation;
+                _settings.Properties.CurrentProfile = profileName;
+
+                // Save settings
+                NotifySettingsChanged();
+
+                // Update current profile
+                CurrentProfile = profileName;
+
+                // Send custom action to trigger profile application
+                SendConfigMSG(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{{ \"action\": {{ \"PowerDisplay\": {{ \"action_name\": \"ApplyProfile\", \"value\": \"{0}\" }} }} }}",
+                        profileName));
+
+                // Signal PowerDisplay to apply profile
+                using (var eventHandle = new System.Threading.EventWaitHandle(
+                    false,
+                    System.Threading.EventResetMode.AutoReset,
+                    Constants.ApplyProfilePowerDisplayEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                Logger.LogInfo($"Profile '{profileName}' applied successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to apply profile: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Add a new profile
+        /// </summary>
+        private async void AddProfile()
+        {
+            try
+            {
+                Logger.LogInfo("Adding new profile");
+
+                if (Monitors == null || Monitors.Count == 0)
+                {
+                    Logger.LogWarning("No monitors available to create profile");
+                    return;
+                }
+
+                var profilesData = LoadProfilesFromDisk();
+                var defaultName = profilesData.GenerateProfileName();
+
+                // Show profile editor dialog
+                var dialog = new Views.ProfileEditorDialog(Monitors, defaultName);
+                var result = await dialog.ShowAsync();
+
+                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary && dialog.ResultProfile != null)
+                {
+                    var newProfile = dialog.ResultProfile;
+
+                    // Validate profile name
+                    if (string.IsNullOrWhiteSpace(newProfile.Name))
+                    {
+                        newProfile = new PowerDisplayProfile(defaultName, newProfile.MonitorSettings);
+                    }
+
+                    profilesData.SetProfile(newProfile);
+                    SaveProfilesToDisk(profilesData);
+
+                    // Reload profile list
+                    LoadProfiles();
+
+                    Logger.LogInfo($"Profile '{newProfile.Name}' created successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to add profile: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Delete the selected profile
+        /// </summary>
+        private void DeleteProfile()
+        {
+            try
+            {
+                if (!CanModifySelectedProfile)
+                {
+                    return;
+                }
+
+                Logger.LogInfo($"Deleting profile: {SelectedProfile}");
+
+                var profilesData = LoadProfilesFromDisk();
+                profilesData.RemoveProfile(SelectedProfile);
+                SaveProfilesToDisk(profilesData);
+
+                // Reload profile list
+                LoadProfiles();
+
+                Logger.LogInfo($"Profile '{SelectedProfile}' deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to delete profile: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Rename the selected profile
+        /// </summary>
+        private async void RenameProfile()
+        {
+            try
+            {
+                if (!CanModifySelectedProfile)
+                {
+                    return;
+                }
+
+                Logger.LogInfo($"Renaming profile: {SelectedProfile}");
+
+                // Load the existing profile
+                var profilesData = LoadProfilesFromDisk();
+                var existingProfile = profilesData.GetProfile(SelectedProfile);
+                if (existingProfile == null)
+                {
+                    Logger.LogWarning($"Profile '{SelectedProfile}' not found");
+                    return;
+                }
+
+                // Show profile editor dialog with existing profile data
+                var dialog = new Views.ProfileEditorDialog(Monitors, existingProfile.Name);
+
+                // Pre-fill monitor settings from existing profile
+                foreach (var monitorSetting in existingProfile.MonitorSettings)
+                {
+                    var monitorItem = dialog.ViewModel.Monitors.FirstOrDefault(m => m.Monitor.HardwareId == monitorSetting.HardwareId);
+                    if (monitorItem != null)
+                    {
+                        monitorItem.IsSelected = true;
+                        monitorItem.Brightness = monitorSetting.Brightness;
+                        monitorItem.ColorTemperature = monitorSetting.ColorTemperature;
+                        if (monitorSetting.Contrast.HasValue)
+                        {
+                            monitorItem.Contrast = monitorSetting.Contrast.Value;
+                        }
+
+                        if (monitorSetting.Volume.HasValue)
+                        {
+                            monitorItem.Volume = monitorSetting.Volume.Value;
+                        }
+                    }
+                }
+
+                var result = await dialog.ShowAsync();
+
+                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary && dialog.ResultProfile != null)
+                {
+                    var updatedProfile = dialog.ResultProfile;
+
+                    // Remove old profile and add updated one
+                    profilesData.RemoveProfile(SelectedProfile);
+                    profilesData.SetProfile(updatedProfile);
+                    SaveProfilesToDisk(profilesData);
+
+                    // Reload profile list
+                    LoadProfiles();
+
+                    // Select the renamed profile
+                    SelectedProfile = updatedProfile.Name;
+
+                    Logger.LogInfo($"Profile renamed to '{updatedProfile.Name}' successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to rename profile: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Save current settings as a new profile
+        /// </summary>
+        private void SaveAsProfile()
+        {
+            try
+            {
+                Logger.LogInfo("Saving current settings as new profile");
+
+                var profilesData = LoadProfilesFromDisk();
+                var newProfileName = profilesData.GenerateProfileName();
+
+                // Collect current monitor settings
+                var monitorSettings = new List<ProfileMonitorSetting>();
+                foreach (var monitor in Monitors)
+                {
+                    var setting = new ProfileMonitorSetting(
+                        monitor.HardwareId,
+                        monitor.CurrentBrightness,
+                        monitor.ColorTemperature,
+                        monitor.EnableContrast ? (int?)50 : null,
+                        monitor.EnableVolume ? (int?)50 : null);
+
+                    monitorSettings.Add(setting);
+                }
+
+                if (monitorSettings.Count == 0)
+                {
+                    Logger.LogWarning("No monitors available to save profile");
+                    return;
+                }
+
+                var newProfile = new PowerDisplayProfile(newProfileName, monitorSettings);
+                profilesData.SetProfile(newProfile);
+                SaveProfilesToDisk(profilesData);
+
+                // Reload profile list and select the new profile
+                LoadProfiles();
+                SelectedProfile = newProfileName;
+
+                Logger.LogInfo($"Saved as profile '{newProfileName}' successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to save as profile: {ex.Message}");
+            }
         }
 
         private void NotifySettingsChanged()

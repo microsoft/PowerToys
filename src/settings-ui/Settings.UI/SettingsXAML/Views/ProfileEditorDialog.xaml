@@ -1,0 +1,158 @@
+<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ProfileEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d"
+    Title="Edit Profile"
+    PrimaryButtonText="Save"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    CloseButtonClick="ContentDialog_CloseButtonClick">
+
+    <ScrollViewer MaxHeight="600" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16">
+            <!-- Profile Name -->
+            <StackPanel Spacing="4">
+                <TextBlock 
+                    Text="Profile Name" 
+                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBox 
+                    x:Name="ProfileNameTextBox"
+                    Text="{x:Bind ViewModel.ProfileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    PlaceholderText="Enter profile name (e.g., 'Work Setup', 'Gaming')"
+                    MaxLength="50" />
+                <TextBlock 
+                    Text="Leave empty to auto-generate (Profile1, Profile2, etc.)"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Monitors Selection -->
+            <StackPanel Spacing="8">
+                <TextBlock 
+                    Text="Select Monitors to Include" 
+                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBlock 
+                    Text="At least one monitor must be selected"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Visibility="{x:Bind ViewModel.HasSelectedMonitors, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
+                            <Expander 
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                IsExpanded="{x:Bind IsSelected, Mode=TwoWay}"
+                                Margin="0,0,0,8">
+                                <Expander.Header>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox 
+                                            IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                            Margin="0,0,12,0" />
+                                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                                            <TextBlock 
+                                                Text="{x:Bind Monitor.Name}"
+                                                Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            <TextBlock 
+                                                Text="{x:Bind Monitor.HardwareId}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Expander.Header>
+
+                                <StackPanel Spacing="12" Padding="32,8,8,8">
+                                    <!-- Brightness -->
+                                    <StackPanel Spacing="4">
+                                        <Grid>
+                                            <TextBlock Text="Brightness" />
+                                            <TextBlock 
+                                                Text="{x:Bind Brightness, Mode=OneWay}" 
+                                                HorizontalAlignment="Right"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                        </Grid>
+                                        <Slider 
+                                            Value="{x:Bind Brightness, Mode=TwoWay}"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            StepFrequency="1"
+                                            IsEnabled="{x:Bind IsSelected, Mode=OneWay}" />
+                                    </StackPanel>
+
+                                    <!-- Color Temperature -->
+                                    <StackPanel 
+                                        Spacing="4"
+                                        Visibility="{x:Bind SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Grid>
+                                            <TextBlock Text="Color Temperature" />
+                                            <TextBlock 
+                                                Text="{x:Bind ColorTemperature, Mode=OneWay}" 
+                                                HorizontalAlignment="Right"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                        </Grid>
+                                        <Slider 
+                                            Value="{x:Bind ColorTemperature, Mode=TwoWay}"
+                                            Minimum="4000"
+                                            Maximum="10000"
+                                            StepFrequency="100"
+                                            IsEnabled="{x:Bind IsSelected, Mode=OneWay}" />
+                                    </StackPanel>
+
+                                    <!-- Contrast -->
+                                    <StackPanel 
+                                        Spacing="4"
+                                        Visibility="{x:Bind SupportsContrast, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Grid>
+                                            <TextBlock Text="Contrast" />
+                                            <TextBlock 
+                                                Text="{x:Bind Contrast, Mode=OneWay}" 
+                                                HorizontalAlignment="Right"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                        </Grid>
+                                        <Slider 
+                                            Value="{x:Bind Contrast, Mode=TwoWay}"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            StepFrequency="1"
+                                            IsEnabled="{x:Bind IsSelected, Mode=OneWay}" />
+                                    </StackPanel>
+
+                                    <!-- Volume -->
+                                    <StackPanel 
+                                        Spacing="4"
+                                        Visibility="{x:Bind SupportsVolume, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <Grid>
+                                            <TextBlock Text="Volume" />
+                                            <TextBlock 
+                                                Text="{x:Bind Volume, Mode=OneWay}" 
+                                                HorizontalAlignment="Right"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                        </Grid>
+                                        <Slider 
+                                            Value="{x:Bind Volume, Mode=TwoWay}"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            StepFrequency="1"
+                                            IsEnabled="{x:Bind IsSelected, Mode=OneWay}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

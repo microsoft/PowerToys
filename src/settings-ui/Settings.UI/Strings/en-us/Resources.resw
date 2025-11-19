@@ -5547,6 +5547,30 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_BrightnessUpdateRate.Description" xml:space="preserve">
     <value>How frequently to update brightness values</value>
   </data>
+  <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="PowerDisplay_CurrentProfile.Header" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="PowerDisplay_CurrentProfile.Description" xml:space="preserve">
+    <value>Select a profile to apply predefined monitor settings</value>
+  </data>
+  <data name="PowerDisplay_AddProfile_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add new profile</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete selected profile</value>
+  </data>
+  <data name="PowerDisplay_SaveAsProfile_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Save current settings as new profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileStatus.Header" xml:space="preserve">
+    <value>Active profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileStatus.Description" xml:space="preserve">
+    <value>Currently active configuration profile</value>
+  </data>
   <data name="PowerDisplay_Monitor_HideMonitor.Header" xml:space="preserve">
     <value>Hide monitor</value>
   </data>

@@ -62,6 +62,7 @@ private:
     HANDLE m_hRefreshEvent = nullptr;
     HANDLE m_hSettingsUpdatedEvent = nullptr;
     HANDLE m_hApplyColorTemperatureEvent = nullptr;
+    HANDLE m_hApplyProfileEvent = nullptr;
 
     void parse_hotkey_settings(PowerToysSettings::PowerToyValues settings)
     {
@@ -199,8 +200,9 @@ public:
         m_hRefreshEvent = CreateDefaultEvent(CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT);
         m_hSettingsUpdatedEvent = CreateDefaultEvent(CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT);
         m_hApplyColorTemperatureEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
+        m_hApplyProfileEvent = CreateDefaultEvent(CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT);
 
-        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent)
+        if (!m_hInvokeEvent || !m_hToggleEvent || !m_hTerminateEvent || !m_hRefreshEvent || !m_hSettingsUpdatedEvent || !m_hApplyColorTemperatureEvent || !m_hApplyProfileEvent)
         {
             Logger::error(L"Failed to create one or more event handles");
         }
@@ -243,6 +245,11 @@ public:
         {
             CloseHandle(m_hApplyColorTemperatureEvent);
             m_hApplyColorTemperatureEvent = nullptr;
+        }
+        if (m_hApplyProfileEvent)
+        {
+            CloseHandle(m_hApplyProfileEvent);
+            m_hApplyProfileEvent = nullptr;
         }
     }
 
@@ -325,6 +332,19 @@ public:
                 else
                 {
                     Logger::warn(L"Apply color temperature event handle is null");
+                }
+            }
+            else if (action_object.get_name() == L"ApplyProfile")
+            {
+                Logger::trace(L"ApplyProfile action received");
+                if (m_hApplyProfileEvent)
+                {
+                    Logger::trace(L"Signaling apply profile event");
+                    SetEvent(m_hApplyProfileEvent);
+                }
+                else
+                {
+                    Logger::warn(L"Apply profile event handle is null");
                 }
             }
         }

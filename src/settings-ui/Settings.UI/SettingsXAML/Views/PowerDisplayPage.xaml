@@ -54,6 +54,47 @@
 
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_CurrentProfile"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <ComboBox
+                                ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
+                                SelectedItem="{x:Bind ViewModel.SelectedProfile, Mode=TwoWay}"
+                                MinWidth="180" />
+                            <Button
+                                x:Uid="PowerDisplay_AddProfile_Button"
+                                Command="{x:Bind ViewModel.AddProfileCommand}"
+                                ToolTipService.ToolTip="Add new profile">
+                                <FontIcon Glyph="&#xE710;" FontSize="16" />
+                            </Button>
+                            <Button
+                                x:Uid="PowerDisplay_DeleteProfile_Button"
+                                Command="{x:Bind ViewModel.DeleteProfileCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanModifySelectedProfile, Mode=OneWay}"
+                                ToolTipService.ToolTip="Delete selected profile">
+                                <FontIcon Glyph="&#xE74D;" FontSize="16" />
+                            </Button>
+                            <Button
+                                x:Uid="PowerDisplay_SaveAsProfile_Button"
+                                Command="{x:Bind ViewModel.SaveAsProfileCommand}"
+                                ToolTipService.ToolTip="Save current settings as new profile">
+                                <FontIcon Glyph="&#xE74E;" FontSize="16" />
+                            </Button>
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="PowerDisplay_ProfileStatus"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.CurrentProfile, Mode=OneWay}"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <!-- Empty state hint -->
                     <InfoBar

@@ -22,6 +22,10 @@ namespace PowerDisplay.Serialization
     [JsonSerializable(typeof(MonitorStateEntry))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSerializable(typeof(ColorTemperatureOperation))]
+    [JsonSerializable(typeof(ProfileOperation))]
+    [JsonSerializable(typeof(PowerDisplayProfiles))]
+    [JsonSerializable(typeof(PowerDisplayProfile))]
+    [JsonSerializable(typeof(ProfileMonitorSetting))]
 
     // MonitorInfo and related types (Settings.UI.Library)
     [JsonSerializable(typeof(MonitorInfo))]
@@ -33,6 +37,8 @@ namespace PowerDisplay.Serialization
     [JsonSerializable(typeof(List<MonitorInfo>))]
     [JsonSerializable(typeof(List<VcpCodeDisplayInfo>))]
     [JsonSerializable(typeof(List<VcpValueInfo>))]
+    [JsonSerializable(typeof(List<PowerDisplayProfile>))]
+    [JsonSerializable(typeof(List<ProfileMonitorSetting>))]
 
     [JsonSourceGenerationOptions(
         WriteIndented = true,

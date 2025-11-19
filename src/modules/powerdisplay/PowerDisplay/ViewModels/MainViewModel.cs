@@ -38,6 +38,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly ISettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
+    private readonly ProfileManager _profileManager;
 
     private ObservableCollection<MonitorViewModel> _monitors;
     private string _statusText;
@@ -61,6 +62,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         // Initialize settings utils
         _settingsUtils = new SettingsUtils();
         _stateManager = new MonitorStateManager();
+        _profileManager = new ProfileManager();
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
@@ -531,6 +533,188 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
+    /// Apply profile from Settings UI (triggered by custom action from Settings UI)
+    /// This is called when user explicitly switches profile in Settings UI.
+    /// Reads the pending operation from settings and applies it directly.
+    /// </summary>
+    public async void ApplyProfileFromSettings()
+    {
+        try
+        {
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+
+            // Check if there's a pending profile operation
+            var pendingOp = settings.Properties.PendingProfileOperation;
+
+            if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.ProfileName))
+            {
+                Logger.LogInfo($"[Profile] Processing pending profile operation: '{pendingOp.ProfileName}' with {pendingOp.MonitorSettings?.Count ?? 0} monitors");
+
+                if (pendingOp.MonitorSettings != null && pendingOp.MonitorSettings.Count > 0)
+                {
+                    // Apply profile settings to monitors
+                    await ApplyProfileAsync(pendingOp.ProfileName, pendingOp.MonitorSettings);
+
+                    // Update current profile in profiles.json
+                    _profileManager.SetCurrentProfile(pendingOp.ProfileName);
+
+                    Logger.LogInfo($"[Profile] Successfully applied profile '{pendingOp.ProfileName}'");
+                }
+                else
+                {
+                    Logger.LogWarning($"[Profile] Profile '{pendingOp.ProfileName}' has no monitor settings");
+                }
+
+                // Clear the pending operation
+                settings.Properties.PendingProfileOperation = null;
+                _settingsUtils.SaveSettings(
+                    System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                    PowerDisplaySettings.ModuleName);
+                Logger.LogInfo("[Profile] Cleared pending profile operation");
+            }
+            else
+            {
+                Logger.LogInfo("[Profile] No pending profile operation");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Profile] Failed to apply profile from settings: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Apply profile settings to monitors
+    /// </summary>
+    private async Task ApplyProfileAsync(string profileName, List<ProfileMonitorSetting> monitorSettings)
+    {
+        var updateTasks = new List<Task>();
+
+        foreach (var setting in monitorSettings)
+        {
+            // Find monitor by HardwareId
+            var monitorVm = Monitors.FirstOrDefault(m => m.HardwareId == setting.HardwareId);
+
+            if (monitorVm == null)
+            {
+                Logger.LogWarning($"[Profile] Monitor with HardwareId '{setting.HardwareId}' not found (disconnected?)");
+                continue;
+            }
+
+            Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (HardwareId: {setting.HardwareId})");
+
+            // Apply brightness
+            if (setting.Brightness >= monitorVm.MinBrightness && setting.Brightness <= monitorVm.MaxBrightness)
+            {
+                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness, immediate: true, fromProfile: true));
+            }
+
+            // Apply contrast if supported and value provided
+            if (setting.Contrast.HasValue && monitorVm.ShowContrast &&
+                setting.Contrast.Value >= monitorVm.MinContrast && setting.Contrast.Value <= monitorVm.MaxContrast)
+            {
+                updateTasks.Add(monitorVm.SetContrastAsync(setting.Contrast.Value, immediate: true, fromProfile: true));
+            }
+
+            // Apply volume if supported and value provided
+            if (setting.Volume.HasValue && monitorVm.ShowVolume &&
+                setting.Volume.Value >= monitorVm.MinVolume && setting.Volume.Value <= monitorVm.MaxVolume)
+            {
+                updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value, immediate: true, fromProfile: true));
+            }
+
+            // Apply color temperature
+            if (setting.ColorTemperature > 0)
+            {
+                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperature, fromProfile: true));
+            }
+        }
+
+        // Wait for all updates to complete
+        if (updateTasks.Count > 0)
+        {
+            await Task.WhenAll(updateTasks);
+            Logger.LogInfo($"[Profile] Applied {updateTasks.Count} parameter updates");
+        }
+    }
+
+    /// <summary>
+    /// Called when user modifies monitor parameters through PowerDisplay UI
+    /// Switches to Custom profile if currently on a non-Custom profile
+    /// </summary>
+    public void OnMonitorParameterChanged(string hardwareId, string propertyName, int value)
+    {
+        try
+        {
+            // Check if we're currently on a non-Custom profile
+            if (_profileManager.IsOnNonCustomProfile())
+            {
+                var currentProfileName = _profileManager.GetCurrentProfileName();
+                Logger.LogInfo($"[Profile] Parameter changed while on profile '{currentProfileName}', switching to Custom");
+
+                // Create Custom profile from current state
+                var customSettings = new List<ProfileMonitorSetting>();
+
+                foreach (var monitorVm in Monitors)
+                {
+                    var setting = new ProfileMonitorSetting(
+                        monitorVm.HardwareId,
+                        monitorVm.Brightness,
+                        monitorVm.ColorTemperature,
+                        monitorVm.ShowContrast ? monitorVm.Contrast : null,
+                        monitorVm.ShowVolume ? monitorVm.Volume : null);
+
+                    customSettings.Add(setting);
+                }
+
+                // Save as Custom profile
+                _profileManager.CreateCustomProfileFromCurrent(customSettings);
+
+                // Set current profile to Custom
+                _profileManager.SetCurrentProfile(PowerDisplayProfiles.CustomProfileName);
+
+                // Update settings.json to reflect Custom profile
+                var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+                settings.Properties.CurrentProfile = PowerDisplayProfiles.CustomProfileName;
+                _settingsUtils.SaveSettings(
+                    System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                    PowerDisplaySettings.ModuleName);
+
+                Logger.LogInfo("[Profile] Switched to Custom profile");
+
+                // Notify Settings UI to refresh
+                NotifySettingsUIRefresh();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Profile] Failed to handle parameter change: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Notifies Settings UI to refresh (e.g., when profile changes)
+    /// </summary>
+    private void NotifySettingsUIRefresh()
+    {
+        try
+        {
+            using (var eventHandle = new System.Threading.EventWaitHandle(
+                false,
+                System.Threading.EventResetMode.AutoReset,
+                Constants.RefreshPowerDisplayMonitorsEvent()))
+            {
+                eventHandle.Set();
+                Logger.LogInfo("[Profile] Notified Settings UI to refresh");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"[Profile] Failed to notify Settings UI: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Apply hardware parameter changes (brightness, color temperature)
     /// Asynchronous operation that communicates with monitor hardware via DDC/CI
     /// Note: Contrast and volume are not currently adjustable from Settings UI
@@ -636,6 +820,35 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
             // Read current settings
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+
+            // Check if we should apply a profile on startup
+            var currentProfileName = _profileManager.GetCurrentProfileName();
+            if (!string.IsNullOrEmpty(currentProfileName) &&
+                !currentProfileName.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.LogInfo($"[Startup] Applying saved profile: {currentProfileName}");
+
+                var currentProfile = _profileManager.GetCurrentProfile();
+                if (currentProfile != null && currentProfile.IsValid())
+                {
+                    // Wait for color temperature initialization if needed
+                    if (colorTempInitTasks != null && colorTempInitTasks.Count > 0)
+                    {
+                        await Task.WhenAll(colorTempInitTasks);
+                    }
+
+                    // Apply profile settings
+                    await ApplyProfileAsync(currentProfileName, currentProfile.MonitorSettings);
+
+                    StatusText = $"Profile '{currentProfileName}' applied";
+                    IsLoading = false;
+                    return;
+                }
+                else
+                {
+                    Logger.LogWarning($"[Startup] Profile '{currentProfileName}' not found or invalid, falling back to saved state");
+                }
+            }
 
             if (settings.Properties.RestoreSettingsOnStartup)
             {

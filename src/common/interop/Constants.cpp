@@ -211,4 +211,12 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT;
     }
+    hstring Constants::ApplyColorTemperaturePowerDisplayEvent()
+    {
+        return CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::ApplyProfilePowerDisplayEvent()
+    {
+        return CommonSharedConstants::APPLY_PROFILE_POWER_DISPLAY_EVENT;
+    }
 }
