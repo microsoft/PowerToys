@@ -18,7 +18,7 @@ namespace AlwaysOnTopModuleInterface
 
         public string Name => "AlwaysOnTop";
 
-        public GpoRuleConfigured GpoRuleConfigured => GpoRuleConfigured.Unavailable;
+        public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
 
         private Process? _process;
 
@@ -48,7 +48,7 @@ namespace AlwaysOnTopModuleInterface
             _process = Process.Start(psi);
         }
 
-        public HotkeyEx HotkeyEx => new(0x2 | 0x1, 0x54); // Ctrl + Alt + T
+        public HotkeyEx HotkeyEx => new SettingsUtils().GetSettings<AlwaysOnTopSettings>().Properties.Hotkey.Value;
 
         public Action OnHotkey => () =>
         {
