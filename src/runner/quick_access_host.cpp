@@ -11,11 +11,21 @@
 
 namespace
 {
+    struct PositionPayload
+    {
+        LONG x;
+        LONG y;
+        LONG sequence;
+    };
+
     wil::unique_handle quick_access_process;
     wil::unique_handle show_event;
     wil::unique_handle exit_event;
+    wil::unique_handle position_mapping;
     std::wstring show_event_name;
     std::wstring exit_event_name;
+    std::wstring position_mapping_name;
+    PositionPayload* position_payload = nullptr;
     std::mutex quick_access_mutex;
 
     bool is_process_active_locked()
@@ -37,11 +47,19 @@ namespace
 
     void reset_state_locked()
     {
+        if (position_payload)
+        {
+            UnmapViewOfFile(position_payload);
+            position_payload = nullptr;
+        }
+
         quick_access_process.reset();
         show_event.reset();
         exit_event.reset();
+        position_mapping.reset();
         show_event_name.clear();
         exit_event_name.clear();
+        position_mapping_name.clear();
     }
 
     std::wstring build_event_name(const wchar_t* suffix)
@@ -57,6 +75,8 @@ namespace
         command_line += show_event_name;
         command_line += L"\" --exit-event=\"";
         command_line += exit_event_name;
+        command_line += L"\" --position-map=\"";
+        command_line += position_mapping_name;
         command_line += L"\"";
         return command_line;
     }
@@ -82,6 +102,7 @@ namespace QuickAccessHost
 
         show_event_name = build_event_name(L"_Show");
         exit_event_name = build_event_name(L"_Exit");
+        position_mapping_name = build_event_name(L"_Position");
 
         show_event.reset(CreateEventW(nullptr, FALSE, FALSE, show_event_name.c_str()));
         if (!show_event)
@@ -99,6 +120,27 @@ namespace QuickAccessHost
             return;
         }
 
+        position_mapping.reset(CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(PositionPayload), position_mapping_name.c_str()));
+        if (!position_mapping)
+        {
+            Logger::error(L"QuickAccessHost: failed to create position mapping. error={}.", GetLastError());
+            reset_state_locked();
+            return;
+        }
+
+        auto view = MapViewOfFile(position_mapping.get(), FILE_MAP_ALL_ACCESS, 0, 0, sizeof(PositionPayload));
+        if (!view)
+        {
+            Logger::error(L"QuickAccessHost: failed to map position view. error={}.", GetLastError());
+            reset_state_locked();
+            return;
+        }
+
+        position_payload = static_cast<PositionPayload*>(view);
+        position_payload->x = 0;
+        position_payload->y = 0;
+        position_payload->sequence = 0;
+
         const std::wstring exe_path = get_module_folderpath() + L"\\WinUI3Apps\\PowerToys.QuickAccess.exe";
         if (GetFileAttributesW(exe_path.c_str()) == INVALID_FILE_ATTRIBUTES)
         {
@@ -107,14 +149,14 @@ namespace QuickAccessHost
             return;
         }
 
-    const std::wstring command_line = build_command_line(exe_path);
-    std::vector<wchar_t> command_line_buffer(command_line.begin(), command_line.end());
-    command_line_buffer.push_back(L'\0');
+        const std::wstring command_line = build_command_line(exe_path);
+        std::vector<wchar_t> command_line_buffer(command_line.begin(), command_line.end());
+        command_line_buffer.push_back(L'\0');
         STARTUPINFOW startup_info{};
         startup_info.cb = sizeof(startup_info);
         PROCESS_INFORMATION process_info{};
 
-    BOOL created = CreateProcessW(exe_path.c_str(), command_line_buffer.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup_info, &process_info);
+        BOOL created = CreateProcessW(exe_path.c_str(), command_line_buffer.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup_info, &process_info);
         if (!created)
         {
             Logger::error(L"QuickAccessHost: failed to launch Quick Access host. error={}.", GetLastError());
@@ -126,10 +168,18 @@ namespace QuickAccessHost
         CloseHandle(process_info.hThread);
     }
 
-    void show()
+    void show(const POINT& position)
     {
         start();
         std::scoped_lock lock(quick_access_mutex);
+        if (position_payload)
+        {
+            InterlockedIncrement(&position_payload->sequence);
+            InterlockedExchange(&position_payload->x, position.x);
+            InterlockedExchange(&position_payload->y, position.y);
+            InterlockedIncrement(&position_payload->sequence);
+        }
+
         if (show_event)
         {
             if (!SetEvent(show_event.get()))
@@ -149,7 +199,23 @@ namespace QuickAccessHost
 
         if (quick_access_process)
         {
-            WaitForSingleObject(quick_access_process.get(), 2000);
+            const DWORD wait_result = WaitForSingleObject(quick_access_process.get(), 2000);
+            if (wait_result == WAIT_TIMEOUT)
+            {
+                Logger::warn(L"QuickAccessHost: Quick Access process did not exit in time, terminating.");
+                if (!TerminateProcess(quick_access_process.get(), 0))
+                {
+                    Logger::error(L"QuickAccessHost: failed to terminate Quick Access process. error={}.", GetLastError());
+                }
+                else
+                {
+                    WaitForSingleObject(quick_access_process.get(), 5000);
+                }
+            }
+            else if (wait_result == WAIT_FAILED)
+            {
+                Logger::error(L"QuickAccessHost: failed while waiting for Quick Access process. error={}.", GetLastError());
+            }
         }
 
         reset_state_locked();

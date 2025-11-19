@@ -72,8 +72,7 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
 
 void open_quick_access_flyout_window(const POINT flyout_position)
 {
-    UNREFERENCED_PARAMETER(flyout_position);
-    QuickAccessHost::show();
+    QuickAccessHost::show(flyout_position);
 }
 
 void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)

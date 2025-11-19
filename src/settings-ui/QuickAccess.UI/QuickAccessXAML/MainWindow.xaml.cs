@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.UI.Dispatching;
@@ -28,6 +30,9 @@ public sealed partial class MainWindow : WindowEx
     private bool _isWindowCloaked;
     private bool _initialActivationHandled;
     private bool _isPrimed;
+    private MemoryMappedFile? _positionMap;
+    private MemoryMappedViewAccessor? _positionView;
+    private PointInt32? _lastRequestedPosition;
 
     private const int DefaultWidth = 320;
     private const int DefaultHeight = 480;
@@ -47,6 +52,7 @@ public sealed partial class MainWindow : WindowEx
     private const long WsMinimizeBox = 0x00020000L;
     private const long WsMaximizeBox = 0x00010000L;
     private const long WsExToolWindow = 0x00000080L;
+    private const uint MonitorDefaulttonearest = 0x00000002;
     private static readonly IntPtr HwndTopmost = new(-1);
     private static readonly IntPtr HwndBottom = new(1);
 
@@ -101,6 +107,7 @@ public sealed partial class MainWindow : WindowEx
 
     private void InitializeEventListeners()
     {
+        InitializePositionMapping();
         if (!string.IsNullOrEmpty(_launchContext.ShowEventName))
         {
             try
@@ -133,8 +140,64 @@ public sealed partial class MainWindow : WindowEx
         if (_hwnd != IntPtr.Zero)
         {
             UncloakWindow();
+            var positionApplied = TryReadRequestedPosition(out var requestedPosition);
+            if (!positionApplied && _lastRequestedPosition.HasValue)
+            {
+                requestedPosition = _lastRequestedPosition.Value;
+                positionApplied = true;
+            }
+
+            if (positionApplied)
+            {
+                _lastRequestedPosition = requestedPosition;
+            }
+
             ShowWindowNative(_hwnd, SwShow);
-            SetWindowPosNative(_hwnd, HwndTopmost, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpShowWindow);
+
+            var flags = SwpNoSize | SwpShowWindow;
+            var targetX = 0;
+            var targetY = 0;
+            if (!positionApplied)
+            {
+                flags |= SwpNoMove;
+            }
+            else
+            {
+                var windowSize = _appWindow?.Size;
+                var windowWidth = windowSize?.Width ?? DefaultWidth;
+                var windowHeight = windowSize?.Height ?? DefaultHeight;
+
+                targetX = requestedPosition.X - (windowWidth / 2);
+                targetY = requestedPosition.Y - windowHeight;
+
+                var monitorHandle = MonitorFromPointNative(new NativePoint { X = requestedPosition.X, Y = requestedPosition.Y }, MonitorDefaulttonearest);
+                if (monitorHandle != IntPtr.Zero)
+                {
+                    var monitorInfo = new MonitorInfo { CbSize = Marshal.SizeOf<MonitorInfo>() };
+                    if (GetMonitorInfoNative(monitorHandle, ref monitorInfo))
+                    {
+                        var minX = monitorInfo.RcWork.Left;
+                        var maxX = monitorInfo.RcWork.Right - windowWidth;
+                        if (maxX < minX)
+                        {
+                            maxX = minX;
+                        }
+
+                        targetX = Math.Clamp(targetX, minX, maxX);
+
+                        var minY = monitorInfo.RcWork.Top;
+                        var maxY = monitorInfo.RcWork.Bottom - windowHeight;
+                        if (maxY < minY)
+                        {
+                            maxY = minY;
+                        }
+
+                        targetY = Math.Clamp(targetY, minY, maxY);
+                    }
+                }
+            }
+
+            SetWindowPosNative(_hwnd, HwndTopmost, targetX, targetY, 0, 0, flags);
             BringToForeground(_hwnd);
         }
 
@@ -166,6 +229,7 @@ public sealed partial class MainWindow : WindowEx
         _showEvent = null;
         _exitEvent?.Dispose();
         _exitEvent = null;
+        DisposePositionResources();
         if (_hwnd != IntPtr.Zero)
         {
             UncloakWindow();
@@ -270,6 +334,12 @@ public sealed partial class MainWindow : WindowEx
 
     [DllImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttribute", SetLastError = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    [DllImport("user32.dll", EntryPoint = "MonitorFromPoint", SetLastError = true)]
+    private static extern IntPtr MonitorFromPointNative(NativePoint pt, uint dwFlags);
+
+    [DllImport("user32.dll", EntryPoint = "GetMonitorInfoW", SetLastError = true)]
+    private static extern bool GetMonitorInfoNative(IntPtr hMonitor, ref MonitorInfo lpmi);
 
     private static void BringToForeground(IntPtr hwnd)
     {
@@ -443,6 +513,141 @@ public sealed partial class MainWindow : WindowEx
         thread = null;
     }
 
+    private void InitializePositionMapping()
+    {
+        if (string.IsNullOrEmpty(_launchContext.PositionMapName) || _positionMap != null)
+        {
+            return;
+        }
+
+        try
+        {
+            _positionMap = MemoryMappedFile.OpenExisting(_launchContext.PositionMapName!, MemoryMappedFileRights.Read);
+            _positionView = _positionMap.CreateViewAccessor(0, sizeof(int) * 3, MemoryMappedFileAccess.Read);
+        }
+        catch (FileNotFoundException)
+        {
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+    }
+
+    private bool TryReadRequestedPosition(out PointInt32 position)
+    {
+        position = default;
+        if (_positionView == null)
+        {
+            return false;
+        }
+
+        const int xOffset = 0;
+        const int yOffset = sizeof(int);
+        const int sequenceOffset = sizeof(int) * 2;
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            int startSequence;
+            try
+            {
+                startSequence = _positionView.ReadInt32(sequenceOffset);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            if ((startSequence & 1) != 0)
+            {
+                Thread.Yield();
+                continue;
+            }
+
+            int x;
+            int y;
+            try
+            {
+                x = _positionView.ReadInt32(xOffset);
+                y = _positionView.ReadInt32(yOffset);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            int endSequence;
+            try
+            {
+                endSequence = _positionView.ReadInt32(sequenceOffset);
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            if (startSequence == endSequence)
+            {
+                position = new PointInt32(x, y);
+                return true;
+            }
+
+            Thread.Yield();
+        }
+
+        return false;
+    }
+
+    private void DisposePositionResources()
+    {
+        try
+        {
+            _positionView?.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        _positionView = null;
+
+        try
+        {
+            _positionMap?.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        _positionMap = null;
+        _lastRequestedPosition = null;
+    }
+
     private void CustomizeWindowChrome()
     {
         if (_hwnd == IntPtr.Zero)
@@ -484,5 +689,30 @@ public sealed partial class MainWindow : WindowEx
             // Apply the new chrome immediately so caption buttons disappear right away and the tool-window flag takes effect.
             SetWindowPosNative(_hwnd, IntPtr.Zero, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZorder | SwpNoActivate | SwpFrameChanged);
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MonitorInfo
+    {
+        public int CbSize;
+        public Rect RcMonitor;
+        public Rect RcWork;
+        public uint DwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Rect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
     }
 }

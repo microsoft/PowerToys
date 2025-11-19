@@ -7,12 +7,13 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
-public sealed record QuickAccessLaunchContext(string? ShowEventName, string? ExitEventName)
+public sealed record QuickAccessLaunchContext(string? ShowEventName, string? ExitEventName, string? PositionMapName)
 {
     public static QuickAccessLaunchContext Parse(string[] args)
     {
         string? showEvent = null;
         string? exitEvent = null;
+        string? positionMap = null;
 
         foreach (var arg in args)
         {
@@ -24,9 +25,13 @@ public sealed record QuickAccessLaunchContext(string? ShowEventName, string? Exi
             {
                 exitEvent = value;
             }
+            else if (TryReadValue(arg, "--position-map", out value))
+            {
+                positionMap = value;
+            }
         }
 
-        return new QuickAccessLaunchContext(showEvent, exitEvent);
+        return new QuickAccessLaunchContext(showEvent, exitEvent, positionMap);
     }
 
     private static bool TryReadValue(string candidate, string key, [NotNullWhen(true)] out string? value)
