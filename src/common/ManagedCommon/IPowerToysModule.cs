@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using PowerToys.GPOWrapper;
 
@@ -20,10 +21,12 @@ namespace ManagedCommon
 
         public GpoRuleConfigured GpoRuleConfigured { get; }
 
-        public virtual HotkeyEx? HotkeyEx => null;
+        public Dictionary<HotkeyEx, Action> Hotkeys { get => []; }
 
-        public virtual Action OnHotkey => () => { };
+        public Dictionary<string, Action> CustomActions { get => []; }
 
-        public virtual Action OnSettingsChanged(string settingsKind, JsonElement jsonProperties) => () => { };
+        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        {
+        }
     }
 }

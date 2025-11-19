@@ -2,15 +2,20 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 
-namespace PowerAccent.Core
+namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class ModuleInterface : IPowerToysModule
+    internal sealed class PowerAccentModuleInterface : IPowerToysModule
     {
         public string Name => "PowerAccent";
 
@@ -28,8 +33,6 @@ namespace PowerAccent.Core
 
         public void Enable()
         {
-            Disable();
-
             Process.Start("PowerToys.PowerAccent.exe", Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
         }
     }

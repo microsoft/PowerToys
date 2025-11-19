@@ -4,5 +4,5 @@
 
 namespace ManagedCommon
 {
-    public record HotkeyEx(ushort ModifiersMask, ushort VkCode);
+    public record HotkeyEx(ushort ModifiersMask, ushort VkCode, int Identifier);
 }

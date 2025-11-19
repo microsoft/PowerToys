@@ -16,19 +16,19 @@ namespace RunnerV2.Helpers
 {
     internal static partial class HotkeyManager
     {
-        private static readonly Dictionary<HotkeyEx, Action> _hotkeyActions = [];
+        private static readonly Dictionary<int, Action> _hotkeyActions = [];
 
         [STAThread]
         public static void EnableHotkey(HotkeyEx hotkey, Action onHotkey)
         {
-            if (_hotkeyActions.ContainsKey(hotkey))
+            if (_hotkeyActions.ContainsKey(hotkey.Identifier))
             {
-                return;
+                DisableHotkey(hotkey);
             }
 
-            _hotkeyActions[hotkey] = onHotkey;
+            _hotkeyActions[hotkey.Identifier] = onHotkey;
 
-            if (!RegisterHotKey(Runner.RunnerHwnd, hotkey.GetHashCode(), hotkey.ModifiersMask, hotkey.VkCode))
+            if (!RegisterHotKey(Runner.RunnerHwnd, hotkey.Identifier, hotkey.ModifiersMask, hotkey.VkCode))
             {
                 Console.WriteLine("Failed to register hotkey: " + hotkey);
                 var lastError = Marshal.GetLastWin32Error();
@@ -36,23 +36,29 @@ namespace RunnerV2.Helpers
             }
         }
 
+        [STAThread]
         public static void DisableHotkey(HotkeyEx hotkey)
         {
-            if (!_hotkeyActions.ContainsKey(hotkey))
+            if (!_hotkeyActions.ContainsKey(hotkey.Identifier))
             {
                 return;
             }
 
-            _hotkeyActions.Remove(hotkey);
-            UnregisterHotKey(IntPtr.Zero, hotkey.GetHashCode());
+            _hotkeyActions.Remove(hotkey.Identifier);
+            if (!UnregisterHotKey(Runner.RunnerHwnd, hotkey.Identifier))
+            {
+                Console.WriteLine("Failed to unregister hotkey: " + hotkey);
+                var lastError = Marshal.GetLastWin32Error();
+                Console.WriteLine("LastError: " + lastError);
+            }
         }
 
         public static void ProcessHotkey(nuint hotkeyId)
         {
             ulong hashId = hotkeyId.ToUInt64();
-            if (_hotkeyActions.Any(h => h.Key.GetHashCode() == (int)hashId))
+            if (_hotkeyActions.Any(h => h.Key == (int)hashId))
             {
-                _hotkeyActions.First(h => h.Key.GetHashCode() == (int)hashId).Value();
+                _hotkeyActions.First(h => h.Key == (int)hashId).Value();
             }
         }
     }

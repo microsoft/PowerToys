@@ -31,43 +31,20 @@ namespace RunnerV2
             InitializeTrayWindow();
         }
 
-        private static List<IPowerToysModule> _successfullyAddedModules = [];
+        public static List<IPowerToysModule> LoadedModules { get; } = [];
 
-        public static List<IPowerToysModule> LoadedModules => _successfullyAddedModules;
+        public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
+        [
+            new ModuleInterfaces.AlwaysOnTopModuleInterface(),
+            new ModuleInterfaces.HostsModuleInterface(),
+            new ModuleInterfaces.PowerAccentModuleInterface(),
+        ];
 
         internal static bool Run(Action afterInitializationAction)
         {
             TrayIconManager.StartTrayIcon();
-            FrozenSet<string> modulesToLoad =
-            [
-                "PowerToys.AlwaysOnTopModuleInterface.dll",
-                "WinUI3Apps\\PowerToys.Hosts.dll",
-                "PowerAccent.Core.dll",
-            ];
 
-            List<string> failedModuleLoads = [];
-
-            foreach (string module in modulesToLoad)
-            {
-                try
-                {
-                    Assembly moduleAssembly = Assembly.LoadFrom(Path.GetFullPath(module));
-                    Type moduleInterfaceType = moduleAssembly.GetTypes().First(t => t.GetInterfaces().Any(i => i.Name.StartsWith(typeof(IPowerToysModule).Name, StringComparison.InvariantCulture)));
-                    _successfullyAddedModules.Add((IPowerToysModule)Activator.CreateInstance(moduleInterfaceType)!);
-                }
-                catch (Exception e)
-                {
-                    failedModuleLoads.Add(module);
-                    Console.WriteLine($"Failed to load module {module}: {e.Message}");
-                }
-            }
-
-            if (failedModuleLoads.Count > 0)
-            {
-                MessageBox.Show("The following modules failed to load: \n- " + string.Join("\n- ", failedModuleLoads), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            foreach (IPowerToysModule module in _successfullyAddedModules)
+            foreach (IPowerToysModule module in ModulesToLoad)
             {
                 ToggleModuleStateBasedOnEnabledProperty(module);
             }
@@ -81,12 +58,19 @@ namespace RunnerV2
 
         private static readonly uint _taskbarCreatedMessage = RegisterWindowMessageW("TaskbarCreated");
 
+        [STAThread]
         private static void MessageLoop()
         {
             while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) != 0)
             {
                 TranslateMessage(ref msg);
                 DispatchMessageW(ref msg);
+
+                // Supress duplicate handling of HOTKEY messages
+                if (msg.Message == (uint)WindowMessages.HOTKEY)
+                {
+                    continue;
+                }
 
                 HandleMessage(msg.HWnd, msg.Message, (nint)msg.WParam, (nint)msg.LParam);
             }
@@ -101,14 +85,14 @@ namespace RunnerV2
             SettingsHelper.CloseSettingsWindow();
             ElevationHelper.RestartIfScheudled();
 
-            foreach (IPowerToysModule module in _successfullyAddedModules)
+            foreach (IPowerToysModule module in LoadedModules)
             {
                 try
                 {
                     module.Disable();
-                    if (module.HotkeyEx is not null)
+                    foreach (var hotkey in module.Hotkeys)
                     {
-                        HotkeyManager.DisableHotkey(module.HotkeyEx);
+                        HotkeyManager.DisableHotkey(hotkey.Key);
                     }
                 }
                 catch (Exception e)
@@ -130,9 +114,14 @@ namespace RunnerV2
 
                     /* Todo: conflict manager */
 
-                    if (module.HotkeyEx is not null)
+                    foreach (var hotkey in module.Hotkeys)
                     {
-                        HotkeyManager.EnableHotkey(module.HotkeyEx, module.OnHotkey);
+                        HotkeyManager.EnableHotkey(hotkey.Key, hotkey.Value);
+                    }
+
+                    if (!LoadedModules.Contains(module))
+                    {
+                        LoadedModules.Add(module);
                     }
                 }
                 catch (Exception e)
@@ -147,10 +136,12 @@ namespace RunnerV2
             {
                 module.Disable();
 
-                if (module.HotkeyEx is not null)
+                foreach (var hotkey in module.Hotkeys)
                 {
-                    HotkeyManager.DisableHotkey(module.HotkeyEx);
+                    HotkeyManager.DisableHotkey(hotkey.Key);
                 }
+
+                LoadedModules.Remove(module);
             }
             catch (Exception e)
             {
@@ -204,21 +195,12 @@ namespace RunnerV2
             }
         }
 
-        private static bool _handledShortcut;
-
         private static IntPtr HandleMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             switch (msg)
             {
                 case (uint)WindowMessages.HOTKEY:
-                    if (_handledShortcut)
-                    {
-                        _handledShortcut = false;
-                        break;
-                    }
-
                     HotkeyManager.ProcessHotkey((nuint)wParam);
-                    _handledShortcut = true;
                     break;
                 case (uint)WindowMessages.ICON_NOTIFY:
                     TrayIconManager.ProcessTrayIconMessage(lParam);
@@ -231,6 +213,13 @@ namespace RunnerV2
                     break;
                 case (uint)WindowMessages.DESTROY:
                     Close();
+                    break;
+                case (uint)WindowMessages.REFRESH_SETTINGS:
+                    foreach (IPowerToysModule module in ModulesToLoad)
+                    {
+                        ToggleModuleStateBasedOnEnabledProperty(module);
+                    }
+
                     break;
                 default:
                     if (msg == _taskbarCreatedMessage)

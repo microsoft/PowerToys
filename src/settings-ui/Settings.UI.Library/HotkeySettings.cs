@@ -340,7 +340,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 modifiers += 0x0008;
             }
 
-            return new HotkeyEx(modifiers, (ushort)settings.Code);
+            return new HotkeyEx(modifiers, (ushort)settings.Code, 0);
         }
     }
 }

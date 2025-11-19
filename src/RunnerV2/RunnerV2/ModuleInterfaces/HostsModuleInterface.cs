@@ -3,15 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 
-namespace Hosts
+namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class ModuleInterface : IPowerToysModule
+    internal sealed class HostsModuleInterface : IPowerToysModule
     {
         public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.Hosts;
 

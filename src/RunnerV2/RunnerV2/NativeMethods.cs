@@ -116,6 +116,13 @@ namespace RunnerV2
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DispatchMessageW(ref MSG lpMsg);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool PostMessageW(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        [LibraryImport("kernel32.dll")]
+        internal static partial ushort AddAtomW([MarshalAs(UnmanagedType.LPWStr)] string lpString);
+
         internal struct MSG
         {
             public IntPtr HWnd;
@@ -133,6 +140,7 @@ namespace RunnerV2
             ICON_NOTIFY = 0x0800,
             WINDOWPOSCHANGING = 0x0046,
             DESTROY = 0x0002,
+            REFRESH_SETTINGS = 0x0400 + 2,
         }
 
         [DllImport("user32.dll")]

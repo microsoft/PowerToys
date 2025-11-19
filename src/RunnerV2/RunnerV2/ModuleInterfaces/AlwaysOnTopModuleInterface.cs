@@ -3,17 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
+using System.Text.Json;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 
-namespace AlwaysOnTopModuleInterface
+namespace RunnerV2.ModuleInterfaces
 {
-    public partial class ModuleInterface : IPowerToysModule, IDisposable
+    public partial class AlwaysOnTopModuleInterface : IPowerToysModule, IDisposable
     {
+        private static readonly ushort _pinHotkeyAtom = NativeMethods.AddAtomW("PowerToys_AlwaysOnTop_PinHotkey");
+
         public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
 
         public string Name => "AlwaysOnTop";
@@ -29,13 +32,17 @@ namespace AlwaysOnTopModuleInterface
             InteropEvent terminateEventWrapper = new(InteropEvent.AlwaysOnTopTerminate);
             terminateEventWrapper.Fire();
             terminateEventWrapper.Dispose();
-            _process?.Dispose();
             _pinEventWrapper?.Dispose();
             _pinEventWrapper = null;
         }
 
         public void Enable()
         {
+            if (_process?.HasExited == false)
+            {
+                return;
+            }
+
             _pinEventWrapper = new InteropEvent(InteropEvent.AlwaysOnTopPin);
 
             var psi = new ProcessStartInfo
@@ -48,15 +55,29 @@ namespace AlwaysOnTopModuleInterface
             _process = Process.Start(psi);
         }
 
-        public HotkeyEx HotkeyEx => new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value;
-
-        public Action OnHotkey => () =>
+        public AlwaysOnTopModuleInterface()
         {
-            if (!_process?.HasExited ?? false)
+            InitializeHotkey();
+        }
+
+        private void InitializeHotkey()
+        {
+            Hotkeys.Clear();
+            Hotkeys.Add(((HotkeyEx)new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value) with { Identifier = 0x1 }, () =>
             {
-                _pinEventWrapper?.Fire();
-            }
-        };
+                if (!_process?.HasExited ?? false)
+                {
+                    _pinEventWrapper?.Fire();
+                }
+            });
+        }
+
+        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
+        {
+            InitializeHotkey();
+        }
+
+        public Dictionary<HotkeyEx, Action> Hotkeys { get; } = [];
 
         public void Dispose()
         {

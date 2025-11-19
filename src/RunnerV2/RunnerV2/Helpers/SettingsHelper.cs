@@ -13,6 +13,7 @@ using System.Text.Json;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
+using Windows.Media.Devices;
 
 namespace RunnerV2.Helpers
 {
@@ -113,16 +114,32 @@ namespace RunnerV2.Helpers
                 switch (property.Name)
                 {
                     case "action":
-                        _settingsUtils.SaveSettings(property.Value.GetProperty("general").ToString(), string.Empty);
-                        switch (property.Value.GetProperty("general").GetProperty("action_name").GetString())
+                        foreach (var moduleName in property.Value.EnumerateObject())
                         {
-                            case "restart_elevation":
-                                ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevatedWithOpenSettings;
-                                Runner.Close();
+                            _settingsUtils.SaveSettings(moduleName.Value.ToString(), moduleName.Name);
+                            if (moduleName.Name == "general")
+                            {
+                                switch (moduleName.Value.GetProperty("action_name").GetString())
+                                {
+                                    case "restart_elevation":
+                                        ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevatedWithOpenSettings;
+                                        Runner.Close();
+                                        break;
+                                    case "request_update_state_date":
+                                        // Todo:
+                                        break;
+                                }
+
                                 break;
-                            case "request_update_state_date":
-                                // Todo:
-                                break;
+                            }
+
+                            foreach (IPowerToysModule ptModule in Runner.LoadedModules)
+                            {
+                                if (ptModule.CustomActions.TryGetValue(moduleName.Value.GetProperty("action_name").GetString() ?? string.Empty, out Action? action))
+                                {
+                                    action();
+                                }
+                            }
                         }
 
                         break;
@@ -140,10 +157,11 @@ namespace RunnerV2.Helpers
                         break;
                     case "general":
                         _settingsUtils.SaveSettings(property.Value.ToString(), string.Empty);
-                        foreach (IPowerToysModule module in Runner.LoadedModules)
+                        NativeMethods.PostMessageW(Runner.RunnerHwnd, (uint)NativeMethods.WindowMessages.REFRESH_SETTINGS, 0, 0);
+
+                        foreach (IPowerToysModule module in Runner.ModulesToLoad)
                         {
                             module.OnSettingsChanged("general", property.Value);
-                            Runner.ToggleModuleStateBasedOnEnabledProperty(module);
                         }
 
                         break;
@@ -164,6 +182,8 @@ namespace RunnerV2.Helpers
                                     module2.OnSettingsChanged(powertoysSettingsPart.Name, powertoysSettingsPart.Value);
                                 }
                             }
+
+                            NativeMethods.PostMessageW(Runner.RunnerHwnd, (uint)NativeMethods.WindowMessages.REFRESH_SETTINGS, 0, 0);
                         }
 
                         break;
