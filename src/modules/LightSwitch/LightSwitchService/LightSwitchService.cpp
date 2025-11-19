@@ -170,7 +170,15 @@ static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateMan
     }
 
     // Use shared helper (handles wraparound logic)
-    bool shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
+    bool shouldBeLight = false;
+    if (s.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        shouldBeLight = !IsNightLightEnabled();
+    } 
+    else
+    {
+        shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
+    }
 
     // Compare current system/apps theme
     bool currentSystemLight = GetCurrentSystemTheme();
