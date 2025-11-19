@@ -198,7 +198,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            // Notify that DashboardSortOrder changed to update menu checkmarks.
+            // Notify that DashboardSortOrder changed so the menu updates its checked state.
             OnPropertyChanged(nameof(DashboardSortOrder));
         }
 
