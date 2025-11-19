@@ -63,7 +63,7 @@ namespace RunnerV2.ModuleInterfaces
         private void InitializeHotkey()
         {
             Hotkeys.Clear();
-            Hotkeys.Add(((HotkeyEx)new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value) with { Identifier = 0x1 }, () =>
+            Hotkeys.Add(((HotkeyEx)new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value) with { Identifier = _pinHotkeyAtom }, () =>
             {
                 if (!_process?.HasExited ?? false)
                 {
