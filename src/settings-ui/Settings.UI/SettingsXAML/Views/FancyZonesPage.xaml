@@ -192,7 +192,7 @@
                         x:Uid="FancyZones_WindowSwitching_GroupSettings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.Name="FancyZonesWindowSwitchingToggle" x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
                             <tkcontrols:SettingsCard Name="FancyZonesWindowSwitchingPlaceholder" Visibility="Collapsed" />
@@ -259,7 +259,7 @@
                         Name="FancyZonesQuickLayoutSwitch"
                         x:Uid="FancyZones_QuickLayoutSwitch"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.Name="FancyZonesQuickLayoutSwitch" x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="FancyZonesFlashZonesOnQuickSwitch"

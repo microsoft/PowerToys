@@ -598,7 +598,7 @@ namespace UITests_FancyZones
             this.TryReaction();
             int tries = 24;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
-            this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
+            this.Find<ToggleSwitch>("FancyZonesQuickLayoutSwitch").Toggle(flag);
 
             tries = 24;
             Pull(tries, "up");

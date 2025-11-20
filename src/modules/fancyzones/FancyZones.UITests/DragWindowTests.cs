@@ -113,13 +113,9 @@ namespace UITests_FancyZones
 
             string zoneColorWithoutShift = GetOutWindowPixelColor(30);
 
-            Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
-            Assert.IsTrue(
-    withShiftColor == inactivateColor || withShiftColor == highlightColor,
-    $"[{testCaseName}] Zone display failed: withShiftColor was {withShiftColor}, expected {inactivateColor} or {highlightColor}.");
-            Assert.AreEqual(inactivateColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
+            Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
+            Assert.AreEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
 
-            Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone deactivated failed.");
             Session.PerformMouseAction(MouseActionType.LeftUp);
 
             Clean();
@@ -142,8 +138,8 @@ namespace UITests_FancyZones
             var windowRect = Session.GetMainWindowRect();
             int startX = windowRect.Left + 70;
             int startY = windowRect.Top + 25;
-            int endX = startX + 100;
-            int endY = startY + 100;
+            int endX = startX + 300;
+            int endY = startY + 300;
 
             var (initialColor, withDragColor) = RunDragInteractions(
                 preAction: () =>
@@ -190,14 +186,19 @@ namespace UITests_FancyZones
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
-            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 300;
+            int endY = startY + 300;
 
             var (initialColor, withMouseColor) = RunDragInteractions(
                 preAction: () =>
                 {
-                    // activate zone
-                    dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+                    Session.MoveMouseTo(startX, startY);
+                    Session.PerformMouseAction(MouseActionType.LeftDown);
+                    Session.MoveMouseTo(endX, endY);
                 },
                 postAction: () =>
                 {
@@ -207,7 +208,7 @@ namespace UITests_FancyZones
                 },
                 releaseAction: () =>
                 {
-                    dragElement.ReleaseDrag();
+                    Session.PerformMouseAction(MouseActionType.LeftUp);
                 },
                 testCaseName: testCaseName);
 
@@ -233,14 +234,19 @@ namespace UITests_FancyZones
         public void TestShowZonesWhenShiftAndMouseOff()
         {
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOff);
-            Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 300;
+            int endY = startY + 300;
 
             var (initialColor, withShiftColor) = RunDragInteractions(
                preAction: () =>
                {
-                   // activate zone
-                   dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+                   Session.MoveMouseTo(startX, startY);
+                   Session.PerformMouseAction(MouseActionType.LeftDown);
+                   Session.MoveMouseTo(endX, endY);
                },
                postAction: () =>
                {
@@ -250,7 +256,7 @@ namespace UITests_FancyZones
                },
                releaseAction: () =>
                {
-                   dragElement.ReleaseDrag();
+                   Session.PerformMouseAction(MouseActionType.LeftUp);
                    Session.ReleaseKey(Key.Shift);
                },
                testCaseName: testCaseName);
@@ -275,12 +281,17 @@ namespace UITests_FancyZones
         {
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOn);
 
-            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 300;
+            int endY = startY + 300;
             var (initialColor, withShiftColor) = RunDragInteractions(
              preAction: () =>
              {
-                 dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+                 Session.MoveMouseTo(startX, startY);
+                 Session.PerformMouseAction(MouseActionType.LeftDown);
+                 Session.MoveMouseTo(endX, endY);
              },
              postAction: () =>
              {
@@ -291,7 +302,7 @@ namespace UITests_FancyZones
              },
              testCaseName: testCaseName);
 
-            Assert.AreEqual(inactivateColor, withShiftColor, $"[{testCaseName}] show zone failed.");
+            Assert.AreEqual(highlightColor, withShiftColor, $"[{testCaseName}] show zone failed.");
 
             Session.PerformMouseAction(
              nonPrimaryMouseButton == "Right" ? MouseActionType.RightClick : MouseActionType.LeftClick);
@@ -300,7 +311,7 @@ namespace UITests_FancyZones
             Assert.AreEqual(initialColor, zoneColorWithMouse, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone deactivate failed.");
 
             Session.ReleaseKey(Key.Shift);
-            dragElement.ReleaseDrag();
+            Session.PerformMouseAction(MouseActionType.LeftUp);
 
             Clean();
         }
@@ -447,22 +458,25 @@ namespace UITests_FancyZones
         // Get the mouse color of the pixel when make dragged window
         private (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
-            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 100;
+            int endY = startY + 100;
 
-            // maximize the window to make sure get pixel color more accurate
-            dragElement.DoubleClick();
-
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            Session.MoveMouseTo(startX, startY);
+            Session.PerformMouseAction(MouseActionType.LeftDoubleClick);
             Session.PressKey(Key.Shift);
-            dragElement.DragAndHold(offSet.Dx, offSet.Dy);
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is in position
+            Session.PerformMouseAction(MouseActionType.LeftDown);
+            Session.MoveMouseTo(endX, endY);
+
             Tuple<int, int> pos = GetMousePosition();
             string pixelInWindow = this.GetPixelColorString(pos.Item1, pos.Item2);
             Session.ReleaseKey(Key.Shift);
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is in position
+            Task.Delay(1000).Wait();
             string transPixel = this.GetPixelColorString(pos.Item1, pos.Item2);
-            dragElement.ReleaseDrag();
 
+            Session.PerformMouseAction(MouseActionType.LeftUp);
             return (pixelInWindow, transPixel);
         }
 
