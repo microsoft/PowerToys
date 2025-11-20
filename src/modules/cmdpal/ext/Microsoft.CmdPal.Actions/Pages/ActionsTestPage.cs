@@ -297,61 +297,6 @@ internal sealed partial class PhotoFilePicker : FilePickerParameterRun
     }
 }
 
-
-// [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
-// public partial class ImageParameter : CommandParameter
-// {
-//    private string? _filePath;
-
-// public ImageParameter(string name = "", bool required = true)
-//        : base(name, required, ParameterType.Custom)
-//    {
-//    }
-
-// public override void ShowPicker(ulong hostHwnd)
-//    {
-//        var picker = new FileOpenPicker
-//        {
-//            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-//        };
-//        picker.FileTypeFilter.Add(".jpg");
-//        picker.FileTypeFilter.Add(".jpeg");
-//        picker.FileTypeFilter.Add(".png");
-//        picker.FileTypeFilter.Add(".gif");
-//        picker.FileTypeFilter.Add(".bmp");
-//        picker.FileTypeFilter.Add(".tiff");
-//        picker.FileTypeFilter.Add(".webp");
-
-// // Initialize the picker with the window handle
-//        WinRT.Interop.InitializeWithWindow.Initialize(picker, (IntPtr)hostHwnd);
-
-// _ = Task.Run(async () =>
-//        {
-//            try
-//            {
-//                var file = await picker.PickSingleFileAsync();
-//                if (file != null)
-//                {
-//                    _filePath = file.Path;
-//                    Value = _filePath;
-//                    Icon = new IconInfo(_filePath);
-
-// // TODO! update display name
-//                }
-//            }
-//            catch (Exception ex)
-//            {
-//                // Handle any exceptions that might occur during file picking
-//                System.Diagnostics.Debug.WriteLine($"Error picking image file: {ex.Message}");
-//            }
-//        });
-//    }
-
-// public override string? DisplayName
-//    {
-//        get { return string.IsNullOrEmpty(_filePath) ? null : Path.GetFileName(_filePath); }
-//    }
-// }
 #pragma warning restore SA1649 // File name should match first type name
 #pragma warning restore SA1402 // File may only contain a single type
 #nullable disable

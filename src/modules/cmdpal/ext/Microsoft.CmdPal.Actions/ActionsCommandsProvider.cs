@@ -19,7 +19,7 @@ public partial class ActionsCommandsProvider : CommandProvider
 
     public ActionsCommandsProvider()
     {
-        DisplayName = "Agents for Windows";
+        DisplayName = "Windows Actions Framework";
         Icon = IconHelpers.FromRelativePath("Assets\\Actions.png");
         Id = "Actions";
 
