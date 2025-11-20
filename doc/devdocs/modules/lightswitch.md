@@ -34,7 +34,7 @@ The **Light Switch** module lets users automatically transition between light an
   > **Note:** Using the shortcut overrides the current schedule until the next transition event.
 
 * **LightSwitchService.cpp**
-  is he heart beat of the module. Controls ticking every minute and depending on user actions (manual override, settings changing, etc) triggers the state manager to perform the corresponding operation.
+  is the heart beat of the module. Controls ticking every minute and depending on user actions (manual override, settings changing, etc) triggers the state manager to perform the corresponding operation.
   
 * **LightSwitchStateMangager.cpp**
   handles updating the state based on the signals sent by LightSwitchService.
