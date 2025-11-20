@@ -26,18 +26,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("colorTemperature")]
         public int? ColorTemperature { get; set; }
 
+        [JsonPropertyName("monitorInternalName")]
+        public string MonitorInternalName { get; set; }
+
         public ProfileMonitorSetting()
         {
             HardwareId = string.Empty;
+            MonitorInternalName = string.Empty;
         }
 
-        public ProfileMonitorSetting(string hardwareId, int? brightness = null, int? colorTemperature = null, int? contrast = null, int? volume = null)
+        public ProfileMonitorSetting(string hardwareId, int? brightness = null, int? colorTemperature = null, int? contrast = null, int? volume = null, string monitorInternalName = "")
         {
             HardwareId = hardwareId;
             Brightness = brightness;
             ColorTemperature = colorTemperature;
             Contrast = contrast;
             Volume = volume;
+            MonitorInternalName = monitorInternalName;
         }
     }
 }

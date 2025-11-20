@@ -108,7 +108,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     m.IncludeBrightness ? (int?)m.Brightness : null,
                     m.IncludeColorTemperature && m.SupportsColorTemperature ? (int?)m.ColorTemperature : null,
                     m.IncludeContrast && m.SupportsContrast ? (int?)m.Contrast : null,
-                    m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null))
+                    m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null,
+                    m.Monitor.InternalName))
                 .ToList();
 
             return new PowerDisplayProfile(_profileName, settings);

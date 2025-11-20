@@ -70,7 +70,7 @@
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" 
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                             <TextBlock 
-                                                Text="{x:Bind Monitor.HardwareId}" 
+                                                Text="{x:Bind Monitor.InternalName}" 
                                                 Style="{StaticResource CaptionTextBlockStyle}" 
                                                 Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                                         </StackPanel>
@@ -100,7 +100,7 @@
                                                     Text="{x:Bind Monitor.Name}" 
                                                     Style="{StaticResource BodyStrongTextBlockStyle}" />
                                                 <TextBlock 
-                                                    Text="{x:Bind Monitor.HardwareId}" 
+                                                    Text="{x:Bind Monitor.InternalName}" 
                                                     Style="{StaticResource CaptionTextBlockStyle}" 
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             </StackPanel>

@@ -324,6 +324,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     public string HardwareId => _monitor.HardwareId;
 
+    public string InternalName => _monitor.Id;
+
     public string Name => _monitor.Name;
 
     public string Manufacturer => _monitor.Manufacturer;

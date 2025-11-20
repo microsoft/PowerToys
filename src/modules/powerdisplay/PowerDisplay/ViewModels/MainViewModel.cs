@@ -591,16 +591,27 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         foreach (var setting in monitorSettings)
         {
-            // Find monitor by HardwareId
-            var monitorVm = Monitors.FirstOrDefault(m => m.HardwareId == setting.HardwareId);
+            // Find monitor by InternalName first (unique identifier), fallback to HardwareId for old profiles
+            MonitorViewModel? monitorVm = null;
+            
+            if (!string.IsNullOrEmpty(setting.MonitorInternalName))
+            {
+                monitorVm = Monitors.FirstOrDefault(m => m.InternalName == setting.MonitorInternalName);
+            }
+            
+            // Fallback to HardwareId for backward compatibility with old profiles
+            if (monitorVm == null)
+            {
+                monitorVm = Monitors.FirstOrDefault(m => m.HardwareId == setting.HardwareId);
+            }
 
             if (monitorVm == null)
             {
-                Logger.LogWarning($"[Profile] Monitor with HardwareId '{setting.HardwareId}' not found (disconnected?)");
+                Logger.LogWarning($"[Profile] Monitor with InternalName '{setting.MonitorInternalName}' or HardwareId '{setting.HardwareId}' not found (disconnected?)");
                 continue;
             }
 
-            Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (HardwareId: {setting.HardwareId})");
+            Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (InternalName: {setting.MonitorInternalName}, HardwareId: {setting.HardwareId})");
 
             // Apply brightness if included in profile
             if (setting.Brightness.HasValue &&
