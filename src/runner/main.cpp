@@ -161,6 +161,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.MouseJump.dll",
             L"PowerToys.AlwaysOnTopModuleInterface.dll",
             L"PowerToys.MousePointerCrosshairs.dll",
+            L"PowerToys.CursorWrap.dll",
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
@@ -177,6 +178,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.WorkspacesModuleInterface.dll",
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
+            L"PowerToys.LightSwitchModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)

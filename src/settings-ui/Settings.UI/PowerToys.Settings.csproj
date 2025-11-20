@@ -20,8 +20,17 @@
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
 	<ItemGroup>
+		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
+		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
+		<None Remove="Assets\Settings\Icons\Models\Onnx.svg" />
+		<None Remove="Assets\Settings\Icons\Models\OpenAI.dark.svg" />
+		<None Remove="Assets\Settings\Icons\Models\OpenAI.light.svg" />
+		<None Remove="Assets\Settings\Icons\Models\WindowsML.svg" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
+		<None Remove="Assets\Settings\Modules\CmdPal_Background.png" />
+		<None Remove="Assets\Settings\Modules\CmdPal_Hero.png" />
+		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
@@ -53,10 +62,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- AI Model Provider Icons - SVG files -->
+		<Content Include="Assets\Settings\Icons\Models\*.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<EmbeddedResource Include="Images\MouseJump-Desktop.png" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
@@ -104,6 +121,7 @@
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+		<ProjectReference Include="..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 	</ItemGroup>
@@ -156,7 +174,9 @@
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</None>
+		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
 			<Generator>MSBuild:Compile</Generator>
@@ -170,6 +190,12 @@
 		<Page Update="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+		    <Page Update="SettingsXAML\Controls\Timeline\TimelineStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="SettingsXAML\Controls\Timeline\Timeline.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
 	</ItemGroup>
 
 	<ItemGroup>

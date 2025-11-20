@@ -21,7 +21,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -48,7 +47,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
-    INotifyPropertyChanged
+    INotifyPropertyChanged,
+    IDisposable
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -64,6 +64,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
+
+    private CancellationTokenSource? _focusAfterLoadedCts;
+    private WeakReference<Page>? _lastNavigatedPageRef;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -95,10 +98,22 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
-        RootFrame.Navigate(typeof(LoadingPage), ViewModel);
+        RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
+    }
+
+    /// <summary>
+    /// Gets the default page animation, depending on the settings
+    /// </summary>
+    private NavigationTransitionInfo DefaultPageAnimation
+    {
+        get
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
+        }
     }
 
     public void Receive(NavigateBackMessage message)
@@ -142,10 +157,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     ParametersPageViewModel => typeof(ParametersPage),
                     _ => throw new NotSupportedException(),
                 },
-                message.Page,
-                message.WithAnimation ? _slideRightTransition : _noAnimation);
+                new AsyncNavigationRequest(message.Page, message.CancellationToken),
+                message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
-            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
+            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
 
             if (!ViewModel.IsNested)
             {
@@ -392,6 +407,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         HideDetails();
 
+        ViewModel.CancelNavigation();
+
         // Note: That we restore the VM state below in RootFrame_Navigated call back after this occurs.
         // In the future, we may want to manage the back stack ourselves vs. relying on Frame
         // We could replace Frame with a ContentPresenter, but then have to manage transition animations ourselves.
@@ -434,7 +451,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         while (RootFrame.CanGoBack)
         {
-            GoBack(withAnimation, focusSearch);
+            // don't focus on each step, just at the end
+            GoBack(withAnimation, focusSearch: false);
+        }
+
+        // focus search box, even if we were already home
+        if (focusSearch)
+        {
+            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            SearchBox.SelectSearch();
         }
     }
 
@@ -445,15 +470,37 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // This listens to the root frame to ensure that we also track the content's page VM as well that we passed as a parameter.
         // This is currently used for both forward and backward navigation.
         // As when we go back that we restore ourselves to the proper state within our VM
-        if (e.Parameter is PageViewModel page)
+        if (e.Parameter is AsyncNavigationRequest request)
         {
-            // Note, this shortcuts and fights a bit with our LoadPageViewModel above, but we want to better fast display and incrementally load anyway
-            // We just need to reconcile our loading systems a bit more in the future.
-            ViewModel.CurrentPage = page;
+            if (request.NavigationToken.IsCancellationRequested && e.NavigationMode is not (Microsoft.UI.Xaml.Navigation.NavigationMode.Back or Microsoft.UI.Xaml.Navigation.NavigationMode.Forward))
+            {
+                return;
+            }
+
+            switch (request.TargetViewModel)
+            {
+                case PageViewModel pageViewModel:
+                    ViewModel.CurrentPage = pageViewModel;
+                    break;
+                case ShellViewModel:
+                    // This one is an exception, for now (LoadingPage is tied to ShellViewModel,
+                    // but ShellViewModel is not PageViewModel.
+                    ViewModel.CurrentPage = ViewModel.NullPage;
+                    break;
+                default:
+                    ViewModel.CurrentPage = ViewModel.NullPage;
+                    Logger.LogWarning($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(PageViewModel)}");
+                    break;
+            }
+        }
+        else
+        {
+            Logger.LogWarning("Unrecognized target for shell navigation: " + e.Parameter);
         }
 
         if (e.Content is Page element)
         {
+            _lastNavigatedPageRef = new WeakReference<Page>(element);
             element.Loaded += FocusAfterLoaded;
         }
     }
@@ -462,6 +509,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         var page = (Page)sender;
         page.Loaded -= FocusAfterLoaded;
+
+        // Only handle focus for the latest navigated page
+        if (_lastNavigatedPageRef is null || !_lastNavigatedPageRef.TryGetTarget(out var last) || !ReferenceEquals(page, last))
+        {
+            return;
+        }
+
+        // Cancel any previous pending focus work
+        _focusAfterLoadedCts?.Cancel();
+        _focusAfterLoadedCts?.Dispose();
+        _focusAfterLoadedCts = new CancellationTokenSource();
+        var token = _focusAfterLoadedCts.Token;
 
         AnnounceNavigationToPage(page);
 
@@ -475,34 +534,57 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else
         {
-            _ = Task.Run(async () =>
-            {
-                await page.DispatcherQueue.EnqueueAsync(async () =>
+            _ = Task.Run(
+                async () =>
                 {
-                    // I hate this so much, but it can take a while for the page to be ready to accept focus;
-                    // focusing page with MarkdownTextBlock takes up to 5 attempts (* 100ms delay between attempts)
-                    for (var i = 0; i < 10; i++)
+                    if (token.IsCancellationRequested)
                     {
-                        if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement frameworkElement)
-                        {
-                            var set = frameworkElement.Focus(FocusState.Programmatic);
-                            if (set)
-                            {
-                                break;
-                            }
-                        }
-
-                        await Task.Delay(100);
+                        return;
                     }
 
-                    // Update the search box visibility based on the current page:
-                    // - We do this here after navigation so the focus is not jumping around too much,
-                    //   it messes with screen readers if we do it too early
-                    // - Since this should hide the search box on content pages, it's not a problem if we
-                    //   wait for the code above to finish trying to focus the content
-                    ViewModel.IsSearchBoxVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
-                });
-            });
+                    try
+                    {
+                        await page.DispatcherQueue.EnqueueAsync(
+                            async () =>
+                            {
+                                // I hate this so much, but it can take a while for the page to be ready to accept focus;
+                                // focusing page with MarkdownTextBlock takes up to 5 attempts (* 100ms delay between attempts)
+                                for (var i = 0; i < 10; i++)
+                                {
+                                    token.ThrowIfCancellationRequested();
+
+                                    if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement frameworkElement)
+                                    {
+                                        var set = frameworkElement.Focus(FocusState.Programmatic);
+                                        if (set)
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    await Task.Delay(100, token);
+                                }
+
+                                token.ThrowIfCancellationRequested();
+
+                                // Update the search box visibility based on the current page:
+                                // - We do this here after navigation so the focus is not jumping around too much,
+                                //   it messes with screen readers if we do it too early
+                                // - Since this should hide the search box on content pages, it's not a problem if we
+                                //   wait for the code above to finish trying to focus the content
+                                ViewModel.IsSearchBoxVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
+                            });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Swallow cancellation - another FocusAfterLoaded invocation superseded this one
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Error during FocusAfterLoaded async focus work", ex);
+                    }
+                },
+                token);
         }
     }
 
@@ -550,25 +632,38 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == VirtualKey.Left && e.KeyStatus.IsMenuKeyDown)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-            e.Handled = true;
-        }
-        else
-        {
-            var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-            var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-                             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+                         InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
 
-            // The CommandBar is responsible for handling all the item keybindings,
-            // since the bound context item may need to then show another
-            // context menu
-            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-            WeakReferenceMessenger.Default.Send(msg);
-            e.Handled = msg.Handled;
+        var onlyAlt = altPressed && !ctrlPressed && !shiftPressed && !winPressed;
+        var onlyCtrl = !altPressed && ctrlPressed && !shiftPressed && !winPressed;
+        switch (e.Key)
+        {
+            case VirtualKey.Left when onlyAlt: // Alt+Left arrow
+                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                e.Handled = true;
+                break;
+            case VirtualKey.Home when onlyAlt: // Alt+Home
+                WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
+                e.Handled = true;
+                break;
+            case (VirtualKey)188 when onlyCtrl: // Ctrl+,
+                WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                e.Handled = true;
+                break;
+            default:
+                {
+                    // The CommandBar is responsible for handling all the item keybindings,
+                    // since the bound context item may need to then show another
+                    // context menu
+                    TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                    WeakReferenceMessenger.Default.Send(msg);
+                    e.Handled = msg.Handled;
+                    break;
+                }
         }
     }
 
@@ -617,5 +712,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    public void Dispose()
+    {
+        _focusAfterLoadedCts?.Cancel();
+        _focusAfterLoadedCts?.Dispose();
+        _focusAfterLoadedCts = null;
     }
 }

@@ -238,6 +238,16 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.PageDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageUp)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+            e.Handled = true;
+        }
 
         if (InSuggestion)
         {

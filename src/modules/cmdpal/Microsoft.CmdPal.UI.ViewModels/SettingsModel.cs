@@ -52,6 +52,10 @@ public partial class SettingsModel : ObservableObject
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
 
+    public bool DisableAnimations { get; set; } = true;
+
+    public WindowPosition? LastWindowPosition { get; set; }
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
@@ -189,6 +193,7 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(bool))]
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
+[JsonSerializable(typeof(WindowPosition))]
 [JsonSerializable(typeof(AppStateModel))]
 [JsonSerializable(typeof(RecentCommandsManager))]
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
@@ -206,4 +211,5 @@ public enum MonitorBehavior
     ToPrimary = 1,
     ToFocusedWindow = 2,
     InPlace = 3,
+    ToLast = 4,
 }

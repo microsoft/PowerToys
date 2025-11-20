@@ -62,7 +62,9 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <!-- Only enable Native AOT for Release builds to avoid System.Private.CoreLib.dll version conflicts during development -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishTrimmed>true</PublishTrimmed>
     <PublishSingleFile>true</PublishSingleFile>
     <IsAotCompatible>true</IsAotCompatible>
 
@@ -91,6 +93,13 @@
     <!-- In Release builds, trimming is enabled by default. 
          feel free to disable this if needed -->
     <PublishTrimmed>true</PublishTrimmed>
+  </PropertyGroup>
+
+  <!-- For Debug builds, use standard JIT compilation -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishAot>false</PublishAot>
   </PropertyGroup>
 
 </Project>
