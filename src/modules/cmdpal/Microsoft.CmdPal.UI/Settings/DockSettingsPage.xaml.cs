@@ -137,13 +137,20 @@ public sealed partial class DockSettingsPage : Page
         // var allBands = GetAllBands();
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsModel = App.Current.Services.GetService<SettingsModel>()!;
+        var dockViewModel = App.Current.Services.GetService<DockViewModel>()!;
         var allBands = tlcManager.DockBands;
         foreach (var band in allBands)
         {
             var setting = band.DockBandSettings;
             if (setting is not null)
             {
-                allSettings.Add(new(setting, band, settingsModel));
+                var bandVm = dockViewModel.FindBandByTopLevel(band);
+                allSettings.Add(new(
+                    dockSettingsModel: setting,
+                    topLevelAdapter: band,
+                    bandViewModel: bandVm,
+                    settingsModel: settingsModel
+                ));
             }
         }
 

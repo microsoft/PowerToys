@@ -112,6 +112,33 @@ public sealed partial class DockViewModel : IDisposable,
         return band;
     }
 
+    public DockBandViewModel? FindBandByTopLevel(TopLevelViewModel tlc)
+    {
+        var id = tlc.Id;
+        return FindBandById(id);
+    }
+
+    public DockBandViewModel? FindBandById(string id)
+    {
+        foreach (var band in StartItems)
+        {
+            if (band.Id == id)
+            {
+                return band;
+            }
+        }
+
+        foreach (var band in EndItems)
+        {
+            if (band.Id == id)
+            {
+                return band;
+            }
+        }
+
+        return null;
+    }
+
     public void ShowException(Exception ex, string? extensionHint = null)
     {
         var extensionText = extensionHint ?? "<unknown>";
@@ -186,6 +213,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
     private readonly SettingsModel _settingsModel;
     private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
+    private readonly DockBandViewModel? _bandViewModel;
 
     public string Title => _adapter.Title;
 
@@ -195,9 +223,17 @@ public partial class DockBandSettingsViewModel : ObservableObject
         {
             // TODO! we should have a way of saying "pinned from {extension}" vs
             // just a band that's from an extension
-            //
-            // TODO! add the number of items in the band
-            return $"{_adapter.ExtensionName}";
+            List<string> parts = [_adapter.ExtensionName];
+
+            // Add the number of items in the band
+            var itemCount = NumItemsInBand();
+            if (itemCount > 0)
+            {
+                var itemsString = itemCount == 1 ? "1 item" : $"{itemCount} items"; // TODO!Loc
+                parts.Add(itemsString);
+            }
+
+            return string.Join(" - ", parts);
         }
     }
 
@@ -250,11 +286,13 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public DockBandSettingsViewModel(
         DockBandSettings dockSettingsModel,
-        TopLevelViewModel adapter,
+        TopLevelViewModel topLevelAdapter,
+        DockBandViewModel? bandViewModel,
         SettingsModel settingsModel)
     {
         _dockSettingsModel = dockSettingsModel;
-        _adapter = adapter;
+        _adapter = topLevelAdapter;
+        _bandViewModel = bandViewModel;
         _settingsModel = settingsModel;
         PinSide = FetchPinSide();
     }
@@ -275,6 +313,17 @@ public partial class DockBandSettingsViewModel : ObservableObject
         }
 
         return DockPinSide.None;
+    }
+
+    private int NumItemsInBand()
+    {
+        var bandVm = _bandViewModel;
+        if (bandVm is null)
+        {
+            return 0;
+        }
+
+        return _bandViewModel!.Items.Count;
     }
 }
 #pragma warning restore SA1402 // File may only contain a single type
