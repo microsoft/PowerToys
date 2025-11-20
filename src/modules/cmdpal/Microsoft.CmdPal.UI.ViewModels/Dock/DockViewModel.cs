@@ -105,9 +105,11 @@ public sealed partial class DockViewModel : IDisposable,
         CoreLogger.LogDebug("Bands reloaded");
     }
 
-    private DockBandViewModel CreateBandItem(DockBandSettings bandSettings, CommandItemViewModel commandItem)
+    private DockBandViewModel CreateBandItem(
+        DockBandSettings bandSettings,
+        CommandItemViewModel commandItem)
     {
-        DockBandViewModel band = new(commandItem, new(this), bandSettings);
+        DockBandViewModel band = new(commandItem, new(this), bandSettings, _settings);
         band.InitializeProperties(); // TODO! make async
         return band;
     }
@@ -262,8 +264,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
                 ShowLabelsOption.HideLabels => false,
                 _ => null,
             };
-
-            // TODO! save settings
+            Save();
         }
     }
 
@@ -324,6 +325,37 @@ public partial class DockBandSettingsViewModel : ObservableObject
         }
 
         return _bandViewModel!.Items.Count;
+    }
+
+    private void Save()
+    {
+        SettingsModel.SaveSettings(_settingsModel);
+    }
+
+    partial void OnPinSideChanged(DockPinSide value)
+    {
+        var dockSettings = _settingsModel.DockSettings;
+
+        // Remove from both sides first
+        dockSettings.StartBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
+        dockSettings.EndBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
+
+        // Add to the selected side
+        switch (value)
+        {
+            case DockPinSide.Start:
+                dockSettings.StartBands.Add(_dockSettingsModel);
+                break;
+            case DockPinSide.End:
+                dockSettings.EndBands.Add(_dockSettingsModel);
+                break;
+            case DockPinSide.None:
+            default:
+                // Do nothing
+                break;
+        }
+
+        Save();
     }
 }
 #pragma warning restore SA1402 // File may only contain a single type

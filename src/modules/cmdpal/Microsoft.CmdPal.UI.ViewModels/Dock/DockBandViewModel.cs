@@ -23,12 +23,16 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     public string Id => _rootItem.Command.Id;
 
-    internal DockBandViewModel(CommandItemViewModel commandItemViewModel, WeakReference<IPageContext> errorContext, DockBandSettings settings)
+    internal DockBandViewModel(
+        CommandItemViewModel commandItemViewModel,
+        WeakReference<IPageContext> errorContext,
+        DockBandSettings settings,
+        DockSettings dockSettings)
         : base(errorContext)
     {
         _rootItem = commandItemViewModel;
 
-        _showLabels = settings.ShowLabels ?? true;
+        _showLabels = settings.ResolveShowLabels(dockSettings.ShowLabels);
     }
 
     private void InitializeFromList(IListPage list)
