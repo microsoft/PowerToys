@@ -159,6 +159,56 @@ void LightSwitchSettings::LoadSettings()
                 NotifyObservers(SettingId::ChangeApps);
             }
         }
+
+        // ApplyMonitorSettings
+        if (const auto jsonVal = values.get_bool_value(L"applyMonitorSettings"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.applyMonitorSettings != val)
+            {
+                m_settings.applyMonitorSettings = val;
+            }
+        }
+
+        // EnableDarkModeProfile
+        if (const auto jsonVal = values.get_bool_value(L"enableDarkModeProfile"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.enableDarkModeProfile != val)
+            {
+                m_settings.enableDarkModeProfile = val;
+            }
+        }
+
+        // EnableLightModeProfile
+        if (const auto jsonVal = values.get_bool_value(L"enableLightModeProfile"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.enableLightModeProfile != val)
+            {
+                m_settings.enableLightModeProfile = val;
+            }
+        }
+
+        // DarkModeProfile
+        if (const auto jsonVal = values.get_string_value(L"darkModeProfile"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.darkModeProfile != val)
+            {
+                m_settings.darkModeProfile = val;
+            }
+        }
+
+        // LightModeProfile
+        if (const auto jsonVal = values.get_string_value(L"lightModeProfile"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.lightModeProfile != val)
+            {
+                m_settings.lightModeProfile = val;
+            }
+        }
     }
     catch (...)
     {

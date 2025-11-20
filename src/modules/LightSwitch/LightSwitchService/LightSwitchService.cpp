@@ -196,6 +196,47 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             if (settings.changeApps && isAppsCurrentlyLight)
                 SetAppsTheme(false);
         }
+
+        // Notify PowerDisplay about theme change if monitor settings integration is enabled
+        if (settings.applyMonitorSettings)
+        {
+            bool shouldNotify = false;
+
+            if (isLightActive && settings.enableLightModeProfile && settings.lightModeProfile != L"(None)")
+            {
+                shouldNotify = true;
+            }
+            else if (!isLightActive && settings.enableDarkModeProfile && settings.darkModeProfile != L"(None)")
+            {
+                shouldNotify = true;
+            }
+
+            if (shouldNotify)
+            {
+                try
+                {
+                    // Signal PowerDisplay to check LightSwitch settings and apply appropriate profile
+                    // PowerDisplay will read LightSwitch settings to determine which profile to apply
+                    Logger::info(L"[LightSwitch] Notifying PowerDisplay about theme change (isLight: {})", isLightActive);
+                    
+                    HANDLE hThemeChangedEvent = CreateEventW(nullptr, FALSE, FALSE, L"Local\\PowerToys_LightSwitch_ThemeChanged");
+                    if (hThemeChangedEvent)
+                    {
+                        SetEvent(hThemeChangedEvent);
+                        CloseHandle(hThemeChangedEvent);
+                        Logger::info(L"[LightSwitch] Theme change event signaled");
+                    }
+                    else
+                    {
+                        Logger::warn(L"[LightSwitch] Failed to create theme change event");
+                    }
+                }
+                catch (...)
+                {
+                    Logger::error(L"[LightSwitch] Failed to notify PowerDisplay");
+                }
+            }
+        }
     };
 
     // --- At service start: immediately honor the schedule ---
@@ -278,12 +319,12 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
         if (wait == WAIT_OBJECT_0)
         {
-            Logger::info(L"[LightSwitchService] Stop event triggered — exiting worker loop.");
+            Logger::info(L"[LightSwitchService] Stop event triggered ï¿½ exiting worker loop.");
             break;
         }
         if (hParent && wait == WAIT_OBJECT_0 + 1) // parent process exited
         {
-            Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
+            Logger::info(L"[LightSwitchService] Parent process exited ï¿½ stopping service.");
             break;
         }
 

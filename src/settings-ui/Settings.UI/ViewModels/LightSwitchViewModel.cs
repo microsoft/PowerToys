@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -44,6 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
+
+            // Load PowerDisplay profiles
+            LoadPowerDisplayProfiles();
+
+            // Check if PowerDisplay is enabled
+            CheckPowerDisplayEnabled();
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -441,6 +448,168 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(propertyName);
         }
 
+        // PowerDisplay Integration Properties and Methods
+        public ObservableCollection<PowerDisplayProfile> AvailableProfiles
+        {
+            get => _availableProfiles;
+            set
+            {
+                if (_availableProfiles != value)
+                {
+                    _availableProfiles = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsPowerDisplayEnabled
+        {
+            get => _isPowerDisplayEnabled;
+            set
+            {
+                if (_isPowerDisplayEnabled != value)
+                {
+                    _isPowerDisplayEnabled = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
+                }
+            }
+        }
+
+        public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled && ModuleSettings.Properties.ApplyMonitorSettings.Value;
+
+        public bool ApplyMonitorSettings
+        {
+            get => ModuleSettings.Properties.ApplyMonitorSettings.Value;
+            set
+            {
+                if (ModuleSettings.Properties.ApplyMonitorSettings.Value != value)
+                {
+                    ModuleSettings.Properties.ApplyMonitorSettings.Value = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
+                }
+            }
+        }
+
+        public bool EnableDarkModeProfile
+        {
+            get => ModuleSettings.Properties.EnableDarkModeProfile.Value;
+            set
+            {
+                if (ModuleSettings.Properties.EnableDarkModeProfile.Value != value)
+                {
+                    ModuleSettings.Properties.EnableDarkModeProfile.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool EnableLightModeProfile
+        {
+            get => ModuleSettings.Properties.EnableLightModeProfile.Value;
+            set
+            {
+                if (ModuleSettings.Properties.EnableLightModeProfile.Value != value)
+                {
+                    ModuleSettings.Properties.EnableLightModeProfile.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string DarkModeProfile
+        {
+            get => ModuleSettings.Properties.DarkModeProfile.Value;
+            set
+            {
+                if (ModuleSettings.Properties.DarkModeProfile.Value != value)
+                {
+                    ModuleSettings.Properties.DarkModeProfile.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string LightModeProfile
+        {
+            get => ModuleSettings.Properties.LightModeProfile.Value;
+            set
+            {
+                if (ModuleSettings.Properties.LightModeProfile.Value != value)
+                {
+                    ModuleSettings.Properties.LightModeProfile.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private void LoadPowerDisplayProfiles()
+        {
+            try
+            {
+                var settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var powerToysPath = Path.Combine(settingsPath, "Microsoft", "PowerToys", "PowerDisplay");
+                _profilesFilePath = Path.Combine(powerToysPath, "profiles.json");
+
+                if (File.Exists(_profilesFilePath))
+                {
+                    var json = File.ReadAllText(_profilesFilePath);
+                    var profilesData = JsonSerializer.Deserialize<PowerDisplayProfiles>(json);
+
+                    if (profilesData != null)
+                    {
+                        AvailableProfiles.Clear();
+
+                        // Add empty option
+                        AvailableProfiles.Add(new PowerDisplayProfile("(None)", new List<ProfileMonitorSetting>()));
+
+                        foreach (var profile in profilesData.Profiles)
+                        {
+                            AvailableProfiles.Add(profile);
+                        }
+
+                        Logger.LogInfo($"Loaded {profilesData.Profiles.Count} PowerDisplay profiles");
+                    }
+                }
+                else
+                {
+                    // Add empty option
+                    AvailableProfiles.Clear();
+                    AvailableProfiles.Add(new PowerDisplayProfile("(None)", new List<ProfileMonitorSetting>()));
+                    Logger.LogInfo("No PowerDisplay profiles file found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load PowerDisplay profiles: {ex.Message}");
+                AvailableProfiles.Clear();
+                AvailableProfiles.Add(new PowerDisplayProfile("(None)", new List<ProfileMonitorSetting>()));
+            }
+        }
+
+        private void CheckPowerDisplayEnabled()
+        {
+            try
+            {
+                var settingsUtils = new SettingsUtils();
+                var generalSettings = settingsUtils.GetSettingsOrDefault<GeneralSettings>(string.Empty);
+                IsPowerDisplayEnabled = generalSettings?.Enabled?.PowerDisplay ?? false;
+                Logger.LogInfo($"PowerDisplay enabled status: {IsPowerDisplayEnabled}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to check PowerDisplay enabled status: {ex.Message}");
+                IsPowerDisplayEnabled = false;
+            }
+        }
+
+        public void RefreshPowerDisplayStatus()
+        {
+            CheckPowerDisplayEnabled();
+            NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
+        }
+
         public void RefreshEnabledState()
         {
             OnPropertyChanged(nameof(IsEnabled));
@@ -457,6 +626,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
             OnPropertyChanged(nameof(ScheduleMode));
+            OnPropertyChanged(nameof(ApplyMonitorSettings));
+            OnPropertyChanged(nameof(EnableDarkModeProfile));
+            OnPropertyChanged(nameof(EnableLightModeProfile));
+            OnPropertyChanged(nameof(DarkModeProfile));
+            OnPropertyChanged(nameof(LightModeProfile));
         }
 
         private void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
@@ -514,6 +688,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private HotkeySettings _toggleThemeHotkey;
         private TimeSpan? _sunriseTimeSpan;
         private TimeSpan? _sunsetTimeSpan;
+
+        // PowerDisplay integration
+        private ObservableCollection<PowerDisplayProfile> _availableProfiles = new ObservableCollection<PowerDisplayProfile>();
+        private bool _isPowerDisplayEnabled;
+        private string _profilesFilePath = string.Empty;
 
         public ICommand ForceLightCommand { get; }
 

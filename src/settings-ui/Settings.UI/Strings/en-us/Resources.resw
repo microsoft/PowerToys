@@ -5321,6 +5321,27 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_AppsCheckbox.Description" xml:space="preserve">
     <value>Supported applications</value>
   </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarningBar.Title" xml:space="preserve">
+    <value>PowerDisplay is disabled</value>
+  </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
+    <value>Enable PowerDisplay module to use automatic monitor profile switching</value>
+  </data>
+  <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">
+    <value>Apply monitor settings to</value>
+  </data>
+  <data name="LightSwitch_ApplyMonitorSettingsExpander.Description" xml:space="preserve">
+    <value>Automatically switch PowerDisplay profiles when theme changes</value>
+  </data>
+  <data name="LightSwitch_EnableMonitorSettings.Content" xml:space="preserve">
+    <value>Enable monitor settings integration</value>
+  </data>
+  <data name="LightSwitch_DarkModeProfileCard.Header" xml:space="preserve">
+    <value>Dark mode profile</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCard.Header" xml:space="preserve">
+    <value>Light mode profile</value>
+  </data>
   <data name="LightSwitch_LocationDialog.Title" xml:space="preserve">
     <value>Select a location</value>
   </data>

@@ -56,6 +56,12 @@ struct LightSwitchConfig
 
     bool changeSystem = false;
     bool changeApps = false;
+
+    bool applyMonitorSettings = false;
+    bool enableDarkModeProfile = false;
+    bool enableLightModeProfile = false;
+    std::wstring darkModeProfile = L"(None)";
+    std::wstring lightModeProfile = L"(None)";
 };
 
 class LightSwitchSettings

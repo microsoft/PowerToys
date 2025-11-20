@@ -60,6 +60,11 @@ namespace Settings.UI.Library
                     Latitude = new StringProperty(Properties.Latitude.Value),
                     Longitude = new StringProperty(Properties.Longitude.Value),
                     ToggleThemeHotkey = new KeyboardKeysProperty(Properties.ToggleThemeHotkey.Value),
+                    ApplyMonitorSettings = new BoolProperty(Properties.ApplyMonitorSettings.Value),
+                    EnableDarkModeProfile = new BoolProperty(Properties.EnableDarkModeProfile.Value),
+                    EnableLightModeProfile = new BoolProperty(Properties.EnableLightModeProfile.Value),
+                    DarkModeProfile = new StringProperty(Properties.DarkModeProfile.Value),
+                    LightModeProfile = new StringProperty(Properties.LightModeProfile.Value),
                 },
             };
         }

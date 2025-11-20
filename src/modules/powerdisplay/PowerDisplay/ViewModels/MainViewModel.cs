@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -40,6 +41,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly ISettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly ProfileManager _profileManager;
+    private Thread? _lightSwitchEventThread;
 
     private ObservableCollection<MonitorViewModel> _monitors;
     private string _statusText;
@@ -70,6 +72,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Subscribe to events
         _monitorManager.MonitorsChanged += OnMonitorsChanged;
+
+        // Start LightSwitch integration event listener
+        StartLightSwitchEventListener();
 
         // Start initial discovery
         _ = InitializeAsync();
@@ -583,6 +588,177 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
+    /// Start background thread to listen for LightSwitch theme change events
+    /// </summary>
+    private void StartLightSwitchEventListener()
+    {
+        _lightSwitchEventThread = new Thread(() =>
+        {
+            try
+            {
+                Logger.LogInfo("[LightSwitch Integration] Event listener thread started");
+
+                // Create or open the named event
+                using var themeChangedEvent = new EventWaitHandle(false, EventResetMode.AutoReset, "Local\\PowerToys_LightSwitch_ThemeChanged");
+
+                while (!_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    // Wait for LightSwitch to signal theme change (with timeout to allow cancellation check)
+                    if (themeChangedEvent.WaitOne(TimeSpan.FromSeconds(1)))
+                    {
+                        Logger.LogInfo("[LightSwitch Integration] Theme change event received");
+
+                        // Process the theme change on a background task
+                        _ = Task.Run(async () => await HandleLightSwitchThemeChangeAsync());
+                    }
+                }
+
+                Logger.LogInfo("[LightSwitch Integration] Event listener thread stopping");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[LightSwitch Integration] Event listener thread failed: {ex.Message}");
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "LightSwitchEventListener",
+        };
+
+        _lightSwitchEventThread.Start();
+    }
+
+    /// <summary>
+    /// Handle theme change notification from LightSwitch
+    /// Reads LightSwitch settings and applies appropriate PowerDisplay profile
+    /// </summary>
+    private async Task HandleLightSwitchThemeChangeAsync()
+    {
+        try
+        {
+            Logger.LogInfo("[LightSwitch Integration] Processing theme change");
+
+            // Read LightSwitch settings using generic approach
+            // We can't directly reference LightSwitchSettings type due to AOT compilation constraints
+            // So we'll read the JSON and parse the properties we need
+            try
+            {
+                var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "LightSwitch", "settings.json");
+
+                if (!File.Exists(settingsPath))
+                {
+                    Logger.LogWarning("[LightSwitch Integration] LightSwitch settings file not found");
+                    return;
+                }
+
+                var json = File.ReadAllText(settingsPath);
+                var settings = System.Text.Json.JsonDocument.Parse(json);
+                var root = settings.RootElement;
+
+                if (!root.TryGetProperty("properties", out var properties))
+                {
+                    Logger.LogWarning("[LightSwitch Integration] LightSwitch settings has no properties");
+                    return;
+                }
+
+                // Check if monitor settings integration is enabled
+                if (!properties.TryGetProperty("apply_monitor_settings", out var applyMonitorSettingsElement) ||
+                    !applyMonitorSettingsElement.TryGetProperty("value", out var applyValue) ||
+                    !applyValue.GetBoolean())
+                {
+                    Logger.LogInfo("[LightSwitch Integration] Monitor settings integration is disabled");
+                    return;
+                }
+
+                // Determine current theme (check Windows registry for current theme state)
+                bool isLightMode = IsSystemInLightMode();
+                Logger.LogInfo($"[LightSwitch Integration] Current system theme: {(isLightMode ? "Light" : "Dark")}");
+
+                // Get the appropriate profile name
+                string? profileToApply = null;
+
+                if (isLightMode)
+                {
+                    if (properties.TryGetProperty("enable_light_mode_profile", out var enableElement) &&
+                        enableElement.TryGetProperty("value", out var enableValue) &&
+                        enableValue.GetBoolean() &&
+                        properties.TryGetProperty("light_mode_profile", out var profileElement) &&
+                        profileElement.TryGetProperty("value", out var profileValue))
+                    {
+                        profileToApply = profileValue.GetString();
+                    }
+                }
+                else
+                {
+                    if (properties.TryGetProperty("enable_dark_mode_profile", out var enableElement) &&
+                        enableElement.TryGetProperty("value", out var enableValue) &&
+                        enableValue.GetBoolean() &&
+                        properties.TryGetProperty("dark_mode_profile", out var profileElement) &&
+                        profileElement.TryGetProperty("value", out var profileValue))
+                    {
+                        profileToApply = profileValue.GetString();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(profileToApply) || profileToApply == "(None)")
+                {
+                    Logger.LogInfo($"[LightSwitch Integration] No profile configured for {(isLightMode ? "light" : "dark")} mode");
+                    return;
+                }
+
+                Logger.LogInfo($"[LightSwitch Integration] Applying profile: {profileToApply}");
+
+                // Load and apply the profile
+                var profilesData = _profileManager.LoadProfiles();
+                var profile = profilesData.GetProfile(profileToApply);
+
+                if (profile == null || !profile.IsValid())
+                {
+                    Logger.LogWarning($"[LightSwitch Integration] Profile '{profileToApply}' not found or invalid");
+                    return;
+                }
+
+                // Apply the profile
+                await ApplyProfileAsync(profileToApply, profile.MonitorSettings);
+                Logger.LogInfo($"[LightSwitch Integration] Successfully applied profile '{profileToApply}'");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[LightSwitch Integration] Failed to handle theme change: {ex.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LightSwitch Integration] Failed to read settings: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Check if Windows is currently in light mode
+    /// </summary>
+    private bool IsSystemInLightMode()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            if (key != null)
+            {
+                var value = key.GetValue("SystemUsesLightTheme");
+                if (value is int intValue)
+                {
+                    return intValue == 1;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LightSwitch Integration] Failed to read system theme: {ex.Message}");
+        }
+
+        return false; // Default to dark mode
+    }
+
+    /// <summary>
     /// Apply profile settings to monitors
     /// </summary>
     private async Task ApplyProfileAsync(string profileName, List<ProfileMonitorSetting> monitorSettings)
@@ -593,12 +769,12 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Find monitor by InternalName first (unique identifier), fallback to HardwareId for old profiles
             MonitorViewModel? monitorVm = null;
-            
+
             if (!string.IsNullOrEmpty(setting.MonitorInternalName))
             {
                 monitorVm = Monitors.FirstOrDefault(m => m.InternalName == setting.MonitorInternalName);
             }
-            
+
             // Fallback to HardwareId for backward compatibility with old profiles
             if (monitorVm == null)
             {
@@ -1148,6 +1324,22 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             // Cancel all async operations first
             _cancellationTokenSource?.Cancel();
+
+            // Wait for LightSwitch event listener thread to stop
+            if (_lightSwitchEventThread != null && _lightSwitchEventThread.IsAlive)
+            {
+                try
+                {
+                    if (!_lightSwitchEventThread.Join(TimeSpan.FromSeconds(2)))
+                    {
+                        Logger.LogWarning("[LightSwitch Integration] Event listener thread did not stop in time");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogDebug($"Error joining LightSwitch event listener thread: {ex.Message}");
+                }
+            }
 
             // No need to flush state - MonitorStateManager now saves directly on each update!
             // State is already persisted, no pending changes to wait for.

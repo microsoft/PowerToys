@@ -151,6 +151,48 @@
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
+                        <InfoBar
+                            x:Name="PowerDisplayDisabledWarningBar"
+                            x:Uid="LightSwitch_PowerDisplayDisabledWarningBar"
+                            IsOpen="True"
+                            Severity="Warning"
+                            Visibility="{x:Bind ViewModel.ShowPowerDisplayDisabledWarning, Mode=OneWay}" />
+                        <tkcontrols:SettingsExpander
+                            x:Uid="LightSwitch_ApplyMonitorSettingsExpander"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                            IsExpanded="False">
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard ContentAlignment="Left">
+                                    <CheckBox
+                                        x:Uid="LightSwitch_EnableMonitorSettings"
+                                        IsChecked="{x:Bind ViewModel.ApplyMonitorSettings, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="LightSwitch_DarkModeProfileCard" HorizontalContentAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <CheckBox
+                                            IsChecked="{x:Bind ViewModel.EnableDarkModeProfile, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}" />
+                                        <ComboBox
+                                            MinWidth="200"
+                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
+                                            SelectedItem="{x:Bind ViewModel.DarkModeProfile, Mode=TwoWay}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard x:Uid="LightSwitch_LightModeProfileCard" HorizontalContentAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <CheckBox
+                                            IsChecked="{x:Bind ViewModel.EnableLightModeProfile, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}" />
+                                        <ComboBox
+                                            MinWidth="200"
+                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
+                                            SelectedItem="{x:Bind ViewModel.LightModeProfile, Mode=TwoWay}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
                     <!--  Force mode buttons  -->
                     <!--<tkcontrols:SettingsCard
