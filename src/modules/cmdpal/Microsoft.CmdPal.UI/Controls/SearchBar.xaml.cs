@@ -87,6 +87,7 @@ public sealed partial class SearchBar : UserControl,
         }
 
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
+        @this?.PropertyChanged?.Invoke(@this, new(nameof(Parameters)));
 
         // Attempt to focus us again, once we evaluate what input is visible
         @this?.Focus();
