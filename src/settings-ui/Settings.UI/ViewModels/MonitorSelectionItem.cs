@@ -20,8 +20,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _contrast = 50;
         private int _volume = 50;
         private int _colorTemperature = 6500;
+        private bool _includeBrightness;
+        private bool _includeContrast;
+        private bool _includeVolume;
+        private bool _includeColorTemperature;
 
         public required MonitorInfo Monitor { get; set; }
+
+        public bool SuppressAutoSelection { get; set; }
 
         public bool IsSelected
         {
@@ -45,6 +51,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _brightness = value;
                     OnPropertyChanged();
+                    if (!SuppressAutoSelection)
+                    {
+                        IncludeBrightness = true;
+                    }
                 }
             }
         }
@@ -58,6 +68,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _contrast = value;
                     OnPropertyChanged();
+                    if (!SuppressAutoSelection)
+                    {
+                        IncludeContrast = true;
+                    }
                 }
             }
         }
@@ -71,6 +85,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _volume = value;
                     OnPropertyChanged();
+                    if (!SuppressAutoSelection)
+                    {
+                        IncludeVolume = true;
+                    }
                 }
             }
         }
@@ -84,6 +102,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _colorTemperature = value;
                     OnPropertyChanged();
+                    if (!SuppressAutoSelection)
+                    {
+                        IncludeColorTemperature = true;
+                    }
                 }
             }
         }
@@ -93,6 +115,58 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool SupportsVolume => Monitor?.SupportsVolume ?? false;
 
         public bool SupportsColorTemperature => Monitor?.SupportsColorTemperature ?? false;
+
+        public bool IncludeBrightness
+        {
+            get => _includeBrightness;
+            set
+            {
+                if (_includeBrightness != value)
+                {
+                    _includeBrightness = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IncludeContrast
+        {
+            get => _includeContrast;
+            set
+            {
+                if (_includeContrast != value)
+                {
+                    _includeContrast = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IncludeVolume
+        {
+            get => _includeVolume;
+            set
+            {
+                if (_includeVolume != value)
+                {
+                    _includeVolume = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IncludeColorTemperature
+        {
+            get => _includeColorTemperature;
+            set
+            {
+                if (_includeColorTemperature != value)
+                {
+                    _includeColorTemperature = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

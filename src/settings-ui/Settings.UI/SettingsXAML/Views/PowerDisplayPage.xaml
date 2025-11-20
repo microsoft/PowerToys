@@ -37,6 +37,8 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
                         IsClickEnabled="True" />
 
+
+
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_RestoreSettingsOnStartup"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7B8;}">
@@ -78,11 +80,11 @@
                                             <Button.ContextFlyout>
                                                 <MenuFlyout>
                                                     <MenuFlyoutItem
-                                                        Text="Rename"
-                                                        Click="RenameProfile_Click"
+                                                        Text="Edit"
+                                                        Click="EditProfile_Click"
                                                         Tag="{x:Bind}">
                                                         <MenuFlyoutItem.Icon>
-                                                            <FontIcon Glyph="&#xE8AC;"/>
+                                                            <FontIcon Glyph="&#xE70F;"/>
                                                         </MenuFlyoutItem.Icon>
                                                     </MenuFlyoutItem>
                                                     <MenuFlyoutItem

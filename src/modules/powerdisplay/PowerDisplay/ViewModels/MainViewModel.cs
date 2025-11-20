@@ -602,10 +602,11 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
             Logger.LogInfo($"[Profile] Applying settings to monitor '{monitorVm.Name}' (HardwareId: {setting.HardwareId})");
 
-            // Apply brightness
-            if (setting.Brightness >= monitorVm.MinBrightness && setting.Brightness <= monitorVm.MaxBrightness)
+            // Apply brightness if included in profile
+            if (setting.Brightness.HasValue &&
+                setting.Brightness.Value >= monitorVm.MinBrightness && setting.Brightness.Value <= monitorVm.MaxBrightness)
             {
-                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness, immediate: true, fromProfile: true));
+                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness.Value, immediate: true, fromProfile: true));
             }
 
             // Apply contrast if supported and value provided
@@ -622,10 +623,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value, immediate: true, fromProfile: true));
             }
 
-            // Apply color temperature
-            if (setting.ColorTemperature > 0)
+            // Apply color temperature if included in profile
+            if (setting.ColorTemperature.HasValue && setting.ColorTemperature.Value > 0)
             {
-                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperature, fromProfile: true));
+                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperature.Value, fromProfile: true));
             }
         }
 

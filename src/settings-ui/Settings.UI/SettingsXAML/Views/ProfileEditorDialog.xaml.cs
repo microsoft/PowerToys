@@ -61,16 +61,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (monitorItem != null)
                 {
                     monitorItem.IsSelected = true;
-                    monitorItem.Brightness = monitorSetting.Brightness;
-                    monitorItem.ColorTemperature = monitorSetting.ColorTemperature;
 
+                    // Set brightness if included in profile
+                    if (monitorSetting.Brightness.HasValue)
+                    {
+                        monitorItem.IncludeBrightness = true;
+                        monitorItem.Brightness = monitorSetting.Brightness.Value;
+                    }
+
+                    // Set color temperature if included in profile
+                    if (monitorSetting.ColorTemperature.HasValue)
+                    {
+                        monitorItem.IncludeColorTemperature = true;
+                        monitorItem.ColorTemperature = monitorSetting.ColorTemperature.Value;
+                    }
+
+                    // Set contrast if included in profile
                     if (monitorSetting.Contrast.HasValue)
                     {
+                        monitorItem.IncludeContrast = true;
                         monitorItem.Contrast = monitorSetting.Contrast.Value;
                     }
 
+                    // Set volume if included in profile
                     if (monitorSetting.Volume.HasValue)
                     {
+                        monitorItem.IncludeVolume = true;
                         monitorItem.Volume = monitorSetting.Volume.Value;
                     }
                 }

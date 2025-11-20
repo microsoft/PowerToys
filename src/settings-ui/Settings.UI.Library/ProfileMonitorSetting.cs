@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string HardwareId { get; set; }
 
         [JsonPropertyName("brightness")]
-        public int Brightness { get; set; }
+        public int? Brightness { get; set; }
 
         [JsonPropertyName("contrast")]
         public int? Contrast { get; set; }
@@ -24,16 +24,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public int? Volume { get; set; }
 
         [JsonPropertyName("colorTemperature")]
-        public int ColorTemperature { get; set; }
+        public int? ColorTemperature { get; set; }
 
         public ProfileMonitorSetting()
         {
             HardwareId = string.Empty;
-            Brightness = 100;
-            ColorTemperature = 6500;
         }
 
-        public ProfileMonitorSetting(string hardwareId, int brightness, int colorTemperature, int? contrast = null, int? volume = null)
+        public ProfileMonitorSetting(string hardwareId, int? brightness = null, int? colorTemperature = null, int? contrast = null, int? volume = null)
         {
             HardwareId = hardwareId;
             Brightness = brightness;

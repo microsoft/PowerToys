@@ -30,19 +30,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var item = new MonitorSelectionItem
                 {
+                    SuppressAutoSelection = true,
                     Monitor = monitor,
                     IsSelected = false,
                     Brightness = monitor.CurrentBrightness,
+                    Contrast = 50, // Default value (MonitorInfo doesn't store contrast)
+                    Volume = 50, // Default value (MonitorInfo doesn't store volume)
                     ColorTemperature = monitor.ColorTemperature,
                 };
 
-                // Subscribe to selection changes
+                item.SuppressAutoSelection = false;
+
+                // Subscribe to selection and checkbox changes
                 item.PropertyChanged += (s, e) =>
                 {
                     if (e.PropertyName == nameof(MonitorSelectionItem.IsSelected))
                     {
                         OnPropertyChanged(nameof(CanSave));
                         OnPropertyChanged(nameof(HasSelectedMonitors));
+                        OnPropertyChanged(nameof(HasValidSettings));
+                    }
+                    else if (e.PropertyName == nameof(MonitorSelectionItem.IncludeBrightness) ||
+                             e.PropertyName == nameof(MonitorSelectionItem.IncludeContrast) ||
+                             e.PropertyName == nameof(MonitorSelectionItem.IncludeVolume) ||
+                             e.PropertyName == nameof(MonitorSelectionItem.IncludeColorTemperature))
+                    {
+                        OnPropertyChanged(nameof(CanSave));
+                        OnPropertyChanged(nameof(HasValidSettings));
                     }
                 };
 
@@ -79,7 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool HasSelectedMonitors => _monitors?.Any(m => m.IsSelected) ?? false;
 
-        public bool CanSave => !string.IsNullOrWhiteSpace(_profileName) && HasSelectedMonitors;
+        public bool HasValidSettings => _monitors != null &&
+            _monitors.Any(m => m.IsSelected) &&
+            _monitors.Where(m => m.IsSelected).All(m => m.IncludeBrightness || m.IncludeContrast || m.IncludeVolume || m.IncludeColorTemperature);
+
+        public bool CanSave => !string.IsNullOrWhiteSpace(_profileName) && HasSelectedMonitors && HasValidSettings;
 
         public PowerDisplayProfile CreateProfile()
         {
@@ -87,10 +105,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 .Where(m => m.IsSelected)
                 .Select(m => new ProfileMonitorSetting(
                     m.Monitor.HardwareId,
-                    m.Brightness,
-                    m.ColorTemperature,
-                    m.SupportsContrast ? (int?)m.Contrast : null,
-                    m.SupportsVolume ? (int?)m.Volume : null))
+                    m.IncludeBrightness ? (int?)m.Brightness : null,
+                    m.IncludeColorTemperature && m.SupportsColorTemperature ? (int?)m.ColorTemperature : null,
+                    m.IncludeContrast && m.SupportsContrast ? (int?)m.Contrast : null,
+                    m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null))
                 .ToList();
 
             return new PowerDisplayProfile(_profileName, settings);

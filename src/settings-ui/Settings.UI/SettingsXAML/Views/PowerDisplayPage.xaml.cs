@@ -182,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private async void RenameProfile_Click(object sender, RoutedEventArgs e)
+        private async void EditProfile_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
