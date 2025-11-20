@@ -40,10 +40,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 
-		<!-- Don't include the actions icon - it gets into our package via the actions extension -->
-		<!--<Content Update="Assets\Actions.png">
+    <!-- Don't include the actions icon - it gets into our package via the actions extension -->
+    <!--
+    <Content Update="Assets\Actions.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>-->
+    </Content>
+    -->
   </ItemGroup>
 
   <ItemGroup>

@@ -122,11 +122,12 @@ public partial class SamplesListPage : ListPage
             Title = "Mixed parameter types (file first)",
             Subtitle = "A demo of a command that takes multiple types of parameters",
         },
-        new ListItem(new CreateNoteParametersPage())
-        {
-            Title = "Create note sample",
-            Subtitle = "A parameter page with both a string and list parameter",
-        },
+        // List parameters aren't yet supported
+        // new ListItem(new CreateNoteParametersPage())
+        // {
+        //     Title = "Create note sample",
+        //     Subtitle = "A parameter page with both a string and list parameter",
+        // },
 
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.

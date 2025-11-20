@@ -28,49 +28,10 @@
             TargetType="x:Boolean"
             Value="{x:Bind ViewModel.ShowCommand, Mode=OneWay}">
             <controls:Case Value="False">
-                <!--<controls:SwitchPresenter
-                    HorizontalAlignment="Stretch"
-                    TargetType="x:Boolean"
-                    Value="{x:Bind ViewModel.IsGridView, Mode=OneWay}">
-                    <controls:Case Value="False">
-                        <ListView
-                            x:Name="ItemsList"
-                            Padding="0,2,0,0"
-                            ContextCanceled="Items_OnContextCanceled"
-                            ContextRequested="Items_OnContextRequested"
-                            DoubleTapped="Items_DoubleTapped"
-                            IsDoubleTapEnabled="True"
-                            IsItemClickEnabled="True"
-                            ItemClick="Items_ItemClick"
-                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                            RightTapped="Items_RightTapped"
-                            SelectionChanged="Items_SelectionChanged">
-                            <ListView.ItemContainerTransitions>
-                                <TransitionCollection />
-                            </ListView.ItemContainerTransitions>
-                        </ListView>
-                    </controls:Case>
-                    <controls:Case Value="True">
-                        <GridView
-                            x:Name="ItemsGrid"
-                            Padding="8"
-                            ContextCanceled="Items_OnContextCanceled"
-                            ContextRequested="Items_OnContextRequested"
-                            DoubleTapped="Items_DoubleTapped"
-                            IsDoubleTapEnabled="True"
-                            IsItemClickEnabled="True"
-                            ItemClick="Items_ItemClick"
-                            ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
-                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                            RightTapped="Items_RightTapped"
-                            SelectionChanged="Items_SelectionChanged">
-                            <GridView.ItemContainerTransitions>
-                                <TransitionCollection />
-                            </GridView.ItemContainerTransitions>
-                        </GridView>
-                    </controls:Case>
-                </controls:SwitchPresenter>-->
+                <!--
+                    what kind of content do we want on this page before it
+                    has a command? Anything? Nothing?
+                -->
             </controls:Case>
             <controls:Case Value="True">
                 <StackPanel

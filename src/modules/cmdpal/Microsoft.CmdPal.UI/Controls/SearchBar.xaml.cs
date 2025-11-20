@@ -575,30 +575,3 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 }
-
-#pragma warning disable SA1402 // File may only contain a single type
-public sealed partial class ParameterRunTemplateSelector : DataTemplateSelector
-#pragma warning restore SA1402 // File may only contain a single type
-{
-    public DataTemplate? LabelRunTemplate { get; set; }
-
-    public DataTemplate? StringParamTemplate { get; set; }
-
-    public DataTemplate? ButtonParamTemplate { get; set; }
-
-    protected override DataTemplate? SelectTemplateCore(object item)
-    {
-        return item switch
-        {
-            LabelRunViewModel => LabelRunTemplate,
-            StringParameterRunViewModel => StringParamTemplate,
-            CommandParameterRunViewModel => ButtonParamTemplate,
-            _ => base.SelectTemplateCore(item),
-        };
-    }
-
-    protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
-    {
-        return SelectTemplateCore(item);
-    }
-}
