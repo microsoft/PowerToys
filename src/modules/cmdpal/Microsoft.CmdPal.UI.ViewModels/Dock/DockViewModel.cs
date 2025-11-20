@@ -243,29 +243,36 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public IconInfoViewModel Icon => _adapter.IconViewModel;
 
+    private ShowLabelsOption _showLabels;
+
     public ShowLabelsOption ShowLabels
     {
-        get
-        {
-            if (_dockSettingsModel.ShowLabels == null)
-            {
-                return ShowLabelsOption.Default;
-            }
-
-            return _dockSettingsModel.ShowLabels.Value ? ShowLabelsOption.ShowLabels : ShowLabelsOption.HideLabels;
-        }
-
+        get => _showLabels;
         set
         {
-            _dockSettingsModel.ShowLabels = value switch
+            if (value != _showLabels)
             {
-                ShowLabelsOption.Default => null,
-                ShowLabelsOption.ShowLabels => true,
-                ShowLabelsOption.HideLabels => false,
-                _ => null,
-            };
-            Save();
+                _showLabels = value;
+                _dockSettingsModel.ShowLabels = value switch
+                {
+                    ShowLabelsOption.Default => null,
+                    ShowLabelsOption.ShowLabels => true,
+                    ShowLabelsOption.HideLabels => false,
+                    _ => null,
+                };
+                Save();
+            }
         }
+    }
+
+    private ShowLabelsOption FetchShowLabels()
+    {
+        if (_dockSettingsModel.ShowLabels == null)
+        {
+            return ShowLabelsOption.Default;
+        }
+
+        return _dockSettingsModel.ShowLabels.Value ? ShowLabelsOption.ShowLabels : ShowLabelsOption.HideLabels;
     }
 
     // used to map to ComboBox selection
@@ -275,9 +282,19 @@ public partial class DockBandSettingsViewModel : ObservableObject
         set => ShowLabels = (ShowLabelsOption)value;
     }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(PinSideIndex))]
-    private partial DockPinSide PinSide { get; set; } // TODO! persist to settings
+    private DockPinSide PinSide
+    {
+        get => _pinSide;
+        set
+        {
+            if (value != _pinSide)
+            {
+                UpdatePinSide(value);
+            }
+        }
+    } // TODO! persist to settings
+
+    private DockPinSide _pinSide;
 
     public int PinSideIndex
     {
@@ -295,7 +312,8 @@ public partial class DockBandSettingsViewModel : ObservableObject
         _adapter = topLevelAdapter;
         _bandViewModel = bandViewModel;
         _settingsModel = settingsModel;
-        PinSide = FetchPinSide();
+        _pinSide = FetchPinSide();
+        _showLabels = FetchShowLabels();
     }
 
     private DockPinSide FetchPinSide()
@@ -332,7 +350,14 @@ public partial class DockBandSettingsViewModel : ObservableObject
         SettingsModel.SaveSettings(_settingsModel);
     }
 
-    partial void OnPinSideChanged(DockPinSide value)
+    private void UpdatePinSide(DockPinSide value)
+    {
+        OnPinSideChanged(value);
+        OnPropertyChanged(nameof(PinSideIndex));
+        OnPropertyChanged(nameof(PinSide));
+    }
+
+    private void OnPinSideChanged(DockPinSide value)
     {
         var dockSettings = _settingsModel.DockSettings;
 
