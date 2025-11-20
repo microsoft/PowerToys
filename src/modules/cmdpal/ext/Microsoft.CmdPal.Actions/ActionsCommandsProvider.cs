@@ -10,34 +10,20 @@ using Windows.Foundation.Metadata;
 
 namespace Microsoft.CmdPal.Ext.Actions;
 
-public partial class AgentsTestCommandsProvider : CommandProvider
+public partial class ActionsCommandsProvider : CommandProvider
 {
     private readonly List<ICommandItem> _commands;
 
-    // private readonly ScriptsTestPage _scriptsPage;
     private static ActionRuntime? _actionRuntime;
     private bool _init;
 
-    public AgentsTestCommandsProvider()
+    public ActionsCommandsProvider()
     {
         DisplayName = "Agents for Windows";
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\Actions.png");
         Id = "Actions";
 
-        // _scriptsPage = new ScriptsTestPage();
-        _commands = [
-            new CommandItem(new AgentsTestPage())
-            {
-                Title = DisplayName,
-                Subtitle = "Use @ to invoke various agents",
-            },
-
-            // new CommandItem(_scriptsPage)
-            // {
-            //    Title = "Script commands",
-            //    Subtitle = "What if we were just raycast",
-            // },
-        ];
+        _commands = [];
     }
 
     public override ICommandItem[] TopLevelCommands()
@@ -60,16 +46,15 @@ public partial class AgentsTestCommandsProvider : CommandProvider
             }
         }
 
-        List<ICommandItem> commands = [.. _commands];
-        //// Add the contacts list page
-        // commands.Add(new CommandItem(new ContactsListPage())
-        // {
-        //    Title = "Contacts",
-        //    Subtitle = "Browse your contacts",
-        //    Icon = Icons.ContactInput,
-        // });
-        // var topLevelScripts = _scriptsPage.GetItems();
-        // commands.InsertRange(0, topLevelScripts);
-        return commands.ToArray();
+        return _commands.ToArray();
+    }
+
+    public static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
+
+    private static bool GetFeatureFlag()
+    {
+        var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
+        return !string.IsNullOrEmpty(env) &&
+           (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
     }
 }
