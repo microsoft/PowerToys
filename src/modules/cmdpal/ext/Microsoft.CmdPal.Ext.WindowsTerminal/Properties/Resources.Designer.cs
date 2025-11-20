@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All channels.
+        /// </summary>
+        internal static string all_channels {
+            get {
+                return ResourceManager.GetString("all_channels", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Terminal Profiles.
         /// </summary>
         internal static string extension_name {
@@ -88,7 +97,7 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Windows Terminal Profiles.
+        ///   Looks up a localized string similar to Open Windows Terminal profiles.
         /// </summary>
         internal static string list_item_title {
             get {
@@ -133,6 +142,78 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Preferred channel.
+        /// </summary>
+        internal static string preferred_channel {
+            get {
+                return ResourceManager.GetString("preferred_channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preferred channel.
+        /// </summary>
+        internal static string preferred_channel_description {
+            get {
+                return ResourceManager.GetString("preferred_channel_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profiles order.
+        /// </summary>
+        internal static string profile_sort_order {
+            get {
+                return ResourceManager.GetString("profile_sort_order", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profiles order.
+        /// </summary>
+        internal static string profile_sort_order_description {
+            get {
+                return ResourceManager.GetString("profile_sort_order_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alphabetical.
+        /// </summary>
+        internal static string profile_sort_order_item_alphabetical {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_alphabetical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As defined in Terminal.
+        /// </summary>
+        internal static string profile_sort_order_item_as_in_terminal {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_as_in_terminal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default (alphabetical).
+        /// </summary>
+        internal static string profile_sort_order_item_default {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Most recently used.
+        /// </summary>
+        internal static string profile_sort_order_item_mru {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_mru", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Terminal Profiles.
         /// </summary>
         internal static string profiles_list_page_name {
@@ -156,6 +237,24 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         internal static string run_terminal_failed {
             get {
                 return ResourceManager.GetString("run_terminal_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep last channel filter.
+        /// </summary>
+        internal static string save_last_selected_channel {
+            get {
+                return ResourceManager.GetString("save_last_selected_channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remember the last selected channel instead of resetting to All Channels..
+        /// </summary>
+        internal static string save_last_selected_channel_description {
+            get {
+                return ResourceManager.GetString("save_last_selected_channel_description", resourceCulture);
             }
         }
         

@@ -257,8 +257,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Disabled</value>
     <comment>Displayed when an extension is disabled</comment>
   </data>
-  <data name="ExtensionEnableCard.Header" xml:space="preserve">
-    <value>Enable this extension</value>
+  <data name="ExtensionEnable.Text" xml:space="preserve">
+    <value>Enable</value>
     <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
   </data>
   <data name="ExtensionEnableCard.Description" xml:space="preserve">
@@ -312,7 +312,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Alias</value>
   </data>
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
-    <value>Typing this alias will navigate to this command. Direct aliases navigate as soon as you type the alias. Indirect aliases navigate after typing a trailing space.</value>
+    <value>A short keyword used to navigate to this command.</value>
+  </data>
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
+    <value>Alias activation</value>
+  </data>
+  <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
+    <value>Choose when the alias runs. Direct runs as soon as you type the alias. Indirect runs after a trailing space.</value>
   </data>
   <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
     <value>Built-in</value>
@@ -407,6 +413,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
     <value>Choose if Command Palette is visible in the system tray</value>
   </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Header" xml:space="preserve">
+    <value>Disable animations</value>
+  </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
+    <value>Disable animations when switching between pages</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
@@ -416,6 +428,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
   </data>
+  <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
+    <value>Last position</value>
+    <comment>Reopen the window where it was last closed</comment>
+  </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
@@ -423,11 +439,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Close</value>
     <comment>Close as a verb, as in Close the application</comment>
   </data>
-  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OnContent" xml:space="preserve">
+  <data name="Settings_ExtensionPage_Alias_DirectComboBox.Content" xml:space="preserve">
     <value>Direct</value>
   </data>
-  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
+  <data name="Settings_ExtensionPage_Alias_InDirectComboBox.Content" xml:space="preserve">
     <value>Indirect</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
+    <value>Enter alias</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show status messages</value>
@@ -448,6 +467,60 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
   </data>
   <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
-    <value>For Developers</value>
+    <value>For developers</value>
+  </data>
+  <data name="UntitledPageTitle" xml:space="preserve">
+    <value>an untitled</value>
+  </data>
+  <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
+    <value>Navigated to {0} page</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings (Ctrl+,)</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Primary.Text" xml:space="preserve">
+    <value>No extensions found</value>
+  </data>
+  <data name="Settings_ExtensionsPage_NoResults_Secondary.Text" xml:space="preserve">
+    <value>Try a different search term</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Reload extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
+    <value>Reloading extensions..</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+    <value>Discover more extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+    <value>Find more extensions on the Microsoft Store or WinGet.</value>
+  </data>
+  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
+    <value>Learn how to create your own extensions</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on the Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on WinGet</value>
+  </data>
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Search extensions</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
+    <value>Command Palette has encountered a fatal error and must close.</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
+    <value>Command Palette - Fatal error</value>
   </data>
 </root>

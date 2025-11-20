@@ -11,7 +11,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 
-public partial class WebSearchCommandsProvider : CommandProvider
+public sealed partial class WebSearchCommandsProvider : CommandProvider
 {
     private readonly SettingsManager _settingsManager = new();
     private readonly FallbackExecuteSearchItem _fallbackItem;
@@ -22,7 +22,7 @@ public partial class WebSearchCommandsProvider : CommandProvider
 
     public WebSearchCommandsProvider()
     {
-        Id = "WebSearch";
+        Id = "com.microsoft.cmdpal.builtin.websearch";
         DisplayName = Resources.extension_name;
         Icon = Icons.WebSearch;
         Settings = _settingsManager.Settings;

@@ -67,6 +67,7 @@
                     Header="{x:Bind Path=DisplayLabel}">
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
                         DisplayMemberPath="Key"
                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
@@ -110,6 +111,7 @@
                     Header="{x:Bind Path=DisplayLabel}">
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
                         Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
                         Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
@@ -175,6 +177,7 @@
                     IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
                         DisplayMemberPath="Key"
                         ItemsSource="{x:Bind Path=ComboBoxItems}"
                         SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
@@ -290,6 +293,7 @@
                     IsEnabled="{x:Bind SecondSettingIsEnabled, Mode=OneWay}">
                     <NumberBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
+                        AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
                         LargeChange="{x:Bind NumberBoxLargeChange, Mode=OneWay}"
                         Maximum="{x:Bind NumberBoxMax, Mode=OneWay}"
                         Minimum="{x:Bind NumberBoxMin, Mode=OneWay}"
@@ -308,7 +312,6 @@
 
     <controls:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Run.png">
         <controls:SettingsPageControl.ModuleContent>
-
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
                     x:Uid="Run_CheckOutCmdPal"
@@ -322,24 +325,14 @@
                         <HyperlinkButton x:Uid="Run_NavigateCmdPalSettings" Click="NavigateCmdPalSettings_Click" />
                     </InfoBar.ActionButton>
                 </InfoBar>
-                <tkcontrols:SettingsCard
-                    Name="PowerLauncherEnablePowerLauncher"
-                    x:Uid="PowerLauncher_EnablePowerLauncher"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
-
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherEnablePowerLauncher"
+                        x:Uid="PowerLauncher_EnablePowerLauncher"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ActivationShortcut"
@@ -357,7 +350,6 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
-
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"

@@ -19,10 +19,22 @@ namespace ManagedCommon
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
         private static readonly string Info = "Info";
+#if DEBUG
         private static readonly string Debug = "Debug";
+#endif
         private static readonly string TraceFlag = "Trace";
 
         private static readonly string Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "Unknown";
+
+        /// <summary>
+        /// Gets the path to the log directory for the current version of the app.
+        /// </summary>
+        public static string CurrentVersionLogDirectoryPath { get; private set; }
+
+        /// <summary>
+        /// Gets the path to the log directory for the app.
+        /// </summary>
+        public static string AppLogDirectoryPath { get; private set; }
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -39,6 +51,9 @@ namespace ManagedCommon
             {
                 Directory.CreateDirectory(versionedPath);
             }
+
+            AppLogDirectoryPath = basePath;
+            CurrentVersionLogDirectoryPath = versionedPath;
 
             var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
 
@@ -128,7 +143,7 @@ namespace ManagedCommon
                 {
                     exMessage +=
                         "Inner exception: " + Environment.NewLine +
-                        ex.InnerException.GetType() + " (" + ex.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
+                        ex.InnerException.GetType() + " (" + ex.InnerException.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
                 }
 
                 exMessage +=
@@ -151,7 +166,9 @@ namespace ManagedCommon
 
         public static void LogDebug(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
+#if DEBUG
             Log(message, Debug, memberName, sourceFilePath, sourceLineNumber);
+#endif
         }
 
         public static void LogTrace([System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)

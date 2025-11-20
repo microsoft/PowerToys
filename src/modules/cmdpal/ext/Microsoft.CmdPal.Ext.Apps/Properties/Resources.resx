@@ -124,14 +124,11 @@
   <data name="installed_apps" xml:space="preserve">
     <value>Installed apps</value>
   </data>
-  <data name="search_installed_apps" xml:space="preserve">
-    <value>Search installed apps</value>
-  </data>
   <data name="all_apps" xml:space="preserve">
-    <value>All Apps</value>
+    <value>Search apps</value>
   </data>
   <data name="search_installed_apps_placeholder" xml:space="preserve">
-    <value>Search installed apps...</value>
+    <value>Search apps...</value>
   </data>
   <data name="open_path_in_console" xml:space="preserve">
     <value>Open path in console</value>
@@ -161,7 +158,7 @@
     <value>File</value>
   </data>
   <data name="open_location" xml:space="preserve">
-    <value>Open location</value>
+    <value>Open file location</value>
   </data>
   <data name="copy_path" xml:space="preserve">
     <value>Copy path</value>

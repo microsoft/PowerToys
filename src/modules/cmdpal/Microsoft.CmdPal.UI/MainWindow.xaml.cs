@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Messages;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -57,10 +57,13 @@ public sealed partial class MainWindow : WindowEx,
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+
+    private WindowPosition _currentWindowPosition = new();
 
     public MainWindow()
     {
@@ -73,6 +76,8 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
+        _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
+
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
 
@@ -80,7 +85,9 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        PositionCentered();
+        RestoreWindowPosition();
+        UpdateWindowPositionInMemory();
+
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -151,6 +158,39 @@ public sealed partial class MainWindow : WindowEx,
         PositionCentered(displayArea);
     }
 
+    private void RestoreWindowPosition()
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>();
+        if (settings?.LastWindowPosition is not WindowPosition savedPosition)
+        {
+            PositionCentered();
+            return;
+        }
+
+        if (savedPosition.Width <= 0 || savedPosition.Height <= 0)
+        {
+            PositionCentered();
+            return;
+        }
+
+        AppWindow.Resize(new SizeInt32 { Width = savedPosition.Width, Height = savedPosition.Height });
+
+        var savedRect = new RectInt32(savedPosition.X, savedPosition.Y, savedPosition.Width, savedPosition.Height);
+        var displayArea = DisplayArea.GetFromRect(savedRect, DisplayAreaFallback.Nearest);
+        var workArea = displayArea.WorkArea;
+
+        var maxX = workArea.X + Math.Max(0, workArea.Width - savedPosition.Width);
+        var maxY = workArea.Y + Math.Max(0, workArea.Height - savedPosition.Height);
+
+        var targetPoint = new PointInt32
+        {
+            X = Math.Clamp(savedPosition.X, workArea.X, maxX),
+            Y = Math.Clamp(savedPosition.Y, workArea.Y, maxY),
+        };
+
+        AppWindow.Move(targetPoint);
+    }
+
     private void PositionCentered(DisplayArea displayArea)
     {
         if (displayArea is not null)
@@ -165,6 +205,17 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
+    private void UpdateWindowPositionInMemory()
+    {
+        _currentWindowPosition = new WindowPosition
+        {
+            X = AppWindow.Position.X,
+            Y = AppWindow.Position.Y,
+            Width = AppWindow.Size.Width,
+            Height = AppWindow.Size.Height,
+        };
+    }
+
     private void HotReloadSettings()
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
@@ -173,8 +224,6 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
-
-        this.SetVisibilityInSwitchers(Debugger.IsAttached);
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -249,8 +298,23 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        if (target == MonitorBehavior.ToLast)
+        {
+            AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
+            AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
+        }
+        else
+        {
+            var display = GetScreen(hwnd, target);
+            PositionCentered(display);
+        }
+
+        // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
+        // because that would make it hard to debug the app
+        if (Debugger.IsAttached)
+        {
+            _hiddenOwnerBehavior.ShowInTaskbar(this, true);
+        }
 
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
@@ -345,33 +409,51 @@ public sealed partial class MainWindow : WindowEx,
     private void HideWindow()
     {
         // Cloak our HWND to avoid all animations.
-        Cloak();
+        var cloaked = Cloak();
 
         // Then hide our HWND, to make sure that the OS gives the FG / focus back to another app
         // (there's no way for us to guess what the right hwnd might be, only the OS can do it right)
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-        // TRICKY: show our HWND again. This will trick XAML into painting our
-        // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
-        // window being first shown
-        // SW_SHOWNA will prevent us for trying to fight the focus back
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
+        if (cloaked)
+        {
+            // TRICKY: show our HWND again. This will trick XAML into painting our
+            // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
+            // window being first shown
+            // SW_SHOWNA will prevent us for trying to fight the focus back
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
 
-        // Intentionally leave the window cloaked. So our window is "visible",
-        // but also cloaked, so you can't see it.
+            // Intentionally leave the window cloaked. So our window is "visible",
+            // but also cloaked, so you can't see it.
+
+            // If the window was not cloaked, then leave it hidden.
+            // Sure, it's not ideal, but at least it's not visible.
+        }
     }
 
-    private void Cloak()
+    private bool Cloak()
     {
+        bool wasCloaked;
         unsafe
         {
             BOOL value = true;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            if (hr.Failed)
+            {
+                Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
+            }
+
+            wasCloaked = hr.Succeeded;
         }
 
-        // Because we're only cloaking the window, bury it at the bottom in case something can
-        // see it - e.g. some accessibility helper (note: this also removes the top-most status).
-        PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        if (wasCloaked)
+        {
+            // Because we're only cloaking the window, bury it at the bottom in case something can
+            // see it - e.g. some accessibility helper (note: this also removes the top-most status).
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        }
+
+        return wasCloaked;
     }
 
     private void Uncloak()
@@ -386,6 +468,22 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
+        UpdateWindowPositionInMemory();
+
+        var settings = serviceProvider.GetService<SettingsModel>();
+        if (settings is not null)
+        {
+            settings.LastWindowPosition = new WindowPosition
+            {
+                X = _currentWindowPosition.X,
+                Y = _currentWindowPosition.Y,
+                Width = _currentWindowPosition.Width,
+                Height = _currentWindowPosition.Height,
+            };
+
+            SettingsModel.SaveSettings(settings);
+        }
+
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
@@ -457,6 +555,9 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            // Save the current window position before hiding the window
+            UpdateWindowPositionInMemory();
+
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
             {

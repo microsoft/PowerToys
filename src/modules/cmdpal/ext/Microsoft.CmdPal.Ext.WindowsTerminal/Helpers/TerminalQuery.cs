@@ -58,13 +58,13 @@ public class TerminalQuery : ITerminalQuery
             profiles.AddRange(TerminalHelper.ParseSettings(terminal, settingsJson));
         }
 
-        return profiles.OrderBy(p => p.Name);
+        return profiles;
     }
 
-    private IEnumerable<TerminalPackage> GetTerminals()
+    public IEnumerable<TerminalPackage> GetTerminals()
     {
         var user = WindowsIdentity.GetCurrent().User;
-        var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
+        var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
         foreach (var p in _packageManager.FindPackagesForUser(user.Value).Where(p => Packages.Contains(p.Id.Name)))
         {
