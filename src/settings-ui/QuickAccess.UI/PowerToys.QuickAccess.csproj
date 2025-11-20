@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
     <AssemblyName>PowerToys.QuickAccess</AssemblyName>
     <UseWinUI>true</UseWinUI>
@@ -18,17 +18,77 @@
       <EnableDefaultPageItems>false</EnableDefaultPageItems>
       <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <Nullable>enable</Nullable>
+    <ProjectPriFileName>PowerToys.QuickAccess.pri</ProjectPriFileName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
   <ItemGroup>
     <ApplicationDefinition Include="QuickAccessXaml\App.xaml" />
     <Page Include="QuickAccessXaml\MainWindow.xaml" />
-    <Page Include="QuickAccessXaml\Pages\MainPage.xaml" />
+    <Page Include="QuickAccessXaml\Flyout\ShellPage.xaml" />
+    <Page Include="QuickAccessXaml\Flyout\LaunchPage.xaml" />
+    <Page Include="QuickAccessXaml\Flyout\AppsListPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <Page Include="..\Settings.UI\SettingsXAML\Styles\Button.xaml">
+      <Link>Resources\Styles\Button.xaml</Link>
+    </Page>
+    <Page Include="..\Settings.UI\SettingsXAML\Styles\TextBlock.xaml">
+      <Link>Resources\Styles\TextBlock.xaml</Link>
+    </Page>
+    <Page Include="..\Settings.UI\SettingsXAML\Themes\Colors.xaml">
+      <Link>Resources\Themes\Colors.xaml</Link>
+    </Page>
+    <Page Include="..\Settings.UI\SettingsXAML\Themes\Generic.xaml">
+      <Link>Resources\Themes\Generic.xaml</Link>
+    </Page>
+    <Page Include="..\Settings.UI\SettingsXAML\Controls\FlyoutMenuButton.xaml">
+      <Link>Controls\FlyoutMenuButton.xaml</Link>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Settings.UI\SettingsXAML\Controls\FlyoutMenuButton.xaml.cs">
+      <Link>Controls\FlyoutMenuButton.xaml.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Include="..\Settings.UI\Strings\en-us\Resources.resw">
+      <Link>Strings\en-us\Resources.resw</Link>
+    </PRIResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Settings.UI\Assets\Settings\Icons\**\*">
+      <Link>Assets\Settings\Icons\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Animations" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="WinUIEx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>

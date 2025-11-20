@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiEx="using:WinUIEx"
-    xmlns:pages="using:Microsoft.PowerToys.QuickAccess.Pages"
+    xmlns:flyout="using:Microsoft.PowerToys.QuickAccess.Flyout"
     Width="420"
     Height="188"
     MinWidth="420"
@@ -17,5 +17,5 @@
     mc:Ignorable="d"
     Title="PowerToys Quick Access (Preview)">
 
-    <pages:MainPage x:Name="MainPage"/>
+    <flyout:ShellPage x:Name="ShellHost" />
 </winuiEx:WindowEx>

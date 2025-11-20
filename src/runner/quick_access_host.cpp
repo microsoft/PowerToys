@@ -4,10 +4,16 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <rpc.h>
+#include <new>
+#include <memory>
 
 #include <common/logger/logger.h>
 #include <common/utils/process_path.h>
+#include <common/interop/two_way_pipe_message_ipc.h>
 #include <wil/resource.h>
+
+extern void receive_json_send_to_main_thread(const std::wstring& msg);
 
 namespace
 {
@@ -25,7 +31,10 @@ namespace
     std::wstring show_event_name;
     std::wstring exit_event_name;
     std::wstring position_mapping_name;
+    std::wstring runner_pipe_name;
+    std::wstring app_pipe_name;
     PositionPayload* position_payload = nullptr;
+    std::unique_ptr<TwoWayPipeMessageIPC> quick_access_ipc;
     std::mutex quick_access_mutex;
 
     bool is_process_active_locked()
@@ -47,6 +56,12 @@ namespace
 
     void reset_state_locked()
     {
+        if (quick_access_ipc)
+        {
+            quick_access_ipc->end();
+            quick_access_ipc.reset();
+        }
+
         if (position_payload)
         {
             UnmapViewOfFile(position_payload);
@@ -60,11 +75,19 @@ namespace
         show_event_name.clear();
         exit_event_name.clear();
         position_mapping_name.clear();
+        runner_pipe_name.clear();
+        app_pipe_name.clear();
     }
 
     std::wstring build_event_name(const wchar_t* suffix)
     {
-        return L"Local\\PowerToysQuickAccess_" + std::to_wstring(GetCurrentProcessId()) + suffix;
+        std::wstring name = L"Local\\PowerToysQuickAccess_";
+        name += std::to_wstring(GetCurrentProcessId());
+        if (suffix)
+        {
+            name += suffix;
+        }
+        return name;
     }
 
     std::wstring build_command_line(const std::wstring& exe_path)
@@ -78,6 +101,18 @@ namespace
         command_line += L"\" --position-map=\"";
         command_line += position_mapping_name;
         command_line += L"\"";
+        if (!runner_pipe_name.empty())
+        {
+            command_line.append(L" --runner-pipe=\"");
+            command_line += runner_pipe_name;
+            command_line += L"\"";
+        }
+        if (!app_pipe_name.empty())
+        {
+            command_line.append(L" --app-pipe=\"");
+            command_line += app_pipe_name;
+            command_line += L"\"";
+        }
         return command_line;
     }
 }
@@ -140,6 +175,61 @@ namespace QuickAccessHost
         position_payload->x = 0;
         position_payload->y = 0;
         position_payload->sequence = 0;
+
+        runner_pipe_name = L"\\\\.\\pipe\\powertoys_quick_access_runner_";
+        app_pipe_name = L"\\\\.\\pipe\\powertoys_quick_access_ui_";
+        UUID temp_uuid;
+        wchar_t* uuid_chars = nullptr;
+        if (UuidCreate(&temp_uuid) == RPC_S_UUID_NO_ADDRESS)
+        {
+            Logger::warn(L"QuickAccessHost: failed to create UUID for pipe names. error={}.", GetLastError());
+        }
+        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
+        {
+            Logger::warn(L"QuickAccessHost: failed to convert UUID to string. error={}.", GetLastError());
+        }
+
+        if (uuid_chars != nullptr)
+        {
+            runner_pipe_name += std::wstring(uuid_chars);
+            app_pipe_name += std::wstring(uuid_chars);
+            RpcStringFree(reinterpret_cast<RPC_WSTR*>(&uuid_chars));
+            uuid_chars = nullptr;
+        }
+        else
+        {
+            const std::wstring fallback_suffix = std::to_wstring(GetTickCount64());
+            runner_pipe_name += fallback_suffix;
+            app_pipe_name += fallback_suffix;
+        }
+
+        HANDLE token_handle = nullptr;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token_handle))
+        {
+            Logger::error(L"QuickAccessHost: failed to open process token. error={}.", GetLastError());
+            reset_state_locked();
+            return;
+        }
+
+        wil::unique_handle token(token_handle);
+        quick_access_ipc.reset(new (std::nothrow) TwoWayPipeMessageIPC(runner_pipe_name, app_pipe_name, receive_json_send_to_main_thread));
+        if (!quick_access_ipc)
+        {
+            Logger::error(L"QuickAccessHost: failed to allocate IPC instance.");
+            reset_state_locked();
+            return;
+        }
+
+        try
+        {
+            quick_access_ipc->start(token.get());
+        }
+        catch (...)
+        {
+            Logger::error(L"QuickAccessHost: failed to start IPC server for Quick Access.");
+            reset_state_locked();
+            return;
+        }
 
         const std::wstring exe_path = get_module_folderpath() + L"\\WinUI3Apps\\PowerToys.QuickAccess.exe";
         if (GetFileAttributesW(exe_path.c_str()) == INVALID_FILE_ATTRIBUTES)

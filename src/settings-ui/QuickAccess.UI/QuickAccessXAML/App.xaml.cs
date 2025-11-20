@@ -9,12 +9,28 @@ namespace Microsoft.PowerToys.QuickAccess;
 
 public partial class App : Application
 {
-    private MainWindow? _window;
+    private static MainWindow? _window;
+
+    public App()
+    {
+        InitializeComponent();
+    }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         var launchContext = QuickAccessLaunchContext.Parse(Environment.GetCommandLineArgs());
         _window = new MainWindow(launchContext);
+        _window.Closed += OnWindowClosed;
         _window.Activate();
+    }
+
+    private static void OnWindowClosed(object sender, WindowEventArgs args)
+    {
+        if (sender is MainWindow window)
+        {
+            window.Closed -= OnWindowClosed;
+        }
+
+        _window = null;
     }
 }

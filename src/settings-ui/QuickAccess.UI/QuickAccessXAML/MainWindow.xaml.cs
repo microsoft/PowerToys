@@ -7,6 +7,9 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.PowerToys.QuickAccess.Flyout;
+using Microsoft.PowerToys.QuickAccess.Services;
+using Microsoft.PowerToys.QuickAccess.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -16,12 +19,16 @@ using WinUIEx;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
-public sealed partial class MainWindow : WindowEx
+public sealed partial class MainWindow : WindowEx, IDisposable
 {
     private readonly QuickAccessLaunchContext _launchContext;
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly IntPtr _hwnd;
     private readonly AppWindow? _appWindow;
+    private readonly LauncherViewModel _launcherViewModel;
+    private readonly AllAppsViewModel _allAppsViewModel;
+    private readonly QuickAccessCoordinator _coordinator;
+    private bool _disposed;
     private EventWaitHandle? _showEvent;
     private EventWaitHandle? _exitEvent;
     private ManualResetEventSlim? _listenerShutdownEvent;
@@ -30,6 +37,9 @@ public sealed partial class MainWindow : WindowEx
     private bool _isWindowCloaked;
     private bool _initialActivationHandled;
     private bool _isPrimed;
+
+    // Prevent auto-hide until the window actually gained focus once.
+    private bool _hasSeenInteractiveActivation;
     private MemoryMappedFile? _positionMap;
     private MemoryMappedViewAccessor? _positionView;
     private PointInt32? _lastRequestedPosition;
@@ -64,6 +74,11 @@ public sealed partial class MainWindow : WindowEx
         _hwnd = WindowNative.GetWindowHandle(this);
         _appWindow = InitializeAppWindow(_hwnd);
         Title = "PowerToys Quick Access (Preview)";
+
+        _coordinator = new QuickAccessCoordinator(this, _launchContext);
+        _launcherViewModel = new LauncherViewModel(_coordinator);
+        _allAppsViewModel = new AllAppsViewModel(_coordinator);
+        ShellHost.Initialize(_coordinator, _launcherViewModel, _allAppsViewModel);
 
         CustomizeWindowChrome();
         HideFromTaskbar();
@@ -102,6 +117,18 @@ public sealed partial class MainWindow : WindowEx
         else if (_appWindow != null)
         {
             _appWindow.Hide();
+        }
+    }
+
+    internal void RequestHide()
+    {
+        if (_dispatcherQueue.HasThreadAccess)
+        {
+            HideWindow();
+        }
+        else
+        {
+            _dispatcherQueue.TryEnqueue(HideWindow);
         }
     }
 
@@ -208,9 +235,16 @@ public sealed partial class MainWindow : WindowEx
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            if (!_hasSeenInteractiveActivation)
+            {
+                return;
+            }
+
             HideWindow();
             return;
         }
+
+        _hasSeenInteractiveActivation = true;
 
         if (_initialActivationHandled)
         {
@@ -224,16 +258,7 @@ public sealed partial class MainWindow : WindowEx
 
     private void OnClosed(object sender, WindowEventArgs e)
     {
-        StopEventListeners();
-        _showEvent?.Dispose();
-        _showEvent = null;
-        _exitEvent?.Dispose();
-        _exitEvent = null;
-        DisposePositionResources();
-        if (_hwnd != IntPtr.Zero)
-        {
-            UncloakWindow();
-        }
+        Dispose();
     }
 
     private void PrimeWindow()
@@ -306,6 +331,42 @@ public sealed partial class MainWindow : WindowEx
         {
             _isWindowCloaked = false;
         }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            StopEventListeners();
+
+            _showEvent?.Dispose();
+            _showEvent = null;
+
+            _exitEvent?.Dispose();
+            _exitEvent = null;
+
+            if (_hwnd != IntPtr.Zero)
+            {
+                UncloakWindow();
+            }
+
+            DisposePositionResources();
+
+            _coordinator.Dispose();
+        }
+
+        _disposed = true;
     }
 
     [DllImport("user32.dll", EntryPoint = "ShowWindow", SetLastError = true)]
