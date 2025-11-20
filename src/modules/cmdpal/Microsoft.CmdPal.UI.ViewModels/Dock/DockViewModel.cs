@@ -357,7 +357,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(PinSide));
     }
 
-    private void OnPinSideChanged(DockPinSide value)
+    public void SetBandPosition(DockPinSide side, int? index)
     {
         var dockSettings = _settingsModel.DockSettings;
 
@@ -366,14 +366,22 @@ public partial class DockBandSettingsViewModel : ObservableObject
         dockSettings.EndBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
 
         // Add to the selected side
-        switch (value)
+        switch (side)
         {
             case DockPinSide.Start:
-                dockSettings.StartBands.Add(_dockSettingsModel);
-                break;
+                {
+                    var insertIndex = index ?? dockSettings.StartBands.Count;
+                    dockSettings.StartBands.Insert(insertIndex, _dockSettingsModel);
+                    break;
+                }
+
             case DockPinSide.End:
-                dockSettings.EndBands.Add(_dockSettingsModel);
-                break;
+                {
+                    var insertIndex = index ?? dockSettings.EndBands.Count;
+                    dockSettings.EndBands.Insert(insertIndex, _dockSettingsModel);
+                    break;
+                }
+
             case DockPinSide.None:
             default:
                 // Do nothing
@@ -381,6 +389,11 @@ public partial class DockBandSettingsViewModel : ObservableObject
         }
 
         Save();
+    }
+
+    private void OnPinSideChanged(DockPinSide value)
+    {
+        SetBandPosition(value, null);
     }
 }
 #pragma warning restore SA1402 // File may only contain a single type
