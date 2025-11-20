@@ -118,7 +118,6 @@ public partial class App : Application
         files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
 
-        services.AddSingleton<ICommandProvider, AgentsTestCommandsProvider>();
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
@@ -153,6 +152,11 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+
+        if (ActionsCommandsProvider.IsActionsFeatureEnabled)
+        {
+            services.AddSingleton<ICommandProvider, ActionsCommandsProvider>();
+        }
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();

@@ -10,13 +10,13 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.Ext.Actions;
 
 [Guid("e87f18cd-985d-4bfc-aacc-117ef57a675d")]
-public sealed partial class AgentsTest : IExtension, IDisposable
+public sealed partial class ActionsTest : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 
-    private readonly AgentsTestCommandsProvider _provider = new();
+    private readonly ActionsCommandsProvider _provider = new();
 
-    public AgentsTest(ManualResetEvent extensionDisposedEvent)
+    public ActionsTest(ManualResetEvent extensionDisposedEvent)
     {
         this._extensionDisposedEvent = extensionDisposedEvent;
     }
