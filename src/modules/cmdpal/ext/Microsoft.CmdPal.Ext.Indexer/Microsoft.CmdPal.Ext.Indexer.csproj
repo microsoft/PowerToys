@@ -36,12 +36,14 @@
     <Content Update="Assets\FileExplorer.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\Actions.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Update="Assets\FileExplorer.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+		<!-- Don't include the actions icon - it gets into our package via the actions extension -->
+		<!--<Content Update="Assets\Actions.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>-->
   </ItemGroup>
 
   <ItemGroup>
