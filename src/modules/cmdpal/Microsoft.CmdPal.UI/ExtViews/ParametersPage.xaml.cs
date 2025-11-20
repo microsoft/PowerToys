@@ -57,15 +57,6 @@ public sealed partial class ParametersPage : Page
 
         ViewModel = ppvm;
 
-        // if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
-        // {
-        //     WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        // }
-
-        // if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSecondaryCommandMessage>(this))
-        // {
-        //     WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
-        // }
         base.OnNavigatedTo(e);
     }
 
@@ -73,24 +64,10 @@ public sealed partial class ParametersPage : Page
     {
         base.OnNavigatingFrom(e);
 
-        // WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
-        // WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
-
         // Clean-up event listeners
         ViewModel = null;
     }
 
-    // // this comes in on Enter keypresses in the SearchBox
-    // public void Receive(ActivateSelectedListItemMessage message)
-    // {
-    //     ViewModel?.InvokePrimaryCommandCommand?.Execute(ViewModel);
-    // }
-
-    // // this comes in on Ctrl+Enter keypresses in the SearchBox
-    // public void Receive(ActivateSecondaryCommandMessage message)
-    // {
-    //     ViewModel?.InvokeSecondaryCommandCommand?.Execute(ViewModel);
-    // }
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is ParametersPage @this)
@@ -98,15 +75,11 @@ public sealed partial class ParametersPage : Page
             if (e.OldValue is ParametersPageViewModel old)
             {
                 old.PropertyChanged -= @this.ViewModel_PropertyChanged;
-
-                // old.ItemsUpdated -= @this.Page_ItemsUpdated;
             }
 
             if (e.NewValue is ParametersPageViewModel page)
             {
                 page.PropertyChanged += @this.ViewModel_PropertyChanged;
-
-                // page.ItemsUpdated += @this.Page_ItemsUpdated;
             }
             else if (e.NewValue is null)
             {
