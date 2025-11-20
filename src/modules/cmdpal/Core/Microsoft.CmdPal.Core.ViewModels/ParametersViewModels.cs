@@ -382,7 +382,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ObservableCollection<ParameterRunViewModel> Items { get; set; } = [];
+    public List<ParameterRunViewModel> Items { get; set; } = [];
 
     public CommandItemViewModel Command { get; private set; }
 
@@ -435,6 +435,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         try
         {
             var newItems = _model.Unsafe!.Parameters;
+            CoreLogger.LogDebug($"Fetched {newItems.Length} objects");
             foreach (var item in newItems)
             {
                 ParameterRunViewModel? itemVm = item switch
@@ -444,11 +445,17 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                     ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost),
                     _ => null,
                 };
+                var t = itemVm?.ToString() ?? "unknown";
+                CoreLogger.LogDebug($"Parameter item was a {t}");
                 if (itemVm != null)
                 {
                     itemVm.InitializeProperties();
                     newViewModels.Add(itemVm);
                     itemVm.PropertyChanged += ItemPropertyChanged;
+                }
+                else
+                {
+                    CoreLogger.LogError("Unexpected parameter type");
                 }
             }
 
@@ -480,6 +487,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         DoOnUiThread(
             () =>
             {
+                CoreLogger.LogDebug($"raising parameter items changed, {Items.Count} parameters");
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
                 OnPropertyChanged(nameof(Items)); // TODO! hack
                 UpdateCommand();

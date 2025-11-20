@@ -6,10 +6,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -101,7 +103,7 @@ public sealed partial class SearchBar : UserControl,
         _ => string.Empty,
     };
 
-    public ObservableCollection<ParameterRunViewModel>? Parameters => CurrentPageViewModel is ParametersPageViewModel ppvm ? ppvm.Items : null;
+    public ObservableCollection<ParameterRunViewModel> Parameters { get; } = new();
 
     public SearchBar()
     {
@@ -389,9 +391,23 @@ public sealed partial class SearchBar : UserControl,
         {
             if (property == nameof(ParametersPageViewModel.Items))
             {
-                this.PropertyChanged?.Invoke(this, new(nameof(Parameters)));
+                CoreLogger.LogDebug($"handling parameter items changed, {parametersPage.Items.Count} parameters");
+                this.DispatcherQueue.TryEnqueue(UpdateParameters);
             }
         }
+    }
+
+    private void UpdateParameters()
+    {
+        var newParams = GetParameters();
+        ListHelpers.InPlaceUpdateList(Parameters, newParams);
+    }
+
+    private List<ParameterRunViewModel> GetParameters()
+    {
+        var res = CurrentPageViewModel is ParametersPageViewModel ppvm ? ppvm.Items : null;
+        CoreLogger.LogDebug($"retrieving parameters, {res?.Count ?? 0} parameters");
+        return res ?? new();
     }
 
     public void Receive(GoHomeMessage message) => ClearSearch();
