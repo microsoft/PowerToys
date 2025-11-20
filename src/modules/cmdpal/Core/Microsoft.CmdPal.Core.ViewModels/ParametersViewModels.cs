@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
@@ -489,8 +490,13 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     private void UpdateCommand()
     {
+        var showCommand = ShowCommand;
+
+        CoreLogger.LogDebug($"showCommand:{showCommand}");
+
         UpdateProperty(nameof(ShowCommand));
-        if (!ShowCommand || Command.Model.Unsafe is null)
+
+        if (!showCommand || Command.Model.Unsafe is null)
         {
             return;
         }

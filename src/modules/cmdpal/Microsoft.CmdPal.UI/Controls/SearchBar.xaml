@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.SearchBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -34,17 +34,16 @@
             </DataTemplate>
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
                 <TextBox
-                    MinHeight="32"
-                    Padding="4"
+                    MinHeight="36"
+                    Margin="0,0,0,-4"
+                    Padding="10,5,10,6"
                     VerticalAlignment="Bottom"
-                    VerticalContentAlignment="Stretch"
-                    BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                    BorderThickness="1"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    VerticalContentAlignment="Bottom"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     KeyDown="StringParameter_KeyDown"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
-                    Style="{StaticResource SearchTextBoxStyle}"
                     Text="{x:Bind TextForUI, Mode=OneWay}"
+                    TextAlignment="DetectFromContent"
                     TextChanged="StringParameter_TextChanged" />
             </DataTemplate>
             <DataTemplate x:Key="ListParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
@@ -94,14 +93,15 @@
 
             <ItemsControl
                 x:Name="ParametersBar"
+                Margin="8,0,0,0"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
+                VerticalAlignment="Center"
                 IsTabStop="False"
                 ItemTemplateSelector="{StaticResource ParameterRunTemplateSelector}"
                 ItemsSource="{x:Bind Parameters, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
