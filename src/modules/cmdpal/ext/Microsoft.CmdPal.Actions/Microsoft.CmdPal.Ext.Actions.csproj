@@ -25,13 +25,13 @@
     </Compile>
   </ItemGroup>
 
+	<ItemGroup>
+		<None Remove="Assets\Actions.png" />
+	</ItemGroup>
   <ItemGroup>
     <Content Update="Assets\Actions.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-    <ItemGroup>
-    <None Remove="Assets\Actions.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
