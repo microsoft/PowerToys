@@ -40,7 +40,7 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider, IExtended
     {
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
 
         _rootPageService = rootPageService;
     }
