@@ -85,13 +85,19 @@ namespace UITests_FancyZones
         public void TestShowZonesOnShiftDuringDrag()
         {
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
-            Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window")); // element to drag
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 300;
+            int endY = startY + 300;
 
             var (initialColor, withShiftColor) = RunDragInteractions(
               preAction: () =>
               {
-                  dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+                  Session.MoveMouseTo(startX, startY);
+                  Session.PerformMouseAction(MouseActionType.LeftDown);
+                  Session.MoveMouseTo(endX, endY);
               },
               postAction: () =>
               {
@@ -101,7 +107,7 @@ namespace UITests_FancyZones
               releaseAction: () =>
               {
                   Session.ReleaseKey(Key.Shift);
-                  Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure window switch
+                  Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
               },
               testCaseName: testCaseName);
 
@@ -114,7 +120,7 @@ namespace UITests_FancyZones
             Assert.AreEqual(inactivateColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
 
             Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone deactivated failed.");
-            dragElement.ReleaseDrag();
+            Session.PerformMouseAction(MouseActionType.LeftUp);
 
             Clean();
         }
@@ -133,24 +139,30 @@ namespace UITests_FancyZones
         {
             string testCaseName = nameof(TestShowZonesOnDragDuringShift);
 
-            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 100;
+            int endY = startY + 100;
 
             var (initialColor, withDragColor) = RunDragInteractions(
                 preAction: () =>
                 {
-                    dragElement.Drag(offSet.Dx, offSet.Dy);
                     Session.PressKey(Key.Shift);
+                    Task.Delay(100).Wait();
                 },
                 postAction: () =>
                 {
-                    dragElement.DragAndHold(0, 0);
-                    Task.Delay(5000).Wait();
+                    Session.MoveMouseTo(startX, startY);
+                    Session.PerformMouseAction(MouseActionType.LeftDown);
+                    Session.MoveMouseTo(endX, endY);
+                    Task.Delay(1000).Wait();
                 },
                 releaseAction: () =>
                 {
-                    dragElement.ReleaseDrag();
+                    Session.PerformMouseAction(MouseActionType.LeftUp);
                     Session.ReleaseKey(Key.Shift);
+                    Task.Delay(100).Wait();
                 },
                 testCaseName: testCaseName);
 
