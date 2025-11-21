@@ -28,7 +28,7 @@ namespace UITests_FancyZones
 
         static LayoutApplyHotKeyTests()
         {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("FancyZones", "Hosts");
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
         }
 
         private static readonly EditorParameters.ParamsWrapper Parameters = new EditorParameters.ParamsWrapper

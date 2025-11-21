@@ -29,7 +29,7 @@ namespace UITests_FancyZones
 
         static OneZoneSwitchTests()
         {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("FancyZones", "Hosts");
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
         }
 
         [TestInitialize]
