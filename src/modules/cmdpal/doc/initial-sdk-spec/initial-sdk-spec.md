@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-09-04
+last updated: 2025-11-21
 issue id: n/a
 ---
 
@@ -2210,10 +2210,9 @@ Extensions will often want to provide rich search experiences for their users.
 This addenda is broken into multiple draft specs currently. These represent
 different approaches to the same goals. 
 
-* **A**: [Rich Search Box](./RichSearchBox-draft-A.md)
-* **B**: [Prefix Search](./PrefixSearch-draft-B.md)
-* **C**: [ZWSP tokens](./PlainRichSearch-draft-C.md)
-
+* **A**: [Rich Search Box](./drafts/RichSearchBox-draft-A.md)
+* **B**: [Prefix Search](./drafts/PrefixSearch-draft-B.md)
+* **C**: [ZWSP tokens](./drafts/PlainRichSearch-draft-C.md)
 
 ### Nov 2025 status
 

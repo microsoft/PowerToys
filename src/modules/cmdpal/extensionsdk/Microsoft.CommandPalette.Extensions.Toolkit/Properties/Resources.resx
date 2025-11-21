@@ -157,4 +157,7 @@
     <value>Copy failed ({0}). Please try again.</value>
     <comment>{0} is the error message</comment>
   </data>
+  <data name="FilePickerParameterRun_PlaceholderText" xml:space="preserve">
+    <value>Select a file</value>
+  </data>
 </root>
