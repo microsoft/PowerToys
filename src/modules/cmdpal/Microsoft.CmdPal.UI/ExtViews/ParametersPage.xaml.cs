@@ -50,12 +50,12 @@ public sealed partial class ParametersPage : Page
             throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
 
-        if (navigationRequest.TargetViewModel is not ParametersPageViewModel ppvm)
+        if (navigationRequest.TargetViewModel is not ParametersPageViewModel page)
         {
             throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ParametersPageViewModel)}");
         }
 
-        ViewModel = ppvm;
+        ViewModel = page;
 
         base.OnNavigatedTo(e);
     }

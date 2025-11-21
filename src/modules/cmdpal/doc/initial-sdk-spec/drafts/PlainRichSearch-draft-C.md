@@ -13,7 +13,7 @@ We'll just use embedded zero-width space (ZWSP) characters in the search text to
 
 We'll add an extended attribute to the page - something like `TokenSearch`. If
 that's set to true, CmdPal will render the search box as a rich text box that
-can contain tokens. When we do that, we'll trezt text between ZWSP characters as
+can contain tokens. When we do that, we'll treat text between ZWSP characters as
 tokens, and give them special UI treatment (like a link).
 
 When the user types a special prefix (like `@`), the extension page will
@@ -148,5 +148,5 @@ class MySuggestionSearchPage : DynamicListPage, IDynamicListPage2
 
 None of this solves the "Command with parameters" problem. We'd still need to introduce a new page type for that. 
 
-It needs to be a new page type, because we need agressively change the search box to only allow inputs into the parameter fields. We can't have users removing part of the command's display text - that doesn't make sense.
+It needs to be a new page type, because we need aggressively change the search box to only allow inputs into the parameter fields. We can't have users removing part of the command's display text - that doesn't make sense.
 

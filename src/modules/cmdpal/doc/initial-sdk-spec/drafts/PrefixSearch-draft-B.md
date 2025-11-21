@@ -207,7 +207,7 @@ I guess the second form makes it easier for an extension to determine what the c
 
 ```cs
 
-interface ITokenPostitions
+interface ITokenPositions
 {
     IToken Token { get; };
     Int64 Position { get; }; // default -1 for "end"
@@ -216,7 +216,7 @@ interface ITokenPostitions
 interface ISearchTextChangedArgs
 {
     String NewSearchText { get; } // The text that the user has typed into the search box.
-    ITokenPostitions[] CurrentTokens { get; } // The tokens that are currently in the search box.
+    ITokenPositions[] CurrentTokens { get; } // The tokens that are currently in the search box.
 }
 ```
 
@@ -224,7 +224,7 @@ But, that's not really what we want either. How would we know where tokens are w
 
 `ITextRange` is in `Microsoft.UI.Text`. Don't want to have to rely on and WASDK types. 
 
-So that kinda necessitates that we have 
+So that kind of necessitates that we have 
 ```cs
 
 interface ISearchRun
@@ -274,10 +274,10 @@ private void OnTokenPicked(MyTokenPickedEventArgs args)
 }
 ```
 
-This is just carcinisation. It's the token search spec again.
+This is just carcinization. It's the token search spec again.
 
 TODO! 
-this current designe requires that the picked suggestion raise an event up through the page hosting the suggestion, into the prefix page. That necessitates a _lot_ of plumbing. Because the prefix page _doesn't actually have a reference to the suggestion pages_. So we can't wire the events from 
+this current design requires that the picked suggestion raise an event up through the page hosting the suggestion, into the prefix page. That necessitates a _lot_ of plumbing. Because the prefix page _doesn't actually have a reference to the suggestion pages_. So we can't wire the events from 
 command -> suggestion page -> prefix page.
 
 we need to wire
@@ -394,9 +394,9 @@ public class PrefixSearchPage : ListPage, IPrefixProvider
 
 Then the prefix page can own the suggestion pages, and wire their events directly to itself. 
 
-Does this mean that the `ISearchTextChangedArgs` coming into the extension are something instantiated by the host? yea. That would force the extension to safely deal with the args. Unless we definitely had OSS MBV, we can't be sure that what the extension sees is safe to handle. 
+Does this mean that the `ISearchTextChangedArgs` coming into the extension are something instantiated by the host? yea. That would force the extension to safely deal with the args. Unless we definitely had OSS MarshalByValue always, we can't be sure that what the extension sees is safe to handle. 
 
-It would be a weird mismash where the set of tokens is half owned by the extension (tokens) and half owned by the host (text). And I don't know how having a token roundtrip across the ABI both ways would translate. Probably fine. 
+It would be a weird mishmash where the set of tokens is half owned by the extension (tokens) and half owned by the host (text). And I don't know how having a token roundtrip across the ABI both ways would translate. Probably fine. 
 
 ```cs
 page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("h")]});
