@@ -5258,6 +5258,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="LightSwitch_MonitorSettingsGroup.Header" xml:space="preserve">
+    <value>Monitor settings</value>
+  </data>
   <data name="LightSwitch_EnableSettingsCard.Header" xml:space="preserve">
     <value>Enable Light Switch</value>
   </data>
@@ -5322,9 +5325,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Supported applications</value>
   </data>
   <data name="LightSwitch_PowerDisplayDisabledWarningBar.Title" xml:space="preserve">
-    <value>PowerDisplay is disabled</value>
+    <value>Enable PowerDisplay module to use automatic monitor profile switching</value>
   </data>
   <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarning.Text" xml:space="preserve">
     <value>Enable PowerDisplay module to use automatic monitor profile switching</value>
   </data>
   <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">

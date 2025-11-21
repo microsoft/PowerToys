@@ -154,11 +154,18 @@
                         <InfoBar
                             x:Name="PowerDisplayDisabledWarningBar"
                             x:Uid="LightSwitch_PowerDisplayDisabledWarningBar"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            IsClosable="False"
                             IsOpen="True"
-                            Severity="Warning"
+                            IsTabStop="True"
+                            Severity="Informational"
                             Visibility="{x:Bind ViewModel.ShowPowerDisplayDisabledWarning, Mode=OneWay}">
                             <InfoBar.ActionButton>
-                                <HyperlinkButton x:Uid="LightSwitch_NavigatePowerDisplaySettings" Click="NavigatePowerDisplaySettings_Click" />
+                                <HyperlinkButton
+                                    x:Uid="LightSwitch_NavigatePowerDisplaySettings"
+                                    HorizontalAlignment="Right"
+                                    Click="NavigatePowerDisplaySettings_Click" />
                             </InfoBar.ActionButton>
                         </InfoBar>
                         <tkcontrols:SettingsExpander
