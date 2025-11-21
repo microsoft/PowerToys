@@ -14,9 +14,18 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
+/// <summary>
+/// View models for parameters. This file has both the viewmodels for all the
+/// different run types, and the page view model. 
+/// </summary>
+
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable SA1649 // File name should match first type name
 
+/// <summary>
+/// Base class for all parameter run view models. This includes both labels and
+/// parameters that accept values.
+/// </summary>
 public abstract partial class ParameterRunViewModel : ExtensionObjectViewModel
 {
     private ExtensionObject<IParameterRun> _model;
@@ -67,6 +76,10 @@ public abstract partial class ParameterRunViewModel : ExtensionObjectViewModel
     }
 }
 
+/// <summary>
+/// View model for label runs. This is a non-interactive run that just displays
+/// text.
+/// </summary>
 public partial class LabelRunViewModel : ParameterRunViewModel
 {
     private ExtensionObject<ILabelRun> _model;
@@ -83,10 +96,6 @@ public partial class LabelRunViewModel : ParameterRunViewModel
     {
         base.InitializeProperties();
 
-        // if (IsInitialized)
-        // {
-        //    return;
-        // }
         var labelRun = _model.Unsafe;
         if (labelRun == null)
         {
@@ -97,6 +106,24 @@ public partial class LabelRunViewModel : ParameterRunViewModel
         UpdateProperty(nameof(Text));
 
         Initialized = InitializedState.Initialized;
+    }
+
+    protected override void FetchProperty(string propertyName)
+    {
+        var model = this._model.Unsafe;
+        if (model is null)
+        {
+            return; // throw?
+        }
+
+        switch (propertyName)
+        {
+            case nameof(ILabelRun.Text):
+                Text = model.Text;
+                break;
+        }
+
+        UpdateProperty(propertyName);
     }
 }
 
@@ -118,10 +145,6 @@ public partial class ParameterValueRunViewModel : ParameterRunViewModel
     {
         base.InitializeProperties();
 
-        // if (IsInitialized)
-        // {
-        //    return;
-        // }
         var valueRun = _model.Unsafe;
         if (valueRun == null)
         {
@@ -177,10 +200,6 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
     {
         base.InitializeProperties();
 
-        // if (IsInitialized)
-        // {
-        //    return;
-        // }
         var stringRun = _model.Unsafe;
         if (stringRun == null)
         {
@@ -270,10 +289,6 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
     {
         base.InitializeProperties();
 
-        // if (IsInitialized)
-        // {
-        //    return;
-        // }
         var commandRun = _model.Unsafe;
         if (commandRun == null)
         {
@@ -389,14 +404,9 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         IsInitialized &&
         IsLoading == false &&
         !NeedsAnyValues()
-
-        // FilteredItems.Count == 0 &&
-        // (!_isFetching) &&
         ;
 
     private readonly Lock _listLock = new();
-
-    public event TypedEventHandler<ParametersPageViewModel, object>? ItemsUpdated;
 
     public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host)
         : base(model, scheduler, host)
@@ -422,8 +432,6 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         Command.SlowInitializeProperties();
 
         FetchItems();
-
-        // model.ItemsChanged += Model_ItemsChanged; // TODO!
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
@@ -487,8 +495,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             () =>
             {
                 CoreLogger.LogDebug($"raising parameter items changed, {Items.Count} parameters");
-                ItemsUpdated?.Invoke(this, EventArgs.Empty);
-                OnPropertyChanged(nameof(Items)); // TODO! hack
+                OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated, but meh
                 UpdateCommand();
 
                 WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());
@@ -583,29 +590,11 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-
-        // TODO!
-
-        // _cancellationTokenSource?.Cancel();
-        // _cancellationTokenSource?.Dispose();
-        // _cancellationTokenSource = null;
-
-        // _fetchItemsCancellationTokenSource?.Cancel();
-        // _fetchItemsCancellationTokenSource?.Dispose();
-        // _fetchItemsCancellationTokenSource = null;
     }
 
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
-
-        // _cancellationTokenSource?.Cancel();
-        // _fetchItemsCancellationTokenSource?.Cancel();
-        var model = _model.Unsafe;
-        if (model is not null)
-        {
-            // model.ItemsChanged -= Model_ItemsChanged;
-        }
 
         lock (_listLock)
         {

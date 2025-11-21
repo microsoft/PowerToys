@@ -2,10 +2,14 @@
 author: Mike Griese
 created on: 2024-07-19
 <<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 last updated: 2026-02-05
 =======
 last updated: 2025-09-04
 >>>>>>> 2970fc5d8 (I kinda like this?):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
+=======
+last updated: 2025-11-21
+>>>>>>> 697736c5b (Final PR cleanup):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 issue id: n/a
 ---
 
@@ -2282,7 +2286,131 @@ interface IParametersPage requires IPage
     IListItem Command{ get; };
 };
 ```
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 >>>>>>> 84af471cb (Resurrect the suggestion page):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
+=======
+
+When we open a `IParametersPage`, we will render the `Parameters` in the search
+box. We'll move focus to the first `IParameterRun` that is not a `ILabelRun`.
+What those interactions looks like depends on the type of `IParameterRun`. 
+
+There are three basic types of inputs: strings, invokable commands, and lists.
+Strings are a special case that doesn't require a command to set the value.
+Lists and invokable commands are picked based on the type of the
+`SelectValueCommand`. Each of these are detailed below. 
+
+When all the parameters have `NeedsValue` set to `false`, we will display a
+single item to the user - the `Command` item. 
+
+### String parameters
+
+These are rendered as a text box within the search box. The user can type into
+it. Focus is moved to the next parameter when the user presses Enter or tab. 
+
+### Command parameters - Invokable Commands
+
+These are used when the `SelectValueCommand` is an `IInvokableCommand`.
+
+These are rendered as a button within the search box. The button text is
+`DisplayText` if it is set, otherwise it is `PlaceholderText`. If the user
+clicks the button, we invoke the `SelectValueCommand` (and ignore the
+`CommandResult`).
+
+This is good for file pickers, date pickers, color pickers, etc. Anything that
+requires a custom UI to pick a value.
+
+When the extension has picked a value, it should set the `NeedsValue` to false. 
+The extension can also set the `DisplayText` and `Icon` to reflect the chosen value.
+
+When the user presses enter with the button focused, we will also invoke the
+`SelectValueCommand`.
+
+When the user presses tab, we will move focus to the next parameter.
+
+If the `NeedsValue` property is changed to `false` while it's focused, we will
+move focus to the next parameter.
+
+### Command parameters - List Commands
+
+These are used when the `SelectValueCommand` is an `IListPage` - both static and
+dynamic lists work similarly.
+
+These are rendered as a text box within the search box. When the user focuses
+the text box, we will display the items from the `IListPage` in the body of
+CmdPal. The user can then type to filter the list. This filtering will work the
+same way as any other list page in CmdPal - CmdPal will filter static lists, or
+pass the query to a dynamic list.
+
+The items in this list should all be `IListItem` objects with
+`IInvokableCommands`. Putting a `IPage` into one of these items will cause the
+user to navigate away from the parameters page, which would probably be
+unexpected.
+
+When the user picks an item from the list, the extension should handle that
+command by bubbling an event up to the `CommandRun`, and setting the `Value`,
+`DisplayText`, and `Icon` properties, and setting `NeedsValue` to false.
+
+When the user presses enter with the text box focused, we will invoke the
+command of the selected item in the list. 
+
+When the user presses tab, we will move focus to the next parameter.
+
+If the `NeedsValue` property is changed to `false` while it's focused, we will
+move focus to the next parameter.
+
+### Examples
+
+Lets say you had a command like "Create a note \${title} in \${folder}".
+`title` is a string input, and `folder` is a static list of folders. 
+
+The extension author can then define a `IParametersPage` with four runs in it:
+* A `ILabelRun` for "Create a note"
+* A `IStringParameterRun` for the `title`
+* A `ILabelRun` for "in"
+* A `ICommandParameterRun` for the `folder`. The `Command` will be a
+  `IListPage`, where the items are possible folders
+
+In this example, the user can pick the "create note" command, then type the
+title, hit enter/tab, and then pick a folder from the list, then hit enter to
+run the command.
+
+Samples for the parameters page are implemented over in 
+[the sample extension](../../ext/SamplePagesExtension/Pages/ParameterSamples.cs)
+
+
+## Addenda III: Rich Search (DRAFT)
+
+> [!NOTE]
+> _Mike_: Rich search and parameters were prototyped together, but ultimately we used two different solutions. 
+>
+> Currently, we have a dummy implementation of draft C (ZWSP tokens), but without full API changes. Detailed [below](#nov-2025-status).
+
+Extensions will often want to provide rich search experiences for their users.
+
+This addenda is broken into multiple draft specs currently. These represent
+different approaches to the same goals. 
+
+* **A**: [Rich Search Box](./drafts/RichSearchBox-draft-A.md)
+* **B**: [Prefix Search](./drafts/PrefixSearch-draft-B.md)
+* **C**: [ZWSP tokens](./drafts/PlainRichSearch-draft-C.md)
+
+### Nov 2025 status
+
+As of Nov 2025, we're implementing a simple version of draft C in the host. 
+
+In this version, if the extension implements `IDynamicListPage`, and also
+implements `IExtendedAttributesProvider`, then they can set the `TokenSearch`
+property. This will enlighten CmdPal to treat ZWSP-separated tokens in the
+search text specially. 
+
+For an example, see 
+[this sample implementation](../../ext/SamplePagesExtension/Pages/SampleSuggestionsPage.cs).
+
+In my head, I am still leaning towards a more full-featured version of draft C,
+but with full CommandItem's in the `ISearchUpdateArgs` instead of just strings.
+We'd almost need a new page type to support that, where the extension can add
+`ICommandItem`s to the search box directly.
+>>>>>>> 697736c5b (Final PR cleanup):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 
 ## Class diagram
 

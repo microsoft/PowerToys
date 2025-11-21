@@ -9,11 +9,18 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class FilePickerParameterRun : CommandParameterRun
 {
+    public static readonly IconInfo AddIcon = new("\uE710"); // Add
+
     public StorageFile? File { get; private set; }
 
     public override object? Value => File;
 
-    public override string? DisplayText { get => File != null ? File.DisplayName : "Select a file"; }
+    public override string? DisplayText
+    {
+        get => File != null ?
+            File.Name :
+            Properties.Resources.FilePickerParameterRun_PlaceholderText;
+    }
 
     public Action<FileOpenPicker>? SetupFilePicker { get; set; }
 
@@ -23,15 +30,12 @@ public partial class FilePickerParameterRun : CommandParameterRun
         command.FileSelected += (s, file) =>
         {
             File = file;
-
-            // Value = file != null ? file : (object?)null;
-            // OnPropertyChanged(nameof(Value));
             OnPropertyChanged(nameof(NeedsValue));
             OnPropertyChanged(nameof(DisplayText));
         };
         command.RequestCustomizePicker += ConfigureFilePicker;
-        PlaceholderText = "Select a file";
-        Icon = new IconInfo("\uE710"); // Add
+        PlaceholderText = Properties.Resources.FilePickerParameterRun_PlaceholderText;
+        Icon = AddIcon;
         Command = command;
     }
 
@@ -42,9 +46,9 @@ public partial class FilePickerParameterRun : CommandParameterRun
 
     private sealed partial class FilePickerCommand : InvokableCommand, IRequiresHostHwnd
     {
-        public override IconInfo Icon => new("\uE710"); // Add
+        public override IconInfo Icon => FilePickerParameterRun.AddIcon;
 
-        public override string Name => "Pick a file";
+        public override string Name => Properties.Resources.FilePickerParameterRun_PlaceholderText;
 
         public event EventHandler<StorageFile?>? FileSelected;
 
@@ -83,7 +87,3 @@ public partial class FilePickerParameterRun : CommandParameterRun
         picker.FileTypeFilter.Add("*");
     }
 }
-
-#pragma warning restore SA1649 // File name should match first type name
-#pragma warning restore SA1402 // File may only contain a single type
-#nullable disable
