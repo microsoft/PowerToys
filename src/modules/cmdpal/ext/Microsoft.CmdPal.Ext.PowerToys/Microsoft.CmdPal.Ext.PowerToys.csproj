@@ -8,8 +8,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>false</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -21,31 +21,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\SplashScreen.scale-200.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\SplashScreen.scale-200.png">
       <Link>Assets\SplashScreen.scale-200.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\LockScreenLogo.scale-200.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\LockScreenLogo.scale-200.png">
       <Link>Assets\LockScreenLogo.scale-200.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\Square150x150Logo.scale-200.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\Square150x150Logo.scale-200.png">
       <Link>Assets\Square150x150Logo.scale-200.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\Square44x44Logo.scale-200.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\Square44x44Logo.scale-200.png">
       <Link>Assets\Square44x44Logo.scale-200.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\Square44x44Logo.targetsize-24_altform-unplated.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\Square44x44Logo.targetsize-24_altform-unplated.png">
       <Link>Assets\Square44x44Logo.targetsize-24_altform-unplated.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\StoreLogo.scale-200.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\StoreLogo.scale-200.png">
       <Link>Assets\StoreLogo.scale-200.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Microsoft.CmdPal.UI\Assets\Stable\Wide310x150Logo.scale-200.png">
+    <Content Include="..\..\Microsoft.CmdPal.UI\Assets\Stable\Wide310x150Logo.scale-200.png">
       <Link>Assets\Wide310x150Logo.scale-200.png</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -55,7 +55,6 @@
   </ItemGroup>
 
     <ItemGroup>
-    <ProjectReference Include="..\Microsoft.CmdPal.Ext.PowerToys.Host\Microsoft.CmdPal.Ext.PowerToys.Host.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>  <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
