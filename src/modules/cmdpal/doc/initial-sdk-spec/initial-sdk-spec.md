@@ -75,6 +75,8 @@ functionality.
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
+  - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
+  - [Addenda II: Rich Search](#addenda-ii-rich-search)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2066,7 +2068,44 @@ parts **C** and **D**.
   not necessarily a full rich search box, we'll provide a parameter page
   experience. 
 
+```csharp
+[uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
+interface IParameterRun requires INotifyPropChanged
+{
+};
 
+interface ILabelRun requires IParameterRun
+{
+    String Text{ get; };
+};
+
+interface IParameterValueRun requires IParameterRun
+{
+    String PlaceholderText{ get; };
+    Boolean NeedsValue{ get; }; // TODO! name is weird
+};
+
+interface IStringParameterRun requires IParameterValueRun
+{
+    String Text{ get; set; };
+
+    // TODO! do we need a way to validate string inputs?
+};
+
+interface ICommandParameterRun requires IParameterValueRun
+{
+    String DisplayText{ get; };
+    ICommand GetSelectValueCommand(UInt64 hostHwnd);
+    IIconInfo Icon{ get; }; // ? maybe
+
+};
+
+interface IParametersPage requires IPage
+{
+    IParameterRun[] Parameters{ get; };
+    IListItem Command{ get; };
+};
+```
 
 ## Class diagram
 

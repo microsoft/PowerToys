@@ -54,6 +54,8 @@ public sealed partial class SearchBar : UserControl,
     // 0.6+ suggestions
     private string? _textToSuggest;
 
+    private bool _tokenSearchEnabled;
+
     public PageViewModel? CurrentPageViewModel
     {
         get => (PageViewModel?)GetValue(CurrentPageViewModelProperty);
@@ -86,6 +88,11 @@ public sealed partial class SearchBar : UserControl,
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
+
+            if (page is ListViewModel listViewModel)
+            {
+                @this._tokenSearchEnabled = listViewModel.IsTokenSearch;
+            }
         }
 
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
@@ -201,6 +208,43 @@ public sealed partial class SearchBar : UserControl,
             {
                 // Mark backspace as held to handle continuous deletion
                 _isBackspaceHeld = true;
+
+                // Try to handle token deletion
+                if (_tokenSearchEnabled &&
+                    FilterBox.SelectionLength == 0)
+                {
+                    // Tokens are delimeted by zero-width space characters
+                    // (ZWSP, U+200B).
+                    //
+                    // What we're gonna do here is check if the character we're
+                    // about to backspace is the _second_ ZWSP in a pair
+                    var lastCaretPosition = FilterBox.SelectionStart;
+                    var text = FilterBox.Text;
+
+                    // Is the character before the caret a zwsp?
+                    if (lastCaretPosition > 0 &&
+                        text[lastCaretPosition - 1] == '\u200B')
+                    {
+                        // make sure that this is a pair. So, we'd need to see an odd number of zwsp's before this one.
+                        var zwspCount = 0;
+                        var previousZwspIndex = -1;
+                        for (var i = 0; i < lastCaretPosition - 1; i++)
+                        {
+                            if (text[i] == '\u200B')
+                            {
+                                zwspCount++;
+                                previousZwspIndex = i;
+                            }
+                        }
+
+                        if (zwspCount % 2 == 1 && previousZwspIndex != -1)
+                        {
+                            // We have a pair! Select the whole token for deletion
+                            FilterBox.Select(previousZwspIndex, lastCaretPosition - previousZwspIndex);
+                            e.Handled = true;
+                        }
+                    }
+                }
             }
         }
         else if (e.Key == VirtualKey.Up)
