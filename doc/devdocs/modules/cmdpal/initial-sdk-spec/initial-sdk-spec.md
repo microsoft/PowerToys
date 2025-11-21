@@ -80,8 +80,12 @@ functionality.
     - [Status messages](#status-messages)
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
   - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+=======
+  - [Addenda II: Rich Search](#addenda-ii-rich-search)
+>>>>>>> 84af471cb (Resurrect the suggestion page):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2116,6 +2120,7 @@ This addenda is broken into multiple draft specs currently. These represent diff
 
 ### Commands with parameters
 
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 We've also long experimented with the idea of commands having parameters that
 can be filled in by the user. These would be commands that take a couple
 lightweight inputs, so that the use can input them more natively than an
@@ -2238,6 +2243,46 @@ because that method is was designed for two main purposes:
 In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
+=======
+```csharp
+[uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
+interface IParameterRun requires INotifyPropChanged
+{
+};
+
+interface ILabelRun requires IParameterRun
+{
+    String Text{ get; };
+};
+
+interface IParameterValueRun requires IParameterRun
+{
+    String PlaceholderText{ get; };
+    Boolean NeedsValue{ get; }; // TODO! name is weird
+};
+
+interface IStringParameterRun requires IParameterValueRun
+{
+    String Text{ get; set; };
+
+    // TODO! do we need a way to validate string inputs?
+};
+
+interface ICommandParameterRun requires IParameterValueRun
+{
+    String DisplayText{ get; };
+    ICommand GetSelectValueCommand(UInt64 hostHwnd);
+    IIconInfo Icon{ get; }; // ? maybe
+
+};
+
+interface IParametersPage requires IPage
+{
+    IParameterRun[] Parameters{ get; };
+    IListItem Command{ get; };
+};
+```
+>>>>>>> 84af471cb (Resurrect the suggestion page):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 
 ## Class diagram
 
