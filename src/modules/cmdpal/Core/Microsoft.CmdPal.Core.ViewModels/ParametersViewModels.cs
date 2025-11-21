@@ -496,7 +496,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             () =>
             {
                 CoreLogger.LogDebug($"raising parameter items changed, {Items.Count} parameters");
-                OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated, but meh
+                OnPropertyChanged(nameof(Items)); // This _could_ be promoted to a dedicated ItemsUpdated event if needed
                 UpdateCommand();
 
                 WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());

@@ -269,7 +269,7 @@ class BasicStringToken : BaseObservable, IBasicStringToken {
     public void UpdateText(ISearchUpdateArgs newText) {
         Text = newText.Text;
         // newText may have other properties too, like a correlation vector, 
-        // but that's not demoed here.
+        // but that's not demo'd here.
     }
 
     // helper for setting the text without raising a property changed event

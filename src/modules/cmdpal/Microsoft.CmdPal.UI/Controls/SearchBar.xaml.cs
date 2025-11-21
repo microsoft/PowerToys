@@ -213,7 +213,7 @@ public sealed partial class SearchBar : UserControl,
                 if (_tokenSearchEnabled &&
                     FilterBox.SelectionLength == 0)
                 {
-                    // Tokens are delimeted by zero-width space characters
+                    // Tokens are delimited by zero-width space characters
                     // (ZWSP, U+200B).
                     //
                     // What we're gonna do here is check if the character we're
@@ -449,7 +449,7 @@ public sealed partial class SearchBar : UserControl,
 
     private List<ParameterRunViewModel> GetParameters()
     {
-        var res = CurrentPageViewModel is ParametersPageViewModel ppvm ? ppvm.Items : null;
+        var res = CurrentPageViewModel is ParametersPageViewModel page ? page.Items : null;
         CoreLogger.LogDebug($"retrieving parameters, {res?.Count ?? 0} parameters");
         return res ?? new();
     }
@@ -612,9 +612,9 @@ public sealed partial class SearchBar : UserControl,
         if (parameter != null)
         {
             var container = ParametersBar.ContainerFromItem(parameter);
-            if (container is FrameworkElement fwe)
+            if (container is FrameworkElement element)
             {
-                fwe.Focus(FocusState.Keyboard);
+                element.Focus(FocusState.Keyboard);
             }
         }
     }
