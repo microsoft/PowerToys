@@ -274,7 +274,8 @@ private void OnTokenPicked(MyTokenPickedEventArgs args)
 }
 ```
 
-This is just carcinization. It's the token search spec again.
+This is just that thing where all life evolves to be crabs. It's the token
+search spec again.
 
 TODO! 
 this current design requires that the picked suggestion raise an event up through the page hosting the suggestion, into the prefix page. That necessitates a _lot_ of plumbing. Because the prefix page _doesn't actually have a reference to the suggestion pages_. So we can't wire the events from 

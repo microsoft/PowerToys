@@ -57,7 +57,7 @@ interface ISearchUpdateArgs requires IExtendedAttributesProvider
 //   not stylized at all. Essentially, it just represents a run of text in the 
 //   text box, between other tokens.
 // * ILabelToken: This is just a static run of text, with no user interaction. 
-//   This isn't an input field - it's just static text between other tokens.
+//   This isn't an input field - it is just static text between other tokens.
 interface IBasicStringToken requires IToken
 {
     String Text { get; }
@@ -246,7 +246,7 @@ class M365RichSearch : BaseObservable, IRichSearch
 Below, `BasicStringToken` is a toolkit class for just the basic string token.
 The basic string token just represents text in the search box, with no special
 meaning. You can imagine that a basic page essentially just has one long
-`BasicStringToken` for it's search text. 
+`BasicStringToken` for its search text. 
 
 ```cs
 class BasicStringToken : BaseObservable, IBasicStringToken {
@@ -451,7 +451,7 @@ none of which were trivially solvable by having the parameters on the command.
 Instead, we can leverage the concept of a "rich search" experience to provide
 that lightweight parameter input method.
 
-We'll add a new type of page, called a `RichSearchPage`. It's a list page, but
+We'll add a new type of page, called a `RichSearchPage`. It is a list page, but
 with a rich search box at the top.
 
 ```c#
@@ -461,7 +461,7 @@ interface IRichSearchPage requires IListPage {
 ```
 
 This lets the user activate the command that needs parameters, and go straight
-into the rich input page. That page will act like it's _just_ the command the
+into the rich input page. That page will act like it is _just_ the command the
 user "invoked", and will let us display additional inputs to the user. 
 
 #### Parameters Example
@@ -480,7 +480,7 @@ Then, when the user hits <kbd>↲</kbd>, we gather up all the tokens, and we can
 reference them in the command. As an example, here's the `CreateNoteCommand`,
 which implements the `IRichSearchPage` interface:
 
-The list page can always change it's results based on the user's input. In our
+The list page can always change its results based on the user's input. In our
 case, we'll listen for the value of the last token to be set. When it is, we can
 then display the final list item with our fully formed command for the user to
 invoke. 
@@ -538,7 +538,7 @@ immediately when picking a value. Not sure if that's reasonable though.
 
 `IRichSearchPage` probably needs a way to go back, that's not driven by user input. Or not driven by backspacing tokens. For example, in our previous `CreateNoteCommand` example, if the user backspaces from:
 * The filled `folder` param: the extension will get a `RemoveToken` call for the
-  `folder` token, which we'll use to clear it's value, and trigger focus to move
+  `folder` token, which we'll use to clear its value, and trigger focus to move
   back into it.
 * The empty `folder` param: we'll move focus back to the `title` token.
 * the filled `title` param: we'll backspace a character.
