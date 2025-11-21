@@ -46,6 +46,11 @@ namespace UITests_FancyZones
         {
         }
 
+        static DragWindowTests()
+        {
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("FancyZones", "Hosts");
+        }
+
         [TestInitialize]
         public void TestInitialize()
         {
