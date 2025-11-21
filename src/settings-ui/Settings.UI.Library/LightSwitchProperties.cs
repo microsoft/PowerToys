@@ -17,7 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string DefaultLatitude = "0.0";
         public const string DefaultLongitude = "0.0";
         public const string DefaultScheduleMode = "FixedHours";
-        public const bool DefaultApplyMonitorSettings = false;
         public const bool DefaultEnableDarkModeProfile = false;
         public const bool DefaultEnableLightModeProfile = false;
         public const string DefaultDarkModeProfile = "";
@@ -36,7 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SunsetOffset = new IntProperty(DefaultSunsetOffset);
             ScheduleMode = new StringProperty(DefaultScheduleMode);
             ToggleThemeHotkey = new KeyboardKeysProperty(DefaultToggleThemeHotkey);
-            ApplyMonitorSettings = new BoolProperty(DefaultApplyMonitorSettings);
             EnableDarkModeProfile = new BoolProperty(DefaultEnableDarkModeProfile);
             EnableLightModeProfile = new BoolProperty(DefaultEnableLightModeProfile);
             DarkModeProfile = new StringProperty(DefaultDarkModeProfile);
@@ -72,9 +70,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("toggle-theme-hotkey")]
         public KeyboardKeysProperty ToggleThemeHotkey { get; set; }
-
-        [JsonPropertyName("applyMonitorSettings")]
-        public BoolProperty ApplyMonitorSettings { get; set; }
 
         [JsonPropertyName("enableDarkModeProfile")]
         public BoolProperty EnableDarkModeProfile { get; set; }

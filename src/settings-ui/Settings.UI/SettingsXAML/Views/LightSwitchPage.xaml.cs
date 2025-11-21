@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -128,7 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.SelectedCity = null;
 
                 // CityAutoSuggestBox.Text = string.Empty;
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}ï¿½, {ViewModel.Longitude}ï¿½";
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
@@ -153,7 +154,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
             {
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}ï¿½, {ViewModel.Longitude}ï¿½";
             }
 
             SunriseModeChartState();
@@ -320,6 +321,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
             await GetGeoLocation();
+        }
+
+        private void NavigatePowerDisplaySettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ShellPage.Navigate(typeof(PowerDisplayPage));
         }
     }
 }

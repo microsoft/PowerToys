@@ -197,44 +197,41 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 SetAppsTheme(false);
         }
 
-        // Notify PowerDisplay about theme change if monitor settings integration is enabled
-        if (settings.applyMonitorSettings)
+        // Notify PowerDisplay about theme change if any profile is enabled
+        bool shouldNotify = false;
+
+        if (isLightActive && settings.enableLightModeProfile && !settings.lightModeProfile.empty())
         {
-            bool shouldNotify = false;
+            shouldNotify = true;
+        }
+        else if (!isLightActive && settings.enableDarkModeProfile && !settings.darkModeProfile.empty())
+        {
+            shouldNotify = true;
+        }
 
-            if (isLightActive && settings.enableLightModeProfile && settings.lightModeProfile != L"(None)")
+        if (shouldNotify)
+        {
+            try
             {
-                shouldNotify = true;
-            }
-            else if (!isLightActive && settings.enableDarkModeProfile && settings.darkModeProfile != L"(None)")
-            {
-                shouldNotify = true;
-            }
+                // Signal PowerDisplay to check LightSwitch settings and apply appropriate profile
+                // PowerDisplay will read LightSwitch settings to determine which profile to apply
+                Logger::info(L"[LightSwitch] Notifying PowerDisplay about theme change (isLight: {})", isLightActive);
 
-            if (shouldNotify)
+                HANDLE hThemeChangedEvent = CreateEventW(nullptr, FALSE, FALSE, L"Local\\PowerToys_LightSwitch_ThemeChanged");
+                if (hThemeChangedEvent)
+                {
+                    SetEvent(hThemeChangedEvent);
+                    CloseHandle(hThemeChangedEvent);
+                    Logger::info(L"[LightSwitch] Theme change event signaled");
+                }
+                else
+                {
+                    Logger::warn(L"[LightSwitch] Failed to create theme change event");
+                }
+            }
+            catch (...)
             {
-                try
-                {
-                    // Signal PowerDisplay to check LightSwitch settings and apply appropriate profile
-                    // PowerDisplay will read LightSwitch settings to determine which profile to apply
-                    Logger::info(L"[LightSwitch] Notifying PowerDisplay about theme change (isLight: {})", isLightActive);
-                    
-                    HANDLE hThemeChangedEvent = CreateEventW(nullptr, FALSE, FALSE, L"Local\\PowerToys_LightSwitch_ThemeChanged");
-                    if (hThemeChangedEvent)
-                    {
-                        SetEvent(hThemeChangedEvent);
-                        CloseHandle(hThemeChangedEvent);
-                        Logger::info(L"[LightSwitch] Theme change event signaled");
-                    }
-                    else
-                    {
-                        Logger::warn(L"[LightSwitch] Failed to create theme change event");
-                    }
-                }
-                catch (...)
-                {
-                    Logger::error(L"[LightSwitch] Failed to notify PowerDisplay");
-                }
+                Logger::error(L"[LightSwitch] Failed to notify PowerDisplay");
             }
         }
     };

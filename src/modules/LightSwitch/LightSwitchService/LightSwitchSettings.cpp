@@ -160,16 +160,6 @@ void LightSwitchSettings::LoadSettings()
             }
         }
 
-        // ApplyMonitorSettings
-        if (const auto jsonVal = values.get_bool_value(L"applyMonitorSettings"))
-        {
-            auto val = *jsonVal;
-            if (m_settings.applyMonitorSettings != val)
-            {
-                m_settings.applyMonitorSettings = val;
-            }
-        }
-
         // EnableDarkModeProfile
         if (const auto jsonVal = values.get_bool_value(L"enableDarkModeProfile"))
         {

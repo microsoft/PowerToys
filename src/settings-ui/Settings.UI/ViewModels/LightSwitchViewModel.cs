@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,10 +32,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<SearchLocation> SearchLocations { get; } = new();
 
-        public LightSwitchViewModel(LightSwitchSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
+        public LightSwitchViewModel(LightSwitchSettings? initialSettings = null, Func<string, int>? ipcMSGCallBackFunc = null)
         {
             _moduleSettings = initialSettings ?? new LightSwitchSettings();
-            SendConfigMSG = ipcMSGCallBackFunc;
+            SendConfigMSG = ipcMSGCallBackFunc ?? (_ => 0);
 
             ForceLightCommand = new RelayCommand(ForceLightNow);
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
@@ -381,9 +383,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private SearchLocation _selectedSearchLocation;
+        private SearchLocation? _selectedSearchLocation;
 
-        public SearchLocation SelectedCity
+        public SearchLocation? SelectedCity
         {
             get => _selectedSearchLocation;
             set
@@ -393,7 +395,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _selectedSearchLocation = value;
                     NotifyPropertyChanged();
 
-                    UpdateSunTimes(_selectedSearchLocation.Latitude, _selectedSearchLocation.Longitude, _selectedSearchLocation.City);
+                    if (_selectedSearchLocation != null)
+                    {
+                        UpdateSunTimes(_selectedSearchLocation.Latitude, _selectedSearchLocation.Longitude, _selectedSearchLocation.City);
+                    }
                 }
             }
         }
@@ -442,7 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        public void NotifyPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             Logger.LogInfo($"Changed the property {propertyName}");
             OnPropertyChanged(propertyName);
@@ -476,21 +481,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled && ModuleSettings.Properties.ApplyMonitorSettings.Value;
-
-        public bool ApplyMonitorSettings
-        {
-            get => ModuleSettings.Properties.ApplyMonitorSettings.Value;
-            set
-            {
-                if (ModuleSettings.Properties.ApplyMonitorSettings.Value != value)
-                {
-                    ModuleSettings.Properties.ApplyMonitorSettings.Value = value;
-                    NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
-                }
-            }
-        }
+        public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled && (ModuleSettings.Properties.EnableDarkModeProfile.Value || ModuleSettings.Properties.EnableLightModeProfile.Value);
 
         public bool EnableDarkModeProfile
         {
@@ -501,6 +492,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.EnableDarkModeProfile.Value = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
                 }
             }
         }
@@ -514,10 +506,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.EnableLightModeProfile.Value = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ShowPowerDisplayDisabledWarning));
                 }
             }
         }
 
+        public PowerDisplayProfile? SelectedDarkModeProfile
+        {
+            get => _selectedDarkModeProfile;
+            set
+            {
+                if (_selectedDarkModeProfile != value)
+                {
+                    _selectedDarkModeProfile = value;
+
+                    // Sync with the string property stored in settings
+                    var newProfileName = value?.Name ?? string.Empty;
+                    if (ModuleSettings.Properties.DarkModeProfile.Value != newProfileName)
+                    {
+                        ModuleSettings.Properties.DarkModeProfile.Value = newProfileName;
+                    }
+
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public PowerDisplayProfile? SelectedLightModeProfile
+        {
+            get => _selectedLightModeProfile;
+            set
+            {
+                if (_selectedLightModeProfile != value)
+                {
+                    _selectedLightModeProfile = value;
+
+                    // Sync with the string property stored in settings
+                    var newProfileName = value?.Name ?? string.Empty;
+                    if (ModuleSettings.Properties.LightModeProfile.Value != newProfileName)
+                    {
+                        ModuleSettings.Properties.LightModeProfile.Value = newProfileName;
+                    }
+
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Legacy string properties for backwards compatibility with settings persistence
         public string DarkModeProfile
         {
             get => ModuleSettings.Properties.DarkModeProfile.Value;
@@ -526,6 +562,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.DarkModeProfile.Value != value)
                 {
                     ModuleSettings.Properties.DarkModeProfile.Value = value;
+
+                    // Sync with the object property
+                    UpdateSelectedProfileFromName(value, isDarkMode: true);
+
                     NotifyPropertyChanged();
                 }
             }
@@ -539,6 +579,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.LightModeProfile.Value != value)
                 {
                     ModuleSettings.Properties.LightModeProfile.Value = value;
+
+                    // Sync with the object property
+                    UpdateSelectedProfileFromName(value, isDarkMode: false);
+
                     NotifyPropertyChanged();
                 }
             }
@@ -548,43 +592,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                var powerToysPath = Path.Combine(settingsPath, "Microsoft", "PowerToys", "PowerDisplay");
-                _profilesFilePath = Path.Combine(powerToysPath, "profiles.json");
+                var profilesData = PowerDisplayProfilesHelper.LoadProfiles();
 
-                if (File.Exists(_profilesFilePath))
+                AvailableProfiles.Clear();
+
+                foreach (var profile in profilesData.Profiles)
                 {
-                    var json = File.ReadAllText(_profilesFilePath);
-                    var profilesData = JsonSerializer.Deserialize<PowerDisplayProfiles>(json);
-
-                    if (profilesData != null)
-                    {
-                        AvailableProfiles.Clear();
-
-                        // Add empty option
-                        AvailableProfiles.Add(new PowerDisplayProfile("(None)", new List<ProfileMonitorSetting>()));
-
-                        foreach (var profile in profilesData.Profiles)
-                        {
-                            AvailableProfiles.Add(profile);
-                        }
-
-                        Logger.LogInfo($"Loaded {profilesData.Profiles.Count} PowerDisplay profiles");
-                    }
+                    AvailableProfiles.Add(profile);
                 }
-                else
-                {
-                    // Add empty option
-                    AvailableProfiles.Clear();
-                    AvailableProfiles.Add(new PowerDisplayProfile("(None)", new List<ProfileMonitorSetting>()));
-                    Logger.LogInfo("No PowerDisplay profiles file found");
-                }
+
+                Logger.LogInfo($"Loaded {profilesData.Profiles.Count} PowerDisplay profiles");
+
+                // Sync selected profiles from settings
+                UpdateSelectedProfileFromName(ModuleSettings.Properties.DarkModeProfile.Value, isDarkMode: true);
+                UpdateSelectedProfileFromName(ModuleSettings.Properties.LightModeProfile.Value, isDarkMode: false);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to load PowerDisplay profiles: {ex.Message}");
                 AvailableProfiles.Clear();
-                AvailableProfiles.Add(new PowerDisplayProfile("(None)", new List<ProfileMonitorSetting>()));
+            }
+        }
+
+        /// <summary>
+        /// Helper method to sync the selected profile object from the profile name stored in settings
+        /// </summary>
+        private void UpdateSelectedProfileFromName(string profileName, bool isDarkMode)
+        {
+            PowerDisplayProfile? matchingProfile = null;
+
+            if (!string.IsNullOrEmpty(profileName))
+            {
+                matchingProfile = AvailableProfiles.FirstOrDefault(p =>
+                    p.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // If not found or empty, default to first available profile
+            if (matchingProfile == null && AvailableProfiles.Count > 0)
+            {
+                matchingProfile = AvailableProfiles[0];
+            }
+
+            if (isDarkMode)
+            {
+                if (_selectedDarkModeProfile != matchingProfile)
+                {
+                    _selectedDarkModeProfile = matchingProfile;
+                    NotifyPropertyChanged(nameof(SelectedDarkModeProfile));
+                }
+            }
+            else
+            {
+                if (_selectedLightModeProfile != matchingProfile)
+                {
+                    _selectedLightModeProfile = matchingProfile;
+                    NotifyPropertyChanged(nameof(SelectedLightModeProfile));
+                }
             }
         }
 
@@ -626,7 +689,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
             OnPropertyChanged(nameof(ScheduleMode));
-            OnPropertyChanged(nameof(ApplyMonitorSettings));
             OnPropertyChanged(nameof(EnableDarkModeProfile));
             OnPropertyChanged(nameof(EnableLightModeProfile));
             OnPropertyChanged(nameof(DarkModeProfile));
@@ -692,7 +754,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // PowerDisplay integration
         private ObservableCollection<PowerDisplayProfile> _availableProfiles = new ObservableCollection<PowerDisplayProfile>();
         private bool _isPowerDisplayEnabled;
-        private string _profilesFilePath = string.Empty;
+        private PowerDisplayProfile? _selectedDarkModeProfile;
+        private PowerDisplayProfile? _selectedLightModeProfile;
 
         public ICommand ForceLightCommand { get; }
 

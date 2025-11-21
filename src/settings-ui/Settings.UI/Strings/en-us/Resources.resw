@@ -5336,11 +5336,26 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_EnableMonitorSettings.Content" xml:space="preserve">
     <value>Enable monitor settings integration</value>
   </data>
+  <data name="LightSwitch_DarkModeProfileCheckbox.Content" xml:space="preserve">
+    <value>Dark mode profile</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCheckbox.Content" xml:space="preserve">
+    <value>Light mode profile</value>
+  </data>
   <data name="LightSwitch_DarkModeProfileCard.Header" xml:space="preserve">
     <value>Dark mode profile</value>
   </data>
+  <data name="LightSwitch_DarkModeProfileCard.Description" xml:space="preserve">
+    <value>Profile to apply when switching to dark mode</value>
+  </data>
   <data name="LightSwitch_LightModeProfileCard.Header" xml:space="preserve">
     <value>Light mode profile</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCard.Description" xml:space="preserve">
+    <value>Profile to apply when switching to light mode</value>
+  </data>
+  <data name="LightSwitch_NavigatePowerDisplaySettings.Content" xml:space="preserve">
+    <value>Open PowerDisplay settings</value>
   </data>
   <data name="LightSwitch_LocationDialog.Title" xml:space="preserve">
     <value>Select a location</value>

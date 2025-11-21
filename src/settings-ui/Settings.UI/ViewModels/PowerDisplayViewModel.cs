@@ -476,7 +476,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Profile-related fields
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
-        private string _profilesFilePath = string.Empty;
 
         /// <summary>
         /// Collection of available profiles (for button display)
@@ -520,11 +519,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                var powerToysPath = Path.Combine(settingsPath, "Microsoft", "PowerToys", "PowerDisplay");
-                _profilesFilePath = Path.Combine(powerToysPath, "profiles.json");
-
-                var profilesData = LoadProfilesFromDisk();
+                var profilesData = PowerDisplayProfilesHelper.LoadProfiles();
 
                 // Load profile objects (no Custom - it's not a profile anymore)
                 Profiles.Clear();
@@ -547,14 +542,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private PowerDisplayProfiles LoadProfilesFromDisk()
         {
-            if (File.Exists(_profilesFilePath))
-            {
-                var json = File.ReadAllText(_profilesFilePath);
-                var profiles = JsonSerializer.Deserialize<PowerDisplayProfiles>(json);
-                return profiles ?? new PowerDisplayProfiles();
-            }
-
-            return new PowerDisplayProfiles();
+            return PowerDisplayProfilesHelper.LoadProfiles();
         }
 
         /// <summary>
@@ -562,17 +550,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SaveProfilesToDisk(PowerDisplayProfiles profiles)
         {
-            try
-            {
-                profiles.LastUpdated = DateTime.UtcNow;
-                var json = JsonSerializer.Serialize(profiles, _jsonSerializerOptions);
-                File.WriteAllText(_profilesFilePath, json);
-                Logger.LogInfo($"Saved profiles to disk: {_profilesFilePath}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to save profiles: {ex.Message}");
-            }
+            PowerDisplayProfilesHelper.SaveProfiles(profiles, prettyPrint: true);
         }
 
         /// <summary>
