@@ -85,11 +85,34 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
 public partial class DockItemViewModel : CommandItemViewModel
 {
-    private readonly bool _showLabel = true;
+    private bool _showLabel = true;
+
+    internal bool ShowLabel
+    {
+        get => _showLabel;
+        set
+        {
+            _showLabel = value;
+            UpdateProperty(nameof(HasText));
+        }
+    }
 
     public override string Title => ItemTitle;
 
     public override bool HasText => _showLabel ? base.HasText : false;
+
+    /// <summary>
+    /// Gets the tooltip for the dock item, which includes the title and
+    /// subtitle. If it doesn't have one part, it just returns the other.
+    /// </summary>
+    /// <remarks>
+    /// Trickery: in the case one is empty, we can just concatenate, and it will
+    /// always only be the one that's non-empty
+    /// </remarks>
+    public string Tooltip =>
+        !string.IsNullOrEmpty(Title) && !string.IsNullOrEmpty(Subtitle) ?
+            $"{Title}\n{Subtitle}" :
+            Title + Subtitle;
 
     public DockItemViewModel(CommandItemViewModel root, bool showLabel)
         : this(root.Model, root.PageContext, showLabel)

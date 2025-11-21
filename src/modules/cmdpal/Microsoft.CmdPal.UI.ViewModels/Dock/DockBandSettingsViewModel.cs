@@ -91,7 +91,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
                 UpdatePinSide(value);
             }
         }
-    } // TODO! persist to settings
+    }
 
     private DockPinSide _pinSide;
 

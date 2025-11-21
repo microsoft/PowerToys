@@ -103,23 +103,8 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
 = 12;
 
-    // TODO! Remove me
-    public bool ShowSearchButton
-    {
-        get => field;
-        set
-        {
-            if (field != value)
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new(nameof(ShowSearchButton)));
-            }
-        }
-    }
-
     internal DockControl(DockViewModel viewModel)
     {
-        // MainViewModel mainModel = (MainViewModel)DataContext;
         _viewModel = viewModel;
         InitializeComponent();
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
@@ -131,17 +116,7 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
 
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
 
-        // _viewModel.UpdateSettings(); // TODO!
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
-
-        // ShowSearchButton = settings.ShowSearchButton;
-        SearchColumn.Width = ShowSearchButton
-            ? new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Star)
-            : new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);
-
-        EndColumn.Width = ShowSearchButton
-            ? new Microsoft.UI.Xaml.GridLength(2, Microsoft.UI.Xaml.GridUnitType.Star)
-            : new Microsoft.UI.Xaml.GridLength(1, Microsoft.UI.Xaml.GridUnitType.Auto);
 
         IconSize = DockSettingsToViews.IconSizeForSize(settings.DockIconsSize);
         TitleTextFontSize = DockSettingsToViews.TitleTextFontSizeForSize(settings.DockSize);
@@ -151,17 +126,6 @@ public sealed partial class DockControl : UserControl, INotifyPropertyChanged, I
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
         }
-    }
-
-    [RelayCommand]
-    private void SearchOpenCmdPal(object? whatever)
-    {
-        // URI invoke "x-cmdpal://"
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = "x-cmdpal://",
-            UseShellExecute = true,
-        });
     }
 
     private void BandItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)

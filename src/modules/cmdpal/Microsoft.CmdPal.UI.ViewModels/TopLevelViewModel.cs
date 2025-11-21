@@ -541,11 +541,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             var bandVm = _topLevelViewModel.CloneAsBand();
             _topLevelCommandManager.PinDockBand(bandVm);
 
-            // TODO! do we need to save the settings here? Kinda, right? Is that too aggressive?
             _topLevelViewModel.Save();
-
-            // // Surgically just update the dock view model
-            // _dockViewModel.UpdateSettings(_settings.DockSettings);
         }
 
         private void UnpinFromDock()

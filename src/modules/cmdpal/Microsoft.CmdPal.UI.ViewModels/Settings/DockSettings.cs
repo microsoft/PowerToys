@@ -5,11 +5,13 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
 #pragma warning disable SA1402 // File may only contain a single type
+
+/// <summary>
+/// Settings for the Dock. These are settings for _the whole dock_. Band-specific
+/// settings are in <see cref="DockBandSettings"/>.
+/// </summary>
 public class DockSettings
 {
-    // public bool ShowAppTitles { get; set; }
-
-    // public bool ShowSearchButton { get; set; }
     public DockSide Side { get; set; } = DockSide.Top;
 
     public DockSize DockSize { get; set; } = DockSize.Small;
@@ -27,12 +29,21 @@ public class DockSettings
     public bool ShowLabels { get; set; } = true;
 }
 
+/// <summary>
+/// Settings for a specific dock band. These are per-band settings stored
+/// within the overall <see cref="DockSettings"/>.
+/// </summary>
 public class DockBandSettings
 {
     public string Id { get; set; } = string.Empty;
 
     public bool? ShowLabels { get; set; }
 
+    /// <summary>
+    /// Resolves the effective value of <see cref="ShowLabels"/> for this band.
+    /// If this band doesn't have a specific value set, we'll fall back to the
+    /// dock-wide setting (passed as <paramref name="defaultValue"/>).
+    /// </summary>
     public bool ResolveShowLabels(bool defaultValue) => ShowLabels ?? defaultValue;
 }
 
