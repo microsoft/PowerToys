@@ -221,7 +221,7 @@ public sealed partial class SearchBar : UserControl,
                     var lastCaretPosition = FilterBox.SelectionStart;
                     var text = FilterBox.Text;
 
-                    // Is the character before the caret a zwsp?
+                    // Look at the character before the caret. Is it a zwsp?
                     if (lastCaretPosition > 0 &&
                         text[lastCaretPosition - 1] == '\u200B')
                     {

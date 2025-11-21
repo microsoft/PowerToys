@@ -11,15 +11,13 @@ using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 /// <summary>
 /// View models for parameters. This file has both the viewmodels for all the
-/// different run types, and the page view model. 
+/// different run types, and the page view model.
 /// </summary>
-
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable SA1649 // File name should match first type name
 
