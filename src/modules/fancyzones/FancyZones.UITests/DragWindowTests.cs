@@ -46,14 +46,11 @@ namespace UITests_FancyZones
         {
         }
 
-        static DragWindowTests()
-        {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-        }
-
         [TestInitialize]
         public void TestInitialize()
         {
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+
             // ClearOpenWindows
             ClearOpenWindows();
 
@@ -257,7 +254,7 @@ namespace UITests_FancyZones
                {
                    // press Shift Key to deactivate zones
                    Session.PressKey(Key.Shift);
-                   Task.Delay(500).Wait();
+                   Task.Delay(1000).Wait();
                },
                releaseAction: () =>
                {

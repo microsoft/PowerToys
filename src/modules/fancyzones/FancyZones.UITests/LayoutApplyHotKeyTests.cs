@@ -26,11 +26,6 @@ namespace UITests_FancyZones
         {
         }
 
-        static LayoutApplyHotKeyTests()
-        {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-        }
-
         private static readonly EditorParameters.ParamsWrapper Parameters = new EditorParameters.ParamsWrapper
         {
             ProcessId = 1,
@@ -222,6 +217,8 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));

@@ -27,14 +27,11 @@ namespace UITests_FancyZones
         {
         }
 
-        static OneZoneSwitchTests()
-        {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-        }
-
         [TestInitialize]
         public void TestInitialize()
         {
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+
             // kill all processes related to FancyZones Editor to ensure a clean state
             Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
             AppZoneHistory.DeleteFile();
