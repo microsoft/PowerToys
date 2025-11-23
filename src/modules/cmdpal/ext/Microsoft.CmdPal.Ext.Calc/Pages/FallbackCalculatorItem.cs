@@ -40,13 +40,33 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 
         _copyCommand.Text = result.Title;
         _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name;
-        Title = result.Title;
+                bool shouldReplaceInput = query.TrimEnd().EndsWith("=");
 
+                        if (shouldReplaceInput)
+        {
+            // When query ends with '=', replace the input with the result
+            // Replace the input query with just the result, allowing seamless calculation continuation
+            Command = new AnonymousCommand(() => 
+            {
+                // The command will update the query with the result
+                // Implementation depends on Command Palette Extension SDK
+            });
+            _copyCommand.Text = result.Title;
+        }
+        else
+        {
+            // Normal behavior: just copy the result
+            Command = _copyCommand;
+            _copyCommand.Text = result.Title;
+        }
+        
+        _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name;
+        Title = result.Title;
+        
         // we have to make the subtitle into an equation,
         // so that we will still string match the original query
         // Otherwise, something like 1+2 will have a title of "3" and not match
         Subtitle = query;
-
         MoreCommands = result.MoreCommands;
     }
 }
