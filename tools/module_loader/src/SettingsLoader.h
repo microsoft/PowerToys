@@ -20,8 +20,9 @@ public:
     /// Load settings for a PowerToy module
     /// </summary>
     /// <param name="moduleName">Name of the module (e.g., "CursorWrap")</param>
+    /// <param name="moduleDllPath">Full path to the module DLL (for checking local settings.json)</param>
     /// <returns>JSON settings string, or empty string if not found</returns>
-    std::wstring LoadSettings(const std::wstring& moduleName);
+    std::wstring LoadSettings(const std::wstring& moduleName, const std::wstring& moduleDllPath);
 
     /// <summary>
     /// Get the settings file path for a module

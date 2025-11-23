@@ -22,9 +22,10 @@ The ModuleLoader is designed to be a **portable, standalone testing tool** that 
    - Example: `CursorWrap.dll` from `x64\Debug\` or `x64\Release\`
    - Location varies by module (see module-specific locations below)
 
-3. **Settings JSON** (Optional but recommended)
-   - Location: `%LOCALAPPDATA%\Microsoft\PowerToys\<ModuleName>\settings.json`
-   - If not provided, tester must have PowerToys installed and run the module once to generate settings
+3. **settings.json** - Module configuration (place in same folder as the DLL)
+   - **NEW**: Settings can be placed alongside the module DLL for portable testing
+   - Location: Same directory as the module DLL (e.g., `settings.json` next to `CursorWrap.dll`)
+   - Falls back to: `%LOCALAPPDATA%\Microsoft\PowerToys\<ModuleName>\settings.json` if not found locally
 
 #### **Complete Standalone Package** (For Users Without PowerToys Installed)
 
@@ -123,13 +124,11 @@ Create a folder structure like this:
 ```
 ModuleLoaderPackage\
 ??? ModuleLoader.exe
-??? modules\
-?   ??? CursorWrap.dll (or other module)
-??? settings\
-?   ??? CursorWrap\
-?       ??? settings.json
-??? README.txt (instructions below)
+??? CursorWrap.dll (or other module)
+??? settings.json (module settings - placed locally!)
 ```
+
+**NEW Simplified Structure**: You can now place `settings.json` directly alongside the module DLL! The ModuleLoader will check this location first before looking in the standard PowerToys settings directories.
 
 ### Step 2: Extract Settings from Your Machine
 

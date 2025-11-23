@@ -66,7 +66,7 @@ std::wstring SettingsLoader::ReadFileContents(const std::wstring& filePath) cons
     return buffer.str();
 }
 
-std::wstring SettingsLoader::LoadSettings(const std::wstring& moduleName)
+std::wstring SettingsLoader::LoadSettings(const std::wstring& moduleName, const std::wstring& moduleDllPath)
 {
     const std::wstring powerToysPrefix = L"PowerToys.";
     
@@ -87,7 +87,27 @@ std::wstring SettingsLoader::LoadSettings(const std::wstring& moduleName)
         moduleNameVariants.push_back(moduleName.substr(powerToysPrefix.length()));
     }
 
-    // Try each variant
+    // FIRST: Try same directory as the module DLL
+    if (!moduleDllPath.empty())
+    {
+        std::filesystem::path dllPath(moduleDllPath);
+        std::filesystem::path dllDirectory = dllPath.parent_path();
+        
+        std::wstring localSettingsPath = (dllDirectory / L"settings.json").wstring();
+        std::wcout << L"Trying settings path (module directory): " << localSettingsPath << L"\n";
+        
+        if (std::filesystem::exists(localSettingsPath))
+        {
+            std::wstring contents = ReadFileContents(localSettingsPath);
+            if (!contents.empty())
+            {
+                std::wcout << L"Settings file loaded from module directory (" << contents.size() << L" characters)\n";
+                return contents;
+            }
+        }
+    }
+
+    // SECOND: Try standard PowerToys settings locations
     for (const auto& variant : moduleNameVariants)
     {
         std::wstring settingsPath = GetSettingsPath(variant);
@@ -147,6 +167,12 @@ std::wstring SettingsLoader::LoadSettings(const std::wstring& moduleName)
     }
 
     std::wcerr << L"Error: Settings file not found in any expected location:\n";
+    if (!moduleDllPath.empty())
+    {
+        std::filesystem::path dllPath(moduleDllPath);
+        std::filesystem::path dllDirectory = dllPath.parent_path();
+        std::wcerr << L"  - " << (dllDirectory / L"settings.json").wstring() << L" (module directory)\n";
+    }
     for (const auto& variant : moduleNameVariants)
     {
         std::wcerr << L"  - " << GetSettingsPath(variant) << L"\n";

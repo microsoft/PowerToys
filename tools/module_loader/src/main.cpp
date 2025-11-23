@@ -102,7 +102,7 @@ int wmain(int argc, wchar_t* argv[])
         // Load settings for the module
         std::wcout << L"Loading settings...\n";
         SettingsLoader settingsLoader;
-        std::wstring settingsJson = settingsLoader.LoadSettings(moduleName);
+        std::wstring settingsJson = settingsLoader.LoadSettings(moduleName, dllPath);
         
         if (settingsJson.empty())
         {
