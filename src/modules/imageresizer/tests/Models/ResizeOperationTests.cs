@@ -404,7 +404,7 @@ namespace ImageResizer.Models
             // Fill mode takes the max of these = 1.0.
             //
             // Previously, the transform logic saw the scale of 1.0 and returned the
-            // original dimensions. The corrected logic recognises that a crop is
+            // original dimensions. The corrected logic recognizes that a crop is
             // required on one dimension and proceeds with the operation.
             var operation = new ResizeOperation(
                 "Test.jpg",
