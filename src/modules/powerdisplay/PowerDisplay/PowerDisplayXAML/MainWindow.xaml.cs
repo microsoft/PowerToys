@@ -613,22 +613,30 @@ namespace PowerDisplay
         /// </summary>
         private void Slider_PointerCaptureLost(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
+            Logger.LogDebug("[UI] Slider_PointerCaptureLost event triggered");
+
             var slider = sender as Slider;
             if (slider == null)
             {
+                Logger.LogWarning("[UI] Slider is null in PointerCaptureLost");
                 return;
             }
 
             var propertyName = slider.Tag as string;
             var monitorVm = slider.DataContext as MonitorViewModel;
 
+            Logger.LogDebug($"[UI] Property: {propertyName}, MonitorVM: {(monitorVm != null ? monitorVm.Name : "NULL")}, Value: {slider.Value}");
+
             if (monitorVm == null || propertyName == null)
             {
+                Logger.LogWarning($"[UI] Null check failed - MonitorVM: {monitorVm == null}, PropertyName: {propertyName == null}");
                 return;
             }
 
             // Get final value after drag completes
             int finalValue = (int)slider.Value;
+
+            Logger.LogInfo($"[UI] Updating {propertyName} to {finalValue} for monitor {monitorVm.Name}");
 
             // Now update the ViewModel, which will trigger hardware operation
             switch (propertyName)
@@ -645,6 +653,8 @@ namespace PowerDisplay
                     monitorVm.Volume = finalValue;
                     break;
             }
+
+            Logger.LogDebug($"[UI] ViewModel property {propertyName} updated successfully");
         }
 
         public void Dispose()

@@ -134,6 +134,7 @@
                                                 Glyph="&#xE706;" />
                                             <Slider
                                                 x:Uid="BrightnessAutomation"
+                                                DataContext="{x:Bind}"
                                                 Grid.Column="2"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Center"
@@ -166,6 +167,7 @@
 
                                             <Slider
                                                 x:Uid="ContrastAutomation"
+                                                DataContext="{x:Bind}"
                                                 Grid.Column="2"
                                                 VerticalAlignment="Center"
                                                 IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
@@ -195,6 +197,7 @@
                                                 Glyph="&#xE767;" />
                                             <Slider
                                                 x:Uid="VolumeAutomation"
+                                                DataContext="{x:Bind}"
                                                 Grid.Column="2"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Center"
