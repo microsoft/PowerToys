@@ -11,6 +11,7 @@ using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.UI.Dispatching;
 using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
@@ -20,6 +21,7 @@ public sealed class AllAppsViewModel : Observable
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
     private readonly ResourceLoader _resourceLoader;
+    private readonly DispatcherQueue _dispatcherQueue;
     private GeneralSettings _generalSettings;
 
     public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; }
@@ -27,10 +29,12 @@ public sealed class AllAppsViewModel : Observable
     public AllAppsViewModel(IQuickAccessCoordinator coordinator)
     {
         _coordinator = coordinator;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         var settingsUtils = new SettingsUtils();
         _settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
         _generalSettings = _settingsRepository.SettingsConfig;
         _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+        _settingsRepository.SettingsChanged += OnSettingsChanged;
 
         _resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
         FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
@@ -39,6 +43,14 @@ public sealed class AllAppsViewModel : Observable
         {
             AddFlyoutMenuItem(moduleType);
         }
+    }
+
+    private void OnSettingsChanged(GeneralSettings newSettings)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            ModuleEnabledChangedOnSettingsPage();
+        });
     }
 
     private void AddFlyoutMenuItem(ModuleType moduleType)

@@ -89,6 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
 
             // Initialize dashboard sort order from settings
             _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
@@ -98,6 +99,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             RefreshModuleList();
             GetShortcutModules();
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            dispatcher.BeginInvoke(() =>
+            {
+                generalSettingsConfig = newSettings;
+                generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+                ModuleEnabledChangedOnSettingsPage();
+            });
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
