@@ -52,7 +52,7 @@ namespace PowerDisplay.Configuration
         public static class UI
         {
             // Window dimensions
-            public const int WindowWidth = 386;
+            public const int WindowWidth = 362;
             public const int MaxWindowHeight = 650;
             public const int WindowRightMargin = 12;
 

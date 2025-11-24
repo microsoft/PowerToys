@@ -343,7 +343,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// WMI monitors (laptop internal displays) use laptop icon, others use external monitor icon
     /// </summary>
     public string MonitorIconGlyph => _monitor.CommunicationMethod?.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
-        ? "\uEA37" // Laptop icon for WMI
+        ? "\uE7F8" // Laptop icon for WMI
         : "\uE7F4"; // External monitor icon for DDC/CI and others
 
     // Monitor property ranges
