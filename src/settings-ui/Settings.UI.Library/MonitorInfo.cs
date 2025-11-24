@@ -258,7 +258,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _supportsBrightness = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(BrightnessTooltip));
                 }
             }
         }
@@ -273,7 +272,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _supportsContrast = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ContrastTooltip));
                 }
             }
         }
@@ -289,7 +287,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     _supportsColorTemperature = value;
                     _availableColorPresetsCache = null; // Clear cache when support status changes
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ColorTemperatureTooltip));
                     OnPropertyChanged(nameof(AvailableColorPresets)); // Refresh computed property
                     OnPropertyChanged(nameof(ColorPresetsForDisplay)); // Refresh display list
                 }
@@ -306,7 +303,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _supportsVolume = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(VolumeTooltip));
                 }
             }
         }
@@ -507,12 +503,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonIgnore]
         public string ContrastTooltip => _supportsContrast ? string.Empty : "Contrast control not supported by this monitor";
-
-        [JsonIgnore]
-        public string ColorTemperatureTooltip => _supportsColorTemperature ? string.Empty : "Color temperature control not supported by this monitor";
-
-        [JsonIgnore]
-        public string VolumeTooltip => _supportsVolume ? string.Empty : "Volume control not supported by this monitor";
 
         /// <summary>
         /// Generate formatted text of all VCP codes for clipboard
