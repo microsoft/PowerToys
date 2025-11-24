@@ -48,7 +48,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public CommandPaletteHost ExtensionHost { get; private set; }
 
-    public string ExtensionName => ExtensionHost.Extension?.ExtensionDisplayName ?? "Built-in"; // TODO! loc
+    public string ExtensionName => ExtensionHost.Extension?.ExtensionDisplayName ?? Properties.Resources.builtin_extension_name_fallback;
 
     public CommandViewModel CommandViewModel => _commandItemViewModel.Command;
 
@@ -486,7 +486,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
-        public override string Name => _pin ? "Pin to dock" : "Unpin from dock"; // TODO! loc
+        public override string Name => _pin ? Properties.Resources.dock_pin_command_name : Properties.Resources.dock_unpin_command_name;
 
         public PinToDockCommand(
             TopLevelViewModel topLevelViewModel,

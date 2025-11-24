@@ -117,10 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ShowDetailsCommand" xml:space="preserve">
-    <value>Show details</value>
-    <comment>Name for the command that shows details of an item</comment>
-  </data>
   <data name="PinnedItemSuffix" xml:space="preserve">
     <value>Pinned</value>
     <comment>Suffix shown for pinned items in the dock</comment>

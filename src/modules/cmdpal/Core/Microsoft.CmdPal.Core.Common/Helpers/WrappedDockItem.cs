@@ -40,7 +40,7 @@ public partial class WrappedDockItem : CommandItem
 
 public partial class PinnedDockItem : WrappedDockItem
 {
-    public override string Title => $"{base.Title} (Pinned)"; // TODO! localization
+    public override string Title => $"{base.Title} ({Properties.Resources.PinnedItemSuffix})";
 
     public PinnedDockItem(ICommand command)
         : base(command, command.Name)
@@ -69,7 +69,7 @@ public partial class WrappedDockList : ListPage
         _command = command;
         _items = new IListItem[] { new ListItem(command) };
         Name = _command.Name;
-        _id = _command.Id; // + "__DockBand";
+        _id = _command.Id;
     }
 
     public WrappedDockList(ICommandItem item, string id)

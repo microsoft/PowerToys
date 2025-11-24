@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -11,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
 public partial class DockBandSettingsViewModel : ObservableObject
 {
+    private static readonly CompositeFormat PluralItemsFormatString = CompositeFormat.Parse(Properties.Resources.dock_item_count_plural);
     private readonly SettingsModel _settingsModel;
     private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
@@ -22,15 +25,15 @@ public partial class DockBandSettingsViewModel : ObservableObject
     {
         get
         {
-            // TODO! we should have a way of saying "pinned from {extension}" vs
-            // just a band that's from an extension
             List<string> parts = [_adapter.ExtensionName];
 
             // Add the number of items in the band
             var itemCount = NumItemsInBand();
             if (itemCount > 0)
             {
-                var itemsString = itemCount == 1 ? "1 item" : $"{itemCount} items"; // TODO!Loc
+                var itemsString = itemCount == 1 ?
+                    Properties.Resources.dock_item_count_singular :
+                    string.Format(CultureInfo.CurrentCulture, PluralItemsFormatString, itemCount);
                 parts.Add(itemsString);
             }
 

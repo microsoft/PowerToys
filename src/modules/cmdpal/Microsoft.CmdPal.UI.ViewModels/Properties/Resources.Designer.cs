@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -57,6 +57,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Command Palette.
+        /// </summary>
+        public static string builtin_command_palette_title {
+            get {
+                return ResourceManager.GetString("builtin_command_palette_title", resourceCulture);
             }
         }
         
@@ -205,7 +214,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create a new extension.
+        ///   Looks up a localized string similar to Create extension.
         /// </summary>
         public static string builtin_create_extension_title {
             get {
@@ -286,6 +295,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Built-in.
+        /// </summary>
+        public static string builtin_extension_name_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Home.
         /// </summary>
         public static string builtin_home_name {
@@ -349,7 +367,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Creates a project for a new Command Palette extension.
+        ///   Looks up a localized string similar to Generate a new Command Palette extension project.
         /// </summary>
         public static string builtin_new_extension_subtitle {
             get {
@@ -358,20 +376,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Settings.
+        ///   Looks up a localized string similar to Open Command Palette settings.
         /// </summary>
         public static string builtin_open_settings_name {
             get {
                 return ResourceManager.GetString("builtin_open_settings_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Open Command Palette settings.
-        /// </summary>
-        public static string builtin_open_settings_subtitle {
-            get {
-                return ResourceManager.GetString("builtin_open_settings_subtitle", resourceCulture);
             }
         }
         
@@ -426,6 +435,42 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_settings_extension_n_extensions_installed {
             get {
                 return ResourceManager.GetString("builtin_settings_extension_n_extensions_installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} items.
+        /// </summary>
+        public static string dock_item_count_plural {
+            get {
+                return ResourceManager.GetString("dock_item_count_plural", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1 item.
+        /// </summary>
+        public static string dock_item_count_singular {
+            get {
+                return ResourceManager.GetString("dock_item_count_singular", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pin to dock.
+        /// </summary>
+        public static string dock_pin_command_name {
+            get {
+                return ResourceManager.GetString("dock_pin_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin from dock.
+        /// </summary>
+        public static string dock_unpin_command_name {
+            get {
+                return ResourceManager.GetString("dock_unpin_command_name", resourceCulture);
             }
         }
     }
