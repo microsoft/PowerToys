@@ -557,30 +557,19 @@ namespace PowerDisplay
                 Logger.LogDebug($"[AdjustSize] Final scaled height after limit: {scaledHeight}");
 
                 // Check if resize is needed
+                // Check if resize is needed
                 var currentSize = _appWindow.Size;
                 if (Math.Abs(currentSize.Height - scaledHeight) > 1)
                 {
-                    Logger.LogInfo($"[AdjustSize] Resize needed: current={currentSize.Height}, target={scaledHeight}");
-
                     // Convert scaled height back to DIU and reposition using DPI-aware method
                     int heightInDiu = (int)Math.Ceiling(scaledHeight / dpiScale);
-                    Logger.LogDebug($"[AdjustSize] Height in DIU for positioning: {heightInDiu}");
 
                     WindowHelper.PositionWindowBottomRight(
                         this,
                         AppConstants.UI.WindowWidth,
                         heightInDiu,
                         AppConstants.UI.WindowRightMargin);
-
-                    Logger.LogInfo($"[AdjustSize] Window repositioned to bottom-right with size {AppConstants.UI.WindowWidth}x{heightInDiu} DIU");
                 }
-                else
-                {
-                    Logger.LogDebug($"[AdjustSize] No resize needed, height difference < 1px");
-                }
-
-                // Log actual element sizes after layout
-                LogActualSizes();
             }
             catch (Exception ex)
             {
@@ -588,63 +577,14 @@ namespace PowerDisplay
             }
         }
 
-        private void LogActualSizes()
-        {
-            try
-            {
-                if (RootGrid.FindName("ContentArea") is Border contentArea)
-                {
-                    Logger.LogDebug($"[Layout] ContentArea ActualSize: {contentArea.ActualWidth}x{contentArea.ActualHeight}");
-                    Logger.LogDebug($"[Layout] ContentArea DesiredSize: {contentArea.DesiredSize.Width}x{contentArea.DesiredSize.Height}");
-                }
-
-                if (RootGrid.FindName("MainScrollViewer") is ScrollViewer scrollViewer)
-                {
-                    Logger.LogDebug($"[Layout] MainScrollViewer ActualSize: {scrollViewer.ActualWidth}x{scrollViewer.ActualHeight}");
-                    Logger.LogDebug($"[Layout] MainScrollViewer DesiredSize: {scrollViewer.DesiredSize.Width}x{scrollViewer.DesiredSize.Height}");
-                    Logger.LogDebug($"[Layout] MainScrollViewer Padding: {scrollViewer.Padding}");
-                    Logger.LogDebug($"[Layout] MainScrollViewer VerticalAlignment: {scrollViewer.VerticalAlignment}");
-                }
-
-                if (RootGrid.FindName("StatusBar") is Grid statusBar)
-                {
-                    Logger.LogDebug($"[Layout] StatusBar ActualSize: {statusBar.ActualWidth}x{statusBar.ActualHeight}");
-                    Logger.LogDebug($"[Layout] StatusBar DesiredSize: {statusBar.DesiredSize.Width}x{statusBar.DesiredSize.Height}");
-                    Logger.LogDebug($"[Layout] StatusBar MaxHeight: {statusBar.MaxHeight}");
-                    Logger.LogDebug($"[Layout] StatusBar Padding: {statusBar.Padding}");
-                }
-
-                if (RootGrid.FindName("MainContainer") is Border mainContainer && mainContainer.Child is Grid mainGrid)
-                {
-                    Logger.LogDebug($"[Layout] MainContainer.Child (Grid) ActualSize: {mainGrid.ActualWidth}x{mainGrid.ActualHeight}");
-
-                    // Log RowDefinitions actual heights
-                    for (int i = 0; i < mainGrid.RowDefinitions.Count; i++)
-                    {
-                        var rowDef = mainGrid.RowDefinitions[i];
-                        Logger.LogDebug($"[Layout] RowDefinition[{i}]: Height={rowDef.Height}, ActualHeight={rowDef.ActualHeight}");
-                    }
-                }
-
-                // Log window's actual size
-                Logger.LogDebug($"[Layout] Window Size: {_appWindow.Size.Width}x{_appWindow.Size.Height}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"[Layout] Error logging actual sizes: {ex.Message}");
-            }
-        }
-
         private double GetContentHeight(double availableWidth)
         {
             // Elegant solution: Measure the MainContainer directly.
-            // This lets the XAML layout engine calculate the exact height required by all visible content,
-            // automatically handling padding, margins, visibility, and spacing.
-            if (RootGrid.FindName("MainContainer") is FrameworkElement container)
+            // This lets the XAML layout engine calculate the exact height required by all visible content.
+            if (MainContainer != null)
             {
-                container.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
-                Logger.LogDebug($"[Measure] MainContainer desired height: {container.DesiredSize.Height}");
-                return container.DesiredSize.Height;
+                MainContainer.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
+                return MainContainer.DesiredSize.Height;
             }
 
             return 0;
