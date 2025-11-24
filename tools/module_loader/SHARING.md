@@ -36,6 +36,15 @@ The ModuleLoader is designed to be a **portable, standalone testing tool** that 
 
 ---
 
+### Debug Builds
+If you build the module in Debug configuration:
+- The module will output debug messages via `OutputDebugString()`
+- View these with [DebugView](https://learn.microsoft.com/sysinternals/downloads/debugview) or Visual Studio Output window
+- Example: CursorWrap outputs detailed topology and cursor wrapping debug info
+
+---
+
+
 ## Module-Specific File Locations
 
 ### CursorWrap
