@@ -43,23 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 item.SuppressAutoSelection = false;
 
                 // Subscribe to selection and checkbox changes
-                item.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(MonitorSelectionItem.IsSelected))
-                    {
-                        OnPropertyChanged(nameof(CanSave));
-                        OnPropertyChanged(nameof(HasSelectedMonitors));
-                        OnPropertyChanged(nameof(HasValidSettings));
-                    }
-                    else if (e.PropertyName == nameof(MonitorSelectionItem.IncludeBrightness) ||
-                             e.PropertyName == nameof(MonitorSelectionItem.IncludeContrast) ||
-                             e.PropertyName == nameof(MonitorSelectionItem.IncludeVolume) ||
-                             e.PropertyName == nameof(MonitorSelectionItem.IncludeColorTemperature))
-                    {
-                        OnPropertyChanged(nameof(CanSave));
-                        OnPropertyChanged(nameof(HasValidSettings));
-                    }
-                };
+                item.PropertyChanged += OnMonitorItemPropertyChanged;
 
                 _monitors.Add(item);
             }
@@ -121,6 +105,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        /// <summary>
+        /// Handle property changes from monitor selection items.
+        /// Centralizes validation state updates to avoid duplication.
+        /// </summary>
+        private void OnMonitorItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // Update selection-dependent properties
+            if (e.PropertyName == nameof(MonitorSelectionItem.IsSelected))
+            {
+                OnPropertyChanged(nameof(HasSelectedMonitors));
+            }
+
+            // Update validation state for relevant property changes
+            if (e.PropertyName == nameof(MonitorSelectionItem.IsSelected) ||
+                e.PropertyName == nameof(MonitorSelectionItem.IncludeBrightness) ||
+                e.PropertyName == nameof(MonitorSelectionItem.IncludeContrast) ||
+                e.PropertyName == nameof(MonitorSelectionItem.IncludeVolume) ||
+                e.PropertyName == nameof(MonitorSelectionItem.IncludeColorTemperature))
+            {
+                OnPropertyChanged(nameof(CanSave));
+                OnPropertyChanged(nameof(HasValidSettings));
+            }
         }
     }
 }

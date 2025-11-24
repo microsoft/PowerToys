@@ -39,6 +39,36 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         // Cached color temperature presets (computed from VcpCodesFormatted)
         private ObservableCollection<ColorPresetItem> _availableColorPresetsCache;
+        private ObservableCollection<ColorPresetItem> _colorPresetsForDisplayCache;
+        private int _lastColorTemperatureVcpForCache = -1;
+
+        /// <summary>
+        /// Invalidates the color preset cache and notifies property changes.
+        /// Call this when VcpCodesFormatted or SupportsColorTemperature changes.
+        /// </summary>
+        private void InvalidateColorPresetCache()
+        {
+            _availableColorPresetsCache = null;
+            _colorPresetsForDisplayCache = null;
+            _lastColorTemperatureVcpForCache = -1;
+            OnPropertyChanged(nameof(AvailableColorPresets));
+            OnPropertyChanged(nameof(ColorPresetsForDisplay));
+        }
+
+        /// <summary>
+        /// Parses a hexadecimal string (with or without "0x" prefix) to an integer.
+        /// </summary>
+        private static bool TryParseHexCode(string hexString, out int result)
+        {
+            result = 0;
+            if (string.IsNullOrEmpty(hexString))
+            {
+                return false;
+            }
+
+            var cleanHex = hexString.Replace("0x", string.Empty);
+            return int.TryParse(cleanHex, System.Globalization.NumberStyles.HexNumber, null, out result);
+        }
 
         public MonitorInfo()
         {
@@ -274,9 +304,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_vcpCodesFormatted != value)
                 {
                     _vcpCodesFormatted = value ?? new List<VcpCodeDisplayInfo>();
-                    _availableColorPresetsCache = null; // Clear cache when VCP codes change
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(AvailableColorPresets));
+                    InvalidateColorPresetCache();
                 }
             }
         }
@@ -338,11 +367,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_supportsColorTemperature != value)
                 {
                     _supportsColorTemperature = value;
-                    _availableColorPresetsCache = null; // Clear cache when support status changes
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(ColorTemperatureTooltip));
-                    OnPropertyChanged(nameof(AvailableColorPresets)); // Refresh computed property
-                    OnPropertyChanged(nameof(ColorPresetsForDisplay)); // Refresh display list
+                    InvalidateColorPresetCache();
                 }
             }
         }
@@ -412,14 +439,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             // Find VCP code 0x14 (Color Temperature / Select Color Preset)
             var colorTempVcp = _vcpCodesFormatted.FirstOrDefault(v =>
-            {
-                if (int.TryParse(v.Code?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int code))
-                {
-                    return code == ColorTemperatureHelper.ColorTemperatureVcpCode;
-                }
-
-                return false;
-            });
+                TryParseHexCode(v.Code, out int code) && code == ColorTemperatureHelper.ColorTemperatureVcpCode);
 
             // No VCP 0x14 or no values
             if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)
@@ -431,8 +451,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             var colorTempValues = colorTempVcp.ValueList
                 .Select(valueInfo =>
                 {
-                    int.TryParse(valueInfo.Value?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int vcpValue);
-                    return (VcpValue: vcpValue, Name: valueInfo.Name);
+                    bool parsed = TryParseHexCode(valueInfo.Value, out int vcpValue);
+                    return (VcpValue: parsed ? vcpValue : 0, Name: valueInfo.Name);
                 })
                 .Where(x => x.VcpValue > 0);
 
@@ -443,17 +463,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Color presets for display in ComboBox, includes current value if not in preset list
+        /// Color presets for display in ComboBox, includes current value if not in preset list.
+        /// Uses caching to avoid recreating collections on every access.
         /// </summary>
         [JsonIgnore]
         public ObservableCollection<ColorPresetItem> ColorPresetsForDisplay
         {
             get
             {
+                // Return cached value if available and color temperature hasn't changed
+                if (_colorPresetsForDisplayCache != null && _lastColorTemperatureVcpForCache == _colorTemperatureVcp)
+                {
+                    return _colorPresetsForDisplayCache;
+                }
+
                 var presets = AvailableColorPresets;
                 if (presets == null || presets.Count == 0)
                 {
-                    return new ObservableCollection<ColorPresetItem>();
+                    _colorPresetsForDisplayCache = new ObservableCollection<ColorPresetItem>();
+                    _lastColorTemperatureVcpForCache = _colorTemperatureVcp;
+                    return _colorPresetsForDisplayCache;
                 }
 
                 // Check if current value is in the preset list
@@ -462,20 +491,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (currentValueInList)
                 {
                     // Current value is in the list, return as-is
-                    return presets;
+                    _colorPresetsForDisplayCache = presets;
+                }
+                else
+                {
+                    // Current value is not in the preset list - add it at the beginning
+                    var displayList = new List<ColorPresetItem>();
+
+                    // Add current value with "Custom" indicator using shared helper
+                    var displayName = ColorTemperatureHelper.FormatCustomColorTemperatureDisplayName(_colorTemperatureVcp);
+                    displayList.Add(new ColorPresetItem(_colorTemperatureVcp, displayName));
+
+                    // Add all supported presets
+                    displayList.AddRange(presets);
+
+                    _colorPresetsForDisplayCache = new ObservableCollection<ColorPresetItem>(displayList);
                 }
 
-                // Current value is not in the preset list - add it at the beginning
-                var displayList = new List<ColorPresetItem>();
-
-                // Add current value with "Custom" indicator using shared helper
-                var displayName = ColorTemperatureHelper.FormatCustomColorTemperatureDisplayName(_colorTemperatureVcp);
-                displayList.Add(new ColorPresetItem(_colorTemperatureVcp, displayName));
-
-                // Add all supported presets
-                displayList.AddRange(presets);
-
-                return new ObservableCollection<ColorPresetItem>(displayList);
+                _lastColorTemperatureVcpForCache = _colorTemperatureVcp;
+                return _colorPresetsForDisplayCache;
             }
         }
 

@@ -203,14 +203,7 @@ namespace PowerDisplay
             // Allow window to close if program is exiting
             if (_isExiting)
             {
-                // Clean up event subscriptions
-                if (_viewModel != null)
-                {
-                    _viewModel.UIRefreshRequested -= OnUIRefreshRequested;
-                    _viewModel.Monitors.CollectionChanged -= OnMonitorsCollectionChanged;
-                    _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-                }
-
+                UnsubscribeFromViewModelEvents();
                 args.Handled = false;
                 return;
             }
@@ -218,6 +211,19 @@ namespace PowerDisplay
             // If only user operation (although we hide close button), just hide window
             args.Handled = true; // Prevent window closing
             HideWindow();
+        }
+
+        /// <summary>
+        /// Unsubscribe from all ViewModel events to prevent memory leaks.
+        /// </summary>
+        private void UnsubscribeFromViewModelEvents()
+        {
+            if (_viewModel != null)
+            {
+                _viewModel.UIRefreshRequested -= OnUIRefreshRequested;
+                _viewModel.Monitors.CollectionChanged -= OnMonitorsCollectionChanged;
+                _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            }
         }
 
         public void ShowWindow()
@@ -388,16 +394,8 @@ namespace PowerDisplay
                 _isExiting = true;
 
                 // Quick cleanup of ViewModel
-                if (_viewModel != null)
-                {
-                    // Unsubscribe from events
-                    _viewModel.UIRefreshRequested -= OnUIRefreshRequested;
-                    _viewModel.Monitors.CollectionChanged -= OnMonitorsCollectionChanged;
-                    _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-
-                    // Dispose immediately
-                    _viewModel.Dispose();
-                }
+                UnsubscribeFromViewModelEvents();
+                _viewModel?.Dispose();
 
                 // Close window directly without animations
                 var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);

@@ -507,22 +507,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Load profiles data from disk
-        /// </summary>
-        private PowerDisplayProfiles LoadProfilesFromDisk()
-        {
-            return ProfileService.LoadProfiles();
-        }
-
-        /// <summary>
-        /// Save profiles data to disk
-        /// </summary>
-        private void SaveProfilesToDisk(PowerDisplayProfiles profiles)
-        {
-            ProfileService.SaveProfiles(profiles);
-        }
-
-        /// <summary>
         /// Apply a profile to monitors
         /// </summary>
         public void ApplyProfile(PowerDisplayProfile profile)
@@ -583,9 +567,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Creating profile: {profile.Name}");
 
-                var profilesData = LoadProfilesFromDisk();
+                var profilesData = ProfileService.LoadProfiles();
                 profilesData.SetProfile(profile);
-                SaveProfilesToDisk(profilesData);
+                ProfileService.SaveProfiles(profilesData);
 
                 // Reload profile list
                 LoadProfiles();
@@ -613,12 +597,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Updating profile: {oldName} -> {newProfile.Name}");
 
-                var profilesData = LoadProfilesFromDisk();
+                var profilesData = ProfileService.LoadProfiles();
 
                 // Remove old profile and add updated one
                 profilesData.RemoveProfile(oldName);
                 profilesData.SetProfile(newProfile);
-                SaveProfilesToDisk(profilesData);
+                ProfileService.SaveProfiles(profilesData);
 
                 // Reload profile list
                 LoadProfiles();
@@ -645,9 +629,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Deleting profile: {profileName}");
 
-                var profilesData = LoadProfilesFromDisk();
+                var profilesData = ProfileService.LoadProfiles();
                 profilesData.RemoveProfile(profileName);
-                SaveProfilesToDisk(profilesData);
+                ProfileService.SaveProfiles(profilesData);
 
                 // Reload profile list
                 LoadProfiles();

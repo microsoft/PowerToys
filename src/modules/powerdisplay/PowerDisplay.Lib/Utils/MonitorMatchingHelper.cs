@@ -18,54 +18,21 @@ namespace PowerDisplay.Common.Utils
         /// </summary>
         /// <param name="monitor">The monitor data to generate a key for.</param>
         /// <returns>A unique string key for the monitor.</returns>
-        public static string GetMonitorKey(IMonitorData monitor)
-        {
-            if (monitor == null)
-            {
-                return string.Empty;
-            }
-
-            // Use hardware ID if available (most stable identifier)
-            if (!string.IsNullOrEmpty(monitor.HardwareId))
-            {
-                return monitor.HardwareId;
-            }
-
-            // Fall back to Id (InternalName in MonitorInfo)
-            if (!string.IsNullOrEmpty(monitor.Id))
-            {
-                return monitor.Id;
-            }
-
-            // Last resort: use display name
-            return monitor.Name ?? string.Empty;
-        }
+        public static string GetMonitorKey(IMonitorData? monitor)
+            => GetMonitorKey(monitor?.HardwareId, monitor?.Id, monitor?.Name);
 
         /// <summary>
         /// Generate a unique key for monitor matching using explicit values.
-        /// Useful when you don't have an IMonitorData object.
+        /// Uses priority: HardwareId > InternalName > Name.
         /// </summary>
         /// <param name="hardwareId">The monitor's hardware ID.</param>
         /// <param name="internalName">The monitor's internal name (optional fallback).</param>
         /// <param name="name">The monitor's display name (optional fallback).</param>
         /// <returns>A unique string key for the monitor.</returns>
         public static string GetMonitorKey(string? hardwareId, string? internalName = null, string? name = null)
-        {
-            // Use hardware ID if available (most stable identifier)
-            if (!string.IsNullOrEmpty(hardwareId))
-            {
-                return hardwareId;
-            }
-
-            // Fall back to internal name
-            if (!string.IsNullOrEmpty(internalName))
-            {
-                return internalName;
-            }
-
-            // Last resort: use display name
-            return name ?? string.Empty;
-        }
+            => !string.IsNullOrEmpty(hardwareId) ? hardwareId
+             : !string.IsNullOrEmpty(internalName) ? internalName
+             : name ?? string.Empty;
 
         /// <summary>
         /// Check if two monitors are considered the same based on their keys.

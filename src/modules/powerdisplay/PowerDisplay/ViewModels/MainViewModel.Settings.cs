@@ -21,6 +21,11 @@ namespace PowerDisplay.ViewModels;
 public partial class MainViewModel
 {
     /// <summary>
+    /// Check if a value is within the valid range (inclusive).
+    /// </summary>
+    private static bool IsValueInRange(int value, int min, int max) => value >= min && value <= max;
+
+    /// <summary>
     /// Apply settings changes from Settings UI (IPC event handler entry point)
     /// Only applies UI configuration changes. Hardware parameter changes (e.g., color temperature)
     /// should be triggered via custom actions to avoid unwanted side effects when non-hardware
@@ -257,21 +262,21 @@ public partial class MainViewModel
 
             // Apply brightness if included in profile
             if (setting.Brightness.HasValue &&
-                setting.Brightness.Value >= monitorVm.MinBrightness && setting.Brightness.Value <= monitorVm.MaxBrightness)
+                IsValueInRange(setting.Brightness.Value, monitorVm.MinBrightness, monitorVm.MaxBrightness))
             {
                 updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness.Value, immediate: true, fromProfile: true));
             }
 
             // Apply contrast if supported and value provided
             if (setting.Contrast.HasValue && monitorVm.ShowContrast &&
-                setting.Contrast.Value >= monitorVm.MinContrast && setting.Contrast.Value <= monitorVm.MaxContrast)
+                IsValueInRange(setting.Contrast.Value, monitorVm.MinContrast, monitorVm.MaxContrast))
             {
                 updateTasks.Add(monitorVm.SetContrastAsync(setting.Contrast.Value, immediate: true, fromProfile: true));
             }
 
             // Apply volume if supported and value provided
             if (setting.Volume.HasValue && monitorVm.ShowVolume &&
-                setting.Volume.Value >= monitorVm.MinVolume && setting.Volume.Value <= monitorVm.MaxVolume)
+                IsValueInRange(setting.Volume.Value, monitorVm.MinVolume, monitorVm.MaxVolume))
             {
                 updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value, immediate: true, fromProfile: true));
             }
@@ -347,7 +352,7 @@ public partial class MainViewModel
                     {
                         // Validate and apply saved values (skip invalid values)
                         // Use UpdatePropertySilently to avoid triggering hardware updates during initialization
-                        if (savedState.Value.Brightness >= monitorVm.MinBrightness && savedState.Value.Brightness <= monitorVm.MaxBrightness)
+                        if (IsValueInRange(savedState.Value.Brightness, monitorVm.MinBrightness, monitorVm.MaxBrightness))
                         {
                             monitorVm.UpdatePropertySilently(nameof(monitorVm.Brightness), savedState.Value.Brightness);
                         }
@@ -366,16 +371,14 @@ public partial class MainViewModel
 
                         // Contrast validation - only apply if hardware supports it
                         if (monitorVm.ShowContrast &&
-                            savedState.Value.Contrast >= monitorVm.MinContrast &&
-                            savedState.Value.Contrast <= monitorVm.MaxContrast)
+                            IsValueInRange(savedState.Value.Contrast, monitorVm.MinContrast, monitorVm.MaxContrast))
                         {
                             monitorVm.UpdatePropertySilently(nameof(monitorVm.Contrast), savedState.Value.Contrast);
                         }
 
                         // Volume validation - only apply if hardware supports it
                         if (monitorVm.ShowVolume &&
-                            savedState.Value.Volume >= monitorVm.MinVolume &&
-                            savedState.Value.Volume <= monitorVm.MaxVolume)
+                            IsValueInRange(savedState.Value.Volume, monitorVm.MinVolume, monitorVm.MaxVolume))
                         {
                             monitorVm.UpdatePropertySilently(nameof(monitorVm.Volume), savedState.Value.Volume);
                         }

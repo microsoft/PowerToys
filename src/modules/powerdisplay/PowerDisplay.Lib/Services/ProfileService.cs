@@ -46,39 +46,13 @@ namespace PowerDisplay.Common.Services
         {
             lock (_lock)
             {
-                try
+                var (profiles, message) = LoadProfilesInternal();
+                if (!string.IsNullOrEmpty(message))
                 {
-                    var filePath = PathConstants.ProfilesFilePath;
-
-                    // Ensure directory exists
-                    PathConstants.EnsurePowerDisplayFolderExists();
-
-                    if (File.Exists(filePath))
-                    {
-                        var json = File.ReadAllText(filePath);
-                        var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles);
-
-                        if (profiles != null)
-                        {
-                            // Clean up any legacy Custom profiles
-                            profiles.Profiles.RemoveAll(p => p.Name.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase));
-
-                            Logger.LogInfo($"{LogPrefix} Loaded {profiles.Profiles.Count} profiles from {filePath}");
-                            return profiles;
-                        }
-                    }
-                    else
-                    {
-                        Logger.LogInfo($"{LogPrefix} No profiles file found at {filePath}, returning empty collection");
-                    }
-
-                    return new PowerDisplayProfiles();
+                    Logger.LogInfo($"{LogPrefix} {message}");
                 }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"{LogPrefix} Failed to load profiles: {ex.Message}");
-                    return new PowerDisplayProfiles();
-                }
+
+                return profiles;
             }
         }
 
@@ -92,35 +66,19 @@ namespace PowerDisplay.Common.Services
         {
             lock (_lock)
             {
-                try
+                if (profiles == null)
                 {
-                    if (profiles == null)
-                    {
-                        Logger.LogWarning($"{LogPrefix} Cannot save null profiles");
-                        return false;
-                    }
-
-                    // Ensure directory exists
-                    PathConstants.EnsurePowerDisplayFolderExists();
-
-                    // Clean up any Custom profiles before saving
-                    profiles.Profiles.RemoveAll(p => p.Name.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase));
-
-                    profiles.LastUpdated = DateTime.UtcNow;
-
-                    var json = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
-
-                    var filePath = PathConstants.ProfilesFilePath;
-                    File.WriteAllText(filePath, json);
-
-                    Logger.LogInfo($"{LogPrefix} Saved {profiles.Profiles.Count} profiles to {filePath}");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"{LogPrefix} Failed to save profiles: {ex.Message}");
+                    Logger.LogWarning($"{LogPrefix} Cannot save null profiles");
                     return false;
                 }
+
+                var (success, message) = SaveProfilesInternal(profiles);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    Logger.LogInfo($"{LogPrefix} {message}");
+                }
+
+                return success;
             }
         }
 
@@ -140,17 +98,17 @@ namespace PowerDisplay.Common.Services
                     return false;
                 }
 
-                var profiles = LoadProfilesInternal();
+                var (profiles, _) = LoadProfilesInternal();
                 profiles.SetProfile(profile);
 
-                var result = SaveProfilesInternal(profiles);
+                var (success, _) = SaveProfilesInternal(profiles);
 
-                if (result)
+                if (success)
                 {
                     Logger.LogInfo($"{LogPrefix} Profile '{profile.Name}' added/updated with {profile.MonitorSettings.Count} monitors");
                 }
 
-                return result;
+                return success;
             }
         }
 
@@ -164,7 +122,7 @@ namespace PowerDisplay.Common.Services
         {
             lock (_lock)
             {
-                var profiles = LoadProfilesInternal();
+                var (profiles, _) = LoadProfilesInternal();
                 bool removed = profiles.RemoveProfile(profileName);
 
                 if (removed)
@@ -191,7 +149,7 @@ namespace PowerDisplay.Common.Services
         {
             lock (_lock)
             {
-                var profiles = LoadProfilesInternal();
+                var (profiles, _) = LoadProfilesInternal();
                 return profiles.GetProfile(profileName);
             }
         }
@@ -223,7 +181,8 @@ namespace PowerDisplay.Common.Services
         }
 
         // Internal methods without lock for use within already-locked contexts
-        private static PowerDisplayProfiles LoadProfilesInternal()
+        // Returns tuple with result and optional log message
+        private static (PowerDisplayProfiles Profiles, string? Message) LoadProfilesInternal()
         {
             try
             {
@@ -239,26 +198,31 @@ namespace PowerDisplay.Common.Services
                     if (profiles != null)
                     {
                         profiles.Profiles.RemoveAll(p => p.Name.Equals(PowerDisplayProfiles.CustomProfileName, StringComparison.OrdinalIgnoreCase));
-                        return profiles;
+                        return (profiles, $"Loaded {profiles.Profiles.Count} profiles from {filePath}");
                     }
                 }
+                else
+                {
+                    return (new PowerDisplayProfiles(), $"No profiles file found at {filePath}, returning empty collection");
+                }
 
-                return new PowerDisplayProfiles();
+                return (new PowerDisplayProfiles(), null);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"{LogPrefix} Failed to load profiles internally: {ex.Message}");
-                return new PowerDisplayProfiles();
+                Logger.LogError($"{LogPrefix} Failed to load profiles: {ex.Message}");
+                return (new PowerDisplayProfiles(), null);
             }
         }
 
-        private static bool SaveProfilesInternal(PowerDisplayProfiles profiles)
+        // Returns tuple with success status and optional log message
+        private static (bool Success, string? Message) SaveProfilesInternal(PowerDisplayProfiles profiles)
         {
             try
             {
                 if (profiles == null)
                 {
-                    return false;
+                    return (false, null);
                 }
 
                 PathConstants.EnsurePowerDisplayFolderExists();
@@ -270,12 +234,12 @@ namespace PowerDisplay.Common.Services
                 var filePath = PathConstants.ProfilesFilePath;
                 File.WriteAllText(filePath, json);
 
-                return true;
+                return (true, $"Saved {profiles.Profiles.Count} profiles to {filePath}");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"{LogPrefix} Failed to save profiles internally: {ex.Message}");
-                return false;
+                Logger.LogError($"{LogPrefix} Failed to save profiles: {ex.Message}");
+                return (false, null);
             }
         }
 

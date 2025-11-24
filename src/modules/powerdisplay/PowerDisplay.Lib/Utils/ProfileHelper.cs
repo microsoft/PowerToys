@@ -25,33 +25,33 @@ namespace PowerDisplay.Common.Utils
         /// <param name="existingProfiles">The collection of existing profiles.</param>
         /// <param name="baseName">The base name to use (default: "Profile").</param>
         /// <returns>A unique profile name like "Profile 1", "Profile 2", etc.</returns>
-        public static string GenerateUniqueProfileName(PowerDisplayProfiles existingProfiles, string baseName = DefaultProfileBaseName)
+        public static string GenerateUniqueProfileName(PowerDisplayProfiles? existingProfiles, string baseName = DefaultProfileBaseName)
+            => GenerateUniqueProfileName(
+                existingProfiles?.Profiles?.Select(p => p.Name).Where(n => !string.IsNullOrEmpty(n))!,
+                baseName);
+
+        /// <summary>
+        /// Generate a unique profile name from a collection of profile names.
+        /// </summary>
+        /// <param name="existingNames">Enumerable of existing profile names.</param>
+        /// <param name="baseName">The base name to use (default: "Profile").</param>
+        /// <returns>A unique profile name like "Profile 1", "Profile 2", etc.</returns>
+        public static string GenerateUniqueProfileName(IEnumerable<string>? existingNames, string baseName = DefaultProfileBaseName)
         {
-            var existingNames = new HashSet<string>();
-
-            if (existingProfiles?.Profiles != null)
-            {
-                foreach (var profile in existingProfiles.Profiles)
-                {
-                    if (!string.IsNullOrEmpty(profile.Name))
-                    {
-                        existingNames.Add(profile.Name);
-                    }
-                }
-            }
-
-            return GenerateUniqueProfileName(existingNames, baseName);
+            var nameSet = existingNames != null ? new HashSet<string>(existingNames) : null;
+            return GenerateUniqueProfileName(nameSet, baseName);
         }
 
         /// <summary>
         /// Generate a unique profile name that doesn't conflict with existing names.
+        /// Core implementation used by all overloads.
         /// </summary>
         /// <param name="existingNames">Set of existing profile names.</param>
         /// <param name="baseName">The base name to use (default: "Profile").</param>
         /// <returns>A unique profile name like "Profile 1", "Profile 2", etc.</returns>
-        public static string GenerateUniqueProfileName(ISet<string> existingNames, string baseName = DefaultProfileBaseName)
+        public static string GenerateUniqueProfileName(ISet<string>? existingNames, string baseName = DefaultProfileBaseName)
         {
-            if (existingNames == null)
+            if (existingNames == null || existingNames.Count == 0)
             {
                 return $"{baseName} 1";
             }
@@ -66,18 +66,6 @@ namespace PowerDisplay.Common.Utils
             while (existingNames.Contains(name));
 
             return name;
-        }
-
-        /// <summary>
-        /// Generate a unique profile name from a collection of profile names.
-        /// </summary>
-        /// <param name="existingNames">Enumerable of existing profile names.</param>
-        /// <param name="baseName">The base name to use (default: "Profile").</param>
-        /// <returns>A unique profile name like "Profile 1", "Profile 2", etc.</returns>
-        public static string GenerateUniqueProfileName(IEnumerable<string> existingNames, string baseName = DefaultProfileBaseName)
-        {
-            var nameSet = new HashSet<string>(existingNames ?? Enumerable.Empty<string>());
-            return GenerateUniqueProfileName(nameSet, baseName);
         }
 
         /// <summary>

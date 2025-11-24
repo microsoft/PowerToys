@@ -78,24 +78,6 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Generates the next available profile name (Profile1, Profile2, etc.)
-        /// </summary>
-        public string GenerateProfileName()
-        {
-            int counter = 1;
-            while (true)
-            {
-                string name = $"Profile{counter}";
-                if (GetProfile(name) == null)
-                {
-                    return name;
-                }
-
-                counter++;
-            }
-        }
-
-        /// <summary>
         /// Checks if a profile name is valid and available
         /// </summary>
         public bool IsNameAvailable(string name, string? excludeName = null)

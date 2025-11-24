@@ -86,23 +86,22 @@ namespace PowerDisplay.Common
         /// </summary>
         /// <returns>The PowerDisplay folder path</returns>
         public static string EnsurePowerDisplayFolderExists()
-        {
-            var folderPath = PowerDisplayFolderPath;
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
-
-            return folderPath;
-        }
+            => EnsureFolderExists(PowerDisplayFolderPath);
 
         /// <summary>
         /// Ensures the LightSwitch folder exists. Creates it if necessary.
         /// </summary>
         /// <returns>The LightSwitch folder path</returns>
         public static string EnsureLightSwitchFolderExists()
+            => EnsureFolderExists(LightSwitchFolderPath);
+
+        /// <summary>
+        /// Ensures the specified folder exists. Creates it if necessary.
+        /// </summary>
+        /// <param name="folderPath">The folder path to ensure exists</param>
+        /// <returns>The folder path</returns>
+        private static string EnsureFolderExists(string folderPath)
         {
-            var folderPath = LightSwitchFolderPath;
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);

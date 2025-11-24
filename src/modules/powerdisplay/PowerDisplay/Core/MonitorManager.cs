@@ -26,6 +26,7 @@ namespace PowerDisplay.Core
     public partial class MonitorManager : IDisposable
     {
         private readonly List<Monitor> _monitors = new();
+        private readonly Dictionary<string, Monitor> _monitorLookup = new();
         private readonly List<IMonitorController> _controllers = new();
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private bool _disposed;
@@ -180,9 +181,14 @@ namespace PowerDisplay.Core
                     newMonitors.AddRange(validMonitors);
                 }
 
-                // Update monitor list
+                // Update monitor list and lookup dictionary
                 _monitors.Clear();
+                _monitorLookup.Clear();
                 _monitors.AddRange(newMonitors);
+                foreach (var monitor in newMonitors)
+                {
+                    _monitorLookup[monitor.Id] = monitor;
+                }
 
                 // Trigger change events
                 var addedMonitors = newMonitors.Where(m => !oldMonitors.Any(o => o.Id == m.Id)).ToList();
@@ -394,11 +400,11 @@ namespace PowerDisplay.Core
         }
 
         /// <summary>
-        /// Get monitor by ID
+        /// Get monitor by ID. Uses dictionary lookup for O(1) performance.
         /// </summary>
         public Monitor? GetMonitor(string monitorId)
         {
-            return _monitors.FirstOrDefault(m => m.Id == monitorId);
+            return _monitorLookup.TryGetValue(monitorId, out var monitor) ? monitor : null;
         }
 
         /// <summary>
@@ -522,6 +528,7 @@ namespace PowerDisplay.Core
 
                 _controllers.Clear();
                 _monitors.Clear();
+                _monitorLookup.Clear();
                 _disposed = true;
             }
         }
