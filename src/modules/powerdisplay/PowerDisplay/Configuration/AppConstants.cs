@@ -52,12 +52,11 @@ namespace PowerDisplay.Configuration
         public static class UI
         {
             // Window dimensions
-            public const int WindowWidth = 640;
+            public const int WindowWidth = 386;
             public const int MaxWindowHeight = 650;
-            public const int WindowRightMargin = 10;
+            public const int WindowRightMargin = 12;
 
             // Animation and layout update delays (milliseconds)
-            public const int AnimationDelayMs = 100;
             public const int LayoutUpdateDelayMs = 50;
             public const int MonitorDiscoveryDelayMs = 200;
 

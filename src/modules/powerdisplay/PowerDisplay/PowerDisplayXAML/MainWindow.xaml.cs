@@ -24,6 +24,7 @@ using PowerDisplay.Native;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
 using WinRT.Interop;
+using WinUIEx;
 using static PowerDisplay.Native.PInvoke;
 using Monitor = PowerDisplay.Core.Models.Monitor;
 
@@ -33,7 +34,7 @@ namespace PowerDisplay
     /// PowerDisplay main window
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
-    public sealed partial class MainWindow : Window, IDisposable
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
         private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private MainViewModel _viewModel = null!;
@@ -157,7 +158,6 @@ namespace PowerDisplay
 
                 // Set text block content
                 ScanningMonitorsTextBlock.Text = loader.GetString("ScanningMonitorsText");
-                NoMonitorsTextBlock.Text = loader.GetString("NoMonitorsText");
                 AdjustBrightnessTextBlock.Text = loader.GetString("AdjustBrightnessText");
 
                 // Set button tooltips
@@ -170,7 +170,6 @@ namespace PowerDisplay
                 // Use English defaults if resource loading fails
                 Logger.LogWarning($"Failed to load localized strings: {ex.Message}");
                 ScanningMonitorsTextBlock.Text = "Scanning monitors...";
-                NoMonitorsTextBlock.Text = "No monitors detected";
                 AdjustBrightnessTextBlock.Text = "PowerDisplay";
 
                 Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(LinkButton, "Synchronize all monitors to the same brightness");
@@ -280,25 +279,8 @@ namespace PowerDisplay
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-            // Use storyboard animation for window exit
-            if (RootGrid.Resources.ContainsKey("SlideOutStoryboard"))
-            {
-                var slideOutStoryboard = RootGrid.Resources["SlideOutStoryboard"] as Storyboard;
-                if (slideOutStoryboard != null)
-                {
-                    slideOutStoryboard.Completed += (s, e) =>
-                    {
-                        // Hide window after animation completes
-                        WindowHelper.ShowWindow(hWnd, false);
-                    };
-                    slideOutStoryboard.Begin();
-                }
-            }
-            else
-            {
-                // Fallback: hide immediately if animation not found
-                WindowHelper.ShowWindow(hWnd, false);
-            }
+            // Fallback: hide immediately if animation not found
+            WindowHelper.ShowWindow(hWnd, false);
         }
 
         /// <summary>
@@ -559,26 +541,6 @@ namespace PowerDisplay
                         titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
                     }
 
-                    // Set modern Mica Alt backdrop for Windows 11
-                    try
-                    {
-                        // Use Mica Alt for a more modern appearance
-                        if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
-                        {
-                            this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
-                        }
-                        else
-                        {
-                            // Fallback to basic backdrop for older systems
-                            this.SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
-                        }
-                    }
-                    catch
-                    {
-                        // Fallback: use solid color background
-                        this.SystemBackdrop = null;
-                    }
-
                     // Use Win32 API to further disable window moving
                     WindowHelper.DisableWindowMovingAndResizing(hWnd);
 
@@ -611,6 +573,8 @@ namespace PowerDisplay
                 // Get precise content height
                 var availableWidth = (double)AppConstants.UI.WindowWidth;
                 var contentHeight = GetContentHeight(availableWidth);
+
+                contentHeight = 720;
 
                 // Account for display scaling
                 var scale = RootGrid.XamlRoot?.RasterizationScale ?? 1.0;

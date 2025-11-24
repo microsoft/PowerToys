@@ -15,7 +15,7 @@
   <data name="ScanningMonitorsText" xml:space="preserve">
     <value>Scanning monitors...</value>
   </data>
-  <data name="NoMonitorsText" xml:space="preserve">
+  <data name="NoMonitorsText.Message" xml:space="preserve">
     <value>No monitors detected</value>
   </data>
   <data name="AdjustBrightnessText" xml:space="preserve">
