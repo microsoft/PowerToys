@@ -228,6 +228,8 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             BringToForeground(_hwnd);
         }
 
+        _hasSeenInteractiveActivation = true;
+        _initialActivationHandled = true;
         Activate();
     }
 
