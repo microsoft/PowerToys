@@ -5,10 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-// Type aliases for Windows API naming conventions compatibility
-using RECT = PowerDisplay.Native.Rect;
-
-namespace PowerDisplay.Native;
+namespace PowerDisplay.Common.Drivers;
 
 /// <summary>
 /// Native delegate type definitions

@@ -14,8 +14,12 @@ namespace PowerDisplay.Common.Models
         [JsonPropertyName("monitor_id")]
         public string MonitorId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color temperature VCP preset value.
+        /// JSON property name kept as "color_temperature" for IPC compatibility.
+        /// </summary>
         [JsonPropertyName("color_temperature")]
-        public int ColorTemperature { get; set; }
+        public int ColorTemperatureVcp { get; set; }
 
         public ColorTemperatureOperation()
         {

@@ -13,7 +13,7 @@ using PowerDisplay.Common.Models;
 using WmiLight;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
-namespace PowerDisplay.Native.WMI
+namespace PowerDisplay.Common.Drivers.WMI
 {
     /// <summary>
     /// WMI monitor controller for controlling internal laptop displays.

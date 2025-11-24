@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -12,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -70,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     // Store the initial value
                     if (!_previousColorTemperatureValues.ContainsKey(monitor.HardwareId))
                     {
-                        _previousColorTemperatureValues[monitor.HardwareId] = monitor.ColorTemperature;
+                        _previousColorTemperatureValues[monitor.HardwareId] = monitor.ColorTemperatureVcp;
                     }
 
                     return;
@@ -87,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 int previousValue;
                 if (!_previousColorTemperatureValues.TryGetValue(monitor.HardwareId, out previousValue))
                 {
-                    previousValue = monitor.ColorTemperature;
+                    previousValue = monitor.ColorTemperatureVcp;
                 }
 
                 // Show confirmation dialog
@@ -137,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     // User confirmed, apply the change
                     // Setting the property will trigger save to settings file via OnPropertyChanged
-                    monitor.ColorTemperature = newValue.Value;
+                    monitor.ColorTemperatureVcp = newValue.Value;
                     _previousColorTemperatureValues[monitor.HardwareId] = newValue.Value;
 
                     // Send IPC message to PowerDisplay with monitor ID and new color temperature value
@@ -235,22 +237,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private string GenerateDefaultProfileName()
         {
-            var existingNames = new HashSet<string>();
-            foreach (var profile in ViewModel.Profiles)
-            {
-                existingNames.Add(profile.Name);
-            }
-
-            int counter = 1;
-            string name;
-            do
-            {
-                name = $"Profile {counter}";
-                counter++;
-            }
-            while (existingNames.Contains(name));
-
-            return name;
+            // Use shared ProfileHelper for consistent profile name generation
+            var existingNames = ViewModel.Profiles.Select(p => p.Name);
+            return ProfileHelper.GenerateUniqueProfileName(existingNames);
         }
     }
 }

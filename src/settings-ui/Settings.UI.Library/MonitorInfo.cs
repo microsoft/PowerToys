@@ -7,19 +7,22 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MonitorInfo : Observable
+    public class MonitorInfo : Observable, IMonitorData
     {
         private string _name = string.Empty;
         private string _internalName = string.Empty;
         private string _hardwareId = string.Empty;
         private string _communicationMethod = string.Empty;
         private int _currentBrightness;
-        private int _colorTemperature = 6500;
+        private int _colorTemperatureVcp = 0x05; // Default to 6500K preset (VCP 0x14 value)
+        private int _contrast;
+        private int _volume;
         private bool _isHidden;
         private bool _enableContrast;
         private bool _enableVolume;
@@ -48,14 +51,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CommunicationMethod = communicationMethod;
         }
 
-        public MonitorInfo(string name, string internalName, string hardwareId, string communicationMethod, int currentBrightness, int colorTemperature)
+        public MonitorInfo(string name, string internalName, string hardwareId, string communicationMethod, int currentBrightness, int colorTemperatureVcp)
         {
             Name = name;
             InternalName = internalName;
             HardwareId = hardwareId;
             CommunicationMethod = communicationMethod;
             CurrentBrightness = currentBrightness;
-            ColorTemperature = colorTemperature;
+            ColorTemperatureVcp = colorTemperatureVcp;
         }
 
         [JsonPropertyName("name")]
@@ -128,17 +131,64 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        [JsonPropertyName("colorTemperature")]
-        public int ColorTemperature
+        /// <summary>
+        /// Gets or sets the color temperature VCP preset value (raw DDC/CI value from VCP code 0x14).
+        /// This stores the raw VCP value (e.g., 0x05 for 6500K preset), not the Kelvin temperature.
+        /// Use MonitorValueConverter to convert to human-readable Kelvin values for display.
+        /// </summary>
+        [JsonPropertyName("colorTemperatureVcp")]
+        public int ColorTemperatureVcp
         {
-            get => _colorTemperature;
+            get => _colorTemperatureVcp;
             set
             {
-                if (_colorTemperature != value)
+                if (_colorTemperatureVcp != value)
                 {
-                    _colorTemperature = value;
+                    _colorTemperatureVcp = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(ColorTemperatureDisplay));
                     OnPropertyChanged(nameof(ColorPresetsForDisplay)); // Update display list when current value changes
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the color temperature as a human-readable display string.
+        /// Converts the VCP value to a Kelvin temperature display.
+        /// </summary>
+        [JsonIgnore]
+        public string ColorTemperatureDisplay => MonitorValueConverter.FormatColorTemperatureDisplay(ColorTemperatureVcp);
+
+        /// <summary>
+        /// Gets or sets the current contrast value (0-100).
+        /// </summary>
+        [JsonPropertyName("contrast")]
+        public int Contrast
+        {
+            get => _contrast;
+            set
+            {
+                if (_contrast != value)
+                {
+                    _contrast = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current volume value (0-100).
+        /// </summary>
+        [JsonPropertyName("volume")]
+        public int Volume
+        {
+            get => _volume;
+            set
+            {
+                if (_volume != value)
+                {
+                    _volume = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -407,7 +457,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
 
                 // Check if current value is in the preset list
-                var currentValueInList = presets.Any(p => p.VcpValue == _colorTemperature);
+                var currentValueInList = presets.Any(p => p.VcpValue == _colorTemperatureVcp);
 
                 if (currentValueInList)
                 {
@@ -419,8 +469,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 var displayList = new List<ColorPresetItem>();
 
                 // Add current value with "Custom" indicator using shared helper
-                var displayName = ColorTemperatureHelper.FormatCustomColorTemperatureDisplayName(_colorTemperature);
-                displayList.Add(new ColorPresetItem(_colorTemperature, displayName));
+                var displayName = ColorTemperatureHelper.FormatCustomColorTemperatureDisplayName(_colorTemperatureVcp);
+                displayList.Add(new ColorPresetItem(_colorTemperatureVcp, displayName));
 
                 // Add all supported presets
                 displayList.AddRange(presets);
@@ -502,7 +552,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HardwareId = other.HardwareId;
             CommunicationMethod = other.CommunicationMethod;
             CurrentBrightness = other.CurrentBrightness;
-            ColorTemperature = other.ColorTemperature;
+            Contrast = other.Contrast;
+            Volume = other.Volume;
+            ColorTemperatureVcp = other.ColorTemperatureVcp;
             IsHidden = other.IsHidden;
             EnableContrast = other.EnableContrast;
             EnableVolume = other.EnableVolume;
@@ -514,6 +566,41 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsColorTemperature = other.SupportsColorTemperature;
             SupportsVolume = other.SupportsVolume;
             CapabilitiesStatus = other.CapabilitiesStatus;
+        }
+
+        /// <inheritdoc />
+        string IMonitorData.Id
+        {
+            get => InternalName;
+            set => InternalName = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Brightness
+        {
+            get => CurrentBrightness;
+            set => CurrentBrightness = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Contrast
+        {
+            get => Contrast;
+            set => Contrast = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Volume
+        {
+            get => Volume;
+            set => Volume = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.ColorTemperatureVcp
+        {
+            get => ColorTemperatureVcp;
+            set => ColorTemperatureVcp = value;
         }
 
         /// <summary>

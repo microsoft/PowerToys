@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using static PowerDisplay.Native.PInvoke;
+using System.Runtime.InteropServices;
 
-namespace PowerDisplay.Native
+namespace PowerDisplay.Helpers
 {
-    internal static class WindowHelper
+    internal static partial class WindowHelper
     {
         // Window Styles
         private const int GwlStyle = -16;
@@ -41,6 +41,50 @@ namespace PowerDisplay.Native
         private const int SwShow = 5;
         private const int SwMinimize = 6;
         private const int SwRestore = 9;
+
+        // P/Invoke declarations
+#if WIN64
+        [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+        private static partial IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
+#else
+        [LibraryImport("user32.dll", EntryPoint = "GetWindowLongW")]
+        private static partial int GetWindowLong(IntPtr hWnd, int nIndex);
+#endif
+
+#if WIN64
+        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+        private static partial IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+#else
+        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongW")]
+        private static partial int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+#endif
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr hWndInsertAfter,
+            int x,
+            int y,
+            int cx,
+            int cy,
+            uint uFlags);
+
+        [LibraryImport("user32.dll", EntryPoint = "ShowWindow")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool ShowWindowNative(IntPtr hWnd, int nCmdShow);
+
+        [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool IsWindowVisibleNative(IntPtr hWnd);
+
+        /// <summary>
+        /// Check if window is visible
+        /// </summary>
+        public static bool IsWindowVisible(IntPtr hWnd)
+        {
+            return IsWindowVisibleNative(hWnd);
+        }
 
         /// <summary>
         /// Disable window moving and resizing functionality
@@ -115,7 +159,7 @@ namespace PowerDisplay.Native
         /// </summary>
         public static void ShowWindow(IntPtr hWnd, bool show)
         {
-            PInvoke.ShowWindow(hWnd, show ? SwShow : SwHide);
+            ShowWindowNative(hWnd, show ? SwShow : SwHide);
         }
 
         /// <summary>
@@ -123,7 +167,7 @@ namespace PowerDisplay.Native
         /// </summary>
         public static void MinimizeWindow(IntPtr hWnd)
         {
-            PInvoke.ShowWindow(hWnd, SwMinimize);
+            ShowWindowNative(hWnd, SwMinimize);
         }
 
         /// <summary>
@@ -131,7 +175,7 @@ namespace PowerDisplay.Native
         /// </summary>
         public static void RestoreWindow(IntPtr hWnd)
         {
-            PInvoke.ShowWindow(hWnd, SwRestore);
+            ShowWindowNative(hWnd, SwRestore);
         }
 
         /// <summary>

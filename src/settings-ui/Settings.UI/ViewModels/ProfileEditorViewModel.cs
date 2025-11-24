@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Brightness = monitor.CurrentBrightness,
                     Contrast = 50, // Default value (MonitorInfo doesn't store contrast)
                     Volume = 50, // Default value (MonitorInfo doesn't store volume)
-                    ColorTemperature = monitor.ColorTemperature,
+                    ColorTemperature = monitor.ColorTemperatureVcp,
                 };
 
                 item.SuppressAutoSelection = false;

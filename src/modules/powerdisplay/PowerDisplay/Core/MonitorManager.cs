@@ -8,13 +8,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common.Drivers;
+using PowerDisplay.Common.Drivers.DDC;
+using PowerDisplay.Common.Drivers.WMI;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Core.Interfaces;
-using PowerDisplay.Native;
-using PowerDisplay.Native.DDC;
-using PowerDisplay.Native.WMI;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Core

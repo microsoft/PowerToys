@@ -8,14 +8,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
-using static PowerDisplay.Native.NativeConstants;
-using static PowerDisplay.Native.PInvoke;
+using static PowerDisplay.Common.Drivers.NativeConstants;
+using static PowerDisplay.Common.Drivers.PInvoke;
 
-using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
-using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
-using RECT = PowerDisplay.Native.Rect;
+using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
+using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
+using RECT = PowerDisplay.Common.Drivers.Rect;
 
-namespace PowerDisplay.Native.DDC
+namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
     /// Helper class for discovering and creating monitor objects

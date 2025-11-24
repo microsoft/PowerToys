@@ -4,7 +4,7 @@
 
 using System;
 
-namespace PowerDisplay.Native
+namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
     /// Windows API constant definitions

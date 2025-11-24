@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 #pragma warning disable SA1649 // File name should match first type name - Multiple related P/Invoke structures
 
-namespace PowerDisplay.Native
+namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
     /// Physical monitor structure for DDC/CI

@@ -27,6 +27,11 @@ namespace PowerDisplay.Common.Serialization
     [JsonSerializable(typeof(List<ProfileOperation>))]
     [JsonSerializable(typeof(ColorTemperatureOperation))]
     [JsonSerializable(typeof(List<ColorTemperatureOperation>))]
+
+    // Monitor State Types
+    [JsonSerializable(typeof(MonitorStateEntry))]
+    [JsonSerializable(typeof(MonitorStateFile))]
+    [JsonSerializable(typeof(Dictionary<string, MonitorStateEntry>))]
     public partial class ProfileSerializationContext : JsonSerializerContext
     {
     }

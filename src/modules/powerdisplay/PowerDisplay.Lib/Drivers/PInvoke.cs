@@ -5,118 +5,13 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PowerDisplay.Native
+namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
     /// P/Invoke declarations using LibraryImport source generator
     /// </summary>
     internal static partial class PInvoke
     {
-        // ==================== User32.dll - Window Management ====================
-        // GetWindowLong: On 64-bit use GetWindowLongPtrW, on 32-bit use GetWindowLongW
-#if WIN64
-        [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
-        internal static partial IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
-#else
-        [LibraryImport("user32.dll", EntryPoint = "GetWindowLongW")]
-        internal static partial int GetWindowLong(IntPtr hWnd, int nIndex);
-#endif
-
-        // SetWindowLong: On 64-bit use SetWindowLongPtrW, on 32-bit use SetWindowLongW
-#if WIN64
-        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-        internal static partial IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
-#else
-        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongW")]
-        internal static partial int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-#endif
-
-        // SetWindowLongPtr: Always uses the Ptr variant (64-bit)
-        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-        internal static partial IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool SetWindowPos(
-            IntPtr hWnd,
-            IntPtr hWndInsertAfter,
-            int x,
-            int y,
-            int cx,
-            int cy,
-            uint uFlags);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool SetForegroundWindow(IntPtr hWnd);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool IsWindowVisible(IntPtr hWnd);
-
-        // ==================== User32.dll - Window Creation and Messaging ====================
-        [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", StringMarshalling = StringMarshalling.Utf16)]
-        internal static partial IntPtr CreateWindowEx(
-            uint dwExStyle,
-            [MarshalAs(UnmanagedType.LPWStr)] string lpClassName,
-            [MarshalAs(UnmanagedType.LPWStr)] string lpWindowName,
-            uint dwStyle,
-            int x,
-            int y,
-            int nWidth,
-            int nHeight,
-            IntPtr hWndParent,
-            IntPtr hMenu,
-            IntPtr hInstance,
-            IntPtr lpParam);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool DestroyWindow(IntPtr hWnd);
-
-        [LibraryImport("user32.dll", EntryPoint = "DefWindowProcW")]
-        internal static partial IntPtr DefWindowProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
-
-        [LibraryImport("user32.dll")]
-        internal static partial IntPtr LoadIcon(IntPtr hInstance, IntPtr lpIconName);
-
-        [LibraryImport("user32.dll", EntryPoint = "RegisterWindowMessageW", StringMarshalling = StringMarshalling.Utf16)]
-        internal static partial uint RegisterWindowMessage([MarshalAs(UnmanagedType.LPWStr)] string lpString);
-
-        // ==================== User32.dll - Menu Functions ====================
-        [LibraryImport("user32.dll")]
-        internal static partial IntPtr CreatePopupMenu();
-
-        [LibraryImport("user32.dll", EntryPoint = "AppendMenuW", StringMarshalling = StringMarshalling.Utf16)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool AppendMenu(
-            IntPtr hMenu,
-            uint uFlags,
-            uint uIDNewItem,
-            [MarshalAs(UnmanagedType.LPWStr)] string lpNewItem);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool DestroyMenu(IntPtr hMenu);
-
-        [LibraryImport("user32.dll")]
-        internal static partial int TrackPopupMenu(
-            IntPtr hMenu,
-            uint uFlags,
-            int x,
-            int y,
-            int nReserved,
-            IntPtr hWnd,
-            IntPtr prcRect);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetCursorPos(out POINT lpPoint);
-
         // ==================== User32.dll - Display Configuration ====================
         [LibraryImport("user32.dll")]
         internal static partial int GetDisplayConfigBufferSizes(
@@ -124,14 +19,14 @@ namespace PowerDisplay.Native
             out uint numPathArrayElements,
             out uint numModeInfoArrayElements);
 
-        // With DisableRuntimeMarshalling, LibraryImport can handle struct arrays
+        // Use unsafe pointer to avoid runtime marshalling
         [LibraryImport("user32.dll")]
-        internal static partial int QueryDisplayConfig(
+        internal static unsafe partial int QueryDisplayConfig(
             uint flags,
             ref uint numPathArrayElements,
-            [Out] DISPLAYCONFIG_PATH_INFO[] pathArray,
+            DISPLAYCONFIG_PATH_INFO* pathArray,
             ref uint numModeInfoArrayElements,
-            [Out] DISPLAYCONFIG_MODE_INFO[] modeInfoArray,
+            DISPLAYCONFIG_MODE_INFO* modeInfoArray,
             IntPtr currentTopologyId);
 
         [LibraryImport("user32.dll")]

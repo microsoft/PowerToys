@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
-using static PowerDisplay.Native.PInvoke;
+using static PowerDisplay.Common.Drivers.PInvoke;
 
-namespace PowerDisplay.Native.DDC
+namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
     /// Manages physical monitor handles - reuse, cleanup, and validation

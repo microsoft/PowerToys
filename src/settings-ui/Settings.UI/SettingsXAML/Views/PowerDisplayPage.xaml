@@ -201,7 +201,7 @@
                                                 x:Name="ColorTemperatureComboBox"
                                                 MinWidth="200"
                                                 ItemsSource="{Binding ColorPresetsForDisplay, Mode=OneWay}"
-                                                SelectedValue="{Binding ColorTemperature, Mode=TwoWay}"
+                                                SelectedValue="{Binding ColorTemperatureVcp, Mode=TwoWay}"
                                                 SelectedValuePath="VcpValue"
                                                 DisplayMemberPath="DisplayName"
                                                 PlaceholderText="Not available"

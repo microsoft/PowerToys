@@ -101,7 +101,7 @@ public partial class MainViewModel
 
         if (pendingOp != null && !string.IsNullOrEmpty(pendingOp.MonitorId))
         {
-            Logger.LogInfo($"[Settings] Processing pending color temperature operation: Monitor '{pendingOp.MonitorId}' -> 0x{pendingOp.ColorTemperature:X2}");
+            Logger.LogInfo($"[Settings] Processing pending color temperature operation: Monitor '{pendingOp.MonitorId}' -> 0x{pendingOp.ColorTemperatureVcp:X2}");
 
             // Find the monitor by internal name (ID)
             var monitorVm = Monitors.FirstOrDefault(m => m.Id == pendingOp.MonitorId);
@@ -109,7 +109,7 @@ public partial class MainViewModel
             if (monitorVm != null)
             {
                 // Apply color temperature directly
-                await ApplyColorTemperatureAsync(monitorVm, pendingOp.ColorTemperature);
+                await ApplyColorTemperatureAsync(monitorVm, pendingOp.ColorTemperatureVcp);
                 Logger.LogInfo($"[Settings] Successfully applied color temperature to monitor '{pendingOp.MonitorId}'");
             }
             else
@@ -277,9 +277,9 @@ public partial class MainViewModel
             }
 
             // Apply color temperature if included in profile
-            if (setting.ColorTemperature.HasValue && setting.ColorTemperature.Value > 0)
+            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0)
             {
-                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperature.Value, fromProfile: true));
+                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value, fromProfile: true));
             }
         }
 
@@ -358,10 +358,10 @@ public partial class MainViewModel
 
                         // Color temperature: VCP 0x14 preset value (discrete values, no range check needed)
                         // Note: ColorTemperature is now read-only in flyout UI, controlled via Settings UI
-                        if (savedState.Value.ColorTemperature > 0)
+                        if (savedState.Value.ColorTemperatureVcp > 0)
                         {
                             // Validation will happen in Settings UI when applying preset values
-                            monitorVm.UpdatePropertySilently(nameof(monitorVm.ColorTemperature), savedState.Value.ColorTemperature);
+                            monitorVm.UpdatePropertySilently(nameof(monitorVm.ColorTemperature), savedState.Value.ColorTemperatureVcp);
                         }
 
                         // Contrast validation - only apply if hardware supports it
@@ -540,7 +540,7 @@ public partial class MainViewModel
             hardwareId: vm.HardwareId,
             communicationMethod: vm.CommunicationMethod,
             currentBrightness: vm.Brightness,
-            colorTemperature: vm.ColorTemperature)
+            colorTemperatureVcp: vm.ColorTemperature)
         {
             CapabilitiesRaw = vm.CapabilitiesRaw,
             VcpCodes = BuildVcpCodesList(vm),

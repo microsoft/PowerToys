@@ -6,25 +6,25 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using static PowerDisplay.Native.NativeConstants;
-using static PowerDisplay.Native.NativeDelegates;
-using static PowerDisplay.Native.PInvoke;
+using static PowerDisplay.Common.Drivers.NativeConstants;
+using static PowerDisplay.Common.Drivers.NativeDelegates;
+using static PowerDisplay.Common.Drivers.PInvoke;
 
 // Type aliases for Windows API naming conventions compatibility
-using DISPLAY_DEVICE = PowerDisplay.Native.DisplayDevice;
-using DISPLAYCONFIG_DEVICE_INFO_HEADER = PowerDisplay.Native.DISPLAYCONFIG_DEVICE_INFO_HEADER;
-using DISPLAYCONFIG_MODE_INFO = PowerDisplay.Native.DISPLAYCONFIG_MODE_INFO;
-using DISPLAYCONFIG_PATH_INFO = PowerDisplay.Native.DISPLAYCONFIG_PATH_INFO;
-using DISPLAYCONFIG_TARGET_DEVICE_NAME = PowerDisplay.Native.DISPLAYCONFIG_TARGET_DEVICE_NAME;
-using LUID = PowerDisplay.Native.Luid;
-using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
-using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
-using RECT = PowerDisplay.Native.Rect;
+using DISPLAY_DEVICE = PowerDisplay.Common.Drivers.DisplayDevice;
+using DISPLAYCONFIG_DEVICE_INFO_HEADER = PowerDisplay.Common.Drivers.DISPLAYCONFIG_DEVICE_INFO_HEADER;
+using DISPLAYCONFIG_MODE_INFO = PowerDisplay.Common.Drivers.DISPLAYCONFIG_MODE_INFO;
+using DISPLAYCONFIG_PATH_INFO = PowerDisplay.Common.Drivers.DISPLAYCONFIG_PATH_INFO;
+using DISPLAYCONFIG_TARGET_DEVICE_NAME = PowerDisplay.Common.Drivers.DISPLAYCONFIG_TARGET_DEVICE_NAME;
+using LUID = PowerDisplay.Common.Drivers.Luid;
+using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
+using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
+using RECT = PowerDisplay.Common.Drivers.Rect;
 
 #pragma warning disable SA1649 // File name should match first type name - Multiple related types for DDC/CI
 #pragma warning disable SA1402 // File may only contain a single type - Related DDC/CI types grouped together
 
-namespace PowerDisplay.Native.DDC
+namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
     /// Display device information class
@@ -227,7 +227,7 @@ namespace PowerDisplay.Native.DDC
         /// Gets all monitor friendly names by enumerating display configurations
         /// </summary>
         /// <returns>Mapping of device path to friendly name</returns>
-        public static Dictionary<string, string> GetAllMonitorFriendlyNames()
+        public static unsafe Dictionary<string, string> GetAllMonitorFriendlyNames()
         {
             var friendlyNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -244,11 +244,17 @@ namespace PowerDisplay.Native.DDC
                 var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
                 var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
 
-                // Query display configuration
-                result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
-                if (result != 0)
+                // Query display configuration using fixed pointer
+                fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
                 {
-                    return friendlyNames;
+                    fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
+                    {
+                        result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
+                        if (result != 0)
+                        {
+                            return friendlyNames;
+                        }
+                    }
                 }
 
                 // Get friendly name for each path
@@ -345,7 +351,7 @@ namespace PowerDisplay.Native.DDC
         /// Gets complete information for all monitors, including friendly name and hardware ID
         /// </summary>
         /// <returns>Dictionary containing monitor information</returns>
-        public static Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
+        public static unsafe Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
         {
             var monitorInfo = new Dictionary<string, MonitorDisplayInfo>(StringComparer.OrdinalIgnoreCase);
 
@@ -362,11 +368,17 @@ namespace PowerDisplay.Native.DDC
                 var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
                 var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
 
-                // Query display configuration
-                result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
-                if (result != 0)
+                // Query display configuration using fixed pointer
+                fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
                 {
-                    return monitorInfo;
+                    fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
+                    {
+                        result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
+                        if (result != 0)
+                        {
+                            return monitorInfo;
+                        }
+                    }
                 }
 
                 // Get information for each path

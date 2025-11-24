@@ -66,6 +66,17 @@ namespace PowerDisplay.Common
         public const string SettingsFileName = "settings.json";
 
         /// <summary>
+        /// The name of the monitor state file.
+        /// </summary>
+        public const string MonitorStateFileName = "monitor_state.json";
+
+        /// <summary>
+        /// Gets the monitor state file path.
+        /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay\monitor_state.json
+        /// </summary>
+        public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
+
+        /// <summary>
         /// Event name for LightSwitch theme change notifications.
         /// </summary>
         public const string LightSwitchThemeChangedEventName = "Local\\PowerToys_LightSwitch_ThemeChanged";

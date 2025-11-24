@@ -5,14 +5,16 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Utils;
 
 namespace PowerDisplay.Common.Models
 {
     /// <summary>
-    /// Monitor model that implements property change notification
+    /// Monitor model that implements property change notification.
+    /// Implements IMonitorData to provide a common interface for monitor hardware values.
     /// </summary>
-    public partial class Monitor : INotifyPropertyChanged
+    public partial class Monitor : INotifyPropertyChanged, IMonitorData
     {
         private int _currentBrightness;
         private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
@@ -251,6 +253,34 @@ namespace PowerDisplay.Common.Models
                 CurrentBrightness = brightness;
                 LastUpdate = DateTime.Now;
             }
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Brightness
+        {
+            get => CurrentBrightness;
+            set => CurrentBrightness = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Contrast
+        {
+            get => CurrentContrast;
+            set => CurrentContrast = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Volume
+        {
+            get => CurrentVolume;
+            set => CurrentVolume = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.ColorTemperatureVcp
+        {
+            get => CurrentColorTemperature;
+            set => CurrentColorTemperature = value;
         }
     }
 }

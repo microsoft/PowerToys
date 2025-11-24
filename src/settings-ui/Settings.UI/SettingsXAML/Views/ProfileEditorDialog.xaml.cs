@@ -71,10 +71,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     }
 
                     // Set color temperature if included in profile
-                    if (monitorSetting.ColorTemperature.HasValue)
+                    if (monitorSetting.ColorTemperatureVcp.HasValue)
                     {
                         monitorItem.IncludeColorTemperature = true;
-                        monitorItem.ColorTemperature = monitorSetting.ColorTemperature.Value;
+                        monitorItem.ColorTemperature = monitorSetting.ColorTemperatureVcp.Value;
                     }
 
                     // Set contrast if included in profile

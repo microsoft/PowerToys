@@ -8,12 +8,11 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
-using PowerDisplay.Common;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Serialization;
 using PowerDisplay.Common.Utils;
-using PowerDisplay.Configuration;
-using PowerDisplay.Serialization;
 
-namespace PowerDisplay.Helpers
+namespace PowerDisplay.Common.Services
 {
     /// <summary>
     /// Manages monitor parameter state in a separate file from main settings.
@@ -39,7 +38,7 @@ namespace PowerDisplay.Helpers
         {
             public int Brightness { get; set; }
 
-            public int ColorTemperature { get; set; }
+            public int ColorTemperatureVcp { get; set; }
 
             public int Contrast { get; set; }
 
@@ -48,11 +47,15 @@ namespace PowerDisplay.Helpers
             public string? CapabilitiesRaw { get; set; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MonitorStateManager"/> class.
+        /// Uses PathConstants for consistent path management.
+        /// </summary>
         public MonitorStateManager()
         {
             // Use PathConstants for consistent path management
             PathConstants.EnsurePowerDisplayFolderExists();
-            _stateFilePath = Path.Combine(PathConstants.PowerDisplayFolderPath, AppConstants.State.StateFileName);
+            _stateFilePath = PathConstants.MonitorStateFilePath;
 
             // Initialize debouncer for batching rapid updates (e.g., slider drag)
             _saveDebouncer = new SimpleDebouncer(SaveDebounceMs);
@@ -68,6 +71,9 @@ namespace PowerDisplay.Helpers
         /// Uses HardwareId as the stable key.
         /// Debounced-save strategy reduces disk I/O by batching rapid updates (e.g., during slider drag).
         /// </summary>
+        /// <param name="hardwareId">The monitor's hardware ID.</param>
+        /// <param name="property">The property name to update (Brightness, ColorTemperature, Contrast, or Volume).</param>
+        /// <param name="value">The new value.</param>
         public void UpdateMonitorParameter(string hardwareId, string property, int value)
         {
             try
@@ -94,7 +100,7 @@ namespace PowerDisplay.Helpers
                             state.Brightness = value;
                             break;
                         case "ColorTemperature":
-                            state.ColorTemperature = value;
+                            state.ColorTemperatureVcp = value;
                             break;
                         case "Contrast":
                             state.Contrast = value;
@@ -121,9 +127,11 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Get saved parameters for a monitor using HardwareId
+        /// Get saved parameters for a monitor using HardwareId.
         /// </summary>
-        public (int Brightness, int ColorTemperature, int Contrast, int Volume)? GetMonitorParameters(string hardwareId)
+        /// <param name="hardwareId">The monitor's hardware ID.</param>
+        /// <returns>A tuple of (Brightness, ColorTemperatureVcp, Contrast, Volume) or null if not found.</returns>
+        public (int Brightness, int ColorTemperatureVcp, int Contrast, int Volume)? GetMonitorParameters(string hardwareId)
         {
             if (string.IsNullOrEmpty(hardwareId))
             {
@@ -134,7 +142,7 @@ namespace PowerDisplay.Helpers
             {
                 if (_states.TryGetValue(hardwareId, out var state))
                 {
-                    return (state.Brightness, state.ColorTemperature, state.Contrast, state.Volume);
+                    return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
                 }
             }
 
@@ -142,7 +150,7 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Load state from disk
+        /// Load state from disk.
         /// </summary>
         private void LoadStateFromDisk()
         {
@@ -155,7 +163,7 @@ namespace PowerDisplay.Helpers
                 }
 
                 var json = File.ReadAllText(_stateFilePath);
-                var stateFile = JsonSerializer.Deserialize(json, AppJsonContext.Default.MonitorStateFile);
+                var stateFile = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.MonitorStateFile);
 
                 if (stateFile?.Monitors != null)
                 {
@@ -169,7 +177,7 @@ namespace PowerDisplay.Helpers
                             _states[monitorKey] = new MonitorState
                             {
                                 Brightness = entry.Brightness,
-                                ColorTemperature = entry.ColorTemperature,
+                                ColorTemperatureVcp = entry.ColorTemperatureVcp,
                                 Contrast = entry.Contrast,
                                 Volume = entry.Volume,
                                 CapabilitiesRaw = entry.CapabilitiesRaw,
@@ -217,7 +225,7 @@ namespace PowerDisplay.Helpers
                         stateFile.Monitors[monitorId] = new MonitorStateEntry
                         {
                             Brightness = state.Brightness,
-                            ColorTemperature = state.ColorTemperature,
+                            ColorTemperatureVcp = state.ColorTemperatureVcp,
                             Contrast = state.Contrast,
                             Volume = state.Volume,
                             CapabilitiesRaw = state.CapabilitiesRaw,
@@ -227,7 +235,7 @@ namespace PowerDisplay.Helpers
                 }
 
                 // Write to disk asynchronously
-                var json = JsonSerializer.Serialize(stateFile, AppJsonContext.Default.MonitorStateFile);
+                var json = JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
                 await File.WriteAllTextAsync(_stateFilePath, json);
 
                 // Clear dirty flag after successful save
@@ -244,6 +252,9 @@ namespace PowerDisplay.Helpers
             }
         }
 
+        /// <summary>
+        /// Disposes the MonitorStateManager, flushing any pending state changes.
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)

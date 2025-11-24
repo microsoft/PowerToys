@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,11 +15,11 @@ namespace PowerDisplay.Serialization
     /// <summary>
     /// JSON source generation context for AOT compatibility.
     /// Eliminates reflection-based JSON serialization.
+    /// Note: MonitorStateFile and MonitorStateEntry are now in PowerDisplay.Lib
+    /// and should be serialized using ProfileSerializationContext from the Lib.
     /// </summary>
     [JsonSerializable(typeof(MonitorInfoData))]
     [JsonSerializable(typeof(IPCMessageAction))]
-    [JsonSerializable(typeof(MonitorStateFile))]
-    [JsonSerializable(typeof(MonitorStateEntry))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSerializable(typeof(ColorTemperatureOperation))]
     [JsonSerializable(typeof(ProfileOperation))]
@@ -57,43 +56,5 @@ namespace PowerDisplay.Serialization
     {
         [JsonPropertyName("action")]
         public string? Action { get; set; }
-    }
-
-    /// <summary>
-    /// Monitor state file structure for JSON persistence.
-    /// Made internal (from private) to support source generation.
-    /// </summary>
-    internal sealed class MonitorStateFile
-    {
-        [JsonPropertyName("monitors")]
-        public Dictionary<string, MonitorStateEntry> Monitors { get; set; } = new();
-
-        [JsonPropertyName("lastUpdated")]
-        public DateTime LastUpdated { get; set; }
-    }
-
-    /// <summary>
-    /// Individual monitor state entry.
-    /// Made internal (from private) to support source generation.
-    /// </summary>
-    internal sealed class MonitorStateEntry
-    {
-        [JsonPropertyName("brightness")]
-        public int Brightness { get; set; }
-
-        [JsonPropertyName("colorTemperature")]
-        public int ColorTemperature { get; set; }
-
-        [JsonPropertyName("contrast")]
-        public int Contrast { get; set; }
-
-        [JsonPropertyName("volume")]
-        public int Volume { get; set; }
-
-        [JsonPropertyName("capabilitiesRaw")]
-        public string? CapabilitiesRaw { get; set; }
-
-        [JsonPropertyName("lastUpdated")]
-        public DateTime LastUpdated { get; set; }
     }
 }

@@ -25,6 +25,7 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
+using PowerDisplay.Common.Utils;
 using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -216,17 +217,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Generate a unique key for monitor matching based on hardware ID and internal name
+        /// Generate a unique key for monitor matching based on hardware ID and internal name.
+        /// Uses shared MonitorMatchingHelper from PowerDisplay.Lib for consistency.
         /// </summary>
-        private string GetMonitorKey(MonitorInfo monitor)
+        private static string GetMonitorKey(MonitorInfo monitor)
         {
-            // Use hardware ID if available, otherwise fall back to internal name
-            if (!string.IsNullOrEmpty(monitor.HardwareId))
-            {
-                return monitor.HardwareId;
-            }
-
-            return monitor.InternalName ?? monitor.Name ?? string.Empty;
+            // Use shared helper for consistent monitor matching logic
+            return MonitorMatchingHelper.GetMonitorKey(monitor);
         }
 
         /// <summary>
@@ -344,7 +341,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settings.Properties.PendingColorTemperatureOperation = new ColorTemperatureOperation
             {
                 MonitorId = monitorInternalName,
-                ColorTemperature = colorTemperature,
+                ColorTemperatureVcp = colorTemperature,
             };
 
             // Save settings to persist the operation

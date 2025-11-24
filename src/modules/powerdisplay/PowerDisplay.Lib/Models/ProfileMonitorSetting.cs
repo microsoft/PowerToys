@@ -23,8 +23,12 @@ namespace PowerDisplay.Common.Models
         [JsonPropertyName("volume")]
         public int? Volume { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color temperature VCP preset value.
+        /// JSON property name kept as "colorTemperature" for backward compatibility.
+        /// </summary>
         [JsonPropertyName("colorTemperature")]
-        public int? ColorTemperature { get; set; }
+        public int? ColorTemperatureVcp { get; set; }
 
         [JsonPropertyName("monitorInternalName")]
         public string MonitorInternalName { get; set; }
@@ -35,11 +39,11 @@ namespace PowerDisplay.Common.Models
             MonitorInternalName = string.Empty;
         }
 
-        public ProfileMonitorSetting(string hardwareId, int? brightness = null, int? colorTemperature = null, int? contrast = null, int? volume = null, string monitorInternalName = "")
+        public ProfileMonitorSetting(string hardwareId, int? brightness = null, int? colorTemperatureVcp = null, int? contrast = null, int? volume = null, string monitorInternalName = "")
         {
             HardwareId = hardwareId;
             Brightness = brightness;
-            ColorTemperature = colorTemperature;
+            ColorTemperatureVcp = colorTemperatureVcp;
             Contrast = contrast;
             Volume = volume;
             MonitorInternalName = monitorInternalName;

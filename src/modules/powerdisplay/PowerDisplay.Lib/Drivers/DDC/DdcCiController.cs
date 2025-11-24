@@ -11,19 +11,18 @@ using ManagedCommon;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
-using PowerDisplay.Helpers;
-using static PowerDisplay.Native.NativeConstants;
-using static PowerDisplay.Native.NativeDelegates;
-using static PowerDisplay.Native.PInvoke;
+using static PowerDisplay.Common.Drivers.NativeConstants;
+using static PowerDisplay.Common.Drivers.NativeDelegates;
+using static PowerDisplay.Common.Drivers.PInvoke;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 // Type aliases matching Windows API naming conventions for better readability when working with native structures.
 // These uppercase aliases are used consistently throughout this file to match Win32 API documentation.
-using MONITORINFOEX = PowerDisplay.Native.MonitorInfoEx;
-using PHYSICAL_MONITOR = PowerDisplay.Native.PhysicalMonitor;
-using RECT = PowerDisplay.Native.Rect;
+using MONITORINFOEX = PowerDisplay.Common.Drivers.MonitorInfoEx;
+using PHYSICAL_MONITOR = PowerDisplay.Common.Drivers.PhysicalMonitor;
+using RECT = PowerDisplay.Common.Drivers.Rect;
 
-namespace PowerDisplay.Native.DDC
+namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
     /// DDC/CI monitor controller for controlling external monitors

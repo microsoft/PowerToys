@@ -20,11 +20,9 @@ using PowerDisplay.Configuration;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Helpers;
-using PowerDisplay.Native;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
 using WinRT.Interop;
-using static PowerDisplay.Native.PInvoke;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay
@@ -308,7 +306,7 @@ namespace PowerDisplay
         public bool IsWindowVisible()
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            return PInvoke.IsWindowVisible(hWnd);
+            return WindowHelper.IsWindowVisible(hWnd);
         }
 
         /// <summary>
@@ -319,15 +317,20 @@ namespace PowerDisplay
             try
             {
                 bool isVisible = IsWindowVisible();
+                Logger.LogInfo($"[ToggleWindow] IsWindowVisible returned: {isVisible}");
 
                 if (isVisible)
                 {
+                    Logger.LogInfo("[ToggleWindow] Window is visible, calling HideWindow");
                     HideWindow();
                 }
                 else
                 {
+                    Logger.LogInfo("[ToggleWindow] Window is hidden, calling ShowWindow");
                     ShowWindow();
                 }
+
+                Logger.LogInfo("[ToggleWindow] Toggle completed");
             }
             catch (Exception ex)
             {
