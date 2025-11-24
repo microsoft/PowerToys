@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// <summary>
 /// Built-in Provider for a top-level command which can quit the application. Invokes the <see cref="QuitCommand"/>, which sends a <see cref="QuitMessage"/>.
 /// </summary>
-public sealed partial class BuiltInsCommandProvider : CommandProvider, IExtendedAttributesProvider
+public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
     private readonly QuitCommand quitCommand = new();
@@ -45,16 +45,13 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider, IExtended
         _rootPageService = rootPageService;
     }
 
-    public IDictionary<string, object> GetProperties()
+    public override ICommandItem[]? GetDockBands()
     {
         var rootPage = _rootPageService.GetRootPage();
         List<ICommandItem> bandItems = new();
         bandItems.Add(new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title));
 
-        return new PropertySet()
-        {
-            { "DockBands", bandItems.ToArray() },
-        };
+        return bandItems.ToArray();
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);

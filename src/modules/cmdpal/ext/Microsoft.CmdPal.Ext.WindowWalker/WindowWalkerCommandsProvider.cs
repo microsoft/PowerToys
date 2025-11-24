@@ -1,15 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation.Collections;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Accessibility;
@@ -17,7 +15,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker;
 
-public partial class WindowWalkerCommandsProvider : CommandProvider, IExtendedAttributesProvider
+public partial class WindowWalkerCommandsProvider : CommandProvider
 {
     private readonly CommandItem _windowWalkerPageItem;
     private readonly CommandItem _bandItem;
@@ -45,12 +43,9 @@ public partial class WindowWalkerCommandsProvider : CommandProvider, IExtendedAt
 
     public override ICommandItem[] TopLevelCommands() => [_windowWalkerPageItem];
 
-    public IDictionary<string, object> GetProperties()
+    public override ICommandItem[]? GetDockBands()
     {
-        return new PropertySet()
-        {
-            { "DockBands", new ICommandItem[] { _bandItem } },
-        };
+        return new ICommandItem[] { _bandItem };
     }
 }
 

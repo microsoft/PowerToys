@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-
-namespace Microsoft.CmdPal.Core.Common.Helpers;
+namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
@@ -15,14 +12,19 @@ public partial class WrappedDockItem : CommandItem
 
     public override IIconInfo? Icon => _icon;
 
+    public override ICommand? Command => _backingList;
+
     private readonly string _itemTitle;
     private readonly IIconInfo? _icon;
+    private readonly WrappedDockList _backingList;
+
+    public IListItem[] Items { get => _backingList.GetItems(); set => _backingList.SetItems(value); }
 
     public WrappedDockItem(
         ICommand command,
         string displayTitle)
     {
-        Command = new WrappedDockList(command);
+        _backingList = new WrappedDockList(command);
         _itemTitle = string.IsNullOrEmpty(displayTitle) ? command.Name : displayTitle;
         _icon = command.Icon;
     }
@@ -32,55 +34,44 @@ public partial class WrappedDockItem : CommandItem
         string id,
         string displayTitle)
     {
-        Command = new WrappedDockList(item, id);
+        _backingList = new WrappedDockList(item, id);
         _itemTitle = string.IsNullOrEmpty(displayTitle) ? item.Title : displayTitle;
         _icon = item.Icon;
     }
-}
 
-public partial class PinnedDockItem : WrappedDockItem
-{
-    public override string Title => $"{base.Title} ({Properties.Resources.PinnedItemSuffix})";
-
-    public PinnedDockItem(ICommand command)
-        : base(command, command.Name)
+    public WrappedDockItem(IListItem[] items, string id, string displayTitle)
     {
-    }
-
-    public PinnedDockItem(ICommandItem item, string id)
-        : base(item, id, item.Title)
-    {
+        _backingList = new WrappedDockList(items, id, displayTitle);
+        _itemTitle = displayTitle;
     }
 }
 
 public partial class WrappedDockList : ListPage
 {
-    public override string Name => _command.Name;
-
     private string _id;
 
     public override string Id => _id;
 
-    private ICommand _command;
-    private IListItem[] _items;
+    // private ICommand _command;
+    private List<IListItem> _items;
 
     public WrappedDockList(ICommand command)
     {
-        _command = command;
-        _items = new IListItem[] { new ListItem(command) };
-        Name = _command.Name;
-        _id = _command.Id;
+        // _command = command;
+        _items = new() { new ListItem(command) };
+        Name = command.Name;
+        _id = command.Id;
     }
 
     public WrappedDockList(ICommandItem item, string id)
     {
-        _command = item.Command;
+        var command = item.Command;
 
         // TODO! This isn't _totally correct, because the wrapping item will not
         // listen for property changes on the inner item.
-        _items = new IListItem[]
+        _items = new()
         {
-            new ListItem(_command)
+            new ListItem(command)
             {
                 Title = item.Title,
                 Subtitle = item.Subtitle,
@@ -88,13 +79,45 @@ public partial class WrappedDockList : ListPage
                 MoreCommands = item.MoreCommands,
             },
         };
-        Name = _command.Name;
-        _id = string.IsNullOrEmpty(id) ? _command.Id : id;
+        Name = command.Name;
+        _id = string.IsNullOrEmpty(id) ? command.Id : id;
+    }
+
+    public WrappedDockList(IListItem[] items, string id, string name)
+    {
+        _items = new(items);
+        Name = name;
+        _id = id;
+    }
+
+    public WrappedDockList(ICommand[] items, string id, string name)
+    {
+        _items = new();
+        foreach (var item in items)
+        {
+            _items.Add(new ListItem(item));
+        }
+
+        Name = name;
+        _id = id;
     }
 
     public override IListItem[] GetItems()
     {
-        return _items;
+        return _items.ToArray();
+    }
+
+    internal void SetItems(IListItem[]? newItems)
+    {
+        if (newItems == null)
+        {
+            _items = [];
+            RaiseItemsChanged(0);
+            return;
+        }
+
+        ListHelpers.InPlaceUpdateList(_items, newItems);
+        RaiseItemsChanged(_items.Count);
     }
 }
 

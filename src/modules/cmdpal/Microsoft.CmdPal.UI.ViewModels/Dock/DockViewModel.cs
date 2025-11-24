@@ -67,12 +67,9 @@ public sealed partial class DockViewModel : IDisposable,
             var commandId = band.Id;
             var topLevelCommand = _topLevelCommandManager.LookupDockBand(commandId);
 
-            // TODO! temp hack: fallback to looking up a top-level command
-            // remove this once the API is added
             if (topLevelCommand is null)
             {
-                Logger.LogWarning($"Temporary fallback to loading top-level command '{commandId}'");
-                topLevelCommand = _topLevelCommandManager.LookupCommand(commandId);
+                Logger.LogWarning($"Failed to find band {commandId}");
             }
 
             if (topLevelCommand is not null)

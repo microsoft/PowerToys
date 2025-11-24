@@ -163,20 +163,27 @@ public sealed class CommandProviderWrapper
                 UnsafePreCacheApiAdditions(two);
             }
 
-            if (model is IExtendedAttributesProvider iHaveProperties)
+            // if (model is IExtendedAttributesProvider iHaveProperties)
+            if (model is ICommandProvider3 supportsDockBands)
             {
-                var props = iHaveProperties.GetProperties();
-                var hasBands = props.TryGetValue("DockBands", out var obj);
-                if (hasBands && obj is not null)
+                // var props = iHaveProperties.GetProperties();
+                // var hasBands = props.TryGetValue("DockBands", out var obj);
+                // if (hasBands && obj is not null)
+                // {
+                //    // CoreLogger.LogDebug($"Found bands object on {DisplayName} ({ProviderId}) ");
+                //    // var bands = (ICommandItem[])obj;
+                //    var bands = obj as ICommandItem[];
+                //    if (bands is not null)
+                //    {
+                //        CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
+                //        dockBands = bands;
+                //    }
+                // }
+                var bands = supportsDockBands.GetDockBands();
+                if (bands is not null)
                 {
-                    // CoreLogger.LogDebug($"Found bands object on {DisplayName} ({ProviderId}) ");
-                    // var bands = (ICommandItem[])obj;
-                    var bands = obj as ICommandItem[];
-                    if (bands is not null)
-                    {
-                        CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
-                        dockBands = bands;
-                    }
+                    CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
+                    dockBands = bands;
                 }
             }
 

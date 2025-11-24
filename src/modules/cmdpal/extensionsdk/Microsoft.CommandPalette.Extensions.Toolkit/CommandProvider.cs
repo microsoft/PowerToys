@@ -6,7 +6,10 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2
+public abstract partial class CommandProvider :
+    ICommandProvider,
+    ICommandProvider2,
+    ICommandProvider3
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -46,6 +49,11 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
         catch
         {
         }
+    }
+
+    public virtual ICommandItem[]? GetDockBands()
+    {
+        return null;
     }
 
     /// <summary>
