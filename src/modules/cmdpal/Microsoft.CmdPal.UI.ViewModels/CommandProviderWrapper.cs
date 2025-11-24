@@ -214,9 +214,28 @@ public sealed class CommandProviderWrapper
         Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
         foreach (var a in apiExtensions)
         {
-            if (a is IExtendedAttributesProvider command2)
+            if (a is IExtendedAttributesProvider)
             {
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
+            }
+
+            if (a is IHostSettingsChanged handler)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an IHostSettingsChanged, sending initial settings");
+
+                // Send initial settings to the extension
+                try
+                {
+                    var settings = AppExtensionHost.GetHostSettingsFunc?.Invoke();
+                    if (settings != null)
+                    {
+                        handler.OnHostSettingsChanged(settings);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogDebug($"Failed to send initial settings to {ProviderId}: {e.Message}");
+                }
             }
         }
     }

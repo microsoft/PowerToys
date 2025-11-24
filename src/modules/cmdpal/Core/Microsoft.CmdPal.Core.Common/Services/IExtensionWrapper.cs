@@ -110,4 +110,10 @@ public interface IExtensionWrapper
     /// <returns>Nullable instance of the provider</returns>
     Task<IEnumerable<T>> GetListOfProvidersAsync<T>()
         where T : class;
+
+    /// <summary>
+    /// Notifies the extension that host settings have changed.
+    /// </summary>
+    /// <param name="settings">The updated host settings.</param>
+    void NotifyHostSettingsChanged(IHostSettings settings);
 }

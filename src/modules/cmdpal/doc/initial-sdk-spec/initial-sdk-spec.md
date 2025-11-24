@@ -74,6 +74,7 @@ functionality.
     - [Settings helpers](#settings-helpers)
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
+    - [Host Settings](#host-settings)
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
@@ -1904,6 +1905,160 @@ instance from the host app.
 to remember that these are x-proc calls, and should be treated asynchronously.
 Should the other properties be async too?
 
+### Host Settings
+
+Extensions may need to be aware of the host application's settings to provide a
+better user experience. For example, an extension displaying keyboard shortcuts
+needs to know the current hotkey setting, or an extension with animations should
+respect the "Disable Animations" preference.
+
+The Host Settings API allows extensions to read host settings and receive
+notifications when those settings change. This works across the out-of-process
+(OOP) boundary using the `GetApiExtensionStubs()` pattern described in
+[Addenda I](#addenda-i-api-additions-icommandprovider2).
+
+#### IHostSettings Interface
+
+The `IHostSettings` interface provides read-only access to the host's current
+settings:
+
+```c#
+enum SummonTarget
+{
+    ToMouse = 0,
+    ToPrimary = 1,
+    ToFocusedWindow = 2,
+    InPlace = 3,
+    ToLast = 4,
+};
+
+interface IHostSettings
+{
+    String Hotkey { get; };
+    Boolean ShowAppDetails { get; };
+    Boolean HotkeyGoesHome { get; };
+    Boolean BackspaceGoesBack { get; };
+    Boolean SingleClickActivates { get; };
+    Boolean HighlightSearchOnActivate { get; };
+    Boolean ShowSystemTrayIcon { get; };
+    Boolean IgnoreShortcutWhenFullscreen { get; };
+    Boolean DisableAnimations { get; };
+    SummonTarget SummonOn { get; };
+}
+```
+
+| Property | Description |
+|----------|-------------|
+| `Hotkey` | The keyboard shortcut to activate Command Palette (e.g., "Alt+Space") |
+| `ShowAppDetails` | Whether to show application details in the UI |
+| `HotkeyGoesHome` | Whether pressing the hotkey returns to the home page |
+| `BackspaceGoesBack` | Whether backspace navigates back when search is empty |
+| `SingleClickActivates` | Whether single-click activates items (vs double-click) |
+| `HighlightSearchOnActivate` | Whether to highlight search text on activation |
+| `ShowSystemTrayIcon` | Whether to show the system tray icon |
+| `IgnoreShortcutWhenFullscreen` | Whether to ignore the hotkey when a fullscreen app is active |
+| `DisableAnimations` | Whether animations are disabled |
+| `SummonOn` | Where to position the window when summoned |
+
+#### IHostSettingsChanged Interface
+
+Extensions that want to receive settings must provide an `IHostSettingsChanged`
+stub via the `GetApiExtensionStubs()` pattern:
+
+```c#
+interface IHostSettingsChanged
+{
+    void OnHostSettingsChanged(IHostSettings settings);
+}
+```
+
+The host will call `OnHostSettingsChanged` in two scenarios:
+1. **Initial settings**: When the extension is first loaded
+2. **Settings changes**: When the user modifies Command Palette settings
+
+#### Using Host Settings (Toolkit)
+
+For extensions using the Toolkit, host settings are automatically managed. The
+`CommandProvider` base class provides the `IHostSettingsChanged` stub, and
+settings are cached in `HostSettingsManager`:
+
+```cs
+// Access current settings anywhere in your extension
+var settings = HostSettingsManager.Current;
+if (settings != null)
+{
+    var hotkey = settings.Hotkey;
+    var animationsDisabled = settings.DisableAnimations;
+}
+
+// Check if settings are available
+if (HostSettingsManager.IsAvailable)
+{
+    // Host supports settings
+}
+```
+
+To respond to settings changes, subscribe to the `SettingsChanged` event:
+
+```cs
+public class MyPage : ListPage
+{
+    public MyPage()
+    {
+        // Refresh the page when settings change
+        HostSettingsManager.SettingsChanged += () => RaiseItemsChanged();
+    }
+
+    public override IListItem[] GetItems()
+    {
+        var settings = HostSettingsManager.Current;
+        if (settings == null)
+        {
+            return [new ListItem(new NoOpCommand())
+            {
+                Title = "Settings not available"
+            }];
+        }
+
+        return [
+            new ListItem(new NoOpCommand())
+            {
+                Title = $"Current Hotkey: {settings.Hotkey}"
+            },
+        ];
+    }
+}
+```
+
+#### Custom Settings Handler
+
+Extensions can override `OnHostSettingsChanged` in their `CommandProvider` to
+add custom handling logic:
+
+```cs
+public class MyCommandProvider : CommandProvider
+{
+    public override void OnHostSettingsChanged(IHostSettings settings)
+    {
+        base.OnHostSettingsChanged(settings);  // Update HostSettingsManager
+
+        // Custom logic
+        if (settings.DisableAnimations)
+        {
+            DisableMyAnimations();
+        }
+    }
+}
+```
+
+#### Compatibility
+
+- **Old extensions** (no `ICommandProvider2`): Won't receive settings, gracefully skipped
+- **Old hosts** (no settings support): `HostSettingsManager.Current` will be null
+
+Extensions should always check `HostSettingsManager.IsAvailable` or handle null
+`Current` values to ensure compatibility with older hosts.
+
 ### Rendering of ICommandItems in Lists and Menus
 
 When displaying a list item:
@@ -2032,19 +2187,31 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
 
     // Here is where we enable support for future additions to the API
     public object[] GetApiExtensionStubs() {
-        return [new SupportCommandsWithProperties()];
+        return [
+            new SupportCommandsWithProperties(),
+            new HostSettingsChangedHandler(this)
+        ];
     }
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider {
         public IDictionary<string, object>? GetProperties() => null;
+    }
+    private sealed partial class HostSettingsChangedHandler : IHostSettingsChanged {
+        private readonly SamplePagesCommandsProvider _provider;
+        public HostSettingsChangedHandler(SamplePagesCommandsProvider provider) => _provider = provider;
+        public void OnHostSettingsChanged(IHostSettings settings) => _provider.OnHostSettingsChanged(settings);
     }
 }
 
 ```
 
+This pattern is used for multiple API extensions:
+- `IExtendedAttributesProvider`: Allows commands to expose additional properties
+- `IHostSettingsChanged`: Allows extensions to receive host settings updates (see [Host Settings](#host-settings))
+
 Fortunately, we can put all of that (`GetApiExtensionStubs`,
-`SupportCommandsWithProperties`) directly in `Toolkit.CommandProvider`, so
-developers won't have to do anything. The toolkit will just do the right thing
-for them.
+`SupportCommandsWithProperties`, `HostSettingsChangedHandler`) directly in
+`Toolkit.CommandProvider`, so developers won't have to do anything. The toolkit
+will just do the right thing for them.
 
 ## Class diagram
 

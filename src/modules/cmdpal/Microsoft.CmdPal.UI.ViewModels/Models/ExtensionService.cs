@@ -400,6 +400,29 @@ public partial class ExtensionService : IExtensionService, IDisposable
         _enabledExtensions.Remove(extension.First());
     }
 
+    /// <summary>
+    /// Notifies all extensions about a settings change.
+    /// </summary>
+    /// <param name="settings">The updated host settings.</param>
+    public void NotifyHostSettingsChanged(IHostSettings settings)
+    {
+        Task.Run(async () =>
+        {
+            var extensions = await GetInstalledExtensionsAsync();
+            foreach (var extension in extensions)
+            {
+                try
+                {
+                    extension.NotifyHostSettingsChanged(settings);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to notify extension {extension.ExtensionUniqueId} of settings change", ex);
+                }
+            }
+        });
+    }
+
     /*
     ///// <inheritdoc cref="IExtensionService.DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper)"/>
     //public async Task<bool> DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper extension)

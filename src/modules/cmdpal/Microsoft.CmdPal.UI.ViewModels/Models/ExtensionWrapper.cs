@@ -12,6 +12,9 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
+#pragma warning disable IDE0005 // Using directive is unnecessary - needed for HostSettings
+#pragma warning restore IDE0005
+
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public class ExtensionWrapper : IExtensionWrapper
@@ -201,4 +204,37 @@ public class ExtensionWrapper : IExtensionWrapper
     public void AddProviderType(ProviderType providerType) => _providerTypes.Add(providerType);
 
     public bool HasProviderType(ProviderType providerType) => _providerTypes.Contains(providerType);
+
+    /// <summary>
+    /// Notifies the extension that host settings have changed.
+    /// </summary>
+    /// <param name="settings">The updated host settings.</param>
+    public void NotifyHostSettingsChanged(IHostSettings settings)
+    {
+        try
+        {
+            var provider = GetExtensionObject()?.GetProvider(ProviderType.Commands);
+            if (provider is not ICommandProvider2 provider2)
+            {
+                return;
+            }
+
+            // Get the IHostSettingsChanged handler from GetApiExtensionStubs().
+            // This pattern works reliably in OOP scenarios because the stub objects
+            // are properly marshalled across the process boundary.
+            var apiExtensions = provider2.GetApiExtensionStubs();
+            foreach (var stub in apiExtensions)
+            {
+                if (stub is IHostSettingsChanged handler)
+                {
+                    handler.OnHostSettingsChanged(settings);
+                    return;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogDebug($"Failed to notify {ExtensionDisplayName} of settings change: {e.Message}");
+        }
+    }
 }

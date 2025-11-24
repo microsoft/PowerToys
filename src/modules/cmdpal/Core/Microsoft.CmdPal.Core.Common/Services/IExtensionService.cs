@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.Common.Services;
@@ -26,6 +27,12 @@ public interface IExtensionService
     void EnableExtension(string extensionUniqueId);
 
     void DisableExtension(string extensionUniqueId);
+
+    /// <summary>
+    /// Notifies all extensions that support the HostSettings capability about a settings change.
+    /// </summary>
+    /// <param name="settings">The updated host settings.</param>
+    void NotifyHostSettingsChanged(IHostSettings settings);
 
     ///// <summary>
     ///// Gets a boolean indicating whether the extension was disabled due to the corresponding Windows optional feature

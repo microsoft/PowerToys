@@ -391,6 +391,53 @@ namespace Microsoft.CommandPalette.Extensions
     {
         Object[] GetApiExtensionStubs();
     };
-    
+
+    // =========================================================================
+    // Host Settings and Capability System
+    // =========================================================================
+
+    /// <summary>
+    /// Represents the position behavior when summoning the Command Palette.
+    /// </summary>
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum SummonTarget
+    {
+        ToMouse = 0,
+        ToPrimary = 1,
+        ToFocusedWindow = 2,
+        InPlace = 3,
+        ToLast = 4,
+    };
+
+    /// <summary>
+    /// Interface for host settings that can be passed to extensions across process boundaries.
+    /// Extensions can access these settings to adapt their behavior accordingly.
+    /// The Toolkit provides a concrete HostSettings class that implements this interface.
+    /// </summary>
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IHostSettings
+    {
+        String Hotkey { get; };
+        Boolean ShowAppDetails { get; };
+        Boolean HotkeyGoesHome { get; };
+        Boolean BackspaceGoesBack { get; };
+        Boolean SingleClickActivates { get; };
+        Boolean HighlightSearchOnActivate { get; };
+        Boolean ShowSystemTrayIcon { get; };
+        Boolean IgnoreShortcutWhenFullscreen { get; };
+        Boolean DisableAnimations { get; };
+        SummonTarget SummonOn { get; };
+    }
+
+    /// <summary>
+    /// Interface for extensions to receive notifications when host settings change.
+    /// Extensions implementing this interface will be notified whenever the user
+    /// modifies Command Palette settings, including initial settings on startup.
+    /// </summary>
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IHostSettingsChanged
+    {
+        void OnHostSettingsChanged(IHostSettings settings);
+    }
 
 }
