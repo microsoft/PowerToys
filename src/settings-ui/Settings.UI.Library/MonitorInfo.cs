@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -335,38 +336,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
-                Logger.LogInfo($"[MonitorInfo.AvailableColorPresets] GET called for monitor '{_name}'");
-
                 // Return cached value if available
                 if (_availableColorPresetsCache != null)
                 {
-                    Logger.LogInfo($"[MonitorInfo.AvailableColorPresets] Cache HIT - returning {_availableColorPresetsCache.Count} items");
                     return _availableColorPresetsCache;
                 }
 
-                Logger.LogInfo("[MonitorInfo.AvailableColorPresets] Cache MISS - computing from VcpCodesFormatted");
-
                 // Compute from VcpCodesFormatted
                 _availableColorPresetsCache = ComputeAvailableColorPresets();
-
-                Logger.LogInfo($"[MonitorInfo.AvailableColorPresets] Computed {_availableColorPresetsCache.Count} items");
                 return _availableColorPresetsCache;
             }
         }
 
         /// <summary>
-        /// Compute available color presets from VcpCodesFormatted (VCP code 0x14)
+        /// Compute available color presets from VcpCodesFormatted (VCP code 0x14).
+        /// Uses ColorTemperatureHelper from PowerDisplay.Lib for shared computation logic.
         /// </summary>
         private ObservableCollection<ColorPresetItem> ComputeAvailableColorPresets()
         {
-            Logger.LogInfo($"[ComputeAvailableColorPresets] START for monitor '{_name}'");
-            Logger.LogInfo($"  - SupportsColorTemperature: {_supportsColorTemperature}");
-            Logger.LogInfo($"  - VcpCodesFormatted: {(_vcpCodesFormatted == null ? "NULL" : $"{_vcpCodesFormatted.Count} items")}");
-
             // Check if color temperature is supported
             if (!_supportsColorTemperature || _vcpCodesFormatted == null)
             {
-                Logger.LogWarning($"[ComputeAvailableColorPresets] Color temperature not supported or no VCP codes - returning empty");
                 return new ObservableCollection<ColorPresetItem>();
             }
 
@@ -375,61 +365,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 if (int.TryParse(v.Code?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int code))
                 {
-                    return code == 0x14;
+                    return code == ColorTemperatureHelper.ColorTemperatureVcpCode;
                 }
 
                 return false;
             });
 
-            Logger.LogInfo($"[ComputeAvailableColorPresets] VCP 0x14 found: {colorTempVcp != null}");
-            if (colorTempVcp != null)
-            {
-                Logger.LogInfo($"  - ValueList: {(colorTempVcp.ValueList == null ? "NULL" : $"{colorTempVcp.ValueList.Count} items")}");
-            }
-
             // No VCP 0x14 or no values
             if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)
             {
-                Logger.LogWarning($"[ComputeAvailableColorPresets] No VCP 0x14 or empty ValueList - returning empty");
                 return new ObservableCollection<ColorPresetItem>();
             }
 
-            // Build preset list from supported values
-            var presetList = new List<ColorPresetItem>();
-            foreach (var valueInfo in colorTempVcp.ValueList)
-            {
-                if (int.TryParse(valueInfo.Value?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int vcpValue))
+            // Extract VCP values as tuples for ColorTemperatureHelper
+            var colorTempValues = colorTempVcp.ValueList
+                .Select(valueInfo =>
                 {
-                    var displayName = FormatColorTemperatureDisplayName(valueInfo.Name, vcpValue);
-                    presetList.Add(new ColorPresetItem(vcpValue, displayName));
-                    Logger.LogDebug($"[ComputeAvailableColorPresets] Added: {displayName}");
-                }
-            }
+                    int.TryParse(valueInfo.Value?.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int vcpValue);
+                    return (VcpValue: vcpValue, Name: valueInfo.Name);
+                })
+                .Where(x => x.VcpValue > 0);
 
-            // Sort by VCP value for consistent ordering
-            presetList = presetList.OrderBy(p => p.VcpValue).ToList();
-
-            Logger.LogInfo($"[ComputeAvailableColorPresets] COMPLETE - returning {presetList.Count} items");
-            Logger.LogInfo($"[ComputeAvailableColorPresets] Current ColorTemperature value: {_colorTemperature}");
-
+            // Use shared helper to compute presets, then convert to nested type for XAML compatibility
+            var basePresets = ColorTemperatureHelper.ComputeColorPresets(colorTempValues);
+            var presetList = basePresets.Select(p => new ColorPresetItem(p.VcpValue, p.DisplayName));
             return new ObservableCollection<ColorPresetItem>(presetList);
-        }
-
-        /// <summary>
-        /// Format color temperature display name
-        /// </summary>
-        private string FormatColorTemperatureDisplayName(string name, int vcpValue)
-        {
-            var hexValue = $"0x{vcpValue:X2}";
-
-            // Check if name is undefined (null or empty)
-            if (string.IsNullOrEmpty(name))
-            {
-                return $"Manufacturer Defined ({hexValue})";
-            }
-
-            // For predefined names, append the hex value in parentheses
-            return $"{name} ({hexValue})";
         }
 
         /// <summary>
@@ -458,12 +418,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 // Current value is not in the preset list - add it at the beginning
                 var displayList = new List<ColorPresetItem>();
 
-                // Add current value with "Custom" indicator
-                var currentValueName = GetColorTemperatureName(_colorTemperature);
-                var displayName = string.IsNullOrEmpty(currentValueName)
-                    ? $"Custom (0x{_colorTemperature:X2})"
-                    : $"{currentValueName} (0x{_colorTemperature:X2}) - Custom";
-
+                // Add current value with "Custom" indicator using shared helper
+                var displayName = ColorTemperatureHelper.FormatCustomColorTemperatureDisplayName(_colorTemperature);
                 displayList.Add(new ColorPresetItem(_colorTemperature, displayName));
 
                 // Add all supported presets
@@ -471,26 +427,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 return new ObservableCollection<ColorPresetItem>(displayList);
             }
-        }
-
-        /// <summary>
-        /// Get the name for a color temperature value from standard VCP naming
-        /// </summary>
-        private string GetColorTemperatureName(int vcpValue)
-        {
-            return vcpValue switch
-            {
-                0x04 => "5000K",
-                0x05 => "6500K",
-                0x06 => "7500K",
-                0x08 => "9300K",
-                0x09 => "10000K",
-                0x0A => "11500K",
-                0x0B => "User 1",
-                0x0C => "User 2",
-                0x0D => "User 3",
-                _ => null,
-            };
         }
 
         [JsonIgnore]
@@ -525,8 +461,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             var lines = new List<string>();
-            lines.Add($"VCP Capabilities for {_name}");
-            lines.Add($"Monitor: {_name}");
+            lines.Add($"VCP Capabilities for: {_name}");
             lines.Add($"Hardware ID: {_hardwareId}");
             lines.Add(string.Empty);
             lines.Add("Detected VCP Codes:");
@@ -582,49 +517,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Represents a color temperature preset item for VCP code 0x14
+        /// Type alias for ColorPresetItem to maintain backward compatibility with XAML bindings.
+        /// Inherits from PowerDisplay.Common.Models.ColorPresetItem.
         /// </summary>
-        public class ColorPresetItem : Observable
+        public class ColorPresetItem : PowerDisplay.Common.Models.ColorPresetItem
         {
-            private int _vcpValue;
-            private string _displayName = string.Empty;
-
-            [JsonPropertyName("vcpValue")]
-            public int VcpValue
-            {
-                get => _vcpValue;
-                set
-                {
-                    if (_vcpValue != value)
-                    {
-                        _vcpValue = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-
-            [JsonPropertyName("displayName")]
-            public string DisplayName
-            {
-                get => _displayName;
-                set
-                {
-                    if (_displayName != value)
-                    {
-                        _displayName = value;
-                        OnPropertyChanged();
-                    }
-                }
-            }
-
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ColorPresetItem"/> class.
+            /// </summary>
             public ColorPresetItem()
+                : base()
             {
             }
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ColorPresetItem"/> class.
+            /// </summary>
+            /// <param name="vcpValue">The VCP value for the color temperature preset.</param>
+            /// <param name="displayName">The display name for UI.</param>
             public ColorPresetItem(int vcpValue, string displayName)
+                : base(vcpValue, displayName)
             {
-                VcpValue = vcpValue;
-                DisplayName = displayName;
             }
         }
     }

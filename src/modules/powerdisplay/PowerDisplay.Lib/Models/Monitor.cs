@@ -5,11 +5,9 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using PowerDisplay.Configuration;
-using PowerDisplay.Core.Utils;
+using PowerDisplay.Common.Utils;
 
-namespace PowerDisplay.Core.Models
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Monitor model that implements property change notification

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using PowerDisplay.Core.Models;
+using PowerDisplay.Common.Models;
 using static PowerDisplay.Native.NativeConstants;
 using static PowerDisplay.Native.PInvoke;
 

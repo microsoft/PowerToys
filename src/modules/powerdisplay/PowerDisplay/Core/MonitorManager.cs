@@ -8,13 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common.Interfaces;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using PowerDisplay.Core.Interfaces;
-using PowerDisplay.Core.Models;
-using PowerDisplay.Core.Utils;
 using PowerDisplay.Native;
 using PowerDisplay.Native.DDC;
 using PowerDisplay.Native.WMI;
-using Monitor = PowerDisplay.Core.Models.Monitor;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Core
 {
@@ -145,7 +146,7 @@ namespace PowerDisplay.Core
                                         monitor.CapabilitiesRaw = capsString;
 
                                         // Parse capabilities
-                                        monitor.VcpCapabilitiesInfo = Utils.VcpCapabilitiesParser.Parse(capsString);
+                                        monitor.VcpCapabilitiesInfo = Common.Utils.VcpCapabilitiesParser.Parse(capsString);
 
                                         Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
 
@@ -349,8 +350,9 @@ namespace PowerDisplay.Core
             {
                 return await controller.GetColorTemperatureAsync(monitor, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogDebug($"GetColorTemperatureAsync failed: {ex.Message}");
                 return BrightnessInfo.Invalid;
             }
         }

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using PowerDisplay.Common.Models;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
@@ -145,6 +146,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(List<VcpValueInfo>))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
     [JsonSerializable(typeof(SndLightSwitchSettings))]
+
+    // PowerDisplay Profile Types (for AOT compatibility)
+    [JsonSerializable(typeof(ColorTemperatureOperation))]
+    [JsonSerializable(typeof(List<ColorTemperatureOperation>))]
+    [JsonSerializable(typeof(ProfileOperation))]
+    [JsonSerializable(typeof(List<ProfileOperation>))]
+    [JsonSerializable(typeof(PowerDisplayProfile))]
+    [JsonSerializable(typeof(List<PowerDisplayProfile>))]
+    [JsonSerializable(typeof(PowerDisplayProfiles))]
+    [JsonSerializable(typeof(ProfileMonitorSetting))]
+    [JsonSerializable(typeof(List<ProfileMonitorSetting>))]
 
     public partial class SettingsSerializationContext : JsonSerializerContext
     {

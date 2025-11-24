@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:pdmodels="using:PowerDisplay.Common.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -67,7 +68,7 @@
                                     <StackLayout Orientation="Horizontal" Spacing="8"/>
                                 </ItemsRepeater.Layout>
                                 <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate x:DataType="library:PowerDisplayProfile">
+                                    <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
                                         <Button
                                             Click="ProfileButton_Click"
                                             Tag="{x:Bind}"

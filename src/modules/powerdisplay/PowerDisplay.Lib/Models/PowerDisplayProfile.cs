@@ -4,10 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Represents a PowerDisplay profile containing monitor settings

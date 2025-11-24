@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library;
+using PowerDisplay.Common.Models;
 
 #pragma warning disable SA1402 // File may only contain a single type - Related JSON serialization types grouped together
 

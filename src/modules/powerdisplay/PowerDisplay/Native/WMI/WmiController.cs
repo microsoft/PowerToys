@@ -8,10 +8,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using PowerDisplay.Core.Interfaces;
-using PowerDisplay.Core.Models;
+using PowerDisplay.Common.Interfaces;
+using PowerDisplay.Common.Models;
 using WmiLight;
-using Monitor = PowerDisplay.Core.Models.Monitor;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Native.WMI
 {

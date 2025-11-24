@@ -15,17 +15,17 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Core;
 using PowerDisplay.Core.Interfaces;
-using PowerDisplay.Core.Models;
 using PowerDisplay.Helpers;
 using PowerDisplay.Native;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
 using WinRT.Interop;
 using static PowerDisplay.Native.PInvoke;
-using Monitor = PowerDisplay.Core.Models.Monitor;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay
 {
@@ -670,9 +670,10 @@ namespace PowerDisplay
                     appWindow.Move(new PointInt32 { X = x, Y = y });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Ignore errors when positioning window
+                // Window positioning failures are non-critical, just log for diagnostics
+                Logger.LogDebug($"[PositionWindow] Failed to position window: {ex.Message}");
             }
         }
 

@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using ManagedCommon;
-using PowerDisplay.Core.Models;
+using PowerDisplay.Common.Models;
 using static PowerDisplay.Native.PInvoke;
 
 namespace PowerDisplay.Native.DDC

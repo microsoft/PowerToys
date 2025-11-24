@@ -68,6 +68,7 @@
     <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
   </ItemGroup>
   <!-- Copy Assets folder to output directory -->
   <ItemGroup>

@@ -6,10 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using PowerDisplay.Core.Models;
-using Monitor = PowerDisplay.Core.Models.Monitor;
+using PowerDisplay.Common.Models;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
-namespace PowerDisplay.Core.Interfaces
+namespace PowerDisplay.Common.Interfaces
 {
     /// <summary>
     /// Monitor controller interface
@@ -96,18 +96,18 @@ namespace PowerDisplay.Core.Interfaces
         Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets monitor color temperature
+        /// Gets monitor color temperature using VCP 0x14 (Select Color Preset)
         /// </summary>
         /// <param name="monitor">Monitor object</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Color temperature information</returns>
+        /// <returns>VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature</returns>
         Task<BrightnessInfo> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Sets monitor color temperature
+        /// Sets monitor color temperature using VCP 0x14 preset value
         /// </summary>
         /// <param name="monitor">Monitor object</param>
-        /// <param name="colorTemperature">Color temperature value (2000-10000K)</param>
+        /// <param name="colorTemperature">VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Operation result</returns>
         Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default);

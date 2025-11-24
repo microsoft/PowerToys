@@ -76,8 +76,9 @@ namespace PowerDisplay.Native.DDC
             {
                 return GetVCPFeatureAndVCPFeatureReply(hPhysicalMonitor, vcpCode, IntPtr.Zero, out currentValue, out maxValue);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogDebug($"TryGetVCPFeature failed for VCP code 0x{vcpCode:X2}: {ex.Message}");
                 return false;
             }
         }
@@ -100,8 +101,9 @@ namespace PowerDisplay.Native.DDC
             {
                 return SetVCPFeature(hPhysicalMonitor, vcpCode, value);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogDebug($"TrySetVCPFeature failed for VCP code 0x{vcpCode:X2}: {ex.Message}");
                 return false;
             }
         }
@@ -129,18 +131,19 @@ namespace PowerDisplay.Native.DDC
             {
                 return GetMonitorBrightness(hPhysicalMonitor, out minBrightness, out currentBrightness, out maxBrightness);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogDebug($"TryGetMonitorBrightness failed: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// 设置高级亮度的安全包装
+        /// Safe wrapper for setting monitor brightness
         /// </summary>
-        /// <param name="hPhysicalMonitor">物理显示器句柄</param>
-        /// <param name="brightness">亮度值</param>
-        /// <returns>是否成功</returns>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <param name="brightness">Brightness value</param>
+        /// <returns>True if successful</returns>
         public static bool TrySetMonitorBrightness(IntPtr hPhysicalMonitor, uint brightness)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
@@ -152,17 +155,18 @@ namespace PowerDisplay.Native.DDC
             {
                 return SetMonitorBrightness(hPhysicalMonitor, brightness);
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogDebug($"TrySetMonitorBrightness failed: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// 检查 DDC/CI 连接的有效性
+        /// Validates the DDC/CI connection
         /// </summary>
-        /// <param name="hPhysicalMonitor">物理显示器句柄</param>
-        /// <returns>是否连接有效</returns>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <returns>True if connection is valid</returns>
         public static bool ValidateDdcCiConnection(IntPtr hPhysicalMonitor)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
@@ -170,7 +174,7 @@ namespace PowerDisplay.Native.DDC
                 return false;
             }
 
-            // 尝试读取基本的 VCP 代码来验证连接
+            // Try reading basic VCP codes to validate connection
             var testCodes = new byte[] { NativeConstants.VcpCodeBrightness, NativeConstants.VcpCodeNewControlValue, NativeConstants.VcpCodeVcpVersion };
 
             foreach (var code in testCodes)
@@ -185,11 +189,11 @@ namespace PowerDisplay.Native.DDC
         }
 
         /// <summary>
-        /// 获取显示器友好名称
+        /// Gets the monitor friendly name
         /// </summary>
-        /// <param name="adapterId">适配器 ID</param>
-        /// <param name="targetId">目标 ID</param>
-        /// <returns>显示器友好名称，如果获取失败返回 null</returns>
+        /// <param name="adapterId">Adapter ID</param>
+        /// <param name="targetId">Target ID</param>
+        /// <returns>Monitor friendly name, or null if retrieval fails</returns>
         public static unsafe string? GetMonitorFriendlyName(LUID adapterId, uint targetId)
         {
             try
@@ -211,43 +215,43 @@ namespace PowerDisplay.Native.DDC
                     return deviceName.GetMonitorFriendlyDeviceName();
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                // 忽略错误
+                Logger.LogDebug($"GetMonitorFriendlyName failed: {ex.Message}");
             }
 
             return null;
         }
 
         /// <summary>
-        /// 通过枚举显示配置获取所有显示器友好名称
+        /// Gets all monitor friendly names by enumerating display configurations
         /// </summary>
-        /// <returns>设备路径到友好名称的映射</returns>
+        /// <returns>Mapping of device path to friendly name</returns>
         public static Dictionary<string, string> GetAllMonitorFriendlyNames()
         {
             var friendlyNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             try
             {
-                // 获取缓冲区大小
+                // Get buffer sizes
                 var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
                 if (result != 0)
                 {
                     return friendlyNames;
                 }
 
-                // 分配缓冲区
+                // Allocate buffers
                 var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
                 var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
 
-                // 查询显示配置
+                // Query display configuration
                 result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
                 if (result != 0)
                 {
                     return friendlyNames;
                 }
 
-                // 获取每个路径的友好名称
+                // Get friendly name for each path
                 for (int i = 0; i < pathCount; i++)
                 {
                     var path = paths[i];
@@ -255,26 +259,26 @@ namespace PowerDisplay.Native.DDC
 
                     if (!string.IsNullOrEmpty(friendlyName))
                     {
-                        // 使用适配器和目标 ID 作为键
+                        // Use adapter and target ID as key
                         var key = $"{path.TargetInfo.AdapterId}_{path.TargetInfo.Id}";
                         friendlyNames[key] = friendlyName;
                     }
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                // 忽略错误
+                Logger.LogDebug($"GetAllMonitorFriendlyNames failed: {ex.Message}");
             }
 
             return friendlyNames;
         }
 
         /// <summary>
-        /// 获取显示器的EDID硬件ID信息
+        /// Gets the EDID hardware ID information for a monitor
         /// </summary>
-        /// <param name="adapterId">适配器ID</param>
-        /// <param name="targetId">目标ID</param>
-        /// <returns>硬件ID字符串，格式为制造商代码+产品代码</returns>
+        /// <param name="adapterId">Adapter ID</param>
+        /// <param name="targetId">Target ID</param>
+        /// <returns>Hardware ID string in format: manufacturer code + product code</returns>
         public static unsafe string? GetMonitorHardwareId(LUID adapterId, uint targetId)
         {
             try
@@ -293,11 +297,11 @@ namespace PowerDisplay.Native.DDC
                 var result = DisplayConfigGetDeviceInfo(ref deviceName);
                 if (result == 0)
                 {
-                    // 将制造商ID转换为3字符字符串
+                    // Convert manufacturer ID to 3-character string
                     var manufacturerId = deviceName.EdidManufactureId;
                     var manufactureCode = ConvertManufactureIdToString(manufacturerId);
 
-                    // 将产品ID转换为4位十六进制字符串
+                    // Convert product ID to 4-digit hex string
                     var productCode = deviceName.EdidProductCodeId.ToString("X4", System.Globalization.CultureInfo.InvariantCulture);
 
                     var hardwareId = $"{manufactureCode}{productCode}";
@@ -310,62 +314,62 @@ namespace PowerDisplay.Native.DDC
                     Logger.LogError($"GetMonitorHardwareId - DisplayConfigGetDeviceInfo failed with result: {result}");
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                // 忽略错误
+                Logger.LogDebug($"GetMonitorHardwareId failed: {ex.Message}");
             }
 
             return null;
         }
 
         /// <summary>
-        /// 将制造商ID转换为3字符制造商代码
+        /// Converts manufacturer ID to 3-character manufacturer code
         /// </summary>
-        /// <param name="manufacturerId">制造商ID</param>
-        /// <returns>3字符制造商代码</returns>
+        /// <param name="manufacturerId">Manufacturer ID</param>
+        /// <returns>3-character manufacturer code</returns>
         private static string ConvertManufactureIdToString(ushort manufacturerId)
         {
-            // EDID制造商ID需要先进行字节序交换
+            // EDID manufacturer ID requires byte order swap first
             manufacturerId = (ushort)(((manufacturerId & 0xff00) >> 8) | ((manufacturerId & 0x00ff) << 8));
 
-            // 提取3个5位字符（每个字符是A-Z，其中A=1, B=2, ..., Z=26）
+            // Extract 3 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
             var char1 = (char)('A' - 1 + ((manufacturerId >> 0) & 0x1f));
             var char2 = (char)('A' - 1 + ((manufacturerId >> 5) & 0x1f));
             var char3 = (char)('A' - 1 + ((manufacturerId >> 10) & 0x1f));
 
-            // 按正确顺序组合字符
+            // Combine characters in correct order
             return $"{char3}{char2}{char1}";
         }
 
         /// <summary>
-        /// 获取所有显示器的完整信息，包括友好名称和硬件ID
+        /// Gets complete information for all monitors, including friendly name and hardware ID
         /// </summary>
-        /// <returns>包含显示器信息的字典</returns>
+        /// <returns>Dictionary containing monitor information</returns>
         public static Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
         {
             var monitorInfo = new Dictionary<string, MonitorDisplayInfo>(StringComparer.OrdinalIgnoreCase);
 
             try
             {
-                // 获取缓冲区大小
+                // Get buffer sizes
                 var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
                 if (result != 0)
                 {
                     return monitorInfo;
                 }
 
-                // 分配缓冲区
+                // Allocate buffers
                 var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
                 var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
 
-                // 查询显示配置
+                // Query display configuration
                 result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
                 if (result != 0)
                 {
                     return monitorInfo;
                 }
 
-                // 获取每个路径的信息
+                // Get information for each path
                 for (int i = 0; i < pathCount; i++)
                 {
                     var path = paths[i];
@@ -385,9 +389,9 @@ namespace PowerDisplay.Native.DDC
                     }
                 }
             }
-            catch
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                // 忽略错误
+                Logger.LogDebug($"GetAllMonitorDisplayInfo failed: {ex.Message}");
             }
 
             return monitorInfo;
@@ -403,14 +407,14 @@ namespace PowerDisplay.Native.DDC
 
             try
             {
-                // 枚举所有适配器
+                // Enumerate all adapters
                 uint adapterIndex = 0;
                 var adapter = default(DISPLAY_DEVICE);
                 adapter.Cb = (uint)sizeof(DisplayDevice);
 
                 while (EnumDisplayDevices(null, adapterIndex, ref adapter, EddGetDeviceInterfaceName))
                 {
-                    // 跳过镜像驱动程序
+                    // Skip mirroring drivers
                     if ((adapter.StateFlags & DisplayDeviceMirroringDriver) != 0)
                     {
                         adapterIndex++;
@@ -419,10 +423,10 @@ namespace PowerDisplay.Native.DDC
                         continue;
                     }
 
-                    // 只处理已连接到桌面的适配器
+                    // Only process adapters attached to desktop
                     if ((adapter.StateFlags & DisplayDeviceAttachedToDesktop) != 0)
                     {
-                        // 枚举该适配器上的所有显示器
+                        // Enumerate all monitors on this adapter
                         uint displayIndex = 0;
                         var display = default(DISPLAY_DEVICE);
                         display.Cb = (uint)sizeof(DisplayDevice);
@@ -432,7 +436,7 @@ namespace PowerDisplay.Native.DDC
                         {
                             string displayDeviceID = display.GetDeviceID();
 
-                            // 只处理活动的显示器
+                            // Only process active monitors
                             if ((display.StateFlags & DisplayDeviceAttachedToDesktop) != 0 &&
                                 !string.IsNullOrEmpty(displayDeviceID))
                             {
@@ -443,8 +447,8 @@ namespace PowerDisplay.Native.DDC
                                     DeviceID = displayDeviceID,
                                 };
 
-                                // 提取 DeviceKey：移除 GUID 部分（#{...} 及之后的内容）
-                                // 例如：\\?\DISPLAY#GSM5C6D#5&1234&0&UID#{GUID} -> \\?\DISPLAY#GSM5C6D#5&1234&0&UID
+                                // Extract DeviceKey: remove GUID part (#{...} and everything after)
+                                // Example: \\?\DISPLAY#GSM5C6D#5&1234&0&UID#{GUID} -> \\?\DISPLAY#GSM5C6D#5&1234&0&UID
                                 int guidIndex = deviceInfo.DeviceID.IndexOf("#{", StringComparison.Ordinal);
                                 if (guidIndex >= 0)
                                 {
@@ -483,7 +487,7 @@ namespace PowerDisplay.Native.DDC
     }
 
     /// <summary>
-    /// 显示器显示信息结构
+    /// Monitor display information structure
     /// </summary>
     public struct MonitorDisplayInfo
     {

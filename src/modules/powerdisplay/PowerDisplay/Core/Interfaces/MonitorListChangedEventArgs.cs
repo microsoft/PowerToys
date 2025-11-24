@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using PowerDisplay.Core.Models;
+using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.Core.Interfaces
 {

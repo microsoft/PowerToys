@@ -4,9 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace PowerDisplay.Core.Models
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// DDC/CI VCP capabilities information

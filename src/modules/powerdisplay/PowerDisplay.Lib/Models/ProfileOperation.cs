@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Represents a pending profile operation to be applied by PowerDisplay

@@ -5,16 +5,17 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using PowerDisplay.Commands;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using PowerDisplay.Configuration;
 using PowerDisplay.Core;
-using PowerDisplay.Core.Models;
-using PowerDisplay.Helpers;
-using Monitor = PowerDisplay.Core.Models.Monitor;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
 
@@ -191,101 +192,53 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Internal method - applies brightness to hardware and persists state.
-    /// Unified logic for all sources (Flyout, Settings, etc.).
+    /// Generic method to apply a monitor property to hardware and persist state.
+    /// Consolidates common logic for brightness, contrast, and volume operations.
     /// </summary>
-    private async Task ApplyBrightnessToHardwareAsync(int brightness, bool fromUserInteraction = false)
+    /// <param name="propertyName">Name of the property being set (for logging and state persistence)</param>
+    /// <param name="value">Value to apply</param>
+    /// <param name="setAsyncFunc">Async function to call on MonitorManager</param>
+    /// <param name="fromUserInteraction">If true, triggers profile change detection</param>
+    private async Task ApplyPropertyToHardwareAsync(
+        string propertyName,
+        int value,
+        Func<string, int, CancellationToken, Task<MonitorOperationResult>> setAsyncFunc,
+        bool fromUserInteraction = false)
     {
         try
         {
-            Logger.LogDebug($"[{HardwareId}] Applying brightness: {brightness}%");
+            Logger.LogDebug($"[{HardwareId}] Applying {propertyName.ToLowerInvariant()}: {value}%");
 
-            var result = await _monitorManager.SetBrightnessAsync(Id, brightness);
+            var result = await setAsyncFunc(Id, value, default);
 
             if (result.IsSuccess)
             {
-                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, nameof(Brightness), brightness);
+                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, propertyName, value);
 
-                // Trigger profile change detection if from user interaction
                 if (fromUserInteraction)
                 {
-                    _mainViewModel?.OnMonitorParameterChanged(_monitor.HardwareId, nameof(Brightness), brightness);
+                    _mainViewModel?.OnMonitorParameterChanged(_monitor.HardwareId, propertyName, value);
                 }
             }
             else
             {
-                Logger.LogWarning($"[{HardwareId}] Failed to set brightness: {result.ErrorMessage}");
+                Logger.LogWarning($"[{HardwareId}] Failed to set {propertyName.ToLowerInvariant()}: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[{HardwareId}] Exception setting brightness: {ex.Message}");
+            Logger.LogError($"[{HardwareId}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
         }
     }
 
-    /// <summary>
-    /// Internal method - applies contrast to hardware and persists state.
-    /// </summary>
-    private async Task ApplyContrastToHardwareAsync(int contrast, bool fromUserInteraction = false)
-    {
-        try
-        {
-            Logger.LogDebug($"[{HardwareId}] Applying contrast: {contrast}%");
+    private Task ApplyBrightnessToHardwareAsync(int brightness, bool fromUserInteraction = false)
+        => ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync, fromUserInteraction);
 
-            var result = await _monitorManager.SetContrastAsync(Id, contrast);
+    private Task ApplyContrastToHardwareAsync(int contrast, bool fromUserInteraction = false)
+        => ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync, fromUserInteraction);
 
-            if (result.IsSuccess)
-            {
-                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, nameof(Contrast), contrast);
-
-                // Trigger profile change detection if from user interaction
-                if (fromUserInteraction)
-                {
-                    _mainViewModel?.OnMonitorParameterChanged(_monitor.HardwareId, nameof(Contrast), contrast);
-                }
-            }
-            else
-            {
-                Logger.LogWarning($"[{HardwareId}] Failed to set contrast: {result.ErrorMessage}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[{HardwareId}] Exception setting contrast: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Internal method - applies volume to hardware and persists state.
-    /// </summary>
-    private async Task ApplyVolumeToHardwareAsync(int volume, bool fromUserInteraction = false)
-    {
-        try
-        {
-            Logger.LogDebug($"[{HardwareId}] Applying volume: {volume}%");
-
-            var result = await _monitorManager.SetVolumeAsync(Id, volume);
-
-            if (result.IsSuccess)
-            {
-                _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, nameof(Volume), volume);
-
-                // Trigger profile change detection if from user interaction
-                if (fromUserInteraction)
-                {
-                    _mainViewModel?.OnMonitorParameterChanged(_monitor.HardwareId, nameof(Volume), volume);
-                }
-            }
-            else
-            {
-                Logger.LogWarning($"[{HardwareId}] Failed to set volume: {result.ErrorMessage}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[{HardwareId}] Exception setting volume: {ex.Message}");
-        }
-    }
+    private Task ApplyVolumeToHardwareAsync(int volume, bool fromUserInteraction = false)
+        => ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync, fromUserInteraction);
 
     // Conversion function for x:Bind (AOT-compatible alternative to converters)
     public Visibility ConvertBoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
@@ -343,8 +296,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// WMI monitors (laptop internal displays) use laptop icon, others use external monitor icon
     /// </summary>
     public string MonitorIconGlyph => _monitor.CommunicationMethod?.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
-        ? "\uEA37" // Laptop icon for WMI
-        : "\uE7F4"; // External monitor icon for DDC/CI and others
+        ? AppConstants.UI.InternalMonitorGlyph
+        : AppConstants.UI.ExternalMonitorGlyph;
 
     // Monitor property ranges
     public int MinBrightness => _monitor.MinBrightness;
@@ -459,7 +412,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     });
 
-    // SetColorTemperatureCommand removed - now controlled via Settings UI
     public ICommand SetContrastCommand => new RelayCommand<int?>((contrast) =>
     {
         if (contrast.HasValue)
@@ -476,8 +428,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     });
 
-    // Percentage-based properties for uniform slider behavior
-    // ColorTemperaturePercent removed - now controlled via Settings UI
     public int ContrastPercent
     {
         get => MapToPercent(_contrast, MinContrast, MaxContrast);

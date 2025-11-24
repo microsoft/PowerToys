@@ -23,14 +23,14 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerDisplayViewModel : PageViewModelBase
     {
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
-
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -232,50 +232,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>
         /// Parse feature support from capabilities VcpCodes list
         /// Sets support flags based on VCP code presence
+        /// Uses shared MonitorFeatureHelper from PowerDisplay.Lib for consistency
         /// </summary>
-        private void ParseFeatureSupportFromCapabilities(MonitorInfo monitor)
+        private static void ParseFeatureSupportFromCapabilities(MonitorInfo monitor)
         {
             if (monitor == null)
             {
                 return;
             }
 
-            // Check capabilities status
-            if (string.IsNullOrEmpty(monitor.CapabilitiesRaw))
-            {
-                monitor.CapabilitiesStatus = "unavailable";
-                monitor.SupportsBrightness = false;
-                monitor.SupportsContrast = false;
-                monitor.SupportsColorTemperature = false;
-                monitor.SupportsVolume = false;
-                return;
-            }
+            // Use shared helper to parse feature support
+            var result = PowerDisplay.Common.Utils.MonitorFeatureHelper.ParseFeatureSupport(
+                monitor.VcpCodes,
+                monitor.CapabilitiesRaw);
 
-            monitor.CapabilitiesStatus = "available";
-
-            // Parse VCP codes to determine feature support
-            // VCP codes are stored as hex strings (e.g., "0x10", "10")
-            var vcpCodes = monitor.VcpCodes ?? new List<string>();
-
-            // Convert all VCP codes to integers for comparison
-            var vcpCodeInts = new HashSet<int>();
-            foreach (var code in vcpCodes)
-            {
-                if (int.TryParse(code.Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber, null, out int codeInt))
-                {
-                    vcpCodeInts.Add(codeInt);
-                }
-            }
-
-            // Check for feature support based on VCP codes
-            // 0x10 (16): Brightness
-            // 0x12 (18): Contrast
-            // 0x14 (20): Color Temperature (Select Color Preset)
-            // 0x62 (98): Volume
-            monitor.SupportsBrightness = vcpCodeInts.Contains(0x10);
-            monitor.SupportsContrast = vcpCodeInts.Contains(0x12);
-            monitor.SupportsColorTemperature = vcpCodeInts.Contains(0x14);
-            monitor.SupportsVolume = vcpCodeInts.Contains(0x62);
+            monitor.CapabilitiesStatus = result.CapabilitiesStatus;
+            monitor.SupportsBrightness = result.SupportsBrightness;
+            monitor.SupportsContrast = result.SupportsContrast;
+            monitor.SupportsColorTemperature = result.SupportsColorTemperature;
+            monitor.SupportsVolume = result.SupportsVolume;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
@@ -290,8 +265,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
 
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
             GC.SuppressFinalize(this);
 
             base.Dispose();
@@ -332,7 +305,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (sender is MonitorInfo monitor)
             {
-                System.Diagnostics.Debug.WriteLine($"[PowerDisplayViewModel] Monitor {monitor.Name} property {e.PropertyName} changed");
+                Logger.LogDebug($"[PowerDisplayViewModel] Monitor {monitor.Name} property {e.PropertyName} changed");
             }
 
             // Update the settings object to keep it in sync
@@ -472,7 +445,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         // Profile-related fields
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
@@ -519,7 +491,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var profilesData = PowerDisplayProfilesHelper.LoadProfiles();
+                var profilesData = ProfileService.LoadProfiles();
 
                 // Load profile objects (no Custom - it's not a profile anymore)
                 Profiles.Clear();
@@ -542,7 +514,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private PowerDisplayProfiles LoadProfilesFromDisk()
         {
-            return PowerDisplayProfilesHelper.LoadProfiles();
+            return ProfileService.LoadProfiles();
         }
 
         /// <summary>
@@ -550,7 +522,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SaveProfilesToDisk(PowerDisplayProfiles profiles)
         {
-            PowerDisplayProfilesHelper.SaveProfiles(profiles, prettyPrint: true);
+            ProfileService.SaveProfiles(profiles);
         }
 
         /// <summary>

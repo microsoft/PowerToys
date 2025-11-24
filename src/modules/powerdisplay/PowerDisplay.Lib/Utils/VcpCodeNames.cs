@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace PowerDisplay.Core.Utils
+namespace PowerDisplay.Common.Utils
 {
     /// <summary>
     /// VCP code to friendly name mapping based on MCCS v2.2a specification

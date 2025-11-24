@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Monitor settings for a specific profile

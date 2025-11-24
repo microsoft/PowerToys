@@ -4,7 +4,7 @@
 
 using System;
 
-namespace PowerDisplay.Core.Models
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Brightness information structure

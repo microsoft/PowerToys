@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace PowerDisplay.Common.Models
 {
     /// <summary>
     /// Represents a pending color temperature change operation
@@ -16,5 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("color_temperature")]
         public int ColorTemperature { get; set; }
+
+        public ColorTemperatureOperation()
+        {
+            MonitorId = string.Empty;
+        }
     }
 }

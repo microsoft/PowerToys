@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerDisplay.Common.Models;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -146,10 +147,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 else
                 {
                     // User cancelled, revert to previous value
-                    // Set flag to prevent recursive event
+                    // Set flag to prevent recursive event, using try-finally for safety
                     _isUpdatingColorTemperature = true;
-                    comboBox.SelectedValue = previousValue;
-                    _isUpdatingColorTemperature = false;
+                    try
+                    {
+                        comboBox.SelectedValue = previousValue;
+                    }
+                    finally
+                    {
+                        _isUpdatingColorTemperature = false;
+                    }
                 }
             }
         }

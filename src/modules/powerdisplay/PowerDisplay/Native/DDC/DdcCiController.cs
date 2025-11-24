@@ -8,14 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using PowerDisplay.Core.Interfaces;
-using PowerDisplay.Core.Models;
-using PowerDisplay.Core.Utils;
+using PowerDisplay.Common.Interfaces;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using PowerDisplay.Helpers;
 using static PowerDisplay.Native.NativeConstants;
 using static PowerDisplay.Native.NativeDelegates;
 using static PowerDisplay.Native.PInvoke;
-using Monitor = PowerDisplay.Core.Models.Monitor;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
 // Type aliases matching Windows API naming conventions for better readability when working with native structures.
 // These uppercase aliases are used consistently throughout this file to match Win32 API documentation.
@@ -30,6 +30,11 @@ namespace PowerDisplay.Native.DDC
     /// </summary>
     public partial class DdcCiController : IMonitorController, IDisposable
     {
+        /// <summary>
+        /// Delay between retry attempts for DDC/CI operations (in milliseconds)
+        /// </summary>
+        private const int RetryDelayMs = 100;
+
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
 
@@ -278,7 +283,7 @@ namespace PowerDisplay.Native.DDC
 
                         if (i < lengthMaxRetries - 1)
                         {
-                            Thread.Sleep(100); // 100ms delay between retries
+                            Thread.Sleep(RetryDelayMs);
                         }
                     }
 
@@ -312,7 +317,7 @@ namespace PowerDisplay.Native.DDC
 
                         if (i < capsMaxRetries - 1)
                         {
-                            Thread.Sleep(100); // 100ms delay between retries
+                            Thread.Sleep(RetryDelayMs);
                         }
                     }
 
@@ -475,9 +480,6 @@ namespace PowerDisplay.Native.DDC
                 catch (Exception ex)
                 {
                     Logger.LogError($"DDC: DiscoverMonitorsAsync exception: {ex.Message}\nStack: {ex.StackTrace}");
-                }
-                finally
-                {
                 }
 
                 return monitors;

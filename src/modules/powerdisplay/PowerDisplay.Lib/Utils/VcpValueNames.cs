@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace PowerDisplay.Core.Utils
+namespace PowerDisplay.Common.Utils
 {
     /// <summary>
     /// Provides human-readable names for VCP code values based on MCCS standard

@@ -5,12 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using ManagedCommon;
-using PowerDisplay.Core.Models;
+using PowerDisplay.Common.Models;
 
-namespace PowerDisplay.Core.Utils
+namespace PowerDisplay.Common.Utils
 {
     /// <summary>
     /// Parser for DDC/CI MCCS capabilities strings
@@ -155,7 +155,7 @@ namespace PowerDisplay.Core.Utils
         private static string ExtractVcpSection(string capabilities, int startIndex)
         {
             var depth = 1;
-            var result = string.Empty;
+            var result = new StringBuilder();
 
             for (int i = startIndex; i < capabilities.Length && depth > 0; i++)
             {
@@ -174,10 +174,10 @@ namespace PowerDisplay.Core.Utils
                     }
                 }
 
-                result += ch;
+                result.Append(ch);
             }
 
-            return result;
+            return result.ToString();
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace PowerDisplay.Core.Utils
         private static string ExtractVcpValuesSection(string section, int startIndex)
         {
             var depth = 1;
-            var result = string.Empty;
+            var result = new StringBuilder();
 
             for (int i = startIndex; i < section.Length && depth > 0; i++)
             {
@@ -264,7 +264,7 @@ namespace PowerDisplay.Core.Utils
                 if (ch == '(')
                 {
                     depth++;
-                    result += ch;
+                    result.Append(ch);
                 }
                 else if (ch == ')')
                 {
@@ -274,15 +274,15 @@ namespace PowerDisplay.Core.Utils
                         break;
                     }
 
-                    result += ch;
+                    result.Append(ch);
                 }
                 else
                 {
-                    result += ch;
+                    result.Append(ch);
                 }
             }
 
-            return result;
+            return result.ToString();
         }
 
         /// <summary>

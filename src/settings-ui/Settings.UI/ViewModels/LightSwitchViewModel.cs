@@ -19,6 +19,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Newtonsoft.Json.Linq;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 
@@ -481,7 +483,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled && (ModuleSettings.Properties.EnableDarkModeProfile.Value || ModuleSettings.Properties.EnableLightModeProfile.Value);
+        public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled;
 
         public bool EnableDarkModeProfile
         {
@@ -592,7 +594,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var profilesData = PowerDisplayProfilesHelper.LoadProfiles();
+                var profilesData = ProfileService.LoadProfiles();
 
                 AvailableProfiles.Clear();
 

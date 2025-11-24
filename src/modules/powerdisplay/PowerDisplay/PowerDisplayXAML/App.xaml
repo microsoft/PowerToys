@@ -2,7 +2,6 @@
 <Application x:Class="PowerDisplay.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="using:PowerDisplay.Converters"
              xmlns:toolkit="using:CommunityToolkit.WinUI">
     <Application.Resources>
         <ResourceDictionary>
@@ -10,12 +9,6 @@
                 <!-- WinUI 3 System Resources -->
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
-
-            <!-- Converters -->
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
-            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>

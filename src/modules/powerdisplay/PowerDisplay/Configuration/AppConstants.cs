@@ -26,27 +26,6 @@ namespace PowerDisplay.Configuration
         }
 
         /// <summary>
-        /// Monitor parameter defaults and ranges
-        /// </summary>
-        public static class MonitorDefaults
-        {
-            // Brightness
-            public const int MinBrightness = 0;
-            public const int MaxBrightness = 100;
-            public const int DefaultBrightness = 50;
-
-            // Contrast
-            public const int MinContrast = 0;
-            public const int MaxContrast = 100;
-            public const int DefaultContrast = 50;
-
-            // Volume
-            public const int MinVolume = 0;
-            public const int MaxVolume = 100;
-            public const int DefaultVolume = 50;
-        }
-
-        /// <summary>
         /// UI layout and timing constants
         /// </summary>
         public static class UI
@@ -65,6 +44,16 @@ namespace PowerDisplay.Configuration
             /// Debounce delay for slider controls in milliseconds
             /// </summary>
             public const int SliderDebounceDelayMs = 300;
+
+            /// <summary>
+            /// Icon glyph for internal/laptop displays (WMI)
+            /// </summary>
+            public const string InternalMonitorGlyph = "\uEA37";
+
+            /// <summary>
+            /// Icon glyph for external monitors (DDC/CI)
+            /// </summary>
+            public const string ExternalMonitorGlyph = "\uE7F4";
         }
 
         /// <summary>

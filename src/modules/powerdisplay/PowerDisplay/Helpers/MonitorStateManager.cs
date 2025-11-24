@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common;
+using PowerDisplay.Common.Utils;
 using PowerDisplay.Configuration;
 using PowerDisplay.Serialization;
 
@@ -25,10 +26,10 @@ namespace PowerDisplay.Helpers
         private readonly string _stateFilePath;
         private readonly Dictionary<string, MonitorState> _states = new();
         private readonly object _lock = new object();
-        private readonly Timer _saveTimer;
+        private readonly SimpleDebouncer _saveDebouncer;
 
         private bool _disposed;
-        private bool _isDirty;
+        private bool _isDirty; // Track pending changes for flush on dispose
         private const int SaveDebounceMs = 2000; // Save 2 seconds after last update
 
         /// <summary>
@@ -49,45 +50,17 @@ namespace PowerDisplay.Helpers
 
         public MonitorStateManager()
         {
-            // Store state file in same location as settings.json but with different name
-            var settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var powerToysPath = Path.Combine(settingsPath, "Microsoft", "PowerToys", "PowerDisplay");
+            // Use PathConstants for consistent path management
+            PathConstants.EnsurePowerDisplayFolderExists();
+            _stateFilePath = Path.Combine(PathConstants.PowerDisplayFolderPath, AppConstants.State.StateFileName);
 
-            if (!Directory.Exists(powerToysPath))
-            {
-                Directory.CreateDirectory(powerToysPath);
-            }
-
-            _stateFilePath = Path.Combine(powerToysPath, AppConstants.State.StateFileName);
-
-            // Initialize debounce timer (disabled initially)
-            _saveTimer = new Timer(OnSaveTimerElapsed, null, Timeout.Infinite, Timeout.Infinite);
+            // Initialize debouncer for batching rapid updates (e.g., slider drag)
+            _saveDebouncer = new SimpleDebouncer(SaveDebounceMs);
 
             // Load existing state if available
             LoadStateFromDisk();
 
             Logger.LogInfo($"MonitorStateManager initialized with debounced-save strategy (debounce: {SaveDebounceMs}ms), state file: {_stateFilePath}");
-        }
-
-        /// <summary>
-        /// Timer callback to save state when dirty
-        /// </summary>
-        private async void OnSaveTimerElapsed(object? state)
-        {
-            bool shouldSave = false;
-            lock (_lock)
-            {
-                if (_isDirty && !_disposed)
-                {
-                    shouldSave = true;
-                    _isDirty = false;
-                }
-            }
-
-            if (shouldSave)
-            {
-                await SaveStateToDiskAsync();
-            }
         }
 
         /// <summary>
@@ -134,57 +107,16 @@ namespace PowerDisplay.Helpers
                             return;
                     }
 
-                    // Mark dirty and schedule debounced save
+                    // Mark dirty for flush on dispose
                     _isDirty = true;
                 }
 
-                // Reset timer to debounce rapid updates (e.g., during slider drag)
-                _saveTimer.Change(SaveDebounceMs, Timeout.Infinite);
+                // Schedule debounced save (SimpleDebouncer handles cancellation of previous calls)
+                _saveDebouncer.Debounce(SaveStateToDiskAsync);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to update monitor parameter: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Update monitor capabilities and schedule save.
-        /// Capabilities are saved separately to avoid frequent writes.
-        /// </summary>
-        public void UpdateMonitorCapabilities(string hardwareId, string? capabilitiesRaw)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(hardwareId))
-                {
-                    Logger.LogWarning($"Cannot update capabilities: HardwareId is empty");
-                    return;
-                }
-
-                lock (_lock)
-                {
-                    // Get or create state entry
-                    if (!_states.TryGetValue(hardwareId, out var state))
-                    {
-                        state = new MonitorState();
-                        _states[hardwareId] = state;
-                    }
-
-                    // Update capabilities
-                    state.CapabilitiesRaw = capabilitiesRaw;
-
-                    // Mark dirty and schedule save
-                    _isDirty = true;
-                }
-
-                // Schedule save
-                _saveTimer.Change(SaveDebounceMs, Timeout.Infinite);
-
-                Logger.LogInfo($"[State] Updated capabilities for monitor HardwareId='{hardwareId}' (length: {capabilitiesRaw?.Length ?? 0})");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to update monitor capabilities: {ex.Message}");
             }
         }
 
@@ -207,43 +139,6 @@ namespace PowerDisplay.Helpers
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Get saved capabilities for a monitor using HardwareId
-        /// </summary>
-        public string? GetMonitorCapabilities(string hardwareId)
-        {
-            if (string.IsNullOrEmpty(hardwareId))
-            {
-                return null;
-            }
-
-            lock (_lock)
-            {
-                if (_states.TryGetValue(hardwareId, out var state))
-                {
-                    return state.CapabilitiesRaw;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Check if state exists for a monitor (by HardwareId)
-        /// </summary>
-        public bool HasMonitorState(string hardwareId)
-        {
-            if (string.IsNullOrEmpty(hardwareId))
-            {
-                return false;
-            }
-
-            lock (_lock)
-            {
-                return _states.ContainsKey(hardwareId);
-            }
         }
 
         /// <summary>
@@ -306,12 +201,11 @@ namespace PowerDisplay.Helpers
                 }
 
                 // Build state file
+                var now = DateTime.Now;
                 var stateFile = new MonitorStateFile
                 {
-                    LastUpdated = DateTime.Now,
+                    LastUpdated = now,
                 };
-
-                var now = DateTime.Now;
 
                 lock (_lock)
                 {
@@ -336,6 +230,12 @@ namespace PowerDisplay.Helpers
                 var json = JsonSerializer.Serialize(stateFile, AppJsonContext.Default.MonitorStateFile);
                 await File.WriteAllTextAsync(_stateFilePath, json);
 
+                // Clear dirty flag after successful save
+                lock (_lock)
+                {
+                    _isDirty = false;
+                }
+
                 Logger.LogDebug($"[State] Saved state for {stateFile.Monitors.Count} monitors");
             }
             catch (Exception ex)
@@ -351,10 +251,7 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            // Stop the timer first
-            _saveTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-
-            bool wasDirty = false;
+            bool wasDirty;
             lock (_lock)
             {
                 wasDirty = _isDirty;
@@ -362,14 +259,15 @@ namespace PowerDisplay.Helpers
                 _isDirty = false;
             }
 
+            // Dispose debouncer first to cancel any pending saves
+            _saveDebouncer?.Dispose();
+
             // Flush any pending changes before disposing
             if (wasDirty)
             {
                 Logger.LogInfo("Flushing pending state changes before dispose");
                 SaveStateToDiskAsync().GetAwaiter().GetResult();
             }
-
-            _saveTimer?.Dispose();
 
             Logger.LogInfo("MonitorStateManager disposed");
             GC.SuppressFinalize(this);

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using PowerDisplay.Common.Models;
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library

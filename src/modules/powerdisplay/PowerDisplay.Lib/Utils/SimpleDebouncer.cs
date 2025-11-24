@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 
-namespace PowerDisplay.Helpers
+namespace PowerDisplay.Common.Utils
 {
     /// <summary>
     /// Simple debouncer that delays execution of an action until a quiet period.
@@ -79,9 +79,9 @@ namespace PowerDisplay.Helpers
                     oldCts.Cancel();
                     oldCts.Dispose();
                 }
-                catch
+                catch (ObjectDisposedException)
                 {
-                    // Ignore disposal errors
+                    // Expected if CTS was already disposed
                 }
             }
 

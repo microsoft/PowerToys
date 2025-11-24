@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using PowerDisplay.Core.Models;
+using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.Core.Interfaces
 {
