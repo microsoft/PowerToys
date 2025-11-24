@@ -12,15 +12,25 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandPalettePreview : UserControl
 {
-    public static readonly DependencyProperty PreviewBackgroundOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundOpacity), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(default(double)));
+    public static readonly DependencyProperty PreviewBackgroundOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundOpacity), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(0d));
 
     public static readonly DependencyProperty PreviewBackgroundColorProperty = DependencyProperty.Register(nameof(PreviewBackgroundColor), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color)));
 
-    public static readonly DependencyProperty PreviewBackgroundImageSourceProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageSource), typeof(ImageSource), typeof(CommandPalettePreview), new PropertyMetadata(default(ImageSource)));
+    public static readonly DependencyProperty PreviewBackgroundImageSourceProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageSource), typeof(ImageSource), typeof(CommandPalettePreview), new PropertyMetadata(null, PropertyChangedCallback));
 
-    public static readonly DependencyProperty PreviewBackgroundImageOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageOpacity), typeof(int), typeof(CommandPalettePreview), new PropertyMetadata(default(int)));
+    public static readonly DependencyProperty PreviewBackgroundImageOpacityProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageOpacity), typeof(int), typeof(CommandPalettePreview), new PropertyMetadata(0));
 
     public static readonly DependencyProperty PreviewBackgroundImageFitProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageFit), typeof(BackgroundImageFit), typeof(CommandPalettePreview), new PropertyMetadata(default(BackgroundImageFit)));
+
+    public static readonly DependencyProperty PreviewBackgroundImageBrightnessProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageBrightness), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(0d));
+
+    public static readonly DependencyProperty PreviewBackgroundImageBlurAmountProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageBlurAmount), typeof(double), typeof(CommandPalettePreview), new PropertyMetadata(0d));
+
+    public static readonly DependencyProperty PreviewBackgroundImageTintProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageTint), typeof(Color), typeof(CommandPalettePreview), new PropertyMetadata(default(Color)));
+
+    public static readonly DependencyProperty PreviewBackgroundImageTintIntensityProperty = DependencyProperty.Register(nameof(PreviewBackgroundImageTintIntensity), typeof(int), typeof(CommandPalettePreview), new PropertyMetadata(0));
+
+    public static readonly DependencyProperty ShowBackgroundImageProperty = DependencyProperty.Register(nameof(ShowBackgroundImage), typeof(Visibility), typeof(CommandPalettePreview), new PropertyMetadata(Visibility.Collapsed));
 
     public BackgroundImageFit PreviewBackgroundImageFit
     {
@@ -52,14 +62,56 @@ public sealed partial class CommandPalettePreview : UserControl
         set { SetValue(PreviewBackgroundImageOpacityProperty, value); }
     }
 
+    public double PreviewBackgroundImageBrightness
+    {
+        get => (double)GetValue(PreviewBackgroundImageBrightnessProperty);
+        set => SetValue(PreviewBackgroundImageBrightnessProperty, value);
+    }
+
+    public double PreviewBackgroundImageBlurAmount
+    {
+        get => (double)GetValue(PreviewBackgroundImageBlurAmountProperty);
+        set => SetValue(PreviewBackgroundImageBlurAmountProperty, value);
+    }
+
+    public Color PreviewBackgroundImageTint
+    {
+        get => (Color)GetValue(PreviewBackgroundImageTintProperty);
+        set => SetValue(PreviewBackgroundImageTintProperty, value);
+    }
+
+    public int PreviewBackgroundImageTintIntensity
+    {
+        get => (int)GetValue(PreviewBackgroundImageTintIntensityProperty);
+        set => SetValue(PreviewBackgroundImageTintIntensityProperty, value);
+    }
+
+    public Visibility ShowBackgroundImage
+    {
+        get => (Visibility)GetValue(ShowBackgroundImageProperty);
+        set => SetValue(ShowBackgroundImageProperty, value);
+    }
+
     public CommandPalettePreview()
     {
         InitializeComponent();
     }
 
-    public double ToOpacity(int value) => value / 100.0;
+    private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not CommandPalettePreview preview)
+        {
+            return;
+        }
 
-    public Stretch ToStretch(BackgroundImageFit fit)
+        preview.ShowBackgroundImage = e.NewValue is ImageSource ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private double ToOpacity(int value) => value / 100.0;
+
+    private double ToTintIntensity(int value) => value / 100.0;
+
+    private Stretch ToStretch(BackgroundImageFit fit)
     {
         return fit switch
         {

@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Media;
+using Color = Windows.UI.Color;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -51,6 +52,21 @@ public partial class ShellViewModel : ObservableObject,
 
     [ObservableProperty]
     public partial double BackgroundImageOpacity { get; private set; }
+
+    [ObservableProperty]
+    public partial Color BackgroundImageTint { get; private set; }
+
+    [ObservableProperty]
+    public partial double BackgroundImageTintIntensity { get; private set; }
+
+    [ObservableProperty]
+    public partial int BackgroundImageBlurAmount { get; private set; }
+
+    [ObservableProperty]
+    public partial double BackgroundImageBrightness { get; private set; }
+
+    [ObservableProperty]
+    public partial bool ShowBackgroundImage { get; private set; }
 
     private PageViewModel _currentPage;
 
@@ -128,6 +144,13 @@ public partial class ShellViewModel : ObservableObject,
             BackgroundImageSource = _themeService.Current.BackgroundImageSource;
             BackgroundImageStretch = _themeService.Current.BackgroundImageStretch;
             BackgroundImageOpacity = _themeService.Current.BackgroundImageOpacity;
+
+            BackgroundImageBrightness = _themeService.Current.BackgroundBrightness;
+            BackgroundImageTint = _themeService.Current.Tint;
+            BackgroundImageTintIntensity = _themeService.Current.TintIntensity;
+            BackgroundImageBlurAmount = _themeService.Current.BlurAmount;
+
+            ShowBackgroundImage = BackgroundImageSource != null;
         });
     }
 

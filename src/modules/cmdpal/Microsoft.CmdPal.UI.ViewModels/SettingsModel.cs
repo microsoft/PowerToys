@@ -68,6 +68,10 @@ public partial class SettingsModel : ObservableObject
 
     public int BackgroundImageOpacity { get; set; } = 20;
 
+    public int BackgroundImageBlurAmount { get; set; }
+
+    public int BackgroundImageBrightness { get; set; }
+
     public BackgroundImageFit BackgroundImageFit { get; set; }
 
     public string? BackgroundImagePath { get; set; }

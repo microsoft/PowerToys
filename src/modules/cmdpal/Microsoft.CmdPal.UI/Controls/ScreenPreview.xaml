@@ -13,17 +13,20 @@
         VerticalAlignment="Center"
         BorderBrush="Black"
         BorderThickness="8"
-        CornerRadius="8">
-        <Viewbox Height="120">
+        CornerRadius="8"
+        UseLayoutRounding="True">
+        <Viewbox Height="120" UseLayoutRounding="True">
             <Grid>
                 <Image
                     x:Name="WallpaperImage"
                     MaxHeight="200"
-                    Stretch="Uniform" />
+                    Stretch="Uniform"
+                    UseLayoutRounding="True" />
                 <ContentPresenter
                     x:Name="ContentPresenter"
                     Margin="40"
-                    Content="{x:Bind PreviewContent}" />
+                    Content="{x:Bind PreviewContent}"
+                    UseLayoutRounding="True" />
             </Grid>
         </Viewbox>
     </Border>

@@ -2,12 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.UI.Settings;
@@ -63,5 +65,22 @@ public sealed partial class AppearancePage : Page
         {
             Logger.LogError("Failed to pick background image file", ex);
         }
+    }
+
+    private void OpenWindowsColorsSettings_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+    {
+        // LOAD BEARING (or BEAR LOADING?): Process.Start with UseShellExecute inside a XAML input event can trigger WinUI reentrancy
+        // and cause FailFast crashes. Task.Run moves the call off the UI thread to prevent hard process termination.
+        Task.Run(() =>
+        {
+            try
+            {
+                _ = Process.Start(new ProcessStartInfo("ms-settings:colors") { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to open Windows Settings", ex);
+            }
+        });
     }
 }

@@ -9,4 +9,5 @@ public enum ColorizationMode
     None,
     WindowsAccentColor,
     CustomColor,
+    Image,
 }

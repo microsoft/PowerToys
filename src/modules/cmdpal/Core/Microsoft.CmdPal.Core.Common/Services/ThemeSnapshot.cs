@@ -20,6 +20,11 @@ public sealed class ThemeSnapshot
     public required Color Tint { get; init; }
 
     /// <summary>
+    /// Gets the accent tint color used by the Command Palette visuals.
+    /// </summary>
+    public required float TintIntensity { get; init; }
+
+    /// <summary>
     /// Gets the configured application theme preference.
     /// </summary>
     public required ElementTheme Theme { get; init; }
@@ -50,4 +55,8 @@ public sealed class ThemeSnapshot
     /// </summary>
     /// <returns>The resolved <c>AcrylicBackdropParameters</c> to apply.</returns>
     public required AcrylicBackdropParameters BackdropParameters { get; init; }
+
+    public required int BlurAmount { get; init; }
+
+    public required float BackgroundBrightness { get; init; }
 }

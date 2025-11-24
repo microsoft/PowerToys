@@ -11,7 +11,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -177,14 +176,21 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Image
+        <cpcontrols:BlurImageControl
             Grid.Row="0"
             Grid.RowSpan="2"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Opacity="{x:Bind ViewModel.BackgroundImageOpacity, Mode=OneWay}"
-            Source="{x:Bind ViewModel.BackgroundImageSource, Mode=OneWay}"
-            Stretch="{x:Bind ViewModel.BackgroundImageStretch, Mode=OneWay}" />
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            BlurAmount="{x:Bind ViewModel.BackgroundImageBlurAmount, Mode=OneWay}"
+            ImageBrightness="{x:Bind ViewModel.BackgroundImageBrightness, Mode=OneWay}"
+            ImageOpacity="{x:Bind ViewModel.BackgroundImageOpacity, Mode=OneWay}"
+            ImageSource="{x:Bind ViewModel.BackgroundImageSource, Mode=OneWay}"
+            ImageStretch="{x:Bind ViewModel.BackgroundImageStretch, Mode=OneWay}"
+            IsHitTestVisible="False"
+            IsHoldingEnabled="False"
+            TintColor="{x:Bind ViewModel.BackgroundImageTint, Mode=OneWay}"
+            TintIntensity="{x:Bind ViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
 
         <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>

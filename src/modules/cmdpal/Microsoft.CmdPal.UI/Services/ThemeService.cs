@@ -73,7 +73,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         // provider selection
         var intensity = Math.Clamp(_settings.CustomThemeColorIntensity, 0, 100);
-        IThemeProvider provider = intensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor
+        IThemeProvider provider = intensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
                 ? _colorfulThemeProvider
                 : _normalThemeProvider;
 
@@ -82,10 +82,13 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         {
             ColorizationMode.CustomColor => _settings.CustomThemeColor,
             ColorizationMode.WindowsAccentColor => _uiSettings.GetColorValue(UIColorType.Accent),
+            ColorizationMode.Image => _settings.CustomThemeColor,
             _ => Colors.Transparent,
         };
         var effectiveTheme = GetElementTheme((ElementTheme)_settings.Theme);
-        var imageSource = LoadImageSafe(_settings.BackgroundImagePath);
+        var imageSource = _settings.ColorizationMode == ColorizationMode.Image
+            ? LoadImageSafe(_settings.BackgroundImagePath)
+            : null;
         var stretch = _settings.BackgroundImageFit switch
         {
             BackgroundImageFit.Fill => Stretch.Fill,
@@ -104,16 +107,21 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             BackgroundImageOpacity = opacity,
         };
         var backdrop = provider.GetAcrylicBackdrop(context);
+        var blur = _settings.BackgroundImageBlurAmount;
+        var brightness = _settings.BackgroundImageBrightness;
 
         // Create public snapshot (no provider!)
         var snapshot = new ThemeSnapshot
         {
             Tint = tint,
+            TintIntensity = intensity / 100f,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
             BackdropParameters = backdrop,
+            BlurAmount = blur,
+            BackgroundBrightness = brightness / 100f,
         };
 
         // Bundle with provider for internal use
@@ -191,6 +199,9 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
                 BackgroundImageOpacity = 1,
                 BackgroundImageSource = null,
                 BackgroundImageStretch = Stretch.Fill,
+                BlurAmount = 0,
+                TintIntensity = 1.0f,
+                BackgroundBrightness = 0,
             },
             Provider = _normalThemeProvider,
         };
