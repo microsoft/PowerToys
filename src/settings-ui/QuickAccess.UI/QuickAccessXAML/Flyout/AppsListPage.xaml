@@ -5,7 +5,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:Microsoft.PowerToys.QuickAccess.ViewModels"
+    xmlns:local="using:Microsoft.PowerToys.QuickAccess.Flyout"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    </Page.Resources>
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -16,25 +20,49 @@
                 x:Uid="AllAppsTxt"
                 VerticalAlignment="Center"
                 Style="{StaticResource BodyStrongTextBlockStyle}" />
-            <Button
-                x:Uid="BackBtn"
-                Padding="8,4,8,4"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Click="BackButton_Click">
-                <Button.Content>
-                    <StackPanel
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="12">
-                        <FontIcon
-                            Margin="0,2,0,0"
-                            FontSize="12"
-                            Glyph="&#xe76b;" />
-                        <TextBlock x:Uid="BackLabel" Style="{StaticResource CaptionTextBlockStyle}" />
-                    </StackPanel>
-                </Button.Content>
-            </Button>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button
+                    x:Uid="Dashboard_SortBy"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="Dashboard_SortBy_ToolTip" />
+                    </ToolTipService.ToolTip>
+                    <Button.Content>
+                        <FontIcon FontSize="16" Glyph="&#xE8CB;" />
+                    </Button.Content>
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <ToggleMenuFlyoutItem
+                                x:Uid="Dashboard_SortAlphabetical"
+                                Click="SortAlphabetical_Click"
+                                IsChecked="{x:Bind ViewModel.DashboardSortOrder, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Alphabetical}" />
+                            <ToggleMenuFlyoutItem
+                                x:Uid="Dashboard_SortByStatus"
+                                Click="SortByStatus_Click"
+                                IsChecked="{x:Bind ViewModel.DashboardSortOrder, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=ByStatus}" />
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button
+                    x:Uid="BackBtn"
+                    Padding="8,4,8,4"
+                    VerticalAlignment="Center"
+                    Click="BackButton_Click">
+                    <Button.Content>
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="12">
+                            <FontIcon
+                                Margin="0,2,0,0"
+                                FontSize="12"
+                                Glyph="&#xe76b;" />
+                            <TextBlock x:Uid="BackLabel" Style="{StaticResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+            </StackPanel>
         </Grid>
         <ListView
             Grid.Row="1"
