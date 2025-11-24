@@ -404,14 +404,14 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Color temperature VCP preset value (from VCP code 0x14).
+    /// Gets color temperature VCP preset value (from VCP code 0x14).
     /// Read-only in flyout UI - controlled via Settings UI.
     /// Returns the raw VCP value (e.g., 0x05 for 6500K).
     /// </summary>
     public int ColorTemperature => _monitor.CurrentColorTemperature;
 
     /// <summary>
-    /// Human-readable color temperature preset name (e.g., "6500K", "sRGB")
+    /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
     /// </summary>
     public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
 

@@ -99,9 +99,6 @@ namespace PowerDisplay
             _viewModel.UIRefreshRequested += OnUIRefreshRequested;
             _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-
-            // Button events
-            DisableButton.Click += OnDisableClick;
         }
 
         private bool _hasInitialized;

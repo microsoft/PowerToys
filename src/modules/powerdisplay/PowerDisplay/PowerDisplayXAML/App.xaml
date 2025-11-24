@@ -3,7 +3,6 @@
     x:Class="PowerDisplay.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:PowerDisplay.Converters"
     xmlns:toolkit="using:CommunityToolkit.WinUI">
     <Application.Resources>
         <ResourceDictionary>

@@ -232,7 +232,7 @@
                             Click="OnLinkClick"
                             Content="{ui:FontIcon Glyph=&#xE71B;,
                                                   FontSize=16}"
-                            Style="{StaticResource SubtleButtonStyle}" />                        
+                            Style="{StaticResource SubtleButtonStyle}" />
                         <Button
                             x:Name="DisableButton"
                             x:Uid="DisableControlTooltip"
@@ -250,7 +250,7 @@
                         <Button
                             x:Name="SettingsBtn"
                             x:Uid="SettingsTooltip"
-                            Padding="8"
+                            Padding="6"
                             Click="OnSettingsClick"
                             Style="{StaticResource FlyoutButtonStyle}">
                             <ToolTipService.ToolTip>
