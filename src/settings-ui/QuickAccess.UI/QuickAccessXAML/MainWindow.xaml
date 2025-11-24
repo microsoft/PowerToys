@@ -17,5 +17,19 @@
     mc:Ignorable="d"
     Title="PowerToys Quick Access (Preview)">
 
-    <flyout:ShellPage x:Name="ShellHost" />
+    <winuiEx:WindowEx.Backdrop>
+        <winuiEx:AcrylicSystemBackdrop
+        DarkFallbackColor="#1c1c1c"
+        DarkLuminosityOpacity="0.96"
+        DarkTintColor="#202020"
+        DarkTintOpacity="0.5"
+        LightFallbackColor="#EEEEEE"
+        LightLuminosityOpacity="0.90"
+        LightTintColor="#F3F3F3"
+        LightTintOpacity="0" />
+    </winuiEx:WindowEx.Backdrop>
+
+    <Grid>
+        <flyout:ShellPage x:Name="ShellHost" />
+    </Grid>
 </winuiEx:WindowEx>
