@@ -1,12 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Application x:Class="PowerDisplay.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:toolkit="using:CommunityToolkit.WinUI">
+<?xml version="1.0" encoding="utf-8" ?>
+<Application
+    x:Class="PowerDisplay.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:toolkit="using:CommunityToolkit.WinUI">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!-- WinUI 3 System Resources -->
+                <!--  WinUI 3 System Resources  -->
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

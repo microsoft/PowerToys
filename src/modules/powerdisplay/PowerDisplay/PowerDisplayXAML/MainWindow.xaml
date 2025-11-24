@@ -1,351 +1,273 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Window x:Class="PowerDisplay.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:PowerDisplay.ViewModels"
-        xmlns:converters="using:PowerDisplay.Converters"
-        xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
-        xmlns:ui="using:CommunityToolkit.WinUI"
-        xmlns:animations="using:CommunityToolkit.WinUI.Animations">
+<winuiex:WindowEx
+    x:Class="PowerDisplay.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:PowerDisplay.ViewModels"
+    xmlns:winuiex="using:WinUIEx"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
+    IsTitleBarVisible="False">
+    <winuiex:WindowEx.Backdrop>
+        <winuiex:AcrylicSystemBackdrop
+            DarkFallbackColor="#1c1c1c"
+            DarkLuminosityOpacity="0.96"
+            DarkTintColor="#202020"
+            DarkTintOpacity="0.5"
+            LightFallbackColor="#EEEEEE"
+            LightLuminosityOpacity="0.90"
+            LightTintColor="#F3F3F3"
+            LightTintOpacity="0" />
+    </winuiex:WindowEx.Backdrop>
+
     <Grid x:Name="RootGrid">
-        <Grid.RenderTransform>
-            <TranslateTransform x:Name="RootGridTransform" X="0" />
-        </Grid.RenderTransform>
-
         <Grid.Resources>
-            <!-- Enhanced Slide-in animation storyboard -->
-            <Storyboard x:Key="SlideInStoryboard">
-                <DoubleAnimation Storyboard.TargetName="RootGridTransform"
-                               Storyboard.TargetProperty="X"
-                               From="300"
-                               To="0"
-                               Duration="0:0:0.4">
-                    <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut" />
-                    </DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
-                <DoubleAnimation Storyboard.TargetName="RootGrid"
-                               Storyboard.TargetProperty="Opacity"
-                               From="0"
-                               To="1"
-                               Duration="0:0:0.3" />
-                <DoubleAnimation Storyboard.TargetName="MainContainer"
-                               Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                               From="20"
-                               To="0"
-                               Duration="0:0:0.5">
-                    <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut" />
-                    </DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
-            </Storyboard>
-
-            <!-- Enhanced Slide-out animation storyboard -->
-            <Storyboard x:Key="SlideOutStoryboard">
-                <DoubleAnimation Storyboard.TargetName="RootGridTransform"
-                               Storyboard.TargetProperty="X"
-                               From="0"
-                               To="300"
-                               Duration="0:0:0.3">
-                    <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseIn" />
-                    </DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
-                <DoubleAnimation Storyboard.TargetName="RootGrid"
-                               Storyboard.TargetProperty="Opacity"
-                               From="1"
-                               To="0"
-                               Duration="0:0:0.2" />
-            </Storyboard>
+            <Style
+                x:Key="FlyoutButtonStyle"
+                BasedOn="{StaticResource SubtleButtonStyle}"
+                TargetType="Button">
+                <Setter Property="Padding" Value="6" />
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+            </Style>
         </Grid.Resources>
-
-        <!-- Main Container with modern design -->
-        <Border x:Name="MainContainer"
-                CornerRadius="8"
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                Margin="0"
-                MaxWidth="640"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top">
-            <Border.RenderTransform>
-                <TranslateTransform Y="0" />
-            </Border.RenderTransform>
-
+        <Border x:Name="MainContainer">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="48" />
                 </Grid.RowDefinitions>
 
-                <!-- Content Area -->
-                <ScrollViewer Grid.Row="0"
-                             ZoomMode="Disabled"
-                             HorizontalScrollMode="Disabled"
-                             HorizontalScrollBarVisibility="Disabled"
-                             VerticalScrollBarVisibility="Auto"
-                             MaxHeight="420"
-                             Padding="8">
+                <!--  Main Container with modern design  -->
+                <Grid
+                    Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,0,1">
+                    <StackPanel
+                        Margin="0,16,0,16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical"
+                        Spacing="16"
+                        Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.IsScanning), Mode=OneWay}">
+                        <ProgressRing
+                            Width="24"
+                            Height="24"
+                            Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                            IsActive="True" />
+                        <TextBlock
+                            x:Name="ScanningMonitorsTextBlock"
+                            x:Uid="ScanningMonitorsText"
+                            HorizontalAlignment="Center"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextAlignment="Center" />
+                    </StackPanel>
 
-                    <StackPanel Spacing="4">
+                    <!--  No Monitors State with InfoBar  -->
+                    <InfoBar
+                        x:Name="NoMonitorsInfoBar"
+                        x:Uid="NoMonitorsText"
+                        IconSource="{ui:FontIconSource Glyph=&#xE7F4;}"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowNoMonitorsMessage, Mode=OneWay}"
+                        Severity="Informational" />
 
-                        <!-- Loading State with modern progress -->
-                        <StackPanel Orientation="Vertical"
-                                   Spacing="16"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.IsScanning), Mode=OneWay}">
-                            <ProgressRing IsActive="True"
-                                         Width="32"
-                                         Height="32"
-                                         Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
-                            <TextBlock x:Name="ScanningMonitorsTextBlock"
-                                      FontSize="12"
-                                      HorizontalAlignment="Center"
-                                      TextAlignment="Center" />
-                        </StackPanel>
-
-                        <!-- No Monitors State with InfoBar -->
-                        <InfoBar x:Name="NoMonitorsInfoBar"
-                                        IsOpen="{x:Bind ViewModel.ShowNoMonitorsMessage, Mode=OneWay}"
-                                        Severity="Informational"
-                                        IsClosable="False"
-                                        Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}">
-                            <InfoBar.IconSource>
-                                <FontIconSource Glyph="&#xE7F4;" />
-                            </InfoBar.IconSource>
-                            <TextBlock x:Name="NoMonitorsTextBlock" />
-                        </InfoBar>
-
-                        <!-- Monitors List with modern card design -->
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
-                                     Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}"
-                                     HorizontalAlignment="Stretch">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Vertical"
-                                               Spacing="0">
-                                        <StackPanel.ChildrenTransitions>
-                                            <TransitionCollection>
-                                                <EntranceThemeTransition FromVerticalOffset="20" />
-                                                <RepositionThemeTransition IsStaggeringEnabled="True" />
-                                            </TransitionCollection>
-                                        </StackPanel.ChildrenTransitions>
-                                    </StackPanel>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-
-                            <ItemsControl.ItemTemplate>
+                    <!--  Content Area  -->
+                    <ScrollViewer
+                        Padding="16,16,16,16"
+                        HorizontalScrollBarVisibility="Disabled"
+                        HorizontalScrollMode="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        ZoomMode="Disabled">
+                        <!--  Monitors List with modern card design  -->
+                        <ItemsRepeater
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
+                            Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Vertical" Spacing="32" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="vm:MonitorViewModel">
-                                    <StackPanel Spacing="2" HorizontalAlignment="Stretch">
-                                        <StackPanel.ChildrenTransitions>
-                                            <TransitionCollection>
-                                                <EntranceThemeTransition FromVerticalOffset="8" />
-                                                <RepositionThemeTransition />
-                                            </TransitionCollection>
-                                        </StackPanel.ChildrenTransitions>
+                                    <StackPanel HorizontalAlignment="Stretch" Spacing="4">
+                                        <!--  Monitor Name with Icon  -->
+                                        <Grid HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="16" />
+                                                <!--  Spacing  -->
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon
+                                                x:Uid="MonitorTooltip"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                FontSize="14"
+                                                Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind Name, Mode=OneWay}" />
+                                        </Grid>
+                                        <!--  Brightness Control  -->
+                                        <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="16" />
+                                                <!--  Spacing  -->
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon
+                                                x:Uid="BrightnessTooltip"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                FontSize="14"
+                                                Glyph="&#xE706;" />
+                                            <Slider
+                                                x:Uid="BrightnessAutomation"
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                Maximum="{x:Bind MaxBrightness, Mode=OneWay}"
+                                                Minimum="{x:Bind MinBrightness, Mode=OneWay}"
+                                                PointerCaptureLost="Slider_PointerCaptureLost"
+                                                Tag="Brightness"
+                                                ValueChanged="Slider_ValueChanged"
+                                                Value="{x:Bind Brightness, Mode=OneWay}" />
+                                        </Grid>
 
-                                        <!-- Monitor Name with Icon -->
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="12"
-                                                    Padding="12,8">
-                                            <FontIcon Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}"
-                                                      FontSize="20"
-                                                      VerticalAlignment="Center"
-                                                      HorizontalAlignment="Center" />
-                                            <TextBlock Text="{x:Bind Name, Mode=OneWay}"
-                                                      FontSize="20"
-                                                      FontWeight="SemiBold"
-                                                      VerticalAlignment="Center" />
-                                        </StackPanel>
+                                        <!--  Visibility="{x:Bind ConvertBoolToVisibility(ShowContrast), Mode=OneWay}"  -->
 
-                                                    <!-- Brightness Control -->
-                                                    <Grid Height="40" HorizontalAlignment="Stretch">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="1*"/>
-                                                            <ColumnDefinition Width="7*"/>
-                                                            <ColumnDefinition Width="2*"/>
-                                                        </Grid.ColumnDefinitions>
+                                        <!--  Contrast Control  -->
+                                        <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="16" />
+                                                <!--  Spacing  -->
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
-                                                        <FontIcon Grid.Column="0"
-                                                                 Glyph="&#xE793;"
-                                                                 FontSize="14"
-                                                                 VerticalAlignment="Center"
-                                                                 HorizontalAlignment="Center" />
+                                            <FontIcon
+                                                x:Uid="ContrastTooltip"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                FontSize="14"
+                                                Glyph="&#xE7A1;" />
 
-                                                        <Slider Grid.Column="1"
-                                                               HorizontalAlignment="Stretch"
-                                                               MinHeight="32"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,2"
-                                                               Minimum="{x:Bind MinBrightness, Mode=OneWay}"
-                                                               Maximum="{x:Bind MaxBrightness, Mode=OneWay}"
-                                                               Value="{x:Bind Brightness, Mode=OneWay}"
-                                                               ValueChanged="Slider_ValueChanged"
-                                                               PointerCaptureLost="Slider_PointerCaptureLost"
-                                                               Tag="Brightness"
-                                                               IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}" />
+                                            <Slider
+                                                x:Uid="ContrastAutomation"
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                Maximum="100"
+                                                Minimum="0"
+                                                PointerCaptureLost="Slider_PointerCaptureLost"
+                                                Tag="Contrast"
+                                                ValueChanged="Slider_ValueChanged"
+                                                Value="{x:Bind ContrastPercent, Mode=OneWay}" />
+                                        </Grid>
 
-                                                        <TextBlock Grid.Column="2"
-                                                                  FontSize="12"
-                                                                  FontWeight="SemiBold"
-                                                                  HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center"
-                                                                  Text="{x:Bind Brightness, Mode=OneWay}" />
-                                                    </Grid>
+                                        <!--  Visibility="{x:Bind ConvertBoolToVisibility(ShowVolume), Mode=OneWay}">  -->
+                                        <!--  Volume Control  -->
+                                        <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="16" />
+                                                <!--  Spacing  -->
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
-                                                    <!-- Color Temperature Control removed - now in Settings UI -->
-
-                                                    <!-- Contrast Control -->
-                                                    <Grid Height="40"
-                                                          HorizontalAlignment="Stretch"
-                                                          Visibility="{x:Bind ConvertBoolToVisibility(ShowContrast), Mode=OneWay}">
-                                                        <Grid.Transitions>
-                                                            <TransitionCollection>
-                                                                <EntranceThemeTransition FromVerticalOffset="10" />
-                                                                <RepositionThemeTransition />
-                                                            </TransitionCollection>
-                                                        </Grid.Transitions>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="1*"/>
-                                                            <ColumnDefinition Width="7*"/>
-                                                            <ColumnDefinition Width="2*"/>
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <FontIcon Grid.Column="0"
-                                                                 Glyph="&#xE7A6;"
-                                                                 FontSize="14"
-                                                                 VerticalAlignment="Center"
-                                                                 HorizontalAlignment="Center" />
-
-                                                        <Slider Grid.Column="1"
-                                                               HorizontalAlignment="Stretch"
-                                                               MinHeight="32"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,2"
-                                                               Minimum="0"
-                                                               Maximum="100"
-                                                               Value="{x:Bind ContrastPercent, Mode=OneWay}"
-                                                               ValueChanged="Slider_ValueChanged"
-                                                               PointerCaptureLost="Slider_PointerCaptureLost"
-                                                               Tag="Contrast"
-                                                               IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}" />
-
-                                                        <TextBlock Grid.Column="2"
-                                                                  FontSize="12"
-                                                                  FontWeight="SemiBold"
-                                                                  HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center">
-                                                            <Run Text="{x:Bind Contrast, Mode=OneWay}" />
-                                                            <Run Text="%" FontSize="9" />
-                                                        </TextBlock>
-                                                    </Grid>
-
-                                                    <!-- Volume Control -->
-                                                    <Grid Height="40"
-                                                          HorizontalAlignment="Stretch"
-                                                          Visibility="{x:Bind ConvertBoolToVisibility(ShowVolume), Mode=OneWay}">
-                                                        <Grid.Transitions>
-                                                            <TransitionCollection>
-                                                                <EntranceThemeTransition FromVerticalOffset="10" />
-                                                                <RepositionThemeTransition />
-                                                            </TransitionCollection>
-                                                        </Grid.Transitions>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="1*"/>
-                                                            <ColumnDefinition Width="7*"/>
-                                                            <ColumnDefinition Width="2*"/>
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <FontIcon Grid.Column="0"
-                                                                 Glyph="&#xE767;"
-                                                                 FontSize="14"
-                                                                 VerticalAlignment="Center"
-                                                                 HorizontalAlignment="Center" />
-
-                                                        <Slider Grid.Column="1"
-                                                               HorizontalAlignment="Stretch"
-                                                               MinHeight="32"
-                                                               VerticalAlignment="Center"
-                                                               Margin="0,2"
-                                                               Minimum="{x:Bind MinVolume, Mode=OneWay}"
-                                                               Maximum="{x:Bind MaxVolume, Mode=OneWay}"
-                                                               Value="{x:Bind Volume, Mode=OneWay}"
-                                                               ValueChanged="Slider_ValueChanged"
-                                                               PointerCaptureLost="Slider_PointerCaptureLost"
-                                                               Tag="Volume"
-                                                               IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}" />
-
-                                                        <TextBlock Grid.Column="2"
-                                                                  FontSize="12"
-                                                                  FontWeight="SemiBold"
-                                                                  HorizontalAlignment="Center"
-                                                                  VerticalAlignment="Center">
-                                                            <Run Text="{x:Bind Volume, Mode=OneWay}" />
-                                                            <Run Text="%" FontSize="9" />
-                                                        </TextBlock>
-                                                    </Grid>
-
+                                            <FontIcon
+                                                x:Uid="VolumeTooltip"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                FontSize="14"
+                                                Glyph="&#xE767;" />
+                                            <Slider
+                                                x:Uid="VolumeAutomation"
+                                                Grid.Column="2"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Center"
+                                                IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                Maximum="{x:Bind MaxVolume, Mode=OneWay}"
+                                                Minimum="{x:Bind MinVolume, Mode=OneWay}"
+                                                PointerCaptureLost="Slider_PointerCaptureLost"
+                                                Tag="Volume"
+                                                ValueChanged="Slider_ValueChanged"
+                                                Value="{x:Bind Volume, Mode=OneWay}" />
+                                        </Grid>
                                     </StackPanel>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </ScrollViewer>
-
-                <!-- Status Bar with modern design -->
-                <Grid Grid.Row="1"
-                      BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                      BorderThickness="0,1,0,0"
-                      Padding="8">
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </ScrollViewer>
+                </Grid>
+                <!--  Status Bar with modern design  -->
+                <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Status Information -->
-                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                        <TextBlock x:Name="AdjustBrightnessTextBlock"
-                                  FontSize="16"
-                                  FontWeight="SemiBold" />
-                    </StackPanel>
-
-                    <!-- Action Buttons -->
-                    <StackPanel Grid.Column="1"
-                               Orientation="Horizontal"
-                               Spacing="4"
-                               VerticalAlignment="Center">
-                        <Button x:Name="LinkButton"
-                               Width="40"
-                               Height="40"
-                               CornerRadius="4"
-                               Background="Transparent"
-                               BorderThickness="0"
-                               ToolTipService.ToolTip="Sync all monitors">
-                            <FontIcon Glyph="&#xE71B;" FontSize="16" />
-                        </Button>
-                        <Button x:Name="DisableButton"
-                               Width="40"
-                               Height="40"
-                               CornerRadius="4"
-                               Background="Transparent"
-                               BorderThickness="0"
-                               ToolTipService.ToolTip="Toggle control">
-                            <FontIcon Glyph="&#xE7E8;" FontSize="16" />
-                        </Button>
-                        <Button x:Name="RefreshButton"
-                               Width="40"
-                               Height="40"
-                               CornerRadius="4"
-                               Background="Transparent"
-                               BorderThickness="0"
-                               ToolTipService.ToolTip="Refresh monitors">
-                            <FontIcon Glyph="&#xE72C;" FontSize="16" />
+                    <!--  Action Buttons  -->
+                    <StackPanel
+                        Grid.Column="1"
+                        Margin="0,0,12,0"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            x:Name="LinkButton"
+                            x:Uid="SyncAllMonitorsTooltip"
+                            Click="OnLinkClick"
+                            Content="{ui:FontIcon Glyph=&#xE71B;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}" />
+                        <Button
+                            x:Name="DisableButton"
+                            x:Uid="DisableControlTooltip"
+                            Click="OnDisableClick"
+                            Content="{ui:FontIcon Glyph=&#xE7E8;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}" />
+                        <Button
+                            x:Name="RefreshButton"
+                            x:Uid="RefreshTooltip"
+                            Click="OnRefreshClick"
+                            Content="{ui:FontIcon Glyph=&#xE72C;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}" />
+                        <Button
+                            x:Name="SettingsBtn"
+                            x:Uid="SettingsTooltip"
+                            Padding="6"
+                            Click="OnSettingsClick"
+                            Style="{StaticResource FlyoutButtonStyle}">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="SettingsTooltip" />
+                            </ToolTipService.ToolTip>
+                            <AnimatedIcon x:Name="SearchAnimatedIcon">
+                                <AnimatedIcon.Source>
+                                    <animatedVisuals:AnimatedSettingsVisualSource />
+                                </AnimatedIcon.Source>
+                                <AnimatedIcon.FallbackIconSource>
+                                    <SymbolIconSource Symbol="Setting" />
+                                </AnimatedIcon.FallbackIconSource>
+                            </AnimatedIcon>
                         </Button>
                     </StackPanel>
                 </Grid>
             </Grid>
         </Border>
     </Grid>
-</Window>
+</winuiex:WindowEx>

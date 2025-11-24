@@ -31,12 +31,11 @@ namespace PowerDisplay.Configuration
         public static class UI
         {
             // Window dimensions
-            public const int WindowWidth = 640;
+            public const int WindowWidth = 362;
             public const int MaxWindowHeight = 650;
-            public const int WindowRightMargin = 10;
+            public const int WindowRightMargin = 12;
 
             // Animation and layout update delays (milliseconds)
-            public const int AnimationDelayMs = 100;
             public const int LayoutUpdateDelayMs = 50;
             public const int MonitorDiscoveryDelayMs = 200;
 
@@ -48,7 +47,7 @@ namespace PowerDisplay.Configuration
             /// <summary>
             /// Icon glyph for internal/laptop displays (WMI)
             /// </summary>
-            public const string InternalMonitorGlyph = "\uEA37";
+            public const string InternalMonitorGlyph = "\uE7F8";
 
             /// <summary>
             /// Icon glyph for external monitors (DDC/CI)

@@ -23,6 +23,7 @@ using PowerDisplay.Helpers;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
 using WinRT.Interop;
+using WinUIEx;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay
@@ -31,7 +32,7 @@ namespace PowerDisplay
     /// PowerDisplay main window
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
-    public sealed partial class MainWindow : Window, IDisposable
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
         private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private MainViewModel _viewModel = null!;
@@ -53,18 +54,15 @@ namespace PowerDisplay
                 // 1. Configure window immediately (synchronous, no data dependency)
                 ConfigureWindow();
 
-                // 2. Initialize UI text (synchronous, lightweight)
-                InitializeUIText();
-
-                // 3. Create ViewModel immediately (lightweight object, no scanning yet)
+                // 2. Create ViewModel immediately (lightweight object, no scanning yet)
                 _viewModel = new MainViewModel();
                 RootGrid.DataContext = _viewModel;
                 Bindings.Update();
 
-                // 4. Register event handlers
+                // 3. Register event handlers
                 RegisterEventHandlers();
 
-                // 5. Start background initialization (don't wait)
+                // 4. Start background initialization (don't wait)
                 _ = Task.Run(async () =>
                 {
                     try
@@ -99,11 +97,6 @@ namespace PowerDisplay
             _viewModel.UIRefreshRequested += OnUIRefreshRequested;
             _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
             _viewModel.PropertyChanged += OnViewModelPropertyChanged;
-
-            // Button events
-            LinkButton.Click += OnLinkClick;
-            DisableButton.Click += OnDisableClick;
-            RefreshButton.Click += OnRefreshClick;
         }
 
         private bool _hasInitialized;
@@ -144,36 +137,6 @@ namespace PowerDisplay
             {
                 Logger.LogError($"Initialization failed: {ex.Message}");
                 DispatcherQueue.TryEnqueue(() => ShowError($"Initialization failed: {ex.Message}"));
-            }
-        }
-
-        private void InitializeUIText()
-        {
-            try
-            {
-                var loader = ResourceLoaderInstance.ResourceLoader;
-
-                // Set text block content
-                ScanningMonitorsTextBlock.Text = loader.GetString("ScanningMonitorsText");
-                NoMonitorsTextBlock.Text = loader.GetString("NoMonitorsText");
-                AdjustBrightnessTextBlock.Text = loader.GetString("AdjustBrightnessText");
-
-                // Set button tooltips
-                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(LinkButton, loader.GetString("SyncAllMonitorsTooltip"));
-                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(DisableButton, loader.GetString("ToggleControlTooltip"));
-                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(RefreshButton, loader.GetString("RefreshTooltip"));
-            }
-            catch (Exception ex)
-            {
-                // Use English defaults if resource loading fails
-                Logger.LogWarning($"Failed to load localized strings: {ex.Message}");
-                ScanningMonitorsTextBlock.Text = "Scanning monitors...";
-                NoMonitorsTextBlock.Text = "No monitors detected";
-                AdjustBrightnessTextBlock.Text = "PowerDisplay";
-
-                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(LinkButton, "Synchronize all monitors to the same brightness");
-                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(DisableButton, "Enable or disable brightness control");
-                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(RefreshButton, "Rescan connected monitors");
             }
         }
 
@@ -248,27 +211,14 @@ namespace PowerDisplay
                     Logger.LogWarning("AppWindow is null, skipping window repositioning");
                 }
 
-                RootGrid.Opacity = 0;
                 this.Activate();
                 WindowHelper.ShowWindow(hWnd, true);
                 WindowHelpers.BringToForeground(hWnd);
-
-                if (RootGrid.Resources.ContainsKey("SlideInStoryboard"))
-                {
-                    var slideInStoryboard = RootGrid.Resources["SlideInStoryboard"] as Storyboard;
-                    slideInStoryboard?.Begin();
-                }
-                else
-                {
-                    Logger.LogWarning("SlideInStoryboard not found, window will appear without animation");
-                    RootGrid.Opacity = 1;
-                }
 
                 bool isVisible = IsWindowVisible();
                 if (!isVisible)
                 {
                     Logger.LogError("Window not visible after show attempt, forcing visibility");
-                    RootGrid.Opacity = 1;
                     this.Activate();
                     WindowHelpers.BringToForeground(hWnd);
                 }
@@ -284,25 +234,8 @@ namespace PowerDisplay
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-            // Use storyboard animation for window exit
-            if (RootGrid.Resources.ContainsKey("SlideOutStoryboard"))
-            {
-                var slideOutStoryboard = RootGrid.Resources["SlideOutStoryboard"] as Storyboard;
-                if (slideOutStoryboard != null)
-                {
-                    slideOutStoryboard.Completed += (s, e) =>
-                    {
-                        // Hide window after animation completes
-                        WindowHelper.ShowWindow(hWnd, false);
-                    };
-                    slideOutStoryboard.Begin();
-                }
-            }
-            else
-            {
-                // Fallback: hide immediately if animation not found
-                WindowHelper.ShowWindow(hWnd, false);
-            }
+            // Fallback: hide immediately if animation not found
+            WindowHelper.ShowWindow(hWnd, false);
         }
 
         /// <summary>
@@ -496,6 +429,11 @@ namespace PowerDisplay
             }
         }
 
+        private void OnSettingsClick(object sender, RoutedEventArgs e)
+        {
+            // TO DO: Open PowerDisplay settings screen
+        }
+
         /// <summary>
         /// Configure window properties (synchronous, no data dependency)
         /// </summary>
@@ -558,26 +496,6 @@ namespace PowerDisplay
 
                         // Disable title bar interaction area
                         titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
-                    }
-
-                    // Set modern Mica Alt backdrop for Windows 11
-                    try
-                    {
-                        // Use Mica Alt for a more modern appearance
-                        if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
-                        {
-                            this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
-                        }
-                        else
-                        {
-                            // Fallback to basic backdrop for older systems
-                            this.SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
-                        }
-                    }
-                    catch
-                    {
-                        // Fallback: use solid color background
-                        this.SystemBackdrop = null;
                     }
 
                     // Use Win32 API to further disable window moving

@@ -296,8 +296,8 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// WMI monitors (laptop internal displays) use laptop icon, others use external monitor icon
     /// </summary>
     public string MonitorIconGlyph => _monitor.CommunicationMethod?.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
-        ? AppConstants.UI.InternalMonitorGlyph
-        : AppConstants.UI.ExternalMonitorGlyph;
+        ? AppConstants.UI.InternalMonitorGlyph // Laptop icon for WMI
+        : AppConstants.UI.ExternalMonitorGlyph; // External monitor icon for DDC/CI and others
 
     // Monitor property ranges
     public int MinBrightness => _monitor.MinBrightness;
@@ -357,14 +357,14 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Color temperature VCP preset value (from VCP code 0x14).
+    /// Gets color temperature VCP preset value (from VCP code 0x14).
     /// Read-only in flyout UI - controlled via Settings UI.
     /// Returns the raw VCP value (e.g., 0x05 for 6500K).
     /// </summary>
     public int ColorTemperature => _monitor.CurrentColorTemperature;
 
     /// <summary>
-    /// Human-readable color temperature preset name (e.g., "6500K", "sRGB")
+    /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
     /// </summary>
     public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
 
