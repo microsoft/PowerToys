@@ -16,17 +16,9 @@
     IsTitleBarVisible="False"
     MinHeight="0"
     MinWidth="0">
-    <winuiex:WindowEx.Backdrop>
-        <winuiex:AcrylicSystemBackdrop
-            DarkFallbackColor="#1c1c1c"
-            DarkLuminosityOpacity="0.96"
-            DarkTintColor="#202020"
-            DarkTintOpacity="0.5"
-            LightFallbackColor="#EEEEEE"
-            LightLuminosityOpacity="0.90"
-            LightTintColor="#F3F3F3"
-            LightTintOpacity="0" />
-    </winuiex:WindowEx.Backdrop>
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
 
     <Grid x:Name="RootGrid">
         <Grid.Resources>
