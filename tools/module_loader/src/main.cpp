@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 #include <Windows.h>
+#include <Tlhelp32.h>
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -73,6 +74,64 @@ int wmain(int argc, wchar_t* argv[])
 {
     std::wcout << L"PowerToys Module Loader v1.0\n";
     std::wcout << L"=============================\n\n";
+
+    // Check if PowerToys.exe is running
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot != INVALID_HANDLE_VALUE)
+    {
+        PROCESSENTRY32W pe32;
+        pe32.dwSize = sizeof(PROCESSENTRY32W);
+        
+        bool powerToysRunning = false;
+        if (Process32FirstW(hSnapshot, &pe32))
+        {
+            do
+            {
+                if (_wcsicmp(pe32.szExeFile, L"PowerToys.exe") == 0)
+                {
+                    powerToysRunning = true;
+                    break;
+                }
+            } while (Process32NextW(hSnapshot, &pe32));
+        }
+        CloseHandle(hSnapshot);
+
+        if (powerToysRunning)
+        {
+            // Display warning with VT100 colors
+            // Yellow background (43m), black text (30m), bold (1m)
+            std::wcout << L"\033[1;43;30m WARNING \033[0m PowerToys.exe is currently running!\n\n";
+            
+            // Red text for important message
+            std::wcout << L"\033[1;31m";
+            std::wcout << L"Running ModuleLoader while PowerToys is active may cause conflicts:\n";
+            std::wcout << L"  - Duplicate hotkey registrations\n";
+            std::wcout << L"  - Conflicting module instances\n";
+            std::wcout << L"  - Unexpected behavior\n";
+            std::wcout << L"\033[0m\n"; // Reset color
+            
+            // Cyan text for recommendation
+            std::wcout << L"\033[1;36m";
+            std::wcout << L"RECOMMENDATION: Exit PowerToys before continuing.\n";
+            std::wcout << L"\033[0m\n"; // Reset color
+            
+            // Yellow text for prompt
+            std::wcout << L"\033[1;33m";
+            std::wcout << L"Do you want to continue anyway? (y/N): ";
+            std::wcout << L"\033[0m"; // Reset color
+            
+            wchar_t response = L'\0';
+            std::wcin >> response;
+            
+            if (response != L'y' && response != L'Y')
+            {
+                std::wcout << L"\nExiting. Please close PowerToys and try again.\n";
+                return 1;
+            }
+            
+            std::wcout << L"\n";
+        }
+    }
 
     // Parse command-line arguments
     if (argc < 2)
