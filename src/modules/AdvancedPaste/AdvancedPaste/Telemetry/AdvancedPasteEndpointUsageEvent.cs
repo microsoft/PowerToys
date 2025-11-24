@@ -19,9 +19,27 @@ public class AdvancedPasteEndpointUsageEvent : EventBase, IEvent
     /// </summary>
     public string ProviderType { get; set; }
 
-    public AdvancedPasteEndpointUsageEvent(AIServiceType providerType)
+    /// <summary>
+    /// Gets or sets the configured model name.
+    /// </summary>
+    public string ModelName { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the advanced AI pipeline was used.
+    /// </summary>
+    public bool IsAdvanced { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total duration in milliseconds, or -1 if unavailable.
+    /// </summary>
+    public int DurationMs { get; set; }
+
+    public AdvancedPasteEndpointUsageEvent(AIServiceType providerType, string modelName, bool isAdvanced, int durationMs = -1)
     {
         ProviderType = providerType.ToString();
+        ModelName = modelName;
+        IsAdvanced = isAdvanced;
+        DurationMs = durationMs;
     }
 
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

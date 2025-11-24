@@ -142,7 +142,7 @@ BLACKFRAME
 BLENDFUNCTION
 blittable
 Blockquotes
-Blt
+blt
 BLURBEHIND
 BLURREGION
 bmi
@@ -1877,6 +1877,7 @@ UPDATENOW
 UPDATEREGISTRY
 updown
 UPGRADINGPRODUCTCODE
+upscaling
 Uptool
 urld
 Usb

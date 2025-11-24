@@ -40,6 +40,8 @@ namespace AdvancedPaste.Settings
 
         public bool CloseAfterLosingFocus { get; private set; }
 
+        public bool EnableClipboardPreview { get; private set; }
+
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
@@ -53,6 +55,7 @@ namespace AdvancedPaste.Settings
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            EnableClipboardPreview = true;
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
@@ -107,6 +110,7 @@ namespace AdvancedPaste.Settings
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
+                                EnableClipboardPreview = properties.EnableClipboardPreview;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
@@ -164,6 +168,15 @@ namespace AdvancedPaste.Settings
             }
 
             var properties = settings.Properties;
+            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
+            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
+
+            if (legacyCredential is null)
+            {
+                return legacyAdvancedAIConsumed;
+            }
+
             var configuration = properties.PasteAIConfiguration;
 
             if (configuration is null)
@@ -172,30 +185,11 @@ namespace AdvancedPaste.Settings
                 properties.PasteAIConfiguration = configuration;
             }
 
-            bool hasLegacyProviders = configuration.LegacyProviderConfigurations is { Count: > 0 };
-            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
-            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
-            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
-
-            if (!hasLegacyProviders && legacyCredential is null && !legacyAdvancedAIConsumed)
-            {
-                return false;
-            }
-
             bool configurationUpdated = false;
 
-            if (hasLegacyProviders)
-            {
-                configurationUpdated |= AdvancedPasteMigrationHelper.MigrateLegacyProviderConfigurations(configuration);
-            }
-
-            PasteAIProviderDefinition openAIProvider = null;
-            if (legacyCredential is not null || hasLegacyProviders || legacyAdvancedAIConsumed)
-            {
-                var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
-                openAIProvider = ensureResult.Provider;
-                configurationUpdated |= ensureResult.Updated;
-            }
+            var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
+            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            configurationUpdated |= ensureResult.Updated;
 
             if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
             {
@@ -203,16 +197,17 @@ namespace AdvancedPaste.Settings
                 configurationUpdated = true;
             }
 
-            if (legacyCredential is not null && openAIProvider is not null)
+            if (openAIProvider is not null)
             {
                 StoreMigratedOpenAICredential(openAIProvider.Id, openAIProvider.ServiceType, legacyCredential.Password);
                 RemoveLegacyOpenAICredential();
             }
 
+            const bool shouldEnableAI = true;
             bool enabledUpdated = false;
-            if (!properties.IsAIEnabled && legacyCredential is not null)
+            if (properties.IsAIEnabled != shouldEnableAI)
             {
-                properties.IsAIEnabled = true;
+                properties.IsAIEnabled = shouldEnableAI;
                 enabledUpdated = true;
             }
 
