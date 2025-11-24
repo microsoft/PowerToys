@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -70,6 +71,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
         }
+
+        public string MonitorIconGlyph => CommunicationMethod.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
+    ? "\uE7F8" // Laptop icon for WMI
+    : "\uE7F4"; // External monitor icon for DDC/CI and others
 
         [JsonPropertyName("internalName")]
         public string InternalName
