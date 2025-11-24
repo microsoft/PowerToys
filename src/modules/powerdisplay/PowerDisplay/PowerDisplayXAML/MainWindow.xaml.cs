@@ -215,6 +215,12 @@ namespace PowerDisplay
                 WindowHelper.ShowWindow(hWnd, true);
                 WindowHelpers.BringToForeground(hWnd);
 
+                // Force a resize AFTER the window is shown.
+                // This is critical because the OS might restore the window to a previous (incorrect) size
+                // when ShowWindow is called, ignoring our pre-show adjustment.
+                // By queuing this on the dispatcher, we ensure it runs after the window is visible and layout is active.
+                DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
+
                 bool isVisible = IsWindowVisible();
                 if (!isVisible)
                 {
@@ -521,8 +527,11 @@ namespace PowerDisplay
             {
                 if (_appWindow == null || RootGrid == null)
                 {
+                    Logger.LogWarning("[AdjustSize] _appWindow or RootGrid is null, aborting");
                     return;
                 }
+
+                Logger.LogDebug($"[AdjustSize] Starting adjustment, current window size: {_appWindow.Size.Width}x{_appWindow.Size.Height}");
 
                 // Force layout update to ensure proper measurement
                 RootGrid.UpdateLayout();
@@ -531,22 +540,47 @@ namespace PowerDisplay
                 var availableWidth = (double)AppConstants.UI.WindowWidth;
                 var contentHeight = GetContentHeight(availableWidth);
 
-                // Account for display scaling
-                var scale = RootGrid.XamlRoot?.RasterizationScale ?? 1.0;
-                var scaledHeight = (int)Math.Ceiling(contentHeight * scale);
+                Logger.LogDebug($"[AdjustSize] Content height from measurement: {contentHeight} DIU");
 
-                // Only set maximum height for scrollable content
-                scaledHeight = Math.Min(scaledHeight, AppConstants.UI.MaxWindowHeight);
+                // Use unified DPI scaling method (consistent with FlyoutWindow pattern)
+                double dpiScale = WindowHelper.GetDpiScale(this);
+                Logger.LogDebug($"[AdjustSize] DPI scale: {dpiScale} ({dpiScale * 100}%)");
+
+                int scaledHeight = WindowHelper.ScaleToPhysicalPixels((int)Math.Ceiling(contentHeight), dpiScale);
+                Logger.LogDebug($"[AdjustSize] Scaled height (physical pixels): {scaledHeight}");
+
+                // Apply maximum height limit (also needs DPI scaling)
+                int maxHeight = WindowHelper.ScaleToPhysicalPixels(AppConstants.UI.MaxWindowHeight, dpiScale);
+                Logger.LogDebug($"[AdjustSize] Max height limit (physical pixels): {maxHeight}");
+
+                scaledHeight = Math.Min(scaledHeight, maxHeight);
+                Logger.LogDebug($"[AdjustSize] Final scaled height after limit: {scaledHeight}");
 
                 // Check if resize is needed
                 var currentSize = _appWindow.Size;
                 if (Math.Abs(currentSize.Height - scaledHeight) > 1)
                 {
-                    _appWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = scaledHeight });
+                    Logger.LogInfo($"[AdjustSize] Resize needed: current={currentSize.Height}, target={scaledHeight}");
 
-                    // Reposition to maintain bottom-right position
-                    PositionWindowAtBottomRight(_appWindow);
+                    // Convert scaled height back to DIU and reposition using DPI-aware method
+                    int heightInDiu = (int)Math.Ceiling(scaledHeight / dpiScale);
+                    Logger.LogDebug($"[AdjustSize] Height in DIU for positioning: {heightInDiu}");
+
+                    WindowHelper.PositionWindowBottomRight(
+                        this,
+                        AppConstants.UI.WindowWidth,
+                        heightInDiu,
+                        AppConstants.UI.WindowRightMargin);
+
+                    Logger.LogInfo($"[AdjustSize] Window repositioned to bottom-right with size {AppConstants.UI.WindowWidth}x{heightInDiu} DIU");
                 }
+                else
+                {
+                    Logger.LogDebug($"[AdjustSize] No resize needed, height difference < 1px");
+                }
+
+                // Log actual element sizes after layout
+                LogActualSizes();
             }
             catch (Exception ex)
             {
@@ -554,40 +588,78 @@ namespace PowerDisplay
             }
         }
 
+        private void LogActualSizes()
+        {
+            try
+            {
+                if (RootGrid.FindName("ContentArea") is Border contentArea)
+                {
+                    Logger.LogDebug($"[Layout] ContentArea ActualSize: {contentArea.ActualWidth}x{contentArea.ActualHeight}");
+                    Logger.LogDebug($"[Layout] ContentArea DesiredSize: {contentArea.DesiredSize.Width}x{contentArea.DesiredSize.Height}");
+                }
+
+                if (RootGrid.FindName("MainScrollViewer") is ScrollViewer scrollViewer)
+                {
+                    Logger.LogDebug($"[Layout] MainScrollViewer ActualSize: {scrollViewer.ActualWidth}x{scrollViewer.ActualHeight}");
+                    Logger.LogDebug($"[Layout] MainScrollViewer DesiredSize: {scrollViewer.DesiredSize.Width}x{scrollViewer.DesiredSize.Height}");
+                    Logger.LogDebug($"[Layout] MainScrollViewer Padding: {scrollViewer.Padding}");
+                    Logger.LogDebug($"[Layout] MainScrollViewer VerticalAlignment: {scrollViewer.VerticalAlignment}");
+                }
+
+                if (RootGrid.FindName("StatusBar") is Grid statusBar)
+                {
+                    Logger.LogDebug($"[Layout] StatusBar ActualSize: {statusBar.ActualWidth}x{statusBar.ActualHeight}");
+                    Logger.LogDebug($"[Layout] StatusBar DesiredSize: {statusBar.DesiredSize.Width}x{statusBar.DesiredSize.Height}");
+                    Logger.LogDebug($"[Layout] StatusBar MaxHeight: {statusBar.MaxHeight}");
+                    Logger.LogDebug($"[Layout] StatusBar Padding: {statusBar.Padding}");
+                }
+
+                if (RootGrid.FindName("MainContainer") is Border mainContainer && mainContainer.Child is Grid mainGrid)
+                {
+                    Logger.LogDebug($"[Layout] MainContainer.Child (Grid) ActualSize: {mainGrid.ActualWidth}x{mainGrid.ActualHeight}");
+
+                    // Log RowDefinitions actual heights
+                    for (int i = 0; i < mainGrid.RowDefinitions.Count; i++)
+                    {
+                        var rowDef = mainGrid.RowDefinitions[i];
+                        Logger.LogDebug($"[Layout] RowDefinition[{i}]: Height={rowDef.Height}, ActualHeight={rowDef.ActualHeight}");
+                    }
+                }
+
+                // Log window's actual size
+                Logger.LogDebug($"[Layout] Window Size: {_appWindow.Size.Width}x{_appWindow.Size.Height}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"[Layout] Error logging actual sizes: {ex.Message}");
+            }
+        }
+
         private double GetContentHeight(double availableWidth)
         {
-            // Try to measure MainContainer directly for precise content size
-            if (RootGrid.FindName("MainContainer") is Border mainContainer)
+            // Elegant solution: Measure the MainContainer directly.
+            // This lets the XAML layout engine calculate the exact height required by all visible content,
+            // automatically handling padding, margins, visibility, and spacing.
+            if (RootGrid.FindName("MainContainer") is FrameworkElement container)
             {
-                mainContainer.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
-                return mainContainer.DesiredSize.Height;
+                container.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
+                Logger.LogDebug($"[Measure] MainContainer desired height: {container.DesiredSize.Height}");
+                return container.DesiredSize.Height;
             }
 
-            // Fallback: Measure the root grid
-            RootGrid.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
-            return RootGrid.DesiredSize.Height + 4; // Small padding for fallback method
+            return 0;
         }
 
         private void PositionWindowAtBottomRight(AppWindow appWindow)
         {
             try
             {
-                // Get display area
-                var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest);
-                if (displayArea != null)
-                {
-                    var workArea = displayArea.WorkArea;
-                    var windowSize = appWindow.Size;
-
-                    // Calculate bottom-right position, close to taskbar
-                    // WorkArea already excludes taskbar area, so use WorkArea bottom directly
-                    int rightMargin = AppConstants.UI.WindowRightMargin; // Small margin from right edge
-                    int x = workArea.Width - windowSize.Width - rightMargin;
-                    int y = workArea.Height - windowSize.Height; // Close to taskbar top, no gap
-
-                    // Move window to bottom right
-                    appWindow.Move(new PointInt32 { X = x, Y = y });
-                }
+                var windowSize = appWindow.Size;
+                WindowHelper.PositionWindowBottomRight(
+                    this,  // MainWindow inherits from WindowEx
+                    AppConstants.UI.WindowWidth,
+                    windowSize.Height,
+                    AppConstants.UI.WindowRightMargin);
             }
             catch (Exception ex)
             {

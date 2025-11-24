@@ -4,6 +4,9 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using WinUIEx;
 
 namespace PowerDisplay.Helpers
 {
@@ -209,6 +212,61 @@ namespace PowerDisplay.Helpers
                 0,
                 0,
                 SwpNomove | SwpNosize | SwpFramechanged);
+        }
+
+        /// <summary>
+        /// Get the DPI scale factor for a window (relative to standard 96 DPI)
+        /// </summary>
+        /// <param name="window">WinUIEx window</param>
+        /// <returns>DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%)</returns>
+        public static double GetDpiScale(WindowEx window)
+        {
+            return (float)window.GetDpiForWindow() / 96.0;
+        }
+
+        /// <summary>
+        /// Convert device-independent units (DIU) to physical pixels
+        /// </summary>
+        /// <param name="diu">Device-independent unit value</param>
+        /// <param name="dpiScale">DPI scale factor</param>
+        /// <returns>Physical pixel value</returns>
+        public static int ScaleToPhysicalPixels(int diu, double dpiScale)
+        {
+            return (int)Math.Ceiling(diu * dpiScale);
+        }
+
+        /// <summary>
+        /// Position a window at the bottom-right corner of its display area
+        /// </summary>
+        /// <param name="window">WinUIEx window to position</param>
+        /// <param name="width">Window width in device-independent units (DIU)</param>
+        /// <param name="height">Window height in device-independent units (DIU)</param>
+        /// <param name="rightMargin">Right margin in device-independent units (DIU)</param>
+        public static void PositionWindowBottomRight(
+            WindowEx window,
+            int width,
+            int height,
+            int rightMargin = 0)
+        {
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
+
+            if (displayArea == null)
+            {
+                return;
+            }
+
+            // Get DPI scale for this display
+            double dpiScale = GetDpiScale(window);
+
+            // Calculate position in physical pixels
+            // WorkArea dimensions are in physical pixels, so we need to scale our DIU values
+            double x = displayArea.WorkArea.Width - (dpiScale * (width + rightMargin));
+            double y = displayArea.WorkArea.Height - (dpiScale * height);
+
+            // MoveAndResize expects x,y in physical pixels and width,height in DIU
+            window.MoveAndResize(x, y, width, height);
         }
     }
 }
