@@ -111,6 +111,7 @@ public partial class MainViewModel
             // Skip monitors that are marked as hidden in settings
             if (hiddenMonitorIds.Contains(monitor.HardwareId))
             {
+                Logger.LogInfo($"[UpdateMonitorList] Skipping hidden monitor: {monitor.Name} (HardwareId: {monitor.HardwareId})");
                 continue;
             }
 

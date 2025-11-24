@@ -39,6 +39,21 @@ public partial class MainViewModel
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
 
+            // Get hidden monitor IDs from settings
+            var hiddenMonitorIds = GetHiddenMonitorIds(settings);
+
+            // Remove hidden monitors from the collection
+            var monitorsToRemove = Monitors.Where(vm => hiddenMonitorIds.Contains(vm.HardwareId)).ToList();
+            foreach (var monitorVm in monitorsToRemove)
+            {
+                Logger.LogInfo($"[Settings] Removing hidden monitor: {monitorVm.Name} (HardwareId: {monitorVm.HardwareId})");
+                Monitors.Remove(monitorVm);
+            }
+
+            // Notify UI that monitor count changed (critical for ShowNoMonitorsMessage)
+            OnPropertyChanged(nameof(HasMonitors));
+            OnPropertyChanged(nameof(ShowNoMonitorsMessage));
+
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
             ApplyUIConfiguration(settings);
