@@ -81,7 +81,6 @@ public:
     void RemoveObserver(SettingsObserver& observer);
 
     void LoadSettings();
-    void ApplyThemeIfNecessary();
 
     HANDLE GetSettingsChangedEvent() const;
 

@@ -8,7 +8,6 @@
     <ClCompile Include="ZipTools\ZipFolder.cpp">
       <Filter>ZipTools</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />
     <ClCompile Include="EventViewer.cpp" />
@@ -28,8 +27,6 @@
       <Filter>ZipTools</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\common\utils\json.h" />
-    <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
-    <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="EventViewer.h" />

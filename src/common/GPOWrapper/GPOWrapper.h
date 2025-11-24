@@ -60,7 +60,6 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetAllowedAdvancedPasteAzureAIInferenceValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteMistralValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteGoogleValue();
-        static GpoRuleConfigured GetAllowedAdvancedPasteAnthropicValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteOllamaValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteFoundryLocalValue();
         static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
