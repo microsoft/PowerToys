@@ -1,0 +1,48 @@
+<Window
+    x:Class="KeystrokeOverlay.KeystrokeOverlayWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:KeystrokeOverlay"
+    mc:Ignorable="d"
+    SystemBackdrop="TransparentBackdrop"> <!-- Makes the window background transparent -->
+
+    <!-- This Grid acts as the draggable area -->
+    <Grid x:Name="DraggableRegion"
+          Background="Transparent" 
+          Padding="10"
+          PointerPressed="OnPointerPressed"
+          PointerMoved="OnPointerMoved"
+          PointerReleased="OnPointerReleased">
+
+        <!-- This ItemsControl will display all keys in the ActiveKeys collection -->
+        <ItemsControl ItemsSource="{x:Bind ActiveKeys}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <!-- Keys will be arranged horizontally -->
+                    <StackPanel Orientation="Horizontal" Spacing="8"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <!-- 
+                  This DataTemplate tells the ItemsControl how to display each 'KeyModel'.
+                  It uses our 'KeyVisual' UserControl and binds properties to it.
+                  
+                  The KeyText binds to the KeyModel's 'Text' property.
+                  
+                  The style properties (FontSize, Background, Foreground) bind to the
+                  'Settings' object, which is a property on the main Window.
+                -->
+                <DataTemplate x:DataType="local:KeyModel">
+                    <local:KeyVisual
+                        KeyText="{x:Bind Text}"
+                        KeyFontSize="{x:Bind Settings.TextSize, Mode=OneWay}"
+                        KeyBackground="{x:Bind Settings.BackgroundBrush, Mode=OneWay}"
+                        KeyForeground="{x:Bind Settings.TextBrush, Mode=OneWay}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</Window>
