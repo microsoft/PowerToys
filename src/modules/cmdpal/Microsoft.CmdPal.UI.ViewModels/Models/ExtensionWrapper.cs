@@ -105,6 +105,7 @@ public class ExtensionWrapper : IExtensionWrapper
                 if (!IsRunning())
                 {
                     Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
+                    Logger.LogInfo($"Starting extension process for {ExtensionDisplayName} ({ExtensionClassId})");
 
                     unsafe
                     {
@@ -117,6 +118,7 @@ public class ExtensionWrapper : IExtensionWrapper
                             var guid = typeof(IExtension).GUID;
 
                             var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out extensionPtr);
+                            Logger.LogInfo($"CoCreateInstance for {ExtensionDisplayName} returned {hr.Value}");
 
                             if (hr.Value == -2147024893)
                             {
@@ -133,10 +135,12 @@ public class ExtensionWrapper : IExtensionWrapper
 
                             // Marshal.ThrowExceptionForHR(hr);
                             _extensionObject = MarshalInterface<IExtension>.FromAbi((nint)extensionPtr);
+                            Logger.LogInfo($"Successfully marshalled extension object for {ExtensionDisplayName}. Pointer={(nint)extensionPtr}");
                         }
                         catch (Exception e)
                         {
                             Logger.LogDebug($"Failed to start {ExtensionDisplayName}. ex: {e.Message}");
+                            Logger.LogError($"Exception while starting extension {ExtensionDisplayName}", e);
                         }
                         finally
                         {

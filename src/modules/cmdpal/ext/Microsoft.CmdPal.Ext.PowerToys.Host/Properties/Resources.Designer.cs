@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.CmdPal.Ext.PowerToys.Properties {
+namespace Microsoft.CmdPal.Ext.PowerToys.Host.Properties {
     using System;
     
     

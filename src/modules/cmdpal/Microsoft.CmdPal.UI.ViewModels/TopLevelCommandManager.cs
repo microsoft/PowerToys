@@ -316,9 +316,11 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
     {
         Logger.LogDebug($"Starting {extension.PackageFullName}");
+        Logger.LogInfo($"StartExtensionWithTimeoutAsync invoked for {extension.ExtensionUniqueId}");
         try
         {
             await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            Logger.LogInfo($"Extension {extension.ExtensionUniqueId} reported running, creating CommandProviderWrapper.");
             return new CommandProviderWrapper(extension, _taskScheduler);
         }
         catch (Exception ex)

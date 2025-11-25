@@ -1,22 +1,21 @@
-Build a packaged Command Palette extension that exposes com.microsoft.commandpalette, while re-using the existing PowerToys sparse MSIX identity for discovery, activation, COM hosting, and dispatching RPCs to PowerToys Runner which fans out to module interfaces and functions.
+Build a packaged Command Palette extension that exposes com.microsoft.commandpalette, while re-using the existing PowerToys sparse MSIX identity for discovery.
+The extension directly references and consumes PowerToys module libraries (C#) to execute commands, removing the need for inter-process communication (IPC) with the PowerToys Runner for these interactions.
 
 0) Goals / Non-Goals
 
 Goals
 
-Let Command Palette (host) discover a PowerToys extension via the Windows AppExtension contract while code runs out-of-package (sparse).
+Let Command Palette (host) discover a PowerToys extension via the Windows AppExtension contract.
 
-Provide an RPC hop from the host → Runner (named pipe/COM) → Module Interface (DLL boundary) → Module function.
+Provide direct, low-latency execution of PowerToys commands by hosting module logic directly within the Extension process.
 
-Define protocol, capabilities model, error handling, versioning, packaging & identity, lifetime, and telemetry.
+Define a pattern for exposing PowerToys modules as consumable C# libraries.
 
 Non-Goals
 
-Not replacing existing module UIs/workflows.
+Not a general inter-process broker.
 
-Not a general inter-process broker for arbitrary apps.
-
-Not prescribing a specific serialization library; JSON is assumed, but binary is allowed behind the protocol façade.
+Not relying on the PowerToys Runner process to be active for command execution (where possible).
 
 1) Terms
 
@@ -24,41 +23,30 @@ Host: Command Palette process (WinUI3 app) loading extensions.
 
 Extension: sparse packaged project that declares uap3:AppExtension Name="com.microsoft.commandpalette".
 
-Sparse Identity: Microsoft.PowerToys.SparseApp MSIX providing identity & cataloging while binaries live outside the package.
+Module Library: A .NET assembly (DLL) implementing the core logic of a PowerToys module, exposing a public C# API.
 
-Runner: PowerToys core process that exposes a named-pipe RPC service (and optional COM server) for module dispatch.
-
-Module Interface: A stable C ABI / COM ABI surface implemented by each module’s DLL to expose callable methods.
-
-Command: A unit of invocation (e.g., workspace.list, awake.enable, fancyzones.applyLayout).
+Command: A unit of invocation (e.g., workspace.list, awake.enable) mapped directly to a C# method call.
 
 2) High-Level Architecture
 
-1. Command Palette gathers user intent → issues an RPC call to Runner:
+1. Command Palette gathers user intent → Invokes Command Provider in Extension.
 
-```json
-{ "module":"workspace", "method":"list_workspaces", "params":{} }
-```
+2. Extension (running in CmdPal process) calls into the referenced Module Library.
 
-2. Runner RPC Server (named pipe) validates schema, and forwards to the Module Interface Dispatcher (DLL call).
+   ```csharp
+   // Direct C# call
+   var workspaces = _workspacesService.GetWorkspaces();
+   ```
 
-3. Module Interface resolves module+method to a function pointer and marshals parameters.
+3. Module Library executes logic (e.g., reads config, spawns process, applies setting).
 
-4. Module executes function and returns a structured result or error.
-
-5. Response flows back to Host; Host renders result as list/content/toast in Command Palette.
+4. Result is returned directly to the Extension and rendered by Command Palette.
 
 3) Prerequisites
 
-PowerToys sparse package installed:
+PowerToys sparse package installed.
 
-Build/Install from src/PackageIdentity/readme.md to ensure Microsoft.PowerToys.SparseApp is registered.
-
-Command Palette SDK restored:
-
-src/modules/cmdpal/extensionsdk projects (Microsoft.CommandPalette.Extensions, .Toolkit).
-
-Developer cert of the sparse package trusted locally.
+Module Libraries refactored/available as .NET assemblies (e.g., `PowerToys.Workspaces.Lib.dll`).
 
 4) Packaging & Identity
 4.1 Add your executable to the sparse package
@@ -181,683 +169,90 @@ public sealed class PowerToysCommandProvider : CommandProvider
     {
         yield return CommandItem.Run("Workspaces", "List or launch a workspace")
              .WithId("workspace.list")
-             .WithInvoke(async ctx => await RpcInvoke(ctx, "workspace", "list_workspaces", new {}));
+             .WithInvoke(async ctx => {
+                 // Direct call to module library
+                 var workspaces = new WorkspacesService();
+                 var list = workspaces.GetWorkspaces();
+                 // ...
+             });
         // …more commands
     }
 }
 ```
 Use toolkit pages (ListPage, MarkdownContent, FormContent, etc.) to render results.
 
-7) RPC Contract (Host ↔ Runner)
-7.1 Transport
+7) Module Library Pattern
+To expose a module to Command Palette, the module must provide a .NET-consumable library (C# Project or C++/CLI wrapper).
 
-Named pipe (default): \\.\pipe\PowerToys.CmdPal.Rpc
+7.1 Library Responsibilities
+*   **Statelessness:** The library should ideally be stateless or manage state via persistent storage (files, registry) that can be shared between the Runner and the Extension.
+*   **Public API:** Expose high-level methods for commands (e.g., `Launch()`, `Enable()`, `GetState()`).
+*   **Dependencies:** Keep dependencies minimal to avoid bloating the Extension package.
 
-Framing: length-prefixed (uint32 LE) followed by UTF-8 JSON payload.
+7.2 Interface Definition (Recommended)
+Define an interface for your module's capabilities to allow for easy testing and mocking.
 
-Alt: COM interface IPowerToysRpc for in-box activation; keep both for flexibility.
-
-7.2 Message schema (JSON)
-Request
-```json
-{
-  "version": "1.0",
-  "id": "guid-or-ulid",
-  "module": "workspace",
-  "method": "list_workspaces",
-  "params": { "filter": "" },
-  "context": {
-    "caller": "CmdPalExtension",
-    "session": "host-session-id",
-    "uiCulture": "en-US"
-  },
-  "timeoutMs": 8000
-}
-```
-success
-```json
-{
-  "id": "guid-or-ulid",
-  "ok": true,
-  "result": {
-    "items": [
-      { "id": "daily", "title": "Daily Dev", "monitors": 2, "tags": ["dev"] }
-    ]
-  },
-  "elapsedMs": 23
-}
-```
-error
-```json
-{
-  "id": "guid-or-ulid",
-  "ok": false,
-  "error": {
-    "code": "Module.NotFound",
-    "message": "Module 'workspace' is not available",
-    "details": { "installed": false, "suggest": "install-module workspace" },
-    "retryable": false
-  }
-}
-```
-
-7.3 Error codes (minimum set)
-```
-  Bad.Request (schema/validation)
-  Module.NotFound
-  Method.NotFound
-  Module.Failure ()
-  Busy (queue full)
-  NotEnabled(disabled module/functionality possibly due to gpo)
-```
-
-7.4 Versioning
-
-version in request selects contract version; Runner must accept N & N-1 at minimum.
-New optional fields must be ignored by older servers.
-Breaking changes require a new version and capability negotiation during handshake method:
-
-```json
-{ "module":"core","method":"handshake","params":{"want":["rpc/1.0","rpc/1.1"]} }
-```
-
-8) Runner RPC Server
-8.1 Responsibilities
-
-Accept connection, authenticate (see Security), parse & validate schema.
-
-Maintain a dispatcher registry: {module → IModuleDispatcher}.
-
-Apply per-module budgets (CPU time, wall time, memory).
-
-Normalize results and write framed responses.
-
-8.2 Dispatcher interface (C# example)
 ```csharp
-public interface IModuleDispatcher
+public interface IWorkspacesService
 {
-    string Name { get; } // "workspace"
-    RpcResult Invoke(string method, JsonElement @params, RpcContext ctx);
-    IEnumerable<ModuleMethodDescriptor> Describe(); // discovery
+    IEnumerable<Workspace> GetWorkspaces();
+    void LaunchWorkspace(string workspaceId);
+    void LaunchEditor();
 }
 ```
 
-8.3 Discover/Introspection
-Method core.listModules returns:
-```json
+8) Example: Workspaces Module
+The Workspaces module exposes a C# library `PowerToys.Workspaces.Lib` that implements the logic.
+
+8.1 Implementation (in `src/modules/Workspaces/WorkspacesLib`)
+```csharp
+public class WorkspacesService : IWorkspacesService
 {
-  "modules": [
-    { "name":"workspace", "version":"1.2.0", "methods":[
-      { "name":"list_workspaces", "params":{"filter":"string?"}, "returns":"WorkspaceList" }
-    ]}
-  ]
-}
-```
+    public IEnumerable<Workspace> GetWorkspaces()
+    {
+        // Read from settings/storage
+        return WorkspaceStorage.Load();
+    }
 
-9) Module Interface (DLL boundary)
-9.1 ABI
-Flat C exports
-```c++
-// returns newly allocated UTF-8 JSON strings; host frees via provided freeFn
-typedef const char* (__stdcall *invoke_fn)(const char* method, const char* jsonParams, void* ctx);
-typedef const char* (__stdcall *describe_fn)(void);
+    public void LaunchWorkspace(string workspaceId)
+    {
+        // Logic to launch apps defined in the workspace
+        var workspace = WorkspaceStorage.Get(workspaceId);
+        Launcher.Launch(workspace);
+    }
 
-__declspec(dllexport) int __stdcall PT_GetModule(IPTModule** out);
-```
-
-PowerToys ships a helper implementation in `PowertoyModuleIface`. Each module inherits default `describe` / `invoke` implementations so that, at a minimum, a `navigateToSettings` verb is exposed. Modules can override those members to add richer metadata or behaviors, but no module can opt out of providing at least the settings deep link.
-
-9.2 Method routing
-
-* Module receives method and params JSON; validate and route to a function:
-* e.g., workspace.list_workspaces → ListWorkspaces().
-* Return JSON only across the boundary; internal domain types are module private.
-
-9.3 Timeouts & cancellation
-
-Runner injects a deadline in ctx. Modules must honor it (e.g., CancellationToken).
-
-10) Security
-* Named pipe DACL: grant READ/WRITE to S-1-15-2-<PFN SID> and LocalSystem (for service scenarios).
-* No elevation over RPC. If a module requires elevation, respond with Unauthorized and let host prompt the user to re-try elevated via existing PowerToys flow.
-* Validate method white-list per module; deny unknown calls with Method.NotFound.
-
-11) Performance & Reliability (Ignore for now)
-* Budgets:
-RPC parse+dispatch ≤ 2 ms typical.
-Module method wall-time ≤ 200 ms default (configurable by method).
-Response size ≤ 256 KB default (soft limit; paginate long lists).
-* Queuing: bounded per-client queue; overflow → Busy.
-* Crash isolation: module exceptions → Module.Failure with truncated stack info; Runner continues.
-* Back-pressure: Host should not issue more than N in-flight calls (default 4).
-* Telemetry IDs must not contain user content (hash identifiers).
-
-12) Telemetry & Logging
-
-* Event names:
-CmdPal.Rpc.Request, CmdPal.Rpc.Success, CmdPal.Rpc.Error, CmdPal.Rpc.Timeout
-
-* Fields:
-module, method, elapsedMs, resultSize, error.code, version
-
-* PII: none. Truncate strings and never log params.
-
-13) Reference: Minimal Runner RPC (sketch)
- Minimal ABI between Runner and Modules
-```cpp
-// English-only comments as requested.
-
-struct RpcContext
-{
-    std::string caller;        // optional: PFN, cert thumbprint, etc.
-    std::string uiCulture;     // optional
-    uint32_t    deadlineMs;    // per-call budget
-};
-
-struct RpcResult
-{
-    bool ok = false;
-    std::string json;          // if ok=true => result JSON; else => error JSON
-};
-
-struct IModuleDispatcher
-{
-    virtual ~IModuleDispatcher() = default;
-    virtual const char* Name() const = 0; // e.g., "workspace"
-
-    // paramsJson is raw JSON text. Must return JSON text.
-    // Implementations must be exception-safe and never throw across the ABI.
-    virtual RpcResult Invoke(std::string_view method,
-                             std::string_view paramsJson,
-                             const RpcContext& ctx) noexcept = 0;
-
-    // Optional: discovery for core.listModules
-    virtual std::string Describe() const = 0; // JSON
-};
-```
-> Existing DLL interfaces can wrap/adapt to this small surface without changing each module’s internal types.
-
-* Request/Response model
-```cpp
-// Request (UTF-8 JSON)
-struct RpcRequest {
-    std::string id;        // guid/ulid
-    std::string version;   // "1.0"
-    std::string module;    // "workspace"
-    std::string method;    // "list_workspaces"
-    std::string params;    // raw JSON object as string
-    uint32_t    timeoutMs; // 0 => default (e.g., 8000)
-    // optional context omitted for brevity
-};
-
-struct RpcResponse {
-    std::string id;
-    bool ok = false;
-    std::string payload;   // if ok => {"result": {...}}, else => {"error": {...}}
-};
-```
-
-* Named pipe server:
-```cpp
-static bool ReadExact(HANDLE h, void* buf, DWORD cb, DWORD* outRead, DWORD timeoutMs);
-static bool WriteExact(HANDLE h, const void* buf, DWORD cb, DWORD timeoutMs);
-
-static bool ReadFrame(HANDLE h, std::string& out, DWORD timeoutMs)
-{
-    uint32_t len = 0;
-    DWORD got = 0;
-    if (!ReadExact(h, &len, sizeof(len), &got, timeoutMs) || got != sizeof(len)) return false;
-    if (len > (64u * 1024u * 1024u)) return false; // hard cap
-
-    out.resize(len);
-    return ReadExact(h, out.data(), len, &got, timeoutMs) && got == len;
-}
-
-static bool WriteFrame(HANDLE h, std::string_view payload, DWORD timeoutMs)
-{
-    const uint32_t len = static_cast<uint32_t>(payload.size());
-    DWORD wrote = 0;
-    if (!WriteExact(h, &len, sizeof(len), timeoutMs)) return false;
-    return WriteExact(h, payload.data(), len, timeoutMs);
-}
-```
-
-* Json parsing
-Use nlohmann/json. Example:
-```cpp
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
-
-static bool ParseRequest(std::string_view j, RpcRequest& out, std::string& err)
-{
-    try {
-        auto d = json::parse(j);
-        out.id       = d.value("id", "");
-        out.version  = d.value("version", "1.0");
-        out.module   = d.at("module").get<std::string>();
-        out.method   = d.at("method").get<std::string>();
-        out.timeoutMs= d.value("timeoutMs", 8000);
-        if (out.timeoutMs == 0 || out.timeoutMs > 60000) out.timeoutMs = 8000;
-
-        // Keep original params text to avoid re-serialization differences.
-        if (d.contains("params")) {
-            out.params = d["params"].dump();
-        } else {
-            out.params = "{}";
-        }
-        return true;
-    } catch (const std::exception& e) {
-        err = e.what();
-        return false;
+    public void LaunchEditor()
+    {
+        // Launch the editor executable
+        Process.Start("PowerToys.Workspaces.Editor.exe");
     }
 }
 ```
 
-* Module registry and dispatch
-```cpp
-class RpcServer
+8.2 Consumption (in `Microsoft.CmdPal.Ext.PowerToys`)
+The extension project references `PowerToys.Workspaces.Lib.csproj`.
+
+```csharp
+public sealed class PowerToysCommandProvider : CommandProvider
 {
-public:
-    // Inject your concrete module dispatchers here.
-    void Register(std::unique_ptr<IModuleDispatcher> m)
+    private readonly IWorkspacesService _workspaces = new WorkspacesService();
+
+    public override IEnumerable<CommandItem> TopLevelCommands()
     {
-        registry_[m->Name()] = std::move(m);
+        yield return CommandItem.Run("Workspaces", "List or launch a workspace")
+             .WithId("workspace.list")
+             .WithInvoke(async ctx => {
+                 var list = _workspaces.GetWorkspaces();
+                 // Render list page...
+             });
     }
-
-    // Main accept loop on a background thread.
-    void Run(std::atomic_bool& stopToken)
-    {
-        for (;;)
-        {
-            if (stopToken.load()) break;
-
-            SECURITY_ATTRIBUTES sa{ sizeof(sa) };
-            // Optional: build a DACL that allows only the PowerToys PFN SID.
-            HANDLE pipe = CreateNamedPipeW(
-                LR"(\\.\pipe\PowerToys.CmdPal.Rpc)",
-                PIPE_ACCESS_DUPLEX,
-                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                PIPE_UNLIMITED_INSTANCES,
-                1 << 16, 1 << 16,
-                0, &sa);
-
-            if (pipe == INVALID_HANDLE_VALUE) { /* log and retry */ Sleep(200); continue; }
-
-            BOOL ok = ConnectNamedPipe(pipe, nullptr) ? TRUE :
-                      (GetLastError() == ERROR_PIPE_CONNECTED);
-
-            if (!ok) { CloseHandle(pipe); continue; }
-
-            // Serve client on a detached thread; the accept loop immediately repeats.
-            std::thread(&RpcServer::ServeClient, this, pipe).detach();
-        }
-    }
-
-private:
-    void ServeClient(HANDLE pipe)
-    {
-        // RAII close
-        auto close = wil::scope_exit([&]() { FlushFileBuffers(pipe); DisconnectNamedPipe(pipe); CloseHandle(pipe); });
-
-        std::string frame;
-        for (;;)
-        {
-            if (!ReadFrame(pipe, frame, /*timeout*/ 120000)) break;
-
-            RpcRequest req;
-            std::string perr;
-            if (!ParseRequest(frame, req, perr))
-            {
-                WriteFrame(pipe, ErrorEnvelope("", "Bad.Request", perr), 5000);
-                continue;
-            }
-
-            RpcResponse rsp = Dispatch(req);
-            WriteFrame(pipe, SerializeResponse(rsp), 15000);
-        }
-    }
-
-    RpcResponse Dispatch(const RpcRequest& r)
-    {
-        RpcResponse out;
-        out.id = r.id;
-
-        auto it = registry_.find(r.module);
-        if (it == registry_.end())
-        {
-            out.ok = false;
-            out.payload = ErrorEnvelope(r.id, "Module.NotFound", "Unknown module");
-            return out;
-        }
-
-        RpcContext ctx;
-        ctx.deadlineMs = r.timeoutMs;
-
-        // Enforce per-call timeout on the module invoke.
-        std::packaged_task<RpcResult()> task([&]() {
-            return it->second->Invoke(r.method, r.params, ctx);
-        });
-        auto fut = task.get_future();
-        std::thread(std::move(task)).detach();
-
-        if (fut.wait_for(std::chrono::milliseconds(r.timeoutMs)) == std::future_status::timeout)
-        {
-            out.ok = false;
-            out.payload = ErrorEnvelope(r.id, "Timeout", nullptr, /*retryable*/ true);
-            return out;
-        }
-
-        RpcResult mr = fut.get();
-        if (mr.ok)
-        {
-            out.ok = true;
-            out.payload = ResultEnvelope(r.id, mr.json);
-        }
-        else
-        {
-            out.ok = false;
-            out.payload = mr.json; // already an error envelope
-        }
-        return out;
-    }
-
-    // Helpers to format envelopes without re-parsing module JSON.
-    static std::string ResultEnvelope(const std::string& id, std::string_view resultJson)
-    {
-        // {"id": "...", "ok": true, "result": {...}}
-        json j; j["id"]=id; j["ok"]=true; j["result"] = json::parse(resultJson);
-        return j.dump();
-    }
-
-    static std::string ErrorEnvelope(const std::string& id,
-                                     std::string_view code,
-                                     std::optional<std::string_view> message,
-                                     bool retryable = false)
-    {
-        json e;
-        e["id"] = id;
-        e["ok"] = false;
-        e["error"] = { {"code", code}, {"retryable", retryable} };
-        if (message && !message->empty()) e["error"]["message"] = *message;
-        return e.dump();
-    }
-
-private:
-    std::unordered_map<std::string, std::unique_ptr<IModuleDispatcher>> registry_;
-};
-```
-> Each client gets a dedicated thread; the per-request timeout is enforced with std::future::wait_for. This is simple and robust. If you prefer fewer threads, switch to an overlapped I/O pool.
-
-ErrorEnvelope / ResultEnvelope keep responses uniform.
-
-If your module returns an error JSON, return it with mr.ok=false so Runner doesn’t wrap twice.
-
-* Example module dispatcher adapter
-```cpp
-class WorkspaceDispatcher final : public IModuleDispatcher
-{
-public:
-    const char* Name() const override { return "workspace"; }
-
-    RpcResult Invoke(std::string_view method,
-                     std::string_view paramsJson,
-                     const RpcContext& ctx) noexcept override
-    {
-        try
-        {
-            if (method == "list_workspaces")  return List(paramsJson, ctx);
-            if (method == "launch")           return Launch(paramsJson, ctx);
-            if (method == "close")            return Close(paramsJson, ctx);
-            if (method == "saveCurrent")      return Save(paramsJson, ctx);
-            if (method == "killNonWorkspaceWindows") return Kill(paramsJson, ctx);
-
-            return Fail("Method.NotFound", "Unknown method");
-        }
-        catch (const std::exception& e)
-        {
-            return Fail("Module.Failure", e.what());
-        }
-    }
-
-    std::string Describe() const override
-    {
-        // Return the MCP-style method+schema JSON you settled on.
-        return R"json({
-          "name":"workspace","version":"1.2.0","capabilities":{ "methods":[ /* ... */ ] }
-        })json";
-    }
-
-private:
-    static RpcResult Ok(json&& result)
-    {
-        RpcResult r; r.ok = true; r.json = result.dump(); return r;
-    }
-    static RpcResult Fail(std::string_view code, std::string_view msg)
-    {
-        RpcResult r; r.ok = false;
-        json e; e["id"] = nullptr; e["ok"] = false;
-        e["error"] = { {"code", code}, {"message", msg} };
-        r.json = e.dump(); return r;
-    }
-
-    RpcResult List(std::string_view paramsJson, const RpcContext&)
-    {
-        auto d = json::parse(paramsJson.empty() ? "{}" : paramsJson);
-        std::string filter = d.value("filter", "");
-        int limit = std::clamp(d.value("limit", 50), 1, 200);
-
-        // Call into your real module DLL/function here.
-        // For example: ModuleWorkspace_List(filter, limit, outVector);
-        json res;
-        res["items"] = json::array({
-          { {"id","daily"}, {"title","Daily Dev"}, {"monitors",2}, {"tags", json::array({"dev"})} }
-        });
-        return Ok(std::move(res));
-    }
-
-    RpcResult Launch(std::string_view paramsJson, const RpcContext& ctx)
-    {
-        auto d = json::parse(paramsJson);
-        std::string id = d.at("id").get<std::string>();
-        std::string policy = d.value("monitorPolicy","matchTopology");
-
-        // Invoke module.
-        bool launched = true; int restored = 7; // from module
-        json res = { {"launched", launched}, {"windowsRestored", restored} };
-        return Ok(std::move(res));
-    }
-
-    // Close/Save/Kill... similar
-};
-```
-> Replace the stub bodies with calls to your existing module DLL functions. This adapter is the only place you translate JSON into the module’s native types.
-
-* Timeouts and cancellation
-The deadlineMs in RpcContext is the budget. Your module functions can optionally accept a HANDLE or std::stop_token to poll for cancellation.
-If a module ignores the budget, the server returns Timeout; the worker thread will still complete in the background. If this is unacceptable, run modules on a job object with CPU time limits or use cooperative cancellation hooks inside modules.
-
-* Wire it up:
-```cpp
-int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
-{
-    std::atomic_bool stop{ false };
-    RpcServer server;
-
-    // Register all module dispatchers.
-    server.Register(std::make_unique<WorkspaceDispatcher>());
-    // server.Register(std::make_unique<AwakeDispatcher>()); etc.
-
-    std::thread t([&] { server.Run(stop); });
-
-    // Integrate with your Runner lifetime (service loop, message pump, etc.)
-    // On shutdown:
-    stop.store(true);
-    // Optionally create a dummy client to unblock CreateNamedPipe/ConnectNamedPipe.
-    t.join();
-    return 0;
 }
 ```
-Runner: 
-1. Accepts RPCs over the pipe,
-2. Validates/parses,
-3. Dispatches into module DLLs,
-4. Enforces budgets,
-5. Formats responses.
 
-14) Example method(workspace)
-```json
-{ "version":"1.0","id":"01H...","module":"workspace","method":"launch","params":{"id":"daily"} }
-```
+9) Security & Isolation
+*   **Process Identity:** The Extension runs as the user in the Command Palette process (or a separate extension process). It inherits the user's permissions.
+*   **Elevation:** If a module requires elevation (e.g., modifying system files), the Library must handle the UAC prompt or fail gracefully. The Extension cannot "request" elevation from the Runner via this direct path.
+*   **Concurrency:** Be aware that `PowerToys.exe` (Runner) and `CmdPal.exe` (Extension) may access shared resources (settings files) simultaneously. Use appropriate file locking or synchronization.
 
-15) Capability & Permissions Model
-Each module exposes a capabilities blob via Describe():
-```json
-{
-  "name": "workspace",
-  "version": "1.2.0",
-  "capabilities": {
-    "methods": [
-      {
-        "name": "list_workspaces",
-        "description": "List saved workspaces with optional filtering.",
-        "sideEffect": "none",                    // none | read | write | dangerous
-        "input_schema": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "filter": { "type": "string" },
-            "limit": { "type": "integer", "minimum": 1, "maximum": 200, "default": 50 },
-            "cursor": { "type": "string", "description": "Opaque paging token" }
-          }
-        },
-        "result_schema": {
-          "type": "object",
-          "required": ["items"],
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": ["id", "title"],
-                "properties": {
-                  "id":   { "type": "string" },
-                  "title":{ "type": "string" },
-                  "monitors": { "type": "integer", "minimum": 1 },
-                  "tags": { "type": "array", "items": { "type": "string" } }
-                }
-              }
-            },
-            "nextCursor": { "type": "string" }
-          }
-        },
-        "errors": ["Timeout","Module.Failure"]
-      },
-      {
-        "name": "launch",
-        "description": "Restore windows for a saved workspace.",
-        "sideEffect": "write",
-        "requiresConfirmation": false,
-        "authzScopes": ["workspace:write"],      // optional scopes
-        "input_schema": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["id"],
-          "properties": {
-            "id": { "type": "string" },
-            "restoreBehavior": {
-              "type": "string",
-              "enum": ["strictPosition","bestEffort","foregroundOnly"],
-              "default": "bestEffort"
-            },
-            "monitorPolicy": {
-              "type": "string",
-              "enum": ["matchSerial","matchTopology","any"],
-              "default": "matchTopology"
-            }
-          }
-        },
-        "result_schema": {
-          "type": "object",
-          "required": ["launched"],
-          "properties": {
-            "launched": { "type": "boolean" },
-            "windowsRestored": { "type": "integer", "minimum": 0 },
-            "warnings": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "errors": ["Workspace.NotFound","Unauthorized","Timeout","Module.Failure"]
-      },
-      {
-        "name": "close",
-        "description": "Close windows that belong to a workspace.",
-        "sideEffect": "write",
-        "requiresConfirmation": true,            // host should show a confirm UI
-        "input_schema": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "id": { "type": "string", "description": "If omitted, act on the active workspace." },
-            "force": { "type": "boolean", "default": false }
-          }
-        },
-        "result_schema": {
-          "type": "object",
-          "properties": {
-            "closed": { "type": "integer", "minimum": 0 }
-          }
-        },
-        "errors": ["Workspace.NotFound","Busy","Timeout","Module.Failure"]
-      },
-      {
-        "name": "saveCurrent",
-        "description": "Snapshot current desktop windows as a new or updated workspace.",
-        "sideEffect": "write",
-        "input_schema": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["name"],
-          "properties": {
-            "name": { "type": "string", "minLength": 1 },
-            "id": { "type": "string", "description": "If present, update existing." },
-            "tags": { "type": "array", "items": { "type": "string" } },
-            "includeMinimized": { "type": "boolean", "default": true }
-          }
-        },
-        "result_schema": {
-          "type": "object",
-          "required": ["id"],
-          "properties": {
-            "id": { "type": "string" },
-            "updated": { "type": "boolean" }
-          }
-        },
-        "errors": ["Validation","Busy","Timeout","Module.Failure"]
-      },
-      {
-        "name": "killNonWorkspaceWindows",
-        "description": "Close windows not part of the active workspace.",
-        "sideEffect": "dangerous",
-        "requiresConfirmation": true,
-        "input_schema": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "dryRun": { "type": "boolean", "default": false }
-          }
-        },
-        "result_schema": {
-          "type": "object",
-          "properties": {
-            "affected": {
-              "type": "array",
-              "items": { "type": "object", "properties": { "pid": { "type":"integer" }, "title": { "type":"string" } } }
-            }
-          }
-        },
-        "errors": ["Unauthorized","Busy","Timeout","Module.Failure"]
-      }
-    ]
-  }
-}
-```
+10) Telemetry
+*   The Extension should log telemetry events directly using the standard PowerToys telemetry pipeline, ensuring the `Caller` is identified as the Command Palette Extension.
