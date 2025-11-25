@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.ModuleSettingsCard"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,18 +14,18 @@
     </UserControl.Resources>
 
     <tkcontrols:SettingsCard
-        Click="OnSettingsCardClick"
-        IsClickEnabled="True"
         MinHeight="0"
         Padding="12,4,12,4"
         Background="Transparent"
         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
         BorderThickness="0,1,0,0"
-        CornerRadius="0">
+        Click="OnSettingsCardClick"
+        CornerRadius="0"
+        IsClickEnabled="True">
         <tkcontrols:SettingsCard.Header>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
-                <!-- InfoBadge -->
+                <!--  InfoBadge  -->
                 <InfoBadge
                     x:Name="NewInfoBadge"
                     Margin="4,0,0,0"
@@ -45,15 +45,15 @@
         </tkcontrols:SettingsCard.Header>
 
         <tkcontrols:SettingsCard.HeaderIcon>
-            <BitmapIcon UriSource="{x:Bind Icon, Mode=OneWay, Converter={StaticResource StringToUriConverter}}" ShowAsMonochrome="False" />
+            <BitmapIcon ShowAsMonochrome="False" UriSource="{x:Bind Icon, Mode=OneWay, Converter={StaticResource StringToUriConverter}}" />
         </tkcontrols:SettingsCard.HeaderIcon>
 
         <ToggleSwitch
-                HorizontalAlignment="Right"
-                AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
-                IsOn="{x:Bind IsOn, Mode=TwoWay}"
-                OffContent=""
-                OnContent=""
-                IsEnabled="{x:Bind IsLocked, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
+            HorizontalAlignment="Right"
+            AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+            IsEnabled="{x:Bind IsLocked, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+            IsOn="{x:Bind IsOn, Mode=TwoWay}"
+            OffContent=""
+            OnContent="" />
     </tkcontrols:SettingsCard>
 </UserControl>

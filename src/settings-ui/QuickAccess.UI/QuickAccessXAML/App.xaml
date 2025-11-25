@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Application
     x:Class="Microsoft.PowerToys.QuickAccess.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -34,9 +34,7 @@
                         Color="#FF000000" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
-                    <SolidColorBrush
-                        x:Key="LayerOnAcrylicFillColorDefaultBrush"
-                        Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
