@@ -4,10 +4,12 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices.Marshalling;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.PowerToys.ComServer;
 using Microsoft.CommandPalette.Extensions;
+using WinRT;
 
 namespace Microsoft.CmdPal.Ext.PowerToys;
 
@@ -30,6 +32,9 @@ public static class Program
 
         if (args.Length > 0 && args[0].Equals("-RegisterProcessAsComServer", StringComparison.OrdinalIgnoreCase))
         {
+            // Ensure cswinrt uses our StrategyBasedComWrappers so the IExtension WinRT interface marshals correctly cross-process.
+            ComWrappersSupport.InitializeComWrappers(new StrategyBasedComWrappers());
+
             using PowerToysExtensionServer server = new();
             using ManualResetEvent extensionDisposed = new(false);
             var extensionInstance = new PowerToysExtension(extensionDisposed);
@@ -41,7 +46,6 @@ public static class Program
         }
 
         Logger.LogWarning("PowerToys CmdPal extension launched without COM registration arguments. Exiting.");
-        Console.WriteLine("Microsoft.CmdPal.Ext.PowerToys launched without COM registration arguments. Exiting.");
         return 0;
     }
 }

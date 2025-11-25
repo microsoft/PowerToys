@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
@@ -135,21 +136,33 @@ internal sealed partial class PowerToysExtensionInstanceManager : IClassFactory
 
         ppvObject = IntPtr.Zero;
 
-        if (pUnkOuter is not null)
+        try
         {
-            Marshal.ThrowExceptionForHR(CLASS_E_NOAGGREGATION);
-        }
+            if (pUnkOuter is not null)
+            {
+                Logger.LogWarning("Aggregation requested but not supported; returning CLASS_E_NOAGGREGATION.");
+                Marshal.ThrowExceptionForHR(CLASS_E_NOAGGREGATION);
+            }
 
-        if (requestedIid == _clsid || requestedIid == IID_IUnknown || requestedIid == IID_IExtension || requestedIid == IID_IInspectable || requestedIid == IID_IAgileObject)
-        {
-            var managed = _createExtension();
-            var inspectable = MarshalInspectable<object>.FromManaged(managed);
-            ppvObject = inspectable;
-            Logger.LogInfo("PowerToys extension COM instance created successfully.");
+            if (requestedIid == _clsid || requestedIid == IID_IUnknown || requestedIid == IID_IExtension || requestedIid == IID_IInspectable || requestedIid == IID_IAgileObject)
+            {
+                var managed = _createExtension();
+                Logger.LogInfo("Managed PowerToysExtension instance created; marshalling to inspectable.");
+                var inspectable = MarshalInspectable<IExtension>.FromManaged(managed);
+                Logger.LogInfo($"MarshalInspectable returned {(inspectable == IntPtr.Zero ? "null" : inspectable.ToString(CultureInfo.InvariantCulture))}.");
+                ppvObject = inspectable;
+                Logger.LogInfo("PowerToys extension COM instance created successfully.");
+            }
+            else
+            {
+                Logger.LogWarning($"PowerToys extension requested unsupported IID {requestedIid:B}. Throwing E_NOINTERFACE.");
+                Marshal.ThrowExceptionForHR(E_NOINTERFACE);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Logger.LogWarning($"PowerToys extension requested unsupported IID {requestedIid:B}. Throwing E_NOINTERFACE.");
+            Logger.LogError($"CreateInstance failed for IID {requestedIid:B}, CLSID {_clsid:B}", ex);
+            ppvObject = IntPtr.Zero;
             Marshal.ThrowExceptionForHR(E_NOINTERFACE);
         }
     }
