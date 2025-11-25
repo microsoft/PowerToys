@@ -287,5 +287,35 @@ namespace PowerDisplay.Common.Drivers
         /// SDR white level conversion factor
         /// </summary>
         public const int SdrWhiteLevelFactor = 80;
+
+        /// <summary>
+        /// Retrieve the current settings for the display device.
+        /// </summary>
+        public const int EnumCurrentSettings = -1;
+
+        /// <summary>
+        /// Retrieve the settings for the display device that are stored in the registry.
+        /// </summary>
+        public const int EnumRegistrySettings = -2;
+
+        /// <summary>
+        /// The display is in the natural orientation of the device.
+        /// </summary>
+        public const int DmdoDefault = 0;
+
+        /// <summary>
+        /// The display is rotated 90 degrees (measured clockwise) from its natural orientation.
+        /// </summary>
+        public const int Dmdo90 = 1;
+
+        /// <summary>
+        /// The display is rotated 180 degrees (measured clockwise) from its natural orientation.
+        /// </summary>
+        public const int Dmdo180 = 2;
+
+        /// <summary>
+        /// The display is rotated 270 degrees (measured clockwise) from its natural orientation.
+        /// </summary>
+        public const int Dmdo270 = 3;
     }
 }

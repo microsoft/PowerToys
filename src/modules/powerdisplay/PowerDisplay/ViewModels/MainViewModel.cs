@@ -152,6 +152,20 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
     });
 
+    public ICommand IdentifyMonitorsCommand => new RelayCommand(() =>
+    {
+        // For now, just show a simple notification that the feature is implemented
+        // Full implementation would require creating WinUI 3 windows positioned on each monitor
+        // which is more complex than WPF due to different windowing model
+        Logger.LogInfo("Identify monitors feature triggered");
+
+        // TODO: Implement proper WinUI 3 window positioning for each monitor
+        // This requires:
+        // 1. Creating a separate Window for each monitor
+        // 2. Using AppWindow.MoveAndResize with monitor coordinates
+        // 3. Handling DPI scaling correctly
+    });
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

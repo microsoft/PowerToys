@@ -282,5 +282,29 @@ namespace PowerDisplay.Common.Models
             get => CurrentColorTemperature;
             set => CurrentColorTemperature = value;
         }
+
+        /// <summary>
+        /// Gets or sets monitor number (1, 2, 3...)
+        /// </summary>
+        public int MonitorNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets monitor orientation (0=0, 1=90, 2=180, 3=270)
+        /// </summary>
+        public int Orientation { get; set; }
+
+        /// <inheritdoc />
+        int IMonitorData.MonitorNumber
+        {
+            get => MonitorNumber;
+            set => MonitorNumber = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Orientation
+        {
+            get => Orientation;
+            set => Orientation = value;
+        }
     }
 }

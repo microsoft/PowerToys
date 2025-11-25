@@ -243,6 +243,10 @@ namespace PowerDisplay.Core
             // Update monitor list and lookup dictionary
             _monitors.Clear();
             _monitorLookup.Clear();
+
+            // Sort by monitor number
+            newMonitors.Sort((a, b) => a.MonitorNumber.CompareTo(b.MonitorNumber));
+
             _monitors.AddRange(newMonitors);
 
             foreach (var monitor in newMonitors)

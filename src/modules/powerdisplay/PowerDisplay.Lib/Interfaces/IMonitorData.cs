@@ -47,5 +47,15 @@ namespace PowerDisplay.Common.Interfaces
         /// Use MonitorValueConverter to convert to/from human-readable Kelvin values.
         /// </summary>
         int ColorTemperatureVcp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the monitor number (1, 2, 3...) as assigned by the OS.
+        /// </summary>
+        int MonitorNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the monitor orientation (0=0, 1=90, 2=180, 3=270).
+        /// </summary>
+        int Orientation { get; set; }
     }
 }

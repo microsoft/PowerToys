@@ -56,6 +56,13 @@ namespace PowerDisplay.Common.Drivers
             ref DisplayDevice lpDisplayDevice,
             uint dwFlags);
 
+        [LibraryImport("user32.dll", EntryPoint = "EnumDisplaySettingsW", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static unsafe partial bool EnumDisplaySettings(
+            [MarshalAs(UnmanagedType.LPWStr)] string? lpszDeviceName,
+            int iModeNum,
+            DevMode* lpDevMode);
+
         [LibraryImport("user32.dll")]
         internal static partial IntPtr MonitorFromWindow(
             IntPtr hwnd,

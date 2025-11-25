@@ -31,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private string _capabilitiesRaw = string.Empty;
         private List<string> _vcpCodes = new List<string>();
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
+        private int _monitorNumber;
+        private int _orientation;
 
         // Feature support status (determined from capabilities)
         private bool _supportsBrightness = true; // Brightness always shown even if unsupported
@@ -744,6 +746,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get => ColorTemperatureVcp;
             set => ColorTemperatureVcp = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.MonitorNumber
+        {
+            get => _monitorNumber;
+            set => _monitorNumber = value;
+        }
+
+        /// <inheritdoc />
+        int IMonitorData.Orientation
+        {
+            get => _orientation;
+            set => _orientation = value;
         }
 
         /// <summary>

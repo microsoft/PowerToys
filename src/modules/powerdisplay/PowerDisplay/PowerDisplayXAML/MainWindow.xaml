@@ -249,6 +249,13 @@
                                                   FontSize=16}"
                             Style="{StaticResource SubtleButtonStyle}" />
                         <Button
+                            x:Name="IdentifyButton"
+                            x:Uid="IdentifyTooltip"
+                            Command="{x:Bind ViewModel.IdentifyMonitorsCommand}"
+                            Content="{ui:FontIcon Glyph=&#xE9D9;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}" />
+                        <Button
                             x:Name="SettingsBtn"
                             x:Uid="SettingsTooltip"
                             Padding="6"
