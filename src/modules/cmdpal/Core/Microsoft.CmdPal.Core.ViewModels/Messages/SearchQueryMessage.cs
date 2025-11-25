@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
 /// <summary>
-/// Message sent when an extension command or page is invoked.
-/// Captures extension usage metrics for telemetry tracking.
+/// Message sent when a search query is executed in the Command Palette.
+/// Used to track session search activity for telemetry.
 /// </summary>
-public record ExtensionInvokedMessage(string ExtensionId, string CommandType, bool Success, ulong ExecutionTimeMs);
+public record SearchQueryMessage();

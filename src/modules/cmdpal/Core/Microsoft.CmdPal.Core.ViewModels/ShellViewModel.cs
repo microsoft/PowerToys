@@ -269,7 +269,7 @@ public partial class ShellViewModel : ObservableObject,
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
 
-                // Track extension page navigation
+                // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
                 {
                     string extensionId = host.GetExtensionDisplayName() ?? "builtin";
@@ -347,6 +347,7 @@ public partial class ShellViewModel : ObservableObject,
 
     private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
     {
+        // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var command = message.Command.Unsafe;
         string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
@@ -371,12 +372,16 @@ public partial class ShellViewModel : ObservableObject,
             success = false;
             _handleInvokeTask = null;
 
+            // Telemetry: Track errors for session metrics
+            WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
+
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
         }
         finally
         {
+            // Telemetry: Send extension invocation metrics (always sent, even on failure)
             stopwatch.Stop();
             WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
                 new(extensionId, commandType, success, (ulong)stopwatch.ElapsedMilliseconds));

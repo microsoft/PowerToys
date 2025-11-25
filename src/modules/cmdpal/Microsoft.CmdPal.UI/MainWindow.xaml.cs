@@ -49,6 +49,11 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<ExtensionInvokedMessage>,
+    IRecipient<NavigateToPageMessage>,
+    IRecipient<NavigationDepthMessage>,
+    IRecipient<SearchQueryMessage>,
+    IRecipient<ErrorOccurredMessage>,
     IDisposable
 {
     private const int DefaultWidth = 800;
@@ -65,6 +70,14 @@ public sealed partial class MainWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private bool _ignoreHotKeyWhenFullScreen = true;
+
+    // Session tracking for telemetry
+    private Stopwatch? _sessionStopwatch;
+    private int _sessionCommandsExecuted;
+    private int _sessionPagesVisited;
+    private int _sessionSearchQueriesCount;
+    private int _sessionMaxNavigationDepth;
+    private int _sessionErrorCount;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -100,6 +113,11 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExtensionInvokedMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
+        WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
+        WeakReferenceMessenger.Default.Register<ErrorOccurredMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -484,6 +502,11 @@ public sealed partial class MainWindow : WindowEx,
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
+        // Start session tracking
+        _sessionStopwatch = Stopwatch.StartNew();
+        _sessionCommandsExecuted = 0;
+        _sessionPagesVisited = 0;
+
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
@@ -492,6 +515,7 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            EndSession("Hide");
             HideWindow();
         });
     }
@@ -506,8 +530,62 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            EndSession("Dismiss");
             HideWindow();
         });
+    }
+
+    // Session telemetry: Track metrics during the Command Palette session
+    // These receivers increment counters that are sent when EndSession is called
+
+    public void Receive(ExtensionInvokedMessage message)
+    {
+        _sessionCommandsExecuted++;
+    }
+
+    public void Receive(NavigateToPageMessage message)
+    {
+        _sessionPagesVisited++;
+    }
+
+    public void Receive(NavigationDepthMessage message)
+    {
+        if (message.Depth > _sessionMaxNavigationDepth)
+        {
+            _sessionMaxNavigationDepth = message.Depth;
+        }
+    }
+
+    public void Receive(SearchQueryMessage message)
+    {
+        _sessionSearchQueriesCount++;
+    }
+
+    public void Receive(ErrorOccurredMessage message)
+    {
+        _sessionErrorCount++;
+    }
+
+    /// <summary>
+    /// Ends the current telemetry session and emits the CmdPal_SessionDuration event.
+    /// Aggregates all session metrics collected since ShowWindow and sends them to telemetry.
+    /// </summary>
+    /// <param name="dismissalReason">The reason the session ended (e.g., Dismiss, Hide, LostFocus).</param>
+    private void EndSession(string dismissalReason)
+    {
+        if (_sessionStopwatch is not null)
+        {
+            _sessionStopwatch.Stop();
+            WeakReferenceMessenger.Default.Send<SessionDurationMessage>(new(
+                (ulong)_sessionStopwatch.ElapsedMilliseconds,
+                _sessionCommandsExecuted,
+                _sessionPagesVisited,
+                dismissalReason,
+                _sessionSearchQueriesCount,
+                _sessionMaxNavigationDepth,
+                _sessionErrorCount));
+            _sessionStopwatch = null;
+        }
     }
 
     private void HideWindow()
@@ -681,6 +759,7 @@ public sealed partial class MainWindow : WindowEx,
             }
 
             // This will DWM cloak our window:
+            EndSession("LostFocus");
             HideWindow();
 
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());

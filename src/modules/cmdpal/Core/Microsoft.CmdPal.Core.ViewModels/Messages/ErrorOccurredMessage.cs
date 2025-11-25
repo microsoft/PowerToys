@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
 /// <summary>
-/// Message sent when an extension command or page is invoked.
-/// Captures extension usage metrics for telemetry tracking.
+/// Message sent when an error occurs during command execution.
+/// Used to track session error count for telemetry.
 /// </summary>
-public record ExtensionInvokedMessage(string ExtensionId, string CommandType, bool Success, ulong ExecutionTimeMs);
+public record ErrorOccurredMessage();

@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
 /// <summary>
-/// Message sent when an extension command or page is invoked.
-/// Captures extension usage metrics for telemetry tracking.
+/// Message containing the current navigation depth (BackStack count) when navigating to a page.
+/// Used to track maximum navigation depth reached during a session for telemetry.
 /// </summary>
-public record ExtensionInvokedMessage(string ExtensionId, string CommandType, bool Success, ulong ExecutionTimeMs);
+public record NavigationDepthMessage(int Depth);
