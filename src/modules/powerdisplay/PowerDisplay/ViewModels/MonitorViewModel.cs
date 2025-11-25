@@ -78,8 +78,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     /// <param name="brightness">Brightness value (0-100)</param>
     /// <param name="immediate">If true, applies immediately; if false, debounces for smooth slider</param>
-    /// <param name="fromProfile">If true, skip profile change detection (avoid recursion)</param>
-    public async Task SetBrightnessAsync(int brightness, bool immediate = false, bool fromProfile = false)
+    public async Task SetBrightnessAsync(int brightness, bool immediate = false)
     {
         brightness = Math.Clamp(brightness, MinBrightness, MaxBrightness);
 
@@ -93,20 +92,20 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         // Apply to hardware (with or without debounce)
         if (immediate)
         {
-            await ApplyBrightnessToHardwareAsync(brightness, fromProfile);
+            await ApplyBrightnessToHardwareAsync(brightness);
         }
         else
         {
-            // Debounce for slider smoothness (always from user interaction, not from profile)
+            // Debounce for slider smoothness
             var capturedValue = brightness;
-            _brightnessDebouncer.Debounce(async () => await ApplyBrightnessToHardwareAsync(capturedValue, fromUserInteraction: true));
+            _brightnessDebouncer.Debounce(async () => await ApplyBrightnessToHardwareAsync(capturedValue));
         }
     }
 
     /// <summary>
     /// Unified method to apply contrast with hardware update and state persistence.
     /// </summary>
-    public async Task SetContrastAsync(int contrast, bool immediate = false, bool fromProfile = false)
+    public async Task SetContrastAsync(int contrast, bool immediate = false)
     {
         contrast = Math.Clamp(contrast, MinContrast, MaxContrast);
 
@@ -119,19 +118,19 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         if (immediate)
         {
-            await ApplyContrastToHardwareAsync(contrast, fromProfile);
+            await ApplyContrastToHardwareAsync(contrast);
         }
         else
         {
             var capturedValue = contrast;
-            _contrastDebouncer.Debounce(async () => await ApplyContrastToHardwareAsync(capturedValue, fromUserInteraction: true));
+            _contrastDebouncer.Debounce(async () => await ApplyContrastToHardwareAsync(capturedValue));
         }
     }
 
     /// <summary>
     /// Unified method to apply volume with hardware update and state persistence.
     /// </summary>
-    public async Task SetVolumeAsync(int volume, bool immediate = false, bool fromProfile = false)
+    public async Task SetVolumeAsync(int volume, bool immediate = false)
     {
         volume = Math.Clamp(volume, MinVolume, MaxVolume);
 
@@ -143,12 +142,12 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
         if (immediate)
         {
-            await ApplyVolumeToHardwareAsync(volume, fromProfile);
+            await ApplyVolumeToHardwareAsync(volume);
         }
         else
         {
             var capturedValue = volume;
-            _volumeDebouncer.Debounce(async () => await ApplyVolumeToHardwareAsync(capturedValue, fromUserInteraction: true));
+            _volumeDebouncer.Debounce(async () => await ApplyVolumeToHardwareAsync(capturedValue));
         }
     }
 
@@ -156,7 +155,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// Unified method to apply color temperature with hardware update and state persistence.
     /// Always immediate (no debouncing for discrete preset values).
     /// </summary>
-    public async Task SetColorTemperatureAsync(int colorTemperature, bool fromProfile = false)
+    public async Task SetColorTemperatureAsync(int colorTemperature)
     {
         try
         {
@@ -171,12 +170,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged(nameof(ColorTemperaturePresetName));
 
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, nameof(ColorTemperature), colorTemperature);
-
-                // Trigger profile change detection if from user interaction
-                if (!fromProfile)
-                {
-                    _mainViewModel?.OnMonitorParameterChanged(_monitor.HardwareId, nameof(ColorTemperature), colorTemperature);
-                }
 
                 Logger.LogInfo($"[{HardwareId}] Color temperature applied successfully");
             }
@@ -198,12 +191,10 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// <param name="propertyName">Name of the property being set (for logging and state persistence)</param>
     /// <param name="value">Value to apply</param>
     /// <param name="setAsyncFunc">Async function to call on MonitorManager</param>
-    /// <param name="fromUserInteraction">If true, triggers profile change detection</param>
     private async Task ApplyPropertyToHardwareAsync(
         string propertyName,
         int value,
-        Func<string, int, CancellationToken, Task<MonitorOperationResult>> setAsyncFunc,
-        bool fromUserInteraction = false)
+        Func<string, int, CancellationToken, Task<MonitorOperationResult>> setAsyncFunc)
     {
         try
         {
@@ -214,11 +205,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.HardwareId, propertyName, value);
-
-                if (fromUserInteraction)
-                {
-                    _mainViewModel?.OnMonitorParameterChanged(_monitor.HardwareId, propertyName, value);
-                }
             }
             else
             {
@@ -231,14 +217,14 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private Task ApplyBrightnessToHardwareAsync(int brightness, bool fromUserInteraction = false)
-        => ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync, fromUserInteraction);
+    private Task ApplyBrightnessToHardwareAsync(int brightness)
+        => ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
 
-    private Task ApplyContrastToHardwareAsync(int contrast, bool fromUserInteraction = false)
-        => ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync, fromUserInteraction);
+    private Task ApplyContrastToHardwareAsync(int contrast)
+        => ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
 
-    private Task ApplyVolumeToHardwareAsync(int volume, bool fromUserInteraction = false)
-        => ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync, fromUserInteraction);
+    private Task ApplyVolumeToHardwareAsync(int volume)
+        => ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
 
     // Conversion function for x:Bind (AOT-compatible alternative to converters)
     public Visibility ConvertBoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;

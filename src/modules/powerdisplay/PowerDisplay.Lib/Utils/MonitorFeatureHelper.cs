@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ManagedCommon;
+using PowerDisplay.Common.Drivers;
 
 namespace PowerDisplay.Common.Utils
 {
@@ -15,26 +16,6 @@ namespace PowerDisplay.Common.Utils
     /// </summary>
     public static class MonitorFeatureHelper
     {
-        /// <summary>
-        /// VCP code for Brightness (0x10) - Standard VESA MCCS brightness control
-        /// </summary>
-        public const int VcpCodeBrightness = 0x10;
-
-        /// <summary>
-        /// VCP code for Contrast (0x12) - Standard VESA MCCS contrast control
-        /// </summary>
-        public const int VcpCodeContrast = 0x12;
-
-        /// <summary>
-        /// VCP code for Select Color Preset (0x14) - Color temperature control
-        /// </summary>
-        public const int VcpCodeSelectColorPreset = 0x14;
-
-        /// <summary>
-        /// VCP code for Audio Speaker Volume (0x62)
-        /// </summary>
-        public const int VcpCodeVolume = 0x62;
-
         /// <summary>
         /// Result of parsing monitor feature support from VCP capabilities
         /// </summary>
@@ -81,10 +62,10 @@ namespace PowerDisplay.Common.Utils
             // Determine feature support based on VCP codes
             return new FeatureSupportResult
             {
-                SupportsBrightness = vcpCodeInts.Contains(VcpCodeBrightness),
-                SupportsContrast = vcpCodeInts.Contains(VcpCodeContrast),
-                SupportsColorTemperature = vcpCodeInts.Contains(VcpCodeSelectColorPreset),
-                SupportsVolume = vcpCodeInts.Contains(VcpCodeVolume),
+                SupportsBrightness = vcpCodeInts.Contains(NativeConstants.VcpCodeBrightness),
+                SupportsContrast = vcpCodeInts.Contains(NativeConstants.VcpCodeContrast),
+                SupportsColorTemperature = vcpCodeInts.Contains(NativeConstants.VcpCodeSelectColorPreset),
+                SupportsVolume = vcpCodeInts.Contains(NativeConstants.VcpCodeVolume),
                 CapabilitiesStatus = "available",
             };
         }

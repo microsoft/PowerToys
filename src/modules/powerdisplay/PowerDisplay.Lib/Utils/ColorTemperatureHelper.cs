@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.Common.Utils
@@ -14,11 +15,6 @@ namespace PowerDisplay.Common.Utils
     /// </summary>
     public static class ColorTemperatureHelper
     {
-        /// <summary>
-        /// VCP code for Select Color Preset (Color Temperature).
-        /// </summary>
-        public const byte ColorTemperatureVcpCode = 0x14;
-
         /// <summary>
         /// Computes available color temperature presets from VCP value data.
         /// </summary>
@@ -64,7 +60,7 @@ namespace PowerDisplay.Common.Utils
             }
 
             // Fall back to standard VCP value name from shared library
-            var standardName = VcpValueNames.GetName(ColorTemperatureVcpCode, vcpValue);
+            var standardName = VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
             if (standardName != null)
             {
                 return $"{standardName} ({hexValue})";
@@ -82,7 +78,7 @@ namespace PowerDisplay.Common.Utils
         /// <returns>Formatted display name with "Custom" indicator.</returns>
         public static string FormatCustomColorTemperatureDisplayName(int vcpValue)
         {
-            var standardName = VcpValueNames.GetName(ColorTemperatureVcpCode, vcpValue);
+            var standardName = VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
             return string.IsNullOrEmpty(standardName)
                 ? $"Custom (0x{vcpValue:X2})"
                 : $"{standardName} (0x{vcpValue:X2}) - Custom";

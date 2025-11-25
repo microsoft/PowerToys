@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
@@ -42,6 +43,73 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private ObservableCollection<ColorPresetItem> _availableColorPresetsCache;
         private ObservableCollection<ColorPresetItem> _colorPresetsForDisplayCache;
         private int _lastColorTemperatureVcpForCache = -1;
+
+        // Batch update support to reduce PropertyChanged notifications during bulk updates
+        private bool _suppressNotifications;
+        private bool _hasPendingNotifications;
+
+        /// <summary>
+        /// Suspends PropertyChanged notifications until the returned object is disposed.
+        /// When disposed, a single PropertyChanged with empty string is raised to refresh all bindings.
+        /// Use this when updating multiple properties at once to improve UI performance.
+        /// </summary>
+        /// <example>
+        /// using (monitor.SuspendNotifications())
+        /// {
+        ///     monitor.CurrentBrightness = newBrightness;
+        ///     monitor.ColorTemperatureVcp = newTemp;
+        /// }  // Single UI refresh here
+        /// </example>
+        public IDisposable SuspendNotifications()
+        {
+            _suppressNotifications = true;
+            _hasPendingNotifications = false;
+            return new NotificationResumer(this);
+        }
+
+        /// <summary>
+        /// Helper class to resume notifications when disposed.
+        /// </summary>
+        private sealed class NotificationResumer : IDisposable
+        {
+            private readonly MonitorInfo _owner;
+            private bool _disposed;
+
+            public NotificationResumer(MonitorInfo owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _disposed = true;
+                _owner._suppressNotifications = false;
+
+                // If any property changed during suspension, raise a single notification to refresh all
+                if (_owner._hasPendingNotifications)
+                {
+                    _owner._hasPendingNotifications = false;
+                    _owner.OnPropertyChanged(string.Empty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raises PropertyChanged if notifications are not suppressed.
+        /// Tracks pending notifications during batch updates.
+        /// </summary>
+        protected new void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        {
+            if (_suppressNotifications)
+            {
+                _hasPendingNotifications = true;
+                return;
+            }
+
+            base.OnPropertyChanged(propertyName);
+        }
 
         /// <summary>
         /// Invalidates the color preset cache and notifies property changes.
@@ -486,7 +554,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             // Find VCP code 0x14 (Color Temperature / Select Color Preset)
             var colorTempVcp = _vcpCodesFormatted.FirstOrDefault(v =>
-                TryParseHexCode(v.Code, out int code) && code == ColorTemperatureHelper.ColorTemperatureVcpCode);
+                TryParseHexCode(v.Code, out int code) && code == NativeConstants.VcpCodeSelectColorPreset);
 
             // No VCP 0x14 or no values
             if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)

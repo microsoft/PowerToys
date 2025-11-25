@@ -99,7 +99,8 @@
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
                                             Maximum="100"
-                                            Minimum="0" />
+                                            Minimum="0"
+                                            Value="{x:Bind Volume, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>

@@ -23,8 +23,7 @@ namespace PowerDisplay.Common.Services
     public partial class MonitorStateManager : IDisposable
     {
         private readonly string _stateFilePath;
-        private readonly Dictionary<string, MonitorState> _states = new();
-        private readonly object _lock = new object();
+        private readonly LockedDictionary<string, MonitorState> _states = new();
         private readonly SimpleDebouncer _saveDebouncer;
 
         private bool _disposed;
@@ -84,13 +83,13 @@ namespace PowerDisplay.Common.Services
                     return;
                 }
 
-                lock (_lock)
+                bool shouldSave = _states.ExecuteWithLock(dict =>
                 {
                     // Get or create state entry using HardwareId
-                    if (!_states.TryGetValue(hardwareId, out var state))
+                    if (!dict.TryGetValue(hardwareId, out var state))
                     {
                         state = new MonitorState();
-                        _states[hardwareId] = state;
+                        dict[hardwareId] = state;
                     }
 
                     // Update the specific property
@@ -110,15 +109,19 @@ namespace PowerDisplay.Common.Services
                             break;
                         default:
                             Logger.LogWarning($"Unknown property: {property}");
-                            return;
+                            return false;
                     }
 
                     // Mark dirty for flush on dispose
                     _isDirty = true;
-                }
+                    return true;
+                });
 
                 // Schedule debounced save (SimpleDebouncer handles cancellation of previous calls)
-                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                if (shouldSave)
+                {
+                    _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                }
             }
             catch (Exception ex)
             {
@@ -138,12 +141,9 @@ namespace PowerDisplay.Common.Services
                 return null;
             }
 
-            lock (_lock)
+            if (_states.TryGetValue(hardwareId, out var state) && state != null)
             {
-                if (_states.TryGetValue(hardwareId, out var state))
-                {
-                    return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
-                }
+                return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
             }
 
             return null;
@@ -167,14 +167,14 @@ namespace PowerDisplay.Common.Services
 
                 if (stateFile?.Monitors != null)
                 {
-                    lock (_lock)
+                    _states.ExecuteWithLock(dict =>
                     {
                         foreach (var kvp in stateFile.Monitors)
                         {
                             var monitorKey = kvp.Key; // Should be HardwareId (e.g., "GSM5C6D")
                             var entry = kvp.Value;
 
-                            _states[monitorKey] = new MonitorState
+                            dict[monitorKey] = new MonitorState
                             {
                                 Brightness = entry.Brightness,
                                 ColorTemperatureVcp = entry.ColorTemperatureVcp,
@@ -183,7 +183,7 @@ namespace PowerDisplay.Common.Services
                                 CapabilitiesRaw = entry.CapabilitiesRaw,
                             };
                         }
-                    }
+                    });
 
                     Logger.LogInfo($"[State] Loaded state for {stateFile.Monitors.Count} monitors from {_stateFilePath}");
                     Logger.LogInfo($"[State] Monitor keys in state file: {string.Join(", ", stateFile.Monitors.Keys)}");
@@ -197,7 +197,7 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// Save current state to disk immediately (async).
-        /// Called by timer after debounce period or on dispose to flush pending changes.
+        /// Called by timer after debounce period.
         /// </summary>
         private async Task SaveStateToDiskAsync()
         {
@@ -208,48 +208,77 @@ namespace PowerDisplay.Common.Services
                     return;
                 }
 
-                // Build state file
-                var now = DateTime.Now;
-                var stateFile = new MonitorStateFile
-                {
-                    LastUpdated = now,
-                };
-
-                lock (_lock)
-                {
-                    foreach (var kvp in _states)
-                    {
-                        var monitorId = kvp.Key;
-                        var state = kvp.Value;
-
-                        stateFile.Monitors[monitorId] = new MonitorStateEntry
-                        {
-                            Brightness = state.Brightness,
-                            ColorTemperatureVcp = state.ColorTemperatureVcp,
-                            Contrast = state.Contrast,
-                            Volume = state.Volume,
-                            CapabilitiesRaw = state.CapabilitiesRaw,
-                            LastUpdated = now,
-                        };
-                    }
-                }
+                var (json, monitorCount) = BuildStateJson();
 
                 // Write to disk asynchronously
-                var json = JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
                 await File.WriteAllTextAsync(_stateFilePath, json);
 
                 // Clear dirty flag after successful save
-                lock (_lock)
-                {
-                    _isDirty = false;
-                }
+                _isDirty = false;
 
-                Logger.LogDebug($"[State] Saved state for {stateFile.Monitors.Count} monitors");
+                Logger.LogDebug($"[State] Saved state for {monitorCount} monitors");
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to save monitor state: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Save current state to disk synchronously.
+        /// Called during Dispose to flush pending changes without risk of deadlock.
+        /// </summary>
+        private void SaveStateToDiskSync()
+        {
+            try
+            {
+                var (json, monitorCount) = BuildStateJson();
+
+                // Write to disk synchronously - safe for Dispose
+                File.WriteAllText(_stateFilePath, json);
+
+                Logger.LogDebug($"[State] Saved state for {monitorCount} monitors (sync)");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to save monitor state (sync): {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Build the JSON string for state file.
+        /// Shared logic between async and sync save methods.
+        /// </summary>
+        /// <returns>Tuple of (JSON string, monitor count)</returns>
+        private (string Json, int MonitorCount) BuildStateJson()
+        {
+            var now = DateTime.Now;
+            var stateFile = new MonitorStateFile
+            {
+                LastUpdated = now,
+            };
+
+            _states.ExecuteWithLock(dict =>
+            {
+                foreach (var kvp in dict)
+                {
+                    var monitorId = kvp.Key;
+                    var state = kvp.Value;
+
+                    stateFile.Monitors[monitorId] = new MonitorStateEntry
+                    {
+                        Brightness = state.Brightness,
+                        ColorTemperatureVcp = state.ColorTemperatureVcp,
+                        Contrast = state.Contrast,
+                        Volume = state.Volume,
+                        CapabilitiesRaw = state.CapabilitiesRaw,
+                        LastUpdated = now,
+                    };
+                }
+            });
+
+            var json = JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
+            return (json, stateFile.Monitors.Count);
         }
 
         /// <summary>
@@ -262,22 +291,18 @@ namespace PowerDisplay.Common.Services
                 return;
             }
 
-            bool wasDirty;
-            lock (_lock)
-            {
-                wasDirty = _isDirty;
-                _disposed = true;
-                _isDirty = false;
-            }
+            bool wasDirty = _isDirty;
+            _disposed = true;
+            _isDirty = false;
 
             // Dispose debouncer first to cancel any pending saves
             _saveDebouncer?.Dispose();
 
-            // Flush any pending changes before disposing
+            // Flush any pending changes before disposing using sync method to avoid deadlock
             if (wasDirty)
             {
                 Logger.LogInfo("Flushing pending state changes before dispose");
-                SaveStateToDiskAsync().GetAwaiter().GetResult();
+                SaveStateToDiskSync();
             }
 
             Logger.LogInfo("MonitorStateManager disposed");

@@ -76,7 +76,7 @@ namespace PowerDisplay.Core
         }
 
         /// <summary>
-        /// Discover all monitors
+        /// Discover all monitors from all controllers.
         /// </summary>
         public async Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {
@@ -85,128 +85,181 @@ namespace PowerDisplay.Core
             try
             {
                 var oldMonitors = _monitors.ToList();
-                var newMonitors = new List<Monitor>();
 
-                // Discover monitors supported by all controllers in parallel
-                var discoveryTasks = _controllers.Select(async controller =>
-                {
-                    try
-                    {
-                        var monitors = await controller.DiscoverMonitorsAsync(cancellationToken);
-                        return (Controller: controller, Monitors: monitors.ToList());
-                    }
-                    catch (Exception ex)
-                    {
-                        // If a controller fails, log the error and return empty list
-                        Logger.LogWarning($"Controller {controller.Name} discovery failed: {ex.Message}");
-                        return (Controller: controller, Monitors: new List<Monitor>());
-                    }
-                });
+                // Step 1: Discover monitors from all controllers
+                var discoveryResults = await DiscoverFromAllControllersAsync(cancellationToken);
 
-                var results = await Task.WhenAll(discoveryTasks);
+                // Step 2: Initialize and validate all discovered monitors
+                var newMonitors = await InitializeAllMonitorsAsync(discoveryResults, cancellationToken);
 
-                // Collect all discovered monitors
-                var allMonitors = new List<Monitor>();
-
-                foreach (var (controller, monitors) in results)
-                {
-                    // Initialize monitors in parallel
-                    var initTasks = monitors.Select(async monitor =>
-                    {
-                        // Verify if monitor can be controlled
-                        if (await controller.CanControlMonitorAsync(monitor, cancellationToken))
-                        {
-                            // Get current brightness
-                            try
-                            {
-                                var brightnessInfo = await controller.GetBrightnessAsync(monitor, cancellationToken);
-                                if (brightnessInfo.IsValid)
-                                {
-                                    monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-                                    monitor.MinBrightness = brightnessInfo.Minimum;
-                                    monitor.MaxBrightness = brightnessInfo.Maximum;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                // If unable to get brightness, use default values
-                                Logger.LogWarning($"Failed to get brightness for monitor {monitor.Id}: {ex.Message}");
-                            }
-
-                            // Get capabilities for DDC/CI monitors
-                            // Check by CommunicationMethod instead of Type
-                            if (monitor.CommunicationMethod?.Contains("DDC", StringComparison.OrdinalIgnoreCase) == true)
-                            {
-                                try
-                                {
-                                    Logger.LogInfo($"Getting capabilities for monitor {monitor.Id}");
-                                    var capsString = await controller.GetCapabilitiesStringAsync(monitor, cancellationToken);
-
-                                    if (!string.IsNullOrEmpty(capsString))
-                                    {
-                                        monitor.CapabilitiesRaw = capsString;
-
-                                        // Parse capabilities
-                                        monitor.VcpCapabilitiesInfo = Common.Utils.VcpCapabilitiesParser.Parse(capsString);
-
-                                        Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
-
-                                        // Update capability flags based on parsed VCP codes
-                                        if (monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0)
-                                        {
-                                            UpdateMonitorCapabilitiesFromVcp(monitor);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Logger.LogWarning($"Got empty capabilities string for monitor {monitor.Id}");
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.LogWarning($"Failed to get capabilities for monitor {monitor.Id}: {ex.Message}");
-
-                                    // Continue without capabilities - not critical
-                                }
-                            }
-
-                            return monitor;
-                        }
-
-                        return null;
-                    });
-
-                    var initializedMonitors = await Task.WhenAll(initTasks);
-                    var validMonitors = initializedMonitors.Where(m => m != null).Cast<Monitor>();
-                    newMonitors.AddRange(validMonitors);
-                }
-
-                // Update monitor list and lookup dictionary
-                _monitors.Clear();
-                _monitorLookup.Clear();
-                _monitors.AddRange(newMonitors);
-                foreach (var monitor in newMonitors)
-                {
-                    _monitorLookup[monitor.Id] = monitor;
-                }
-
-                // Trigger change events
-                var addedMonitors = newMonitors.Where(m => !oldMonitors.Any(o => o.Id == m.Id)).ToList();
-                var removedMonitors = oldMonitors.Where(o => !newMonitors.Any(m => m.Id == o.Id)).ToList();
-
-                if (addedMonitors.Count > 0 || removedMonitors.Count > 0)
-                {
-                    MonitorsChanged?.Invoke(this, new MonitorListChangedEventArgs(
-                        addedMonitors.AsReadOnly(),
-                        removedMonitors.AsReadOnly(),
-                        _monitors.AsReadOnly()));
-                }
+                // Step 3: Update collection and notify changes
+                UpdateMonitorCollection(oldMonitors, newMonitors);
 
                 return _monitors.AsReadOnly();
             }
             finally
             {
                 _discoveryLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Discover monitors from all registered controllers in parallel.
+        /// </summary>
+        private async Task<List<(IMonitorController Controller, List<Monitor> Monitors)>> DiscoverFromAllControllersAsync(
+            CancellationToken cancellationToken)
+        {
+            var discoveryTasks = _controllers.Select(async controller =>
+            {
+                try
+                {
+                    var monitors = await controller.DiscoverMonitorsAsync(cancellationToken);
+                    return (Controller: controller, Monitors: monitors.ToList());
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Controller {controller.Name} discovery failed: {ex.Message}");
+                    return (Controller: controller, Monitors: new List<Monitor>());
+                }
+            });
+
+            var results = await Task.WhenAll(discoveryTasks);
+            return results.ToList();
+        }
+
+        /// <summary>
+        /// Initialize all discovered monitors from all controllers.
+        /// </summary>
+        private async Task<List<Monitor>> InitializeAllMonitorsAsync(
+            List<(IMonitorController Controller, List<Monitor> Monitors)> discoveryResults,
+            CancellationToken cancellationToken)
+        {
+            var newMonitors = new List<Monitor>();
+
+            foreach (var (controller, monitors) in discoveryResults)
+            {
+                var initTasks = monitors.Select(monitor =>
+                    InitializeSingleMonitorAsync(monitor, controller, cancellationToken));
+
+                var initializedMonitors = await Task.WhenAll(initTasks);
+                var validMonitors = initializedMonitors.Where(m => m != null).Cast<Monitor>();
+                newMonitors.AddRange(validMonitors);
+            }
+
+            return newMonitors;
+        }
+
+        /// <summary>
+        /// Initialize a single monitor: verify control, get brightness, and fetch capabilities.
+        /// </summary>
+        private async Task<Monitor?> InitializeSingleMonitorAsync(
+            Monitor monitor,
+            IMonitorController controller,
+            CancellationToken cancellationToken)
+        {
+            // Verify if monitor can be controlled
+            if (!await controller.CanControlMonitorAsync(monitor, cancellationToken))
+            {
+                return null;
+            }
+
+            // Get current brightness
+            await InitializeMonitorBrightnessAsync(monitor, controller, cancellationToken);
+
+            // Get capabilities for DDC/CI monitors
+            if (monitor.CommunicationMethod?.Contains("DDC", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                await InitializeMonitorCapabilitiesAsync(monitor, controller, cancellationToken);
+            }
+
+            return monitor;
+        }
+
+        /// <summary>
+        /// Initialize monitor brightness values.
+        /// </summary>
+        private async Task InitializeMonitorBrightnessAsync(
+            Monitor monitor,
+            IMonitorController controller,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var brightnessInfo = await controller.GetBrightnessAsync(monitor, cancellationToken);
+                if (brightnessInfo.IsValid)
+                {
+                    monitor.CurrentBrightness = brightnessInfo.ToPercentage();
+                    monitor.MinBrightness = brightnessInfo.Minimum;
+                    monitor.MaxBrightness = brightnessInfo.Maximum;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to get brightness for monitor {monitor.Id}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Initialize monitor DDC/CI capabilities.
+        /// </summary>
+        private async Task InitializeMonitorCapabilitiesAsync(
+            Monitor monitor,
+            IMonitorController controller,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                Logger.LogInfo($"Getting capabilities for monitor {monitor.Id}");
+                var capsString = await controller.GetCapabilitiesStringAsync(monitor, cancellationToken);
+
+                if (!string.IsNullOrEmpty(capsString))
+                {
+                    monitor.CapabilitiesRaw = capsString;
+                    monitor.VcpCapabilitiesInfo = Common.Utils.VcpCapabilitiesParser.Parse(capsString);
+
+                    Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
+
+                    if (monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0)
+                    {
+                        UpdateMonitorCapabilitiesFromVcp(monitor);
+                    }
+                }
+                else
+                {
+                    Logger.LogWarning($"Got empty capabilities string for monitor {monitor.Id}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to get capabilities for monitor {monitor.Id}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Update the monitor collection and trigger change events.
+        /// </summary>
+        private void UpdateMonitorCollection(List<Monitor> oldMonitors, List<Monitor> newMonitors)
+        {
+            // Update monitor list and lookup dictionary
+            _monitors.Clear();
+            _monitorLookup.Clear();
+            _monitors.AddRange(newMonitors);
+
+            foreach (var monitor in newMonitors)
+            {
+                _monitorLookup[monitor.Id] = monitor;
+            }
+
+            // Trigger change events
+            var addedMonitors = newMonitors.Where(m => !oldMonitors.Any(o => o.Id == m.Id)).ToList();
+            var removedMonitors = oldMonitors.Where(o => !newMonitors.Any(m => m.Id == o.Id)).ToList();
+
+            if (addedMonitors.Count > 0 || removedMonitors.Count > 0)
+            {
+                MonitorsChanged?.Invoke(this, new MonitorListChangedEventArgs(
+                    addedMonitors.AsReadOnly(),
+                    removedMonitors.AsReadOnly(),
+                    _monitors.AsReadOnly()));
             }
         }
 

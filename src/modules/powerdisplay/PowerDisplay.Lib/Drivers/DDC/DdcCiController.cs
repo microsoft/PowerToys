@@ -69,28 +69,14 @@ namespace PowerDisplay.Common.Drivers.DDC
                 () =>
                 {
                     var physicalHandle = GetPhysicalHandle(monitor);
-                    if (physicalHandle == IntPtr.Zero)
+                    var result = GetBrightnessInfoCore(monitor.Id, physicalHandle);
+
+                    if (!result.IsValid)
                     {
-                        Logger.LogDebug($"[{monitor.Id}] Invalid physical handle");
-                        return BrightnessInfo.Invalid;
+                        Logger.LogWarning($"[{monitor.Id}] Failed to read brightness");
                     }
 
-                    // First try high-level API
-                    if (DdcCiNative.TryGetMonitorBrightness(physicalHandle, out uint minBrightness, out uint currentBrightness, out uint maxBrightness))
-                    {
-                        Logger.LogDebug($"[{monitor.Id}] Brightness via high-level API: {currentBrightness}/{maxBrightness}");
-                        return new BrightnessInfo((int)currentBrightness, (int)minBrightness, (int)maxBrightness);
-                    }
-
-                    // Try VCP code 0x10 (standard brightness)
-                    if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out uint current, out uint max))
-                    {
-                        Logger.LogDebug($"[{monitor.Id}] Brightness via 0x10: {current}/{max}");
-                        return new BrightnessInfo((int)current, 0, (int)max);
-                    }
-
-                    Logger.LogWarning($"[{monitor.Id}] Failed to read brightness");
-                    return BrightnessInfo.Invalid;
+                    return result;
                 },
                 cancellationToken);
         }
@@ -113,7 +99,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     try
                     {
-                        var currentInfo = GetBrightnessInfo(monitor, physicalHandle);
+                        var currentInfo = GetBrightnessInfoCore(monitor.Id, physicalHandle);
                         if (!currentInfo.IsValid)
                         {
                             Logger.LogWarning($"[{monitor.Id}] Cannot read current brightness");
@@ -262,74 +248,77 @@ namespace PowerDisplay.Common.Drivers.DDC
             return await Task.Run(
                 () =>
                 {
-                if (monitor.Handle == IntPtr.Zero)
-                {
-                    return string.Empty;
-                }
-
-                try
-                {
-                    // Step 1: Get capabilities string length (retry up to 3 times)
-                    uint length = 0;
-                    const int lengthMaxRetries = 3;
-                    for (int i = 0; i < lengthMaxRetries; i++)
+                    if (monitor.Handle == IntPtr.Zero)
                     {
-                        if (GetCapabilitiesStringLength(monitor.Handle, out length) && length > 0)
-                        {
-                            Logger.LogDebug($"Got capabilities length: {length} (attempt {i + 1})");
-                            break;
-                        }
-
-                        if (i < lengthMaxRetries - 1)
-                        {
-                            Thread.Sleep(RetryDelayMs);
-                        }
-                    }
-
-                    if (length == 0)
-                    {
-                        Logger.LogWarning("Failed to get capabilities string length after retries");
                         return string.Empty;
                     }
 
-                    // Step 2: Get actual capabilities string (retry up to 5 times)
-                    const int capsMaxRetries = 5;
-                    for (int i = 0; i < capsMaxRetries; i++)
+                    try
                     {
-                        var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal((int)length);
-                        try
-                        {
-                            if (CapabilitiesRequestAndCapabilitiesReply(monitor.Handle, buffer, length))
+                        // Step 1: Get capabilities string length with retry
+                        var length = RetryHelper.ExecuteWithRetry(
+                            () =>
                             {
-                                var capsString = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buffer) ?? string.Empty;
-                                if (!string.IsNullOrEmpty(capsString))
+                                if (GetCapabilitiesStringLength(monitor.Handle, out uint len) && len > 0)
                                 {
-                                    Logger.LogInfo($"Got capabilities string (length: {capsString.Length}, attempt: {i + 1})");
-                                    return capsString;
+                                    return len;
                                 }
-                            }
-                        }
-                        finally
+
+                                return 0u;
+                            },
+                            len => len > 0,
+                            maxRetries: 3,
+                            delayMs: RetryDelayMs,
+                            operationName: "GetCapabilitiesStringLength");
+
+                        if (length == 0)
                         {
-                            System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer);
+                            return string.Empty;
                         }
 
-                        if (i < capsMaxRetries - 1)
+                        // Step 2: Get actual capabilities string with retry
+                        var capsString = RetryHelper.ExecuteWithRetry(
+                            () => TryGetCapabilitiesString(monitor.Handle, length),
+                            str => !string.IsNullOrEmpty(str),
+                            maxRetries: 5,
+                            delayMs: RetryDelayMs,
+                            operationName: "GetCapabilitiesString");
+
+                        if (!string.IsNullOrEmpty(capsString))
                         {
-                            Thread.Sleep(RetryDelayMs);
+                            Logger.LogInfo($"Got capabilities string (length: {capsString.Length})");
+                            return capsString;
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Exception getting capabilities string: {ex.Message}");
+                    }
 
-                    Logger.LogWarning("Failed to get capabilities string after retries");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Exception getting capabilities string: {ex.Message}");
-                }
-
-                return string.Empty;
+                    return string.Empty;
                 },
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Try to get capabilities string from monitor handle.
+        /// </summary>
+        private string? TryGetCapabilitiesString(IntPtr handle, uint length)
+        {
+            var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal((int)length);
+            try
+            {
+                if (CapabilitiesRequestAndCapabilitiesReply(handle, buffer, length))
+                {
+                    return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buffer);
+                }
+
+                return null;
+            }
+            finally
+            {
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer);
+            }
         }
 
         /// <summary>
@@ -669,24 +658,31 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get brightness information using VCP code 0x10 only
+        /// Core implementation for getting brightness information using high-level API or VCP code 0x10.
+        /// Used by both GetBrightnessAsync and SetBrightnessAsync.
         /// </summary>
-        private BrightnessInfo GetBrightnessInfo(Monitor monitor, IntPtr physicalHandle)
+        /// <param name="monitorId">Monitor ID for logging.</param>
+        /// <param name="physicalHandle">Physical monitor handle.</param>
+        /// <returns>BrightnessInfo with current, min, and max values, or Invalid if failed.</returns>
+        private BrightnessInfo GetBrightnessInfoCore(string monitorId, IntPtr physicalHandle)
         {
             if (physicalHandle == IntPtr.Zero)
             {
+                Logger.LogDebug($"[{monitorId}] Invalid physical handle");
                 return BrightnessInfo.Invalid;
             }
 
             // First try high-level API
             if (DdcCiNative.TryGetMonitorBrightness(physicalHandle, out uint min, out uint current, out uint max))
             {
+                Logger.LogDebug($"[{monitorId}] Brightness via high-level API: {current}/{max}");
                 return new BrightnessInfo((int)current, (int)min, (int)max);
             }
 
             // Try VCP code 0x10 (standard brightness)
             if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out current, out max))
             {
+                Logger.LogDebug($"[{monitorId}] Brightness via VCP 0x10: {current}/{max}");
                 return new BrightnessInfo((int)current, 0, (int)max);
             }
 

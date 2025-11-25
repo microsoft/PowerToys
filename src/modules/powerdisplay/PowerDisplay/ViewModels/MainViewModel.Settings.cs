@@ -276,27 +276,27 @@ public partial class MainViewModel
             if (setting.Brightness.HasValue &&
                 IsValueInRange(setting.Brightness.Value, monitorVm.MinBrightness, monitorVm.MaxBrightness))
             {
-                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness.Value, immediate: true, fromProfile: true));
+                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness.Value, immediate: true));
             }
 
             // Apply contrast if supported and value provided
             if (setting.Contrast.HasValue && monitorVm.ShowContrast &&
                 IsValueInRange(setting.Contrast.Value, monitorVm.MinContrast, monitorVm.MaxContrast))
             {
-                updateTasks.Add(monitorVm.SetContrastAsync(setting.Contrast.Value, immediate: true, fromProfile: true));
+                updateTasks.Add(monitorVm.SetContrastAsync(setting.Contrast.Value, immediate: true));
             }
 
             // Apply volume if supported and value provided
             if (setting.Volume.HasValue && monitorVm.ShowVolume &&
                 IsValueInRange(setting.Volume.Value, monitorVm.MinVolume, monitorVm.MaxVolume))
             {
-                updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value, immediate: true, fromProfile: true));
+                updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value, immediate: true));
             }
 
             // Apply color temperature if included in profile
             if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0)
             {
-                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value, fromProfile: true));
+                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value));
             }
         }
 
@@ -307,14 +307,6 @@ public partial class MainViewModel
             Logger.LogInfo($"[Profile] Applied {updateTasks.Count} parameter updates");
         }
     }
-
-    /// <summary>
-    /// Called when user modifies monitor parameters through PowerDisplay UI.
-    /// Parameters are saved to monitor_state.json via SaveMonitorSettingDirect.
-    /// Profiles are templates, not states - no profile tracking needed.
-    /// </summary>
-    public void OnMonitorParameterChanged(string hardwareId, string propertyName, int value)
-        => Logger.LogDebug($"[Monitor] {hardwareId}: {propertyName}={value}");
 
     /// <summary>
     /// Apply color temperature to a specific monitor
@@ -576,10 +568,7 @@ public partial class MainViewModel
     /// </summary>
     private List<string> BuildVcpCodesList(MonitorViewModel vm)
     {
-        return vm.VcpCapabilitiesInfo?.SupportedVcpCodes
-            .OrderBy(kvp => kvp.Key)
-            .Select(kvp => $"0x{kvp.Key:X2}")
-            .ToList() ?? new List<string>();
+        return vm.VcpCapabilitiesInfo?.GetVcpCodesAsHexStrings() ?? new List<string>();
     }
 
     /// <summary>
@@ -587,10 +576,18 @@ public partial class MainViewModel
     /// </summary>
     private List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo> BuildFormattedVcpCodesList(MonitorViewModel vm)
     {
-        return vm.VcpCapabilitiesInfo?.SupportedVcpCodes
-            .OrderBy(kvp => kvp.Key)
-            .Select(kvp => FormatVcpCodeForDisplay(kvp.Key, kvp.Value))
-            .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>();
+        if (vm.VcpCapabilitiesInfo == null)
+        {
+            return new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>();
+        }
+
+        var result = new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>();
+        foreach (var info in vm.VcpCapabilitiesInfo.GetSortedVcpCodes())
+        {
+            result.Add(FormatVcpCodeForDisplay(info.Code, info));
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -637,8 +634,8 @@ public partial class MainViewModel
     {
         var result = new Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo
         {
-            Code = $"0x{code:X2}",
-            Title = $"{info.Name} (0x{code:X2})",
+            Code = info.FormattedCode,
+            Title = info.FormattedTitle,
         };
 
         if (info.IsContinuous)

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
@@ -15,9 +16,8 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public partial class PhysicalMonitorHandleManager : IDisposable
     {
-        // Mapping: deviceKey -> physical handle
-        private readonly Dictionary<string, IntPtr> _deviceKeyToHandleMap = new();
-        private readonly object _lock = new();
+        // Mapping: deviceKey -> physical handle (thread-safe)
+        private readonly LockedDictionary<string, IntPtr> _deviceKeyToHandleMap = new();
         private bool _disposed;
 
         /// <summary>
@@ -25,14 +25,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public IntPtr GetPhysicalHandle(Monitor monitor)
         {
-            lock (_lock)
+            // Primary lookup: use stable deviceKey from EnumDisplayDevices
+            if (!string.IsNullOrEmpty(monitor.DeviceKey) &&
+                _deviceKeyToHandleMap.TryGetValue(monitor.DeviceKey, out var handle))
             {
-                // Primary lookup: use stable deviceKey from EnumDisplayDevices
-                if (!string.IsNullOrEmpty(monitor.DeviceKey) &&
-                    _deviceKeyToHandleMap.TryGetValue(monitor.DeviceKey, out var handle))
-                {
-                    return handle;
-                }
+                return handle;
             }
 
             // Fallback: use direct handle from monitor object
@@ -55,10 +52,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return (newHandle, false);
             }
 
-            lock (_lock)
+            return _deviceKeyToHandleMap.ExecuteWithLock(dict =>
             {
                 // Try to reuse existing handle if it's still valid
-                if (_deviceKeyToHandleMap.TryGetValue(deviceKey, out var existingHandle) &&
+                if (dict.TryGetValue(deviceKey, out var existingHandle) &&
                     existingHandle != IntPtr.Zero &&
                     DdcCiNative.ValidateDdcCiConnection(existingHandle))
                 {
@@ -70,9 +67,9 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     return (existingHandle, true);
                 }
-            }
 
-            return (newHandle, false);
+                return (newHandle, false);
+            });
         }
 
         /// <summary>
@@ -80,26 +77,27 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public void UpdateHandleMap(Dictionary<string, IntPtr> newHandleMap)
         {
-            lock (_lock)
+            _deviceKeyToHandleMap.ExecuteWithLock(dict =>
             {
                 // Clean up unused handles before updating
-                CleanupUnusedHandles(newHandleMap);
+                CleanupUnusedHandles(dict, newHandleMap);
 
                 // Update the device key map
-                _deviceKeyToHandleMap.Clear();
+                dict.Clear();
                 foreach (var kvp in newHandleMap)
                 {
-                    _deviceKeyToHandleMap[kvp.Key] = kvp.Value;
+                    dict[kvp.Key] = kvp.Value;
                 }
-            }
+            });
         }
 
         /// <summary>
-        /// Clean up handles that are no longer in use
+        /// Clean up handles that are no longer in use.
+        /// Called within ExecuteWithLock context with the internal dictionary.
         /// </summary>
-        private void CleanupUnusedHandles(Dictionary<string, IntPtr> newHandles)
+        private void CleanupUnusedHandles(Dictionary<string, IntPtr> currentHandles, Dictionary<string, IntPtr> newHandles)
         {
-            if (_deviceKeyToHandleMap.Count == 0)
+            if (currentHandles.Count == 0)
             {
                 return;
             }
@@ -107,7 +105,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             var handlesToDestroy = new List<IntPtr>();
 
             // Find handles that are in old map but not being reused
-            foreach (var oldMapping in _deviceKeyToHandleMap)
+            foreach (var oldMapping in currentHandles)
             {
                 bool found = false;
                 foreach (var newMapping in newHandles)
@@ -148,8 +146,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return;
             }
 
-            // Release all physical monitor handles
-            foreach (var handle in _deviceKeyToHandleMap.Values)
+            // Release all physical monitor handles - get snapshot to avoid holding lock during cleanup
+            var handles = _deviceKeyToHandleMap.GetValuesSnapshot();
+            foreach (var handle in handles)
             {
                 if (handle != IntPtr.Zero)
                 {

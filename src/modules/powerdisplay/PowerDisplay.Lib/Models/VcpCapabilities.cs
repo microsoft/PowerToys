@@ -73,6 +73,37 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
+        /// Get all VCP codes as hex strings, sorted by code value.
+        /// </summary>
+        /// <returns>List of hex strings like ["0x10", "0x12", "0x14"]</returns>
+        public List<string> GetVcpCodesAsHexStrings()
+        {
+            var result = new List<string>(SupportedVcpCodes.Count);
+            foreach (var kvp in SupportedVcpCodes)
+            {
+                result.Add($"0x{kvp.Key:X2}");
+            }
+
+            result.Sort(StringComparer.Ordinal);
+            return result;
+        }
+
+        /// <summary>
+        /// Get all VCP codes sorted by code value.
+        /// </summary>
+        /// <returns>Sorted list of VcpCodeInfo</returns>
+        public IEnumerable<VcpCodeInfo> GetSortedVcpCodes()
+        {
+            var sortedKeys = new List<byte>(SupportedVcpCodes.Keys);
+            sortedKeys.Sort();
+
+            foreach (var key in sortedKeys)
+            {
+                yield return SupportedVcpCodes[key];
+            }
+        }
+
+        /// <summary>
         /// Creates an empty capabilities object
         /// </summary>
         public static VcpCapabilities Empty => new();
@@ -112,6 +143,16 @@ namespace PowerDisplay.Common.Models
         /// Whether this VCP code supports a continuous range
         /// </summary>
         public bool IsContinuous => SupportedValues.Count == 0;
+
+        /// <summary>
+        /// Gets the VCP code formatted as a hex string (e.g., "0x10").
+        /// </summary>
+        public string FormattedCode => $"0x{Code:X2}";
+
+        /// <summary>
+        /// Gets the VCP code formatted with its name (e.g., "Brightness (0x10)").
+        /// </summary>
+        public string FormattedTitle => $"{Name} ({FormattedCode})";
 
         public VcpCodeInfo(byte code, string name, IReadOnlyList<int>? supportedValues = null)
         {

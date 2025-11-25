@@ -85,103 +85,14 @@ namespace PowerDisplay
                 // PID is already parsed in Program.cs and passed to constructor
 
                 // Set up Windows Events monitoring (Awake pattern)
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.ShowPowerDisplayEvent(),
-                    () =>
-                    {
-                        Logger.LogInfo("[EVENT] Show event received");
-                        Logger.LogInfo($"[EVENT] _mainWindow is null: {_mainWindow == null}");
-                        Logger.LogInfo($"[EVENT] _mainWindow type: {_mainWindow?.GetType().Name}");
-                        Logger.LogInfo($"[EVENT] Current thread ID: {Environment.CurrentManagedThreadId}");
-
-                        // Direct call - NativeEventWaiter already marshalled to UI thread
-                        // No need for double DispatcherQueue.TryEnqueue
-                        if (_mainWindow is MainWindow mainWindow)
-                        {
-                            Logger.LogInfo("[EVENT] Calling ShowWindow directly");
-                            mainWindow.ShowWindow();
-                            Logger.LogInfo("[EVENT] ShowWindow returned");
-                        }
-                        else
-                        {
-                            Logger.LogError($"[EVENT] _mainWindow type mismatch, actual type: {_mainWindow?.GetType().Name}");
-                        }
-                    },
-                    CancellationToken.None);
-
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.TogglePowerDisplayEvent(),
-                    () =>
-                    {
-                        Logger.LogInfo("[EVENT] Toggle event received");
-                        if (_mainWindow is MainWindow mainWindow)
-                        {
-                            Logger.LogInfo("[EVENT] Calling ToggleWindow");
-                            mainWindow.ToggleWindow();
-                        }
-                        else
-                        {
-                            Logger.LogError($"[EVENT] _mainWindow type mismatch for toggle");
-                        }
-                    },
-                    CancellationToken.None);
-
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.TerminatePowerDisplayEvent(),
-                    () =>
-                    {
-                        Logger.LogInfo("Received terminate event - exiting immediately");
-                        Environment.Exit(0);
-                    },
-                    CancellationToken.None);
-
                 // Note: PowerDisplay.exe should NOT listen to RefreshMonitorsEvent
                 // That event is sent BY PowerDisplay TO Settings UI for one-way notification
-                // Listening to our own event would create an infinite refresh loop
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.SettingsUpdatedPowerDisplayEvent(),
-                    () =>
-                    {
-                        Logger.LogInfo("Received settings updated event");
-                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
-                            {
-                                mainWindow.ViewModel.ApplySettingsFromUI();
-                            }
-                        });
-                    },
-                    CancellationToken.None);
-
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.ApplyColorTemperaturePowerDisplayEvent(),
-                    () =>
-                    {
-                        Logger.LogInfo("Received apply color temperature event");
-                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
-                            {
-                                mainWindow.ViewModel.ApplyColorTemperatureFromSettings();
-                            }
-                        });
-                    },
-                    CancellationToken.None);
-
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.ApplyProfilePowerDisplayEvent(),
-                    () =>
-                    {
-                        Logger.LogInfo("Received apply profile event");
-                        _mainWindow?.DispatcherQueue.TryEnqueue(() =>
-                        {
-                            if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
-                            {
-                                mainWindow.ViewModel.ApplyProfileFromSettings();
-                            }
-                        });
-                    },
-                    CancellationToken.None);
+                RegisterWindowEvent(Constants.ShowPowerDisplayEvent(), mw => mw.ShowWindow(), "Show");
+                RegisterWindowEvent(Constants.TogglePowerDisplayEvent(), mw => mw.ToggleWindow(), "Toggle");
+                RegisterEvent(Constants.TerminatePowerDisplayEvent(), () => Environment.Exit(0), "Terminate");
+                RegisterViewModelEvent(Constants.SettingsUpdatedPowerDisplayEvent(), vm => vm.ApplySettingsFromUI(), "SettingsUpdated");
+                RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
+                RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
 
                 // Monitor Runner process (backup exit mechanism)
                 if (_powerToysRunnerPid > 0)
@@ -238,6 +149,66 @@ namespace PowerDisplay
             {
                 ShowStartupError(ex);
             }
+        }
+
+        /// <summary>
+        /// Register a simple event handler (no window access needed)
+        /// </summary>
+        private void RegisterEvent(string eventName, Action action, string logName)
+        {
+            NativeEventWaiter.WaitForEventLoop(
+                eventName,
+                () =>
+                {
+                    Logger.LogInfo($"[EVENT] {logName} event received");
+                    action();
+                },
+                CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Register an event handler that operates on MainWindow directly
+        /// NativeEventWaiter already marshals to UI thread
+        /// </summary>
+        private void RegisterWindowEvent(string eventName, Action<MainWindow> action, string logName)
+        {
+            NativeEventWaiter.WaitForEventLoop(
+                eventName,
+                () =>
+                {
+                    Logger.LogInfo($"[EVENT] {logName} event received");
+                    if (_mainWindow is MainWindow mainWindow)
+                    {
+                        action(mainWindow);
+                    }
+                    else
+                    {
+                        Logger.LogError($"[EVENT] _mainWindow type mismatch for {logName}");
+                    }
+                },
+                CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Register an event handler that operates on ViewModel via DispatcherQueue
+        /// Used for Settings UI IPC events that need ViewModel access
+        /// </summary>
+        private void RegisterViewModelEvent(string eventName, Action<ViewModels.MainViewModel> action, string logName)
+        {
+            NativeEventWaiter.WaitForEventLoop(
+                eventName,
+                () =>
+                {
+                    Logger.LogInfo($"[EVENT] {logName} event received");
+                    _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+                    {
+                        if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                        {
+                            action(mainWindow.ViewModel);
+                        }
+                    });
+                },
+                CancellationToken.None);
         }
 
         /// <summary>

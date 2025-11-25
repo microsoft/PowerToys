@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using PowerDisplay.Common.Drivers;
 
 namespace PowerDisplay.Common.Utils
 {
@@ -80,7 +81,7 @@ namespace PowerDisplay.Common.Utils
             }
 
             // Use VcpValueNames for special presets like sRGB, User 1, etc.
-            var name = VcpValueNames.GetName(ColorTemperatureHelper.ColorTemperatureVcpCode, vcpValue);
+            var name = VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
             return name ?? $"Unknown (0x{vcpValue:X2})";
         }
 
@@ -101,7 +102,7 @@ namespace PowerDisplay.Common.Utils
         /// <returns>Preset name like "6500K", "sRGB", or null if unknown.</returns>
         public static string? GetColorTemperaturePresetName(int vcpValue)
         {
-            return VcpValueNames.GetName(ColorTemperatureHelper.ColorTemperatureVcpCode, vcpValue);
+            return VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
         }
 
         /// <summary>
@@ -140,7 +141,7 @@ namespace PowerDisplay.Common.Utils
         public static bool IsKnownColorTemperaturePreset(int vcpValue)
         {
             return VcpToKelvinMap.ContainsKey(vcpValue) ||
-                   VcpValueNames.GetName(ColorTemperatureHelper.ColorTemperatureVcpCode, vcpValue) != null;
+                   VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue) != null;
         }
     }
 }
