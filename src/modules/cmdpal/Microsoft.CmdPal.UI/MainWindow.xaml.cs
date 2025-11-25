@@ -29,7 +29,6 @@ using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -48,6 +47,9 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<QuitMessage>,
     IDisposable
 {
+    private const int DefaultWidth = 800;
+    private const int DefaultHeight = 480;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
     private readonly uint WM_TASKBAR_RESTART;
@@ -152,11 +154,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
-    private void PositionCentered()
-    {
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        MonitorHelper.PositionCentered(AppWindow, displayArea);
-    }
+    private void PositionCentered() => MonitorHelper.PositionCentered(AppWindow, DisplayAreaFallback.Nearest);
 
     private void RestoreWindowPosition()
     {
@@ -173,32 +171,22 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        AppWindow.Resize(new SizeInt32 { Width = savedPosition.Width, Height = savedPosition.Height });
-
-        var savedRect = new RectInt32(savedPosition.X, savedPosition.Y, savedPosition.Width, savedPosition.Height);
-        var displayArea = DisplayArea.GetFromRect(savedRect, DisplayAreaFallback.Nearest);
-        var workArea = displayArea.WorkArea;
-
-        var maxX = workArea.X + Math.Max(0, workArea.Width - savedPosition.Width);
-        var maxY = workArea.Y + Math.Max(0, workArea.Height - savedPosition.Height);
-
-        var targetPoint = new PointInt32
-        {
-            X = Math.Clamp(savedPosition.X, workArea.X, maxX),
-            Y = Math.Clamp(savedPosition.Y, workArea.Y, maxY),
-        };
-
-        AppWindow.Move(targetPoint);
+        var newRect = MonitorHelper.EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi, DefaultWidth, DefaultHeight);
+        AppWindow.MoveAndResize(newRect);
     }
 
     private void UpdateWindowPositionInMemory()
     {
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
         _currentWindowPosition = new WindowPosition
         {
             X = AppWindow.Position.X,
             Y = AppWindow.Position.Y,
             Width = AppWindow.Size.Width,
             Height = AppWindow.Size.Height,
+            Dpi = (int)this.GetDpiForWindow(),
+            ScreenWidth = displayArea.WorkArea.Width,
+            ScreenHeight = displayArea.WorkArea.Height,
         };
     }
 
@@ -286,8 +274,13 @@ public sealed partial class MainWindow : WindowEx,
 
         if (target == MonitorBehavior.ToLast)
         {
-            AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
-            AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
+            var newRect = MonitorHelper.EnsureWindowIsVisible(
+                _currentWindowPosition.ToPhysicalWindowRectangle(),
+                new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight),
+                _currentWindowPosition.Dpi,
+                DefaultWidth,
+                DefaultHeight);
+            AppWindow.MoveAndResize(newRect);
         }
         else
         {
@@ -418,6 +411,9 @@ public sealed partial class MainWindow : WindowEx,
                 Y = _currentWindowPosition.Y,
                 Width = _currentWindowPosition.Width,
                 Height = _currentWindowPosition.Height,
+                Dpi = _currentWindowPosition.Dpi,
+                ScreenWidth = _currentWindowPosition.ScreenWidth,
+                ScreenHeight = _currentWindowPosition.ScreenHeight,
             };
 
             SettingsModel.SaveSettings(settings);
