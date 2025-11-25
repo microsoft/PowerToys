@@ -269,8 +269,17 @@ public partial class ShellViewModel : ObservableObject,
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
 
+                // Track extension page navigation
+                if (host is not null)
+                {
+                    string extensionId = host.GetExtensionDisplayName() ?? "builtin";
+                    string commandType = command?.Name ?? command?.Id ?? "unknown";
+                    WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
+                        new(extensionId, commandType, true, 0));
+                }
+
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -338,6 +347,12 @@ public partial class ShellViewModel : ObservableObject,
 
     private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var command = message.Command.Unsafe;
+        string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+        string commandType = command?.Name ?? command?.Id ?? "unknown";
+        bool success = false;
+
         try
         {
             // Call out to extension process.
@@ -348,15 +363,23 @@ public partial class ShellViewModel : ObservableObject,
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result);
 
+            success = true;
             _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
+            success = false;
             _handleInvokeTask = null;
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
+        }
+        finally
+        {
+            stopwatch.Stop();
+            WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
+                new(extensionId, commandType, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
 

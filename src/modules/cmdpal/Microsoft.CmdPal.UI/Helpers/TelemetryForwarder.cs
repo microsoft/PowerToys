@@ -22,12 +22,14 @@ namespace Microsoft.CmdPal.UI;
 internal sealed class TelemetryForwarder :
     ITelemetryService,
     IRecipient<BeginInvokeMessage>,
-    IRecipient<CmdPalInvokeResultMessage>
+    IRecipient<CmdPalInvokeResultMessage>,
+    IRecipient<ExtensionInvokedMessage>
 {
     public TelemetryForwarder()
     {
         WeakReferenceMessenger.Default.Register<BeginInvokeMessage>(this);
         WeakReferenceMessenger.Default.Register<CmdPalInvokeResultMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExtensionInvokedMessage>(this);
     }
 
     public void Receive(CmdPalInvokeResultMessage message)
@@ -38,6 +40,15 @@ internal sealed class TelemetryForwarder :
     public void Receive(BeginInvokeMessage message)
     {
         PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
+    }
+
+    public void Receive(ExtensionInvokedMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalExtensionInvoked(
+            message.ExtensionId,
+            message.CommandType,
+            message.Success,
+            message.ExecutionTimeMs));
     }
 
     public void LogRunQuery(string query, int resultCount, ulong durationMs)
