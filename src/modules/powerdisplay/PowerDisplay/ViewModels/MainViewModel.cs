@@ -6,16 +6,19 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using PowerDisplay.Commands;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Core;
 using PowerDisplay.Helpers;
+using PowerDisplay.PowerDisplayXAML;
 
 namespace PowerDisplay.ViewModels;
 
@@ -154,16 +157,43 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
     public ICommand IdentifyMonitorsCommand => new RelayCommand(() =>
     {
-        // For now, just show a simple notification that the feature is implemented
-        // Full implementation would require creating WinUI 3 windows positioned on each monitor
-        // which is more complex than WPF due to different windowing model
         Logger.LogInfo("Identify monitors feature triggered");
 
-        // TODO: Implement proper WinUI 3 window positioning for each monitor
-        // This requires:
-        // 1. Creating a separate Window for each monitor
-        // 2. Using AppWindow.MoveAndResize with monitor coordinates
-        // 3. Handling DPI scaling correctly
+        try
+        {
+            // Get all display areas - use direct indexing to avoid WinRT enumeration issues
+            var displayAreas = DisplayArea.FindAll();
+            int displayCount = displayAreas.Count;
+            Logger.LogDebug($"Found {displayCount} display areas");
+
+            // Get current monitors sorted by MonitorNumber
+            var monitors = _monitorManager.Monitors.OrderBy(m => m.MonitorNumber).ToList();
+            Logger.LogDebug($"Found {monitors.Count} monitors in MonitorManager");
+
+            for (int index = 0; index < displayCount; index++)
+            {
+                var displayArea = displayAreas[index];
+
+                // Get monitor number: prefer MonitorManager's number, fallback to index+1
+                int monitorNumber = (index < monitors.Count)
+                    ? monitors[index].MonitorNumber
+                    : index + 1;
+
+                Logger.LogDebug($"Creating identify window for monitor {monitorNumber} on display area {index}");
+
+                // Create and position window
+                var identifyWindow = new IdentifyWindow(monitorNumber);
+                identifyWindow.PositionOnDisplay(displayArea);
+                identifyWindow.Activate();
+            }
+
+            Logger.LogInfo($"Created {displayCount} identify windows");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to identify monitors: {ex.Message}");
+            Logger.LogError($"Stack trace: {ex.StackTrace}");
+        }
     });
 
     public event PropertyChangedEventHandler? PropertyChanged;

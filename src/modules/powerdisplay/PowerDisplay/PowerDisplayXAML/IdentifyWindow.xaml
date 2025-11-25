@@ -5,20 +5,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid>
-        <Border Background="{ThemeResource SystemAccentColor}" 
-                CornerRadius="10"
-                Opacity="0.9"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Width="200" Height="200">
-            <TextBlock x:Name="NumberText"
-                       Text="1"
-                       FontSize="120"
-                       FontWeight="Bold"
-                       Foreground="White"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-        </Border>
+    <Grid Background="Transparent">
+        <TextBlock x:Name="NumberText"
+                   Text="1"
+                   FontSize="200"
+                   FontWeight="Bold"
+                   FontFamily="Segoe UI"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
     </Grid>
 </Window>
