@@ -25,38 +25,27 @@
                 <StackPanel>
                     <Button
                         MinHeight="32"
+                        Margin="2,0,2,0"
                         VerticalAlignment="Center"
                         VerticalContentAlignment="Stretch"
                         Command="{x:Bind InvokeCommand, Mode=OneWay}"
                         Content="{x:Bind DisplayText, Mode=OneWay}" />
-
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
                 <TextBox
-                    MinHeight="36"
-                    Margin="0,0,0,-4"
-                    Padding="10,5,10,6"
-                    VerticalAlignment="Bottom"
-                    VerticalContentAlignment="Bottom"
-                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    VerticalAlignment="Center"
                     KeyDown="StringParameter_KeyDown"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
+                    Style="{StaticResource SearchParameterTextBoxStyle}"
                     Text="{x:Bind TextForUI, Mode=OneWay}"
-                    TextAlignment="DetectFromContent"
                     TextChanged="StringParameter_TextChanged" />
             </DataTemplate>
             <DataTemplate x:Key="ListParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
                 <TextBox
-                    MinHeight="32"
-                    Padding="4,2"
                     VerticalAlignment="Center"
-                    VerticalContentAlignment="Stretch"
-                    BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                    BorderThickness="1"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
-                    Style="{StaticResource SearchTextBoxStyle}"
+                    Style="{StaticResource SearchParameterTextBoxStyle}"
                     Text="{x:Bind SearchBoxText, Mode=TwoWay}" />
             </DataTemplate>
             <cpcontrols:ParameterRunTemplateSelector
@@ -101,7 +90,7 @@
                 ItemsSource="{x:Bind Parameters, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="8" />
+                        <StackPanel Orientation="Horizontal" Spacing="4" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
