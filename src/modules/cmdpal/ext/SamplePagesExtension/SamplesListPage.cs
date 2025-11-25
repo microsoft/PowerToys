@@ -101,6 +101,14 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
+        // Host Settings
+        new ListItem(new HostSettingsPage())
+        {
+            Title = "Host Settings",
+            Subtitle = "View current Command Palette host settings",
+            Icon = new IconInfo("\uE713"), // Settings icon
+        },
+
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.
         new ListItem(new EvilSamplesPage())

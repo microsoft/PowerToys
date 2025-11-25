@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2
+public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2, IHostSettingsChanged
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -29,6 +29,16 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
     IIconInfo ICommandProvider.Icon => Icon;
 
     public virtual void InitializeWithHost(IExtensionHost host) => ExtensionHost.Initialize(host);
+
+    /// <summary>
+    /// Called when the host settings have changed. Override this method to respond to settings changes.
+    /// The base implementation updates the HostSettingsManager cache.
+    /// </summary>
+    /// <param name="settings">The updated host settings.</param>
+    public virtual void OnHostSettingsChanged(IHostSettings settings)
+    {
+        HostSettingsManager.Update(settings);
+    }
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public virtual void Dispose()
@@ -57,7 +67,7 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
     /// <returns>an array of objects that implement all the leaf interfaces we support</returns>
     public object[] GetApiExtensionStubs()
     {
-        return [new SupportCommandsWithProperties()];
+        return [new SupportCommandsWithProperties(), new HostSettingsChangedHandler(this)];
     }
 
     /// <summary>
@@ -68,5 +78,19 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
         public IDictionary<string, object>? GetProperties() => null;
+    }
+
+    /// <summary>
+    /// A stub class which implements IHostSettingsChanged. This is marshalled across
+    /// the ABI so that the host can call OnHostSettingsChanged on this object,
+    /// which then delegates to the CommandProvider's OnHostSettingsChanged method.
+    /// </summary>
+    private sealed partial class HostSettingsChangedHandler : IHostSettingsChanged
+    {
+        private readonly CommandProvider _provider;
+
+        public HostSettingsChangedHandler(CommandProvider provider) => _provider = provider;
+
+        public void OnHostSettingsChanged(IHostSettings settings) => _provider.OnHostSettingsChanged(settings);
     }
 }

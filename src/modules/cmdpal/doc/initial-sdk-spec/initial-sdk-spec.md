@@ -68,6 +68,7 @@ functionality.
       - [Fallback commands](#fallback-commands)
         - [`GetCommand`](#getcommand)
         - [Settings](#settings)
+        - [Host Settings Awareness](#host-settings-awareness)
   - [Helper SDK Classes](#helper-sdk-classes)
     - [Default implementations](#default-implementations)
     - [Using the Clipboard](#using-the-clipboard)
@@ -1638,6 +1639,74 @@ We're then additionally going to provide a collection of
 [settings helpers](#settings-helpers) for developers in the helper SDK. This
 should allow developers to quickly work to add settings, without mucking around
 in building the form JSON themselves.
+
+##### Host Settings Awareness
+
+Extensions can access the Command Palette's global configuration through the
+`HostSettingsManager` class provided by the Toolkit. This allows extensions to
+read user preferences like the global hotkey, animation settings, and more.
+
+**Reading Current Settings**
+
+Use `HostSettingsManager.Current` to get the current host settings:
+
+```cs
+using Microsoft.CommandPalette.Extensions.Toolkit;
+
+// Get current settings - this is the primary way to access host configuration
+var settings = HostSettingsManager.Current;
+
+// Access individual settings
+var hotkey = settings.Hotkey;                    // e.g., "Win+Alt+Space"
+var disableAnimations = settings.DisableAnimations;
+var singleClick = settings.SingleClickActivates;
+var summonTarget = settings.SummonOn;            // ToMouse, ToPrimary, etc.
+```
+
+Available properties on `HostSettingsManager.Current`:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Hotkey` | `string` | Global summon hotkey |
+| `ShowAppDetails` | `bool` | Show app details in UI |
+| `HotkeyGoesHome` | `bool` | Hotkey returns to home page |
+| `BackspaceGoesBack` | `bool` | Backspace navigates back |
+| `SingleClickActivates` | `bool` | Single-click activation |
+| `HighlightSearchOnActivate` | `bool` | Highlight search on activate |
+| `ShowSystemTrayIcon` | `bool` | Show system tray icon |
+| `IgnoreShortcutWhenFullscreen` | `bool` | Ignore hotkey in fullscreen |
+| `DisableAnimations` | `bool` | Animations disabled |
+| `SummonOn` | `SummonTarget` | Monitor positioning behavior |
+
+**Checking Availability**
+
+Before using settings, check if they're available (for backwards compatibility
+with older hosts):
+
+```cs
+if (HostSettingsManager.IsAvailable)
+{
+    var settings = HostSettingsManager.Current;
+    // Use settings...
+}
+```
+
+**Responding to Changes (Optional)**
+
+If your extension needs to update when settings change, subscribe to
+`HostSettingsManager.SettingsChanged`:
+
+```cs
+HostSettingsManager.SettingsChanged += () =>
+{
+    // Re-read settings and update your UI
+    var settings = HostSettingsManager.Current;
+    RaiseItemsChanged();
+};
+```
+
+For implementation details, see
+[Host Settings Awareness](../host-settings-awareness/host-settings-awareness.md).
 
 ## Helper SDK Classes
 

@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -13,6 +14,12 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public abstract partial class AppExtensionHost : IExtensionHost
 {
+    /// <summary>
+    /// Gets or sets a function that returns the current IHostSettings.
+    /// This is set by the application to provide settings to extensions.
+    /// </summary>
+    public static Func<IHostSettings?>? GetHostSettingsFunc { get; set; }
+
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
     private static ulong _hostingHwnd;

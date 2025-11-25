@@ -160,9 +160,22 @@ public partial class App : Application
         services.AddSingleton(sm);
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
-        services.AddSingleton<IExtensionService, ExtensionService>();
+        var extensionService = new ExtensionService();
+        services.AddSingleton<IExtensionService>(extensionService);
         services.AddSingleton<TrayIconService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
+
+        // Set up host settings for extensions
+        AppExtensionHost.GetHostSettingsFunc = () => sm.ToHostSettings();
+
+        // Subscribe to settings changes and notify extensions
+        sm.SettingsChanged += (sender, _) =>
+        {
+            if (sender is SettingsModel settings)
+            {
+                extensionService.NotifyHostSettingsChanged(settings.ToHostSettings());
+            }
+        };
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
