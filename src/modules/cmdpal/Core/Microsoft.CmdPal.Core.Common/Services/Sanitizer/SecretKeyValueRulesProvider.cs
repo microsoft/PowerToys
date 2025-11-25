@@ -97,13 +97,13 @@ internal sealed class SecretKeyValueRulesProvider : ISanitizationRuleProvider
 
         foreach (var raw in keys)
         {
-            if (string.IsNullOrWhiteSpace(raw))
+            var key = raw?.Trim();
+            if (string.IsNullOrEmpty(key))
             {
                 continue;
             }
 
-            var key = raw.Trim();
-            if (starEverything && key[0] != '*')
+            if (starEverything && !key.StartsWith('*'))
             {
                 key = "*" + key;
             }
