@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 
 namespace PowerDisplay.Helpers
@@ -23,15 +24,30 @@ namespace PowerDisplay.Helpers
         public static void WaitForEventLoop(string eventName, Action callback, CancellationToken cancellationToken)
         {
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            Logger.LogInfo($"[NativeEventWaiter] Setting up listener for event: {eventName}");
+
             var t = new Thread(() =>
             {
-                using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
-                while (!cancellationToken.IsCancellationRequested)
+                try
                 {
-                    if (eventHandle.WaitOne(500))
+                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                    Logger.LogInfo($"[NativeEventWaiter] Thread started, waiting on event: {eventName}");
+
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        dispatcherQueue.TryEnqueue(() => callback());
+                        // Use infinite wait like Peek.UI for more reliable event reception
+                        if (eventHandle.WaitOne(500))
+                        {
+                            Logger.LogInfo($"[NativeEventWaiter] Event signaled: {eventName}");
+                            dispatcherQueue.TryEnqueue(() => callback());
+                        }
                     }
+
+                    Logger.LogInfo($"[NativeEventWaiter] Cancellation requested, exiting loop for: {eventName}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"[NativeEventWaiter] Exception in event loop for {eventName}: {ex.Message}");
                 }
             });
 

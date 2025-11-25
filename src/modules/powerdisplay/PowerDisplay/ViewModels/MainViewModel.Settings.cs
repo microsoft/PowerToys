@@ -119,18 +119,27 @@ public partial class MainViewModel
                 // Apply color temperature directly
                 await ApplyColorTemperatureAsync(monitorVm, pendingOp.ColorTemperatureVcp);
                 Logger.LogInfo($"[Settings] Successfully applied color temperature to monitor '{pendingOp.MonitorId}'");
+
+                // Update the monitor's ColorTemperatureVcp in settings to match the applied value
+                // This ensures Settings UI gets the correct value when it reloads from file
+                var settingsMonitor = settings.Properties.Monitors.FirstOrDefault(m => m.InternalName == pendingOp.MonitorId);
+                if (settingsMonitor != null)
+                {
+                    settingsMonitor.ColorTemperatureVcp = pendingOp.ColorTemperatureVcp;
+                    Logger.LogInfo($"[Settings] Updated monitor ColorTemperatureVcp in settings: 0x{pendingOp.ColorTemperatureVcp:X2}");
+                }
             }
             else
             {
                 Logger.LogWarning($"[Settings] Monitor not found: {pendingOp.MonitorId}");
             }
 
-            // Clear the pending operation
+            // Clear the pending operation and save updated settings
             settings.Properties.PendingColorTemperatureOperation = null;
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
-            Logger.LogInfo("[Settings] Cleared pending color temperature operation");
+            Logger.LogInfo("[Settings] Cleared pending color temperature operation and saved updated settings");
         }
         else
         {

@@ -324,10 +324,31 @@ public:
             else if (action_object.get_name() == L"ApplyColorTemperature")
             {
                 Logger::trace(L"ApplyColorTemperature action received");
+                Logger::trace(L"Event handle address: {}", reinterpret_cast<void*>(m_hApplyColorTemperatureEvent));
+                Logger::trace(L"Event name: {}", CommonSharedConstants::APPLY_COLOR_TEMPERATURE_POWER_DISPLAY_EVENT);
+
+                // Ensure PowerDisplay process is running before signaling event
+                if (!is_process_running())
+                {
+                    Logger::trace(L"PowerDisplay process not running, launching before applying color temperature");
+                    launch_process();
+                    // Wait for process to initialize and register event listeners
+                    // This prevents race condition where event is set before process is ready
+                    Sleep(1000);
+                }
+
                 if (m_hApplyColorTemperatureEvent)
                 {
-                    Logger::trace(L"Signaling apply color temperature event");
-                    SetEvent(m_hApplyColorTemperatureEvent);
+                    Logger::trace(L"Signaling apply color temperature event (handle valid)");
+                    BOOL result = SetEvent(m_hApplyColorTemperatureEvent);
+                    if (result)
+                    {
+                        Logger::trace(L"SetEvent succeeded for ApplyColorTemperature");
+                    }
+                    else
+                    {
+                        Logger::error(L"SetEvent FAILED for ApplyColorTemperature, error: {}", GetLastError());
+                    }
                 }
                 else
                 {
@@ -337,6 +358,16 @@ public:
             else if (action_object.get_name() == L"ApplyProfile")
             {
                 Logger::trace(L"ApplyProfile action received");
+
+                // Ensure PowerDisplay process is running before signaling event
+                if (!is_process_running())
+                {
+                    Logger::trace(L"PowerDisplay process not running, launching before applying profile");
+                    launch_process();
+                    // Wait for process to initialize and register event listeners
+                    Sleep(1000);
+                }
+
                 if (m_hApplyProfileEvent)
                 {
                     Logger::trace(L"Signaling apply profile event");
@@ -364,16 +395,11 @@ public:
             parse_hotkey_settings(values);
             parse_activation_hotkey(values);
 
-            // Signal settings updated event
-            if (m_hSettingsUpdatedEvent)
-            {
-                Logger::trace(L"Signaling settings updated event");
-                SetEvent(m_hSettingsUpdatedEvent);
-            }
-            else
-            {
-                Logger::warn(L"Settings updated event handle is null");
-            }
+            // NOTE: We intentionally do NOT signal m_hSettingsUpdatedEvent here.
+            // The Settings UI broadcasts config changes to ALL modules on ANY change,
+            // which would cause excessive UI refreshes in PowerDisplay and close ComboBox dropdowns.
+            // Instead, settings updates are handled via explicit custom actions (ApplyColorTemperature, ApplyProfile, etc.)
+            // or when PowerDisplay starts up.
         }
         catch (std::exception&)
         {

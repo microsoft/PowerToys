@@ -378,6 +378,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
                 var updatedMonitors = updatedSettings.Properties.Monitors;
 
+                // Check for pending color temperature operation to avoid race conditions
+                // If there's a pending operation, we should preserve the local ColorTemperatureVcp value
+                // because the Settings UI just set it and PowerDisplay hasn't processed it yet
+                var pendingColorTempOp = updatedSettings.Properties.PendingColorTemperatureOperation;
+                var pendingColorTempMonitorId = pendingColorTempOp?.MonitorId;
+                var pendingColorTempValue = pendingColorTempOp?.ColorTemperatureVcp ?? 0;
+
+                if (!string.IsNullOrEmpty(pendingColorTempMonitorId))
+                {
+                    Logger.LogInfo($"[ReloadMonitors] Found pending color temp operation for monitor: {pendingColorTempMonitorId}, will preserve local value");
+                }
+
                 Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
 
                 // Parse capabilities for each monitor
@@ -406,7 +418,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             // Monitor still exists - update its properties in place
                             Logger.LogInfo($"[ReloadMonitors] Updating existing monitor: {existingMonitor.InternalName}");
-                            existingMonitor.UpdateFrom(updatedMonitor);
+
+                            // Preserve local ColorTemperatureVcp if there's a pending operation for this monitor
+                            // This prevents race condition where PowerDisplay's stale data overwrites user's selection
+                            if (existingMonitor.InternalName == pendingColorTempMonitorId && pendingColorTempValue > 0)
+                            {
+                                var preservedColorTemp = existingMonitor.ColorTemperatureVcp;
+                                existingMonitor.UpdateFrom(updatedMonitor);
+                                existingMonitor.ColorTemperatureVcp = preservedColorTemp;
+                                Logger.LogInfo($"[ReloadMonitors] Preserved local ColorTemperatureVcp: 0x{preservedColorTemp:X2} for monitor with pending operation");
+                            }
+                            else
+                            {
+                                existingMonitor.UpdateFrom(updatedMonitor);
+                            }
+
                             updatedMonitorsDict.Remove(existingMonitor.InternalName);
                         }
                         else
