@@ -1,5 +1,6 @@
 // PipeServer.cpp
 // Administrates named pipes server for IPC communications.
+#include "pch.h"
 #include "PipeServer.h" // relies on named pipes api through windows.h
 
 PipeServer::PipeServer(const wchar_t *name) : _name(name) {} // Constructor

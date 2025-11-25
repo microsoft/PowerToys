@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "trace.h"
 
+#include <common/Telemetry/TraceBase.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
