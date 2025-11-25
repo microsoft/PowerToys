@@ -12,7 +12,6 @@
                 <ResourceDictionary Source="ms-appx:///Resources/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="ms-appx:///Resources/Themes/Colors.xaml" />
                 <ResourceDictionary Source="ms-appx:///Resources/Themes/Generic.xaml" />
-                <ResourceDictionary Source="ms-appx:///Controls/FlyoutMenuButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <ResourceDictionary.ThemeDictionaries>

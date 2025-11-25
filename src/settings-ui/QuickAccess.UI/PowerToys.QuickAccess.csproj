@@ -47,15 +47,6 @@
     <Page Include="..\Settings.UI\SettingsXAML\Themes\Generic.xaml">
       <Link>Resources\Themes\Generic.xaml</Link>
     </Page>
-    <Page Include="..\Settings.UI\SettingsXAML\Controls\FlyoutMenuButton.xaml">
-      <Link>Controls\FlyoutMenuButton.xaml</Link>
-    </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\Settings.UI\SettingsXAML\Controls\FlyoutMenuButton.xaml.cs">
-      <Link>Controls\FlyoutMenuButton.xaml.cs</Link>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -89,6 +80,7 @@
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
   </ItemGroup>
 
   <ItemGroup>

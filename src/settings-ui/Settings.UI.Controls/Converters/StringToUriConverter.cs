@@ -5,22 +5,25 @@
 using System;
 using Microsoft.UI.Xaml.Data;
 
-namespace Microsoft.PowerToys.Settings.UI.Converters
+namespace Microsoft.PowerToys.Settings.UI.Controls.Converters
 {
-    public partial class EnumToBooleanConverter : IValueConverter
+    public partial class StringToUriConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value == null || parameter == null)
+            if (value is string path && !string.IsNullOrEmpty(path))
             {
-                return false;
+                try
+                {
+                    return new Uri(path);
+                }
+                catch
+                {
+                    // Fallback or null
+                }
             }
 
-            // Get the enum value as string
-            var enumString = value.ToString();
-            var parameterString = parameter.ToString();
-
-            return enumString.Equals(parameterString, StringComparison.OrdinalIgnoreCase);
+            return null!;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

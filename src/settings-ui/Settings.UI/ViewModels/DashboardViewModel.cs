@@ -596,7 +596,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void DashboardListItemClick(object sender)
         {
-            if (sender is SettingsCard card && card.Tag is ModuleType moduleType)
+            if (sender is FrameworkElement element && element.Tag is ModuleType moduleType)
             {
                 NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
             }

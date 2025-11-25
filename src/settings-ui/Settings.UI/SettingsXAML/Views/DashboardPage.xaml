@@ -5,6 +5,7 @@
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:controlConverters="using:Microsoft.PowerToys.Settings.UI.Controls.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,7 +20,7 @@
             x:Key="ModuleItemTemplateSelector"
             ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
             ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
-        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <controlConverters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
             <Grid MinHeight="36" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -313,55 +314,14 @@
                             </ItemsRepeater.Layout>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                                    <tkcontrols:SettingsCard
-                                        MinHeight="0"
-                                        Padding="12,4,12,4"
-                                        AutomationProperties.Name="{x:Bind Label}"
-                                        Background="Transparent"
-                                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                                        BorderThickness="0,1,0,0"
+                                    <controls:ModuleSettingsCard
                                         Click="DashboardListItemClick"
-                                        CornerRadius="0"
-                                        IsClickEnabled="True"
-                                        Tag="{x:Bind Tag}">
-                                        <tkcontrols:SettingsCard.Resources>
-                                            <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
-                                            <x:Double x:Key="SettingsCardHeaderIconMaxSize">16</x:Double>
-                                        </tkcontrols:SettingsCard.Resources>
-                                        <tkcontrols:SettingsCard.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{x:Bind Label}" />
-                                                <InfoBadge
-                                                    Margin="4,0,0,0"
-                                                    Style="{StaticResource NewInfoBadge}"
-                                                    Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                <FontIcon
-                                                    Grid.Column="2"
-                                                    Width="20"
-                                                    Margin="0,0,-12,0"
-                                                    FontSize="16"
-                                                    Glyph="&#xE72E;"
-                                                    Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
-                                                    <ToolTipService.ToolTip>
-                                                        <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
-                                                    </ToolTipService.ToolTip>
-                                                </FontIcon>
-                                            </StackPanel>
-                                        </tkcontrols:SettingsCard.Header>
-                                        <tkcontrols:SettingsCard.HeaderIcon>
-                                            <ImageIcon>
-                                                <ImageIcon.Source>
-                                                    <BitmapImage UriSource="{x:Bind Icon}" />
-                                                </ImageIcon.Source>
-                                            </ImageIcon>
-                                        </tkcontrols:SettingsCard.HeaderIcon>
-                                        <ToggleSwitch
-                                            AutomationProperties.Name="{x:Bind Label}"
-                                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                            OffContent=""
-                                            OnContent="" />
-                                    </tkcontrols:SettingsCard>
+                                        Icon="{x:Bind Icon}"
+                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                        IsLocked="{x:Bind IsLocked}"
+                                        IsNew="{x:Bind IsNew}"
+                                        Label="{x:Bind Label}"
+                                        Tag="{x:Bind Tag}" />
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>

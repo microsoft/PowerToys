@@ -6,9 +6,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:Microsoft.PowerToys.QuickAccess.ViewModels"
     xmlns:local="using:Microsoft.PowerToys.QuickAccess.Flyout"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Controls.Converters"
     mc:Ignorable="d">
     <Page.Resources>
-        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Page.Resources>
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
         <Grid.RowDefinitions>
@@ -69,6 +71,12 @@
             Margin="0,16,0,0"
             ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
             SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Padding="0,0,0,16" Orientation="Vertical" />
@@ -77,48 +85,12 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
-                    <Grid Height="40" Padding="24,0,24,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Image
-                            Width="20"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center">
-                            <Image.Source>
-                                <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                            </Image.Source>
-                        </Image>
-                        <TextBlock
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Text="{x:Bind Label, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis" />
-                        <FontIcon
-                            Grid.Column="2"
-                            Width="20"
-                            VerticalAlignment="Center"
-                            FontSize="16"
-                            Glyph="&#xE72E;"
-                            Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
-                            <ToolTipService.ToolTip>
-                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
-                            </ToolTipService.ToolTip>
-                        </FontIcon>
-                        <ToggleSwitch
-                            Grid.Column="3"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
-                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                            OffContent=""
-                            OnContent=""
-                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
-                    </Grid>
+                    <controls:ModuleSettingsCard
+                        HorizontalAlignment="Stretch"
+                        Label="{x:Bind Label, Mode=OneWay}"
+                        Icon="{x:Bind Icon, Mode=OneWay}"
+                        IsLocked="{x:Bind IsLocked, Mode=OneWay}"
+                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
