@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
 using System;
-using ManagedCommons;
+using ManagedCommon;
+using Microsoft.PowerToys;
 using Microsoft.UI.Xaml;
 
 namespace KeystrokeOverlayUI
@@ -11,10 +11,10 @@ namespace KeystrokeOverlayUI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application, IDisposable
+    public partial class App : Application
     {
-        private MainWindow? Window { get; set; }
-        
+        private MainWindow Window { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -51,15 +51,7 @@ namespace KeystrokeOverlayUI
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            PowerToysTelemetry.Log.WriteEvent(new ErrorEvent() { HResult = (Common.Models.HResult)e.Exception.HResult, Failure = ErrorEvent.FailureType.AppCrash });
-        }
-
-        /// <summary>
-        /// Handle Switch Monitor hotkey
-        /// </summary>
-        private void OnSwitchMonitor()
-        {
-            
+            Logger.LogError("Unhandled exception", e.Exception);
         }
     }
 }

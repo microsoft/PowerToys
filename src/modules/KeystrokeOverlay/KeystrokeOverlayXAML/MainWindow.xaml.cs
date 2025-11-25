@@ -4,109 +4,125 @@
 
 using System;
 using System.Collections.ObjectModel;
-using ManagedCommon;
+using Microsoft.UI;                 // Added: For WindowId
+using Microsoft.UI.Windowing;       // Added: For AppWindow & OverlappedPresenter
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;      // Added: For PointerRoutedEventArgs
+using Windows.Graphics;             // Added: For PointInt32
+using WinRT.Interop;                // Added: For WindowNative (to get HWND)
 
 namespace KeystrokeOverlayUI
 {
-    // single key display
-    public class KeyModel
-    {
-        public string Text { get; set; }
-    }
-
-    public class MockSettings : INotifyPropertyChanged
-    {
-        // Defaults from KeystrokeOverlayProperties.cs
-        private double _textSize = 24.0;
-        private int _overlayTimeout = 3000;
-        private Color _textColor = Colors.White;
-        private double _textOpacity = 1.0; // 100%
-        private Color _bgColor = Colors.Black;
-        private double _bgOpacity = 0.5; // 50%
-        private bool _isDraggable = true;
-
-        public double TextSize
-        {
-            get => _textSize;
-            set => SetProperty(ref _textSize, value);
-        }
-
-        public int OverlayTimeout
-        {
-            get => _overlayTimeout;
-            set => SetProperty(ref _overlayTimeout, value);
-        }
-
-        public bool IsDraggable
-        {
-            get => _isDraggable;
-            set => SetProperty(ref _isDraggable, value);
-        }
-
-        // --- Derived Brush properties for XAML Binding ---
-        public Brush TextBrush => new SolidColorBrush(_textColor) { Opacity = _textOpacity };
-        public Brush BackgroundBrush => new SolidColorBrush(_bgColor) { Opacity = _bgOpacity };
-
-        // Helper for INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void SetProperty<T>(ref T storage, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (Equals(storage, value)) return;
-            storage = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            
-            // Update derived brushes
-            if (propertyName == nameof(TextColor) || propertyName == nameof(TextOpacity))
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TextBrush)));
-            if (propertyName == nameof(BackgroundColor) || propertyName == nameof(BackgroundOpacity))
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundBrush)));
-        }
-    }
-
     public sealed partial class MainWindow : Window
     {
+        // Uncommented this so the assignment in the constructor compiles
+        private readonly IUserSettings _userSettings;
+
         private AppWindow _appWindow;
+        private KeystrokeListener _listener;
 
-        // private readonly IUserSettings _userSettings;
-        public MockSettings Settings { get; } = new MockSettings();
+        public OverlaySettings Settings { get; }
 
-        // this collections holds the keys currently being displayed
-        private readonly ObservableCollection<KeyModel> ActiveKeys { get; } = new ObservableCollection<KeyModel>();
+        // This collection holds the keys currently being displayed
+        private ObservableCollection<KeyModel> ActiveKeys { get; } = new ObservableCollection<KeyModel>();
+
+        // DRAGGING LOGIC VARS
+        private bool _isDragging;
+        private PointInt32 _lastMousePos;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            // Note: ExtendsContentIntoTitleBar works best when you have a standard title bar.
+            // If ConfigureAppWindow removes the borders, this might not be visually necessary,
+            // but it is harmless to keep.
             this.ExtendsContentIntoTitleBar = true;
 
+            // 1. Get the AppWindow (Standard helper method logic)
             _appWindow = GetAppWindowForCurrentWindow();
+
+            // 2. Configure it (Overlay style)
             ConfigureAppWindow();
 
             _userSettings = App.GetService<IUserSettings>();
+            Settings = new OverlaySettings();
 
-            // simulation of key presses for testing
-            this.CoreWindow.KeyDown += (sender, args) =>
+            _listener = new KeystrokeListener();
+            _listener.OnBatchReceived += Listener_OnBatchReceived;
+            _listener.Start();
+        }
+
+        // =========================================================
+        //  HELPER METHODS (ADDED)
+        // =========================================================
+        private AppWindow GetAppWindowForCurrentWindow()
+        {
+            // Get the window handle (HWND) of the current WinUI 3 Window
+            IntPtr hWnd = WindowNative.GetWindowHandle(this);
+
+            // Retrieve the WindowId needed to get the AppWindow
+            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+
+            // Return the AppWindow instance
+            return AppWindow.GetFromWindowId(wndId);
+        }
+
+        private void ConfigureAppWindow()
+        {
+            if (_appWindow.Presenter is OverlappedPresenter presenter)
             {
-                // This would be replaced by your global hook logic
-                string keyText = e.VirtualKey.ToString();
+                // OVERLAY CONFIGURATION:
+                // 1. Remove the system title bar and borders
+                presenter.SetBorderAndTitleBar(false, false);
 
-                // Simple formatting
-                if (keyText.StartsWith("Number")) keyText = keyText.Replace("Number", "");
-                if (keyText == "Control") keyText = "Ctrl";
+                // 2. Prevent resizing/maximizing by the user (since it's an overlay)
+                presenter.IsResizable = false;
+                presenter.IsMaximizable = false;
 
-                ShowKey(keyText);
-            };
+                // 3. Keep it on top of other windows
+                presenter.IsAlwaysOnTop = true;
+            }
+        }
+
+        // =========================================================
+        //  EVENT HANDLERS
+        // =========================================================
+        private void Listener_OnBatchReceived(KeystrokeBatch batch)
+        {
+            // Marshall to UI Thread
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                foreach (var keyEvent in batch.events)
+                {
+                    // Only showing "Down" events for visual simplicity
+                    if (keyEvent.t == "down")
+                    {
+                        // Logic to format text (e.g., translate VK Code to String if 'text' is empty)
+                        string displayText = string.IsNullOrEmpty(keyEvent.text)
+                                            ? ((Windows.System.VirtualKey)keyEvent.vk).ToString()
+                                            : keyEvent.text;
+
+                        ShowKey(displayText);
+                    }
+                }
+            });
         }
 
         private void ShowKey(string keyText)
         {
-            var model = new KeyModel { Text = keyText };
+            var model = new KeyModel
+            {
+                Text = keyText,
+                Settings = this.Settings,
+            };
+
             ActiveKeys.Add(model);
 
             // Use a DispatcherTimer to remove the key after the OverlayTimeout
             var timer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(Settings.OverlayTimeout)
+                Interval = TimeSpan.FromMilliseconds(Settings.OverlayTimeout),
             };
             timer.Tick += (s, e) =>
             {
@@ -116,10 +132,9 @@ namespace KeystrokeOverlayUI
             timer.Start();
         }
 
-        // DRAGGING LOGIC
-        private bool _isDragging;
-        private PointInt32 _lastMousePos;
-
+        // =========================================================
+        //  DRAGGING LOGIC
+        // =========================================================
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (Settings.IsDraggable)
@@ -151,11 +166,10 @@ namespace KeystrokeOverlayUI
                 // Get current window position
                 var windowPos = _appWindow.Position;
 
-                // Move the window
+                // Move the window using AppWindow
                 _appWindow.Move(new PointInt32(windowPos.X + deltaX, windowPos.Y + deltaY));
 
-                // No need to update _lastMousePos, we're tracking offset from start
-                // We're calculating delta from last *move* event, not start.
+                // Update last pos
                 _lastMousePos.X = newX;
                 _lastMousePos.Y = newY;
             }
@@ -166,6 +180,13 @@ namespace KeystrokeOverlayUI
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCapture(e.Pointer);
         }
+    }
 
+    // single key display
+    public class KeyModel
+    {
+        public string Text { get; set; }
+
+        public OverlaySettings Settings { get; set; }
     }
 }
