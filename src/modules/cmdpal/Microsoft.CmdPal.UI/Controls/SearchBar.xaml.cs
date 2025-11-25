@@ -185,6 +185,18 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.Left)
+        {
+            // Check if we're in a grid view, and if so, send grid navigation command
+            var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
+
+            // Special handling is required if we're in grid view.
+            if (isGridView)
+            {
+                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                e.Handled = true;
+            }
+        }
         else if (e.Key == VirtualKey.Right)
         {
             // Check if the "replace search text with suggestion" feature from 0.4-0.5 is enabled.
@@ -197,9 +209,8 @@ public sealed partial class SearchBar : UserControl,
                     FilterBox.Text = _textToSuggest;
                     FilterBox.Select(_textToSuggest.Length, 0);
                     e.Handled = true;
+                    return;
                 }
-
-                return;
             }
 
             // Here, we're using the "replace search text with suggestion" feature.
@@ -208,6 +219,20 @@ public sealed partial class SearchBar : UserControl,
                 _inSuggestion = false;
                 _lastText = null;
                 DoFilterBoxUpdate();
+            }
+
+            // Wouldn't want to perform text completion *and* move the selected item, so only perform this if text suggestion wasn't performed.
+            if (!e.Handled)
+            {
+                // Check if we're in a grid view, and if so, send grid navigation command
+                var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
+
+                // Special handling is required if we're in grid view.
+                if (isGridView)
+                {
+                    WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                    e.Handled = true;
+                }
             }
         }
         else if (e.Key == VirtualKey.Down)
@@ -251,6 +276,8 @@ public sealed partial class SearchBar : UserControl,
 
                 e.Key == VirtualKey.Up ||
                 e.Key == VirtualKey.Down ||
+                e.Key == VirtualKey.Left ||
+                e.Key == VirtualKey.Right ||
 
                 e.Key == VirtualKey.RightMenu ||
                 e.Key == VirtualKey.LeftMenu ||
