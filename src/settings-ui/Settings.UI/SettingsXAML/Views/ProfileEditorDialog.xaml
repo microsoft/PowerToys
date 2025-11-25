@@ -4,18 +4,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     Title="Edit Profile"
+    Width="486"
+    MinWidth="486"
     CloseButtonClick="ContentDialog_CloseButtonClick"
     CloseButtonText="Cancel"
     DefaultButton="Primary"
     IsPrimaryButtonEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     PrimaryButtonText="Save"
+    Style="{StaticResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid MinWidth="486">
+        <Grid.Resources>
+            <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+            <x:Double x:Key="SettingsCardWrapNoIconThreshold">0</x:Double>
+            <Thickness x:Key="SettingsExpanderItemPadding">0,8,0,8</Thickness>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -29,264 +38,92 @@
             Text="{x:Bind ViewModel.ProfileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <!--  Monitors List  -->
-        <ScrollViewer
-            Grid.Row="1"
-            Padding="0,0,16,0"
-            VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16">
-                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Select Monitors" />
-
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Select what monitors and settings to include for this profile" />
                 <ItemsControl ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
-                            <Grid Margin="0,0,0,12">
-                                <!--  Unselected State  -->
-                                <Border
-                                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Visibility="{x:Bind IsSelected, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                                    <Grid Padding="16,12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox
-                                            Margin="0,0,12,0"
-                                            VerticalAlignment="Center"
-                                            IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Style="{StaticResource BodyStrongTextBlockStyle}"
-                                                Text="{x:Bind Monitor.Name}" />
-                                            <TextBlock
-                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                Style="{StaticResource CaptionTextBlockStyle}"
-                                                Text="{x:Bind Monitor.InternalName}" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-
-                                <!--  Selected State  -->
-                                <Border
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Visibility="{x:Bind IsSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <StackPanel>
-                                        <!--  Header: Monitor Selection  -->
-                                        <Grid Padding="16,12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <CheckBox
-                                                Margin="0,0,12,0"
-                                                VerticalAlignment="Center"
-                                                IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Monitor.Name}" />
-                                                <TextBlock
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Text="{x:Bind Monitor.InternalName}" />
-                                            </StackPanel>
-                                        </Grid>
-
-                                        <!--  Content: Settings  -->
-                                        <StackPanel Padding="20,0,20,20" Spacing="0">
-
-                                            <MenuFlyoutSeparator Margin="-20,0,-20,16" />
-
-                                            <!--  Brightness Row  -->
-                                            <Grid Margin="0,0,0,12" Visibility="{x:Bind Monitor.SupportsBrightness, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="40" />
-                                                    <ColumnDefinition Width="50" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <StackPanel
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal"
-                                                    Spacing="12">
-                                                    <FontIcon
-                                                        FontSize="16"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Glyph="&#xE706;" />
+                            <tkcontrols:SettingsExpander
+                                Margin="0,0,0,8"
+                                Header="{x:Bind Monitor.Name}"
+                                HeaderIcon="{x:Bind Monitor.MonitorIconGlyph}">
+                                <ToggleSwitch IsOn="{x:Bind IsSelected, Mode=TwoWay}" />
+                                <tkcontrols:SettingsExpander.Items>
+                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsBrightness, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <tkcontrols:SettingsCard.Header>
+                                            <CheckBox IsChecked="{x:Bind IncludeBrightness, Mode=TwoWay}">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon FontSize="16" Glyph="&#xE706;" />
                                                     <TextBlock VerticalAlignment="Center" Text="Brightness" />
                                                 </StackPanel>
+                                            </CheckBox>
+                                        </tkcontrols:SettingsCard.Header>
+                                        <Slider
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            VerticalAlignment="Center"
+                                            Maximum="100"
+                                            Minimum="0"
+                                            Value="{x:Bind Brightness, Mode=TwoWay}" />
+                                        <tkcontrols:SettingsCard.Resources>
+                                            <x:Double x:Key="SettingsCardLeftIndention">0</x:Double>
+                                        </tkcontrols:SettingsCard.Resources>
+                                    </tkcontrols:SettingsCard>
 
-                                                <Slider
-                                                    Grid.Column="1"
-                                                    Margin="12,0,12,0"
-                                                    VerticalAlignment="Center"
-                                                    Maximum="100"
-                                                    Minimum="0"
-                                                    Value="{x:Bind Brightness, Mode=TwoWay}" />
-
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    Margin="0,0,8,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="{x:Bind Brightness, Mode=OneWay}"
-                                                    TextAlignment="Right" />
-
-                                                <ToggleSwitch
-                                                    Grid.Column="3"
-                                                    MinWidth="0"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    IsOn="{x:Bind IncludeBrightness, Mode=TwoWay}"
-                                                    OffContent=""
-                                                    OnContent="" />
-                                            </Grid>
-
-                                            <!--  Contrast Row  -->
-                                            <Grid Margin="0,0,0,12" Visibility="{x:Bind Monitor.SupportsContrast, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="40" />
-                                                    <ColumnDefinition Width="50" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <StackPanel
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal"
-                                                    Spacing="12">
-                                                    <FontIcon
-                                                        FontSize="16"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Glyph="&#xE793;" />
+                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsContrast, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <tkcontrols:SettingsCard.Header>
+                                            <CheckBox IsChecked="{x:Bind IncludeContrast, Mode=TwoWay}">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon FontSize="16" Glyph="&#xE793;" />
                                                     <TextBlock VerticalAlignment="Center" Text="Contrast" />
                                                 </StackPanel>
-
-                                                <Slider
-                                                    Grid.Column="1"
-                                                    Margin="12,0,12,0"
-                                                    VerticalAlignment="Center"
-                                                    Maximum="100"
-                                                    Minimum="0"
-                                                    Value="{x:Bind Contrast, Mode=TwoWay}" />
-
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    Margin="0,0,8,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="{x:Bind Contrast, Mode=OneWay}"
-                                                    TextAlignment="Right" />
-
-                                                <ToggleSwitch
-                                                    Grid.Column="3"
-                                                    MinWidth="0"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    IsOn="{x:Bind IncludeContrast, Mode=TwoWay}"
-                                                    OffContent=""
-                                                    OnContent="" />
-                                            </Grid>
-
-                                            <!--  Volume Row  -->
-                                            <Grid Margin="0,0,0,12" Visibility="{x:Bind Monitor.SupportsVolume, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="40" />
-                                                    <ColumnDefinition Width="50" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <StackPanel
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal"
-                                                    Spacing="12">
-                                                    <FontIcon
-                                                        FontSize="16"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Glyph="&#xE767;" />
+                                            </CheckBox>
+                                        </tkcontrols:SettingsCard.Header>
+                                        <Slider
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            VerticalAlignment="Center"
+                                            Maximum="100"
+                                            Minimum="0"
+                                            Value="{x:Bind Contrast, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsVolume, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <tkcontrols:SettingsCard.Header>
+                                            <CheckBox IsChecked="{x:Bind IncludeVolume, Mode=TwoWay}">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon FontSize="16" Glyph="&#xE767;" />
                                                     <TextBlock VerticalAlignment="Center" Text="Volume" />
                                                 </StackPanel>
-
-                                                <Slider
-                                                    Grid.Column="1"
-                                                    Margin="12,0,12,0"
-                                                    VerticalAlignment="Center"
-                                                    Maximum="100"
-                                                    Minimum="0"
-                                                    Value="{x:Bind Volume, Mode=TwoWay}" />
-
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    Margin="0,0,8,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="{x:Bind Volume, Mode=OneWay}"
-                                                    TextAlignment="Right" />
-
-                                                <ToggleSwitch
-                                                    Grid.Column="3"
-                                                    MinWidth="0"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    IsOn="{x:Bind IncludeVolume, Mode=TwoWay}"
-                                                    OffContent=""
-                                                    OnContent="" />
-                                            </Grid>
-
-                                            <!--  Color Temperature Row  -->
-                                            <Grid Margin="0,0,0,0" Visibility="{x:Bind Monitor.SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="140" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="40" />
-                                                    <ColumnDefinition Width="50" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <StackPanel
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal"
-                                                    Spacing="12">
-                                                    <FontIcon
-                                                        FontSize="16"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Glyph="&#xE790;" />
-                                                    <TextBlock VerticalAlignment="Center" Text="Color Temp" />
+                                            </CheckBox>
+                                        </tkcontrols:SettingsCard.Header>
+                                        <Slider
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            VerticalAlignment="Center"
+                                            Maximum="100"
+                                            Minimum="0" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <tkcontrols:SettingsCard.Header>
+                                            <CheckBox IsChecked="{x:Bind IncludeColorTemperature, Mode=TwoWay}">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon FontSize="16" Glyph="&#xE790;" />
+                                                    <TextBlock VerticalAlignment="Center" Text="Color temperature" />
                                                 </StackPanel>
-
-                                                <ComboBox
-                                                    Grid.Column="1"
-                                                    MinWidth="160"
-                                                    Margin="12,0,12,0"
-                                                    HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Center"
-                                                    DisplayMemberPath="DisplayName"
-                                                    ItemsSource="{x:Bind Monitor.ColorPresetsForDisplay, Mode=OneWay}"
-                                                    PlaceholderText="Select..."
-                                                    SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
-                                                    SelectedValuePath="VcpValue" />
-
-                                                <!--  Spacer to match layout  -->
-                                                <Grid Grid.Column="2" />
-
-                                                <ToggleSwitch
-                                                    Grid.Column="3"
-                                                    MinWidth="0"
-                                                    HorizontalAlignment="Right"
-                                                    VerticalAlignment="Center"
-                                                    IsOn="{x:Bind IncludeColorTemperature, Mode=TwoWay}"
-                                                    OffContent=""
-                                                    OnContent="" />
-                                            </Grid>
-
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
+                                            </CheckBox>
+                                        </tkcontrols:SettingsCard.Header>
+                                        <ComboBox
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            VerticalAlignment="Center"
+                                            DisplayMemberPath="DisplayName"
+                                            ItemsSource="{x:Bind Monitor.ColorPresetsForDisplay, Mode=OneWay}"
+                                            PlaceholderText="Select.."
+                                            SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
+                                            SelectedValuePath="VcpValue" />
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
+
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>

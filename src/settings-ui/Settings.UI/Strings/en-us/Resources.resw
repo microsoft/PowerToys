@@ -5599,7 +5599,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Click a profile button to quickly apply saved monitor settings</value>
   </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
-    <value>Add Profile</value>
+    <value>Add profile</value>
   </data>
   <data name="PowerDisplay_ProfilesHelpText.Text" xml:space="preserve">
     <value>Right-click a profile to rename or delete it</value>

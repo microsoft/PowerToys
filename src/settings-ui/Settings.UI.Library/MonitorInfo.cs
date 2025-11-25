@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -104,6 +105,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
         }
+
+        public string MonitorIconGlyph => CommunicationMethod.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
+    ? "\uE7F8" // Laptop icon for WMI
+    : "\uE7F4"; // External monitor icon for DDC/CI and others
 
         [JsonPropertyName("internalName")]
         public string InternalName
@@ -301,13 +306,59 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             get => _vcpCodesFormatted;
             set
             {
-                if (_vcpCodesFormatted != value)
+                var newValue = value ?? new List<VcpCodeDisplayInfo>();
+
+                // Only update if content actually changed (compare by VCP code list content)
+                if (AreVcpCodesEqual(_vcpCodesFormatted, newValue))
                 {
-                    _vcpCodesFormatted = value ?? new List<VcpCodeDisplayInfo>();
-                    OnPropertyChanged();
-                    InvalidateColorPresetCache();
+                    return;
+                }
+
+                _vcpCodesFormatted = newValue;
+                OnPropertyChanged();
+                InvalidateColorPresetCache();
+            }
+        }
+
+        /// <summary>
+        /// Compare two VcpCodesFormatted lists for equality by content.
+        /// Returns true if both lists have the same VCP codes (by code value).
+        /// </summary>
+        private static bool AreVcpCodesEqual(List<VcpCodeDisplayInfo> list1, List<VcpCodeDisplayInfo> list2)
+        {
+            if (list1 == null && list2 == null)
+            {
+                return true;
+            }
+
+            if (list1 == null || list2 == null)
+            {
+                return false;
+            }
+
+            if (list1.Count != list2.Count)
+            {
+                return false;
+            }
+
+            // Compare by code values - order matters for our use case
+            for (int i = 0; i < list1.Count; i++)
+            {
+                if (list1[i].Code != list2[i].Code)
+                {
+                    return false;
+                }
+
+                // Also compare ValueList count to detect preset changes
+                var values1 = list1[i].ValueList;
+                var values2 = list2[i].ValueList;
+                if ((values1?.Count ?? 0) != (values2?.Count ?? 0))
+                {
+                    return false;
                 }
             }
+
+            return true;
         }
 
         [JsonIgnore]

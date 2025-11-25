@@ -22,11 +22,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private PowerDisplayViewModel ViewModel { get; set; }
 
-        // Track previous color temperature values to restore on cancel
-        private Dictionary<string, int> _previousColorTemperatureValues = new Dictionary<string, int>();
-
-        // Flag to prevent recursive SelectionChanged events
-        private bool _isUpdatingColorTemperature;
+        // Flag to prevent re-entrant SelectionChanged handling during programmatic selection
+        private bool _isRestoringSelection;
 
         public PowerDisplayPage()
         {
@@ -58,107 +55,101 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void ColorTemperatureComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is ComboBox comboBox && comboBox.Tag is MonitorInfo monitor)
+            // Skip if we're programmatically restoring a selection (prevents re-entrant handling)
+            if (_isRestoringSelection)
             {
-                // Skip if we are programmatically updating the value
-                if (_isUpdatingColorTemperature)
-                {
-                    return;
-                }
+                return;
+            }
 
-                // Skip if this is the initial load (no removed items means programmatic selection)
-                if (e.RemovedItems.Count == 0)
+            // Skip if no new selection
+            if (e.AddedItems.Count == 0)
+            {
+                return;
+            }
+
+            if (sender is not ComboBox comboBox || comboBox.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
+            // Get new selected item
+            if (e.AddedItems[0] is not ColorPresetItem newItem)
+            {
+                return;
+            }
+
+            // Skip if selected value equals current property value (this is a restore operation or no change)
+            if (newItem.VcpValue == monitor.ColorTemperatureVcp)
+            {
+                return;
+            }
+
+            // Get old value: from RemovedItems if available, otherwise from current property
+            int oldValue = (e.RemovedItems.Count > 0 && e.RemovedItems[0] is ColorPresetItem oldItem)
+                ? oldItem.VcpValue
+                : monitor.ColorTemperatureVcp;
+
+            // Show confirmation dialog
+            var dialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = "Confirm Color Temperature Change",
+                Content = new StackPanel
                 {
-                    // Store the initial value
-                    if (!_previousColorTemperatureValues.ContainsKey(monitor.HardwareId))
+                    Spacing = 12,
+                    Children =
                     {
-                        _previousColorTemperatureValues[monitor.HardwareId] = monitor.ColorTemperatureVcp;
-                    }
-
-                    return;
-                }
-
-                // Get the new selected value
-                var newValue = comboBox.SelectedValue as int?;
-                if (!newValue.HasValue)
-                {
-                    return;
-                }
-
-                // Get the previous value
-                int previousValue;
-                if (!_previousColorTemperatureValues.TryGetValue(monitor.HardwareId, out previousValue))
-                {
-                    previousValue = monitor.ColorTemperatureVcp;
-                }
-
-                // Show confirmation dialog
-                var dialog = new ContentDialog
-                {
-                    XamlRoot = this.XamlRoot,
-                    Title = "Confirm Color Temperature Change",
-                    Content = new StackPanel
-                    {
-                        Spacing = 12,
-                        Children =
+                        new TextBlock
                         {
-                            new TextBlock
-                            {
-                                Text = "⚠️ Warning: This is a potentially dangerous operation!",
-                                FontWeight = Microsoft.UI.Text.FontWeights.Bold,
-                                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                                TextWrapping = TextWrapping.Wrap,
-                            },
-                            new TextBlock
-                            {
-                                Text = "Changing the color temperature setting may cause unpredictable results including:",
-                                TextWrapping = TextWrapping.Wrap,
-                            },
-                            new TextBlock
-                            {
-                                Text = "• Incorrect display colors\n• Display malfunction\n• Settings that cannot be reverted",
-                                TextWrapping = TextWrapping.Wrap,
-                                Margin = new Thickness(20, 0, 0, 0),
-                            },
-                            new TextBlock
-                            {
-                                Text = "Are you sure you want to proceed with this change?",
-                                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                                TextWrapping = TextWrapping.Wrap,
-                            },
+                            Text = "⚠️ Warning: This is a potentially dangerous operation!",
+                            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
+                            TextWrapping = TextWrapping.Wrap,
+                        },
+                        new TextBlock
+                        {
+                            Text = "Changing the color temperature setting may cause unpredictable results including:",
+                            TextWrapping = TextWrapping.Wrap,
+                        },
+                        new TextBlock
+                        {
+                            Text = "• Incorrect display colors\n• Display malfunction\n• Settings that cannot be reverted",
+                            TextWrapping = TextWrapping.Wrap,
+                            Margin = new Thickness(20, 0, 0, 0),
+                        },
+                        new TextBlock
+                        {
+                            Text = "Are you sure you want to proceed with this change?",
+                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                            TextWrapping = TextWrapping.Wrap,
                         },
                     },
-                    PrimaryButtonText = "Yes, Change Setting",
-                    CloseButtonText = "Cancel",
-                    DefaultButton = ContentDialogButton.Close,
-                };
+                },
+                PrimaryButtonText = "Yes, Change Setting",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+            };
 
-                var result = await dialog.ShowAsync();
+            var result = await dialog.ShowAsync();
 
-                if (result == ContentDialogResult.Primary)
+            if (result == ContentDialogResult.Primary)
+            {
+                // User confirmed: update property and apply to hardware
+                monitor.ColorTemperatureVcp = newItem.VcpValue;
+                ViewModel.ApplyColorTemperatureToMonitor(monitor.InternalName, newItem.VcpValue);
+            }
+            else
+            {
+                // User cancelled: revert ComboBox to previous selection (property unchanged)
+                // Use flag to prevent re-entrant event handling
+                _isRestoringSelection = true;
+                try
                 {
-                    // User confirmed, apply the change
-                    // Setting the property will trigger save to settings file via OnPropertyChanged
-                    monitor.ColorTemperatureVcp = newValue.Value;
-                    _previousColorTemperatureValues[monitor.HardwareId] = newValue.Value;
-
-                    // Send IPC message to PowerDisplay with monitor ID and new color temperature value
-                    // PowerDisplay will apply it directly to the specified monitor only
-                    ViewModel.ApplyColorTemperatureToMonitor(monitor.InternalName, newValue.Value);
+                    comboBox.SelectedValue = oldValue;
                 }
-                else
+                finally
                 {
-                    // User cancelled, revert to previous value
-                    // Set flag to prevent recursive event, using try-finally for safety
-                    _isUpdatingColorTemperature = true;
-                    try
-                    {
-                        comboBox.SelectedValue = previousValue;
-                    }
-                    finally
-                    {
-                        _isUpdatingColorTemperature = false;
-                    }
+                    _isRestoringSelection = false;
                 }
             }
         }
