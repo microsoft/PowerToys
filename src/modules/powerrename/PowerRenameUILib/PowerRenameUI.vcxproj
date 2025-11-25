@@ -45,7 +45,6 @@
     <PackageReference Include="boost_regex-vc143" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
@@ -218,6 +217,7 @@
     <ResourceCompile Include="PowerRenameUI.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\deps\spdlog.props" />
   <Target Name="AddWildCardItems" AfterTargets="BuildGenerateSources">
     <ItemGroup>
       <PRIResource Include="@(_WildCardPRIResource)" />

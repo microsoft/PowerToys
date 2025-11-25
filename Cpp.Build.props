@@ -42,6 +42,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+    		<!-- Make angle-bracket includes external -->
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

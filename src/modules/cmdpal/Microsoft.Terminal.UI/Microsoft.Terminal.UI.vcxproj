@@ -3,16 +3,14 @@
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-
     <!-- Tell NuGet we're a native project -->
     <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
-
     <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
     <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup>
-</PropertyGroup>
+  </PropertyGroup>
   <PropertyGroup Label="Globals">
     <PlatformToolset>v143</PlatformToolset>
     <CppWinRTOptimized>true</CppWinRTOptimized>
@@ -120,7 +118,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -211,12 +208,4 @@
     <None Include="Microsoft.Terminal.UI.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ItemGroup>
-    <ClCompile Include="$(PkgMicrosoft_Windows_ImplementationLibrary)\**\*.h">
-      <AdditionalOptions>
-        %(AdditionalOptions)
-        -wd26492 -wd26471 -wd26493 -wd26497 -wd26403
-      </AdditionalOptions>
-    </ClCompile>
-  </ItemGroup>
 </Project>

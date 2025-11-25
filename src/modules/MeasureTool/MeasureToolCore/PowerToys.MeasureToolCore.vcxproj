@@ -41,6 +41,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
+		<PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -49,7 +50,6 @@
     <DesktopCompatible>true</DesktopCompatible>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
@@ -150,4 +150,5 @@
     <ResourceCompile Include="PowerToys.MeasureToolCore.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="..\..\..\..\deps\spdlog.props" />
 </Project>

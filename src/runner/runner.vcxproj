@@ -11,10 +11,8 @@
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-
     <!-- Tell NuGet we're a native project -->
     <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
-
     <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
     <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
@@ -146,12 +144,4 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\deps\spdlog.props" />
-  <ItemGroup>
-    <ClCompile Include="$(PkgMicrosoft_Windows_ImplementationLibrary)\**\*.h">
-      <AdditionalOptions>
-        %(AdditionalOptions)
-        -wd26492 -wd26471 -wd26493 -wd26497 -wd26403
-      </AdditionalOptions>
-    </ClCompile>
-  </ItemGroup>
 </Project>
