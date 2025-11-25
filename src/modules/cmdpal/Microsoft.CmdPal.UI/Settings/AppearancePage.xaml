@@ -22,12 +22,7 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <!--  'Appearance' section  -->
-                    <!--
-                    <TextBlock x:Uid="AppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                    -->
-
-                    <ptControls:ScreenPreview Margin="0,0,0,16">
+                    <ptControls:ScreenPreview Margin="0,0,0,16" HorizontalAlignment="Left">
                         <ptControls:CommandPalettePreview
                             PreviewBackgroundColor="{x:Bind ViewModel.Appearance.EffectiveBackdrop.TintColor, Mode=OneWay}"
                             PreviewBackgroundImageBlurAmount="{x:Bind ViewModel.Appearance.EffectiveBackgroundImageBlurAmount, Mode=OneWay}"
@@ -43,21 +38,21 @@
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.ThemeIndex, Mode=TwoWay}">
 
-                            <ComboBoxItem Tag="Default">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="16" Glyph="&#xE770;" />
                                     <TextBlock x:Uid="Settings_GeneralPage_AppTheme_Mode_System" />
                                 </StackPanel>
                             </ComboBoxItem>
 
-                            <ComboBoxItem Tag="Light">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_Light_Automation" Tag="Light">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="16" Glyph="&#xE706;" />
                                     <TextBlock x:Uid="Settings_GeneralPage_AppTheme_Mode_Light" />
                                 </StackPanel>
                             </ComboBoxItem>
 
-                            <ComboBoxItem Tag="Dark">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_Dark_Automation" Tag="Dark">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="16" Glyph="&#xE708;" />
                                     <TextBlock x:Uid="Settings_GeneralPage_AppTheme_Mode_Dark" />
@@ -71,17 +66,15 @@
                         x:Uid="Settings_GeneralPage_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsExpanded="{x:Bind ViewModel.Appearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
-                        <controls:SettingsExpander.Content>
-                            <ComboBox
-                                x:Uid="Settings_GeneralPage_ColorizationMode"
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                SelectedIndex="{x:Bind ViewModel.Appearance.ColorizationModeIndex, Mode=TwoWay}">
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
-                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Image" />
-                            </ComboBox>
-                        </controls:SettingsExpander.Content>
+                        <ComboBox
+                            x:Uid="Settings_GeneralPage_ColorizationMode"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind ViewModel.Appearance.ColorizationModeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Image" />
+                        </ComboBox>
                         <controls:SettingsExpander.Items>
                             <!--  none  -->
                             <controls:SettingsCard
@@ -93,7 +86,7 @@
                                     x:Uid="Settings_GeneralPage_NoBackground_DescriptionTextBlock"
                                     Margin="24"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     HorizontalTextAlignment="Center"
                                     TextAlignment="Center"
                                     TextWrapping="WrapWholeWords" />
@@ -103,15 +96,13 @@
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_WindowsAccentColor_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsAccentColorControlsVisible, Mode=OneWay}">
                                 <controls:SettingsCard.Description>
                                     <TextBlock>
-                                        <Span>
-                                            <Run x:Uid="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1" />
-                                            <Hyperlink
-                                                Click="OpenWindowsColorsSettings_Click"
-                                                TextDecorations="None"
-                                                UnderlineStyle="None">
-                                                <Run x:Uid="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText" />
-                                            </Hyperlink>
-                                        </Span>
+                                        <Run x:Uid="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1" />
+                                        <Hyperlink
+                                            Click="OpenWindowsColorsSettings_Click"
+                                            TextDecorations="None"
+                                            UnderlineStyle="None">
+                                            <Run x:Uid="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText" />
+                                        </Hyperlink>
                                     </TextBlock>
                                 </controls:SettingsCard.Description>
                                 <controls:SettingsCard.Content>
@@ -131,9 +122,7 @@
                                 x:Uid="Settings_GeneralPage_BackgroundImage_SettingsCard"
                                 Description="{x:Bind ViewModel.Appearance.BackgroundImagePath, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
-                                </StackPanel>
+                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
                             </controls:SettingsCard>
                             <!--
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
@@ -145,29 +134,22 @@
                             </controls:SettingsCard>
                             -->
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <controls:SettingsCard.Resources>
-                                    <x:Double x:Key="SettingsCardLeftIndention">40</x:Double>
-                                </controls:SettingsCard.Resources>
                                 <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="-100"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.BackgroundImageBrightness, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageBlur_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <controls:SettingsCard.Resources>
-                                    <x:Double x:Key="SettingsCardLeftIndention">40</x:Double>
-                                </controls:SettingsCard.Resources>
                                 <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="50"
                                     Minimum="0"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.BackgroundImageBlurAmount, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageFit_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <controls:SettingsCard.Resources>
-                                    <x:Double x:Key="SettingsCardLeftIndention">40</x:Double>
-                                </controls:SettingsCard.Resources>
                                 <ComboBox SelectedIndex="{x:Bind ViewModel.Appearance.BackgroundImageFitIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Fill" />
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Stretch" />
@@ -183,10 +165,8 @@
                                     SelectedColor="{x:Bind ViewModel.Appearance.ThemeColor, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsCustomTintIntensityVisible, Mode=OneWay}">
-                                <controls:SettingsCard.Resources>
-                                    <x:Double x:Key="SettingsCardLeftIndention">40</x:Double>
-                                </controls:SettingsCard.Resources>
                                 <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
                                     StepFrequency="1"
@@ -201,7 +181,6 @@
                             </controls:SettingsCard>
 
                         </controls:SettingsExpander.Items>
-
                     </controls:SettingsExpander>
 
                     <!--  'Behavior' section  -->
