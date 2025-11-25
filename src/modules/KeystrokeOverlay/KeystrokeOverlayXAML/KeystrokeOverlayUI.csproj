@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Standard PowerToys Imports -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Use the module-specific output folder so the C++ DLL finds the EXE -->
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\KeystrokeOverlay\</OutputPath>
+    <UseWinUI>true</UseWinUI>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    
+    <!-- Naming and Identity -->
+    <AssemblyName>PowerToys.KeystrokeOverlayUI</AssemblyName>
+    <RootNamespace>KeystrokeOverlayUI</RootNamespace>
+    <ApplicationIcon>Assets\KeystrokeOverlay\Icon.ico</ApplicationIcon>
+    
+    <!-- WinUI 3 Packaging Settings -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <ProjectPriFileName>PowerToys.KeystrokeOverlayUI.pri</ProjectPriFileName>
+    
+    <!-- Platform Settings -->
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    
+    <!-- Allow unsafe blocks if you do any P/Invoke, good practice to enable in PT modules -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <!-- Force specific JSON version to match PT ecosystem -->
+    <PackageReference Include="System.Text.Json" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- PowerToys Internal Dependencies -->
+  <ItemGroup>
+    <!-- GPO Wrapper for Enterprise Policies -->
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <!-- Interop for shared native functionality -->
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <!-- ManagedCommon for Logger, SettingsUtils, and ThemeHelpers -->
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <!-- Settings Library for the Settings Model -->
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <!-- Ensure Views are compiled correctly -->
+  <ItemGroup>
+    <Page Update="Views\KeyVisual.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <!-- If you have other views in subfolders, ensure they are updated here -->
+  </ItemGroup>
+</Project>
