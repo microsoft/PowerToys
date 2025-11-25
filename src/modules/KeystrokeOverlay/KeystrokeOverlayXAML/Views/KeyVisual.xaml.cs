@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Media;
 
 // This UserControl displays a single key visual, matching the preview
 // in KeystrokeOverlayPage.xaml.
-namespace KeystrokeOverlay
+namespace KeystrokeOverlayUI
 {
     public sealed partial class KeyVisual : UserControl
     {
