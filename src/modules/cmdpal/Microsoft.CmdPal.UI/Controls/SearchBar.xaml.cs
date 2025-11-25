@@ -203,7 +203,7 @@ public sealed partial class SearchBar : UserControl,
             // If it isn't, then only use the suggestion when the caret is at the end of the input.
             if (!IsTextToSuggestEnabled)
             {
-                if (_textToSuggest != null &&
+                if (!string.IsNullOrEmpty(_textToSuggest) &&
                     FilterBox.SelectionStart == FilterBox.Text.Length)
                 {
                     FilterBox.Text = _textToSuggest;
