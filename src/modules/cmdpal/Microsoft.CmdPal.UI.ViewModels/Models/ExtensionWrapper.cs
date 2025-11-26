@@ -12,9 +12,6 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
-#pragma warning disable IDE0005 // Using directive is unnecessary - needed for HostSettings
-#pragma warning restore IDE0005
-
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public class ExtensionWrapper : IExtensionWrapper
