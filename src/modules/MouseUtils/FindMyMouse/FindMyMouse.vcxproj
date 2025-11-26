@@ -134,14 +134,17 @@
     <ResourceCompile Include="FindMyMouse.rc" />
   </ItemGroup>
   <!-- Deduplicate WindowsAppRuntimeAutoInitializer.cpp (added twice via transitive imports causing LNK4042). Remove all then add exactly once. -->
-  <ItemGroup>
-    <!-- Remove any transitive inclusion first -->
-    <ClCompile Remove="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp" />
-    <!-- Re-add once, but disable PCH because the SDK file doesn't include our pch.h -->
-    <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
-  </ItemGroup>
+  <Target Name="FixWinAppSDKAutoInitializer" BeforeTargets="ClCompile" AfterTargets="WindowsAppRuntimeAutoInitializer">
+    <ItemGroup>
+      <!-- Remove ALL injected versions of the file -->
+      <ClCompile Remove="@(ClCompile)" Condition="'%(Filename)' == 'WindowsAppRuntimeAutoInitializer'" />
+    
+      <!-- Add ONE copy back manually -->
+      <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      </ClCompile>
+    </ItemGroup>
+  </Target>
   <Target Name="RemoveManagedWebView2CoreFromNativeOutDir" AfterTargets="Build">
     <ItemGroup>
       <_ToDelete Include="$(OutDir)Microsoft.Web.WebView2.Core.dll" />

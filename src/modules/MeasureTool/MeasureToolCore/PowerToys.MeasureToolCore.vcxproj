@@ -12,7 +12,7 @@
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <NoWarn>81010002</NoWarn>
+    <NoWarn>$(NoWarn);81010002</NoWarn>
     <!-- Skip code analysis for all files in NuGet cache -->
     <CodeAnalysisExcludePaths>$(NuGetPackageRoot)**\*</CodeAnalysisExcludePaths>
   </PropertyGroup>
