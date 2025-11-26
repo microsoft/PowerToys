@@ -210,13 +210,11 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Default final action">
                                 <ComboBox SelectedIndex="0">
+                                    <ComboBoxItem Content="Show context menu" />
                                     <ComboBoxItem Content="Left click" />
                                     <ComboBoxItem Content="Right click" />
                                     <ComboBoxItem Content="Middle click" />
                                 </ComboBox>
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox Content="Show context menu on final action" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
