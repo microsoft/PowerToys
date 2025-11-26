@@ -46,8 +46,10 @@
                         <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
                             <tkcontrols:SettingsExpander
                                 Margin="0,0,0,8"
-                                Header="{x:Bind Monitor.Name}"
-                                HeaderIcon="{x:Bind Monitor.MonitorIconGlyph}">
+                                Header="{x:Bind Monitor.Name}">
+                                <tkcontrols:SettingsExpander.HeaderIcon>
+                                    <FontIcon Glyph="{x:Bind Monitor.MonitorIconGlyph}" />
+                                </tkcontrols:SettingsExpander.HeaderIcon>
                                 <ToggleSwitch IsOn="{x:Bind IsSelected, Mode=TwoWay}" />
                                 <tkcontrols:SettingsExpander.Items>
                                     <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsBrightness, Converter={StaticResource BoolToVisibilityConverter}}">

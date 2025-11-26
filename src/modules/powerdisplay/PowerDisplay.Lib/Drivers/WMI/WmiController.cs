@@ -203,6 +203,9 @@ namespace PowerDisplay.Common.Drivers.WMI
                         }
                     }
 
+                    // Pre-fetch display devices once to avoid repeated Win32 API calls in the loop
+                    var displayDevices = Drivers.DDC.DdcCiNative.GetAllDisplayDevices();
+
                     // Create monitor objects for each supported brightness instance
                     foreach (var obj in brightnessResults)
                     {
@@ -232,7 +235,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 CommunicationMethod = "WMI",
                                 Manufacturer = "Internal",
                                 SupportsColorTemperature = false,
-                                MonitorNumber = 1, // Internal display is typically DISPLAY1
+                                MonitorNumber = Utils.MonitorMatchingHelper.GetMonitorNumberFromWmiInstanceName(instanceName, displayDevices),
                             };
 
                             monitors.Add(monitor);

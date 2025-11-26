@@ -21,7 +21,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
@@ -154,6 +153,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 OnPropertyChanged(nameof(Monitors));
                 HasMonitors = _monitors?.Count > 0;
+
+                // Update TotalMonitorCount for dynamic DisplayName
+                UpdateTotalMonitorCount();
             }
         }
 
@@ -178,6 +180,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             HasMonitors = _monitors.Count > 0;
             _settings.Properties.Monitors = _monitors.ToList();
             NotifySettingsChanged();
+
+            // Update TotalMonitorCount for dynamic DisplayName
+            UpdateTotalMonitorCount();
+        }
+
+        /// <summary>
+        /// Update TotalMonitorCount on all monitors for dynamic DisplayName formatting.
+        /// When multiple monitors exist, DisplayName shows "Name N" format.
+        /// </summary>
+        private void UpdateTotalMonitorCount()
+        {
+            if (_monitors == null)
+            {
+                return;
+            }
+
+            var count = _monitors.Count;
+            foreach (var monitor in _monitors)
+            {
+                monitor.TotalMonitorCount = count;
+            }
         }
 
         public void UpdateMonitors(MonitorInfo[] monitors)
@@ -326,7 +349,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
             };
 
-            SendConfigMSG(JsonSerializer.Serialize(actionMessage));
+            SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
         }
 
         /// <summary>
@@ -362,7 +385,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 },
             };
 
-            SendConfigMSG(JsonSerializer.Serialize(actionMessage));
+            SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
         }
 
         /// <summary>
@@ -672,6 +695,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
+            // Skip during initialization when SendConfigMSG is not yet set
+            if (SendConfigMSG == null)
+            {
+                return;
+            }
+
             // Persist locally first so settings survive even if the module DLL isn't loaded yet.
             SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);
 
@@ -683,7 +712,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PowerDisplaySettings.ModuleName,
-                       JsonSerializer.Serialize(_settings, SourceGenerationContextContext.Default.PowerDisplaySettings)));
+                       _settings.ToJsonString()));
         }
     }
 }

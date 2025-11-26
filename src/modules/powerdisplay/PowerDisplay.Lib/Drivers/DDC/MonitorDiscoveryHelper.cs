@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
@@ -185,7 +186,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     CommunicationMethod = "DDC/CI",
                     Manufacturer = ExtractManufacturer(name),
                     CapabilitiesStatus = "unknown",
-                    MonitorNumber = ParseMonitorNumber(adapterName),
+                    MonitorNumber = MonitorMatchingHelper.ParseDisplayNumber(adapterName),
                     Orientation = GetMonitorOrientation(adapterName),
                 };
 
@@ -246,45 +247,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             // Return first word as manufacturer
             var firstWord = name.Split(' ')[0];
             return firstWord.Length > 2 ? firstWord : "Unknown";
-        }
-
-        /// <summary>
-        /// Parse monitor number from device name (e.g., "\\.\DISPLAY1" -> 1)
-        /// </summary>
-        private int ParseMonitorNumber(string adapterName)
-        {
-            try
-            {
-                // Format is usually \\.\DISPLAYx
-                if (string.IsNullOrEmpty(adapterName))
-                {
-                    return 0;
-                }
-
-                // Remove prefix
-                var name = adapterName.Replace(@"\\.\", string.Empty, StringComparison.Ordinal);
-
-                // Find "DISPLAY"
-                int index = name.IndexOf("DISPLAY", StringComparison.OrdinalIgnoreCase);
-                if (index >= 0)
-                {
-                    string numberPart = name.Substring(index + 7);
-
-                    // Take only digits
-                    string numberStr = new string(numberPart.TakeWhile(char.IsDigit).ToArray());
-
-                    if (int.TryParse(numberStr, out int number))
-                    {
-                        return number;
-                    }
-                }
-            }
-            catch
-            {
-                // Ignore parsing errors
-            }
-
-            return 0;
         }
 
         /// <summary>

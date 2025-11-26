@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
         private int _orientation;
+        private int _totalMonitorCount;
 
         // Feature support status (determined from capabilities)
         private bool _supportsBrightness = true; // Brightness always shown even if unsupported
@@ -172,7 +173,64 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     _name = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(DisplayName));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the monitor number (Windows DISPLAY number, e.g., 1, 2, 3...).
+        /// </summary>
+        [JsonPropertyName("monitorNumber")]
+        public int MonitorNumber
+        {
+            get => _monitorNumber;
+            set
+            {
+                if (_monitorNumber != value)
+                {
+                    _monitorNumber = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the total number of monitors (used for dynamic display name).
+        /// This is not serialized; it's set by the ViewModel.
+        /// </summary>
+        [JsonIgnore]
+        public int TotalMonitorCount
+        {
+            get => _totalMonitorCount;
+            set
+            {
+                if (_totalMonitorCount != value)
+                {
+                    _totalMonitorCount = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(DisplayName));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the display name - includes monitor number when multiple monitors exist.
+        /// Follows the same logic as PowerDisplay UI's MonitorViewModel.DisplayName.
+        /// </summary>
+        [JsonIgnore]
+        public string DisplayName
+        {
+            get
+            {
+                // Show monitor number only when there are multiple monitors and MonitorNumber is valid
+                if (TotalMonitorCount > 0 && MonitorNumber > 0)
+                {
+                    return $"{Name} {MonitorNumber}";
+                }
+
+                return Name;
             }
         }
 
@@ -711,6 +769,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsColorTemperature = other.SupportsColorTemperature;
             SupportsVolume = other.SupportsVolume;
             CapabilitiesStatus = other.CapabilitiesStatus;
+            MonitorNumber = other.MonitorNumber;
         }
 
         /// <inheritdoc />

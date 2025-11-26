@@ -558,6 +558,9 @@ public partial class MainViewModel
             SupportsContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             SupportsColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
+
+            // Monitor number for display name formatting
+            MonitorNumber = vm.MonitorNumber,
         };
 
         return monitorInfo;

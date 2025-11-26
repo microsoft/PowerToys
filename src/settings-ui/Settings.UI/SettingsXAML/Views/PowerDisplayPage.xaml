@@ -114,7 +114,7 @@
                                 <tkcontrols:SettingsExpander
                                     Margin="0,0,0,2"
                                     Description="{x:Bind InternalName, Mode=OneWay}"
-                                    Header="{x:Bind Name}"
+                                    Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsExpanded="False">
                                     <tkcontrols:SettingsExpander.HeaderIcon>
                                         <FontIcon Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}" />
