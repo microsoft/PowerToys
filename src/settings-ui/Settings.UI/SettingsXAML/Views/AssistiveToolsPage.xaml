@@ -61,15 +61,13 @@
                             <ComboBoxItem Content="Sweeping Cursor" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Header="Default final action">
+                            <tkcontrols:SettingsCard Header="Default action">
                                 <ComboBox SelectedIndex="0">
+                                    <ComboBoxItem Content="Show context menu" />
                                     <ComboBoxItem Content="Left click" />
                                     <ComboBoxItem Content="Right click" />
                                     <ComboBoxItem Content="Middle click" />
                                 </ComboBox>
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox Content="Show context menu on final action" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -203,21 +201,16 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="25" />
                             </tkcontrols:SettingsCard>
-
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsExpander Header="Menu options and delay" HeaderIcon="{ui:FontIcon Glyph=&#xECE9;}">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Header="Default final action">
-                                <ComboBox SelectedIndex="0">
-                                    <ComboBoxItem Content="Show context menu" />
-                                    <ComboBoxItem Content="Left click" />
-                                    <ComboBoxItem Content="Right click" />
-                                    <ComboBoxItem Content="Middle click" />
-                                </ComboBox>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard Header="Default action" HeaderIcon="{ui:FontIcon Glyph=&#xECE9;}">
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem Content="Show context menu" />
+                            <ComboBoxItem Content="Left click" />
+                            <ComboBoxItem Content="Right click" />
+                            <ComboBoxItem Content="Middle click" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander x:Uid="Appearance_Behavior" HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}">
                         <tkcontrols:SettingsExpander.Items>
