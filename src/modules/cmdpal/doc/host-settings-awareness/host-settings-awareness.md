@@ -1,7 +1,7 @@
 ---
 author: Yu Leng
 created on: 2025-11-25
-last updated: 2025-11-25
+last updated: 2025-11-26
 issue id: n/a
 ---
 
@@ -38,6 +38,9 @@ This document describes the design and implementation of the Host Settings Aware
       - [Extension Notification Flow](#extension-notification-flow)
       - [Cross-Process Communication](#cross-process-communication)
     - [Initial Settings Delivery](#initial-settings-delivery)
+  - [Sequence Diagrams](#sequence-diagrams)
+    - [Initial Settings After Provider Initialization](#initial-settings-after-provider-initialization)
+    - [Settings Change Notification](#settings-change-notification)
   - [Example Usage](#example-usage)
     - [Reading Current Settings via `HostSettingsManager.Current`](#reading-current-settings-via-hostsettingsmanagercurrent)
     - [Using Settings in a Page](#using-settings-in-a-page)
@@ -250,8 +253,9 @@ public static class HostSettingsManager
     /// </summary>
     public static bool IsAvailable => _current != null;
 
-    internal static void Initialize(IHostSettings settings) => _current = settings;
-
+    /// <summary>
+    /// Updates the cached host settings. Called internally when settings change.
+    /// </summary>
     internal static void Update(IHostSettings settings)
     {
         _current = settings;
@@ -391,20 +395,42 @@ public void NotifyHostSettingsChanged(IHostSettings settings)
 
 ### Initial Settings Delivery
 
-When an extension first loads, it receives initial settings during the command provider initialization:
+When an extension first loads, it receives initial settings after the command provider is fully initialized. This is handled by `CommandProviderWrapper.SendInitialHostSettings()`, which is called from `TopLevelCommandManager.LoadTopLevelCommandsFromProvider()`:
 
 ```csharp
-// In CommandProviderWrapper.UnsafePreCacheApiAdditions
-if (a is IHostSettingsChanged handler)
+// In TopLevelCommandManager.LoadTopLevelCommandsFromProvider
+await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
+
+// Send initial host settings after the provider is fully initialized
+commandProvider.SendInitialHostSettings();
+```
+
+The `SendInitialHostSettings()` method handles both OOP extensions and built-in commands:
+
+```csharp
+// In CommandProviderWrapper
+public void SendInitialHostSettings()
 {
-    Logger.LogDebug($"{ProviderId}: Found an IHostSettingsChanged, sending initial settings");
+    var settings = AppExtensionHost.GetHostSettingsFunc?.Invoke();
+    if (settings == null)
+    {
+        return;
+    }
 
     try
     {
-        var settings = AppExtensionHost.GetHostSettingsFunc?.Invoke();
-        if (settings != null)
+        if (Extension != null)
         {
-            handler.OnHostSettingsChanged(settings);
+            // OOP extension: send through ExtensionWrapper (cross-process)
+            Extension.NotifyHostSettingsChanged(settings);
+        }
+        else
+        {
+            // Built-in command: call directly (in-proc)
+            if (_commandProvider.Unsafe is IHostSettingsChanged handler)
+            {
+                handler.OnHostSettingsChanged(settings);
+            }
         }
     }
     catch (Exception e)
@@ -412,6 +438,113 @@ if (a is IHostSettingsChanged handler)
         Logger.LogDebug($"Failed to send initial settings to {ProviderId}: {e.Message}");
     }
 }
+```
+
+This design ensures:
+1. **Unified entry point**: Both extensions and built-in commands use the same `SendInitialHostSettings()` method
+2. **Consistent path**: Extensions use the same `ExtensionWrapper.NotifyHostSettingsChanged()` path for both initial settings and settings changes
+3. **Proper timing**: Settings are sent after `LoadTopLevelCommands()` completes, ensuring the provider is fully initialized
+
+## Sequence Diagrams
+
+### Initial Settings After Provider Initialization
+
+This diagram shows how initial host settings are delivered to extensions when they first load:
+
+```
+┌─────────────────────┐  ┌─────────────────────────┐  ┌────────────────────┐  ┌─────────────────┐
+│TopLevelCommandManager│  │CommandProviderWrapper   │  │ExtensionWrapper    │  │Extension Process│
+└──────────┬──────────┘  └────────────┬────────────┘  └─────────┬──────────┘  └────────┬────────┘
+           │                          │                         │                      │
+           │ LoadTopLevelCommandsFromProvider()                 │                      │
+           │─────────────────────────▶│                         │                      │
+           │                          │                         │                      │
+           │                          │ LoadTopLevelCommands()  │                      │
+           │                          │────────────────────────▶│                      │
+           │                          │                         │                      │
+           │                          │◀────────────────────────│                      │
+           │                          │                         │                      │
+           │                          │ SendInitialHostSettings()                      │
+           │                          │──────┐                  │                      │
+           │                          │      │ Get settings     │                      │
+           │                          │◀─────┘                  │                      │
+           │                          │                         │                      │
+           │                          │ [OOP Extension]         │                      │
+           │                          │ NotifyHostSettingsChanged(settings)            │
+           │                          │────────────────────────▶│                      │
+           │                          │                         │                      │
+           │                          │                         │ GetApiExtensionStubs()
+           │                          │                         │─────────────────────▶│
+           │                          │                         │                      │
+           │                          │                         │◀─────────────────────│
+           │                          │                         │   [stubs array]      │
+           │                          │                         │                      │
+           │                          │                         │ OnHostSettingsChanged(settings)
+           │                          │                         │─────────────────────▶│
+           │                          │                         │                      │
+           │                          │                         │                      │ HostSettingsManager
+           │                          │                         │                      │ .Update(settings)
+           │                          │                         │                      │──────┐
+           │                          │                         │                      │      │
+           │                          │                         │                      │◀─────┘
+           │                          │                         │                      │
+           │                          │ [Built-in Command]      │                      │
+           │                          │ OnHostSettingsChanged(settings) (direct call)  │
+           │                          │───────────────────────────────────────────────▶│
+           │                          │                         │                      │
+           │◀─────────────────────────│                         │                      │
+           │                          │                         │                      │
+```
+
+### Settings Change Notification
+
+This diagram shows how settings changes are propagated to all extensions:
+
+```
+┌───────────┐  ┌────────────┐  ┌────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ User      │  │SettingsModel│  │ExtensionService│  │ExtensionWrapper │  │Extension Process│
+└─────┬─────┘  └──────┬─────┘  └───────┬────────┘  └────────┬────────┘  └────────┬────────┘
+      │               │                │                    │                    │
+      │ Change setting│                │                    │                    │
+      │──────────────▶│                │                    │                    │
+      │               │                │                    │                    │
+      │               │ SettingsChanged event               │                    │
+      │               │───────────────▶│                    │                    │
+      │               │                │                    │                    │
+      │               │                │ ToHostSettings()   │                    │
+      │               │                │──────┐             │                    │
+      │               │                │      │ Convert     │                    │
+      │               │                │◀─────┘             │                    │
+      │               │                │                    │                    │
+      │               │                │ NotifyHostSettingsChanged(settings)     │
+      │               │                │───────────────────▶│                    │
+      │               │                │                    │                    │
+      │               │                │    [For each extension]                 │
+      │               │                │                    │                    │
+      │               │                │                    │ GetApiExtensionStubs()
+      │               │                │                    │───────────────────▶│
+      │               │                │                    │                    │
+      │               │                │                    │◀───────────────────│
+      │               │                │                    │   [stubs array]    │
+      │               │                │                    │                    │
+      │               │                │                    │ OnHostSettingsChanged(settings)
+      │               │                │                    │───────────────────▶│
+      │               │                │                    │                    │
+      │               │                │                    │                    │ HostSettingsManager
+      │               │                │                    │                    │ .Update(settings)
+      │               │                │                    │                    │──────┐
+      │               │                │                    │                    │      │
+      │               │                │                    │                    │◀─────┘
+      │               │                │                    │                    │
+      │               │                │                    │                    │ SettingsChanged
+      │               │                │                    │                    │ event fired
+      │               │                │                    │                    │──────┐
+      │               │                │                    │                    │      │
+      │               │                │                    │                    │◀─────┘
+      │               │                │                    │                    │
+      │               │                │                    │                    │ Extension pages
+      │               │                │                    │                    │ update UI
+      │               │                │                    │                    │
 ```
 
 ## Example Usage

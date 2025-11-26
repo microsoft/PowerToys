@@ -103,6 +103,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
+        // Send initial host settings after the provider is fully initialized
+        commandProvider.SendInitialHostSettings();
+
         var commands = await Task.Factory.StartNew(
             () =>
             {

@@ -219,24 +219,47 @@ public sealed class CommandProviderWrapper
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
             }
 
-            if (a is IHostSettingsChanged handler)
+            if (a is IHostSettingsChanged)
             {
-                Logger.LogDebug($"{ProviderId}: Found an IHostSettingsChanged, sending initial settings");
+                Logger.LogDebug($"{ProviderId}: Found an IHostSettingsChanged");
+            }
+        }
+    }
 
-                // Send initial settings to the extension
-                try
+    /// <summary>
+    /// Sends the initial host settings to the provider.
+    /// For extensions, this goes through ExtensionWrapper (cross-process).
+    /// For built-in commands, this calls the handler directly (in-proc).
+    /// </summary>
+    public void SendInitialHostSettings()
+    {
+        var settings = AppExtensionHost.GetHostSettingsFunc?.Invoke();
+        if (settings == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (Extension != null)
+            {
+                // OOP extension: send through ExtensionWrapper (cross-process)
+                Extension.NotifyHostSettingsChanged(settings);
+                Logger.LogDebug($"{ProviderId}: Sent initial host settings via ExtensionWrapper");
+            }
+            else
+            {
+                // Built-in command: call directly (in-proc)
+                if (_commandProvider.Unsafe is IHostSettingsChanged handler)
                 {
-                    var settings = AppExtensionHost.GetHostSettingsFunc?.Invoke();
-                    if (settings != null)
-                    {
-                        handler.OnHostSettingsChanged(settings);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogDebug($"Failed to send initial settings to {ProviderId}: {e.Message}");
+                    handler.OnHostSettingsChanged(settings);
+                    Logger.LogDebug($"{ProviderId}: Sent initial host settings directly");
                 }
             }
+        }
+        catch (Exception e)
+        {
+            Logger.LogDebug($"Failed to send initial settings to {ProviderId}: {e.Message}");
         }
     }
 

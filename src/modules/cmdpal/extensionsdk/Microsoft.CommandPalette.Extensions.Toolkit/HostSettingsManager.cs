@@ -30,12 +30,6 @@ public static class HostSettingsManager
     public static bool IsAvailable => _current != null;
 
     /// <summary>
-    /// Initializes the host settings. Called internally by ExtensionHost during initialization.
-    /// </summary>
-    /// <param name="settings">The initial host settings.</param>
-    internal static void Initialize(IHostSettings settings) => _current = settings;
-
-    /// <summary>
     /// Updates the cached host settings. Called internally when settings change.
     /// </summary>
     /// <param name="settings">The updated host settings.</param>
