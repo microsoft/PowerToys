@@ -86,47 +86,28 @@ Some extensions may want to provide experiences that align with the host's confi
 
 ### Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Command Palette Host                         │
-│  ┌─────────────────┐    ┌──────────────────┐                    │
-│  │  SettingsModel  │───▶│HostSettingsConv- │                    │
-│  │                 │    │     erter        │                    │
-│  └────────┬────────┘    └────────┬─────────┘                    │
-│           │                      │                               │
-│           │SettingsChanged       │ IHostSettings                 │
-│           ▼                      ▼                               │
-│  ┌─────────────────────────────────────────────────┐            │
-│  │            ExtensionService                      │            │
-│  │   NotifyHostSettingsChanged(IHostSettings)       │            │
-│  └────────────────────┬────────────────────────────┘            │
-│                       │                                          │
-└───────────────────────┼──────────────────────────────────────────┘
-                        │ Cross-Process (COM/WinRT)
-                        ▼
-┌───────────────────────────────────────────────────────────────────┐
-│                    Extension Process                               │
-│  ┌────────────────────────────────────────────────┐               │
-│  │           CommandProvider                       │               │
-│  │  OnHostSettingsChanged(IHostSettings settings)  │               │
-│  └────────────────────┬───────────────────────────┘               │
-│                       │                                            │
-│                       ▼                                            │
-│  ┌────────────────────────────────────────────────┐               │
-│  │         HostSettingsManager                     │               │
-│  │  ┌──────────────────────────────────────────┐  │               │
-│  │  │ Current: IHostSettings                   │  │               │
-│  │  │ SettingsChanged: event Action            │  │               │
-│  │  └──────────────────────────────────────────┘  │               │
-│  └────────────────────┬───────────────────────────┘               │
-│                       │                                            │
-│                       ▼                                            │
-│  ┌────────────────────────────────────────────────┐               │
-│  │        Extension Pages / Commands               │               │
-│  │    (Subscribe to HostSettingsManager.           │               │
-│  │     SettingsChanged or read Current)            │               │
-│  └────────────────────────────────────────────────┘               │
-└───────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Host["Command Palette Host"]
+        SM[SettingsModel]
+        HSC[HostSettingsConverter]
+        ES["ExtensionService<br/>NotifyHostSettingsChanged(IHostSettings)"]
+
+        SM -->|SettingsChanged| ES
+        SM --> HSC
+        HSC -->|IHostSettings| ES
+    end
+
+    ES -->|"Cross-Process (COM/WinRT)"| CP
+
+    subgraph Extension["Extension Process"]
+        CP["CommandProvider<br/>OnHostSettingsChanged(IHostSettings)"]
+        HSM["HostSettingsManager<br/>━━━━━━━━━━━━━━━━━━━━<br/>Current: IHostSettings<br/>SettingsChanged: event Action"]
+        EPC["Extension Pages / Commands<br/>(Subscribe to HostSettingsManager.SettingsChanged<br/>or read Current)"]
+
+        CP --> HSM
+        HSM --> EPC
+    end
 ```
 
 ### Key Components
@@ -451,100 +432,61 @@ This design ensures:
 
 This diagram shows how initial host settings are delivered to extensions when they first load:
 
-```
-┌─────────────────────┐  ┌─────────────────────────┐  ┌────────────────────┐  ┌─────────────────┐
-│TopLevelCommandManager│  │CommandProviderWrapper   │  │ExtensionWrapper    │  │Extension Process│
-└──────────┬──────────┘  └────────────┬────────────┘  └─────────┬──────────┘  └────────┬────────┘
-           │                          │                         │                      │
-           │ LoadTopLevelCommandsFromProvider()                 │                      │
-           │─────────────────────────▶│                         │                      │
-           │                          │                         │                      │
-           │                          │ LoadTopLevelCommands()  │                      │
-           │                          │────────────────────────▶│                      │
-           │                          │                         │                      │
-           │                          │◀────────────────────────│                      │
-           │                          │                         │                      │
-           │                          │ SendInitialHostSettings()                      │
-           │                          │──────┐                  │                      │
-           │                          │      │ Get settings     │                      │
-           │                          │◀─────┘                  │                      │
-           │                          │                         │                      │
-           │                          │ [OOP Extension]         │                      │
-           │                          │ NotifyHostSettingsChanged(settings)            │
-           │                          │────────────────────────▶│                      │
-           │                          │                         │                      │
-           │                          │                         │ GetApiExtensionStubs()
-           │                          │                         │─────────────────────▶│
-           │                          │                         │                      │
-           │                          │                         │◀─────────────────────│
-           │                          │                         │   [stubs array]      │
-           │                          │                         │                      │
-           │                          │                         │ OnHostSettingsChanged(settings)
-           │                          │                         │─────────────────────▶│
-           │                          │                         │                      │
-           │                          │                         │                      │ HostSettingsManager
-           │                          │                         │                      │ .Update(settings)
-           │                          │                         │                      │──────┐
-           │                          │                         │                      │      │
-           │                          │                         │                      │◀─────┘
-           │                          │                         │                      │
-           │                          │ [Built-in Command]      │                      │
-           │                          │ OnHostSettingsChanged(settings) (direct call)  │
-           │                          │───────────────────────────────────────────────▶│
-           │                          │                         │                      │
-           │◀─────────────────────────│                         │                      │
-           │                          │                         │                      │
+```mermaid
+sequenceDiagram
+    participant TLCM as TopLevelCommandManager
+    participant CPW as CommandProviderWrapper
+    participant EW as ExtensionWrapper
+    participant EP as Extension Process
+
+    TLCM->>CPW: LoadTopLevelCommandsFromProvider()
+    CPW->>EW: LoadTopLevelCommands()
+    EW-->>CPW: (commands loaded)
+
+    CPW->>CPW: SendInitialHostSettings()<br/>Get settings
+
+    alt OOP Extension
+        CPW->>EW: NotifyHostSettingsChanged(settings)
+        EW->>EP: GetApiExtensionStubs()
+        EP-->>EW: [stubs array]
+        EW->>EP: OnHostSettingsChanged(settings)
+        EP->>EP: HostSettingsManager.Update(settings)
+    else Built-in Command
+        CPW->>EP: OnHostSettingsChanged(settings)<br/>(direct call)
+        EP->>EP: HostSettingsManager.Update(settings)
+    end
+
+    CPW-->>TLCM: (complete)
 ```
 
 ### Settings Change Notification
 
 This diagram shows how settings changes are propagated to all extensions:
 
-```
-┌───────────┐  ┌────────────┐  ┌────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│ User      │  │SettingsModel│  │ExtensionService│  │ExtensionWrapper │  │Extension Process│
-└─────┬─────┘  └──────┬─────┘  └───────┬────────┘  └────────┬────────┘  └────────┬────────┘
-      │               │                │                    │                    │
-      │ Change setting│                │                    │                    │
-      │──────────────▶│                │                    │                    │
-      │               │                │                    │                    │
-      │               │ SettingsChanged event               │                    │
-      │               │───────────────▶│                    │                    │
-      │               │                │                    │                    │
-      │               │                │ ToHostSettings()   │                    │
-      │               │                │──────┐             │                    │
-      │               │                │      │ Convert     │                    │
-      │               │                │◀─────┘             │                    │
-      │               │                │                    │                    │
-      │               │                │ NotifyHostSettingsChanged(settings)     │
-      │               │                │───────────────────▶│                    │
-      │               │                │                    │                    │
-      │               │                │    [For each extension]                 │
-      │               │                │                    │                    │
-      │               │                │                    │ GetApiExtensionStubs()
-      │               │                │                    │───────────────────▶│
-      │               │                │                    │                    │
-      │               │                │                    │◀───────────────────│
-      │               │                │                    │   [stubs array]    │
-      │               │                │                    │                    │
-      │               │                │                    │ OnHostSettingsChanged(settings)
-      │               │                │                    │───────────────────▶│
-      │               │                │                    │                    │
-      │               │                │                    │                    │ HostSettingsManager
-      │               │                │                    │                    │ .Update(settings)
-      │               │                │                    │                    │──────┐
-      │               │                │                    │                    │      │
-      │               │                │                    │                    │◀─────┘
-      │               │                │                    │                    │
-      │               │                │                    │                    │ SettingsChanged
-      │               │                │                    │                    │ event fired
-      │               │                │                    │                    │──────┐
-      │               │                │                    │                    │      │
-      │               │                │                    │                    │◀─────┘
-      │               │                │                    │                    │
-      │               │                │                    │                    │ Extension pages
-      │               │                │                    │                    │ update UI
-      │               │                │                    │                    │
+```mermaid
+sequenceDiagram
+    participant User
+    participant SM as SettingsModel
+    participant ES as ExtensionService
+    participant EW as ExtensionWrapper
+    participant EP as Extension Process
+
+    User->>SM: Change setting
+    SM->>ES: SettingsChanged event
+
+    ES->>ES: ToHostSettings()<br/>Convert settings
+
+    ES->>EW: NotifyHostSettingsChanged(settings)
+
+    loop For each extension
+        EW->>EP: GetApiExtensionStubs()
+        EP-->>EW: [stubs array]
+        EW->>EP: OnHostSettingsChanged(settings)
+
+        EP->>EP: HostSettingsManager.Update(settings)
+        EP->>EP: SettingsChanged event fired
+        EP->>EP: Extension pages update UI
+    end
 ```
 
 ## Example Usage
