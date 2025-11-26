@@ -4,7 +4,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <Description>PowerToys Runner</Description>
-    <AssemblyName>PowerToys2</AssemblyName>
+    <AssemblyName>PowerToys</AssemblyName>
     <OutputPath>..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -16,5 +16,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\Update\Update.csproj" />
   </ItemGroup>
 </Project>

@@ -344,8 +344,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesModuleInterface",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZones", "src\modules\fancyzones\FancyZones\FancyZones.vcxproj", "{FF1D7936-842A-4BBB-8BEA-E9FE796DE700}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.Update", "src\Update\PowerToys.Update.vcxproj", "{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.PowerToys.Run.Plugin.WindowsSettings", "src\modules\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.WindowsSettings\Microsoft.PowerToys.Run.Plugin.WindowsSettings.csproj", "{5043CECE-E6A7-4867-9CBE-02D27D83747A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfThumbnailProvider", "src\modules\previewpane\PdfThumbnailProvider\PdfThumbnailProvider.csproj", "{11491FD8-F921-48BF-880C-7FEA185B80A1}"
@@ -829,6 +827,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.UI.ViewModels.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.UI.ViewModels.UnitTests\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj", "{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunnerV2", "src\RunnerV2\RunnerV2\RunnerV2.csproj", "{20C43796-E14D-47B2-843A-843CAC9C0D28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Update", "src\Update\Update.csproj", "{9BC7C461-FE76-4F27-B5CB-129F9923967C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1502,14 +1502,6 @@ Global
 		{FF1D7936-842A-4BBB-8BEA-E9FE796DE700}.Release|ARM64.Build.0 = Release|ARM64
 		{FF1D7936-842A-4BBB-8BEA-E9FE796DE700}.Release|x64.ActiveCfg = Release|x64
 		{FF1D7936-842A-4BBB-8BEA-E9FE796DE700}.Release|x64.Build.0 = Release|x64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|ARM64.Build.0 = Debug|ARM64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.ActiveCfg = Debug|x64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Debug|x64.Build.0 = Debug|x64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|ARM64.ActiveCfg = Release|ARM64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|ARM64.Build.0 = Release|ARM64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.ActiveCfg = Release|x64
-		{44CE9AE1-4390-42C5-BACC-0FD6B40AA203}.Release|x64.Build.0 = Release|x64
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A}.Debug|ARM64.Build.0 = Debug|ARM64
 		{5043CECE-E6A7-4867-9CBE-02D27D83747A}.Debug|x64.ActiveCfg = Debug|x64
@@ -3016,6 +3008,14 @@ Global
 		{20C43796-E14D-47B2-843A-843CAC9C0D28}.Release|ARM64.Build.0 = Release|ARM64
 		{20C43796-E14D-47B2-843A-843CAC9C0D28}.Release|x64.ActiveCfg = Release|x64
 		{20C43796-E14D-47B2-843A-843CAC9C0D28}.Release|x64.Build.0 = Release|x64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Debug|x64.ActiveCfg = Debug|x64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Debug|x64.Build.0 = Debug|x64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Release|ARM64.Build.0 = Release|ARM64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Release|x64.ActiveCfg = Release|x64
+		{9BC7C461-FE76-4F27-B5CB-129F9923967C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,9 +13,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using ManagedCommon;
 using RunnerV2.Helpers;
+using Update;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2
@@ -43,6 +45,8 @@ namespace RunnerV2
         internal static bool Run(Action afterInitializationAction)
         {
             TrayIconManager.StartTrayIcon();
+
+            Task.Run(UpdateUtilities.UninstallPreviousMsixVersions);
 
             foreach (IPowerToysModule module in ModulesToLoad)
             {
@@ -106,29 +110,33 @@ namespace RunnerV2
 
         public static void ToggleModuleStateBasedOnEnabledProperty(IPowerToysModule module)
         {
-            if ((module.Enabled && (module.GpoRuleConfigured != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)) || module.GpoRuleConfigured == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
+            try
             {
-                try
+                if ((module.Enabled && (module.GpoRuleConfigured != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)) || module.GpoRuleConfigured == PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
                 {
-                    module.Enable();
-
                     /* Todo: conflict manager */
 
-                    foreach (var hotkey in module.Hotkeys)
+                    // ToArray is called to mitigate mutations while the foreach is executing
+                    foreach (var hotkey in module.Hotkeys.ToArray())
                     {
                         HotkeyManager.EnableHotkey(hotkey.Key, hotkey.Value);
                     }
 
                     if (!LoadedModules.Contains(module))
                     {
+                        module.Enable();
                         LoadedModules.Add(module);
                     }
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show($"The module {module.Name} failed to load: \n" + e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
 
+                    return;
+                }
+            }
+            catch (IOException)
+            {
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"The module {module.Name} failed to load: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -143,13 +151,14 @@ namespace RunnerV2
 
                 LoadedModules.Remove(module);
             }
+            catch (IOException)
+            {
+            }
             catch (Exception e)
             {
-                MessageBox.Show($"The module {module.Name} failed to unload: \n" + e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"The module {module.Name} failed to unload: \n" + e.Message, "Error: " + e.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        public static Thread? WindowThread { get; set; }
 
         [STAThread]
         private static void InitializeTrayWindow()

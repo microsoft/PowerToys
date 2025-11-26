@@ -26,6 +26,9 @@ internal sealed class Program
         {
             case SpecialMode.None:
                 break;
+            case SpecialMode.UpdateNow:
+                UpdateNow();
+                return;
             default:
                 throw new NotImplementedException("Special modes are not implemented yet.");
         }
@@ -103,7 +106,28 @@ internal sealed class Program
 
     private static SpecialMode ShouldRunInSpecialMode(string[] args)
     {
-        // TODO
+        if (args.Length > 0 && args[0].StartsWith("powertoys://", StringComparison.InvariantCultureIgnoreCase))
+        {
+            Uri uri = new(args[0]);
+            string host = uri.Host.ToLowerInvariant();
+            return host switch
+            {
+                "update_now" => SpecialMode.UpdateNow,
+                _ => SpecialMode.None,
+            };
+        }
+
         return SpecialMode.None;
+    }
+
+    private static void UpdateNow()
+    {
+        Process.Start(new ProcessStartInfo()
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            FileName = "PowerToys.Update.exe",
+            Arguments = "-update_now",
+        });
     }
 }

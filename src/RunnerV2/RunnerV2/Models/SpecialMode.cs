@@ -9,6 +9,7 @@ namespace RunnerV2.Models
         None,
         Win32ToastNotificationCOMServer,
         ToastNotificationHandler,
+        UpdateNow,
         ReportSuccessfulUpdate,
     }
 }

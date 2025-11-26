@@ -10,9 +10,11 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
+using Update;
 using Windows.Media.Devices;
 
 namespace RunnerV2.Helpers
@@ -125,6 +127,12 @@ namespace RunnerV2.Helpers
                                         ElevationHelper.RestartScheduled = ElevationHelper.RestartScheduledMode.RestartElevatedWithOpenSettings;
                                         Runner.Close();
                                         break;
+                                    case "restart_mentain_elevation":
+                                        // Todo:
+                                        break;
+                                    case "check_for_updates":
+                                        UpdateSettingsHelper.TriggerUpdateCheck();
+                                        break;
                                     case "request_update_state_date":
                                         // Todo:
                                         break;
@@ -156,7 +164,15 @@ namespace RunnerV2.Helpers
                         Runner.Close();
                         break;
                     case "general":
-                        _settingsUtils.SaveSettings(property.Value.ToString(), string.Empty);
+                        try
+                        {
+                            _settingsUtils.SaveSettings(property.Value.ToString(), string.Empty);
+                        }
+                        catch (Exception)
+                        {
+                            // TODO: Log error
+                        }
+
                         NativeMethods.PostMessageW(Runner.RunnerHwnd, (uint)NativeMethods.WindowMessages.REFRESH_SETTINGS, 0, 0);
 
                         foreach (IPowerToysModule module in Runner.ModulesToLoad)
