@@ -281,10 +281,10 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         {
             // Check if there's more than one visible monitor and MonitorNumber is valid
             // Set the limit to zero for debugging.
-            if (_mainViewModel != null && _mainViewModel.Monitors.Count > 0 && MonitorNumber > 0)
+            /* if (_mainViewModel != null && _mainViewModel.Monitors.Count > 0 && MonitorNumber > 0)
             {
                 return $"{Name} {MonitorNumber}";
-            }
+            } */
 
             return Name;
         }
