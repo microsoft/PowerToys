@@ -274,7 +274,7 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup Description="Zoom in and out at the location of your cursor tip." Header="Cursor Dwell">
+                <controls:SettingsGroup Description="Zoom in and out at the location of your cursor tip." Header="Magnifier Glass">
                     <tkcontrols:SettingsCard Header="Enable Magnifier Glass" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
                         <ToggleSwitch IsOn="True" />
                     </tkcontrols:SettingsCard>
