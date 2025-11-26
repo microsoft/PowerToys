@@ -36,13 +36,6 @@ public static class HostSettingsManager
     internal static void Update(IHostSettings settings)
     {
         _current = settings;
-#if DEBUG
-        var subscriberCount = SettingsChanged?.GetInvocationList().Length ?? 0;
-        ExtensionHost.LogMessage($"[HostSettingsManager] Update called, subscriber count: {subscriberCount}");
-#endif
         SettingsChanged?.Invoke();
-#if DEBUG
-        ExtensionHost.LogMessage($"[HostSettingsManager] SettingsChanged event invoked");
-#endif
     }
 }
