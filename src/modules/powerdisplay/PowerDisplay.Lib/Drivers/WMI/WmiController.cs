@@ -232,6 +232,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 CommunicationMethod = "WMI",
                                 Manufacturer = "Internal",
                                 SupportsColorTemperature = false,
+                                MonitorNumber = 1, // Internal display is typically DISPLAY1
                             };
 
                             monitors.Add(monitor);

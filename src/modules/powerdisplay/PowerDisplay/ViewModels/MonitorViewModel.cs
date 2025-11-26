@@ -267,6 +267,29 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     public string Name => _monitor.Name;
 
+    /// <summary>
+    /// Gets the monitor number from the underlying monitor model (Windows DISPLAY number)
+    /// </summary>
+    public int MonitorNumber => _monitor.MonitorNumber;
+
+    /// <summary>
+    /// Gets the display name - includes monitor number when multiple monitors are visible
+    /// </summary>
+    public string DisplayName
+    {
+        get
+        {
+            // Check if there's more than one visible monitor and MonitorNumber is valid
+            // Set the limit to zero for debugging.
+            if (_mainViewModel != null && _mainViewModel.Monitors.Count > 0 && MonitorNumber > 0)
+            {
+                return $"{Name} {MonitorNumber}";
+            }
+
+            return Name;
+        }
+    }
+
     public string Manufacturer => _monitor.Manufacturer;
 
     public string CommunicationMethod => _monitor.CommunicationMethod;
@@ -464,6 +487,11 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         if (e.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
         {
             OnPropertyChanged(nameof(IsInteractionEnabled));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.HasMonitors))
+        {
+            // Monitor count changed, update display name to show/hide number suffix
+            OnPropertyChanged(nameof(DisplayName));
         }
     }
 

@@ -116,7 +116,7 @@
                                                     Grid.Column="2"
                                                     VerticalAlignment="Center"
                                                     FontWeight="SemiBold"
-                                                    Text="{x:Bind Name, Mode=OneWay}" />
+                                                    Text="{x:Bind DisplayName, Mode=OneWay}" />
                                             </Grid>
                                             <!--  Brightness Control  -->
                                             <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
