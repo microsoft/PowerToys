@@ -1,0 +1,374 @@
+﻿<helper:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.AssistiveToolsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:local="clr-namespace:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <helper:NavigablePage.Resources>
+        <converters:DoubleToVisibilityConverter
+            x:Key="ControlModeToVisibilityConverter"
+            FalseValue="Visible"
+            GreaterThan="1"
+            LessThan="1"
+            TrueValue="Collapsed" />
+    </helper:NavigablePage.Resources>
+    <controls:SettingsPageControl ModuleImageSource="ms-appx:///Assets/Settings/Modules/NewPlus.png" ModuleTitle="Assistive Tools">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel
+                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Orientation="Vertical"
+                Spacing="2">
+                <controls:SettingsGroup Description="Navigate with external switches, using Gliding, Sweeping Cursor or Grid Overlay mode. Grid overlay also supports arrow ← ↑ → ↓ navigation." Header="Switch Control">
+                    <tkcontrols:SettingsCard Header="Enable Switch Control" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
+                        <ToggleSwitch IsOn="True" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        Description="Configure how to use Switch Control"
+                        Header="Activation"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Header="Initiate or next step">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Header="Previous step">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Header="End session">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox Content="Automatically activate on utility startup" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander Header="Control mode" HeaderIcon="{ui:FontIcon Glyph=&#xECE9;}">
+                        <ComboBox
+                            x:Name="ControlModeSelectionBox"
+                            Loaded="ControlModeSelectionBox_Loaded"
+                            SelectedIndex="0">
+                            <ComboBoxItem Content="Grid Overlay" />
+                            <ComboBoxItem Content="Gliding Cursor" />
+                            <ComboBoxItem Content="Sweeping Cursor" />
+                        </ComboBox>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Header="Default final action">
+                                <ComboBox SelectedIndex="0">
+                                    <ComboBoxItem Content="Left click" />
+                                    <ComboBoxItem Content="Right click" />
+                                    <ComboBoxItem Content="Middle click" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox Content="Show context menu on final action" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander Header="Scanning method and speed" HeaderIcon="{ui:FontIcon Glyph=&#xEC49;}">
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem Content="Automatic" />
+                            <ComboBoxItem Content="Fast" />
+                            <ComboBoxItem Content="Slow" />
+                        </ComboBox>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Header="Delay in ms">
+                                <NumberBox SpinButtonPlacementMode="Compact" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Name="InitialSpeedCard"
+                                Description="Speed of the horizontal or vertical line when it begins moving"
+                                Header="Initial line speed"
+                                Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon
+                                        FontSize="14"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xEA79;" />
+                                    <Slider Value="50" />
+                                    <FontIcon
+                                        FontSize="14"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xEA79;" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Name="ReducedLineSpeedCard"
+                                Description="Speed after slowing down the line with a second shortcut press"
+                                Header="Reduced line speed"
+                                Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon
+                                        FontSize="14"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xEA79;" />
+                                    <Slider Value="50" />
+                                    <FontIcon
+                                        FontSize="14"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xEA79;" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander x:Uid="Appearance_Behavior" HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
+                                <controls:ColorPickerButton />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    Value="100" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="500"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="250" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="50"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
+                                <controls:ColorPickerButton />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="2"
+                                    Maximum="50"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup Description="Hover the cursor over an item on the screen for a specified amount of time to trigger an action." Header="Cursor Dwell">
+                    <tkcontrols:SettingsCard Header="Enable Cursor Dwell" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
+                        <ToggleSwitch IsOn="True" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander
+                        Description="Configure how to activate Dwell Cursor"
+                        Header="Activation"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Header="Initiate">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Header="End session">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox Content="Automatically activate on utility startup" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Header="Delay in ms">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="2"
+                                    Maximum="50"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsExpander Header="Menu options and delay" HeaderIcon="{ui:FontIcon Glyph=&#xECE9;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Header="Default final action">
+                                <ComboBox SelectedIndex="0">
+                                    <ComboBoxItem Content="Left click" />
+                                    <ComboBoxItem Content="Right click" />
+                                    <ComboBoxItem Content="Middle click" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox Content="Show context menu on final action" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander x:Uid="Appearance_Behavior" HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
+                                <controls:ColorPickerButton />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    Value="100" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="500"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="250" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="50"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
+                                <controls:ColorPickerButton />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="2"
+                                    Maximum="50"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup Description="Zoom in and out at the location of your cursor tip." Header="Cursor Dwell">
+                    <tkcontrols:SettingsCard Header="Enable Magnifier Glass" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
+                        <ToggleSwitch IsOn="True" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander
+                        Description="Configure how to activate Dwell Cursor"
+                        Header="Activation"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Header="Initiate">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Header="End session">
+                                <controls:ShortcutControl />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox Content="Automatically activate on utility startup" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard Header="Set default zoom level" HeaderIcon="{ui:FontIcon Glyph=&#xECE9;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontSize="14"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Glyph="&#xE738;" />
+                            <Slider Value="50" />
+                            <FontIcon
+                                FontSize="14"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Glyph="&#xE710;" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander x:Uid="Appearance_Behavior" HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
+                                <controls:ColorPickerButton />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="1"
+                                    Value="100" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="500"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="250" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="50"
+                                    Minimum="1"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
+                                <controls:ColorPickerButton />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="2"
+                                    Maximum="50"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="25" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="NewPlus_Learn_More" Link="https://aka.ms/PowerToysOverview_NewPlus" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://www.linkedin.com/in/christian-gaardmark/" Text="Christian Gaardmark" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+
+</helper:NavigablePage>

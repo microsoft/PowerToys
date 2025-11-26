@@ -290,6 +290,11 @@
                     </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
+                            x:Name="AssistiveTools"
+                            helpers:NavHelper.NavigateTo="views:AssistiveToolsPage"
+                            Content="Assistive Tools"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}" />
+                        <NavigationViewItem
                             x:Name="KeyboardManagerNavigationItem"
                             x:Uid="Shell_KeyboardManager"
                             helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
