@@ -6,9 +6,9 @@ using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.PowerToys;
+namespace PowerToysExtension;
 
-public partial class PowerToysCommandsProvider : CommandProvider
+public sealed partial class PowerToysCommandsProvider : CommandProvider
 {
     public PowerToysCommandsProvider()
     {

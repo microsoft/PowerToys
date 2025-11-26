@@ -3,49 +3,49 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices.Marshalling;
 using System.Threading;
+using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.PowerToys.ComServer;
 using Microsoft.CommandPalette.Extensions;
-using WinRT;
+using Shmuelie.WinRTServer;
+using Shmuelie.WinRTServer.CsWinRT;
 
-namespace Microsoft.CmdPal.Ext.PowerToys;
+namespace PowerToysExtension;
 
-public static class Program
+public class Program
 {
     [MTAThread]
-    public static int Main(string[] args)
+    public static void Main(string[] args)
     {
         try
         {
+            // Initialize per-extension log under CmdPal/PowerToysExtension.
             Logger.InitializeLogger("\\CmdPal\\PowerToysExtension\\Logs");
         }
         catch
         {
-            // If logging fails we still continue; CmdPal host will surface failures.
+            // Continue even if logging fails.
         }
 
-        var exePath = Process.GetCurrentProcess().MainModule?.FileName ?? "unknown";
-        Logger.LogInfo($"PowerToys CmdPal extension entry point. exe={exePath}, args=\"{string.Join(' ', args)}\"");
-
-        if (args.Length > 0 && args[0].Equals("-RegisterProcessAsComServer", StringComparison.OrdinalIgnoreCase))
+        if (args.Length > 0 && args[0] == "-RegisterProcessAsComServer")
         {
-            // Ensure cswinrt uses our StrategyBasedComWrappers so the IExtension WinRT interface marshals correctly cross-process.
-            ComWrappersSupport.InitializeComWrappers(new StrategyBasedComWrappers());
+            using ExtensionServer server = new();
 
-            using PowerToysExtensionServer server = new();
-            using ManualResetEvent extensionDisposed = new(false);
-            var extensionInstance = new PowerToysExtension(extensionDisposed);
+            ManualResetEvent extensionDisposedEvent = new(false);
 
+            // We are instantiating an extension instance once above, and returning it every time the callback in RegisterExtension below is called.
+            // This makes sure that only one instance of SampleExtension is alive, which is returned every time the host asks for the IExtension object.
+            // If you want to instantiate a new instance each time the host asks, create the new instance inside the delegate.
+            PowerToysExtension extensionInstance = new(extensionDisposedEvent);
             server.RegisterExtension(() => extensionInstance);
-            Logger.LogInfo("Registered PowerToys CmdPal extension COM server. Waiting for dispose signal.");
-            extensionDisposed.WaitOne();
-            return 0;
-        }
 
-        Logger.LogWarning("PowerToys CmdPal extension launched without COM registration arguments. Exiting.");
-        return 0;
+            // This will make the main thread wait until the event is signalled by the extension class.
+            // Since we have single instance of the extension object, we exit as soon as it is disposed.
+            extensionDisposedEvent.WaitOne();
+        }
+        else
+        {
+            Console.WriteLine("Not being launched as a Extension... exiting.");
+        }
     }
 }
