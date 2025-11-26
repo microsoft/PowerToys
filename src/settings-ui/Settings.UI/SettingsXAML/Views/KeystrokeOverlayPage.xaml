@@ -17,7 +17,6 @@
                
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        Name="KeystrokeOverlayEnable"
                         x:Uid="KeystrokeOverlay_Enable"
                        HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
                         <ToggleSwitch x:Uid="KeystrokeOverlay_ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />

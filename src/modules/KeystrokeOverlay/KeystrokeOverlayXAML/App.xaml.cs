@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+
 using System;
+
 using ManagedCommon;
-using Microsoft.PowerToys;
 using Microsoft.UI.Xaml;
 
 namespace KeystrokeOverlayUI
@@ -11,9 +12,9 @@ namespace KeystrokeOverlayUI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application
+    public partial class App : Application, IDisposable
     {
-        private MainWindow Window { get; set; }
+        private MainWindow window;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -41,17 +42,26 @@ namespace KeystrokeOverlayUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFileLocksmithEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-                Environment.Exit(0); // Current.Exit won't work until there's a window opened.
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled.");
+                Environment.Exit(0);
                 return;
             }
+
+            window = new MainWindow();
+            window.Activate();
+        }
+
+        public void Dispose()
+        {
+            window?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            Logger.LogError("Unhandled exception", e.Exception);
+            ManagedCommon.Logger.LogError("Unhandled exception", e.Exception);
         }
     }
 }

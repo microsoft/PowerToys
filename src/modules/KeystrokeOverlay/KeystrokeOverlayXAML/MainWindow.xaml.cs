@@ -4,50 +4,43 @@
 
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.UI;                 // Added: For WindowId
-using Microsoft.UI.Windowing;       // Added: For AppWindow & OverlappedPresenter
+using KeystrokeOverlayUI.Models;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Input;      // Added: For PointerRoutedEventArgs
-using Windows.Graphics;             // Added: For PointInt32
-using WinRT.Interop;                // Added: For WindowNative (to get HWND)
+using Microsoft.UI.Xaml.Input;
+using Windows.Graphics;
+using WinRT.Interop;
 
 namespace KeystrokeOverlayUI
 {
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : Window, IDisposable
     {
-        // Uncommented this so the assignment in the constructor compiles
-        private readonly IUserSettings _userSettings;
-
         private AppWindow _appWindow;
         private KeystrokeListener _listener;
+
+        // DRAGGING LOGIC VARS
+        private bool _isDragging;
+        private PointInt32 _lastMousePos;
 
         public OverlaySettings Settings { get; }
 
         // This collection holds the keys currently being displayed
         private ObservableCollection<KeyModel> ActiveKeys { get; } = new ObservableCollection<KeyModel>();
 
-        // DRAGGING LOGIC VARS
-        private bool _isDragging;
-        private PointInt32 _lastMousePos;
-
         public MainWindow()
         {
-            InitializeComponent();
-
-            // Note: ExtendsContentIntoTitleBar works best when you have a standard title bar.
-            // If ConfigureAppWindow removes the borders, this might not be visually necessary,
-            // but it is harmless to keep.
+            this.InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;
 
-            // 1. Get the AppWindow (Standard helper method logic)
+            // app window configuration
             _appWindow = GetAppWindowForCurrentWindow();
-
-            // 2. Configure it (Overlay style)
             ConfigureAppWindow();
 
-            _userSettings = App.GetService<IUserSettings>();
+            // settings initialization
             Settings = new OverlaySettings();
 
+            // listener initialization
             _listener = new KeystrokeListener();
             _listener.OnBatchReceived += Listener_OnBatchReceived;
             _listener.Start();
@@ -93,15 +86,15 @@ namespace KeystrokeOverlayUI
             // Marshall to UI Thread
             this.DispatcherQueue.TryEnqueue(() =>
             {
-                foreach (var keyEvent in batch.events)
+                foreach (var keyEvent in batch.Events)
                 {
                     // Only showing "Down" events for visual simplicity
-                    if (keyEvent.t == "down")
+                    if (keyEvent.T == "down")
                     {
                         // Logic to format text (e.g., translate VK Code to String if 'text' is empty)
-                        string displayText = string.IsNullOrEmpty(keyEvent.text)
-                                            ? ((Windows.System.VirtualKey)keyEvent.vk).ToString()
-                                            : keyEvent.text;
+                        string displayText = string.IsNullOrEmpty(keyEvent.Text)
+                                            ? ((Windows.System.VirtualKey)keyEvent.VK).ToString()
+                                            : keyEvent.Text;
 
                         ShowKey(displayText);
                     }
@@ -180,13 +173,10 @@ namespace KeystrokeOverlayUI
             _isDragging = false;
             (sender as UIElement)?.ReleasePointerCapture(e.Pointer);
         }
-    }
 
-    // single key display
-    public class KeyModel
-    {
-        public string Text { get; set; }
-
-        public OverlaySettings Settings { get; set; }
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

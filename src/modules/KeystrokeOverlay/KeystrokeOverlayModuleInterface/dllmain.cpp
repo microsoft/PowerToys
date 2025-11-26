@@ -58,7 +58,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class KeystrokeOverlay : public KeystroeOverlayIface
+class KeystrokeOverlay : public KeystrokeOverlayInterface
 {
 private:
     // The PowerToy state.

@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.IO;
 using System.IO.Pipes;
@@ -5,12 +9,19 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using KeystrokeOverlayUI.Models;
 
 namespace KeystrokeOverlayUI
 {
-    public class KeystrokeListener
+    public class KeystrokeListener : IDisposable
     {
-        private const string PipeName = "PowerToys.KeystrokeOverlay"; // Must match C++
+        public void Dispose()
+        {
+            Stop();
+            GC.SuppressFinalize(this);
+        }
+
+        private const string PipeName = "PowerToys.KeystrokeOverlay";
         private CancellationTokenSource _cts;
 
         public event Action<KeystrokeBatch> OnBatchReceived;
@@ -62,26 +73,5 @@ namespace KeystrokeOverlayUI
                 }
             }
         }
-    }
-
-    // Data models matching Batcher.cpp JSON schema
-    public class KeystrokeBatch
-    {
-        public int schema { get; set; }
-
-        public KeystrokeData[] events { get; set; }
-    }
-
-    public class KeystrokeData
-    {
-        public string t { get; set; } // "down", "up", "char"
-
-        public int vk { get; set; }
-
-        public string text { get; set; }
-
-        public string[] mods { get; set; }
-
-        public double ts { get; set; }
     }
 }
