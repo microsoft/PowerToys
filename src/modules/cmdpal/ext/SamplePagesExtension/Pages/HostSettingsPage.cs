@@ -29,7 +29,7 @@ internal sealed partial class HostSettingsPage : ListPage
         ExtensionHost.LogMessage($"[HostSettingsPage] OnSettingsChanged called, invoking RaiseItemsChanged");
 
         // Notify the UI to refresh the items list
-        RaiseItemsChanged();
+        RaiseItemsChanged(0);
         ExtensionHost.LogMessage($"[HostSettingsPage] RaiseItemsChanged completed");
     }
 

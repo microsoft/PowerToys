@@ -1678,18 +1678,6 @@ Available properties on `HostSettingsManager.Current`:
 | `DisableAnimations` | `bool` | Animations disabled |
 | `SummonOn` | `SummonTarget` | Monitor positioning behavior |
 
-**Checking Availability**
-
-Before using settings, check if they're available (for backwards compatibility
-with older hosts):
-
-```cs
-if (HostSettingsManager.IsAvailable)
-{
-    var settings = HostSettingsManager.Current;
-    // Use settings...
-}
-```
 
 **Responding to Changes (Optional)**
 
@@ -1704,9 +1692,6 @@ HostSettingsManager.SettingsChanged += () =>
     RaiseItemsChanged();
 };
 ```
-
-For implementation details, see
-[Host Settings Awareness](../host-settings-awareness/host-settings-awareness.md).
 
 ## Helper SDK Classes
 
