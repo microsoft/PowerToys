@@ -175,7 +175,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             // Try reading basic VCP codes to validate connection
-            var testCodes = new byte[] { NativeConstants.VcpCodeBrightness, NativeConstants.VcpCodeNewControlValue, NativeConstants.VcpCodeVcpVersion };
+            var testCodes = new byte[] { NativeConstants.VcpCodeBrightness, NativeConstants.VcpCodeContrast, NativeConstants.VcpCodeVcpVersion, NativeConstants.VcpCodeVolume };
 
             foreach (var code in testCodes)
             {
