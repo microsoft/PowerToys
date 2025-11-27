@@ -20,38 +20,7 @@ internal static class CommandsHelper
             case SettingsWindow.ColorPicker:
                 return new List<ICommandContextItem>()
                             {
-                                new CommandContextItem(new LaunchCommand(entry)),
                                 new CommandContextItem(new ColorPickerListPage()),
-                            };
-            case SettingsWindow.FancyZones:
-                return new List<ICommandContextItem>()
-                            {
-                                new CommandContextItem(new LaunchCommand(entry)),
-                            };
-            case SettingsWindow.Hosts:
-                return new List<ICommandContextItem>()
-                            {
-                                new CommandContextItem(new LaunchCommand(entry)),
-                            };
-            case SettingsWindow.MeasureTool:
-                return new List<ICommandContextItem>()
-                            {
-                                new CommandContextItem(new LaunchCommand(entry)),
-                            };
-            case SettingsWindow.PowerOCR:
-                return new List<ICommandContextItem>()
-                            {
-                                new CommandContextItem(new LaunchCommand(entry)),
-                            };
-            case SettingsWindow.ShortcutGuide:
-                return new List<ICommandContextItem>()
-                            {
-                                new CommandContextItem(new LaunchCommand(entry)),
-                            };
-            case SettingsWindow.RegistryPreview:
-                return new List<ICommandContextItem>()
-                            {
-                                new CommandContextItem(new LaunchCommand(entry)),
                             };
             case SettingsWindow.CropAndLock:
                 return new List<ICommandContextItem>()
@@ -59,16 +28,15 @@ internal static class CommandsHelper
                                 new CommandContextItem(new CrockAndLockThumbnailCommand()),
                                 new CommandContextItem(new CrockAndLockReparentCommand()),
                             };
-            case SettingsWindow.EnvironmentVariables:
+            case SettingsWindow.Awake:
                 return new List<ICommandContextItem>()
                             {
-                                new CommandContextItem(new LaunchCommand(entry)),
+                                new CommandContextItem(new AwakePage()),
                             };
             case SettingsWindow.Workspaces:
                 return new List<ICommandContextItem>()
                             {
                                 new CommandContextItem(new WorkspacesListPage()),
-                                new CommandContextItem(new LaunchCommand(entry)),
                             };
             default:
                 return new List<ICommandContextItem>();

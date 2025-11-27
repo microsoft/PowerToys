@@ -16,13 +16,23 @@ internal sealed partial class AwakePage : DynamicListPage
         Icon = IconHelpers.FromRelativePath("Assets\\Awake.png");
         Name = Title = "Awake";
         Id = "com.microsoft.cmdpal.powertoys.awake";
+        EmptyContent = new CommandItem()
+        {
+            Icon = Icon,
+            Title = "No Awake actions available",
+            Subtitle = SearchText,
+        };
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        if (EmptyContent is CommandItem empty)
+        {
+            empty.Subtitle = newSearch;
+        }
         RaiseItemsChanged(0);
         return;
     }
 
-    public override IListItem[] GetItems() => WorkspaceItemsHelper.FilteredItems(SearchText);
+    public override IListItem[] GetItems() => AwakeItemsHelper.FilteredItems(SearchText);
 }

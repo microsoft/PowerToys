@@ -28,13 +28,23 @@ internal static class ModuleItemsHelper
                     {
                         Module = module,
                     };
-                    return new ListItem(new CommandItem(new WorkspacesListPage()))
+                    var primary = new CommandItem(new LaunchCommand(entry))
+                    {
+                        Title = module.ModuleName(),
+                        Icon = module.ModuleIcon(),
+                    };
+
+                    var moreCommands = new List<ICommandContextItem>
+                    {
+                        .. entry.GetCommands(),
+                        new CommandContextItem(new OpenInSettingsCommand(entry)),
+                    };
+
+                    return new ListItem(primary)
                     {
                         Icon = module.ModuleIcon(),
                         Title = module.ModuleName(),
-                        MoreCommands = [.. entry.GetCommands(),
-                            new CommandContextItem(new OpenInSettingsCommand(entry))
-                        ],
+                        MoreCommands = moreCommands.ToArray(),
                     };
                 }
 
@@ -44,11 +54,23 @@ internal static class ModuleItemsHelper
                     {
                         Module = module,
                     };
-                    return new ListItem(new OpenInSettingsCommand(entry))
+                    var primary = new CommandItem(new LaunchCommand(entry))
+                    {
+                        Title = module.ModuleName(),
+                        Icon = module.ModuleIcon(),
+                    };
+
+                    var moreCommands = new List<ICommandContextItem>
+                    {
+                        .. entry.GetCommands(),
+                        new CommandContextItem(new OpenInSettingsCommand(entry)),
+                    };
+
+                    return new ListItem(primary)
                     {
                         Icon = module.ModuleIcon(),
                         Title = module.ModuleName(),
-                        MoreCommands = [.. entry.GetCommands()],
+                        MoreCommands = moreCommands.ToArray(),
                     };
                 }
 
@@ -83,11 +105,23 @@ internal static class ModuleItemsHelper
                     {
                         Module = module,
                     };
-                    return new ListItem(new OpenInSettingsCommand(entry))
+                    var primary = new CommandItem(new LaunchCommand(entry))
+                    {
+                        Title = module.ModuleName(),
+                        Icon = module.ModuleIcon(),
+                    };
+
+                    var moreCommands = new List<ICommandContextItem>
+                    {
+                        .. entry.GetCommands(),
+                        new CommandContextItem(new OpenInSettingsCommand(entry)),
+                    };
+
+                    return new ListItem(primary)
                     {
                         Icon = module.ModuleIcon(),
                         Title = module.ModuleName(),
-                        MoreCommands = [.. entry.GetCommands()],
+                        MoreCommands = moreCommands.ToArray(),
                     };
                 }
 

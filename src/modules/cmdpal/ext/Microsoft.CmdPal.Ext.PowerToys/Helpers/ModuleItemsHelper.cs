@@ -75,7 +75,7 @@ internal static class ModuleItemsHelper
         var icon = module.ModuleIcon();
         var title = module.ModuleDisplayName();
 
-        var settingsCommand = new OpenInSettingsCommand(module, $"Open {title} settings");
+        var settingsCommand = new OpenInSettingsCommand(module, title);
 
         var more = new List<ICommandContextItem>();
 
