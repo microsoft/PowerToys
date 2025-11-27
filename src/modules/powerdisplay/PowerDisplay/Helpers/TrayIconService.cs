@@ -19,14 +19,14 @@ namespace PowerDisplay.Helpers
 {
     /// <summary>
     /// Window procedure delegate for handling window messages.
-    /// Defined locally because CsWin32 generates WNDPROC as internal with allowMarshaling: false.
+    /// Uses primitive types to avoid accessibility issues with CsWin32-generated types.
     /// </summary>
     /// <param name="hwnd">Handle to the window.</param>
     /// <param name="msg">The message.</param>
     /// <param name="wParam">Additional message information.</param>
     /// <param name="lParam">Additional message information.</param>
     /// <returns>The result of the message processing.</returns>
-    internal delegate LRESULT WndProcDelegate(HWND hwnd, uint msg, WPARAM wParam, LPARAM lParam);
+    internal delegate nint WndProcDelegate(nint hwnd, uint msg, nuint wParam, nint lParam);
 
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_*")]
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_*")]
@@ -43,12 +43,12 @@ namespace PowerDisplay.Helpers
         private readonly uint WM_TASKBAR_RESTART;
 
         private Window? _window;
-        private HWND _hwnd;
-        private IntPtr _originalWndProc;
+        private nint _hwnd;
+        private nint _originalWndProc;
         private WndProcDelegate? _trayWndProc;
         private NOTIFYICONDATAW? _trayIconData;
-        private DestroyIconSafeHandle? _largeIcon;
-        private DestroyMenuSafeHandle? _popupMenu;
+        private nint _largeIcon;
+        private nint _popupMenu;
 
         public TrayIconService(
             ISettingsUtils settingsUtils,
@@ -66,7 +66,7 @@ namespace PowerDisplay.Helpers
             // TaskbarCreated is the message that's broadcast when explorer.exe
             // restarts. We need to know when that happens to be able to bring our
             // notification area icon back
-            WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+            WM_TASKBAR_RESTART = RegisterWindowMessageNative("TaskbarCreated");
         }
 
         public void SetupTrayIcon(bool? showSystemTrayIcon = null)
@@ -79,7 +79,7 @@ namespace PowerDisplay.Helpers
                 if (_window is null)
                 {
                     _window = new Window();
-                    _hwnd = new HWND(WindowNative.GetWindowHandle(_window));
+                    _hwnd = WindowNative.GetWindowHandle(_window);
 
                     // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
                     // member (and instead like, use a local), then the pointer we marshal
@@ -87,7 +87,7 @@ namespace PowerDisplay.Helpers
                     // and our **WindProc will explode**.
                     _trayWndProc = WindowProc;
                     var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
-                    _originalWndProc = PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer);
+                    _originalWndProc = SetWindowLongPtrNative(_hwnd, GWL_WNDPROC, hotKeyPrcPointer);
                 }
 
                 if (_trayIconData is null)
@@ -102,11 +102,11 @@ namespace PowerDisplay.Helpers
                         _trayIconData = new NOTIFYICONDATAW()
                         {
                             cbSize = (uint)sizeof(NOTIFYICONDATAW),
-                            hWnd = _hwnd,
+                            hWnd = new HWND(_hwnd),
                             uID = MY_NOTIFY_ID,
                             uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
                             uCallbackMessage = WM_TRAY_ICON,
-                            hIcon = (HICON)_largeIcon.DangerousGetHandle(),
+                            hIcon = new HICON(_largeIcon),
                             szTip = GetString("AppName"),
                         };
                     }
@@ -115,13 +115,16 @@ namespace PowerDisplay.Helpers
                 var d = (NOTIFYICONDATAW)_trayIconData;
 
                 // Add the notification icon
-                PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
-
-                if (_popupMenu is null)
+                unsafe
                 {
-                    _popupMenu = PInvoke.CreatePopupMenu_SafeHandle();
-                    PInvoke.InsertMenu(_popupMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, PInvoke.WM_USER + 1, GetString("TrayMenu_Settings"));
-                    PInvoke.InsertMenu(_popupMenu, 1, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, PInvoke.WM_USER + 2, GetString("TrayMenu_Exit"));
+                    Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &d);
+                }
+
+                if (_popupMenu == 0)
+                {
+                    _popupMenu = CreatePopupMenu();
+                    InsertMenuNative(_popupMenu, 0, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 1, GetString("TrayMenu_Settings"));
+                    InsertMenuNative(_popupMenu, 1, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 2, GetString("TrayMenu_Exit"));
                 }
             }
             else
@@ -135,29 +138,32 @@ namespace PowerDisplay.Helpers
             if (_trayIconData is not null)
             {
                 var d = (NOTIFYICONDATAW)_trayIconData;
-                if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
+                unsafe
                 {
-                    _trayIconData = null;
+                    if (Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_DELETE, &d))
+                    {
+                        _trayIconData = null;
+                    }
                 }
             }
 
-            if (_popupMenu is not null)
+            if (_popupMenu != 0)
             {
-                _popupMenu.Close();
-                _popupMenu = null;
+                DestroyMenu(_popupMenu);
+                _popupMenu = 0;
             }
 
-            if (_largeIcon is not null)
+            if (_largeIcon != 0)
             {
-                _largeIcon.Close();
-                _largeIcon = null;
+                DestroyIcon(_largeIcon);
+                _largeIcon = 0;
             }
 
             if (_window is not null)
             {
                 _window.Close();
                 _window = null;
-                _hwnd = HWND.Null;
+                _hwnd = 0;
             }
         }
 
@@ -180,18 +186,18 @@ namespace PowerDisplay.Helpers
             }
         }
 
-        private DestroyIconSafeHandle GetAppIconHandle()
+        private nint GetAppIconHandle()
         {
             var exePath = Path.Combine(AppContext.BaseDirectory, "PowerToys.PowerDisplay.exe");
-            PInvoke.ExtractIconEx(exePath, 0, out var largeIcon, out _, 1);
+            ExtractIconExNative(exePath, 0, out var largeIcon, out _, 1);
             return largeIcon;
         }
 
-        private LRESULT WindowProc(
-            HWND hwnd,
+        private nint WindowProc(
+            nint hwnd,
             uint uMsg,
-            WPARAM wParam,
-            LPARAM lParam)
+            nuint wParam,
+            nint lParam)
         {
             switch (uMsg)
             {
@@ -237,15 +243,15 @@ namespace PowerDisplay.Helpers
                     }
                     else if (uMsg == WM_TRAY_ICON)
                     {
-                        switch ((uint)lParam.Value)
+                        switch ((uint)lParam)
                         {
                             case PInvoke.WM_RBUTTONUP:
                                 {
-                                    if (_popupMenu is not null)
+                                    if (_popupMenu != 0)
                                     {
-                                        PInvoke.GetCursorPos(out var cursorPos);
-                                        PInvoke.SetForegroundWindow(_hwnd);
-                                        PInvoke.TrackPopupMenuEx(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, cursorPos.X, cursorPos.Y, _hwnd, null);
+                                        GetCursorPos(out var cursorPos);
+                                        SetForegroundWindow(_hwnd);
+                                        TrackPopupMenuExNative(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, cursorPos.X, cursorPos.Y, _hwnd, 0);
                                     }
                                 }
 
@@ -261,16 +267,62 @@ namespace PowerDisplay.Helpers
                     break;
             }
 
-            nint result;
-            unsafe
-            {
-                result = CallWindowProcIntPtr(_originalWndProc, (nint)hwnd.Value, uMsg, wParam.Value, lParam.Value);
-            }
-
-            return new LRESULT(result);
+            return CallWindowProcIntPtr(_originalWndProc, hwnd, uMsg, wParam, lParam);
         }
 
         [LibraryImport("user32.dll", EntryPoint = "CallWindowProcW")]
         private static partial nint CallWindowProcIntPtr(IntPtr lpPrevWndFunc, nint hWnd, uint msg, nuint wParam, nint lParam);
+
+        [LibraryImport("user32.dll", EntryPoint = "RegisterWindowMessageW", StringMarshalling = StringMarshalling.Utf16)]
+        private static partial uint RegisterWindowMessageNative(string lpString);
+
+        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+        private static partial nint SetWindowLongPtrNative(nint hWnd, int nIndex, nint dwNewLong);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GetCursorPos(out POINT lpPoint);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool SetForegroundWindow(nint hWnd);
+
+        // Shell APIs - use uint for enums and unsafe pointer for struct
+        [LibraryImport("shell32.dll", EntryPoint = "Shell_NotifyIconW")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static unsafe partial bool Shell_NotifyIconNative(uint dwMessage, NOTIFYICONDATAW* lpData);
+
+        [LibraryImport("shell32.dll", EntryPoint = "ExtractIconExW", StringMarshalling = StringMarshalling.Utf16)]
+        private static partial uint ExtractIconExNative(string lpszFile, int nIconIndex, out nint phiconLarge, out nint phiconSmall, uint nIcons);
+
+        // Menu APIs
+        [LibraryImport("user32.dll")]
+        private static partial nint CreatePopupMenu();
+
+        [LibraryImport("user32.dll", EntryPoint = "InsertMenuW", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool InsertMenuNative(nint hMenu, uint uPosition, uint uFlags, nuint uIDNewItem, string? lpNewItem);
+
+        [LibraryImport("user32.dll", EntryPoint = "TrackPopupMenuEx")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool TrackPopupMenuExNative(nint hMenu, uint uFlags, int x, int y, nint hwnd, nint lptpm);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool DestroyMenu(nint hMenu);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool DestroyIcon(nint hIcon);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        // GWL_WNDPROC constant
+        private const int GWL_WNDPROC = -4;
     }
 }

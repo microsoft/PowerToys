@@ -1,19 +1,14 @@
-// TrayIcon APIs
-Shell_NotifyIcon
-WM_USER
-WM_WINDOWPOSCHANGING
-RegisterWindowMessageW
-ExtractIconEx
+// Types/Structs only - functions use LibraryImport
+NOTIFYICONDATAW
+NOTIFY_ICON_MESSAGE
+NOTIFY_ICON_DATA_FLAGS
+MENU_ITEM_FLAGS
 TRACK_POPUP_MENU_FLAGS
+
+// Constants for window messages
+WM_USER
 WM_COMMAND
 WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK
-CreatePopupMenu
-TrackPopupMenuEx
-InsertMenu
-SetWindowLongPtr
-CallWindowProc
-GetCursorPos
-SetForegroundWindow
-WNDPROC
+WM_WINDOWPOSCHANGING
