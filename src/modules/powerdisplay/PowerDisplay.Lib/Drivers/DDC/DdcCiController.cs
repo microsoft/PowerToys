@@ -48,8 +48,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Check if the specified monitor can be controlled.
-        /// Uses quick connection check if capabilities are already cached,
-        /// otherwise falls back to full validation.
+        /// Uses quick connection check since capabilities are already cached during discovery.
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -62,18 +61,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return false;
                     }
 
-                    // If monitor already has cached capabilities with brightness support,
-                    // use quick connection check instead of full capabilities retrieval
-                    if (monitor.VcpCapabilitiesInfo != null &&
-                        monitor.VcpCapabilitiesInfo.SupportsVcpCode(NativeConstants.VcpCodeBrightness))
-                    {
-                        return DdcCiNative.QuickConnectionCheck(physicalHandle);
-                    }
-
-                    // Fall back to full validation for monitors without cached capabilities
-#pragma warning disable CS0618 // Suppress obsolete warning - needed for backward compatibility
-                    return DdcCiNative.ValidateDdcCiConnection(physicalHandle).IsValid;
-#pragma warning restore CS0618
+                    // Capabilities are always cached during DiscoverMonitorsAsync Phase 2,
+                    // so we can use quick connection check instead of full validation
+                    return DdcCiNative.QuickConnectionCheck(physicalHandle);
                 },
                 cancellationToken);
         }

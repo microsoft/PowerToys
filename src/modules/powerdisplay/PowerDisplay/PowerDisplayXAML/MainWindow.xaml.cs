@@ -412,29 +412,6 @@ namespace PowerDisplay
             }
         }
 
-        private void OnDisableClick(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Disable/enable all monitor controls
-                if (_viewModel != null)
-                {
-                    foreach (var monitor in _viewModel.Monitors)
-                    {
-                        monitor.IsAvailable = !monitor.IsAvailable;
-                    }
-
-                    _viewModel.StatusText = _viewModel.Monitors.Any(m => m.IsAvailable)
-                        ? "Display control enabled"
-                        : "Display control disabled";
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"OnDisableClick failed: {ex}");
-            }
-        }
-
         private void OnSettingsClick(object sender, RoutedEventArgs e)
         {
             // TO DO: Open PowerDisplay settings screen

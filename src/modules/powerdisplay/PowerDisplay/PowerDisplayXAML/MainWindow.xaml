@@ -304,13 +304,6 @@
                                                   FontSize=16}"
                             Style="{StaticResource SubtleButtonStyle}" />
                         <Button
-                            x:Name="DisableButton"
-                            x:Uid="DisableControlTooltip"
-                            Click="OnDisableClick"
-                            Content="{ui:FontIcon Glyph=&#xE7E8;,
-                                                  FontSize=16}"
-                            Style="{StaticResource SubtleButtonStyle}" />
-                        <Button
                             x:Name="RefreshButton"
                             x:Uid="RefreshTooltip"
                             Click="OnRefreshClick"
