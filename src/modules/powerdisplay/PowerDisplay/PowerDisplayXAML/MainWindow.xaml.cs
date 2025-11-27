@@ -157,7 +157,7 @@ namespace PowerDisplay
             // Auto-hide window when it loses focus (deactivated)
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                HideWindow();
+                // HideWindow();
             }
         }
 
