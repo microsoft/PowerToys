@@ -67,6 +67,7 @@ internal static class CommandsHelper
             case SettingsWindow.Workspaces:
                 return new List<ICommandContextItem>()
                             {
+                                new CommandContextItem(new WorkspacesListPage()),
                                 new CommandContextItem(new LaunchCommand(entry)),
                             };
             default:
