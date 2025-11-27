@@ -30,7 +30,12 @@ public partial class MainListPage : DynamicListPage,
 {
     private readonly string[] _specialFallbacks = [
         "com.microsoft.cmdpal.builtin.run",
-        "com.microsoft.cmdpal.builtin.calculator"
+        "com.microsoft.cmdpal.builtin.calculator",
+        "com.microsoft.cmdpal.builtin.system",
+        "com.microsoft.cmdpal.builtin.core",
+        "com.microsoft.cmdpal.builtin.websearch",
+        "com.microsoft.cmdpal.builtin.windowssettings",
+        "com.microsoft.cmdpal.builtin.datetime",
     ];
 
     private readonly IServiceProvider _serviceProvider;

@@ -48,6 +48,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>../../../src/</AdditionalIncludeDirectories>
+      <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -55,10 +56,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\deps\cziplib\src\zip.c">
-      <!-- Disabling warnings for external code -->
-      <DisableSpecificWarnings>4706;26451;4267;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-    </ClCompile>
     <ClCompile Include="EventViewer.cpp" />
     <ClCompile Include="InstallationFolder.cpp" />
     <ClCompile Include="Package.cpp" />
@@ -82,8 +79,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\deps\cziplib\src\miniz.h" />
-    <ClInclude Include="..\..\..\deps\cziplib\src\zip.h" />
     <ClInclude Include="EventViewer.h" />
     <ClInclude Include="InstallationFolder.h" />
     <ClInclude Include="Package.h" />

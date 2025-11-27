@@ -54,6 +54,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\DscResources.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\DscResources.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\FileExplorerPreview.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\FileLocksmith.wxs.bk""""
@@ -109,6 +110,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -121,6 +123,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>

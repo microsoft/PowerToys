@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
+using ImageResizer.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
@@ -101,7 +101,9 @@ namespace ImageResizer.Models
         private static ResizeBatch CreateBatch(Action<string> executeAction)
         {
             var mock = new Mock<ResizeBatch> { CallBase = true };
-            mock.Protected().Setup("Execute", ItExpr.IsAny<string>()).Callback(executeAction);
+            mock.Protected()
+                .Setup("Execute", ItExpr.IsAny<string>(), ItExpr.IsAny<Settings>())
+                .Callback((string file, Settings settings) => executeAction(file));
 
             return mock.Object;
         }

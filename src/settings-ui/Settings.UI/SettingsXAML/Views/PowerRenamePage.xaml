@@ -22,7 +22,10 @@
                         Name="PowerRenameToggleEnable"
                         x:Uid="PowerRename_Toggle_Enable"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleEnable, Path=Header}"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -30,7 +33,10 @@
                         Name="PowerRenameToggleContextMenu"
                         x:Uid="PowerRename_Toggle_ContextMenu"
                         IsExpanded="False">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleContextMenu, Path=Header}"
+                            SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="PowerRename_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="PowerRename_Toggle_ExtendedContextMenu" />
                         </ComboBox>
@@ -53,7 +59,10 @@
                         Name="PowerRenameToggleAutoComplete"
                         x:Uid="PowerRename_Toggle_AutoComplete"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MRUEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleAutoComplete, Path=Header}"
+                            IsOn="{x:Bind ViewModel.MRUEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="PowerRenameToggleMaxDispListNum"
@@ -61,6 +70,7 @@
                                 IsEnabled="{x:Bind ViewModel.GlobalAndMruEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.Name="{Binding ElementName=PowerRenameToggleMaxDispListNum, Path=Header}"
                                     Maximum="20"
                                     Minimum="0"
                                     SpinButtonPlacementMode="Compact"
@@ -73,12 +83,18 @@
                         Name="PowerRenameToggleRestoreFlagsOnLaunch"
                         x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
                         HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleRestoreFlagsOnLaunch, Path=Header}"
+                            IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="PowerRename_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="PowerRenameToggleUseBoostLib" x:Uid="PowerRename_Toggle_UseBoostLib">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="{Binding ElementName=PowerRenameToggleUseBoostLib, Path=Header}"
+                            IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
