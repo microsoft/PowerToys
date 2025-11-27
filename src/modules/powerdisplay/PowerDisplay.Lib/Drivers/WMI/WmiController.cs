@@ -113,12 +113,14 @@ namespace PowerDisplay.Common.Drivers.WMI
                     foreach (var obj in results)
                     {
                         // Call WmiSetBrightness method
-                        // Parameters: Timeout (uint32), Brightness (byte)
+                        // Parameters: Timeout (uint32), Brightness (uint8)
+                        // Note: Using int instead of byte to avoid WBEM_E_TYPE_MISMATCH (0x80041005)
+                        // Some WMI driver implementations expect VT_I4 instead of VT_UI1
                         using (WmiMethod method = obj.GetMethod("WmiSetBrightness"))
                         using (WmiMethodParameters inParams = method.CreateInParameters())
                         {
                             inParams.SetPropertyValue("Timeout", 0u);
-                            inParams.SetPropertyValue("Brightness", (byte)brightness);
+                            inParams.SetPropertyValue("Brightness", brightness);
 
                             uint result = obj.ExecuteMethod<uint>(
                                 method,
@@ -366,7 +368,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                         using (WmiMethodParameters inParams = method.CreateInParameters())
                         {
                             inParams.SetPropertyValue("Timeout", 0u);
-                            inParams.SetPropertyValue("Brightness", (byte)50);
+                            inParams.SetPropertyValue("Brightness", 50);
                             obj.ExecuteMethod<uint>(method, inParams, out WmiMethodParameters outParams);
                             return false; // If successful, no elevation required
                         }
