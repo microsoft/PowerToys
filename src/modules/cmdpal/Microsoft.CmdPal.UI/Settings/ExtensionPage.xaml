@@ -129,11 +129,22 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Uid="ExtensionFallbackCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                                     <HyperlinkButton
+                                        x:Uid="ManageFallbackRankAutomation"
                                         Grid.Column="1"
+                                        Margin="0,0,0,4"
                                         Padding="0"
-                                        VerticalAlignment="Center"
-                                        Click="RankButton_Click"
-                                        Content="Rank" />
+                                        VerticalAlignment="Bottom"
+                                        Click="RankButton_Click">
+                                        <HyperlinkButton.Content>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    FontSize="16"
+                                                    Glyph="&#xE8CB;" />
+                                                <TextBlock x:Uid="ManageFallbackRank" />
+                                            </StackPanel>
+                                        </HyperlinkButton.Content>
+                                    </HyperlinkButton>
                                 </Grid>
 
                                 <ItemsRepeater
@@ -239,23 +250,35 @@
         </ScrollViewer>
         <ContentDialog
             x:Name="FallbackRankerDialog"
-            Title="Rank fallbacks"
             Width="420"
             MinWidth="420"
             PrimaryButtonText="OK">
-            <Grid Width="420" MinWidth="420">
+            <ContentDialog.Title>
+                <TextBlock x:Uid="ManageFallbackRank" />
+            </ContentDialog.Title>
+            <ContentDialog.Resources>
+                <x:Double x:Key="ContentDialogMaxWidth">800</x:Double>
+            </ContentDialog.Resources>
+            <Grid Width="560" MinWidth="420">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock
+                    x:Uid="ManageFallbackOrderDialogDescription"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Drag items to set which fallback commands run first; commands at the top take priority."
                     TextWrapping="Wrap" />
+                <Rectangle
+                    Grid.Row="1"
+                    Height="1"
+                    Margin="0,16,0,16"
+                    HorizontalAlignment="Stretch"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 <cpcontrols:FallbackRanker
                     x:Name="FallbackRanker"
-                    Grid.Row="1"
-                    Margin="-24,12,-24,0" />
+                    Grid.Row="2"
+                    Margin="-24,0,-24,0" />
             </Grid>
         </ContentDialog>
     </Grid>

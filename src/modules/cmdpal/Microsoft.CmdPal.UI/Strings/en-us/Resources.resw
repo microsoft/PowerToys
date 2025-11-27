@@ -529,4 +529,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
     <value>Show results on queries without direct activation command</value>
   </data>
+  <data name="ManageFallbackRankAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Manage fallback order</value>
+  </data>
+  <data name="ManageFallbackRank.Text" xml:space="preserve">
+    <value>Manage fallback order</value>
+  </data>
+  <data name="ManageFallbackOrderDialogDescription.Text" xml:space="preserve">
+    <value>Drag items to set which fallback commands run first; commands at the top take priority.</value>
+  </data>
 </root>
