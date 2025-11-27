@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CmdPal.Ext.PowerToys.Services;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.Commands;
 
@@ -19,28 +19,12 @@ internal sealed partial class LaunchWorkspaceCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        LaunchWorkspace();
-        return CommandResult.KeepOpen();
-    }
-
-    private bool LaunchWorkspace()
-    {
-        var powertoysBaseDir = PowerToysPathResolver.GetPowerToysInstallPath();
-        if (string.IsNullOrEmpty(powertoysBaseDir))
+        var result = ModuleServices.Workspaces().LaunchWorkspaceAsync(_workspaceId).GetAwaiter().GetResult();
+        if (!result.Success)
         {
-            return false;
+            return CommandResult.ShowToast(result.Error ?? "Failed to launch workspace.");
         }
 
-        var launcherPath = Path.Combine(powertoysBaseDir, "PowerToys.WorkspacesLauncher.exe");
-
-        var process = new System.Diagnostics.Process();
-        process.StartInfo.FileName = launcherPath;
-        process.StartInfo.Arguments = _workspaceId;
-        process.StartInfo.UseShellExecute = true;
-
-        // process.StartInfo.Verb = "runas"; // run as admin
-        process.Start();
-
-        return true;
+        return CommandResult.KeepOpen();
     }
 }

@@ -18,6 +18,7 @@
 		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\..\..\..\common\PowerToys.ModuleContracts\PowerToys.ModuleContracts.csproj" />
 		<ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 	</ItemGroup>
 
