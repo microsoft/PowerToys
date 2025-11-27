@@ -241,6 +241,110 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Get current input source using VCP code 0x60
+        /// Returns the raw VCP value (e.g., 0x11 for HDMI-1)
+        /// </summary>
+        public async Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(
+                () =>
+                {
+                    if (monitor.Handle == IntPtr.Zero)
+                    {
+                        Logger.LogDebug($"[{monitor.Id}] Invalid handle for input source read");
+                        return BrightnessInfo.Invalid;
+                    }
+
+                    // Try VCP code 0x60 (Input Source)
+                    if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeInputSource, out uint current, out uint max))
+                    {
+                        var sourceName = VcpValueNames.GetFormattedName(0x60, (int)current);
+                        Logger.LogInfo($"[{monitor.Id}] Input source via 0x60: {sourceName}");
+                        return new BrightnessInfo((int)current, 0, (int)max);
+                    }
+
+                    Logger.LogWarning($"[{monitor.Id}] Failed to read input source (0x60 not supported)");
+                    return BrightnessInfo.Invalid;
+                },
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Set input source using VCP code 0x60
+        /// </summary>
+        /// <param name="monitor">Monitor to control</param>
+        /// <param name="inputSource">VCP input source value (e.g., 0x11 for HDMI-1)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        public async Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(
+                () =>
+                {
+                    if (monitor.Handle == IntPtr.Zero)
+                    {
+                        return MonitorOperationResult.Failure("Invalid monitor handle");
+                    }
+
+                    try
+                    {
+                        // Validate value is in supported list if capabilities available
+                        var capabilities = monitor.VcpCapabilitiesInfo;
+                        if (capabilities != null && capabilities.SupportsVcpCode(0x60))
+                        {
+                            var supportedValues = capabilities.GetSupportedValues(0x60);
+                            if (supportedValues?.Count > 0 && !supportedValues.Contains(inputSource))
+                            {
+                                var supportedList = string.Join(", ", supportedValues.Select(v => $"0x{v:X2}"));
+                                Logger.LogWarning($"[{monitor.Id}] Input source 0x{inputSource:X2} not in supported list: [{supportedList}]");
+                                return MonitorOperationResult.Failure($"Input source 0x{inputSource:X2} not supported by monitor");
+                            }
+                        }
+
+                        // Set VCP 0x60 value
+                        var sourceName = VcpValueNames.GetFormattedName(0x60, inputSource);
+                        if (DdcCiNative.TrySetVCPFeature(monitor.Handle, VcpCodeInputSource, (uint)inputSource))
+                        {
+                            Logger.LogInfo($"[{monitor.Id}] Set input source to {sourceName} via 0x60");
+
+                            // Verify the change by reading back the value after a short delay
+                            System.Threading.Thread.Sleep(100);
+                            if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeInputSource, out uint verifyValue, out uint _))
+                            {
+                                var verifyName = VcpValueNames.GetFormattedName(0x60, (int)verifyValue);
+                                if (verifyValue == (uint)inputSource)
+                                {
+                                    Logger.LogInfo($"[{monitor.Id}] Input source verified: {verifyName} (0x{verifyValue:X2})");
+                                }
+                                else
+                                {
+                                    Logger.LogWarning($"[{monitor.Id}] Input source verification mismatch! Expected 0x{inputSource:X2}, got {verifyName} (0x{verifyValue:X2}). Monitor may have refused to switch (no signal on target port?)");
+                                }
+                            }
+                            else
+                            {
+                                Logger.LogWarning($"[{monitor.Id}] Could not verify input source change");
+                            }
+
+                            // Update the monitor model with the new value
+                            monitor.CurrentInputSource = inputSource;
+
+                            return MonitorOperationResult.Success();
+                        }
+
+                        var lastError = GetLastError();
+                        Logger.LogError($"[{monitor.Id}] Failed to set input source, error: {lastError}");
+                        return MonitorOperationResult.Failure($"Failed to set input source via DDC/CI", (int)lastError);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"[{monitor.Id}] Exception setting input source: {ex.Message}");
+                        return MonitorOperationResult.Failure($"Exception setting input source: {ex.Message}");
+                    }
+                },
+                cancellationToken);
+        }
+
+        /// <summary>
         /// Get monitor capabilities string with retry logic
         /// </summary>
         public async Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)

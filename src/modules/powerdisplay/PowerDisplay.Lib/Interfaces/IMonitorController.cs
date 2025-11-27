@@ -113,6 +113,23 @@ namespace PowerDisplay.Common.Interfaces
         Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets current input source using VCP 0x60
+        /// </summary>
+        /// <param name="monitor">Monitor object</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>VCP input source value (e.g., 0x11 for HDMI-1)</returns>
+        Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sets input source using VCP 0x60
+        /// </summary>
+        /// <param name="monitor">Monitor object</param>
+        /// <param name="inputSource">VCP input source value (e.g., 0x11 for HDMI-1)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Operation result</returns>
+        Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets monitor capabilities string (DDC/CI)
         /// </summary>
         /// <param name="monitor">Monitor object</param>

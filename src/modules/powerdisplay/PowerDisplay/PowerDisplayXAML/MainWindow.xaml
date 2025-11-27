@@ -98,13 +98,15 @@
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:MonitorViewModel">
                                         <StackPanel HorizontalAlignment="Stretch" Spacing="4">
-                                            <!--  Monitor Name with Icon  -->
+                                            <!--  Monitor Name with Icon and More Actions  -->
                                             <Grid HorizontalAlignment="Stretch">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="16" />
                                                     <ColumnDefinition Width="16" />
                                                     <!--  Spacing  -->
                                                     <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <!--  More Actions Button  -->
                                                 </Grid.ColumnDefinitions>
                                                 <FontIcon
                                                     x:Uid="MonitorTooltip"
@@ -117,6 +119,63 @@
                                                     VerticalAlignment="Center"
                                                     FontWeight="SemiBold"
                                                     Text="{x:Bind DisplayName, Mode=OneWay}" />
+
+                                                <!--  More Actions Button (only visible when input source switching is supported)  -->
+                                                <Button
+                                                    x:Name="MoreActionsButton"
+                                                    Grid.Column="3"
+                                                    Padding="4"
+                                                    VerticalAlignment="Center"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Visibility="{x:Bind ConvertBoolToVisibility(SupportsInputSource), Mode=OneWay}">
+                                                    <ToolTipService.ToolTip>
+                                                        <TextBlock Text="More actions" />
+                                                    </ToolTipService.ToolTip>
+                                                    <FontIcon FontSize="12" Glyph="&#xE712;" />
+                                                    <Button.Flyout>
+                                                        <Flyout Placement="BottomEdgeAlignedRight">
+                                                            <StackPanel MinWidth="160" Spacing="4">
+                                                                <TextBlock
+                                                                    Margin="12,4,12,8"
+                                                                    FontWeight="SemiBold"
+                                                                    Text="Input source" />
+                                                                <ItemsRepeater ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}">
+                                                                    <ItemsRepeater.Layout>
+                                                                        <StackLayout Orientation="Vertical" Spacing="0" />
+                                                                    </ItemsRepeater.Layout>
+                                                                    <ItemsRepeater.ItemTemplate>
+                                                                        <DataTemplate x:DataType="vm:InputSourceItem">
+                                                                            <Button
+                                                                                Padding="0"
+                                                                                HorizontalAlignment="Stretch"
+                                                                                HorizontalContentAlignment="Stretch"
+                                                                                Style="{StaticResource SubtleButtonStyle}"
+                                                                                Tag="{x:Bind}"
+                                                                                Click="InputSourceItem_Click">
+                                                                                <Grid MinHeight="32" MinWidth="140">
+                                                                                    <!--  Selection indicator (left blue bar)  -->
+                                                                                    <Border
+                                                                                        Width="3"
+                                                                                        HorizontalAlignment="Left"
+                                                                                        VerticalAlignment="Stretch"
+                                                                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                                                        CornerRadius="1.5"
+                                                                                        Visibility="{x:Bind SelectionVisibility}" />
+                                                                                    <TextBlock
+                                                                                        Margin="12,0,12,0"
+                                                                                        HorizontalAlignment="Left"
+                                                                                        VerticalAlignment="Center"
+                                                                                        Text="{x:Bind Name}" />
+                                                                                </Grid>
+                                                                            </Button>
+                                                                        </DataTemplate>
+                                                                    </ItemsRepeater.ItemTemplate>
+                                                                </ItemsRepeater>
+                                                            </StackPanel>
+                                                        </Flyout>
+                                                    </Button.Flyout>
+                                                </Button>
                                             </Grid>
                                             <!--  Brightness Control  -->
                                             <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">

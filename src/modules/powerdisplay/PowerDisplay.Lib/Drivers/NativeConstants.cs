@@ -49,6 +49,14 @@ namespace PowerDisplay.Common.Drivers
         public const byte VcpCodeSelectColorPreset = 0x14;
 
         /// <summary>
+        /// VCP code: Input Source (0x60)
+        /// Standard VESA MCCS input source selection.
+        /// Supports values like: 0x0F=DisplayPort-1, 0x10=DisplayPort-2, 0x11=HDMI-1, 0x12=HDMI-2, 0x1B=USB-C.
+        /// Note: Actual supported values depend on monitor capabilities.
+        /// </summary>
+        public const byte VcpCodeInputSource = 0x60;
+
+        /// <summary>
         /// VCP code: VCP version
         /// </summary>
         public const byte VcpCodeVcpVersion = 0xDF;

@@ -669,6 +669,75 @@ namespace PowerDisplay
             Logger.LogDebug($"[UI] ViewModel property {propertyName} updated successfully");
         }
 
+        /// <summary>
+        /// Input source item click handler - switches the monitor input source
+        /// </summary>
+        private async void InputSourceItem_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.LogInfo("[UI] InputSourceItem_Click: Event triggered!");
+
+            if (sender is not Button button)
+            {
+                Logger.LogWarning("[UI] InputSourceItem_Click: sender is not Button");
+                return;
+            }
+
+            Logger.LogInfo($"[UI] InputSourceItem_Click: Button clicked, Tag type = {button.Tag?.GetType().Name ?? "null"}, DataContext type = {button.DataContext?.GetType().Name ?? "null"}");
+
+            // Get the InputSourceItem from Tag (not DataContext - Flyout doesn't inherit DataContext properly)
+            var inputSourceItem = button.Tag as InputSourceItem;
+            if (inputSourceItem == null)
+            {
+                Logger.LogWarning("[UI] InputSourceItem_Click: Tag is not InputSourceItem");
+                return;
+            }
+
+            Logger.LogInfo($"[UI] InputSourceItem_Click: InputSourceItem found - Value=0x{inputSourceItem.Value:X2}, Name={inputSourceItem.Name}, MonitorId={inputSourceItem.MonitorId}");
+
+            int inputSourceValue = inputSourceItem.Value;
+            string monitorId = inputSourceItem.MonitorId;
+
+            // Use MonitorId for direct lookup (Flyout popup is not in visual tree)
+            MonitorViewModel? monitorVm = null;
+
+            if (!string.IsNullOrEmpty(monitorId) && _viewModel != null)
+            {
+                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == monitorId);
+                Logger.LogInfo($"[UI] InputSourceItem_Click: Found MonitorViewModel by ID: {monitorVm?.Name ?? "null"}");
+            }
+
+            // Fallback: search through all monitors (for backwards compatibility)
+            if (monitorVm == null && _viewModel != null)
+            {
+                Logger.LogInfo("[UI] InputSourceItem_Click: MonitorId lookup failed, trying fallback search");
+                foreach (var vm in _viewModel.Monitors)
+                {
+                    if (vm.SupportsInputSource && vm.AvailableInputSources != null)
+                    {
+                        if (vm.AvailableInputSources.Any(s => s.Value == inputSourceValue))
+                        {
+                            monitorVm = vm;
+                            Logger.LogInfo($"[UI] InputSourceItem_Click: Found MonitorViewModel by fallback: {vm.Name}");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (monitorVm == null)
+            {
+                Logger.LogWarning("[UI] InputSourceItem_Click: Could not find MonitorViewModel");
+                return;
+            }
+
+            Logger.LogInfo($"[UI] Switching input source for {monitorVm.Name} to 0x{inputSourceValue:X2} ({inputSourceItem.Name})");
+
+            // Set the input source
+            await monitorVm.SetInputSourceAsync(inputSourceValue);
+
+            Logger.LogInfo("[UI] InputSourceItem_Click: SetInputSourceAsync completed");
+        }
+
         public void Dispose()
         {
             _viewModel?.Dispose();

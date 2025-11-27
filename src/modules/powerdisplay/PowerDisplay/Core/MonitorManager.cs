@@ -170,6 +170,12 @@ namespace PowerDisplay.Core
             if (monitor.CommunicationMethod?.Contains("DDC", StringComparison.OrdinalIgnoreCase) == true)
             {
                 await InitializeMonitorCapabilitiesAsync(monitor, controller, cancellationToken);
+
+                // Initialize input source if supported
+                if (monitor.SupportsInputSource)
+                {
+                    await InitializeMonitorInputSourceAsync(monitor, controller, cancellationToken);
+                }
             }
 
             return monitor;
@@ -232,6 +238,29 @@ namespace PowerDisplay.Core
             catch (Exception ex)
             {
                 Logger.LogWarning($"Failed to get capabilities for monitor {monitor.Id}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Initialize monitor input source value.
+        /// </summary>
+        private async Task InitializeMonitorInputSourceAsync(
+            Monitor monitor,
+            IMonitorController controller,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var inputSourceInfo = await controller.GetInputSourceAsync(monitor, cancellationToken);
+                if (inputSourceInfo.IsValid)
+                {
+                    monitor.CurrentInputSource = inputSourceInfo.Current;
+                    Logger.LogInfo($"[{monitor.Id}] Input source initialized: {monitor.InputSourceName} (0x{monitor.CurrentInputSource:X2})");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to get input source for monitor {monitor.Id}: {ex.Message}");
             }
         }
 
@@ -432,6 +461,70 @@ namespace PowerDisplay.Core
                 cancellationToken);
 
         /// <summary>
+        /// Get current input source for a monitor
+        /// </summary>
+        public async Task<BrightnessInfo> GetInputSourceAsync(string monitorId, CancellationToken cancellationToken = default)
+        {
+            var monitor = GetMonitor(monitorId);
+            if (monitor == null)
+            {
+                return BrightnessInfo.Invalid;
+            }
+
+            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
+            if (controller == null)
+            {
+                return BrightnessInfo.Invalid;
+            }
+
+            try
+            {
+                return await controller.GetInputSourceAsync(monitor, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogDebug($"GetInputSourceAsync failed: {ex.Message}");
+                return BrightnessInfo.Invalid;
+            }
+        }
+
+        /// <summary>
+        /// Set input source for a monitor
+        /// </summary>
+        public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
+            => ExecuteMonitorOperationAsync(
+                monitorId,
+                inputSource,
+                (ctrl, mon, val, ct) => ctrl.SetInputSourceAsync(mon, val, ct),
+                (mon, val) => mon.CurrentInputSource = val,
+                cancellationToken);
+
+        /// <summary>
+        /// Initialize input source for a monitor (async operation)
+        /// </summary>
+        public async Task InitializeInputSourceAsync(string monitorId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var sourceInfo = await GetInputSourceAsync(monitorId, cancellationToken);
+                if (sourceInfo.IsValid)
+                {
+                    var monitor = GetMonitor(monitorId);
+                    if (monitor != null)
+                    {
+                        // Store raw VCP 0x60 value (e.g., 0x11 for HDMI-1)
+                        monitor.CurrentInputSource = sourceInfo.Current;
+                        Logger.LogInfo($"[{monitorId}] Input source initialized: {monitor.InputSourceName}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to initialize input source for {monitorId}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Initialize color temperature for a monitor (async operation)
         /// </summary>
         public async Task InitializeColorTemperatureAsync(string monitorId, CancellationToken cancellationToken = default)
@@ -562,7 +655,14 @@ namespace PowerDisplay.Core
                 Logger.LogDebug($"[{monitor.Id}] Color temperature support detected via VCP 0x14");
             }
 
-            Logger.LogInfo($"[{monitor.Id}] Capabilities updated: Contrast={monitor.SupportsContrast}, Volume={monitor.SupportsVolume}, ColorTemp={monitor.SupportsColorTemperature}");
+            // Check for Input Source support (VCP 0x60)
+            if (vcpCaps.SupportsVcpCode(NativeConstants.VcpCodeInputSource))
+            {
+                var supportedSources = vcpCaps.GetSupportedValues(0x60);
+                Logger.LogDebug($"[{monitor.Id}] Input source support detected via VCP 0x60: {supportedSources?.Count ?? 0} sources");
+            }
+
+            Logger.LogInfo($"[{monitor.Id}] Capabilities updated: Contrast={monitor.SupportsContrast}, Volume={monitor.SupportsVolume}, ColorTemp={monitor.SupportsColorTemperature}, InputSource={monitor.SupportsInputSource}");
         }
 
         public void Dispose()

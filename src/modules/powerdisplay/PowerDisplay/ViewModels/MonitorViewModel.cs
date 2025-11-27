@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -376,6 +378,103 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
     /// </summary>
     public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
+
+    /// <summary>
+    /// Whether this monitor supports input source switching via VCP 0x60
+    /// </summary>
+    public bool SupportsInputSource => _monitor.SupportsInputSource;
+
+    /// <summary>
+    /// Gets current input source VCP value (from VCP code 0x60)
+    /// </summary>
+    public int CurrentInputSource => _monitor.CurrentInputSource;
+
+    /// <summary>
+    /// Gets human-readable current input source name (e.g., "HDMI-1", "DisplayPort-1")
+    /// </summary>
+    public string CurrentInputSourceName => _monitor.InputSourceName;
+
+    private List<InputSourceItem>? _availableInputSources;
+
+    /// <summary>
+    /// Gets available input sources for this monitor
+    /// </summary>
+    public List<InputSourceItem>? AvailableInputSources
+    {
+        get
+        {
+            if (_availableInputSources == null && SupportsInputSource)
+            {
+                RefreshAvailableInputSources();
+            }
+
+            return _availableInputSources;
+        }
+    }
+
+    /// <summary>
+    /// Refresh the list of available input sources based on monitor capabilities
+    /// </summary>
+    private void RefreshAvailableInputSources()
+    {
+        var supportedSources = _monitor.SupportedInputSources;
+        if (supportedSources == null || supportedSources.Count == 0)
+        {
+            _availableInputSources = null;
+            return;
+        }
+
+        _availableInputSources = supportedSources.Select(value => new InputSourceItem
+        {
+            Value = value,
+            Name = Common.Utils.VcpValueNames.GetName(0x60, value) ?? $"Source 0x{value:X2}",
+            SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
+            MonitorId = _monitor.Id,
+        }).ToList();
+
+        OnPropertyChanged(nameof(AvailableInputSources));
+    }
+
+    /// <summary>
+    /// Set input source for this monitor
+    /// </summary>
+    public async Task SetInputSourceAsync(int inputSource)
+    {
+        try
+        {
+            Logger.LogInfo($"[{HardwareId}] Setting input source to 0x{inputSource:X2}");
+
+            var result = await _monitorManager.SetInputSourceAsync(Id, inputSource);
+
+            if (result.IsSuccess)
+            {
+                OnPropertyChanged(nameof(CurrentInputSource));
+                OnPropertyChanged(nameof(CurrentInputSourceName));
+                RefreshAvailableInputSources();
+
+                Logger.LogInfo($"[{HardwareId}] Input source set successfully to {CurrentInputSourceName}");
+            }
+            else
+            {
+                Logger.LogWarning($"[{HardwareId}] Failed to set input source: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{HardwareId}] Exception setting input source: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Command to set input source
+    /// </summary>
+    public ICommand SetInputSourceCommand => new RelayCommand<int?>(async (source) =>
+    {
+        if (source.HasValue)
+        {
+            await SetInputSourceAsync(source.Value);
+        }
+    });
 
     public int Contrast
     {

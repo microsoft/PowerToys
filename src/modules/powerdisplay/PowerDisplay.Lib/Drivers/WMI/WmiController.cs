@@ -424,6 +424,18 @@ namespace PowerDisplay.Common.Drivers.WMI
             return Task.FromResult(MonitorOperationResult.Failure("Color temperature control not supported via WMI"));
         }
 
+        public Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            // Input source switching not supported for internal displays
+            return Task.FromResult(BrightnessInfo.Invalid);
+        }
+
+        public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
+        {
+            // Input source switching not supported for internal displays
+            return Task.FromResult(MonitorOperationResult.Failure("Input source switching not supported via WMI"));
+        }
+
         public Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(string.Empty);

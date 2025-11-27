@@ -18,6 +18,7 @@ namespace PowerDisplay.Common.Models
     {
         private int _currentBrightness;
         private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
+        private int _currentInputSource; // VCP 0x60 value
         private bool _isAvailable = true;
 
         /// <summary>
@@ -91,6 +92,43 @@ namespace PowerDisplay.Common.Models
         /// Whether supports color temperature adjustment via VCP 0x14
         /// </summary>
         public bool SupportsColorTemperature { get; set; }
+
+        /// <summary>
+        /// Current input source VCP value (from VCP code 0x60).
+        /// This stores the raw VCP value (e.g., 0x11 for HDMI-1).
+        /// Use InputSourceName to get human-readable name.
+        /// </summary>
+        public int CurrentInputSource
+        {
+            get => _currentInputSource;
+            set
+            {
+                if (_currentInputSource != value)
+                {
+                    _currentInputSource = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(InputSourceName));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Human-readable input source name (e.g., "HDMI-1", "DisplayPort-1")
+        /// Returns just the name without hex value for cleaner UI display.
+        /// </summary>
+        public string InputSourceName =>
+            VcpValueNames.GetName(0x60, CurrentInputSource) ?? $"Source 0x{CurrentInputSource:X2}";
+
+        /// <summary>
+        /// Whether supports input source switching via VCP 0x60
+        /// </summary>
+        public bool SupportsInputSource => VcpCapabilitiesInfo?.SupportsVcpCode(0x60) ?? false;
+
+        /// <summary>
+        /// Get supported input sources from capabilities (as list of VCP values)
+        /// </summary>
+        public System.Collections.Generic.IReadOnlyList<int>? SupportedInputSources =>
+            VcpCapabilitiesInfo?.GetSupportedValues(0x60);
 
         /// <summary>
         /// Capabilities detection status: "available", "unavailable", or "unknown"
