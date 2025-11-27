@@ -58,6 +58,7 @@ public sealed partial class MainWindow : WindowEx,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
     private readonly uint WM_TASKBAR_RESTART;
     private readonly HWND _hwnd;
+    private readonly DispatcherTimer _autoGoHomeTimer;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
@@ -68,12 +69,16 @@ public sealed partial class MainWindow : WindowEx,
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+    private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     private WindowPosition _currentWindowPosition = new();
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _autoGoHomeTimer = new DispatcherTimer();
+        _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -139,6 +144,15 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+    }
+
+    private void OnAutoGoHomeTimerOnTick(object? s, object e)
+    {
+        _autoGoHomeTimer.Stop();
+
+        // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
+        // and prevent the user from opening its context menu.
+        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -220,6 +234,9 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
+
+        _autoGoHomeInterval = settings.AutoGoHomeInterval;
+        _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -279,6 +296,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
+        StopAutoGoHome();
+
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
         // Remember, IsIconic == "minimized", which is entirely different state
@@ -533,6 +552,25 @@ public sealed partial class MainWindow : WindowEx,
             // If the window was not cloaked, then leave it hidden.
             // Sure, it's not ideal, but at least it's not visible.
         }
+
+        // Start auto-go-home timer
+        RestartAutoGoHome();
+    }
+
+    private void StopAutoGoHome()
+    {
+        _autoGoHomeTimer.Stop();
+    }
+
+    private void RestartAutoGoHome()
+    {
+        if (_autoGoHomeInterval == Timeout.InfiniteTimeSpan)
+        {
+            return;
+        }
+
+        _autoGoHomeTimer.Stop();
+        _autoGoHomeTimer.Start();
     }
 
     private bool Cloak()
