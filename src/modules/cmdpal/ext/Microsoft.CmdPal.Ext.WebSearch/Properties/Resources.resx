@@ -184,4 +184,7 @@
   <data name="open_url_fallback_title" xml:space="preserve">
     <value>Open URL</value>
   </data>
+  <data name="default_browser" xml:space="preserve">
+    <value>default browser</value>
+  </data>
 </root>

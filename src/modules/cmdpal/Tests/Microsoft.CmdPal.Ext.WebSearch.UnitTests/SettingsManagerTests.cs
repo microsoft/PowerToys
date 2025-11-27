@@ -20,7 +20,9 @@ public class SettingsManagerTests : CommandPaletteUnitTestBase
     {
         // Setup
         var settings = new MockSettingsInterface(historyItemCount: 5);
-        var page = new WebSearchListPage(settings);
+        var browserInfoService = new MockBrowserInfoService();
+
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         var eventRaised = false;
 
