@@ -406,7 +406,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 if (currentSettingsFiles.Count == 0)
                 {
-                    return (false, "General_SettingsBackupAndRestore_NoSettingsFilesFound", "Warning");
+                    return (false, "General_SettingsBackupAndRestore_ResetNothingToReset", "Warning");
                 }
 
                 var deletedFiles = 0;
