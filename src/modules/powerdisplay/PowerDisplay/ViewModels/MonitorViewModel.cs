@@ -43,6 +43,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     // Visibility settings (controlled by Settings UI)
     private bool _showContrast;
     private bool _showVolume;
+    private bool _showInputSource;
 
     /// <summary>
     /// Updates a property value directly without triggering hardware updates.
@@ -249,6 +250,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         // Initialize Show properties based on hardware capabilities
         _showContrast = monitor.SupportsContrast;
         _showVolume = monitor.SupportsVolume;
+        _showInputSource = monitor.SupportsInputSource;
 
         // Color temperature initialization removed - now controlled via Settings UI
         // The Monitor.CurrentColorTemperature stores VCP 0x14 preset value (e.g., 0x05 for 6500K)
@@ -337,6 +339,19 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 _showVolume = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(HasAdvancedControls));
+            }
+        }
+    }
+
+    public bool ShowInputSource
+    {
+        get => _showInputSource;
+        set
+        {
+            if (_showInputSource != value)
+            {
+                _showInputSource = value;
+                OnPropertyChanged();
             }
         }
     }

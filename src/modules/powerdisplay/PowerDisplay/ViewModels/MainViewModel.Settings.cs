@@ -452,10 +452,11 @@ public partial class MainViewModel
 
         if (monitorSettings != null)
         {
-            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}");
+            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}, InputSource={monitorSettings.EnableInputSource}");
 
             monitorVm.ShowContrast = monitorSettings.EnableContrast;
             monitorVm.ShowVolume = monitorSettings.EnableVolume;
+            monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
         }
         else
         {
@@ -554,9 +555,10 @@ public partial class MainViewModel
             VcpCodesFormatted = BuildFormattedVcpCodesList(vm),
 
             // Infer support flags from VCP capabilities
-            // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x62 (98) = Volume
+            // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x60 (96) = Input Source, 0x62 (98) = Volume
             SupportsContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             SupportsColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
+            SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
 
             // Monitor number for display name formatting
@@ -605,6 +607,7 @@ public partial class MainViewModel
             monitorInfo.IsHidden = existingMonitor.IsHidden;
             monitorInfo.EnableContrast = existingMonitor.EnableContrast;
             monitorInfo.EnableVolume = existingMonitor.EnableVolume;
+            monitorInfo.EnableInputSource = existingMonitor.EnableInputSource;
         }
     }
 

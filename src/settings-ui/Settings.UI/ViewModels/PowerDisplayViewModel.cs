@@ -248,6 +248,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Preserve user settings from existing monitor
                     newMonitor.EnableContrast = existingMonitor.EnableContrast;
                     newMonitor.EnableVolume = existingMonitor.EnableVolume;
+                    newMonitor.EnableInputSource = existingMonitor.EnableInputSource;
                     newMonitor.IsHidden = existingMonitor.IsHidden;
                 }
 
@@ -290,6 +291,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             monitor.SupportsContrast = result.SupportsContrast;
             monitor.SupportsColorTemperature = result.SupportsColorTemperature;
             monitor.SupportsVolume = result.SupportsVolume;
+            monitor.SupportsInputSource = result.SupportsInputSource;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
@@ -352,6 +354,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Save settings when any monitor property changes
             NotifySettingsChanged();
+
+            // For feature visibility properties, explicitly signal PowerDisplay to refresh
+            // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
+            if (e.PropertyName == nameof(MonitorInfo.EnableContrast) ||
+                e.PropertyName == nameof(MonitorInfo.EnableVolume) ||
+                e.PropertyName == nameof(MonitorInfo.EnableInputSource) ||
+                e.PropertyName == nameof(MonitorInfo.IsHidden))
+            {
+                SignalSettingsUpdated();
+            }
+        }
+
+        /// <summary>
+        /// Signal PowerDisplay.exe that settings have been updated and need to be applied
+        /// </summary>
+        private void SignalSettingsUpdated()
+        {
+            try
+            {
+                using var eventHandle = new System.Threading.EventWaitHandle(
+                    false,
+                    System.Threading.EventResetMode.AutoReset,
+                    Constants.SettingsUpdatedPowerDisplayEvent());
+                eventHandle.Set();
+                Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to signal SettingsUpdatedPowerDisplayEvent: {ex.Message}");
+            }
         }
 
         public void Launch()

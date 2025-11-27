@@ -22,7 +22,9 @@ namespace PowerDisplay.Commands
             _canExecute = canExecute;
         }
 
+#pragma warning disable CS0067 // Event is never used - required by ICommand interface
         public event EventHandler? CanExecuteChanged;
+#pragma warning restore CS0067
 
         public bool CanExecute(object? parameter)
         {
@@ -70,7 +72,9 @@ namespace PowerDisplay.Commands
             _canExecute = canExecute;
         }
 
+#pragma warning disable CS0067 // Event is never used - required by ICommand interface
         public event EventHandler? CanExecuteChanged;
+#pragma warning restore CS0067
 
         public bool CanExecute(object? parameter)
         {

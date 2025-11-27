@@ -28,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _isHidden;
         private bool _enableContrast;
         private bool _enableVolume;
+        private bool _enableInputSource;
         private string _capabilitiesRaw = string.Empty;
         private List<string> _vcpCodes = new List<string>();
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
@@ -40,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _supportsContrast;
         private bool _supportsColorTemperature;
         private bool _supportsVolume;
+        private bool _supportsInputSource;
         private string _capabilitiesStatus = "unknown"; // "available", "unavailable", or "unknown"
 
         // Cached color temperature presets (computed from VcpCodesFormatted)
@@ -398,6 +400,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("enableInputSource")]
+        public bool EnableInputSource
+        {
+            get => _enableInputSource;
+            set
+            {
+                if (_enableInputSource != value)
+                {
+                    _enableInputSource = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         [JsonPropertyName("capabilitiesRaw")]
         public string CapabilitiesRaw
         {
@@ -559,6 +575,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_supportsVolume != value)
                 {
                     _supportsVolume = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonPropertyName("supportsInputSource")]
+        public bool SupportsInputSource
+        {
+            get => _supportsInputSource;
+            set
+            {
+                if (_supportsInputSource != value)
+                {
+                    _supportsInputSource = value;
                     OnPropertyChanged();
                 }
             }
@@ -761,6 +791,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsHidden = other.IsHidden;
             EnableContrast = other.EnableContrast;
             EnableVolume = other.EnableVolume;
+            EnableInputSource = other.EnableInputSource;
             CapabilitiesRaw = other.CapabilitiesRaw;
             VcpCodes = other.VcpCodes;
             VcpCodesFormatted = other.VcpCodesFormatted;
@@ -768,6 +799,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsContrast = other.SupportsContrast;
             SupportsColorTemperature = other.SupportsColorTemperature;
             SupportsVolume = other.SupportsVolume;
+            SupportsInputSource = other.SupportsInputSource;
             CapabilitiesStatus = other.CapabilitiesStatus;
             MonitorNumber = other.MonitorNumber;
         }

@@ -122,7 +122,7 @@
                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                           FontSize=16}"
                                                     Style="{StaticResource SubtleButtonStyle}"
-                                                    Visibility="{x:Bind ConvertBoolToVisibility(SupportsInputSource), Mode=OneWay}">
+                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowInputSource), Mode=OneWay}">
                                                     <Button.Flyout>
                                                         <Flyout>
                                                             <StackPanel Orientation="Vertical">
@@ -198,11 +198,11 @@
                                                         Value="{x:Bind Brightness, Mode=OneWay}" />
                                                 </Grid>
 
-                                                <!--  Contrast Control {x:Bind ConvertBoolToVisibility(ShowContrast), Mode=OneWay}"  -->
+                                                <!--  Contrast Control  -->
                                                 <Grid
                                                     Margin="0,8,0,0"
                                                     HorizontalAlignment="Stretch"
-                                                    Visibility="Visible">
+                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowContrast), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="16" />
@@ -231,8 +231,11 @@
                                                         Value="{x:Bind ContrastPercent, Mode=OneWay}" />
                                                 </Grid>
 
-                                                <!--  Volume Control Visibility="{x:Bind ConvertBoolToVisibility(ShowVolume), Mode=OneWay}"  -->
-                                                <Grid Margin="0,8,0,0" HorizontalAlignment="Stretch">
+                                                <!--  Volume Control  -->
+                                                <Grid
+                                                    Margin="0,8,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowVolume), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="16" />

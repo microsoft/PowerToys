@@ -5658,6 +5658,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_Monitor_EnableVolume.Content" xml:space="preserve">
     <value>Display volume slider</value>
   </data>
+  <data name="PowerDisplay_Monitor_EnableInputSource.Content" xml:space="preserve">
+    <value>Show input source control</value>
+  </data>
   <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
     <value>Hide monitor</value>
   </data>

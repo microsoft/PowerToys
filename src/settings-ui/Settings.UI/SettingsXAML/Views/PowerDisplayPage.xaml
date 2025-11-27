@@ -174,6 +174,9 @@
                                         <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsVolume, Mode=OneWay}">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_EnableVolume" IsChecked="{x:Bind EnableVolume, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsInputSource, Mode=OneWay}">
+                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnableInputSource" IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
