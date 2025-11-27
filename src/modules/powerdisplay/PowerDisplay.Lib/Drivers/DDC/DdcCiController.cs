@@ -544,10 +544,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                             // Use HandleManager to reuse or create handle
                             var (handleToUse, reusingOldHandle) = _handleManager.ReuseOrCreateHandle(deviceKey, physicalMonitor.HPhysicalMonitor);
 
-                            // Validate DDC/CI connection for the handle we're going to use
-                            if (!reusingOldHandle && !DdcCiNative.ValidateDdcCiConnection(handleToUse))
+                            // Always validate DDC/CI connection, regardless of handle reuse
+                            // This ensures monitors that don't support DDC/CI (e.g., internal laptop displays)
+                            // are not included in the DDC controller's results
+                            if (!DdcCiNative.ValidateDdcCiConnection(handleToUse))
                             {
-                                Logger.LogWarning($"DDC: New handle 0x{handleToUse:X} failed DDC/CI validation, skipping");
+                                Logger.LogDebug($"DDC: Handle 0x{handleToUse:X} (reused={reusingOldHandle}) failed DDC/CI validation, skipping");
                                 continue;
                             }
 
