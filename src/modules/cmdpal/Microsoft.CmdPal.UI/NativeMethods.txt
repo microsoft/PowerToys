@@ -64,3 +64,11 @@ WNDCLASSEXW
 RegisterClassEx
 GetStockObject
 GetModuleHandle
+GetModuleHandle
+
+GetSystemMenu
+RemoveMenu
+DrawMenuBar
+MENU_ITEM_FLAGS
+SC_CLOSE
+IsWindow

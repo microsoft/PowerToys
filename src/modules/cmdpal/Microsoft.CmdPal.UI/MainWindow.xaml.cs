@@ -18,7 +18,6 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
-using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -30,12 +29,9 @@ using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
-using Windows.Win32.Graphics.Gdi;
-using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
@@ -172,11 +168,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
-    private void PositionCentered()
-    {
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        PositionCentered(displayArea);
-    }
+    private void PositionCentered() => MonitorHelper.PositionCentered(AppWindow, DisplayAreaFallback.Nearest);
 
     private void RestoreWindowPosition()
     {
@@ -193,22 +185,8 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        var newRect = EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi);
+        var newRect = MonitorHelper.EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi, DefaultWidth, DefaultHeight);
         AppWindow.MoveAndResize(newRect);
-    }
-
-    private void PositionCentered(DisplayArea displayArea)
-    {
-        if (displayArea is not null)
-        {
-            var centeredPosition = AppWindow.Position;
-            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
-            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
-
-            centeredPosition.X += displayArea.WorkArea.X;
-            centeredPosition.Y += displayArea.WorkArea.Y;
-            AppWindow.Move(centeredPosition);
-        }
     }
 
     private void UpdateWindowPositionInMemory()
@@ -315,13 +293,17 @@ public sealed partial class MainWindow : WindowEx,
 
         if (target == MonitorBehavior.ToLast)
         {
-            var newRect = EnsureWindowIsVisible(_currentWindowPosition.ToPhysicalWindowRectangle(), new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight), _currentWindowPosition.Dpi);
+            var newRect = MonitorHelper.EnsureWindowIsVisible(
+                _currentWindowPosition.ToPhysicalWindowRectangle(),
+                new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight),
+                _currentWindowPosition.Dpi,
+                DefaultWidth,
+                DefaultHeight);
             AppWindow.MoveAndResize(newRect);
         }
         else
         {
-            var display = GetScreen(hwnd, target);
-            PositionCentered(display);
+            MonitorHelper.PositionCentered(hwnd, AppWindow, target);
         }
 
         // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
@@ -343,160 +325,6 @@ public sealed partial class MainWindow : WindowEx,
         // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
         // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-    }
-
-    /// <summary>
-    /// Ensures that the window rectangle is visible on-screen.
-    /// </summary>
-    /// <param name="windowRect">The window rectangle in physical pixels.</param>
-    /// <param name="originalScreen">The desktop area the window was positioned on.</param>
-    /// <param name="originalDpi">The window's original DPI.</param>
-    /// <returns>
-    /// A window rectangle in physical pixels, moved to the nearest display and resized
-    /// if the DPI has changed.
-    /// </returns>
-    private static RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi)
-    {
-        var displayArea = DisplayArea.GetFromRect(windowRect, DisplayAreaFallback.Nearest);
-        if (displayArea is null)
-        {
-            return windowRect;
-        }
-
-        var workArea = displayArea.WorkArea;
-        if (workArea.Width <= 0 || workArea.Height <= 0)
-        {
-            // Fallback, nothing reasonable to do
-            return windowRect;
-        }
-
-        var effectiveDpi = GetEffectiveDpiFromDisplayId(displayArea);
-        if (originalDpi <= 0)
-        {
-            originalDpi = effectiveDpi; // use current DPI as baseline (no scaling adjustment needed)
-        }
-
-        var hasInvalidSize = windowRect.Width <= 0 || windowRect.Height <= 0;
-        if (hasInvalidSize)
-        {
-            windowRect = new RectInt32(windowRect.X, windowRect.Y, DefaultWidth, DefaultHeight);
-        }
-
-        // If we have a DPI change, scale the window rectangle accordingly
-        if (effectiveDpi != originalDpi)
-        {
-            var scalingFactor = effectiveDpi / (double)originalDpi;
-            windowRect = new RectInt32(
-                (int)Math.Round(windowRect.X * scalingFactor),
-                (int)Math.Round(windowRect.Y * scalingFactor),
-                (int)Math.Round(windowRect.Width * scalingFactor),
-                (int)Math.Round(windowRect.Height * scalingFactor));
-        }
-
-        var targetWidth = Math.Min(windowRect.Width, workArea.Width);
-        var targetHeight = Math.Min(windowRect.Height, workArea.Height);
-
-        // Ensure at least some minimum visible area (e.g., 100 pixels)
-        // This helps prevent the window from being entirely offscreen, regardless of display scaling.
-        const int minimumVisibleSize = 100;
-        var isOffscreen =
-            windowRect.X + minimumVisibleSize > workArea.X + workArea.Width ||
-            windowRect.X + windowRect.Width - minimumVisibleSize < workArea.X ||
-            windowRect.Y + minimumVisibleSize > workArea.Y + workArea.Height ||
-            windowRect.Y + windowRect.Height - minimumVisibleSize < workArea.Y;
-
-        // if the work area size has changed, re-center the window
-        var workAreaSizeChanged =
-            originalScreen.Width != workArea.Width ||
-            originalScreen.Height != workArea.Height;
-
-        int targetX;
-        int targetY;
-        var recenter = isOffscreen || workAreaSizeChanged || hasInvalidSize;
-        if (recenter)
-        {
-            targetX = workArea.X + ((workArea.Width - targetWidth) / 2);
-            targetY = workArea.Y + ((workArea.Height - targetHeight) / 2);
-        }
-        else
-        {
-            targetX = windowRect.X;
-            targetY = windowRect.Y;
-        }
-
-        return new RectInt32(targetX, targetY, targetWidth, targetHeight);
-    }
-
-    private static int GetEffectiveDpiFromDisplayId(DisplayArea displayArea)
-    {
-        var effectiveDpi = 96;
-
-        var hMonitor = (HMONITOR)Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
-        if (!hMonitor.IsNull)
-        {
-            var hr = PInvoke.GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
-            if (hr == 0)
-            {
-                effectiveDpi = (int)dpiX;
-            }
-            else
-            {
-                Logger.LogWarning($"GetDpiForMonitor failed with HRESULT: 0x{hr.Value:X8} on display {displayArea.DisplayId}");
-            }
-        }
-
-        if (effectiveDpi <= 0)
-        {
-            effectiveDpi = 96;
-        }
-
-        return effectiveDpi;
-    }
-
-    private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
-    {
-        // Leaving a note here, in case we ever need it:
-        // https://github.com/microsoft/microsoft-ui-xaml/issues/6454
-        // If we need to ever FindAll, we'll need to iterate manually
-        var displayAreas = Microsoft.UI.Windowing.DisplayArea.FindAll();
-        switch (target)
-        {
-            case MonitorBehavior.InPlace:
-                if (PInvoke.GetWindowRect(currentHwnd, out var bounds))
-                {
-                    RectInt32 converted = new(bounds.X, bounds.Y, bounds.Width, bounds.Height);
-                    return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
-                }
-
-                break;
-
-            case MonitorBehavior.ToFocusedWindow:
-                var foregroundWindowHandle = PInvoke.GetForegroundWindow();
-                if (foregroundWindowHandle != IntPtr.Zero)
-                {
-                    if (PInvoke.GetWindowRect(foregroundWindowHandle, out var fgBounds))
-                    {
-                        RectInt32 converted = new(fgBounds.X, fgBounds.Y, fgBounds.Width, fgBounds.Height);
-                        return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
-                    }
-                }
-
-                break;
-
-            case MonitorBehavior.ToPrimary:
-                return DisplayArea.Primary;
-
-            case MonitorBehavior.ToMouse:
-            default:
-                if (PInvoke.GetCursorPos(out var cursorPos))
-                {
-                    return DisplayArea.GetFromPoint(new PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.Nearest);
-                }
-
-                break;
-        }
-
-        return DisplayArea.Primary;
     }
 
     public void Receive(ShowWindowMessage message)
