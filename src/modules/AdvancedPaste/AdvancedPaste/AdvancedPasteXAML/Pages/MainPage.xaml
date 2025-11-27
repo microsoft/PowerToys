@@ -299,47 +299,49 @@
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>
-        <Grid Grid.Row="2" RowSpacing="4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <ListView
-                x:Name="PasteOptionsListView"
-                Grid.Row="0"
-                VerticalAlignment="Bottom"
-                IsItemClickEnabled="True"
-                ItemClick="PasteFormat_ItemClick"
-                ItemContainerTransitions="{x:Null}"
-                ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
-                ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                ScrollViewer.VerticalScrollMode="Auto"
-                SelectionMode="None"
-                TabIndex="1" />
-            <Rectangle
-                Grid.Row="1"
-                Height="1"
-                HorizontalAlignment="Stretch"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
-                Visibility="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+        <ScrollViewer Grid.Row="2">
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ListView
+                    x:Name="PasteOptionsListView"
+                    Grid.Row="0"
+                    VerticalAlignment="Bottom"
+                    IsItemClickEnabled="True"
+                    ItemClick="PasteFormat_ItemClick"
+                    ItemContainerTransitions="{x:Null}"
+                    ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
+                    ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="None"
+                    TabIndex="1" />
+                <Rectangle
+                    Grid.Row="1"
+                    Height="1"
+                    HorizontalAlignment="Stretch"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    Visibility="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
 
-            <ListView
-                x:Name="CustomActionsListView"
-                Grid.Row="2"
-                VerticalAlignment="Top"
-                IsItemClickEnabled="True"
-                ItemClick="PasteFormat_ItemClick"
-                ItemContainerTransitions="{x:Null}"
-                ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
-                ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                ScrollViewer.VerticalScrollMode="Auto"
-                SelectionMode="None"
-                TabIndex="2" />
-        </Grid>
+                <ListView
+                    x:Name="CustomActionsListView"
+                    Grid.Row="2"
+                    VerticalAlignment="Top"
+                    IsItemClickEnabled="True"
+                    ItemClick="PasteFormat_ItemClick"
+                    ItemContainerTransitions="{x:Null}"
+                    ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
+                    ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="None"
+                    TabIndex="2" />
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>

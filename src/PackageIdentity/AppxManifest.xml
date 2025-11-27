@@ -43,7 +43,8 @@
         Description="PowerToys OCR Module"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
       </uap:VisualElements>
     </Application>
     <Application Id="PowerToys.SettingsUI" Executable="WinUI3Apps\PowerToys.Settings.exe" EntryPoint="Windows.FullTrustApplication">
@@ -52,7 +53,8 @@
         Description="PowerToys Settings UI"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
       </uap:VisualElements>
     </Application>
     <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
@@ -61,7 +63,8 @@
         Description="PowerToys Image Resizer UI"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
       </uap:VisualElements>
     </Application>
     <!-- Temporarily disabled: PowerToys Command Palette Extension now packaged with its own manifest -->
