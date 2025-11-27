@@ -421,7 +421,10 @@ namespace PowerDisplay
 
         private void OnSettingsClick(object sender, RoutedEventArgs e)
         {
-            // TO DO: Open PowerDisplay settings screen
+            // Open PowerDisplay settings in PowerToys Settings UI
+            // mainExecutableIsOnTheParentFolder = true because PowerDisplay is a WinUI 3 app
+            // deployed in a subfolder (PowerDisplay\) while PowerToys.exe is in the parent folder
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.PowerDisplay, true);
         }
 
         /// <summary>
