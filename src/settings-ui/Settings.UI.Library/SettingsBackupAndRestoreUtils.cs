@@ -384,6 +384,67 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
+        /// Method <c>ResetSettingsToDefaults</c> deletes all settings files to reset PowerToys to default settings.
+        /// </summary>
+        /// <returns>
+        /// A tuple that indicates if the reset was successful or not, and a message.
+        /// The message usually is a localized reference key.
+        /// </returns>
+        public (bool Success, string Message, string Severity) ResetSettingsToDefaults(string appBasePath)
+        {
+            try
+            {
+                // verify inputs
+                if (!Directory.Exists(appBasePath))
+                {
+                    return (false, $"Invalid appBasePath {appBasePath}", "Error");
+                }
+
+                // get data needed for process
+                var backupRestoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
+                var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList();
+
+                if (currentSettingsFiles.Count == 0)
+                {
+                    return (false, "General_SettingsBackupAndRestore_ResetNothingToReset", "Warning");
+                }
+
+                var deletedFiles = 0;
+
+                foreach (var settingsFile in currentSettingsFiles)
+                {
+                    try
+                    {
+                        if (File.Exists(settingsFile))
+                        {
+                            File.Delete(settingsFile);
+                            deletedFiles++;
+                            Logger.LogInfo($"ResetSettingsToDefaults: Deleted {settingsFile}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to delete settings file: {settingsFile}", ex);
+                    }
+                }
+
+                if (deletedFiles > 0)
+                {
+                    return (true, "General_SettingsBackupAndRestore_ResetSuccess", "Success");
+                }
+                else
+                {
+                    return (false, "General_SettingsBackupAndRestore_ResetNothingToReset", "Warning");
+                }
+            }
+            catch (Exception ex2)
+            {
+                Logger.LogError("Error in ResetSettingsToDefaults, " + ex2.ToString());
+                return (false, "General_SettingsBackupAndRestore_ResetError", "Error");
+            }
+        }
+
+        /// <summary>
         /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path of the backup and restore location.
         /// </summary>
         /// <remarks>

@@ -1015,6 +1015,9 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="General_SettingsBackupAndRestore_ButtonRestore.Content" xml:space="preserve">
     <value>Restore</value>
   </data>
+  <data name="General_SettingsBackupAndRestore_ButtonResetToDefaults.Content" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
   <data name="General_SettingsBackupAndRestore_ButtonSelectFolder.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Select folder</value>
   </data>
@@ -3599,6 +3602,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="General_SettingsBackupAndRestore_InvalidBackupLocation" xml:space="preserve">
     <value>Invalid backup location.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ResetSuccess" xml:space="preserve">
+    <value>Settings have been reset to defaults. Restarting...</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ResetNothingToReset" xml:space="preserve">
+    <value>No settings files found to reset.</value>
+  </data>
+  <data name="General_SettingsBackupAndRestore_ResetError" xml:space="preserve">
+    <value>There was an error resetting settings to defaults.</value>
   </data>
   <data name="TextExtractor.ModuleDescription" xml:space="preserve">
     <value>Text Extractor is a convenient way to copy text from anywhere on screen</value>
