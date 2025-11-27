@@ -54,22 +54,6 @@ namespace PowerDisplay.Common.Interfaces
         Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Validates monitor connection status
-        /// </summary>
-        /// <param name="monitor">Monitor object</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Whether the monitor is connected</returns>
-        Task<bool> ValidateConnectionAsync(Monitor monitor, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets monitor contrast
-        /// </summary>
-        /// <param name="monitor">Monitor object</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Contrast information</returns>
-        Task<BrightnessInfo> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Sets monitor contrast
         /// </summary>
         /// <param name="monitor">Monitor object</param>
@@ -77,14 +61,6 @@ namespace PowerDisplay.Common.Interfaces
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Operation result</returns>
         Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets monitor volume
-        /// </summary>
-        /// <param name="monitor">Monitor object</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Volume information</returns>
-        Task<BrightnessInfo> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets monitor volume
@@ -136,14 +112,6 @@ namespace PowerDisplay.Common.Interfaces
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Capabilities string</returns>
         Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Saves current settings to monitor
-        /// </summary>
-        /// <param name="monitor">Monitor object</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Operation result</returns>
-        Task<MonitorOperationResult> SaveCurrentSettingsAsync(Monitor monitor, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Releases resources

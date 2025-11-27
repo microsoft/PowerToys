@@ -275,22 +275,9 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public int MonitorNumber => _monitor.MonitorNumber;
 
     /// <summary>
-    /// Gets the display name - includes monitor number when multiple monitors are visible
+    /// Gets the display name
     /// </summary>
-    public string DisplayName
-    {
-        get
-        {
-            // Check if there's more than one visible monitor and MonitorNumber is valid
-            // Set the limit to zero for debugging.
-            /* if (_mainViewModel != null && _mainViewModel.Monitors.Count > 0 && MonitorNumber > 0)
-            {
-                return $"{Name} {MonitorNumber}";
-            } */
-
-            return Name;
-        }
-    }
+    public string DisplayName => Name;
 
     public string Manufacturer => _monitor.Manufacturer;
 
@@ -573,12 +560,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        // Notify percentage properties when actual values change
-        if (propertyName == nameof(Contrast))
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContrastPercent)));
-        }
     }
 
     private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -53,8 +53,6 @@ namespace PowerDisplay.Commands
                 Logger.LogError($"Command execution failed: {ex.Message}");
             }
         }
-
-        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -103,7 +101,5 @@ namespace PowerDisplay.Commands
                 Logger.LogError($"Command<T> execution failed: {ex.Message}");
             }
         }
-
-        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

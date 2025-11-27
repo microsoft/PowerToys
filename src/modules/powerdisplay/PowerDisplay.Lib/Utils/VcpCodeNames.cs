@@ -225,15 +225,5 @@ namespace PowerDisplay.Common.Utils
         {
             return CodeNames.TryGetValue(code, out var name) ? name : $"Unknown (0x{code:X2})";
         }
-
-        /// <summary>
-        /// Check if a VCP code has a known name
-        /// </summary>
-        public static bool HasName(byte code) => CodeNames.ContainsKey(code);
-
-        /// <summary>
-        /// Get all known VCP codes
-        /// </summary>
-        public static IEnumerable<byte> GetAllKnownCodes() => CodeNames.Keys;
     }
 }

@@ -144,22 +144,10 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get monitor contrast
-        /// </summary>
-        public Task<BrightnessInfo> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
-            => GetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, cancellationToken);
-
-        /// <summary>
         /// Set monitor contrast
         /// </summary>
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
             => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, contrast, 0, 100, cancellationToken);
-
-        /// <summary>
-        /// Get monitor volume
-        /// </summary>
-        public Task<BrightnessInfo> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
-            => GetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, cancellationToken);
 
         /// <summary>
         /// Set monitor volume
@@ -442,37 +430,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Save current settings
-        /// </summary>
-        public async Task<MonitorOperationResult> SaveCurrentSettingsAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return await Task.Run(
-                () =>
-                {
-                if (monitor.Handle == IntPtr.Zero)
-                {
-                    return MonitorOperationResult.Failure("Invalid monitor handle");
-                }
-
-                try
-                {
-                    if (SaveCurrentSettings(monitor.Handle))
-                    {
-                        return MonitorOperationResult.Success();
-                    }
-
-                    var lastError = GetLastError();
-                    return MonitorOperationResult.Failure($"Failed to save settings", (int)lastError);
-                }
-                catch (Exception ex)
-                {
-                    return MonitorOperationResult.Failure($"Exception saving settings: {ex.Message}");
-                }
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
         /// Discover supported monitors
         /// </summary>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
@@ -637,17 +594,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 return monitors;
                 },
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Validate monitor connection status.
-        /// Uses quick VCP read instead of full capabilities retrieval.
-        /// </summary>
-        public async Task<bool> ValidateConnectionAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return await Task.Run(
-                () => monitor.Handle != IntPtr.Zero && DdcCiNative.QuickConnectionCheck(monitor.Handle),
                 cancellationToken);
         }
 

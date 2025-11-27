@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using ManagedCommon;
 using PowerDisplay.Common.Drivers;
 
 namespace PowerDisplay.Common.Utils
@@ -74,7 +73,7 @@ namespace PowerDisplay.Common.Utils
         /// Parse VCP codes from string list to integer set
         /// Handles both hex formats: "0x10" and "10"
         /// </summary>
-        public static HashSet<int> ParseVcpCodesToIntegers(IReadOnlyList<string>? vcpCodes)
+        private static HashSet<int> ParseVcpCodesToIntegers(IReadOnlyList<string>? vcpCodes)
         {
             var result = new HashSet<int>();
 
@@ -104,23 +103,6 @@ namespace PowerDisplay.Common.Utils
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Check if a specific VCP code is supported
-        /// </summary>
-        public static bool SupportsVcpCode(IReadOnlyList<string>? vcpCodes, int vcpCode)
-        {
-            var parsed = ParseVcpCodesToIntegers(vcpCodes);
-            return parsed.Contains(vcpCode);
-        }
-
-        /// <summary>
-        /// Format VCP code for display (e.g., 0x10 -> "0x10")
-        /// </summary>
-        public static string FormatVcpCode(int vcpCode)
-        {
-            return $"0x{vcpCode:X2}";
         }
     }
 }

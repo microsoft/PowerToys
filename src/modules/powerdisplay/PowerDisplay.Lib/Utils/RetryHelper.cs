@@ -4,7 +4,6 @@
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using ManagedCommon;
 
 namespace PowerDisplay.Common.Utils
@@ -24,86 +23,6 @@ namespace PowerDisplay.Common.Utils
         /// Default maximum number of retry attempts.
         /// </summary>
         public const int DefaultMaxRetries = 3;
-
-        /// <summary>
-        /// Executes an async operation with retry logic.
-        /// </summary>
-        /// <typeparam name="T">The return type of the operation.</typeparam>
-        /// <param name="operation">The async operation to execute.</param>
-        /// <param name="isValid">Predicate to determine if the result is valid.</param>
-        /// <param name="maxRetries">Maximum number of retry attempts (default: 3).</param>
-        /// <param name="delayMs">Delay between retries in milliseconds (default: 100).</param>
-        /// <param name="operationName">Optional name for logging purposes.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The result of the operation, or default if all retries failed.</returns>
-        public static async Task<T?> ExecuteWithRetryAsync<T>(
-            Func<Task<T?>> operation,
-            Func<T?, bool> isValid,
-            int maxRetries = DefaultMaxRetries,
-            int delayMs = DefaultRetryDelayMs,
-            string? operationName = null,
-            CancellationToken cancellationToken = default)
-        {
-            for (int attempt = 0; attempt < maxRetries; attempt++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                try
-                {
-                    var result = await operation();
-
-                    if (isValid(result))
-                    {
-                        if (attempt > 0 && !string.IsNullOrEmpty(operationName))
-                        {
-                            Logger.LogDebug($"[Retry] {operationName} succeeded on attempt {attempt + 1}");
-                        }
-
-                        return result;
-                    }
-
-                    if (attempt < maxRetries - 1)
-                    {
-                        if (!string.IsNullOrEmpty(operationName))
-                        {
-                            Logger.LogWarning($"[Retry] {operationName} returned invalid result on attempt {attempt + 1}, retrying...");
-                        }
-
-                        await Task.Delay(delayMs, cancellationToken);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    if (attempt < maxRetries - 1)
-                    {
-                        if (!string.IsNullOrEmpty(operationName))
-                        {
-                            Logger.LogWarning($"[Retry] {operationName} failed on attempt {attempt + 1}: {ex.Message}, retrying...");
-                        }
-
-                        await Task.Delay(delayMs, cancellationToken);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(operationName))
-                        {
-                            Logger.LogWarning($"[Retry] {operationName} failed after {maxRetries} attempts: {ex.Message}");
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(operationName))
-            {
-                Logger.LogWarning($"[Retry] {operationName} failed after {maxRetries} attempts");
-            }
-
-            return default;
-        }
 
         /// <summary>
         /// Executes a synchronous operation with retry logic.

@@ -356,45 +356,13 @@ namespace PowerDisplay.Core
         /// <summary>
         /// Set brightness of the specified monitor
         /// </summary>
-        public async Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
-        {
-            var monitor = GetMonitor(monitorId);
-            if (monitor == null)
-            {
-                Logger.LogError($"Monitor not found: {monitorId}");
-                return MonitorOperationResult.Failure("Monitor not found");
-            }
-
-            var controller = await GetControllerForMonitorAsync(monitor, cancellationToken);
-            if (controller == null)
-            {
-                Logger.LogError($"No controller available for monitor {monitorId}");
-                return MonitorOperationResult.Failure("No controller available for this monitor");
-            }
-
-            try
-            {
-                var result = await controller.SetBrightnessAsync(monitor, brightness, cancellationToken);
-
-                if (result.IsSuccess)
-                {
-                    // Update monitor status
-                    monitor.UpdateStatus(brightness, true);
-                }
-                else
-                {
-                    // If setting fails, monitor may be unavailable
-                    monitor.IsAvailable = false;
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                monitor.IsAvailable = false;
-                return MonitorOperationResult.Failure($"Exception setting brightness: {ex.Message}");
-            }
-        }
+        public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
+            => ExecuteMonitorOperationAsync(
+                monitorId,
+                brightness,
+                (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
+                (mon, val) => mon.UpdateStatus(val, true),
+                cancellationToken);
 
         /// <summary>
         /// Set brightness of all monitors

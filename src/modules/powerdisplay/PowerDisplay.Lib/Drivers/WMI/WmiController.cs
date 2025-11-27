@@ -265,31 +265,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Validate monitor connection status
-        /// </summary>
-        public async Task<bool> ValidateConnectionAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return await Task.Run(
-                () =>
-                {
-                    try
-                    {
-                        // Try to read current brightness to validate connection
-                        using var connection = new WmiConnection(WmiNamespace);
-                        var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass} WHERE InstanceName='{monitor.InstanceName}'";
-                        var results = connection.CreateQuery(query).ToList();
-                        return results.Count > 0;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogWarning($"WMI ValidateConnection failed for {monitor.InstanceName}: {ex.Message}");
-                        return false;
-                    }
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
         /// Get user-friendly name from WMI object
         /// </summary>
         private static string? GetUserFriendlyName(WmiObject monitorObject)
@@ -348,67 +323,10 @@ namespace PowerDisplay.Common.Drivers.WMI
             }
         }
 
-        /// <summary>
-        /// Check if administrator privileges are required
-        /// </summary>
-        public static bool RequiresElevation()
-        {
-            try
-            {
-                using var connection = new WmiConnection(WmiNamespace);
-                var query = $"SELECT * FROM {BrightnessMethodClass}";
-                var results = connection.CreateQuery(query).ToList();
-
-                foreach (var obj in results)
-                {
-                    // Try to call method to check permissions
-                    try
-                    {
-                        using (WmiMethod method = obj.GetMethod("WmiSetBrightness"))
-                        using (WmiMethodParameters inParams = method.CreateInParameters())
-                        {
-                            inParams.SetPropertyValue("Timeout", "0");
-                            inParams.SetPropertyValue("Brightness", "50");
-                            obj.ExecuteMethod<uint>(method, inParams, out WmiMethodParameters outParams);
-                            return false; // If successful, no elevation required
-                        }
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        return true; // Administrator privileges required
-                    }
-                    catch (Exception ex)
-                    {
-                        // Other errors may not be permission issues
-                        Logger.LogDebug($"WMI RequiresElevation check error: {ex.Message}");
-                        return false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Cannot determine, assume privileges required
-                Logger.LogWarning($"WMI RequiresElevation check failed: {ex.Message}");
-                return true;
-            }
-
-            return false;
-        }
-
         // Extended features not supported by WMI
-        public Task<BrightnessInfo> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(BrightnessInfo.Invalid);
-        }
-
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(MonitorOperationResult.Failure("Contrast control not supported via WMI"));
-        }
-
-        public Task<BrightnessInfo> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(BrightnessInfo.Invalid);
         }
 
         public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
@@ -441,11 +359,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         public Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(string.Empty);
-        }
-
-        public Task<MonitorOperationResult> SaveCurrentSettingsAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Save settings not supported via WMI"));
         }
 
         public void Dispose()

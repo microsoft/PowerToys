@@ -188,12 +188,5 @@ namespace PowerDisplay.Common.Utils
 
             return $"0x{value:X2}";
         }
-
-        /// <summary>
-        /// Check if a VCP code has value name mappings
-        /// </summary>
-        /// <param name="vcpCode">VCP code to check</param>
-        /// <returns>True if value names are available</returns>
-        public static bool HasValueNames(byte vcpCode) => ValueNames.ContainsKey(vcpCode);
     }
 }

@@ -106,7 +106,7 @@ namespace PowerDisplay.Common.Services
                         Logger.LogInfo($"{LogPrefix} Theme change event received");
 
                         // Process the theme change
-                        _ = Task.Run(() => ProcessThemeChangeAsync(), CancellationToken.None);
+                        _ = Task.Run(() => ProcessThemeChange(), CancellationToken.None);
                     }
                 }
 
@@ -118,7 +118,7 @@ namespace PowerDisplay.Common.Services
             }
         }
 
-        private async Task ProcessThemeChangeAsync()
+        private void ProcessThemeChange()
         {
             try
             {
@@ -149,8 +149,6 @@ namespace PowerDisplay.Common.Services
             {
                 Logger.LogError($"{LogPrefix} Failed to process theme change: {ex.Message}");
             }
-
-            await Task.CompletedTask;
         }
 
         /// <summary>
