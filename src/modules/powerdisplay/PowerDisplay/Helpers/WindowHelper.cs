@@ -27,17 +27,6 @@ namespace PowerDisplay.Helpers
         private const int WsExClientedge = 0x00000200;
         private const int WsExStaticedge = 0x00020000;
         private const int WsExToolwindow = 0x00000080;
-        private const int WsExLayered = 0x00080000;
-        private const int WsExTransparent = 0x00000020;
-
-        // Layered window attributes
-        private const int LwaColorkey = 0x00000001;
-        private const int LwaAlpha = 0x00000002;
-
-        // Window Messages
-        private const int WmNclbuttondown = 0x00A1;
-        private const int WmSyscommand = 0x0112;
-        private const int ScMove = 0xF010;
 
         private const uint SwpNosize = 0x0001;
         private const uint SwpNomove = 0x0002;
@@ -86,22 +75,6 @@ namespace PowerDisplay.Helpers
         [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool IsWindowVisibleNative(IntPtr hWnd);
-
-        [LibraryImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool SetLayeredWindowAttributes(IntPtr hWnd, uint crKey, byte bAlpha, uint dwFlags);
-
-        [LibraryImport("dwmapi.dll")]
-        private static partial int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MARGINS
-        {
-            public int Left;
-            public int Right;
-            public int Top;
-            public int Bottom;
-        }
 
         /// <summary>
         /// Check if window is visible
@@ -234,17 +207,6 @@ namespace PowerDisplay.Helpers
                 0,
                 0,
                 SwpNomove | SwpNosize | SwpFramechanged);
-        }
-
-        /// <summary>
-        /// Make window fully transparent using DWM glass effect
-        /// </summary>
-        /// <param name="hWnd">Window handle</param>
-        public static void MakeWindowTransparent(IntPtr hWnd)
-        {
-            // Extend glass frame into entire client area for transparency
-            var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
-            DwmExtendFrameIntoClientArea(hWnd, ref margins);
         }
 
         /// <summary>
