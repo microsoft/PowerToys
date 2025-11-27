@@ -36,6 +36,9 @@
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_RestoreSettingsOnStartup" HeaderIcon="{ui:FontIcon Glyph=&#xE7B8;}">
                         <ToggleSwitch x:Uid="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowSystemTrayIcon" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_BrightnessUpdateRate" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <ComboBox

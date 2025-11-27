@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             BrightnessUpdateRate = "1s";
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = true;
+            ShowSystemTrayIcon = true;
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
@@ -36,6 +37,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("restore_settings_on_startup")]
         public bool RestoreSettingsOnStartup { get; set; }
+
+        [JsonPropertyName("show_system_tray_icon")]
+        public bool ShowSystemTrayIcon { get; set; }
 
         /// <summary>
         /// Pending color temperature operation from Settings UI.

@@ -1,0 +1,19 @@
+// TrayIcon APIs
+Shell_NotifyIcon
+WM_USER
+WM_WINDOWPOSCHANGING
+RegisterWindowMessageW
+ExtractIconEx
+TRACK_POPUP_MENU_FLAGS
+WM_COMMAND
+WM_RBUTTONUP
+WM_LBUTTONUP
+WM_LBUTTONDBLCLK
+CreatePopupMenu
+TrackPopupMenuEx
+InsertMenu
+SetWindowLongPtr
+CallWindowProc
+GetCursorPos
+SetForegroundWindow
+WNDPROC

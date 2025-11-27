@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -25,8 +26,10 @@ namespace PowerDisplay
     public partial class App : Application
 #pragma warning restore CA1001
     {
+        private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
+        private TrayIconService? _trayIconService;
 
         public App(int runnerPid)
         {
@@ -90,7 +93,16 @@ namespace PowerDisplay
                 RegisterWindowEvent(Constants.ShowPowerDisplayEvent(), mw => mw.ShowWindow(), "Show");
                 RegisterWindowEvent(Constants.TogglePowerDisplayEvent(), mw => mw.ToggleWindow(), "Toggle");
                 RegisterEvent(Constants.TerminatePowerDisplayEvent(), () => Environment.Exit(0), "Terminate");
-                RegisterViewModelEvent(Constants.SettingsUpdatedPowerDisplayEvent(), vm => vm.ApplySettingsFromUI(), "SettingsUpdated");
+                RegisterViewModelEvent(
+                    Constants.SettingsUpdatedPowerDisplayEvent(),
+                    vm =>
+                    {
+                        vm.ApplySettingsFromUI();
+
+                        // Refresh tray icon based on updated settings
+                        _trayIconService?.SetupTrayIcon();
+                    },
+                    "SettingsUpdated");
                 RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
                 RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
 
@@ -112,6 +124,15 @@ namespace PowerDisplay
 
                 // Create main window
                 _mainWindow = new MainWindow();
+
+                // Initialize tray icon service
+                _trayIconService = new TrayIconService(
+                    _settingsUtils,
+                    ShowMainWindow,
+                    ToggleMainWindow,
+                    () => Environment.Exit(0),
+                    OpenSettings);
+                _trayIconService.SetupTrayIcon();
 
                 // Window visibility depends on launch mode
                 bool isStandaloneMode = _powerToysRunnerPid <= 0;
@@ -277,6 +298,44 @@ namespace PowerDisplay
         public Window? MainWindow => _mainWindow;
 
         /// <summary>
+        /// Show the main window
+        /// </summary>
+        private void ShowMainWindow()
+        {
+            if (_mainWindow is MainWindow mainWindow)
+            {
+                mainWindow.ShowWindow();
+            }
+        }
+
+        /// <summary>
+        /// Toggle the main window visibility
+        /// </summary>
+        private void ToggleMainWindow()
+        {
+            if (_mainWindow is MainWindow mainWindow)
+            {
+                mainWindow.ToggleWindow();
+            }
+        }
+
+        /// <summary>
+        /// Open PowerDisplay settings in PowerToys Settings UI
+        /// </summary>
+        private void OpenSettings()
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.PowerDisplay, false);
+        }
+
+        /// <summary>
+        /// Refresh tray icon based on current settings
+        /// </summary>
+        public void RefreshTrayIcon()
+        {
+            _trayIconService?.SetupTrayIcon();
+        }
+
+        /// <summary>
         /// Check if running standalone (not launched from PowerToys Runner)
         /// </summary>
         public bool IsRunningDetachedFromPowerToys()
@@ -290,6 +349,7 @@ namespace PowerDisplay
         public void Shutdown()
         {
             Logger.LogInfo("PowerDisplay shutting down");
+            _trayIconService?.Destroy();
             Environment.Exit(0);
         }
     }

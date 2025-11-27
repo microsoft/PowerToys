@@ -5583,6 +5583,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
     <value>Off</value>
   </data>
+  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
+  </data>
+  <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
+    <value>Choose if PowerDisplay is visible in the system tray</value>
+  </data>
   <data name="PowerDisplay_BrightnessUpdateRate.Header" xml:space="preserve">
     <value>Brightness update rate</value>
   </data>

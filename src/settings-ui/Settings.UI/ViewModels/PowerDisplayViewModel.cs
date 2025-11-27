@@ -109,6 +109,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
         }
 
+        public bool ShowSystemTrayIcon
+        {
+            get => _settings.Properties.ShowSystemTrayIcon;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ShowSystemTrayIcon, value, v => _settings.Properties.ShowSystemTrayIcon = v))
+                {
+                    // Explicitly signal PowerDisplay to refresh tray icon
+                    // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
+                    using var eventHandle = new System.Threading.EventWaitHandle(
+                        false,
+                        System.Threading.EventResetMode.AutoReset,
+                        Constants.SettingsUpdatedPowerDisplayEvent());
+                    eventHandle.Set();
+                    Logger.LogInfo($"ShowSystemTrayIcon changed to {value}, signaled SettingsUpdatedPowerDisplayEvent");
+                }
+            }
+        }
+
         public HotkeySettings ActivationShortcut
         {
             get => _settings.Properties.ActivationShortcut;

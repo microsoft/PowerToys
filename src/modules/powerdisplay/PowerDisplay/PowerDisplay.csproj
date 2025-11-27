@@ -7,6 +7,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>PowerDisplay</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\PowerDisplay\PowerDisplay.ico</ApplicationIcon>
     <Platforms>x64;ARM64</Platforms>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
@@ -53,6 +54,9 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="Microsoft.Windows.CsWin32">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!--
@@ -66,7 +70,7 @@
   <ItemGroup>
     <!-- Removed Common.UI dependency - SettingsDeepLink is now implemented locally -->
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
+    <!-- Removed ManagedCsWin32 - using CsWin32 directly for TrayIcon APIs -->
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />

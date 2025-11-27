@@ -54,4 +54,13 @@
 	<data name="BrightnessAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Brightness</value>
   </data>
+  <data name="AppName" xml:space="preserve">
+    <value>PowerDisplay</value>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
 </root>
