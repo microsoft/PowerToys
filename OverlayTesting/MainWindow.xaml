@@ -1,16 +1,13 @@
-﻿<Window x:Class="OverlayTesting.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Overlay"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
-        Topmost="True"
-        ShowInTaskbar="False"
-        ResizeMode="NoResize"
-        Width="800"
-        Height="200">
-    <Grid>
+﻿<Window
+    x:Class="OverlayTestingWinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Overlay">
+
+    <Grid Background="Transparent">
         <Border x:Name="OverlayPill"
                 Background="#CC1E1E2F"
                 CornerRadius="6"
@@ -19,11 +16,8 @@
                 VerticalAlignment="Top"
                 Margin="0,24,24,0"
                 Opacity="0">
-            <TextBlock x:Name="OverlayText"
-                       Foreground="White"
-                       FontSize="18"
-                       FontWeight="SemiBold"
-                       Text="Ctrl + T" />
+            <StackPanel x:Name="LettersPanel"
+                        Orientation="Horizontal" />
         </Border>
     </Grid>
 </Window>
