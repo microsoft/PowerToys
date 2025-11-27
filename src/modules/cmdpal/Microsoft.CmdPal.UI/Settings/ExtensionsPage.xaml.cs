@@ -23,7 +23,8 @@ public sealed partial class ExtensionsPage : Page
         this.InitializeComponent();
 
         var settings = App.Current.Services.GetService<SettingsModel>()!;
-        viewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
+        var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler);
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)
