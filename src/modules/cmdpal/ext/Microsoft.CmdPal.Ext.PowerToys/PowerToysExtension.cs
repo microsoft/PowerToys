@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace PowerToysExtension;
 
-[Guid("3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55")]
+[Guid("7EC02C7D-8F98-4A2E-9F23-B58C2C2F2B17")]
 public sealed partial class PowerToysExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;

@@ -44,8 +44,8 @@
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="$targetnametoken$.exe" Arguments="-RegisterProcessAsComServer" DisplayName="PowerToys Command Palette Extension">
-              <com:Class Id="3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55" DisplayName="PowerToys Command Palette Extension" />
+            <com:ExeServer Executable="Microsoft.CmdPal.Ext.PowerToys.exe" Arguments="-RegisterProcessAsComServer" DisplayName="PowerToys Command Palette Extension">
+              <com:Class Id="7EC02C7D-8F98-4A2E-9F23-B58C2C2F2B17" DisplayName="PowerToys Command Palette Extension" />
             </com:ExeServer>
           </com:ComServer>
         </com:Extension>
@@ -58,7 +58,7 @@
             <uap3:Properties>
               <CmdPalProvider>
                 <Activation>
-                  <CreateInstance ClassId="3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55" />
+                  <CreateInstance ClassId="7EC02C7D-8F98-4A2E-9F23-B58C2C2F2B17" />
                 </Activation>
                 <SupportedInterfaces>
                   <Commands/>

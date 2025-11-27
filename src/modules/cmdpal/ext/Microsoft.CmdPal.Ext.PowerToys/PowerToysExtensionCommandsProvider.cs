@@ -13,10 +13,14 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
     public PowerToysExtensionCommandsProvider()
     {
-        DisplayName = "PowerToysExtension";
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        DisplayName = "PowerToys";
+        Icon = IconHelpers.FromRelativePath("Assets\\PowerToys.png");
         _commands = [
-            new CommandItem(new PowerToysExtensionPage()) { Title = DisplayName },
+            new CommandItem(new Pages.PowerToysListPage())
+            {
+                Title = "PowerToys",
+                Subtitle = "PowerToys commands and settings",
+            },
         ];
     }
 

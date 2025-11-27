@@ -13,25 +13,15 @@ public sealed partial class PowerToysCommandsProvider : CommandProvider
     public PowerToysCommandsProvider()
     {
         DisplayName = "PowerToys";
-        Icon = new IconInfo("\uE82D"); // TODO: Use proper icon
-        Logger.LogInfo("PowerToysCommandsProvider constructed.");
+        Icon = IconHelpers.FromRelativePath("Assets\\PowerToys.png");
     }
 
-    public override ICommandItem[] TopLevelCommands()
-    {
-        Logger.LogInfo("PowerToysCommandsProvider.TopLevelCommands invoked.");
-        return
-        [
-            new CommandItem(new ListPage()
-            {
-                Name = "PowerToys",
-                Title = "PowerToys",
-                Icon = new IconInfo("\uE82D"),
-            })
-            {
-                Title = "PowerToys",
-                Subtitle = "PowerToys commands",
-            }
-        ];
-    }
+    public override ICommandItem[] TopLevelCommands() =>
+    [
+        new CommandItem(new Pages.PowerToysListPage())
+        {
+            Title = "PowerToys",
+            Subtitle = "PowerToys commands and settings",
+        }
+    ];
 }
