@@ -54,6 +54,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\WindowsVersions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GifRecordingSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Registry.h">
@@ -93,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZoomItSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GifRecordingSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

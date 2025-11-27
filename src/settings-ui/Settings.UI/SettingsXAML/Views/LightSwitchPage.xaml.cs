@@ -12,88 +12,94 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
-using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
-using Windows.Services.Maps;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class LightSwitchPage : Page
+    public sealed partial class LightSwitchPage : NavigablePage, IRefreshablePage
     {
-        private readonly string _appName = "LightSwitch";
-        private readonly SettingsUtils _settingsUtils;
-        private readonly Func<string, int> _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
+        private readonly string appName = "LightSwitch";
+        private readonly SettingsUtils settingsUtils;
+        private readonly Func<string, int> sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
-        private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
-        private readonly ISettingsRepository<LightSwitchSettings> _moduleSettingsRepository;
+        private readonly SettingsRepository<GeneralSettings> generalSettingsRepository;
+        private readonly SettingsRepository<LightSwitchSettings> moduleSettingsRepository;
 
-        private readonly IFileSystem _fileSystem;
-        private readonly IFileSystemWatcher _fileSystemWatcher;
-        private readonly DispatcherQueue _dispatcherQueue;
+        private readonly IFileSystem fileSystem;
+        private readonly IFileSystemWatcher fileSystemWatcher;
+        private readonly DispatcherQueue dispatcherQueue;
+        private bool suppressViewModelUpdates;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
         public LightSwitchPage()
         {
-            _settingsUtils = new SettingsUtils();
-            _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
+            this.settingsUtils = new SettingsUtils();
+            this.sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
-            _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
-            _moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(_settingsUtils);
+            this.generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(this.settingsUtils);
+            this.moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(this.settingsUtils);
 
             // Get settings from JSON (or defaults if JSON missing)
-            var darkSettings = _moduleSettingsRepository.SettingsConfig;
+            var darkSettings = this.moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            ViewModel = new LightSwitchViewModel(darkSettings, ShellPage.SendDefaultIPCMessage);
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            this.ViewModel = new LightSwitchViewModel(darkSettings, this.sendConfigMsg);
+            this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
+            this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
 
-            DataContext = ViewModel;
+            DataContext = this.ViewModel;
 
-            var settingsPath = _settingsUtils.GetSettingsFilePath(_appName);
+            var settingsPath = this.settingsUtils.GetSettingsFilePath(this.appName);
 
-            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            _fileSystem = new FileSystem();
+            this.dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            this.fileSystem = new FileSystem();
 
-            _fileSystemWatcher = _fileSystem.FileSystemWatcher.New();
-            _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(settingsPath);
-            _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(settingsPath);
-            _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
-            _fileSystemWatcher.Changed += Settings_Changed;
-            _fileSystemWatcher.EnableRaisingEvents = true;
+            this.fileSystemWatcher = this.fileSystem.FileSystemWatcher.New();
+            this.fileSystemWatcher.Path = this.fileSystem.Path.GetDirectoryName(settingsPath);
+            this.fileSystemWatcher.Filter = this.fileSystem.Path.GetFileName(settingsPath);
+            this.fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
+            this.fileSystemWatcher.Changed += Settings_Changed;
+            this.fileSystemWatcher.EnableRaisingEvents = true;
 
             this.InitializeComponent();
-            this.Loaded += LightSwitchPage_Loaded;
-            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += LightSwitchPage_Loaded;
+            Loaded += (s, e) => this.ViewModel.OnPageLoaded();
+        }
+
+        public void RefreshEnabledState()
+        {
+            this.ViewModel.RefreshEnabledState();
         }
 
         private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SearchLocations.Count == 0)
+            if (this.ViewModel.SearchLocations.Count == 0)
             {
                 foreach (var city in SearchLocationLoader.GetAll())
                 {
-                    ViewModel.SearchLocations.Add(city);
+                    this.ViewModel.SearchLocations.Add(city);
                 }
             }
 
-            ViewModel.InitializeScheduleMode();
+            this.ViewModel.InitializeScheduleMode();
         }
 
-        private async Task GetGeoLocation()
+        private async void GetGeoLocation_Click(object sender, RoutedEventArgs e)
         {
-            SyncButton.IsEnabled = false;
-            SyncLoader.IsActive = true;
-            SyncLoader.Visibility = Visibility.Visible;
+            this.LatitudeBox.IsEnabled = false;
+            this.LongitudeBox.IsEnabled = false;
+            this.SyncButton.IsEnabled = false;
+            this.SyncLoader.IsActive = true;
+            this.SyncLoader.Visibility = Visibility.Visible;
+            this.LocationResultPanel.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -112,75 +118,110 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
 
-                SunTimes result = SunCalc.CalculateSunriseSunset(
-                    latitude,
-                    longitude,
-                    DateTime.Now.Year,
-                    DateTime.Now.Month,
-                    DateTime.Now.Day);
+                ViewModel.LocationPanelLatitude = latitude;
+                ViewModel.LocationPanelLongitude = longitude;
 
-                ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
-                ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
-                ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
-                ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
+                var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+                this.ViewModel.LocationPanelLightTimeMinutes = (result.SunriseHour * 60) + result.SunriseMinute;
+                this.ViewModel.LocationPanelDarkTimeMinutes = (result.SunsetHour * 60) + result.SunsetMinute;
 
                 // Since we use this mode, we can remove the selected city data.
-                ViewModel.SelectedCity = null;
-
-                // CityAutoSuggestBox.Text = string.Empty;
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                this.ViewModel.SelectedCity = null;
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
-                SyncButton.IsEnabled = true;
-                SyncLoader.IsActive = false;
-                SyncLoader.Visibility = Visibility.Collapsed;
-                LocationDialog.IsPrimaryButtonEnabled = true;
-                LocationResultPanel.Visibility = Visibility.Visible;
+                this.SyncButton.IsEnabled = true;
+                this.SyncLoader.IsActive = false;
+                this.SyncLoader.Visibility = Visibility.Collapsed;
+                this.LocationDialog.IsPrimaryButtonEnabled = true;
+                this.LatitudeBox.IsEnabled = true;
+                this.LongitudeBox.IsEnabled = true;
+                this.LocationResultPanel.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
-                SyncButton.IsEnabled = true;
-                SyncLoader.IsActive = false;
-                System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
+                this.SyncButton.IsEnabled = true;
+                this.SyncLoader.IsActive = false;
+                this.SyncLoader.Visibility = Visibility.Collapsed;
+                this.LocationResultPanel.Visibility = Visibility.Collapsed;
+                this.LatitudeBox.IsEnabled = true;
+                this.LongitudeBox.IsEnabled = true;
+                Logger.LogInfo($"Location error: " + ex.Message);
+            }
+        }
+
+        private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+        {
+            double latitude = this.LatitudeBox.Value;
+            double longitude = this.LongitudeBox.Value;
+
+            if (double.IsNaN(latitude) || double.IsNaN(longitude) || (latitude == 0 && longitude == 0))
+            {
+                return;
+            }
+
+            var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+            this.ViewModel.LocationPanelLightTimeMinutes = (result.SunriseHour * 60) + result.SunriseMinute;
+            this.ViewModel.LocationPanelDarkTimeMinutes = (result.SunsetHour * 60) + result.SunsetMinute;
+
+            this.LocationResultPanel.Visibility = Visibility.Visible;
+            if (this.LocationDialog != null)
+            {
+                this.LocationDialog.IsPrimaryButtonEnabled = true;
             }
         }
 
         private void LocationDialog_PrimaryButtonClick(object sender, ContentDialogButtonClickEventArgs args)
         {
-            if (ViewModel.ScheduleMode == "SunriseToSunsetUser")
+            if (double.IsNaN(this.LatitudeBox.Value) || double.IsNaN(this.LongitudeBox.Value))
             {
-                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.City;
-            }
-            else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
-            {
-                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
+                return;
             }
 
-            SunriseModeChartState();
+            double latitude = this.LatitudeBox.Value;
+            double longitude = this.LongitudeBox.Value;
+
+            // need to save the values
+            this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
+            this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
+            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
+
+            var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+
+            this.ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+            this.ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+
+            this.SunriseModeChartState();
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (this.suppressViewModelUpdates)
+            {
+                return;
+            }
+
             if (e.PropertyName == "IsEnabled")
             {
-                if (ViewModel.IsEnabled != _generalSettingsRepository.SettingsConfig.Enabled.LightSwitch)
+                if (this.ViewModel.IsEnabled != this.generalSettingsRepository.SettingsConfig.Enabled.LightSwitch)
                 {
-                    _generalSettingsRepository.SettingsConfig.Enabled.LightSwitch = ViewModel.IsEnabled;
+                    this.generalSettingsRepository.SettingsConfig.Enabled.LightSwitch = this.ViewModel.IsEnabled;
 
-                    var generalSettingsMessage = new OutGoingGeneralSettings(_generalSettingsRepository.SettingsConfig).ToString();
+                    var generalSettingsMessage = new OutGoingGeneralSettings(this.generalSettingsRepository.SettingsConfig).ToString();
                     Logger.LogInfo($"Saved general settings from Light Switch page.");
 
-                    _sendConfigMsg?.Invoke(generalSettingsMessage);
+                    this.sendConfigMsg?.Invoke(generalSettingsMessage);
                 }
             }
             else
             {
-                if (ViewModel.ModuleSettings != null)
+                if (this.ViewModel.ModuleSettings != null)
                 {
-                    SndLightSwitchSettings currentSettings = new(_moduleSettingsRepository.SettingsConfig);
+                    SndLightSwitchSettings currentSettings = new(this.moduleSettingsRepository.SettingsConfig);
                     SndModuleSettings<SndLightSwitchSettings> csIpcMessage = new(currentSettings);
 
-                    SndLightSwitchSettings outSettings = new(ViewModel.ModuleSettings);
+                    SndLightSwitchSettings outSettings = new(this.ViewModel.ModuleSettings);
                     SndModuleSettings<SndLightSwitchSettings> outIpcMessage = new(outSettings);
 
                     string csMessage = csIpcMessage.ToJsonString();
@@ -190,13 +231,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         Logger.LogInfo($"Saved Light Switch settings from Light Switch page.");
 
-                        _sendConfigMsg?.Invoke(outMessage);
+                        this.sendConfigMsg?.Invoke(outMessage);
                     }
                 }
             }
         }
 
-        private void LoadSettings(ISettingsRepository<GeneralSettings> generalSettingsRepository, ISettingsRepository<LightSwitchSettings> moduleSettingsRepository)
+        private void LoadSettings(SettingsRepository<GeneralSettings> generalSettingsRepository, SettingsRepository<LightSwitchSettings> moduleSettingsRepository)
         {
             if (generalSettingsRepository != null)
             {
@@ -221,8 +262,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (generalSettings != null)
                 {
-                    ViewModel.IsEnabled = generalSettings.Enabled.LightSwitch;
-                    ViewModel.ModuleSettings = (LightSwitchSettings)lightSwitchSettings.Clone();
+                    this.ViewModel.IsEnabled = generalSettings.Enabled.LightSwitch;
+                    this.ViewModel.ModuleSettings = (LightSwitchSettings)lightSwitchSettings.Clone();
 
                     UpdateEnabledState(generalSettings.Enabled.LightSwitch);
                 }
@@ -239,10 +280,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void Settings_Changed(object sender, FileSystemEventArgs e)
         {
-            _dispatcherQueue.TryEnqueue(() =>
+            this.dispatcherQueue.TryEnqueue(() =>
             {
-                _moduleSettingsRepository.ReloadSettings();
-                LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
+                this.suppressViewModelUpdates = true;
+
+                this.moduleSettingsRepository.ReloadSettings();
+                this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
+
+                this.suppressViewModelUpdates = false;
             });
         }
 
@@ -253,20 +298,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
-                ViewModel.IsEnabledGpoConfigured = true;
-                ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                this.ViewModel.IsEnabledGpoConfigured = true;
+                this.ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
             {
-                ViewModel.IsEnabled = recommendedState;
+                this.ViewModel.IsEnabled = recommendedState;
             }
         }
 
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
         {
-            LocationDialog.IsPrimaryButtonEnabled = false;
-            LocationResultPanel.Visibility = Visibility.Collapsed;
-            await LocationDialog.ShowAsync();
+            this.LocationDialog.IsPrimaryButtonEnabled = false;
+            this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            await this.LocationDialog.ShowAsync();
         }
 
         private void CityAutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -276,7 +321,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 string query = sender.Text.ToLower(CultureInfo.CurrentCulture);
 
                 // Filter your cities (assuming ViewModel.Cities is a List<City>)
-                var filtered = ViewModel.SearchLocations
+                var filtered = this.ViewModel.SearchLocations
                     .Where(c =>
                         (c.City?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false) ||
                         (c.Country?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false))
@@ -286,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void CityAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        /* private void CityAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             if (args.SelectedItem is SearchLocation location)
             {
@@ -296,43 +341,38 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 LocationDialog.IsPrimaryButtonEnabled = true;
                 LocationResultPanel.Visibility = Visibility.Visible;
             }
-        }
+        } */
 
         private void ModeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            switch (ViewModel.ScheduleMode)
+            switch (this.ViewModel.ScheduleMode)
             {
                 case "FixedHours":
                     VisualStateManager.GoToState(this, "ManualState", true);
-                    TimelineCard.Visibility = Visibility.Visible;
+                    this.TimelineCard.Visibility = Visibility.Visible;
                     break;
                 case "SunsetToSunrise":
                     VisualStateManager.GoToState(this, "SunsetToSunriseState", true);
-                    SunriseModeChartState();
+                    this.SunriseModeChartState();
                     break;
                 default:
                     VisualStateManager.GoToState(this, "OffState", true);
-                    TimelineCard.Visibility = Visibility.Collapsed;
+                    this.TimelineCard.Visibility = Visibility.Collapsed;
                     break;
             }
-        }
-
-        private async void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            await GetGeoLocation();
         }
 
         private void SunriseModeChartState()
         {
-            if (ViewModel.Latitude != "0.0" && ViewModel.Longitude != "0.0")
+            if (this.ViewModel.Latitude != "0.0" && this.ViewModel.Longitude != "0.0")
             {
-                TimelineCard.Visibility = Visibility.Visible;
-                LocationWarningBar.Visibility = Visibility.Collapsed;
+                this.TimelineCard.Visibility = Visibility.Visible;
+                this.LocationWarningBar.Visibility = Visibility.Collapsed;
             }
             else
             {
-                TimelineCard.Visibility = Visibility.Collapsed;
-                LocationWarningBar.Visibility = Visibility.Visible;
+                this.TimelineCard.Visibility = Visibility.Collapsed;
+                this.LocationWarningBar.Visibility = Visibility.Visible;
             }
         }
     }
