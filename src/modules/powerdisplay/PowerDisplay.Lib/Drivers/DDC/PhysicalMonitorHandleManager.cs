@@ -55,9 +55,10 @@ namespace PowerDisplay.Common.Drivers.DDC
             return _deviceKeyToHandleMap.ExecuteWithLock(dict =>
             {
                 // Try to reuse existing handle if it's still valid
+                // Use quick connection check instead of full capabilities retrieval
                 if (dict.TryGetValue(deviceKey, out var existingHandle) &&
                     existingHandle != IntPtr.Zero &&
-                    DdcCiNative.ValidateDdcCiConnection(existingHandle))
+                    DdcCiNative.QuickConnectionCheck(existingHandle))
                 {
                     // Destroy the newly created handle since we're using the old one
                     if (newHandle != existingHandle && newHandle != IntPtr.Zero)

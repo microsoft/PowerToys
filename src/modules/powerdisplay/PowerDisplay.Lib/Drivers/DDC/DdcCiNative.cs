@@ -41,6 +41,57 @@ namespace PowerDisplay.Common.Drivers.DDC
     }
 
     /// <summary>
+    /// DDC/CI validation result containing both validation status and cached capabilities data.
+    /// This allows reusing capabilities data retrieved during validation, avoiding duplicate I2C calls.
+    /// </summary>
+    public struct DdcCiValidationResult
+    {
+        /// <summary>
+        /// Gets a value indicating whether the monitor has a valid DDC/CI connection with brightness support.
+        /// </summary>
+        public bool IsValid { get; }
+
+        /// <summary>
+        /// Gets the raw capabilities string retrieved during validation.
+        /// Null if retrieval failed.
+        /// </summary>
+        public string? CapabilitiesString { get; }
+
+        /// <summary>
+        /// Gets the parsed VCP capabilities info retrieved during validation.
+        /// Null if parsing failed.
+        /// </summary>
+        public Models.VcpCapabilities? VcpCapabilitiesInfo { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether capabilities retrieval was attempted.
+        /// True means the result is from an actual attempt (success or failure).
+        /// </summary>
+        public bool WasAttempted { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DdcCiValidationResult"/> struct.
+        /// </summary>
+        public DdcCiValidationResult(bool isValid, string? capabilitiesString = null, Models.VcpCapabilities? vcpCapabilitiesInfo = null, bool wasAttempted = true)
+        {
+            IsValid = isValid;
+            CapabilitiesString = capabilitiesString;
+            VcpCapabilitiesInfo = vcpCapabilitiesInfo;
+            WasAttempted = wasAttempted;
+        }
+
+        /// <summary>
+        /// Gets an invalid validation result with no cached data.
+        /// </summary>
+        public static DdcCiValidationResult Invalid => new(false, null, null, true);
+
+        /// <summary>
+        /// Gets a result indicating validation was not attempted yet.
+        /// </summary>
+        public static DdcCiValidationResult NotAttempted => new(false, null, null, false);
+    }
+
+    /// <summary>
     /// DDC/CI native API wrapper
     /// </summary>
     public static class DdcCiNative
@@ -163,29 +214,131 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Validates the DDC/CI connection
+        /// Fetches VCP capabilities string from a monitor and returns a validation result.
+        /// This is the slow I2C operation (~4 seconds per monitor) that should only be done once.
+        /// The result is cached regardless of success or failure.
         /// </summary>
         /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>True if connection is valid</returns>
-        public static bool ValidateDdcCiConnection(IntPtr hPhysicalMonitor)
+        /// <returns>Validation result with capabilities data (or failure status)</returns>
+        public static DdcCiValidationResult FetchCapabilities(IntPtr hPhysicalMonitor)
+        {
+            if (hPhysicalMonitor == IntPtr.Zero)
+            {
+                return DdcCiValidationResult.Invalid;
+            }
+
+            try
+            {
+                // Try to get capabilities string (slow I2C operation)
+                var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
+                if (string.IsNullOrEmpty(capsString))
+                {
+                    Logger.LogDebug($"FetchCapabilities: Failed to get capabilities string for handle 0x{hPhysicalMonitor:X}");
+                    return DdcCiValidationResult.Invalid;
+                }
+
+                // Parse the capabilities string
+                var capabilities = Utils.VcpCapabilitiesParser.Parse(capsString);
+                if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
+                {
+                    Logger.LogDebug($"FetchCapabilities: Failed to parse capabilities string for handle 0x{hPhysicalMonitor:X}");
+                    return DdcCiValidationResult.Invalid;
+                }
+
+                // Check if brightness (VCP 0x10) is supported - determines DDC/CI validity
+                bool supportsBrightness = capabilities.SupportsVcpCode(NativeConstants.VcpCodeBrightness);
+
+                Logger.LogDebug($"FetchCapabilities: Handle 0x{hPhysicalMonitor:X} - BrightnessSupport={supportsBrightness}, VcpCodes={capabilities.SupportedVcpCodes.Count}");
+                return new DdcCiValidationResult(supportsBrightness, capsString, capabilities);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogDebug($"FetchCapabilities: Exception for handle 0x{hPhysicalMonitor:X}: {ex.Message}");
+                return DdcCiValidationResult.Invalid;
+            }
+        }
+
+        /// <summary>
+        /// Validates the DDC/CI connection by checking if the monitor returns a valid capabilities string
+        /// that includes brightness control (VCP 0x10).
+        /// NOTE: This method performs a slow I2C operation. Prefer using FetchCapabilities() during
+        /// discovery phase and caching the result.
+        /// </summary>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <returns>Validation result containing status and cached capabilities data</returns>
+        [System.Obsolete("Use FetchCapabilities() during discovery and cache results. This method is kept for backward compatibility.")]
+        public static DdcCiValidationResult ValidateDdcCiConnection(IntPtr hPhysicalMonitor)
+        {
+            // Delegate to FetchCapabilities which does the same thing
+            return FetchCapabilities(hPhysicalMonitor);
+        }
+
+        /// <summary>
+        /// Quick connection check using a simple VCP read (brightness).
+        /// This is much faster than full capabilities retrieval (~50ms vs ~4s).
+        /// Use this for runtime connection validation when capabilities are already cached.
+        /// </summary>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <returns>True if the monitor responds to VCP queries</returns>
+        public static bool QuickConnectionCheck(IntPtr hPhysicalMonitor)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
             {
                 return false;
             }
 
-            // Try reading basic VCP codes to validate connection
-            var testCodes = new byte[] { NativeConstants.VcpCodeBrightness, NativeConstants.VcpCodeContrast, NativeConstants.VcpCodeVcpVersion, NativeConstants.VcpCodeVolume };
-
-            foreach (var code in testCodes)
+            try
             {
-                if (TryGetVCPFeature(hPhysicalMonitor, code, out _, out _))
-                {
-                    return true;
-                }
+                // Try a quick brightness read to verify connection
+                return TryGetMonitorBrightness(hPhysicalMonitor, out _, out _, out _);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Try to get capabilities string from a physical monitor handle.
+        /// </summary>
+        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
+        /// <returns>Capabilities string, or null if failed</returns>
+        private static string? TryGetCapabilitiesString(IntPtr hPhysicalMonitor)
+        {
+            if (hPhysicalMonitor == IntPtr.Zero)
+            {
+                return null;
             }
 
-            return false;
+            try
+            {
+                // Get capabilities string length
+                if (!GetCapabilitiesStringLength(hPhysicalMonitor, out uint length) || length == 0)
+                {
+                    return null;
+                }
+
+                // Allocate buffer and get capabilities string
+                var buffer = Marshal.AllocHGlobal((int)length);
+                try
+                {
+                    if (!CapabilitiesRequestAndCapabilitiesReply(hPhysicalMonitor, buffer, length))
+                    {
+                        return null;
+                    }
+
+                    return Marshal.PtrToStringAnsi(buffer);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogDebug($"TryGetCapabilitiesString failed: {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>

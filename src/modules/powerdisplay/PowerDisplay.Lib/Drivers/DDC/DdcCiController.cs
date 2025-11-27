@@ -47,7 +47,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         public string Name => "DDC/CI Monitor Controller";
 
         /// <summary>
-        /// Check if the specified monitor can be controlled
+        /// Check if the specified monitor can be controlled.
+        /// Uses quick connection check if capabilities are already cached,
+        /// otherwise falls back to full validation.
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -55,7 +57,23 @@ namespace PowerDisplay.Common.Drivers.DDC
                 () =>
                 {
                     var physicalHandle = GetPhysicalHandle(monitor);
-                    return physicalHandle != IntPtr.Zero && DdcCiNative.ValidateDdcCiConnection(physicalHandle);
+                    if (physicalHandle == IntPtr.Zero)
+                    {
+                        return false;
+                    }
+
+                    // If monitor already has cached capabilities with brightness support,
+                    // use quick connection check instead of full capabilities retrieval
+                    if (monitor.VcpCapabilitiesInfo != null &&
+                        monitor.VcpCapabilitiesInfo.SupportsVcpCode(NativeConstants.VcpCodeBrightness))
+                    {
+                        return DdcCiNative.QuickConnectionCheck(physicalHandle);
+                    }
+
+                    // Fall back to full validation for monitors without cached capabilities
+#pragma warning disable CS0618 // Suppress obsolete warning - needed for backward compatibility
+                    return DdcCiNative.ValidateDdcCiConnection(physicalHandle).IsValid;
+#pragma warning restore CS0618
                 },
                 cancellationToken);
         }
@@ -345,10 +363,18 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get monitor capabilities string with retry logic
+        /// Get monitor capabilities string with retry logic.
+        /// Uses cached CapabilitiesRaw if available to avoid slow I2C operations.
         /// </summary>
         public async Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            // Check if capabilities are already cached
+            if (!string.IsNullOrEmpty(monitor.CapabilitiesRaw))
+            {
+                Logger.LogDebug($"GetCapabilitiesStringAsync: Using cached capabilities for {monitor.Id} (length: {monitor.CapabilitiesRaw.Length})");
+                return monitor.CapabilitiesRaw;
+            }
+
             return await Task.Run(
                 () =>
                 {
@@ -492,7 +518,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return monitors;
                     }
 
-                    // Get physical handles for each monitor
+                    // Phase 1: Collect all candidate monitors with their handles
+                    var candidateMonitors = new List<(IntPtr Handle, string DeviceKey, PHYSICAL_MONITOR PhysicalMonitor, string AdapterName, int Index, DisplayDeviceInfo? MatchedDevice)>();
+
                     foreach (var hMonitor in monitorHandles)
                     {
                         var adapterName = _discoveryHelper.GetMonitorDeviceId(hMonitor);
@@ -511,7 +539,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                         }
 
                         // Match physical monitors with DisplayDeviceInfo
-                        // For each physical monitor on this adapter, find the corresponding DisplayDeviceInfo
                         for (int i = 0; i < physicalMonitors.Length; i++)
                         {
                             var physicalMonitor = physicalMonitors[i];
@@ -542,29 +569,71 @@ namespace PowerDisplay.Common.Drivers.DDC
                             string deviceKey = matchedDevice?.DeviceKey ?? $"{adapterName}_{i}";
 
                             // Use HandleManager to reuse or create handle
-                            var (handleToUse, reusingOldHandle) = _handleManager.ReuseOrCreateHandle(deviceKey, physicalMonitor.HPhysicalMonitor);
+                            var (handleToUse, _) = _handleManager.ReuseOrCreateHandle(deviceKey, physicalMonitor.HPhysicalMonitor);
 
-                            // Always validate DDC/CI connection, regardless of handle reuse
-                            // This ensures monitors that don't support DDC/CI (e.g., internal laptop displays)
-                            // are not included in the DDC controller's results
-                            if (!DdcCiNative.ValidateDdcCiConnection(handleToUse))
-                            {
-                                Logger.LogDebug($"DDC: Handle 0x{handleToUse:X} (reused={reusingOldHandle}) failed DDC/CI validation, skipping");
-                                continue;
-                            }
-
-                            // Update physical monitor handle to use the correct one
+                            // Update physical monitor handle
                             var monitorToCreate = physicalMonitor;
                             monitorToCreate.HPhysicalMonitor = handleToUse;
 
-                            var monitor = _discoveryHelper.CreateMonitorFromPhysical(monitorToCreate, adapterName, i, monitorDisplayInfo, matchedDevice);
-                            if (monitor != null)
-                            {
-                                monitors.Add(monitor);
+                            candidateMonitors.Add((handleToUse, deviceKey, monitorToCreate, adapterName, i, matchedDevice));
+                        }
+                    }
 
-                                // Store in new map for cleanup
-                                newHandleMap[monitor.DeviceKey] = handleToUse;
+                    // Phase 2: Fetch capabilities in PARALLEL for all candidate monitors
+                    // This is the slow I2C operation (~4s per monitor), but parallelization
+                    // significantly reduces total time when multiple monitors are connected.
+                    // Results are cached regardless of success/failure.
+                    Logger.LogInfo($"DDC: Phase 2 - Fetching capabilities for {candidateMonitors.Count} monitors in parallel");
+
+                    var fetchTasks = candidateMonitors.Select(candidate =>
+                        Task.Run(
+                            () =>
+                            {
+                                var capabilitiesResult = DdcCiNative.FetchCapabilities(candidate.Handle);
+                                return (Candidate: candidate, CapabilitiesResult: capabilitiesResult);
+                            },
+                            cancellationToken));
+
+                    var fetchResults = await Task.WhenAll(fetchTasks);
+
+                    Logger.LogInfo($"DDC: Phase 2 completed - Got results for {fetchResults.Length} monitors");
+
+                    // Phase 3: Create monitor objects for valid DDC/CI monitors
+                    // A monitor is valid for DDC if it has capabilities with brightness support
+                    foreach (var result in fetchResults)
+                    {
+                        // Skip monitors that don't support DDC/CI brightness control
+                        if (!result.CapabilitiesResult.IsValid)
+                        {
+                            Logger.LogDebug($"DDC: Handle 0x{result.Candidate.Handle:X} - No DDC/CI brightness support, skipping");
+                            continue;
+                        }
+
+                        var monitor = _discoveryHelper.CreateMonitorFromPhysical(
+                            result.Candidate.PhysicalMonitor,
+                            result.Candidate.AdapterName,
+                            result.Candidate.Index,
+                            monitorDisplayInfo,
+                            result.Candidate.MatchedDevice);
+
+                        if (monitor != null)
+                        {
+                            // Attach cached capabilities data - this is the key optimization!
+                            // By caching here, we avoid re-fetching during InitializeMonitorCapabilitiesAsync
+                            if (!string.IsNullOrEmpty(result.CapabilitiesResult.CapabilitiesString))
+                            {
+                                monitor.CapabilitiesRaw = result.CapabilitiesResult.CapabilitiesString;
                             }
+
+                            if (result.CapabilitiesResult.VcpCapabilitiesInfo != null)
+                            {
+                                monitor.VcpCapabilitiesInfo = result.CapabilitiesResult.VcpCapabilitiesInfo;
+                            }
+
+                            monitors.Add(monitor);
+                            newHandleMap[monitor.DeviceKey] = result.Candidate.Handle;
+
+                            Logger.LogInfo($"DDC: Added monitor {monitor.Id} with {monitor.VcpCapabilitiesInfo?.SupportedVcpCodes.Count ?? 0} VCP codes");
                         }
                     }
 
@@ -582,12 +651,13 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Validate monitor connection status
+        /// Validate monitor connection status.
+        /// Uses quick VCP read instead of full capabilities retrieval.
         /// </summary>
         public async Task<bool> ValidateConnectionAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             return await Task.Run(
-                () => monitor.Handle != IntPtr.Zero && DdcCiNative.ValidateDdcCiConnection(monitor.Handle),
+                () => monitor.Handle != IntPtr.Zero && DdcCiNative.QuickConnectionCheck(monitor.Handle),
                 cancellationToken);
         }
 

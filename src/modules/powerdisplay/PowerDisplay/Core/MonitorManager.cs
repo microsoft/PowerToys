@@ -157,10 +157,19 @@ namespace PowerDisplay.Core
             IMonitorController controller,
             CancellationToken cancellationToken)
         {
-            // Verify if monitor can be controlled
-            if (!await controller.CanControlMonitorAsync(monitor, cancellationToken))
+            // Skip control verification if monitor was already validated during discovery phase
+            // The presence of cached VcpCapabilitiesInfo indicates the monitor passed DDC/CI validation
+            // This avoids redundant capabilities retrieval (~4 seconds per monitor)
+            bool alreadyValidated = monitor.VcpCapabilitiesInfo != null &&
+                                   monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0;
+
+            if (!alreadyValidated)
             {
-                return null;
+                // Verify if monitor can be controlled (for monitors not validated in discovery phase)
+                if (!await controller.CanControlMonitorAsync(monitor, cancellationToken))
+                {
+                    return null;
+                }
             }
 
             // Get current brightness
@@ -207,6 +216,7 @@ namespace PowerDisplay.Core
 
         /// <summary>
         /// Initialize monitor DDC/CI capabilities.
+        /// If capabilities are already cached from discovery phase, only update derived properties.
         /// </summary>
         private async Task InitializeMonitorCapabilitiesAsync(
             Monitor monitor,
@@ -215,6 +225,15 @@ namespace PowerDisplay.Core
         {
             try
             {
+                // Check if capabilities were already cached during discovery phase
+                // This avoids expensive I2C calls (~4 seconds per monitor) for redundant data
+                if (monitor.VcpCapabilitiesInfo != null && monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count > 0)
+                {
+                    Logger.LogInfo($"Using cached capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
+                    UpdateMonitorCapabilitiesFromVcp(monitor);
+                    return;
+                }
+
                 Logger.LogInfo($"Getting capabilities for monitor {monitor.Id}");
                 var capsString = await controller.GetCapabilitiesStringAsync(monitor, cancellationToken);
 
