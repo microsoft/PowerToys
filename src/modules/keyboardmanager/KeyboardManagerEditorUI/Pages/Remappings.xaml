@@ -23,16 +23,12 @@
                 Height="36"
                 Margin="0,12,0,0"
                 Click="NewRemappingBtn_Click">
-                <StackPanel 
-                    Orientation="Horizontal" 
-                    Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock
-                        x:Uid="RemappingsPageNewTextBlock"
-                        VerticalAlignment="Center" />
+                    <TextBlock x:Uid="RemappingsPageNewTextBlock" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
             <Grid
@@ -78,7 +74,7 @@
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
                 <Rectangle
                     Grid.ColumnSpan="4"

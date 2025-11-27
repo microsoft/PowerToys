@@ -157,12 +157,12 @@
             Width="480"
             MinWidth="600"
             MaxWidth="600"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
             PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
             PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogPrimary')}"
             SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogSecondary')}">
             <Grid>
-                <controls:AppPageInputControl x:Name="AppShortcutControl"/>
+                <controls:AppPageInputControl x:Name="AppShortcutControl" />
             </Grid>
         </ContentDialog>
     </Grid>

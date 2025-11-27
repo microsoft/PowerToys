@@ -44,39 +44,31 @@
             </ToggleButton.Content>
         </ToggleButton>
 
-        <StackPanel Orientation="Horizontal" 
-                    Spacing="8">
-            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleHeader')}"/>
-            <TextBox 
-                x:Name="ProgramPathInput"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleHeader')}" />
+            <TextBox x:Name="ProgramPathInput" />
             <Button
                 x:Name="ProgramPathSelectButton"
-                Content="Select Program"
-                Click="ProgramPathSelectButton_Click"/>
+                Click="ProgramPathSelectButton_Click"
+                Content="Select Program" />
         </StackPanel>
-        <StackPanel Orientation="Horizontal" 
-            Spacing="8">
-            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Arguments')}"/>
-            <TextBox
-                x:Name="ProgramArgsInput"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Arguments')}" />
+            <TextBox x:Name="ProgramArgsInput" />
         </StackPanel>
-        
-        <StackPanel 
-            Orientation="Horizontal" 
-            Spacing="8">
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock>
                 Start in
             </TextBlock>
-            <TextBox
-                x:Name="StartInPathInput"/>
+            <TextBox x:Name="StartInPathInput" />
             <Button
                 x:Name="StartInSelectButton"
-                Content="Select Starting Directory"
-                Click="StartInSelectButton_Click"/>
+                Click="StartInSelectButton_Click"
+                Content="Select Starting Directory" />
         </StackPanel>
-        <StackPanel Orientation="Horizontal" 
-            Spacing="8">
-            <ComboBox 
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <ComboBox
                 x:Name="ElevationComboBox"
                 Header="Elevation"
                 SelectedValue="Normal">
@@ -104,7 +96,7 @@
                 <x:String>Maximized</x:String>
             </ComboBox>
         </StackPanel>
-        
+
 
 
 

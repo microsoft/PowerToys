@@ -23,13 +23,9 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock
-                x:Uid="InputControlOriginalKeysTextBlock"
-                Margin="0,12,0,0" />
+            <TextBlock x:Uid="InputControlOriginalKeysTextBlock" Margin="0,12,0,0" />
             <Grid Grid.Column="2">
-                <TextBlock 
-                    x:Uid="InputControlNewKeysTextBlock"
-                    Margin="0,12,0,0" />
+                <TextBlock x:Uid="InputControlNewKeysTextBlock" Margin="0,12,0,0" />
             </Grid>
             <Grid Grid.Row="1" Margin="0,8,0,0">
                 <ToggleButton

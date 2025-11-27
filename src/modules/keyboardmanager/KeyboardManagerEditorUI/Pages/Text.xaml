@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="KeyboardManagerEditorUI.Pages.Text"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -27,9 +27,7 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock
-                        x:Uid="TextPageNewTextBlock"
-                        VerticalAlignment="Center" />
+                    <TextBlock x:Uid="TextPageNewTextBlock" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
             <Grid

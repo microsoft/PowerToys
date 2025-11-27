@@ -19,7 +19,7 @@
         <TextBlock
             x:Uid="TextPageInputControlShortcutKeysTextBlock"
             Margin="0,12,0,8"
-            FontWeight="SemiBold"/>
+            FontWeight="SemiBold" />
 
         <ToggleButton
             x:Name="ShortcutToggleBtn"
@@ -67,6 +67,6 @@
             x:Uid="TextPageInputControlAllAppsTextBox"
             Background="{ThemeResource TextControlBackgroundFocused}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}"/>
+            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}" />
     </StackPanel>
 </UserControl>

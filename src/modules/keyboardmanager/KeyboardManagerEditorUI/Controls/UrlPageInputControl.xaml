@@ -44,12 +44,9 @@
             </ToggleButton.Content>
         </ToggleButton>
 
-        <StackPanel Orientation="Vertical" 
-                    Spacing="8">
-            <TextBlock Text="URL to open"/>
-            <TextBox 
-                x:Name="UrlPathInput"
-                Width="360"/>
+        <StackPanel Orientation="Vertical" Spacing="8">
+            <TextBlock Text="URL to open" />
+            <TextBox x:Name="UrlPathInput" Width="360" />
         </StackPanel>
     </StackPanel>
 </UserControl>
