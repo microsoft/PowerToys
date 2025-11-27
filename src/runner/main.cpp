@@ -34,8 +34,10 @@
 
 #include <Psapi.h>
 #include <RestartManager.h>
+#include <shellapi.h>
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
+#include "ai_detection.h"
 
 #if _DEBUG && _WIN64
 #include "unhandled_exception_handler.h"
@@ -74,6 +76,87 @@ void chdir_current_executable()
     {
         show_last_error_message(L"Change Directory to Executable Path", GetLastError(), L"PowerToys - runner");
     }
+}
+
+// Detect AI capabilities by calling ImageResizer in detection mode.
+// This runs in a background thread to avoid blocking the main startup.
+// ImageResizer writes the result to a cache file that it reads on normal startup.
+void DetectAiCapabilitiesAsync(bool skipSettingsCheck)
+{
+    std::thread([skipSettingsCheck]() {
+        try
+        {
+            // Check if ImageResizer module is enabled (skip if called from apply_general_settings)
+            if (!skipSettingsCheck)
+            {
+                auto settings = PTSettingsHelper::load_general_settings();
+                if (json::has(settings, L"enabled", json::JsonValueType::Object))
+                {
+                    auto enabledModules = settings.GetNamedObject(L"enabled");
+                    if (json::has(enabledModules, L"Image Resizer", json::JsonValueType::Boolean))
+                    {
+                        bool isEnabled = enabledModules.GetNamedBoolean(L"Image Resizer", false);
+                        if (!isEnabled)
+                        {
+                            Logger::info(L"ImageResizer module is disabled, skipping AI detection");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Get ImageResizer.exe path
+            std::wstring imageResizerPath = get_module_folderpath();
+            imageResizerPath += L"\\modules\\ImageResizer\\ImageResizer.exe";
+
+            if (!std::filesystem::exists(imageResizerPath))
+            {
+                Logger::warn(L"ImageResizer.exe not found at {}, skipping AI detection", imageResizerPath);
+                return;
+            }
+
+            Logger::info(L"Starting AI capability detection via ImageResizer");
+
+            // Call ImageResizer --detect-ai
+            SHELLEXECUTEINFO sei = { sizeof(sei) };
+            sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+            sei.lpFile = imageResizerPath.c_str();
+            sei.lpParameters = L"--detect-ai";
+            sei.nShow = SW_HIDE;
+
+            if (ShellExecuteExW(&sei))
+            {
+                // Wait for detection to complete (with timeout)
+                DWORD waitResult = WaitForSingleObject(sei.hProcess, 30000); // 30 second timeout
+                CloseHandle(sei.hProcess);
+
+                if (waitResult == WAIT_OBJECT_0)
+                {
+                    Logger::info(L"AI capability detection completed successfully");
+                }
+                else if (waitResult == WAIT_TIMEOUT)
+                {
+                    Logger::warn(L"AI capability detection timed out");
+                }
+                else
+                {
+                    Logger::warn(L"AI capability detection wait failed");
+                }
+            }
+            else
+            {
+                Logger::warn(L"Failed to launch ImageResizer for AI detection, error: {}", GetLastError());
+            }
+        }
+        catch (const std::exception& e)
+        {
+            Logger::error("Exception during AI capability detection: {}", e.what());
+        }
+        catch (...)
+        {
+            Logger::error("Unknown exception during AI capability detection");
+        }
+    }).detach();
 }
 
 inline wil::unique_mutex_nothrow create_msi_mutex()
@@ -126,6 +209,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         std::thread{ [] {
             PeriodicUpdateWorker();
         } }.detach();
+
+        // Start AI capability detection in background
+        // This calls ImageResizer --detect-ai which writes result to cache file
+        DetectAiCapabilitiesAsync();
 
         std::thread{ [] {
             if (updating::uninstall_previous_msix_version_async().get())

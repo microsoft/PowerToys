@@ -67,6 +67,13 @@ namespace ImageResizer
             // Fix for .net 3.1.19 making Image Resizer not adapt to DPI changes.
             NativeMethods.SetProcessDPIAware();
 
+            // Check for AI detection mode (called by Runner in background)
+            if (e?.Args?.Length > 0 && e.Args[0] == "--detect-ai")
+            {
+                RunAiDetectionMode();
+                return;
+            }
+
             if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredImageResizerEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
             {
                 /* TODO: Add logs to ImageResizer.
@@ -77,9 +84,20 @@ namespace ImageResizer
                 return;
             }
 
-            // Check AI availability at startup (not relying on cached settings)
-            AiAvailabilityState = CheckAiAvailability();
-            Logger.LogInfo($"AI availability checked at startup: {AiAvailabilityState}");
+            // Load AI availability from cache (written by Runner's background detection)
+            var cachedState = Services.AiAvailabilityCacheService.LoadCache();
+
+            if (cachedState.HasValue)
+            {
+                AiAvailabilityState = cachedState.Value;
+                Logger.LogInfo($"AI state loaded from cache: {AiAvailabilityState}");
+            }
+            else
+            {
+                // No valid cache - default to NotSupported (Runner will detect and cache for next startup)
+                AiAvailabilityState = AiAvailabilityState.NotSupported;
+                Logger.LogInfo("No AI cache found, defaulting to NotSupported");
+            }
 
             // If AI is potentially available, start background initialization (non-blocking)
             if (AiAvailabilityState == AiAvailabilityState.Ready)
@@ -100,6 +118,34 @@ namespace ImageResizer
 
             // Temporary workaround for issue #1273
             WindowHelpers.BringToForeground(new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
+        }
+
+        /// <summary>
+        /// AI detection mode: perform detection, write to cache, and exit.
+        /// Called by Runner in background to avoid blocking ImageResizer UI startup.
+        /// </summary>
+        private void RunAiDetectionMode()
+        {
+            try
+            {
+                Logger.LogInfo("Running AI detection mode...");
+
+                // Perform detection (reuse existing logic)
+                var state = CheckAiAvailability();
+
+                // Write result to cache file
+                Services.AiAvailabilityCacheService.SaveCache(state);
+
+                Logger.LogInfo($"AI detection complete: {state}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"AI detection failed: {ex.Message}");
+                Services.AiAvailabilityCacheService.SaveCache(AiAvailabilityState.NotSupported);
+            }
+
+            // Exit silently without showing UI
+            Environment.Exit(0);
         }
 
         /// <summary>
