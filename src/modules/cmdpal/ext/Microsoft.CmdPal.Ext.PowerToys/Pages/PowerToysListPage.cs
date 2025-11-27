@@ -4,7 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helper;
+using PowerToysExtension.Helpers;
 
 namespace PowerToysExtension.Pages;
 

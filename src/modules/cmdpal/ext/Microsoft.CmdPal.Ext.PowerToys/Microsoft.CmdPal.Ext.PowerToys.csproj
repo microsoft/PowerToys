@@ -8,6 +8,7 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>false</UseWinUI>
+		<UseWindowsForms>true</UseWindowsForms>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
@@ -25,6 +26,7 @@
 		<Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
 		<Content Include="Assets\StoreLogo.png" />
 		<Content Include="Assets\Wide310x150Logo.scale-200.png" />
+		<Content Include="Assets\FileLocksmith.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -55,6 +57,8 @@
 		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
 	</ItemGroup>
+
+	<!-- Exclude legacy Helper folder in favor of Helpers -->
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<PublishTrimmed>true</PublishTrimmed>

@@ -78,6 +78,8 @@ internal static class WorkspaceItemsHelper
         return items.ToArray();
     }
 
+    internal static IListItem[] FilteredItems(string searchText) => GetWorkspaceItems(searchText);
+
     private static List<WorkspaceProject> LoadWorkspaces()
     {
         try

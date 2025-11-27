@@ -5,7 +5,7 @@
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Common.UI.SettingsDeepLink;
 
-namespace PowerToysExtension.Helper;
+namespace PowerToysExtension.Helpers;
 
 internal static class PowerToysResourcesHelper
 {
@@ -18,7 +18,7 @@ internal static class PowerToysResourcesHelper
             SettingsWindow.ColorPicker => "Assets\\ColorPicker.png",
             SettingsWindow.FancyZones => "Assets\\FancyZones.png",
             SettingsWindow.Hosts => "Assets\\Hosts.png",
-            SettingsWindow.PowerOCR => "Assets\\PowerOcr.png",
+            SettingsWindow.PowerOCR => "Assets\\TextExtractor.png",
             SettingsWindow.RegistryPreview => "Assets\\RegistryPreview.png",
             SettingsWindow.MeasureTool => "Assets\\ScreenRuler.png",
             SettingsWindow.ShortcutGuide => "Assets\\ShortcutGuide.png",

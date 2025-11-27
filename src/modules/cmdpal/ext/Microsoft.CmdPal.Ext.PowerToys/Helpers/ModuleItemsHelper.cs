@@ -10,9 +10,9 @@ using Common.UI;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
-using PowerToysExtension.Helper;
+using PowerToysExtension.Pages;
 
-namespace PowerToysExtension.Helper;
+namespace PowerToysExtension.Helpers;
 
 /// <summary>
 /// Builds the list of PowerToys module entries and supports basic fuzzy filtering.
@@ -77,8 +77,8 @@ internal static class ModuleItemsHelper
 
         var settingsCommand = new OpenInSettingsCommand(module, $"Open {title} settings");
 
-        // Module-specific extras
-        var more = new List<CommandContextItem>();
+        var more = new List<ICommandContextItem>();
+
         switch (module)
         {
             case SettingsDeepLink.SettingsWindow.Awake:
@@ -89,12 +89,12 @@ internal static class ModuleItemsHelper
                 break;
 
             case SettingsDeepLink.SettingsWindow.Workspaces:
+                more.Add(new CommandContextItem(new WorkspacesListPage()));
                 more.Add(new CommandContextItem(new OpenWorkspaceEditorCommand()));
-                more.Add(new CommandContextItem(new OpenPowerToysSettingsCommand("Workspaces", "Workspaces")));
                 break;
 
-            case SettingsDeepLink.SettingsWindow.Overview:
-                // Overview just opens main settings
+            case SettingsDeepLink.SettingsWindow.ColorPicker:
+                more.Add(new CommandContextItem(new CopyColorCommand()));
                 break;
 
             default:
