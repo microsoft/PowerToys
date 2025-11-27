@@ -11,12 +11,6 @@ using AdvancedPaste.Settings;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Amazon;
-using Microsoft.SemanticKernel.Connectors.AzureAIInference;
-using Microsoft.SemanticKernel.Connectors.Google;
-using Microsoft.SemanticKernel.Connectors.HuggingFace;
-using Microsoft.SemanticKernel.Connectors.MistralAI;
-using Microsoft.SemanticKernel.Connectors.Ollama;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services;
@@ -220,8 +214,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         var serviceType = GetRuntimeConfiguration().ServiceType;
         return new OpenAIPromptExecutionSettings
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
-            Temperature = 0.01,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
         };
     }
 }

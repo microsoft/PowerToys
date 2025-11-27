@@ -32,18 +32,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "#include ""binres.rc""\0"
 END
@@ -121,7 +121,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,166,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,223,306,50,14
-    LTEXT           "ZoomIt v9.10",IDC_VERSION,42,7,73,10
+    LTEXT           "ZoomIt v9.21",IDC_VERSION,42,7,73,10
     LTEXT           "Copyright © 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,231,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
@@ -272,13 +272,15 @@ BEGIN
     LTEXT           "Note: Recording is only available on Windows 10 (version 1903) and higher.",IDC_STATIC,7,77,246,19
     LTEXT           "Scaling:",IDC_STATIC,30,115,26,8
     COMBOBOX        IDC_RECORD_SCALING,61,114,26,30,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_OEMCONVERT | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Format:",IDC_STATIC,30,132,26,8
+    COMBOBOX        IDC_RECORD_FORMAT,61,131,60,30,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_OEMCONVERT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Frame Rate:",IDC_STATIC,119,115,44,8,NOT WS_VISIBLE
     COMBOBOX        IDC_RECORD_FRAME_RATE,166,114,42,30,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | CBS_OEMCONVERT | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
     LTEXT           "To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode. ",IDC_STATIC,7,32,246,19
     LTEXT           "To record a specific window, enter the hotkey with the Alt key in the opposite mode.",IDC_STATIC,7,55,246,19
-    CONTROL         "&Capture audio input:",IDC_CAPTURE_AUDIO,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,137,83,10
-    COMBOBOX        IDC_MICROPHONE,81,152,172,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Microphone:",IDC_STATIC,32,154,47,8
+    CONTROL         "&Capture audio input:",IDC_CAPTURE_AUDIO,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,149,83,10
+    COMBOBOX        IDC_MICROPHONE,81,164,172,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Microphone:",IDC_STATIC,32,166,47,8
 END
 
 SNIP DIALOGEX 0, 0, 260, 68

@@ -344,12 +344,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
     <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
   </data>
-  <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
-    <value>Go home when activated</value>
-  </data>
-  <data name="Settings_GeneralPage_GoHome_SettingsCard.Description" xml:space="preserve">
-    <value>Automatically opens the home page upon activation</value>
-  </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>
@@ -429,7 +423,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>More</value>
   </data>
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
-    <value>Last Position</value>
+    <value>Last position</value>
     <comment>Reopen the window where it was last closed</comment>
   </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
@@ -522,5 +516,38 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
     <value>Command Palette - Fatal error</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Immediately.Content" xml:space="preserve">
+    <value>Immediately</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After10Seconds.Content" xml:space="preserve">
+    <value>10 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After20Seconds.Content" xml:space="preserve">
+    <value>20 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After30Seconds.Content" xml:space="preserve">
+    <value>30 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After60Seconds.Content" xml:space="preserve">
+    <value>60 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After90Seconds.Content" xml:space="preserve">
+    <value>90 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After120Seconds.Content" xml:space="preserve">
+    <value>2 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After180Seconds.Content" xml:space="preserve">
+    <value>3 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Automatically return home</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
+    <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
   </data>
 </root>

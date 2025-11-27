@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     public sealed partial class AdvancedPastePage : NavigablePage, IRefreshablePage, IDisposable
     {
         private readonly ObservableCollection<ModelDetails> _foundryCachedModels = new();
-        private readonly ObservableCollection<FoundryDownloadableModel> _foundryDownloadableModels = new();
         private CancellationTokenSource _foundryModelLoadCts;
         private bool _suppressFoundrySelectionChanged;
         private bool _isFoundryLocalAvailable;
@@ -36,6 +35,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private const string AdvancedAISystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
         private const string SimpleAISystemPrompt = "You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content.";
+        private static readonly string AdvancedAISystemPromptNormalized = AdvancedAISystemPrompt.Trim();
+        private static readonly string SimpleAISystemPromptNormalized = SimpleAISystemPrompt.Trim();
 
         private AdvancedPasteViewModel ViewModel { get; set; }
 
@@ -55,7 +56,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (FoundryLocalPicker is not null)
             {
                 FoundryLocalPicker.CachedModels = _foundryCachedModels;
-                FoundryLocalPicker.DownloadableModels = _foundryDownloadableModels;
                 FoundryLocalPicker.SelectionChanged += FoundryLocalPicker_SelectionChanged;
                 FoundryLocalPicker.LoadRequested += FoundryLocalPicker_LoadRequested;
             }
@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.RefreshEnabledState();
             UpdatePasteAIUIVisibility();
-            _ = UpdateFoundryLocalUIAsync(refreshFoundry: true);
+            _ = UpdateFoundryLocalUIAsync();
         }
 
         private void EnableAdvancedPasteAI() => ViewModel.EnableAI();
@@ -317,7 +317,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool requiresEndpoint = serviceKind is AIServiceType.AzureOpenAI
                 or AIServiceType.AzureAIInference
                 or AIServiceType.Mistral
-                or AIServiceType.HuggingFace
                 or AIServiceType.Ollama;
             bool requiresDeployment = serviceKind == AIServiceType.AzureOpenAI;
             bool requiresApiVersion = serviceKind == AIServiceType.AzureOpenAI;
@@ -385,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private Task UpdateFoundryLocalUIAsync(bool refreshFoundry = false)
+        private Task UpdateFoundryLocalUIAsync()
         {
             string selectedType = ViewModel?.PasteAIProviderDraft?.ServiceType ?? string.Empty;
             bool isFoundryLocal = string.Equals(selectedType, "FoundryLocal", StringComparison.OrdinalIgnoreCase);
@@ -420,12 +419,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
             }
 
-            FoundryLocalPicker?.RequestLoad(refreshFoundry);
+            FoundryLocalPicker?.RequestLoad();
 
             return Task.CompletedTask;
         }
 
-        private async Task LoadFoundryLocalModelsAsync(bool refresh = false)
+        private async Task LoadFoundryLocalModelsAsync()
         {
             if (FoundryLocalPanel is null)
             {
@@ -457,9 +456,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     return;
                 }
 
-                IEnumerable<ModelDetails> cachedModelsEnumerable = refresh
-                    ? await provider.GetModelsAsync(ignoreCached: true, cancelationToken: cancellationToken)
-                    : await provider.GetModelsAsync(cancelationToken: cancellationToken);
+                IEnumerable<ModelDetails> cachedModelsEnumerable = await provider.GetModelsAsync(cancelationToken: cancellationToken).ConfigureAwait(false);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -468,9 +465,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 var cachedModels = cachedModelsEnumerable?.ToList() ?? new List<ModelDetails>();
 
-                UpdateFoundryCollections(cachedModels, []);
-                ShowFoundryAvailableState();
-                RestoreFoundrySelection(cachedModels);
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateFoundryCollections(cachedModels);
+                    ShowFoundryAvailableState();
+                    RestoreFoundrySelection(cachedModels);
+                });
             }
             catch (OperationCanceledException)
             {
@@ -479,12 +479,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch (Exception ex)
             {
                 var errorMessage = $"Unable to load Foundry Local models. {ex.Message}";
-                ShowFoundryUnavailableState(errorMessage);
                 System.Diagnostics.Debug.WriteLine($"[AdvancedPastePage] Failed to load Foundry Local models: {ex}");
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    ShowFoundryUnavailableState(errorMessage);
+                });
             }
             finally
             {
-                UpdateFoundrySaveButtonState();
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateFoundrySaveButtonState();
+                });
             }
         }
 
@@ -537,7 +543,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateFoundrySaveButtonState();
         }
 
-        private void UpdateFoundryCollections(IReadOnlyCollection<ModelDetails> cachedModels, IReadOnlyCollection<ModelDetails> catalogModels)
+        private void UpdateFoundryCollections(IReadOnlyCollection<ModelDetails> cachedModels)
         {
             _foundryCachedModels.Clear();
 
@@ -546,20 +552,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 _foundryCachedModels.Add(model);
             }
 
-            var cachedReferences = new HashSet<string>(_foundryCachedModels.Select(m => NormalizeFoundryModelReference(m.Url ?? m.Name)), StringComparer.OrdinalIgnoreCase);
-
-            _foundryDownloadableModels.Clear();
-
-            foreach (var model in catalogModels.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                var reference = NormalizeFoundryModelReference(model.Url ?? model.Name);
-                if (cachedReferences.Contains(reference))
-                {
-                    continue;
-                }
-
-                _foundryDownloadableModels.Add(new FoundryDownloadableModel(model));
-            }
+            var cachedReferences = new HashSet<string>(_foundryCachedModels.Select(m => m.Name), StringComparer.OrdinalIgnoreCase);
         }
 
         private void RestoreFoundrySelection(IReadOnlyCollection<ModelDetails> cachedModels)
@@ -575,9 +568,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (!string.IsNullOrWhiteSpace(currentModelReference))
             {
-                var normalizedReference = NormalizeFoundryModelReference(currentModelReference);
                 matchingModel = cachedModels.FirstOrDefault(model =>
-                    string.Equals(NormalizeFoundryModelReference(model.Url ?? model.Name), normalizedReference, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(model.Name, currentModelReference, StringComparison.OrdinalIgnoreCase));
             }
 
             if (FoundryLocalPicker is null)
@@ -607,7 +599,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIProviderDraft.ModelName = NormalizeFoundryModelReference(matchingModel.Url ?? matchingModel.Name);
+                    ViewModel.PasteAIProviderDraft.ModelName = matchingModel.Name;
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -617,19 +609,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             UpdateFoundrySaveButtonState();
-        }
-
-        private static string NormalizeFoundryModelReference(string modelReference)
-        {
-            if (string.IsNullOrWhiteSpace(modelReference))
-            {
-                return string.Empty;
-            }
-
-            var prefix = FoundryLocalModelProvider.Instance.UrlPrefix;
-            return modelReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                ? modelReference
-                : $"{prefix}{modelReference}";
         }
 
         private void UpdateFoundrySaveButtonState()
@@ -655,7 +634,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            if (!_isFoundryLocalAvailable || _foundryDownloadableModels.Any(model => model.IsDownloading))
+            if (!_isFoundryLocalAvailable)
             {
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
                 return;
@@ -676,7 +655,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (ViewModel?.PasteAIProviderDraft is not null)
                 {
-                    ViewModel.PasteAIProviderDraft.ModelName = NormalizeFoundryModelReference(selectedModel.Url ?? selectedModel.Name);
+                    ViewModel.PasteAIProviderDraft.ModelName = selectedModel.Name;
                 }
 
                 if (FoundryLocalPicker is not null)
@@ -700,9 +679,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateFoundrySaveButtonState();
         }
 
-        private async void FoundryLocalPicker_LoadRequested(object sender, FoundryLocalModelPicker.FoundryLoadRequestedEventArgs args)
+        private async void FoundryLocalPicker_LoadRequested(object sender)
         {
-            await LoadFoundryLocalModelsAsync(args?.Refresh ?? false);
+            await LoadFoundryLocalModelsAsync();
         }
 
         private sealed class FoundryDownloadableModel : INotifyPropertyChanged
@@ -805,6 +784,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            NormalizeSystemPrompt(draft);
             string serviceType = draft.ServiceType ?? "OpenAI";
             string apiKey = PasteAIApiKeyPasswordBox.Password;
             string trimmedApiKey = apiKey?.Trim() ?? string.Empty;
@@ -835,22 +815,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            bool isEmptyOrDefault = string.IsNullOrWhiteSpace(draft.SystemPrompt) ||
-                                     draft.SystemPrompt.Trim() == AdvancedAISystemPrompt.Trim() ||
-                                     draft.SystemPrompt.Trim() == SimpleAISystemPrompt.Trim();
-
-            if (isEmptyOrDefault)
-            {
-                if (!draft.EnableAdvancedAI)
-                {
-                    // Now we'll switch
-                    draft.SystemPrompt = AdvancedAISystemPrompt;
-                }
-                else
-                {
-                    draft.SystemPrompt = SimpleAISystemPrompt;
-                }
-            }
+            NormalizeSystemPrompt(draft);
+            UpdateSystemPromptPlaceholder();
         }
 
         private static bool RequiresApiKeyForService(string serviceType)
@@ -874,7 +840,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 AIServiceType.AzureOpenAI => "https://your-resource.openai.azure.com/",
                 AIServiceType.AzureAIInference => "https://{resource-name}.cognitiveservices.azure.com/",
                 AIServiceType.Mistral => "https://api.mistral.ai/v1/",
-                AIServiceType.HuggingFace => "https://api-inference.huggingface.co/models/",
                 AIServiceType.Ollama => "http://localhost:11434/",
                 _ => "https://your-resource.openai.azure.com/",
             };
@@ -952,15 +917,47 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private Visibility GetServicePrivacyVisibility(string serviceType) => HasServicePrivacyLink(serviceType) ? Visibility.Visible : Visibility.Collapsed;
 
-        private void UpdateSystemPromptPlaceholder()
+        private static bool IsPlaceholderSystemPrompt(string prompt)
         {
-            var draft = ViewModel?.PasteAIProviderDraft;
-            if (draft is null || PasteAISystemPromptTextBox is null)
+            if (string.IsNullOrWhiteSpace(prompt))
+            {
+                return true;
+            }
+
+            string trimmedPrompt = prompt.Trim();
+            return string.Equals(trimmedPrompt, AdvancedAISystemPromptNormalized, StringComparison.Ordinal)
+                || string.Equals(trimmedPrompt, SimpleAISystemPromptNormalized, StringComparison.Ordinal);
+        }
+
+        private static void NormalizeSystemPrompt(PasteAIProviderDefinition draft)
+        {
+            if (draft is null)
             {
                 return;
             }
 
-            PasteAISystemPromptTextBox.PlaceholderText = draft.EnableAdvancedAI
+            if (IsPlaceholderSystemPrompt(draft.SystemPrompt))
+            {
+                draft.SystemPrompt = string.Empty;
+            }
+        }
+
+        private void UpdateSystemPromptPlaceholder()
+        {
+            var draft = ViewModel?.PasteAIProviderDraft;
+            if (draft is null)
+            {
+                return;
+            }
+
+            NormalizeSystemPrompt(draft);
+            if (PasteAISystemPromptTextBox is null)
+            {
+                return;
+            }
+
+            bool useAdvancedPlaceholder = PasteAIEnableAdvancedAICheckBox?.IsOn ?? draft.EnableAdvancedAI;
+            PasteAISystemPromptTextBox.PlaceholderText = useAdvancedPlaceholder
                 ? AdvancedAISystemPrompt
                 : SimpleAISystemPrompt;
         }
@@ -1099,7 +1096,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PasteAIProviderConfigurationDialog.Title = $"{displayName} provider configuration";
             }
 
-            await UpdateFoundryLocalUIAsync(refreshFoundry: true);
+            await UpdateFoundryLocalUIAsync();
             UpdatePasteAIUIVisibility();
             RefreshDialogBindings();
 
@@ -1128,7 +1125,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 : $"{titlePrefix} provider configuration";
 
             UpdatePasteAIUIVisibility();
-            await UpdateFoundryLocalUIAsync(refreshFoundry: false);
+            await UpdateFoundryLocalUIAsync();
             RefreshDialogBindings();
             PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(provider.Id, provider.ServiceType);
             await PasteAIProviderConfigurationDialog.ShowAsync();

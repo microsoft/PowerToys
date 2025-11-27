@@ -15,36 +15,11 @@ public static class AIServiceTypeRegistry
 {
     private static readonly Dictionary<AIServiceType, AIServiceTypeMetadata> MetadataMap = new()
     {
-        [AIServiceType.AmazonBedrock] = new AIServiceTypeMetadata
-        {
-            ServiceType = AIServiceType.AmazonBedrock,
-            DisplayName = "Amazon Bedrock",
-            IsAvailableInUI = false, // Currently disabled in UI
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Bedrock.svg",
-            IsOnlineService = true,
-            LegalDescription = "AdvancedPaste_AmazonBedrock_LegalDescription",
-            TermsLabel = "AdvancedPaste_AmazonBedrock_TermsLabel",
-            TermsUri = new Uri("https://aws.amazon.com/service-terms/"),
-            PrivacyLabel = "AdvancedPaste_AmazonBedrock_PrivacyLabel",
-            PrivacyUri = new Uri("https://aws.amazon.com/privacy/"),
-        },
-        [AIServiceType.Anthropic] = new AIServiceTypeMetadata
-        {
-            ServiceType = AIServiceType.Anthropic,
-            DisplayName = "Anthropic",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Anthropic.svg",
-            IsOnlineService = true,
-            LegalDescription = "AdvancedPaste_Anthropic_LegalDescription",
-            TermsLabel = "AdvancedPaste_Anthropic_TermsLabel",
-            TermsUri = new Uri("https://privacy.claude.com/en/collections/10672567-policies-terms-of-service"),
-            PrivacyLabel = "AdvancedPaste_Anthropic_PrivacyLabel",
-            PrivacyUri = new Uri("https://privacy.claude.com/en/"),
-        },
         [AIServiceType.AzureAIInference] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.AzureAIInference,
             DisplayName = "Azure AI Inference",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg", // No icon for Azure AI Inference, use Foundry Local temporarily
+            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Azure.svg",
             IsOnlineService = true,
             LegalDescription = "AdvancedPaste_AzureAIInference_LegalDescription",
             TermsLabel = "AdvancedPaste_AzureAIInference_TermsLabel",
@@ -84,14 +59,6 @@ public static class AIServiceTypeRegistry
             TermsUri = new Uri("https://ai.google.dev/gemini-api/terms"),
             PrivacyLabel = "AdvancedPaste_Google_PrivacyLabel",
             PrivacyUri = new Uri("https://support.google.com/gemini/answer/13594961"),
-        },
-        [AIServiceType.HuggingFace] = new AIServiceTypeMetadata
-        {
-            ServiceType = AIServiceType.HuggingFace,
-            DisplayName = "Hugging Face",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/HuggingFace.svg",
-            IsOnlineService = true,
-            IsAvailableInUI = false, // Currently disabled in UI
         },
         [AIServiceType.Mistral] = new AIServiceTypeMetadata
         {
