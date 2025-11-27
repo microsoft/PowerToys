@@ -8,13 +8,13 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>false</UseWinUI>
-		<WindowsPackageType>None</WindowsPackageType>
-		<EnableMsixTooling>false</EnableMsixTooling>
-		<GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Nullable>enable</Nullable>
+		<Platforms>x64;ARM64;AnyCPU</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,14 +32,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CommandPalette.Extensions" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 		<PackageReference Include="Microsoft.Windows.CsWin32">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Shmuelie.WinRTServer" />
 	</ItemGroup>
+
+	<!-- Enable Single-project MSIX packaging support -->
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />

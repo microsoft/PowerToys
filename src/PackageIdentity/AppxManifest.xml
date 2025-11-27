@@ -64,6 +64,8 @@
         Square44x44Logo="Images\Square44x44Logo.png">
       </uap:VisualElements>
     </Application>
+    <!-- Temporarily disabled: PowerToys Command Palette Extension now packaged with its own manifest -->
+    <!--
     <Application Id="CmdPalExt.PowerToys"
                  Executable="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.exe"
                  EntryPoint="Windows.FullTrustApplication">
@@ -81,7 +83,7 @@
             <com:ExeServer Executable="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.exe"
                             Arguments="-RegisterProcessAsComServer"
                             DisplayName="PowerToys Command Palette Extension">
-              <com:Class Id="F0A8B809-CE2C-475A-935F-64A0348B1D29"
+              <com:Class Id="3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55"
                          DisplayName="PowerToys Command Palette Extension" />
             </com:ExeServer>
           </com:ComServer>
@@ -96,7 +98,7 @@
               <CmdPalProvider xmlns="http://schemas.microsoft.com/commandpalette/2024/extension">
                 <Metadata DisplayName="PowerToys" Description="Built-in PowerToys commands." />
                 <Activation>
-                  <CreateInstance ClassId="F0A8B809-CE2C-475A-935F-64A0348B1D29" />
+                  <CreateInstance ClassId="3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55" />
                 </Activation>
                 <SupportedInterfaces>
                   <Commands />
@@ -107,5 +109,6 @@
         </uap3:Extension>
       </Extensions>
     </Application>
+    -->
   </Applications>
 </Package>

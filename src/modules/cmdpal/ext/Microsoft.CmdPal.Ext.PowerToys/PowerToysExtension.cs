@@ -5,11 +5,12 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 
 namespace PowerToysExtension;
 
-[Guid("F0A8B809-CE2C-475A-935F-64A0348B1D29")]
+[Guid("3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55")]
 public sealed partial class PowerToysExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
@@ -19,10 +20,12 @@ public sealed partial class PowerToysExtension : IExtension, IDisposable
     public PowerToysExtension(ManualResetEvent extensionDisposedEvent)
     {
         this._extensionDisposedEvent = extensionDisposedEvent;
+        Logger.LogInfo("PowerToysExtension constructed.");
     }
 
     public object? GetProvider(ProviderType providerType)
     {
+        Logger.LogInfo($"GetProvider requested: {providerType}");
         return providerType switch
         {
             ProviderType.Commands => _provider,
@@ -30,5 +33,9 @@ public sealed partial class PowerToysExtension : IExtension, IDisposable
         };
     }
 
-    public void Dispose() => this._extensionDisposedEvent.Set();
+    public void Dispose()
+    {
+        Logger.LogInfo("PowerToysExtension disposing; signalling exit.");
+        this._extensionDisposedEvent.Set();
+    }
 }
