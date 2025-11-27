@@ -145,9 +145,9 @@
       <BuildProject>True</BuildProject>
     </ProjectReference>
     <!-- WinRT metadata reference -->
-    <CsWinRTInputs Include="$(ProjectDir)\..\Microsoft.Terminal.UI\$(Platform)\$(Configuration)\Microsoft.Terminal.UI\Microsoft.Terminal.UI.winmd" />
+    <CsWinRTInputs Include="$(OutputPath)\Microsoft.Terminal.UI.winmd" />
     <!-- Native implementation DLL -->
-    <None Include="..\Microsoft.Terminal.UI\$(Platform)\$(Configuration)\Microsoft.Terminal.UI\Microsoft.Terminal.UI.dll">
+    <None Include="$(OutputPath)\Microsoft.Terminal.UI.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>    
     <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
