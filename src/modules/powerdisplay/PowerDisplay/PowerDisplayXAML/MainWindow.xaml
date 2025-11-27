@@ -121,11 +121,15 @@
                                                     HorizontalAlignment="Right"
                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                           FontSize=16}"
-                                                    Style="{StaticResource SubtleButtonStyle}">
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Visibility="{x:Bind ConvertBoolToVisibility(SupportsInputSource), Mode=OneWay}">
                                                     <Button.Flyout>
                                                         <Flyout>
                                                             <StackPanel Orientation="Vertical">
-                                                                <ListView SelectedIndex="2">
+                                                                <ListView
+                                                                    ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}"
+                                                                    SelectionChanged="InputSourceListView_SelectionChanged"
+                                                                    SelectionMode="Single">
                                                                     <ListView.Header>
                                                                         <TextBlock
                                                                             Margin="16,0,8,0"
@@ -133,9 +137,25 @@
                                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                                             Text="Input source" />
                                                                     </ListView.Header>
-                                                                    <ListViewItem Content="Source 1" />
-                                                                    <ListViewItem Content="Source 2" />
-                                                                    <ListViewItem Content="Source 3" />
+                                                                    <ListView.ItemTemplate>
+                                                                        <DataTemplate x:DataType="vm:InputSourceItem">
+                                                                            <Grid Padding="0,4">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*" />
+                                                                                    <ColumnDefinition Width="Auto" />
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock
+                                                                                    VerticalAlignment="Center"
+                                                                                    Text="{x:Bind Name}" />
+                                                                                <FontIcon
+                                                                                    Grid.Column="1"
+                                                                                    Margin="8,0,0,0"
+                                                                                    FontSize="12"
+                                                                                    Glyph="&#xE73E;"
+                                                                                    Visibility="{x:Bind SelectionVisibility}" />
+                                                                            </Grid>
+                                                                        </DataTemplate>
+                                                                    </ListView.ItemTemplate>
                                                                 </ListView>
                                                             </StackPanel>
                                                         </Flyout>

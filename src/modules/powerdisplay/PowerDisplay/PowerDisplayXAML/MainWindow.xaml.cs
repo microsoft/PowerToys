@@ -738,6 +738,49 @@ namespace PowerDisplay
             Logger.LogInfo("[UI] InputSourceItem_Click: SetInputSourceAsync completed");
         }
 
+        /// <summary>
+        /// Input source ListView selection changed handler - switches the monitor input source
+        /// </summary>
+        private async void InputSourceListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ListView listView)
+            {
+                return;
+            }
+
+            // Get the selected input source item
+            var selectedItem = listView.SelectedItem as InputSourceItem;
+            if (selectedItem == null)
+            {
+                return;
+            }
+
+            Logger.LogInfo($"[UI] InputSourceListView_SelectionChanged: Selected {selectedItem.Name} (0x{selectedItem.Value:X2}) for monitor {selectedItem.MonitorId}");
+
+            // Find the monitor by ID
+            MonitorViewModel? monitorVm = null;
+            if (!string.IsNullOrEmpty(selectedItem.MonitorId) && _viewModel != null)
+            {
+                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == selectedItem.MonitorId);
+            }
+
+            if (monitorVm == null)
+            {
+                Logger.LogWarning("[UI] InputSourceListView_SelectionChanged: Could not find MonitorViewModel");
+                return;
+            }
+
+            // Set the input source
+            await monitorVm.SetInputSourceAsync(selectedItem.Value);
+
+            // Close the flyout after selection
+            if (listView.Parent is StackPanel stackPanel &&
+                stackPanel.Parent is Flyout flyout)
+            {
+                flyout.Hide();
+            }
+        }
+
         public void Dispose()
         {
             _viewModel?.Dispose();
