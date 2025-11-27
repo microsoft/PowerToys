@@ -39,7 +39,6 @@
                             Padding="8"
                             Background="Transparent"
                             BorderThickness="0"
-                            Description="{x:Bind Id}"
                             Header="{x:Bind DisplayName}"
                             ToolTipService.ToolTip="{x:Bind Id}">
                             <controls:SettingsCard.HeaderIcon>
