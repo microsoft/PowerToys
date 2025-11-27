@@ -21,7 +21,7 @@
         <DesktopAcrylicBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
 
-    <Grid x:Name="RootGrid">
+    <Grid x:Name="RootGrid" IsTabStop="True">
         <Grid.Resources>
             <Style
                 x:Key="FlyoutButtonStyle"

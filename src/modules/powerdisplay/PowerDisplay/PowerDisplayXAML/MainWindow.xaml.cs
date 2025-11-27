@@ -219,7 +219,14 @@ namespace PowerDisplay
                 // This is critical because the OS might restore the window to a previous (incorrect) size
                 // when ShowWindow is called, ignoring our pre-show adjustment.
                 // By queuing this on the dispatcher, we ensure it runs after the window is visible and layout is active.
-                DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    AdjustWindowSizeToContent();
+
+                    // Clear focus from any interactive element (e.g., Slider) to prevent
+                    // showing the value tooltip when the window opens
+                    RootGrid.Focus(FocusState.Programmatic);
+                });
 
                 bool isVisible = IsWindowVisible();
                 if (!isVisible)
