@@ -45,6 +45,21 @@
 	<data name="VolumeTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Volume</value>
   </data>
+	<data name="RotationTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rotation</value>
+  </data>
+	<data name="RotateNormalTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Normal (0°)</value>
+  </data>
+	<data name="RotateLeftTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rotate left (270°)</value>
+  </data>
+	<data name="RotateRightTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rotate right (90°)</value>
+  </data>
+	<data name="RotateInvertedTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Inverted (180°)</value>
+  </data>
 	<data name="VolumeAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Volume</value>
   </data>

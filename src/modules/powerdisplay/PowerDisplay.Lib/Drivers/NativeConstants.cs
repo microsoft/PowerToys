@@ -325,5 +325,96 @@ namespace PowerDisplay.Common.Drivers
         /// The display is rotated 270 degrees (measured clockwise) from its natural orientation.
         /// </summary>
         public const int Dmdo270 = 3;
+
+        // ==================== DEVMODE field flags ====================
+
+        /// <summary>
+        /// DmDisplayOrientation field is valid.
+        /// </summary>
+        public const int DmDisplayOrientation = 0x00000080;
+
+        /// <summary>
+        /// DmPelsWidth field is valid.
+        /// </summary>
+        public const int DmPelsWidth = 0x00080000;
+
+        /// <summary>
+        /// DmPelsHeight field is valid.
+        /// </summary>
+        public const int DmPelsHeight = 0x00100000;
+
+        // ==================== ChangeDisplaySettings flags ====================
+
+        /// <summary>
+        /// The settings change is temporary. Not saved to registry.
+        /// </summary>
+        public const uint CdsUpdateregistry = 0x00000001;
+
+        /// <summary>
+        /// Test the graphics mode but don't actually set it.
+        /// </summary>
+        public const uint CdsTest = 0x00000002;
+
+        /// <summary>
+        /// The mode is fullscreen.
+        /// </summary>
+        public const uint CdsFullscreen = 0x00000004;
+
+        /// <summary>
+        /// The settings apply to all users.
+        /// </summary>
+        public const uint CdsGlobal = 0x00000008;
+
+        /// <summary>
+        /// Set the primary display.
+        /// </summary>
+        public const uint CdsSetPrimary = 0x00000010;
+
+        /// <summary>
+        /// Reset the mode after a dynamic mode change.
+        /// </summary>
+        public const uint CdsReset = 0x40000000;
+
+        /// <summary>
+        /// Don't reset the mode.
+        /// </summary>
+        public const uint CdsNoreset = 0x10000000;
+
+        // ==================== ChangeDisplaySettings result codes ====================
+
+        /// <summary>
+        /// The settings change was successful.
+        /// </summary>
+        public const int DispChangeSuccessful = 0;
+
+        /// <summary>
+        /// The computer must be restarted for the graphics mode to work.
+        /// </summary>
+        public const int DispChangeRestart = 1;
+
+        /// <summary>
+        /// The display driver failed the specified graphics mode.
+        /// </summary>
+        public const int DispChangeFailed = -1;
+
+        /// <summary>
+        /// The graphics mode is not supported.
+        /// </summary>
+        public const int DispChangeBadmode = -2;
+
+        /// <summary>
+        /// Unable to write settings to the registry.
+        /// </summary>
+        public const int DispChangeNotupdated = -3;
+
+        /// <summary>
+        /// An invalid set of flags was passed in.
+        /// </summary>
+        public const int DispChangeBadflags = -4;
+
+        /// <summary>
+        /// An invalid parameter was passed in.
+        /// </summary>
+        public const int DispChangeBadparam = -5;
     }
 }

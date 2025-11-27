@@ -178,6 +178,9 @@
                                             <CheckBox x:Uid="PowerDisplay_Monitor_EnableInputSource" IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
+                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnableRotation" IsChecked="{x:Bind EnableRotation, Mode=TwoWay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Left">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
 

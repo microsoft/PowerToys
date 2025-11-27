@@ -264,6 +264,72 @@
                                                         ValueChanged="Slider_ValueChanged"
                                                         Value="{x:Bind Volume, Mode=OneWay}" />
                                                 </Grid>
+
+                                                <!--  Rotation Controls  -->
+                                                <Grid
+                                                    Margin="0,8,0,0"
+                                                    HorizontalAlignment="Stretch"
+                                                    Visibility="{x:Bind ConvertBoolToVisibility(ShowRotation), Mode=OneWay}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <!--  Spacing  -->
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <FontIcon
+                                                        x:Uid="RotationTooltip"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        FontSize="16"
+                                                        Glyph="&#xE7AD;" />
+
+                                                    <StackPanel
+                                                        Grid.Column="2"
+                                                        Orientation="Horizontal"
+                                                        Spacing="4">
+                                                        <!--  Normal (0°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateNormalTooltip"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation0, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            Tag="0">
+                                                            <FontIcon FontSize="14" Glyph="&#xE74A;" />
+                                                        </ToggleButton>
+                                                        <!--  Left (270°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateLeftTooltip"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation3, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            Tag="3">
+                                                            <FontIcon FontSize="14" Glyph="&#xE76B;" />
+                                                        </ToggleButton>
+                                                        <!--  Right (90°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateRightTooltip"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation1, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            Tag="1">
+                                                            <FontIcon FontSize="14" Glyph="&#xE76C;" />
+                                                        </ToggleButton>
+                                                        <!--  Inverted (180°)  -->
+                                                        <ToggleButton
+                                                            x:Uid="RotateInvertedTooltip"
+                                                            Click="RotationButton_Click"
+                                                            DataContext="{x:Bind}"
+                                                            IsChecked="{x:Bind IsRotation2, Mode=OneWay}"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            Tag="2">
+                                                            <FontIcon FontSize="14" Glyph="&#xE74B;" />
+                                                        </ToggleButton>
+                                                    </StackPanel>
+                                                </Grid>
                                             </StackPanel>
                                         </StackPanel>
                                     </DataTemplate>

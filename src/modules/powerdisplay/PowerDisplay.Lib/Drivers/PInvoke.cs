@@ -63,6 +63,14 @@ namespace PowerDisplay.Common.Drivers
             int iModeNum,
             DevMode* lpDevMode);
 
+        [LibraryImport("user32.dll", EntryPoint = "ChangeDisplaySettingsExW", StringMarshalling = StringMarshalling.Utf16)]
+        internal static unsafe partial int ChangeDisplaySettingsEx(
+            [MarshalAs(UnmanagedType.LPWStr)] string? lpszDeviceName,
+            DevMode* lpDevMode,
+            IntPtr hwnd,
+            uint dwflags,
+            IntPtr lParam);
+
         [LibraryImport("user32.dll")]
         internal static partial IntPtr MonitorFromWindow(
             IntPtr hwnd,

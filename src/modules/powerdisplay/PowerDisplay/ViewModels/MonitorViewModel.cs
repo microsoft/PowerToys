@@ -44,6 +44,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     private bool _showContrast;
     private bool _showVolume;
     private bool _showInputSource;
+    private bool _showRotation;
 
     /// <summary>
     /// Updates a property value directly without triggering hardware updates.
@@ -353,6 +354,87 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
                 _showInputSource = value;
                 OnPropertyChanged();
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show rotation controls (controlled by Settings UI, default false)
+    /// </summary>
+    public bool ShowRotation
+    {
+        get => _showRotation;
+        set
+        {
+            if (_showRotation != value)
+            {
+                _showRotation = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the current rotation/orientation of the monitor (0=normal, 1=90°, 2=180°, 3=270°)
+    /// </summary>
+    public int CurrentRotation => _monitor.Orientation;
+
+    /// <summary>
+    /// Gets whether the current rotation is 0° (normal/default)
+    /// </summary>
+    public bool IsRotation0 => CurrentRotation == 0;
+
+    /// <summary>
+    /// Gets whether the current rotation is 90° (rotated right)
+    /// </summary>
+    public bool IsRotation1 => CurrentRotation == 1;
+
+    /// <summary>
+    /// Gets whether the current rotation is 180° (inverted)
+    /// </summary>
+    public bool IsRotation2 => CurrentRotation == 2;
+
+    /// <summary>
+    /// Gets whether the current rotation is 270° (rotated left)
+    /// </summary>
+    public bool IsRotation3 => CurrentRotation == 3;
+
+    /// <summary>
+    /// Set rotation/orientation for this monitor
+    /// </summary>
+    /// <param name="orientation">Orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
+    public async Task SetRotationAsync(int orientation)
+    {
+        // If already at this orientation, do nothing
+        if (CurrentRotation == orientation)
+        {
+            return;
+        }
+
+        try
+        {
+            Logger.LogInfo($"[{HardwareId}] Setting rotation to {orientation}");
+
+            var result = await _monitorManager.SetRotationAsync(Id, orientation);
+
+            if (result.IsSuccess)
+            {
+                // Notify all rotation-related properties changed
+                OnPropertyChanged(nameof(CurrentRotation));
+                OnPropertyChanged(nameof(IsRotation0));
+                OnPropertyChanged(nameof(IsRotation1));
+                OnPropertyChanged(nameof(IsRotation2));
+                OnPropertyChanged(nameof(IsRotation3));
+
+                Logger.LogInfo($"[{HardwareId}] Rotation set successfully to {orientation}");
+            }
+            else
+            {
+                Logger.LogWarning($"[{HardwareId}] Failed to set rotation: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{HardwareId}] Exception setting rotation: {ex.Message}");
         }
     }
 

@@ -13,6 +13,7 @@ using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Drivers.WMI;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Core.Interfaces;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -29,6 +30,7 @@ namespace PowerDisplay.Core
         private readonly Dictionary<string, Monitor> _monitorLookup = new();
         private readonly List<IMonitorController> _controllers = new();
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
+        private readonly DisplayRotationService _rotationService = new();
         private bool _disposed;
 
         public IReadOnlyList<Monitor> Monitors => _monitors.AsReadOnly();
@@ -485,6 +487,46 @@ namespace PowerDisplay.Core
                 (ctrl, mon, val, ct) => ctrl.SetInputSourceAsync(mon, val, ct),
                 (mon, val) => mon.CurrentInputSource = val,
                 cancellationToken);
+
+        /// <summary>
+        /// Set rotation/orientation for a monitor.
+        /// Uses Windows ChangeDisplaySettingsEx API (not DDC/CI).
+        /// </summary>
+        /// <param name="monitorId">Monitor ID</param>
+        /// <param name="orientation">Orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Operation result</returns>
+        public Task<MonitorOperationResult> SetRotationAsync(string monitorId, int orientation, CancellationToken cancellationToken = default)
+        {
+            var monitor = GetMonitor(monitorId);
+            if (monitor == null)
+            {
+                Logger.LogError($"[MonitorManager] SetRotation: Monitor not found: {monitorId}");
+                return Task.FromResult(MonitorOperationResult.Failure("Monitor not found"));
+            }
+
+            if (monitor.MonitorNumber <= 0)
+            {
+                Logger.LogError($"[MonitorManager] SetRotation: Invalid monitor number for {monitorId}");
+                return Task.FromResult(MonitorOperationResult.Failure("Invalid monitor number"));
+            }
+
+            // Rotation uses Windows display settings API, not DDC/CI controller
+            var result = _rotationService.SetRotation(monitor.MonitorNumber, orientation);
+
+            if (result.IsSuccess)
+            {
+                monitor.Orientation = orientation;
+                monitor.LastUpdate = DateTime.Now;
+                Logger.LogInfo($"[MonitorManager] SetRotation: Successfully set {monitorId} to orientation {orientation}");
+            }
+            else
+            {
+                Logger.LogError($"[MonitorManager] SetRotation: Failed for {monitorId}: {result.ErrorMessage}");
+            }
+
+            return Task.FromResult(result);
+        }
 
         /// <summary>
         /// Initialize input source for a monitor (async operation)

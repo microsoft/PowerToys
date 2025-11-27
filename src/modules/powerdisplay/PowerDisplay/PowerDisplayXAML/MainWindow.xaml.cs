@@ -768,6 +768,43 @@ namespace PowerDisplay
             }
         }
 
+        /// <summary>
+        /// Rotation button click handler - changes monitor orientation
+        /// </summary>
+        private async void RotationButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggleButton)
+            {
+                return;
+            }
+
+            // Get the orientation from the Tag
+            if (toggleButton.Tag is not string tagStr || !int.TryParse(tagStr, out int orientation))
+            {
+                Logger.LogWarning("[UI] RotationButton_Click: Invalid Tag");
+                return;
+            }
+
+            var monitorVm = toggleButton.DataContext as MonitorViewModel;
+            if (monitorVm == null)
+            {
+                Logger.LogWarning("[UI] RotationButton_Click: Could not find MonitorViewModel");
+                return;
+            }
+
+            // If clicking the current orientation, restore the checked state and do nothing
+            if (monitorVm.CurrentRotation == orientation)
+            {
+                toggleButton.IsChecked = true;
+                return;
+            }
+
+            Logger.LogInfo($"[UI] RotationButton_Click: Setting rotation for {monitorVm.Name} to {orientation}");
+
+            // Set the rotation
+            await monitorVm.SetRotationAsync(orientation);
+        }
+
         public void Dispose()
         {
             _viewModel?.Dispose();

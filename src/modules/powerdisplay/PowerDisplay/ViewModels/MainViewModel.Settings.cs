@@ -452,11 +452,12 @@ public partial class MainViewModel
 
         if (monitorSettings != null)
         {
-            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}, InputSource={monitorSettings.EnableInputSource}");
+            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}, InputSource={monitorSettings.EnableInputSource}, Rotation={monitorSettings.EnableRotation}");
 
             monitorVm.ShowContrast = monitorSettings.EnableContrast;
             monitorVm.ShowVolume = monitorSettings.EnableVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
+            monitorVm.ShowRotation = monitorSettings.EnableRotation;
         }
         else
         {
@@ -608,6 +609,7 @@ public partial class MainViewModel
             monitorInfo.EnableContrast = existingMonitor.EnableContrast;
             monitorInfo.EnableVolume = existingMonitor.EnableVolume;
             monitorInfo.EnableInputSource = existingMonitor.EnableInputSource;
+            monitorInfo.EnableRotation = existingMonitor.EnableRotation;
         }
     }
 

@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableContrast;
         private bool _enableVolume;
         private bool _enableInputSource;
+        private bool _enableRotation;
         private string _capabilitiesRaw = string.Empty;
         private List<string> _vcpCodes = new List<string>();
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
@@ -414,6 +415,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonPropertyName("enableRotation")]
+        public bool EnableRotation
+        {
+            get => _enableRotation;
+            set
+            {
+                if (_enableRotation != value)
+                {
+                    _enableRotation = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         [JsonPropertyName("capabilitiesRaw")]
         public string CapabilitiesRaw
         {
@@ -792,6 +807,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableContrast = other.EnableContrast;
             EnableVolume = other.EnableVolume;
             EnableInputSource = other.EnableInputSource;
+            EnableRotation = other.EnableRotation;
             CapabilitiesRaw = other.CapabilitiesRaw;
             VcpCodes = other.VcpCodes;
             VcpCodesFormatted = other.VcpCodesFormatted;
