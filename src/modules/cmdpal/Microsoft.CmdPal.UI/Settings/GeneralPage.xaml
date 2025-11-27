@@ -51,6 +51,9 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableChinesePinYinSupport_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.EnableChinesePinYinSupport, Mode=TwoWay}" />
+                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                     </controls:SettingsCard>
