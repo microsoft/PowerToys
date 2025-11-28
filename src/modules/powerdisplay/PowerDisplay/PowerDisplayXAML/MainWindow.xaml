@@ -284,13 +284,21 @@
                                                         FontSize="16"
                                                         Glyph="&#xE7AD;" />
 
-                                                    <StackPanel
-                                                        Grid.Column="2"
-                                                        Orientation="Horizontal"
-                                                        Spacing="4">
+                                                    <Grid Grid.Column="2" HorizontalAlignment="Stretch">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="4" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="4" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="4" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
                                                         <!--  Normal (0°)  -->
                                                         <ToggleButton
                                                             x:Uid="RotateNormalTooltip"
+                                                            Grid.Column="0"
+                                                            HorizontalAlignment="Stretch"
                                                             Click="RotationButton_Click"
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation0, Mode=OneWay}"
@@ -301,6 +309,8 @@
                                                         <!--  Left (270°)  -->
                                                         <ToggleButton
                                                             x:Uid="RotateLeftTooltip"
+                                                            Grid.Column="2"
+                                                            HorizontalAlignment="Stretch"
                                                             Click="RotationButton_Click"
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation3, Mode=OneWay}"
@@ -311,6 +321,8 @@
                                                         <!--  Right (90°)  -->
                                                         <ToggleButton
                                                             x:Uid="RotateRightTooltip"
+                                                            Grid.Column="4"
+                                                            HorizontalAlignment="Stretch"
                                                             Click="RotationButton_Click"
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation1, Mode=OneWay}"
@@ -321,6 +333,8 @@
                                                         <!--  Inverted (180°)  -->
                                                         <ToggleButton
                                                             x:Uid="RotateInvertedTooltip"
+                                                            Grid.Column="6"
+                                                            HorizontalAlignment="Stretch"
                                                             Click="RotationButton_Click"
                                                             DataContext="{x:Bind}"
                                                             IsChecked="{x:Bind IsRotation2, Mode=OneWay}"
@@ -328,7 +342,7 @@
                                                             Tag="2">
                                                             <FontIcon FontSize="14" Glyph="&#xE74B;" />
                                                         </ToggleButton>
-                                                    </StackPanel>
+                                                    </Grid>
                                                 </Grid>
                                             </StackPanel>
                                         </StackPanel>
