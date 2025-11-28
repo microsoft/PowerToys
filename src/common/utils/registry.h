@@ -16,6 +16,47 @@
 
 namespace registry
 {
+    namespace detail
+    {
+        struct on_exit
+        {
+            std::function<void()> f;
+
+            on_exit(std::function<void()> f) :
+                f{ std::move(f) } {}
+            ~on_exit() { f(); }
+        };
+
+        template<class... Ts>
+        struct overloaded : Ts...
+        {
+            using Ts::operator()...;
+        };
+
+        template<class... Ts>
+        overloaded(Ts...) -> overloaded<Ts...>;
+
+        inline const wchar_t* getScopeName(HKEY scope)
+        {
+            if (scope == HKEY_LOCAL_MACHINE)
+            {
+                return L"HKLM";
+            }
+            else if (scope == HKEY_CURRENT_USER)
+            {
+                return L"HKCU";
+            }
+            else if (scope == HKEY_CLASSES_ROOT)
+            {
+                return L"HKCR";
+            }
+            else
+            {
+                return L"HK??";
+            }
+        }
+    }
+
     namespace install_scope
     {
         const wchar_t INSTALL_SCOPE_REG_KEY[] = L"Software\\Classes\\powertoys\\";
@@ -159,47 +200,6 @@ namespace registry
 
     template<class>
     inline constexpr bool always_false_v = false;
-
-    namespace detail
-    {
-        struct on_exit
-        {
-            std::function<void()> f;
-
-            on_exit(std::function<void()> f) :
-                f{ std::move(f) } {}
-            ~on_exit() { f(); }
-        };
-
-        template<class... Ts>
-        struct overloaded : Ts...
-        {
-            using Ts::operator()...;
-        };
-
-        template<class... Ts>
-        overloaded(Ts...) -> overloaded<Ts...>;
-
-        inline const wchar_t* getScopeName(HKEY scope)
-        {
-            if (scope == HKEY_LOCAL_MACHINE)
-            {
-                return L"HKLM";
-            }
-            else if (scope == HKEY_CURRENT_USER)
-            {
-                return L"HKCU";
-            }
-            else if (scope == HKEY_CLASSES_ROOT)
-            {
-                return L"HKCR";
-            }
-            else
-            {
-                return L"HK??";
-            }
-        }
-    }
 
     struct ValueChange
     {
