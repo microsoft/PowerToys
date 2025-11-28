@@ -2,9 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using PowerToysExtension.Modules;
 
 namespace PowerToysExtension.Pages;
 
@@ -32,5 +33,5 @@ internal sealed partial class WorkspacesListPage : DynamicListPage
         RaiseItemsChanged(0);
     }
 
-    public override IListItem[] GetItems() => WorkspaceItemsHelper.FilteredItems(SearchText);
+    public override IListItem[] GetItems() => [.. new WorkspacesModuleCommandProvider().BuildCommands()];
 }

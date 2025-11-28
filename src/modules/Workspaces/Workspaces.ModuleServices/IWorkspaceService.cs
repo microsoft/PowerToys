@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
 using PowerToys.ModuleContracts;
 using WorkspacesCsharpLibrary.Data;
 
@@ -19,7 +18,5 @@ public interface IWorkspaceService : IModuleService
 
     Task<OperationResult> SnapshotAsync(string? targetPath = null, CancellationToken cancellationToken = default);
 
-    [RequiresUnreferencedCode("Workspace deserialization uses reflection-based JSON serializer.")]
-    [RequiresDynamicCode("Workspace deserialization uses reflection-based JSON serializer.")]
     Task<OperationResult<IReadOnlyList<ProjectWrapper>>> GetWorkspacesAsync(CancellationToken cancellationToken = default);
 }

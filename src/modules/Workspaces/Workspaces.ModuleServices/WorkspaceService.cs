@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Common.UI;
 using ManagedCommon;
 using PowerToys.Interop;
@@ -80,8 +80,6 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
         return Task.FromResult(OperationResult.Fail("Snapshot is not implemented for Workspaces."));
     }
 
-    [RequiresUnreferencedCode("Workspace deserialization uses reflection-based JSON serializer.")]
-    [RequiresDynamicCode("Workspace deserialization uses reflection-based JSON serializer.")]
     public Task<OperationResult<IReadOnlyList<ProjectWrapper>>> GetWorkspacesAsync(CancellationToken cancellationToken = default)
     {
         try

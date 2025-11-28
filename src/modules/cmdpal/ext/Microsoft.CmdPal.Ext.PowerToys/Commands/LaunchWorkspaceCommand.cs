@@ -2,10 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using Workspaces.ModuleServices;
 
 namespace PowerToysExtension.Commands;
 
@@ -25,25 +23,12 @@ internal sealed partial class LaunchWorkspaceCommand : InvokableCommand
             return CommandResult.KeepOpen();
         }
 
-        try
+        var result = WorkspaceService.Instance.LaunchWorkspaceAsync(_workspaceId).GetAwaiter().GetResult();
+        if (!result.Success)
         {
-            var launcherPath = PowerToysPathResolver.TryResolveExecutable("PowerToys.WorkspacesLauncher.exe");
-            if (string.IsNullOrEmpty(launcherPath))
-            {
-                return CommandResult.ShowToast("Unable to locate PowerToys Workspaces launcher.");
-            }
-
-            var startInfo = new ProcessStartInfo(launcherPath, _workspaceId)
-            {
-                UseShellExecute = true,
-            };
-
-            Process.Start(startInfo);
-            return CommandResult.Hide();
+            return CommandResult.ShowToast(result.Error ?? "Launching workspace failed.");
         }
-        catch (Exception ex)
-        {
-            return CommandResult.ShowToast($"Launching workspace failed: {ex.Message}");
-        }
+
+        return CommandResult.Hide();
     }
 }

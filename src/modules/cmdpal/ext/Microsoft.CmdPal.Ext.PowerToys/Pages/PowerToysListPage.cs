@@ -32,5 +32,5 @@ internal sealed partial class PowerToysListPage : DynamicListPage
         RaiseItemsChanged(0);
     }
 
-    public override IListItem[] GetItems() => ModuleItemsHelper.FilteredItems(SearchText);
+    public override IListItem[] GetItems() => ModuleCommandCatalog.FilteredItems(SearchText);
 }

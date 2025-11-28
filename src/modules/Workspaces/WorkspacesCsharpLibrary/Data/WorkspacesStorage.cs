@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using WorkspacesCsharpLibrary.Data;
 
 namespace WorkspacesCsharpLibrary.Data;
 
@@ -17,13 +15,6 @@ namespace WorkspacesCsharpLibrary.Data;
 /// </summary>
 public static class WorkspacesStorage
 {
-    private static readonly JsonSerializerOptions _loadOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-    };
-
-    [RequiresUnreferencedCode("Workspace file deserialization uses reflection-based JSON serializer.")]
-    [RequiresDynamicCode("Workspace file deserialization uses reflection-based JSON serializer.")]
     public static IReadOnlyList<ProjectWrapper> Load()
     {
         var filePath = GetDefaultFilePath();
@@ -35,7 +26,7 @@ public static class WorkspacesStorage
         try
         {
             var json = File.ReadAllText(filePath);
-            var data = JsonSerializer.Deserialize<WorkspacesFile>(json, _loadOptions);
+            var data = JsonSerializer.Deserialize(json, WorkspacesStorageJsonContext.Default.WorkspacesFile);
 
             if (data?.Workspaces == null)
             {
@@ -70,12 +61,12 @@ public static class WorkspacesStorage
         return Path.Combine(localAppData, "Microsoft", "PowerToys", "Workspaces", "workspaces.json");
     }
 
-    private sealed class WorkspacesFile
+    internal sealed class WorkspacesFile
     {
         public List<WorkspaceProject> Workspaces { get; set; } = new();
     }
 
-    private sealed class WorkspaceProject
+    internal sealed class WorkspaceProject
     {
         public string Id { get; set; } = string.Empty;
 
