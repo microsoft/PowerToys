@@ -105,9 +105,9 @@ void DetectAiCapabilitiesAsync(bool skipSettingsCheck)
                 }
             }
 
-            // Get ImageResizer.exe path
+            // Get ImageResizer.exe path (located in WinUI3Apps folder)
             std::wstring imageResizerPath = get_module_folderpath();
-            imageResizerPath += L"\\modules\\ImageResizer\\ImageResizer.exe";
+            imageResizerPath += L"\\WinUI3Apps\\PowerToys.ImageResizer.exe";
 
             if (!std::filesystem::exists(imageResizerPath))
             {

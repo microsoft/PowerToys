@@ -22,6 +22,11 @@ namespace ImageResizer.Services
         private const string CacheFileName = "ai_capabilities.json";
         private const int CacheVersion = 1;
 
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+        };
+
         private static string CachePath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Microsoft",
@@ -82,10 +87,7 @@ namespace ImageResizer.Services
                     Directory.CreateDirectory(dir);
                 }
 
-                var json = JsonSerializer.Serialize(cache, new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                });
+                var json = JsonSerializer.Serialize(cache, SerializerOptions);
                 File.WriteAllText(CachePath, json);
 
                 Logger.LogInfo($"AI cache saved: {state}");
@@ -119,21 +121,5 @@ namespace ImageResizer.Services
 
             return true;
         }
-    }
-
-    /// <summary>
-    /// Data model for AI capability cache file.
-    /// </summary>
-    internal sealed class AiCapabilityCache
-    {
-        public int Version { get; set; }
-
-        public int State { get; set; }
-
-        public string WindowsBuild { get; set; }
-
-        public string Architecture { get; set; }
-
-        public string Timestamp { get; set; }
     }
 }

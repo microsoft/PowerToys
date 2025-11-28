@@ -156,12 +156,6 @@ namespace ImageResizer
         {
             try
             {
-                // First check if the platform is ARM64 - AI Super Resolution only works on ARM64
-                if (RuntimeInformation.ProcessArchitecture != Architecture.Arm64)
-                {
-                    return AiAvailabilityState.NotSupported;
-                }
-
                 // Check Windows AI service model ready state
                 // it's so slow, why?
                 var readyState = Services.WinAiSuperResolutionService.GetModelReadyState();
