@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using Awake.ModuleServices;
 using Common.UI;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
-using Awake.ModuleServices;
 
 namespace PowerToysExtension.Modules;
 
