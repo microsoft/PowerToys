@@ -36,7 +36,7 @@ internal sealed partial class DevRibbonViewModel : ObservableObject
         Trace.Listeners.Add(new DevRibbonTraceListener(this));
 
         var configLabel = BuildConfiguration == Release ? "RLS" : "DBG"; /* #no-spell-check-line */
-        var aotLabel = BuildInfo.IsNativeAot ? "⚡AOT" : "NO AOT"; /* #no-spell-check-line */
+        var aotLabel = BuildInfo.IsNativeAot ? "⚡AOT" : "NO AOT";
         Tag = $"{configLabel} | {aotLabel}";
 
         TagColor = (BuildConfiguration, BuildInfo.IsNativeAot) switch
