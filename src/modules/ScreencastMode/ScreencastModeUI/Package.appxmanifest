@@ -8,16 +8,16 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="1d41f8df-3045-4c49-87bc-e5410ecd31e5"
+    Name="ae7b75cb-906c-439c-9140-47b031cd9eff"
     Publisher="CN=ahmad"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="1d41f8df-3045-4c49-87bc-e5410ecd31e5" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="ae7b75cb-906c-439c-9140-47b031cd9eff" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>ScreencastModeUI (Package)</DisplayName>
+    <DisplayName>ScreencastModeUI</DisplayName>
     <PublisherDisplayName>ahmad</PublisherDisplayName>
-    <Logo>Images\StoreLogo.png</Logo>
+    <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -34,13 +34,13 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="ScreencastModeUI (Package)"
-        Description="ScreencastModeUI (Package)"
+        DisplayName="ScreencastModeUI"
+        Description="ScreencastModeUI"
         BackgroundColor="transparent"
-        Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
-        <uap:SplashScreen Image="Images\SplashScreen.png" />
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>

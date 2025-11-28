@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\Common.SelfContained.props" />
+
+	<PropertyGroup>
+		<AssemblyTitle>PowerToys.ScreencastMode</AssemblyTitle>
+		<AssemblyDescription>PowerToys ScreencastMode</AssemblyDescription>
+		<OutputType>WinExe</OutputType>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+		<RootNamespace>ScreencastModeUI</RootNamespace>
+		<AssemblyName>PowerToys.ScreencastModeUI</AssemblyName>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<UseWinUI>true</UseWinUI>
+		<Platforms>x64;ARM64</Platforms>
+		<GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<Nullable>enable</Nullable>
+		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+		<ProjectPriFileName>PowerToys.ScreencastModeUI.pri</ProjectPriFileName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+		<PackageReference Include="WinUIEx" />
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+
+	<!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+       Tools extension to be activated for this project even if the Windows App SDK Nuget
+       package has not yet been restored -->
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+		<ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Assets\**\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+</Project>

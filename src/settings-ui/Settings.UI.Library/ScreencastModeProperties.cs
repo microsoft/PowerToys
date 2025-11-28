@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -15,9 +16,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public HotkeySettings ScreencastModeShortcut { get; set; }
 
+        [JsonPropertyName("display_position")]
+        public StringProperty DisplayPosition { get; set; }
+
+        [JsonPropertyName("text_color")]
+        public StringProperty TextColor { get; set; }
+
+        [JsonPropertyName("background_color")]
+        public StringProperty BackgroundColor { get; set; }
+
         public ScreencastModeProperties()
         {
             ScreencastModeShortcut = new HotkeySettings(true, false, true, false, 83); // Win + Alt + S
+            DisplayPosition = new StringProperty("Center");
+            TextColor = new StringProperty("#FFFFFF");
+            BackgroundColor = new StringProperty("#000000");
         }
     }
 }

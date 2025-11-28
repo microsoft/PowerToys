@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 
-public class ScreencastModeViewModel : Observable
+public partial class ScreencastModeViewModel : Observable
 {
     private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -68,6 +68,50 @@ public class ScreencastModeViewModel : Observable
             {
                 _screencastModeSettings.Properties.ScreencastModeShortcut = value;
                 OnPropertyChanged(nameof(ScreencastModeShortcut));
+
+                SaveAndNotifySettings();
+            }
+        }
+    }
+
+    public string DisplayPosition
+    {
+        get => _screencastModeSettings.Properties.DisplayPosition.Value;
+        set
+        {
+            if (_screencastModeSettings.Properties.DisplayPosition.Value != value)
+            {
+                _screencastModeSettings.Properties.DisplayPosition.Value = value;
+                OnPropertyChanged(nameof(DisplayPosition));
+
+                SaveAndNotifySettings();
+            }
+        }
+    }
+
+    public string TextColor
+    {
+        get => _screencastModeSettings.Properties.TextColor.Value;
+        set
+        {
+            if (_screencastModeSettings.Properties.TextColor.Value != value)
+            {
+                _screencastModeSettings.Properties.TextColor.Value = value;
+                OnPropertyChanged(nameof(TextColor));
+                SaveAndNotifySettings();
+            }
+        }
+    }
+
+    public string BackgroundColor
+    {
+        get => _screencastModeSettings.Properties.BackgroundColor.Value;
+        set
+        {
+            if (_screencastModeSettings.Properties.BackgroundColor.Value != value)
+            {
+                _screencastModeSettings.Properties.BackgroundColor.Value = value;
+                OnPropertyChanged(nameof(BackgroundColor));
 
                 SaveAndNotifySettings();
             }

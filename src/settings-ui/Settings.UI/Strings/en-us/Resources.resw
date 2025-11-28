@@ -5493,7 +5493,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
-    <data name="Shell_ScreencastMode.Content" xml:space="preserve">
+  <data name="Shell_ScreencastMode.Content" xml:space="preserve">
     <value>Screencast Mode</value>
     <comment>Product name: Navigation view item name for Screencast Mode</comment>
   </data>
@@ -5501,9 +5501,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Screencast Mode</value>
     <comment>"Screencast Mode" is the name of the utility</comment>
   </data>
-<data name="ScreencastMode.ModuleDescription" xml:space="preserve">
-    <value>Enhance your screencasts and presentations with visual aids</value>
-    <comment>"Screencast Mode" is the name of the utility</comment>
+  <data name="ScreencastMode.ModuleDescription" xml:space="preserve">
+    <value>Visualize keystroke on your screen</value>
   </data>
   <data name="ScreencastMode_Enable.Header" xml:space="preserve">
     <value>Enable Screencast Mode</value>
@@ -5519,5 +5518,29 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ScreencastMode_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
+  </data>
+  <data name="ScreencastMode_Appearance.Header" xml:space="preserve">
+    <value>Appearance &amp; behavior</value>
+  </data>
+  <data name="ScreencastMode_DisplayPosition.Header" xml:space="preserve">
+    <value>Display position</value>
+  </data>
+  <data name="ScreencastMode_DisplayPosition.Description" xml:space="preserve">
+    <value>Choose where the keystroke visualization appears on screen</value>
+  </data>
+  <data name="ScreencastMode_BackgroundColor.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="ScreencastMode_BackgroundColor.Description" xml:space="preserve">
+    <value>Customize the background color of the keystroke display box</value>
+  </data>
+  <data name="ScreencastMode_DocumentationLink.Text" xml:space="preserve">
+    <value>Learn more about Screencast Mode</value>
+  </data>
+  <data name="ScreencastMode_TextColor.Header" xml:space="preserve">
+    <value>Text Color</value>
+  </data>
+  <data name="ScreencastMode_TextColor.Description" xml:space="preserve">
+    <value>Customize the text color of the keystrokes</value>
   </data>
 </root>
