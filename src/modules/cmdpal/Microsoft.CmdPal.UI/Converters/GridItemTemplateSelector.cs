@@ -18,6 +18,10 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Gallery { get; set; }
 
+    public DataTemplate? Section { get; set; }
+
+    public DataTemplate? Separator { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
         DataTemplate? dataTemplate = Medium;
@@ -33,6 +37,17 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
         else if (GridProperties is GalleryGridPropertiesViewModel)
         {
             dataTemplate = Gallery;
+        }
+
+        if (item is ListItemViewModel element && element.IsSectionOrSeparator)
+        {
+            dataTemplate = string.IsNullOrEmpty(element.Section) ? Separator : Section;
+
+            if (dependencyObject is UIElement li)
+            {
+                li.IsTabStop = false;
+                li.IsHitTestVisible = false;
+            }
         }
 
         return dataTemplate;

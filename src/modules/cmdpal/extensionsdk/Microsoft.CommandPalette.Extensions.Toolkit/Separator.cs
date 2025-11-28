@@ -4,6 +4,20 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class Separator : ISeparatorContextItem, ISeparatorFilterItem
+public partial class Separator : CommandItem, IListItem, ISeparatorContextItem, ISeparatorFilterItem
 {
+    public Separator(string? section = "")
+        : base()
+    {
+        this.Command = null;
+        Title = section ?? string.Empty;
+    }
+
+    public IDetails? Details => null;
+
+    public string Section => Title;
+
+    public ITag[]? Tags => null;
+
+    public string? TextToSuggest => null;
 }

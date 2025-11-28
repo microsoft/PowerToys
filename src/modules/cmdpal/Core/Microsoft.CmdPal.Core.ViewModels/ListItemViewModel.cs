@@ -25,6 +25,8 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     public string Section { get; private set; } = string.Empty;
 
+    public bool IsSectionOrSeparator { get; private set; }
+
     public DetailsViewModel? Details { get; private set; }
 
     [MemberNotNullWhen(true, nameof(Details))]
@@ -49,12 +51,17 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         }
 
         UpdateTags(li.Tags);
-
         Section = li.Section ?? string.Empty;
-
+        IsSectionOrSeparator = IsSeparator(li);
         UpdateProperty(nameof(Section));
+        UpdateProperty(nameof(IsSectionOrSeparator));
 
         UpdateAccessibleName();
+    }
+
+    public bool IsSeparator(IListItem item)
+    {
+        return Section is not null && item.Command is null;
     }
 
     public override void SlowInitializeProperties()
@@ -101,6 +108,9 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 break;
             case nameof(Section):
                 this.Section = model.Section ?? string.Empty;
+                break;
+            case nameof(IsSectionOrSeparator):
+                this.IsSectionOrSeparator = !string.IsNullOrEmpty(Section) || IsSeparator(model);
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
