@@ -53,4 +53,16 @@ public partial class Details : BaseObservable, IDetails
     }
 
 = [];
+
+    public virtual IDetailsSize Size
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Size));
+        }
+    }
+
+    = new SmallDetails();
 }
