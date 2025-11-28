@@ -6,9 +6,9 @@ using System.Threading;
 using Microsoft.CmdPal.Ext.PowerToys.Classes;
 using Microsoft.CmdPal.Ext.PowerToys.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.CmdPal.Ext.PowerToys.Services;
 using PowerToys.Interop;
 using static Common.UI.SettingsDeepLink;
+using Workspaces.ModuleServices;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.Commands;
 
@@ -133,7 +133,7 @@ internal sealed partial class LaunchCommand : InvokableCommand
 
             case SettingsWindow.Workspaces:
                 {
-                    var result = Services.ModuleServices.Workspaces().LaunchEditorAsync().GetAwaiter().GetResult();
+                    var result = WorkspaceService.Instance.LaunchEditorAsync().GetAwaiter().GetResult();
                     return result.Success
                         ? CommandResult.KeepOpen()
                         : CommandResult.ShowToast(result.Error ?? "Failed to launch Workspaces editor.");

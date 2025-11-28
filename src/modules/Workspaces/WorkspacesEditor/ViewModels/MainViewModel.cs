@@ -18,12 +18,12 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using WorkspacesCsharpLibrary;
-using WorkspacesEditor.Data;
+using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
-
-using static WorkspacesEditor.Data.WorkspacesData;
+using static WorkspacesCsharpLibrary.Data.WorkspacesData;
 
 namespace WorkspacesEditor.ViewModels
 {

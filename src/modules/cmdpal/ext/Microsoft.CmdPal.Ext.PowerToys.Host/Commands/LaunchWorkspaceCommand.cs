@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.CmdPal.Ext.PowerToys.Services;
+using Workspaces.ModuleServices;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.Commands;
 
@@ -19,7 +19,7 @@ internal sealed partial class LaunchWorkspaceCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        var result = ModuleServices.Workspaces().LaunchWorkspaceAsync(_workspaceId).GetAwaiter().GetResult();
+        var result = WorkspaceService.Instance.LaunchWorkspaceAsync(_workspaceId).GetAwaiter().GetResult();
         if (!result.Success)
         {
             return CommandResult.ShowToast(result.Error ?? "Failed to launch workspace.");

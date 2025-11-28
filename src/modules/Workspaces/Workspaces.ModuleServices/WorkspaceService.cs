@@ -3,21 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Threading;
-using PowerToys.ModuleContracts;
+using System.Diagnostics.CodeAnalysis;
+using Common.UI;
+using ManagedCommon;
 using PowerToys.Interop;
-using static Common.UI.SettingsDeepLink;
+using PowerToys.ModuleContracts;
+using WorkspacesCsharpLibrary.Data;
 
-namespace Microsoft.CmdPal.Ext.PowerToys.Services;
+namespace Workspaces.ModuleServices;
 
 /// <summary>
-/// Implementation of workspace actions that can be reused by thin command adapters.
+/// Implementation of workspace actions for reuse across hosts.
 /// </summary>
-internal sealed class WorkspaceService : IWorkspaceService
+public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
 {
-    public string Key => SettingsWindow.Workspaces.ToString();
+    public static WorkspaceService Instance { get; } = new();
 
-    public Task<OperationResult> LaunchAsync(CancellationToken cancellationToken = default)
+    public override string Key => SettingsDeepLink.SettingsWindow.Workspaces.ToString();
+
+    protected override SettingsDeepLink.SettingsWindow SettingsWindow => SettingsDeepLink.SettingsWindow.Workspaces;
+
+    public override Task<OperationResult> LaunchAsync(CancellationToken cancellationToken = default)
     {
         // Treat launch as invoking the Workspaces editor.
         return LaunchEditorAsync(cancellationToken);
@@ -68,27 +74,25 @@ internal sealed class WorkspaceService : IWorkspaceService
         }
     }
 
-    public Task<OperationResult> OpenSettingsAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var entry = new Classes.PowerToysModuleEntry
-            {
-                Module = SettingsWindow.Workspaces,
-            };
-
-            entry.NavigateToSettingsPage();
-            return Task.FromResult(OperationResult.Ok());
-        }
-        catch (Exception ex)
-        {
-            return Task.FromResult(OperationResult.Fail($"Failed to open Workspaces settings: {ex.Message}"));
-        }
-    }
-
     public Task<OperationResult> SnapshotAsync(string? targetPath = null, CancellationToken cancellationToken = default)
     {
         // Snapshot orchestration is not yet exposed via events; provide a clear failure for now.
         return Task.FromResult(OperationResult.Fail("Snapshot is not implemented for Workspaces."));
+    }
+
+    [RequiresUnreferencedCode("Workspace deserialization uses reflection-based JSON serializer.")]
+    [RequiresDynamicCode("Workspace deserialization uses reflection-based JSON serializer.")]
+    public Task<OperationResult<IReadOnlyList<ProjectWrapper>>> GetWorkspacesAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var items = WorkspacesStorage.Load();
+
+            return Task.FromResult(OperationResults.Ok<IReadOnlyList<ProjectWrapper>>(items));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(OperationResults.Fail<IReadOnlyList<ProjectWrapper>>($"Failed to read workspaces: {ex.Message}"));
+        }
     }
 }
