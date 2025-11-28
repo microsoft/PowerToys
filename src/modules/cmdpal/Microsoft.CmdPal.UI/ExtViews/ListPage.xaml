@@ -27,10 +27,10 @@
             IsSourceGrouped="True"
             Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
 
-        <converters:BoolToVisibilityConverter 
-            x:Key="BoolToVisibilityConverter" 
-            TrueValue="Visible"
-            FalseValue="Collapsed" />
+        <converters:BoolToVisibilityConverter
+            x:Key="BoolToVisibilityConverter"
+            FalseValue="Collapsed"
+            TrueValue="Visible" />
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
@@ -146,8 +146,8 @@
                 Margin="0"
                 VerticalAlignment="Center"
                 cpcontrols:WrapPanel.IsFullLine="True"
-                IsTabStop="False"
                 ColumnSpacing="8"
+                IsTabStop="False"
                 IsTapEnabled="True">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -204,8 +204,8 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <cpcontrols:IconBox
-                    Grid.Row="0"
                     x:Name="GridIconBorder"
+                    Grid.Row="0"
                     Width="36"
                     Height="36"
                     Margin="0"
@@ -217,8 +217,8 @@
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                 <TextBlock
-                    Grid.Row="1"
                     x:Name="TitleTextBlock"
+                    Grid.Row="1"
                     MaxHeight="40"
                     Margin="0,8,0,4"
                     HorizontalAlignment="Center"
@@ -347,7 +347,7 @@
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
                             <GridView.ItemContainerStyle>
-                                <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                                <Style BasedOn="{StaticResource DefaultGridViewItemStyle}" TargetType="GridViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                     <Setter Property="VerticalContentAlignment" Value="Center" />
                                 </Style>
