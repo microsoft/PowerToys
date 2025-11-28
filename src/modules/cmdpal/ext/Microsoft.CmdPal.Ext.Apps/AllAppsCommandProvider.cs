@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
@@ -65,6 +66,47 @@ public partial class AllAppsCommandProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
+
+    public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
+    {
+        if (string.IsNullOrEmpty(packageFamilyName))
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is AppListItem appItem && string.Equals(packageFamilyName, appItem.PackageFamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                matches.Add(item);
+                if (!requireSingleMatch)
+                {
+                    // Return early if we don't require uniqueness.
+                    return item;
+                }
+            }
+        }
+
+        if (requireSingleMatch)
+        {
+            return matches.Count == 1 ? matches[0] : null;
+        }
+
+        return null;
+    }
+
+    public ICommandItem? LookupAppByProductCode(string productCode, bool requireSingleMatch)
+    {
+        /*
+         * msi.dll
+         * MsiEnumProductsEx
+         * MsiGetProductInfo
+         */
+        throw new InvalidOperationException("TODO:");
+    }
 
     public ICommandItem? LookupApp(string displayName)
     {

@@ -215,11 +215,42 @@ public partial class InstallPackageListItem : ListItem
             if (WinGetStatics.AppSearchCallback is not null)
             {
                 var callback = WinGetStatics.AppSearchCallback;
-                var installedApp = callback(_package.DefaultInstallVersion is null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
-                if (installedApp is not null)
+
+                if (_package.InstalledVersion is not null)
                 {
-                    this.Command = installedApp.Command;
-                    contextMenu = [.. installedApp.MoreCommands];
+                    var names = _package.InstalledVersion.PackageFamilyNames;
+                    for (var i = 0; i < names.Count; i++)
+                    {
+                        var installedAppByPfn = callback(names[i]);
+                        if (installedAppByPfn is not null)
+                        {
+                            Command = installedAppByPfn.Command;
+                            foreach (var item in installedAppByPfn.MoreCommands)
+                            {
+                                contextMenu.Add(item);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                if (_package.InstalledVersion is not null)
+                {
+                    var productCodes = _package.InstalledVersion.ProductCodes;
+                    for (var i = 0; i < productCodes.Count; i++)
+                    {
+                        var installedAppByProductCode = callback(productCodes[i]);
+                        if (installedAppByProductCode is not null)
+                        {
+                            Command = installedAppByProductCode.Command;
+                            foreach (var item in installedAppByProductCode.MoreCommands)
+                            {
+                                contextMenu.Add(item);
+                            }
+                            break;
+                        }
+                    }
                 }
             }
 

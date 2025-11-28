@@ -40,6 +40,8 @@ public sealed partial class AppListItem : ListItem
 
     public string AppIdentifier => _app.AppIdentifier;
 
+    public string? PackageFamilyName => _app.PackageFamilyName;
+
     public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
     {
         Command = _appCommand = new AppCommand(app);

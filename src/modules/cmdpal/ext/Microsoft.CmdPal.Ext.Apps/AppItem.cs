@@ -29,6 +29,8 @@ public sealed class AppItem
 
     public string AppIdentifier { get; set; } = string.Empty;
 
+    public string? PackageFamilyName { get; set; }
+
     public AppItem()
     {
     }
