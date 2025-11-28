@@ -360,6 +360,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (e.PropertyName == nameof(MonitorInfo.EnableContrast) ||
                 e.PropertyName == nameof(MonitorInfo.EnableVolume) ||
                 e.PropertyName == nameof(MonitorInfo.EnableInputSource) ||
+                e.PropertyName == nameof(MonitorInfo.EnableRotation) ||
                 e.PropertyName == nameof(MonitorInfo.IsHidden))
             {
                 SignalSettingsUpdated();
