@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
+using System.Text.Json;
 using Common.UI;
-using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.ModuleContracts;
 
 namespace Awake.ModuleServices;
@@ -28,7 +28,13 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
 
     public Task<OperationResult> SetIndefiniteAsync(CancellationToken cancellationToken = default)
     {
-        return InvokeCliAsync("-m indefinite");
+        return UpdateSettingsAsync(
+            settings =>
+            {
+                settings.Properties.Mode = AwakeMode.INDEFINITE;
+                settings.Properties.KeepDisplayOn = true;
+            },
+            cancellationToken);
     }
 
     public Task<OperationResult> SetTimedAsync(int minutes, CancellationToken cancellationToken = default)
@@ -38,42 +44,49 @@ public sealed class AwakeService : ModuleServiceBase, IAwakeService
             return Task.FromResult(OperationResult.Fail("Minutes must be greater than zero."));
         }
 
-        return InvokeCliAsync($"-m timed -t {minutes}");
+        return UpdateSettingsAsync(
+            settings =>
+            {
+                var totalMinutes = Math.Min(minutes, int.MaxValue);
+                settings.Properties.Mode = AwakeMode.TIMED;
+                settings.Properties.KeepDisplayOn = true;
+                settings.Properties.IntervalHours = (uint)(totalMinutes / 60);
+                settings.Properties.IntervalMinutes = (uint)(totalMinutes % 60);
+            },
+            cancellationToken);
     }
 
     public Task<OperationResult> SetOffAsync(CancellationToken cancellationToken = default)
     {
-        return InvokeCliAsync("-m passive");
+        return UpdateSettingsAsync(
+            settings =>
+            {
+                settings.Properties.Mode = AwakeMode.PASSIVE;
+            },
+            cancellationToken);
     }
 
-    private static Task<OperationResult> InvokeCliAsync(string arguments)
+    private static Task<OperationResult> UpdateSettingsAsync(Action<AwakeSettings> mutateSettings, CancellationToken cancellationToken)
     {
         try
         {
-            var basePath = PowerToysPathResolver.GetPowerToysInstallPath();
-            if (string.IsNullOrWhiteSpace(basePath))
-            {
-                return Task.FromResult(OperationResult.Fail("PowerToys install path not found."));
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var exePath = Path.Combine(basePath, "PowerToys.Awake.exe");
-            if (!File.Exists(exePath))
-            {
-                return Task.FromResult(OperationResult.Fail("Unable to locate PowerToys.Awake.exe."));
-            }
+            var settingsUtils = new SettingsUtils();
+            var settings = settingsUtils.GetSettingsOrDefault<AwakeSettings>(AwakeSettings.ModuleName);
 
-            var startInfo = new ProcessStartInfo(exePath, arguments)
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
+            mutateSettings(settings);
 
-            Process.Start(startInfo);
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(settings, AwakeServiceJsonContext.Default.AwakeSettings), AwakeSettings.ModuleName);
             return Task.FromResult(OperationResult.Ok());
+        }
+        catch (OperationCanceledException)
+        {
+            return Task.FromResult(OperationResult.Fail("Awake update was cancelled."));
         }
         catch (Exception ex)
         {
-            return Task.FromResult(OperationResult.Fail($"Failed to invoke Awake: {ex.Message}"));
+            return Task.FromResult(OperationResult.Fail($"Failed to update Awake settings: {ex.Message}"));
         }
     }
 }
