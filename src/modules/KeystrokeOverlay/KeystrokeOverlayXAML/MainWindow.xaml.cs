@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -31,11 +32,12 @@ namespace KeystrokeOverlayUI
         public MainWindow()
         {
             this.InitializeComponent();
-            this.ExtendsContentIntoTitleBar = true;
 
             // app window configuration
             _appWindow = GetAppWindowForCurrentWindow();
             ConfigureAppWindow();
+
+            // MakeWindowTransparent();
 
             // settings initialization
             Settings = new OverlaySettings();
@@ -44,6 +46,8 @@ namespace KeystrokeOverlayUI
             _listener = new KeystrokeListener();
             _listener.OnBatchReceived += Listener_OnBatchReceived;
             _listener.Start();
+
+            ShowKey("DEBUG");
         }
 
         // =========================================================

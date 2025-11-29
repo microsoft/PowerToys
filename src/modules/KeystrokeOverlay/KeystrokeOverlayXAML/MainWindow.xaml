@@ -5,12 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:KeystrokeOverlayUI"
+    xmlns:models="using:KeystrokeOverlayUI.Models"
     mc:Ignorable="d"
 >
 
     <!-- This Grid acts as the draggable area -->
-    <Grid x:Name="DraggableRegion"
-          Background="Transparent" 
+    <Grid Background="Transparent" 
           Padding="10"
           PointerPressed="OnPointerPressed"
           PointerMoved="OnPointerMoved"
@@ -35,7 +35,7 @@
                   The style properties (FontSize, Background, Foreground) bind to the
                   'Settings' object, which is a property on the main Window.
                 -->
-                <DataTemplate x:DataType="local:KeyModel">
+                <DataTemplate x:DataType="models:KeyModel">
                     <local:KeyVisual
                         KeyText="{x:Bind Text}"
                         KeyFontSize="{x:Bind Settings.TextSize, Mode=OneWay}"
