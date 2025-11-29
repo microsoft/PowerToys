@@ -33,13 +33,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public IntProperty TextSize { get; set; }
 
         [JsonPropertyName("text_color")]
-        public IntProperty TextColor { get; set; }
+        public StringProperty TextColor { get; set; }
 
         [JsonPropertyName("text_opacity")]
         public IntProperty TextOpacity { get; set; }
 
         [JsonPropertyName("background_color")]
-        public IntProperty BackgroundColor { get; set; }
+        public StringProperty BackgroundColor { get; set; }
 
         [JsonPropertyName("background_opacity")]
         public IntProperty BackgroundOpacity { get; set; }
@@ -52,9 +52,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DisplayMode = new IntProperty(0);
             OverlayTimeout = new IntProperty(3000);
             TextSize = new IntProperty(24);
-            TextColor = new IntProperty(16777215); // White
+            TextColor = new StringProperty("#FFFFFF");
             TextOpacity = new IntProperty(100);
-            BackgroundColor = new IntProperty(0); // Black
+            BackgroundColor = new StringProperty("#000000");
             BackgroundOpacity = new IntProperty(50);
         }
 

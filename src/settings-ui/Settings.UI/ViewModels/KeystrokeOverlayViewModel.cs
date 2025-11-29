@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using global::PowerToys.GPOWrapper;
@@ -12,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI;
 using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -27,7 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        // private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
@@ -52,18 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            // _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue();
-            // if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            // {
-            //    // Get the enabled state from GPO.
-            //    _enabledStateIsGPOConfigured = true;
-            //    _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            // }
-            // else
-            // {
             _isEnabled = GeneralSettingsConfig.Enabled.KeystrokeOverlay;
-
-            // }
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -83,28 +73,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_enabledStateIsGPOConfigured)
                 {
-                    // If it's GPO configured, shouldn't be able to change this state.
                     return;
                 }
 
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-
-                    // set status in the general settings configuration
                     GeneralSettingsConfig.Enabled.KeystrokeOverlay = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
-
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
                 }
             }
         }
 
-        public bool IsEnabledGpoConfigured
-        {
-            get => _enabledStateIsGPOConfigured;
-        }
+        public bool IsEnabledGpoConfigured => _enabledStateIsGPOConfigured;
 
         public HotkeySettings SwitchMonitorHotkey
         {
@@ -171,27 +154,75 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /* Color and Opacity Settings */
+        // =========================================================
+        //  UPDATED COLOR LOGIC
+        // =========================================================
+        private static Color ParseColor(string hex)
+        {
+            if (string.IsNullOrEmpty(hex))
+            {
+                return Colors.Black;
+            }
+
+            // Convert to Span to avoid allocations
+            ReadOnlySpan<char> hexSpan = hex.AsSpan();
+
+            // Skip the '#' if it exists
+            if (hexSpan.Length > 0 && hexSpan[0] == '#')
+            {
+                hexSpan = hexSpan.Slice(1);
+            }
+
+            // Sanity check: Ensure we have exactly 6 characters left (RRGGBB)
+            if (hexSpan.Length != 6)
+            {
+                return Colors.Black;
+            }
+
+            try
+            {
+                // Parse directly from the span slices
+                byte r = byte.Parse(hexSpan.Slice(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                byte g = byte.Parse(hexSpan.Slice(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                byte b = byte.Parse(hexSpan.Slice(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+                return Color.FromArgb(255, r, g, b);
+            }
+            catch
+            {
+                return Colors.Black;
+            }
+        }
+
+        // Helper: Convert Windows.UI.Color to "#RRGGBB" string
+        private static string ColorToHex(Color c)
+        {
+            return $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+        }
 
         public Color TextColorWithAlpha
         {
             get
             {
-                Color color = IntToColor(_settings.Properties.TextColor.Value);
+                // Convert string hex to Color struct
+                Color color = ParseColor(_settings.Properties.TextColor.Value);
+
+                // Apply the separate Opacity setting
                 byte alpha = (byte)(_settings.Properties.TextOpacity.Value * 2.55);
                 return Color.FromArgb(alpha, color.R, color.G, color.B);
             }
 
             set
             {
-                int newColorRGB = ColorToInt(value);
+                string newColorHex = ColorToHex(value);
                 int newOpacity = (int)(value.A / 2.55);
 
                 bool changed = false;
 
-                if (_settings.Properties.TextColor.Value != newColorRGB)
+                // Compare Strings
+                if (_settings.Properties.TextColor.Value != newColorHex)
                 {
-                    _settings.Properties.TextColor.Value = newColorRGB;
+                    _settings.Properties.TextColor.Value = newColorHex;
                     OnPropertyChanged(nameof(TextColor));
                     changed = true;
                 }
@@ -211,7 +242,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int TextColor
+        // Changed type from int to string
+        public string TextColor
         {
             get => _settings.Properties.TextColor.Value;
             set
@@ -242,21 +274,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                Color color = IntToColor(_settings.Properties.BackgroundColor.Value);
+                Color color = ParseColor(_settings.Properties.BackgroundColor.Value);
                 byte alpha = (byte)(_settings.Properties.BackgroundOpacity.Value * 2.55);
                 return Color.FromArgb(alpha, color.R, color.G, color.B);
             }
 
             set
             {
-                int newColorRGB = ColorToInt(value);
+                string newColorHex = ColorToHex(value);
                 int newOpacity = (int)(value.A / 2.55);
 
                 bool changed = false;
 
-                if (_settings.Properties.BackgroundColor.Value != newColorRGB)
+                if (_settings.Properties.BackgroundColor.Value != newColorHex)
                 {
-                    _settings.Properties.BackgroundColor.Value = newColorRGB;
+                    _settings.Properties.BackgroundColor.Value = newColorHex;
                     OnPropertyChanged(nameof(BackgroundColor));
                     changed = true;
                 }
@@ -276,7 +308,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int BackgroundColor
+        // Changed type from int to string
+        public string BackgroundColor
         {
             get => _settings.Properties.BackgroundColor.Value;
             set
@@ -301,19 +334,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(BackgroundOpacity));
                 }
             }
-        }
-
-        private static Color IntToColor(int v)
-        {
-            byte r = (byte)((v >> 16) & 0xFF);
-            byte g = (byte)((v >> 8) & 0xFF);
-            byte b = (byte)(v & 0xFF);
-            return Color.FromArgb(255, r, g, b);
-        }
-
-        private static int ColorToInt(Color c)
-        {
-            return (c.R << 16) | (c.G << 8) | c.B;
         }
 
         /* Notify Settings Changed */
