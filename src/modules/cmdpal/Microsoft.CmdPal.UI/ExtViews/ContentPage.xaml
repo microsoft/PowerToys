@@ -16,6 +16,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:extViews="using:Microsoft.CmdPal.UI.ExtViews.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -40,12 +42,17 @@
                 x:Key="ContentTemplateSelector"
                 FormTemplate="{StaticResource FormContentTemplate}"
                 MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
-                TreeTemplate="{StaticResource TreeContentTemplate}" />
+                TreeTemplate="{StaticResource TreeContentTemplate}"
+                PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
+                ImageTemplate="{StaticResource ImageContentTemplate}" />
+
             <cmdpalUI:ContentTemplateSelector
                 x:Key="NestedContentTemplateSelector"
                 FormTemplate="{StaticResource NestedFormContentTemplate}"
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
-                TreeTemplate="{StaticResource TreeContentTemplate}" />
+                TreeTemplate="{StaticResource TreeContentTemplate}"
+                PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
+                ImageTemplate="{StaticResource ImageContentTemplate}" />
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
@@ -60,6 +67,18 @@
                         Text="{x:Bind Body, Mode=OneWay}"
                         UseEmphasisExtras="True"
                         UsePipeTables="True" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="PlainTextContentTemplate" x:DataType="viewModels:ContentPlainTextViewModel">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <extViews:PlainTextContentViewer DataContext="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <extViews:ImageContentViewer DataContext="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 

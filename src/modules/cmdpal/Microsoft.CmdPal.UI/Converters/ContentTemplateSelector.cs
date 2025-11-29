@@ -19,6 +19,10 @@ public partial class ContentTemplateSelector : DataTemplateSelector
 
     public DataTemplate? TreeTemplate { get; set; }
 
+    public DataTemplate? PlainTextTemplate { get; set; }
+
+    public DataTemplate? ImageTemplate { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
         return item is ContentViewModel element
@@ -27,6 +31,8 @@ public partial class ContentTemplateSelector : DataTemplateSelector
                 ContentFormViewModel => FormTemplate,
                 ContentMarkdownViewModel => MarkdownTemplate,
                 ContentTreeViewModel => TreeTemplate,
+                ContentImageViewModel => ImageTemplate,
+                ContentPlainTextViewModel => PlainTextTemplate,
                 _ => null,
             }
             : null;

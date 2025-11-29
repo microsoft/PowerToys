@@ -66,8 +66,11 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\ImageViewer.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="ExtViews\Controls\ImageContentViewer.xaml" />
+    <None Remove="ExtViews\Controls\PlainTextContentViewer.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
@@ -79,6 +82,10 @@
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Controls\DevRibbon.xaml" />
   </ItemGroup>
 
 
@@ -197,6 +204,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Controls\DevRibbon.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <Page Update="Controls\ImageViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="ExtViews\Controls\ImageContentViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Update="IsEnabledTextBlock.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -229,6 +248,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\Settings\GeneralPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ExtViews\Controls\PlainTextContentViewer.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

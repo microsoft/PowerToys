@@ -40,6 +40,44 @@ internal sealed partial class SampleContentPage : ContentPage
 }
 
 [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
+internal sealed partial class SamplePlainTextContentPage : ContentPage
+{
+    private readonly PlainTextContent _samplePlainText = new()
+    {
+        Text = """
+               # Sample Plain Text Content
+               This is a sample plain text content page.
+               Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+               """,
+    };
+
+    public override IContent[] GetContent() => [_samplePlainText];
+
+    public SamplePlainTextContentPage()
+    {
+        Name = "Plain Text";
+        Title = "Sample Plain Text Content";
+        Icon = new IconInfo("\uE8D2"); // Text Document
+    }
+}
+
+[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
+internal sealed partial class SampleImageContentPage : ContentPage
+{
+    private readonly ImageContent _sampleImage = new(IconHelpers.FromRelativePath("Assets/Images/Win-Digital.png"));
+    private readonly ImageContent _sampleImage2 = new(IconHelpers.FromRelativePath("Assets/Images/Win-Digital.png")) { MaxWidth = 200, MaxHeight = 200 };
+
+    public override IContent[] GetContent() => [_sampleImage, _sampleImage2];
+
+    public SampleImageContentPage()
+    {
+        Name = "Image";
+        Title = "Sample Image Content";
+        Icon = new IconInfo("\uE722"); // Picture
+    }
+}
+
+[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
 internal sealed partial class SampleContentForm : FormContent
 {
     public SampleContentForm()

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ImageViewer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    mc:Ignorable="d">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <controls:IconBox x:Name="ZoomImage"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsTabStop="False"
+                          RenderTransformOrigin="0.5,0.5"
+                          SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}">
+            <controls:IconBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform x:Name="ScaleTransform" ScaleX="1" ScaleY="1" />
+                    <TranslateTransform x:Name="TranslateTransform" X="0" Y="0" />
+                </TransformGroup>
+            </controls:IconBox.RenderTransform>
+        </controls:IconBox>
+
+        <Border x:Name="ToolbarHost"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Margin="0,0,0,12"
+                Padding="8"
+                CornerRadius="8"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                Background="{ThemeResource SystemControlAcrylicWindowBrush}">
+            <StackPanel x:Name="Toolbar"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="Transparent">
+                <Button Padding="8,6" Click="OnZoomInClick">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Zoom in"/>
+                    </ToolTipService.ToolTip>
+                    <SymbolIcon Symbol="ZoomIn" />
+                </Button>
+                <Button Padding="8,6" Click="OnZoomOutClick">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Zoom out"/>
+                    </ToolTipService.ToolTip>
+                    <SymbolIcon Symbol="ZoomOut" />
+                </Button>
+                <Button Padding="8,6" Click="OnZoomToFitClick">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Zoom to fit"/>
+                    </ToolTipService.ToolTip>
+                    <FontIcon Glyph="&#xE9A6;" />
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
