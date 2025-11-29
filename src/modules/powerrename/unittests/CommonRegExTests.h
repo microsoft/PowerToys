@@ -660,7 +660,7 @@ void VerifyNormalizationHelper(DWORD flags)
 
     // Source: "Test" + U+0438 (Cyrillic small letter i) + U+0306 (combining breve).
     std::wstring sourceNFD = L"Test\u0438\u0306";
-    // Expected result: "Test" + U+0438 (Cyrillic small letter i with breve).
+    // Search: "Test" + U+0438 (Cyrillic small letter i with breve).
     std::wstring searchNFC = L"Test\u0439";
 
     // A match should occur despite different normalization forms.
