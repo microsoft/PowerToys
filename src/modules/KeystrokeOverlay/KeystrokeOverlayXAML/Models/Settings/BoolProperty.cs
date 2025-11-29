@@ -4,5 +4,8 @@
 
 namespace KeystrokeOverlayUI.Models
 {
-    public class BoolProperty { public bool Value { get; set; } }
+    public class BoolProperty
+    {
+        public bool Value { get; set; }
+    }
 }

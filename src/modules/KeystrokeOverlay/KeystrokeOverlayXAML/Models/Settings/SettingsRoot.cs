@@ -8,25 +8,25 @@ namespace KeystrokeOverlayUI.Models
 {
     public class SettingsRoot
     {
-        [JsonPropertyName("IsDraggableOverlayEnabled")]
+        [JsonPropertyName("enable_draggable_overlay")]
         public BoolProperty IsDraggable { get; set; } = new BoolProperty { Value = true };
 
-        [JsonPropertyName("OverlayTimeout")]
+        [JsonPropertyName("overlay_timeout")]
         public IntProperty OverlayTimeout { get; set; } = new IntProperty { Value = 3000 };
 
-        [JsonPropertyName("TextSize")]
+        [JsonPropertyName("text_size")]
         public IntProperty TextSize { get; set; } = new IntProperty { Value = 24 };
 
-        [JsonPropertyName("TextOpacity")]
+        [JsonPropertyName("text_opacity")]
         public IntProperty TextOpacity { get; set; } = new IntProperty { Value = 100 };
 
-        [JsonPropertyName("BackgroundOpacity")]
+        [JsonPropertyName("background_opacity")]
         public IntProperty BackgroundOpacity { get; set; } = new IntProperty { Value = 50 };
 
-        [JsonPropertyName("TextColor")]
+        [JsonPropertyName("text_color")]
         public StringProperty TextColor { get; set; } = new StringProperty { Value = "#FFFFFF" };
 
-        [JsonPropertyName("BackgroundColor")]
+        [JsonPropertyName("background_color")]
         public StringProperty BackgroundColor { get; set; } = new StringProperty { Value = "#000000" };
     }
 }

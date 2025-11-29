@@ -4,5 +4,8 @@
 
 namespace KeystrokeOverlayUI.Models
 {
-    public class IntProperty { public int Value { get; set; } }
+    public class IntProperty
+    {
+        public int Value { get; set; }
+    }
 }
