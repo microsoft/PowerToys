@@ -22,10 +22,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\modules\KeystrokeOverlay\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetName>PowerToys.KeystrokeOverlayModuleInterface</TargetName>
+    <TargetName>PowerToys.$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

@@ -6,14 +6,13 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <!-- Use the module-specific output folder so the C++ DLL finds the EXE -->
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\modules\KeystrokeOverlay\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     
     <!-- Naming and Identity -->
-    <AssemblyName>PowerToys.KeystrokeOverlayUI</AssemblyName>
-    <RootNamespace>KeystrokeOverlayUI</RootNamespace>
-    <ApplicationIcon>Assets\KeystrokeOverlay\Icon.ico</ApplicationIcon>
+    <AssemblyName>PowerToys.KeystrokeOverlay</AssemblyName>
+    <RootNamespace>KeystrokeOverlay</RootNamespace>
     
     <!-- WinUI 3 Packaging Settings -->
     <WindowsPackageType>None</WindowsPackageType>
@@ -34,7 +33,6 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <!-- Force specific JSON version to match PT ecosystem -->
     <PackageReference Include="System.Text.Json" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
