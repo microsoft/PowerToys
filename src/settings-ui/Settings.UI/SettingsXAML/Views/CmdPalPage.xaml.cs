@@ -9,7 +9,10 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -26,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage,
                 DispatcherQueue);
             DataContext = ViewModel;
+            Loaded += GenerateBackground;
             Loaded += (s, e) => ViewModel.OnPageLoaded();
             InitializeComponent();
         }
@@ -33,6 +37,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private async void GenerateBackground(object sender, RoutedEventArgs e)
+        {
+            if (TextureRectangle.Fill != null)
+            {
+                return;
+            }
+
+            // Gradient background.
+            InitializeBackground();
+
+            // Texture overlay.
+            TextureRectangle.Fill = BackgroundTextureHelper.CreateNoiseBrush(
+                outputWidth: 1000,
+                outputHeight: 560,
+                opacity: 0.08);
+        }
+
+        private async void InitializeBackground()
+        {
+            var colTL = Color.FromArgb(0xff, 0x45, 0xa5, 0xc4);
+            var colTR = Color.FromArgb(0xff, 0x4d, 0x8f, 0xc5);
+            var colBL = Color.FromArgb(0xff, 0x2d, 0x3b, 0x7b);
+            var colBR = Color.FromArgb(0xff, 0x43, 0x52, 0xb1);
+
+            GradientImage.Source =
+                await BackgroundTextureHelper.CreateCornerGradientAsync(colTL, colTR, colBL, colBR);
         }
 
         private void LaunchApp(string appPath, string args)
