@@ -29,7 +29,7 @@ namespace KeystrokeOverlayUI
                 Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
             }
 
-            Logger.InitializeLogger("\\Keystroke Overlay\\KeystrokeOverlayUI\\Logs");
+            Logger.InitializeLogger("\\KeystrokeOverlay\\Logs");
 
             this.InitializeComponent();
 
@@ -42,13 +42,12 @@ namespace KeystrokeOverlayUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-            {
-                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled.");
-                Environment.Exit(0);
-                return;
-            }
-
+            // if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            // {
+            //     Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled.");
+            //     Environment.Exit(0);
+            //     return;
+            // }
             window = new MainWindow();
             window.Activate();
         }

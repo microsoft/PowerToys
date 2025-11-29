@@ -21,7 +21,7 @@ namespace KeystrokeOverlayUI
             GC.SuppressFinalize(this);
         }
 
-        private const string PipeName = "PowerToys.KeystrokeOverlay";
+        private const string PipeName = "KeystrokeOverlayPipe";
         private CancellationTokenSource _cts;
 
         public event Action<KeystrokeBatch> OnBatchReceived;
