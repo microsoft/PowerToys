@@ -13,7 +13,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
-internal class RDPConnectionsManager : IRdpConnectionManager
+internal class RdpConnectionsManager : IRdpConnectionsManager
 {
     private readonly ISettingsInterface _settingsManager;
     private readonly ConnectionListItem _openRdpCommandListItem = new(string.Empty);
@@ -23,7 +23,7 @@ internal class RDPConnectionsManager : IRdpConnectionManager
     private const int MinutesToCache = 1;
     private DateTime? _connectionsLastLoaded;
 
-    public RDPConnectionsManager(ISettingsInterface settingsManager)
+    public RdpConnectionsManager(ISettingsInterface settingsManager)
     {
         _settingsManager = settingsManager;
         _settingsManager.Settings.SettingsChanged += (s, e) =>

@@ -728,6 +728,7 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
+icf
 ICONERROR
 ICONLOCATION
 IDCANCEL
@@ -800,7 +801,6 @@ invokecommand
 ipcmanager
 IPREVIEW
 ipreviewhandlervisualssetfont
-irdp
 IPTC
 irow
 irprops

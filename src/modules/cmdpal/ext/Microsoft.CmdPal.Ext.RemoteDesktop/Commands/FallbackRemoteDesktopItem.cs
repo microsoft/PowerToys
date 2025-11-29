@@ -23,9 +23,9 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
         ];
 
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
-    private readonly IRdpConnectionManager _rdpConnectionsManager;
+    private readonly IRdpConnectionsManager _rdpConnectionsManager;
 
-    public FallbackRemoteDesktopItem(IRdpConnectionManager rdpConnectionsManager)
+    public FallbackRemoteDesktopItem(IRdpConnectionsManager rdpConnectionsManager)
     : base(new OpenRemoteDesktopCommand(string.Empty), Resources.remotedesktop_title)
     {
         _rdpConnectionsManager = rdpConnectionsManager;
