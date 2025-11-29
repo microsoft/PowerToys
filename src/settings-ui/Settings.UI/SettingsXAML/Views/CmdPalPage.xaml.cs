@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -46,17 +47,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            // Gradient background.
-            InitializeBackground();
+            try
+            {
+                // Gradient background.
+                await InitializeGradientBackgroundAsync();
 
-            // Texture overlay.
-            TextureRectangle.Fill = BackgroundTextureHelper.CreateNoiseBrush(
-                outputWidth: 1000,
-                outputHeight: 560,
-                opacity: 0.08);
+                // Texture overlay.
+                TextureRectangle.Fill = BackgroundTextureHelper.CreateNoiseBrush(
+                    outputWidth: 1000,
+                    outputHeight: 560,
+                    opacity: 0.08);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to generate CmdPalPage background.", ex);
+
+                // Set fallback solid color background.
+                TextureRectangle.Fill = new SolidColorBrush(Color.FromArgb(0xff, 0x45, 0xa5, 0xc4));
+            }
         }
 
-        private async void InitializeBackground()
+        private async Task InitializeGradientBackgroundAsync()
         {
             var colTL = Color.FromArgb(0xff, 0x45, 0xa5, 0xc4);
             var colTR = Color.FromArgb(0xff, 0x4d, 0x8f, 0xc5);
