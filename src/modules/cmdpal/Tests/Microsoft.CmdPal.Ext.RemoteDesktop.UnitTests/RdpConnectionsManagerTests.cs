@@ -10,13 +10,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
 [TestClass]
-public class RDPConnectionsManagerTests
+public class RdpConnectionsManagerTests
 {
     [TestMethod]
     public void Constructor_AddsOpenCommandItem()
     {
         // Act
-        var manager = new RDPConnectionsManager(new MockSettingsManager(["test.local"]));
+        var manager = new RdpConnectionsManager(new MockSettingsManager(["test.local"]));
 
         // Assert
         Assert.IsTrue(manager.Connections.Any(item => string.IsNullOrEmpty(item.ConnectionName)));

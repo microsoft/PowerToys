@@ -12,16 +12,16 @@ namespace Microsoft.CmdPal.Ext.RemoteDesktop.Pages;
 
 internal sealed partial class RemoteDesktopListPage : ListPage
 {
-    private readonly IRdpConnectionManager _rdpConnectionManager;
+    private readonly IRdpConnectionsManager _rdpConnectionsManager;
 
-    public RemoteDesktopListPage(IRdpConnectionManager rdpConnectionManager)
+    public RemoteDesktopListPage(IRdpConnectionsManager rdpConnectionsManager)
     {
         Icon = Icons.RDPIcon;
         Name = Resources.remotedesktop_title;
         Id = "com.microsoft.cmdpal.builtin.remotedesktop";
 
-        _rdpConnectionManager = rdpConnectionManager;
+        _rdpConnectionsManager = rdpConnectionsManager;
     }
 
-    public override IListItem[] GetItems() => _rdpConnectionManager.Connections.ToArray();
+    public override IListItem[] GetItems() => _rdpConnectionsManager.Connections.ToArray();
 }

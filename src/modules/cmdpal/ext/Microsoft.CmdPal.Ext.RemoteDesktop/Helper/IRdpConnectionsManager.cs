@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Helper;
 
-internal interface IRdpConnectionManager
+internal interface IRdpConnectionsManager
 {
     IReadOnlyCollection<ConnectionListItem> Connections { get; }
 }

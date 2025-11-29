@@ -113,10 +113,10 @@ public class FallbackRemoteDesktopItemTests
         return field.GetValue(command) as string ?? string.Empty;
     }
 
-    private static (FallbackRemoteDesktopItem Fallback, IRdpConnectionManager Manager) CreateFallback(params string[] connectionNames)
+    private static (FallbackRemoteDesktopItem Fallback, IRdpConnectionsManager Manager) CreateFallback(params string[] connectionNames)
     {
         var settingsManager = new MockSettingsManager(connectionNames);
-        var connectionsManager = new MockRDPConnectionsManager(settingsManager);
+        var connectionsManager = new MockRdpConnectionsManager(settingsManager);
 
         var fallback = new FallbackRemoteDesktopItem(connectionsManager);
 
