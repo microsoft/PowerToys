@@ -24,7 +24,7 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
         Icon = Icons.RDPIcon;
 
         var settingsManager = new SettingsManager();
-        var rdpConnectionsManager = new RDPConnectionsManager(settingsManager);
+        var rdpConnectionsManager = new RdpConnectionsManager(settingsManager);
         var listPage = new RemoteDesktopListPage(rdpConnectionsManager);
 
         fallback = new FallbackRemoteDesktopItem(rdpConnectionsManager);
