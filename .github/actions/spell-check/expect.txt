@@ -727,7 +727,6 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
 IDCANCEL
@@ -800,6 +799,7 @@ invokecommand
 ipcmanager
 IPREVIEW
 ipreviewhandlervisualssetfont
+irdp
 IPTC
 irow
 irprops
@@ -1057,6 +1057,7 @@ msrc
 msstore
 msvcp
 MT
+mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1206,8 +1207,11 @@ OOBEUI
 openas
 opencode
 OPENFILENAME
+openrdp
 opensource
 openxmlformats
+ollama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1420,6 +1424,8 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
+remotedesktop
+rdp
 RDW
 READMODE
 READOBJECTS
