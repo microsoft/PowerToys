@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.ExtViews.Controls.ImageContentViewer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    mc:Ignorable="d">
+    <Grid Padding="12,8,8,8">
+        <Border x:Name="ImageBorder"
+                BorderThickness="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <Grid>
+                <Border x:Name="ImageCornerBorder"
+                        CornerRadius="8"
+                        Background="Transparent"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <Viewbox x:Name="FitViewbox"
+                             Stretch="Uniform"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             MaxWidth="{x:Bind ViewModel.MaxWidth, Mode=OneWay}"
+                             MaxHeight="{x:Bind ViewModel.MaxHeight, Mode=OneWay}"
+                             SizeChanged="FitViewbox_SizeChanged">
+                        <controls:IconBox
+                            x:Name="Image"
+                            AutomationProperties.AccessibilityView="Raw"
+                            SourceKey="{x:Bind ViewModel.Image, Mode=OneWay}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    </Viewbox>
+                </Border>
+
+                <Canvas x:Name="OverlayCanvas"
+                        Background="{x:Null}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                    <Button x:Name="OpenZoomOverlayButton"
+                            IsHitTestVisible="True"
+                            Padding="8,4"
+                            Style="{StaticResource ButtonRevealStyle}"
+                            Click="OpenZoomOverlay_Click"
+                            Loaded="OpenZoomOverlayButton_Loaded"
+                            SizeChanged="OpenZoomOverlayButton_SizeChanged">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SymbolIcon Symbol="Zoom" />
+                            <TextBlock Text="Zoom &amp; Scroll" />
+                        </StackPanel>
+                    </Button>
+                </Canvas>
+            </Grid>
+        </Border>
+        <Grid.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem Text="Open Zoom Viewer" Icon="Zoom" Click="OpenZoomOverlay_Click" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Copy Image" Icon="Copy" Click="CopyImage_Click" />
+            </MenuFlyout>
+        </Grid.ContextFlyout>
+    </Grid>
+</UserControl>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.ExtViews.Controls.PlainTextContentViewer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border Padding="12,8,8,8">
+        <ScrollViewer x:Name="Scroller" 
+                      HorizontalScrollMode="Auto"
+                      IsHorizontalScrollChainingEnabled="False"
+                      HorizontalScrollBarVisibility="Auto" 
+                      IsDeferredScrollingEnabled="False">
+            <TextBlock
+                x:Name="ContentTextBlock"
+                IsTextSelectionEnabled="True"
+                Text="{Binding Text, Mode=OneWay}">
+                <TextBlock.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem x:Name="CopySelectionItem" Text="Copy" Icon="Copy" Click="CopySelection_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator  Key="C" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Select All" Icon="SelectAll" Click="SelectAll_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator  Key="A" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <ToggleMenuFlyoutItem Text="Word Wrap" IsChecked="{x:Bind WordWrapEnabled, Mode=TwoWay}" />
+                        <ToggleMenuFlyoutItem Text="Monospace Font" IsChecked="{x:Bind UseMonospace, Mode=TwoWay}" />
+                    </MenuFlyout>
+                </TextBlock.ContextFlyout>
+            </TextBlock>
+        </ScrollViewer>
+    </Border>
+</UserControl>

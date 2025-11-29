@@ -339,6 +339,18 @@ namespace Microsoft.CommandPalette.Extensions
         IContent RootContent { get; };
         IContent[] GetChildren();
     }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IPlainTextContent requires IContent {
+        String Text { get; };
+    }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IImageContent requires IContent {
+        IIconInfo Image { get; };
+        Int32 MaxWidth { get; };
+        Int32 MaxHeight { get; };
+    }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContentPage requires IPage, INotifyItemsChanged {
