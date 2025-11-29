@@ -12,6 +12,19 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsViewModel : INotifyPropertyChanged
 {
+    private static readonly List<TimeSpan> AutoGoHomeIntervals =
+    [
+        Timeout.InfiniteTimeSpan,
+        TimeSpan.Zero,
+        TimeSpan.FromSeconds(10),
+        TimeSpan.FromSeconds(20),
+        TimeSpan.FromSeconds(30),
+        TimeSpan.FromSeconds(60),
+        TimeSpan.FromSeconds(90),
+        TimeSpan.FromSeconds(120),
+        TimeSpan.FromSeconds(180),
+    ];
+
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
 
@@ -57,16 +70,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         set
         {
             _settings.ShowAppDetails = value;
-            Save();
-        }
-    }
-
-    public bool HotkeyGoesHome
-    {
-        get => _settings.HotkeyGoesHome;
-        set
-        {
-            _settings.HotkeyGoesHome = value;
             Save();
         }
     }
@@ -137,6 +140,25 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         set
         {
             _settings.DisableAnimations = value;
+            Save();
+        }
+    }
+
+    public int AutoGoBackIntervalIndex
+    {
+        get
+        {
+            var index = AutoGoHomeIntervals.IndexOf(_settings.AutoGoHomeInterval);
+            return index >= 0 ? index : 0;
+        }
+
+        set
+        {
+            if (value >= 0 && value < AutoGoHomeIntervals.Count)
+            {
+                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+            }
+
             Save();
         }
     }
