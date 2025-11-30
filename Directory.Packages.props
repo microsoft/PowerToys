@@ -72,7 +72,7 @@
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.231216.1"/>
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.250906002" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.37" />

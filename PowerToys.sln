@@ -834,6 +834,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageModelProvider", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.UI.ViewModels.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.UI.ViewModels.UnitTests\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj", "{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.RemoteDesktop", "src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.RemoteDesktop\Microsoft.CmdPal.Ext.RemoteDesktop.csproj", "{2B3FB837-23DE-629F-82C6-42304E7083C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj", "{DB34808A-FF91-D06E-A426-AFB5A8BD583B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -3036,6 +3040,22 @@ Global
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|ARM64.Build.0 = Release|ARM64
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|x64.ActiveCfg = Release|x64
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C}.Release|x64.Build.0 = Release|x64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Debug|ARM64.Build.0 = Debug|ARM64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Debug|x64.ActiveCfg = Debug|x64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Debug|x64.Build.0 = Debug|x64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Release|ARM64.ActiveCfg = Release|ARM64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Release|ARM64.Build.0 = Release|ARM64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Release|x64.ActiveCfg = Release|x64
+		{2B3FB837-23DE-629F-82C6-42304E7083C9}.Release|x64.Build.0 = Release|x64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Debug|ARM64.Build.0 = Debug|ARM64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Debug|x64.ActiveCfg = Debug|x64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Debug|x64.Build.0 = Debug|x64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|ARM64.ActiveCfg = Release|ARM64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|ARM64.Build.0 = Release|ARM64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|x64.ActiveCfg = Release|x64
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3367,6 +3387,8 @@ Global
 		{4E0FCF69-B06B-D272-76BF-ED3A559B4EDA} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{45354F4F-1414-45CE-B600-51CD1209FD19} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{2B3FB837-23DE-629F-82C6-42304E7083C9} = {ECB8E0D1-7603-4E5C-AB10-D1E545E6F8E2}
+		{DB34808A-FF91-D06E-A426-AFB5A8BD583B} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

@@ -146,6 +146,7 @@ public sealed class FoundryLocalPasteProvider : IPasteAIProvider
         var options = new ChatOptions
         {
             ModelId = modelReference,
+            MaxOutputTokens = 2048,
         };
 
         if (!string.IsNullOrWhiteSpace(systemPrompt))
