@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ScreencastModeSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "Screencast Mode";
+        public const string ModuleName = "ScreencastMode";
         public const string ModuleVersion = "0.0.1";
 
         [JsonPropertyName("properties")]
