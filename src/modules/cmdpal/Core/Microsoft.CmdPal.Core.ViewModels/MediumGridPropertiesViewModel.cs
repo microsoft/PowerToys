@@ -11,12 +11,14 @@ public class MediumGridPropertiesViewModel : IGridPropertiesViewModel
 {
     private readonly ExtensionObject<IMediumGridLayout> _model;
 
+    public bool ShowTitle { get; private set; }
+
+    public bool ShowSubtitle => false;
+
     public MediumGridPropertiesViewModel(IMediumGridLayout mediumGridLayout)
     {
         _model = new(mediumGridLayout);
     }
-
-    public bool ShowTitle { get; set; }
 
     public void InitializeProperties()
     {
