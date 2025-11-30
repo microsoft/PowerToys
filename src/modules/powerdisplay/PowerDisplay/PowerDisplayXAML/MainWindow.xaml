@@ -7,6 +7,7 @@
     xmlns:local="using:PowerDisplay"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:models="using:PowerDisplay.Common.Models"
     xmlns:vm="using:PowerDisplay.ViewModels"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="0"
@@ -361,10 +362,19 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="8">
-                        <Button Content="{ui:FontIcon Glyph=&#xE748;, FontSize=16}" Style="{StaticResource SubtleButtonStyle}">
+                        <Button
+                            x:Name="ProfilesButton"
+                            x:Uid="ProfilesTooltip"
+                            Content="{ui:FontIcon Glyph=&#xE748;, FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}"
+                            Visibility="{x:Bind ConvertBoolToVisibility(ViewModel.HasProfiles), Mode=OneWay}">
                             <Button.Flyout>
-                                <Flyout>
-                                    <ListView SelectedIndex="2">
+                                <Flyout x:Name="ProfilesFlyout">
+                                    <ListView
+                                        x:Name="ProfilesListView"
+                                        ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
+                                        SelectionChanged="ProfileListView_SelectionChanged"
+                                        SelectionMode="Single">
                                         <ListView.Header>
                                             <TextBlock
                                                 Margin="16,0,8,0"
@@ -372,9 +382,11 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="Profiles" />
                                         </ListView.Header>
-                                        <ListViewItem Content="Profile 1" />
-                                        <ListViewItem Content="Profile 2" />
-                                        <ListViewItem Content="Profile 3" />
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="models:PowerDisplayProfile">
+                                                <TextBlock Padding="0,4" Text="{x:Bind Name}" />
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
                                     </ListView>
                                 </Flyout>
                             </Button.Flyout>

@@ -5670,4 +5670,102 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ColorTemperatureNotSupportedText.Text" xml:space="preserve">
     <value>Color temperature control not supported by this monitor</value>
   </data>
+  <data name="PowerDisplay_ColorTemperature_WarningTitle" xml:space="preserve">
+    <value>Confirm Color Temperature Change</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
+    <value>Changing the color temperature setting may cause unpredictable results including:</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningList" xml:space="preserve">
+    <value>• Incorrect display colors
+• Display malfunction
+• Settings that cannot be reverted</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
+    <value>Are you sure you want to proceed with this change?</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_PrimaryButton" xml:space="preserve">
+    <value>Yes, Change Setting</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Title" xml:space="preserve">
+    <value>Delete Profile</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Content" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}'?</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_PrimaryButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_Profile_ApplyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Apply profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_MoreButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More profile options</value>
+  </data>
+  <data name="PowerDisplay_Profile_EditMenuItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_DeleteMenuItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_AddButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add new profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_ApplyButton.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PowerDisplay_Profile_MoreButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>More settings</value>
+  </data>
+  <data name="PowerDisplay_Profile_EditMenuItem.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_Profile_DeleteMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_AddProfileButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Save current settings as new profile</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CapabilitiesWarning.Title" xml:space="preserve">
+    <value>Monitor capabilities unavailable</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CapabilitiesWarning.Message" xml:space="preserve">
+    <value>This monitor did not report DDC/CI capabilities. Advanced controls may be limited.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_ColorTemperature_Warning.Text" xml:space="preserve">
+    <value>Warning: Changing this setting can cause unexpected behavior. Adjust only when its impact is clear.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_ColorTemperature_ComboBox.PlaceholderText" xml:space="preserve">
+    <value>Not available</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCapabilities.Header" xml:space="preserve">
+    <value>VCP capabilities</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCapabilities.Description" xml:space="preserve">
+    <value>DDC/CI VCP codes and supported values (for debugging purposes)</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpDetails_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>View VCP details</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpDetails_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>View VCP details</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_Header.Text" xml:space="preserve">
+    <value>Detected VCP Codes</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Copy all VCP codes to clipboard</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Copy VCP codes to clipboard</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
+    <value>Copy</value>
+  </data>
 </root>

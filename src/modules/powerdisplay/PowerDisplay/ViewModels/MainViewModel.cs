@@ -15,6 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using PowerDisplay.Commands;
+using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Core;
 using PowerDisplay.Helpers;
@@ -40,6 +41,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly LightSwitchListener _lightSwitchListener;
 
     private ObservableCollection<MonitorViewModel> _monitors;
+    private ObservableCollection<PowerDisplayProfile> _profiles;
     private string _statusText;
     private bool _isScanning;
     private bool _isInitialized;
@@ -55,6 +57,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _cancellationTokenSource = new CancellationTokenSource();
         _monitors = new ObservableCollection<MonitorViewModel>();
+        _profiles = new ObservableCollection<PowerDisplayProfile>();
         _statusText = "Initializing...";
         _isScanning = true;
 
@@ -73,6 +76,9 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _lightSwitchListener.ThemeChanged += OnLightSwitchThemeChanged;
         _lightSwitchListener.Start();
 
+        // Load profiles for quick apply feature
+        LoadProfiles();
+
         // Start initial discovery
         _ = InitializeAsync();
     }
@@ -86,6 +92,19 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged();
         }
     }
+
+    public ObservableCollection<PowerDisplayProfile> Profiles
+    {
+        get => _profiles;
+        set
+        {
+            _profiles = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasProfiles));
+        }
+    }
+
+    public bool HasProfiles => Profiles.Count > 0;
 
     public string StatusText
     {
@@ -196,6 +215,15 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         }
     });
 
+    public ICommand ApplyProfileCommand => new RelayCommand<PowerDisplayProfile>(async profile =>
+    {
+        if (profile != null && profile.IsValid())
+        {
+            Logger.LogInfo($"[Profile] Applying profile '{profile.Name}' from quick apply");
+            await ApplyProfileAsync(profile.Name, profile.MonitorSettings);
+        }
+    });
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -252,6 +280,29 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         catch (Exception ex)
         {
             Logger.LogDebug($"Error executing {name}: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Load profiles from disk for quick apply feature
+    /// </summary>
+    private void LoadProfiles()
+    {
+        try
+        {
+            var profilesData = ProfileService.LoadProfiles();
+            _profiles.Clear();
+            foreach (var profile in profilesData.Profiles)
+            {
+                _profiles.Add(profile);
+            }
+
+            OnPropertyChanged(nameof(HasProfiles));
+            Logger.LogInfo($"[Profile] Loaded {_profiles.Count} profiles for quick apply");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
         }
     }
 }

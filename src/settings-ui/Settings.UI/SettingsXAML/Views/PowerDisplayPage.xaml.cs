@@ -90,10 +90,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 : monitor.ColorTemperatureVcp;
 
             // Show confirmation dialog
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var dialog = new ContentDialog
             {
                 XamlRoot = this.XamlRoot,
-                Title = "Confirm Color Temperature Change",
+                Title = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningTitle"),
                 Content = new StackPanel
                 {
                     Spacing = 12,
@@ -101,32 +102,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         new TextBlock
                         {
-                            Text = "⚠️ Warning: This is a potentially dangerous operation!",
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningHeader"),
                             FontWeight = Microsoft.UI.Text.FontWeights.Bold,
                             Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                             TextWrapping = TextWrapping.Wrap,
                         },
                         new TextBlock
                         {
-                            Text = "Changing the color temperature setting may cause unpredictable results including:",
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningDescription"),
                             TextWrapping = TextWrapping.Wrap,
                         },
                         new TextBlock
                         {
-                            Text = "• Incorrect display colors\n• Display malfunction\n• Settings that cannot be reverted",
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningList"),
                             TextWrapping = TextWrapping.Wrap,
                             Margin = new Thickness(20, 0, 0, 0),
                         },
                         new TextBlock
                         {
-                            Text = "Are you sure you want to proceed with this change?",
+                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningConfirm"),
                             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                             TextWrapping = TextWrapping.Wrap,
                         },
                     },
                 },
-                PrimaryButtonText = "Yes, Change Setting",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperature_PrimaryButton"),
+                CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
 
@@ -207,13 +208,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
                 var dialog = new ContentDialog
                 {
                     XamlRoot = this.XamlRoot,
-                    Title = "Delete Profile",
-                    Content = $"Are you sure you want to delete '{profile.Name}'?",
-                    PrimaryButtonText = "Delete",
-                    CloseButtonText = "Cancel",
+                    Title = resourceLoader.GetString("PowerDisplay_DeleteProfile_Title"),
+                    Content = string.Format(System.Globalization.CultureInfo.CurrentCulture, resourceLoader.GetString("PowerDisplay_DeleteProfile_Content"), profile.Name),
+                    PrimaryButtonText = resourceLoader.GetString("PowerDisplay_DeleteProfile_PrimaryButton"),
+                    CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                     DefaultButton = ContentDialogButton.Close,
                 };
 

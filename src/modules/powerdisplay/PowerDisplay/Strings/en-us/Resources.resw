@@ -78,4 +78,10 @@
   <data name="TrayMenu_Exit" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="ProfilesTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Quick apply profiles</value>
+  </data>
+  <data name="IdentifyTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Identify monitors</value>
+  </data>
 </root>

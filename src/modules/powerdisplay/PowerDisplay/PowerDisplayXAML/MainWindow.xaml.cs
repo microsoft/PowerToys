@@ -35,12 +35,12 @@ namespace PowerDisplay
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
         private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
-        private MainViewModel _viewModel = null!;
-        private AppWindow _appWindow = null!;
+        private MainViewModel? _viewModel;
+        private AppWindow? _appWindow;
         private bool _isExiting;
 
         // Expose ViewModel as property for x:Bind
-        public MainViewModel ViewModel => _viewModel;
+        public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
 
         // Conversion functions for x:Bind (AOT-compatible alternative to converters)
         public Visibility ConvertBoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
@@ -49,20 +49,23 @@ namespace PowerDisplay
         {
             try
             {
+                // 1. Create ViewModel BEFORE InitializeComponent to avoid x:Bind failures
+                // x:Bind evaluates during InitializeComponent, so ViewModel must exist first
+                _viewModel = new MainViewModel();
+
                 this.InitializeComponent();
 
-                // 1. Configure window immediately (synchronous, no data dependency)
+                // 2. Configure window immediately (synchronous, no data dependency)
                 ConfigureWindow();
 
-                // 2. Create ViewModel immediately (lightweight object, no scanning yet)
-                _viewModel = new MainViewModel();
+                // 3. Set up data context and update bindings
                 RootGrid.DataContext = _viewModel;
                 Bindings.Update();
 
-                // 3. Register event handlers
+                // 4. Register event handlers
                 RegisterEventHandlers();
 
-                // 4. Start background initialization (don't wait)
+                // 5. Start background initialization (don't wait)
                 _ = Task.Run(async () =>
                 {
                     try
@@ -93,10 +96,13 @@ namespace PowerDisplay
             this.Closed += OnWindowClosed;
             this.Activated += OnWindowActivated;
 
-            // ViewModel events
-            _viewModel.UIRefreshRequested += OnUIRefreshRequested;
-            _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
-            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            // ViewModel events - _viewModel is guaranteed non-null here as this is called after initialization
+            if (_viewModel != null)
+            {
+                _viewModel.UIRefreshRequested += OnUIRefreshRequested;
+                _viewModel.Monitors.CollectionChanged += OnMonitorsCollectionChanged;
+                _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+            }
         }
 
         private bool _hasInitialized;
@@ -123,7 +129,10 @@ namespace PowerDisplay
             try
             {
                 // Perform monitor scanning (which internally calls ReloadMonitorSettingsAsync)
-                await _viewModel.RefreshMonitorsAsync();
+                if (_viewModel != null)
+                {
+                    await _viewModel.RefreshMonitorsAsync();
+                }
 
                 // Adjust window size after data is loaded (must run on UI thread)
                 DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
@@ -157,7 +166,7 @@ namespace PowerDisplay
             // Auto-hide window when it loses focus (deactivated)
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                // HideWindow();
+                HideWindow();
             }
         }
 
@@ -803,6 +812,37 @@ namespace PowerDisplay
 
             // Set the rotation
             await monitorVm.SetRotationAsync(orientation);
+        }
+
+        /// <summary>
+        /// Profile selection changed handler - applies the selected profile
+        /// </summary>
+        private void ProfileListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ListView listView)
+            {
+                return;
+            }
+
+            var selectedProfile = listView.SelectedItem as PowerDisplayProfile;
+            if (selectedProfile == null || !selectedProfile.IsValid())
+            {
+                return;
+            }
+
+            Logger.LogInfo($"[UI] ProfileListView_SelectionChanged: Applying profile '{selectedProfile.Name}'");
+
+            // Apply profile via ViewModel command
+            if (_viewModel?.ApplyProfileCommand?.CanExecute(selectedProfile) == true)
+            {
+                _viewModel.ApplyProfileCommand.Execute(selectedProfile);
+            }
+
+            // Close the flyout after selection
+            ProfilesFlyout?.Hide();
+
+            // Clear selection to allow reselecting the same profile
+            listView.SelectedItem = null;
         }
 
         public void Dispose()

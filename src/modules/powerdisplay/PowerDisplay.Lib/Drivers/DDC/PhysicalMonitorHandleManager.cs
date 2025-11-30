@@ -95,6 +95,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Clean up handles that are no longer in use.
         /// Called within ExecuteWithLock context with the internal dictionary.
+        /// Optimized to O(n) using HashSet lookup instead of O(n*m) nested loops.
         /// </summary>
         private void CleanupUnusedHandles(Dictionary<string, IntPtr> currentHandles, Dictionary<string, IntPtr> newHandles)
         {
@@ -103,25 +104,16 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return;
             }
 
+            // Build HashSet of handles that will be reused (O(m))
+            var reusedHandles = new HashSet<IntPtr>(newHandles.Values);
+
+            // Find handles to destroy: in old map but not reused (O(n) with O(1) lookup)
             var handlesToDestroy = new List<IntPtr>();
-
-            // Find handles that are in old map but not being reused
-            foreach (var oldMapping in currentHandles)
+            foreach (var oldHandle in currentHandles.Values)
             {
-                bool found = false;
-                foreach (var newMapping in newHandles)
+                if (oldHandle != IntPtr.Zero && !reusedHandles.Contains(oldHandle))
                 {
-                    // If the same handle is being reused, don't destroy it
-                    if (oldMapping.Value == newMapping.Value)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found && oldMapping.Value != IntPtr.Zero)
-                {
-                    handlesToDestroy.Add(oldMapping.Value);
+                    handlesToDestroy.Add(oldHandle);
                 }
             }
 

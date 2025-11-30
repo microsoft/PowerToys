@@ -46,6 +46,9 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
             ApplyUIConfiguration(settings);
 
+            // Reload profiles in case they were added/updated/deleted in Settings UI
+            LoadProfiles();
+
             Logger.LogInfo("[Settings] Settings update complete");
         }
         catch (Exception ex)

@@ -52,6 +52,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
                 () =>
                 {
@@ -73,6 +75,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
                 () =>
                 {
@@ -94,6 +98,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
             brightness = Math.Clamp(brightness, 0, 100);
 
             return await Task.Run(
@@ -161,6 +166,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<BrightnessInfo> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
                 () =>
                 {
@@ -192,6 +199,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <param name="cancellationToken">Cancellation token</param>
         public async Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
                 () =>
                 {
@@ -242,6 +251,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<BrightnessInfo> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
                 () =>
                 {
@@ -273,8 +284,10 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <param name="cancellationToken">Cancellation token</param>
         public async Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
-                () =>
+                async () =>
                 {
                     if (monitor.Handle == IntPtr.Zero)
                     {
@@ -303,7 +316,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                             Logger.LogInfo($"[{monitor.Id}] Set input source to {sourceName} via 0x60");
 
                             // Verify the change by reading back the value after a short delay
-                            System.Threading.Thread.Sleep(100);
+                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                             if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeInputSource, out uint verifyValue, out uint _))
                             {
                                 var verifyName = VcpValueNames.GetFormattedName(0x60, (int)verifyValue);
@@ -346,6 +359,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public async Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             // Check if capabilities are already cached
             if (!string.IsNullOrEmpty(monitor.CapabilitiesRaw))
             {

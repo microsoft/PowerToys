@@ -27,7 +27,40 @@ namespace PowerDisplay.Common.Drivers.WMI
         private const string BrightnessMethodClass = "WmiMonitorBrightnessMethods";
         private const string MonitorIdClass = "WmiMonitorID";
 
+        // Common WMI error codes for classification
+        private const int WbemENotFound = unchecked((int)0x80041002);
+        private const int WbemEAccessDenied = unchecked((int)0x80041003);
+        private const int WbemEProviderFailure = unchecked((int)0x80041004);
+        private const int WbemEInvalidQuery = unchecked((int)0x80041017);
+        private const int WmiFeatureNotSupported = 0x1068;
+
         private bool _disposed;
+
+        /// <summary>
+        /// Classifies WMI exceptions into user-friendly error messages.
+        /// </summary>
+        private static MonitorOperationResult ClassifyWmiError(WmiException ex, string operation)
+        {
+            var hresult = ex.HResult;
+
+            return hresult switch
+            {
+                WbemENotFound => MonitorOperationResult.Failure($"WMI class not found during {operation}. This feature may not be supported on your system.", hresult),
+                WbemEAccessDenied => MonitorOperationResult.Failure($"Access denied during {operation}. Administrator privileges may be required.", hresult),
+                WbemEProviderFailure => MonitorOperationResult.Failure($"WMI provider failure during {operation}. The display driver may not support this feature.", hresult),
+                WbemEInvalidQuery => MonitorOperationResult.Failure($"Invalid WMI query during {operation}. This is likely a bug.", hresult),
+                WmiFeatureNotSupported => MonitorOperationResult.Failure($"WMI brightness control not supported on this system during {operation}.", hresult),
+                _ => MonitorOperationResult.Failure($"WMI error during {operation}: {ex.Message}", hresult),
+            };
+        }
+
+        /// <summary>
+        /// Determines if the WMI error is expected for systems without WMI brightness support.
+        /// </summary>
+        private static bool IsExpectedUnsupportedError(WmiException ex)
+        {
+            return ex.HResult == WmiFeatureNotSupported || ex.HResult == WbemENotFound;
+        }
 
         public string Name => "WMI Monitor Controller (WmiLight)";
 
@@ -36,6 +69,8 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             if (monitor.CommunicationMethod != "WMI")
             {
                 return false;
@@ -65,6 +100,8 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// </summary>
         public async Task<BrightnessInfo> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             return await Task.Run(
                 () =>
                 {
@@ -99,6 +136,8 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// </summary>
         public async Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(monitor);
+
             // Validate brightness range
             brightness = Math.Clamp(brightness, 0, 100);
 
@@ -147,11 +186,11 @@ namespace PowerDisplay.Common.Drivers.WMI
                 }
                 catch (WmiException ex)
                 {
-                    return MonitorOperationResult.Failure($"WMI error: {ex.Message}", ex.HResult);
+                    return ClassifyWmiError(ex, "SetBrightness");
                 }
                 catch (Exception ex)
                 {
-                    return MonitorOperationResult.Failure($"Unexpected error: {ex.Message}");
+                    return MonitorOperationResult.Failure($"Unexpected error during SetBrightness: {ex.Message}");
                 }
             },
                 cancellationToken);
@@ -309,15 +348,21 @@ namespace PowerDisplay.Common.Drivers.WMI
                 var results = connection.CreateQuery(query).ToList();
                 return results.Count > 0;
             }
-            catch (WmiException ex) when (ex.HResult == 0x1068)
+            catch (WmiException ex) when (IsExpectedUnsupportedError(ex))
             {
                 // Expected on systems without WMI brightness support (desktops, some laptops)
                 Logger.LogInfo("WMI brightness control not supported on this system (expected for desktops)");
                 return false;
             }
+            catch (WmiException ex)
+            {
+                // Unexpected WMI error - log with details for debugging
+                Logger.LogWarning($"WMI availability check failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
+                return false;
+            }
             catch (Exception ex)
             {
-                // Unexpected error during WMI check
+                // Unexpected non-WMI error
                 Logger.LogDebug($"WMI availability check failed: {ex.Message}");
                 return false;
             }

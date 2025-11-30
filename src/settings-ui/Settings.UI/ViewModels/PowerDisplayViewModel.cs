@@ -81,9 +81,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 });
         }
 
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
+
         private void InitializeEnabledValue()
         {
-            _isEnabled = GeneralSettingsConfig.Enabled.PowerDisplay;
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPowerDisplayEnabledValue();
+            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO
+                _enabledStateIsGPOConfigured = true;
+                _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerDisplay;
+            }
         }
 
         public bool IsEnabled
@@ -91,6 +104,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isEnabled;
             set
             {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (_isEnabled != value)
                 {
                     _isEnabled = value;
@@ -101,6 +120,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsEnabledGpoConfigured
+        {
+            get => _enabledStateIsGPOConfigured;
         }
 
         public bool RestoreSettingsOnStartup
@@ -675,6 +699,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Reload profile list
                 LoadProfiles();
 
+                // Signal PowerDisplay to reload profiles
+                SignalSettingsUpdated();
+
                 Logger.LogInfo($"Profile '{profile.Name}' created successfully");
             }
             catch (Exception ex)
@@ -708,6 +735,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Reload profile list
                 LoadProfiles();
 
+                // Signal PowerDisplay to reload profiles
+                SignalSettingsUpdated();
+
                 Logger.LogInfo($"Profile updated to '{newProfile.Name}' successfully");
             }
             catch (Exception ex)
@@ -736,6 +766,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 // Reload profile list
                 LoadProfiles();
+
+                // Signal PowerDisplay to reload profiles
+                SignalSettingsUpdated();
 
                 Logger.LogInfo($"Profile '{profileName}' deleted successfully");
             }

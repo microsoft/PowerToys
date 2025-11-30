@@ -271,7 +271,7 @@ public:
 
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::gpo_rule_configured_not_configured;
+        return powertoys_gpo::getConfiguredPowerDisplayEnabledValue();
     }
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -413,8 +413,15 @@ public:
         m_enabled = true;
         Trace::EnablePowerDisplay(true);
 
-        // Launch PowerDisplay.exe with PID only (Awake pattern)
-        launch_process();
+        // Launch PowerDisplay.exe if not already running (ColorPicker pattern)
+        if (!is_process_running())
+        {
+            launch_process();
+        }
+        else
+        {
+            Logger::trace(L"PowerDisplay process already running");
+        }
     }
 
     virtual void disable() override

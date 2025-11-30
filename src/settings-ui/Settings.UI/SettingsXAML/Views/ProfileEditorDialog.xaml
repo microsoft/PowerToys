@@ -46,7 +46,8 @@
                         <DataTemplate x:DataType="viewmodels:MonitorSelectionItem">
                             <tkcontrols:SettingsExpander
                                 Margin="0,0,0,8"
-                                Header="{x:Bind Monitor.Name}">
+                                Header="{x:Bind Monitor.Name}"
+                                IsExpanded="True">
                                 <tkcontrols:SettingsExpander.HeaderIcon>
                                     <FontIcon Glyph="{x:Bind Monitor.MonitorIconGlyph}" />
                                 </tkcontrols:SettingsExpander.HeaderIcon>

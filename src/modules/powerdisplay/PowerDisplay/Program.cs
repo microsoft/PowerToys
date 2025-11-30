@@ -53,6 +53,7 @@ namespace PowerDisplay
             else
             {
                 Logger.LogWarning("Another instance of PowerDisplay is running. Exiting.");
+                return;
             }
         }
     }
