@@ -18,8 +18,8 @@
     <Page.Resources>
 
         <!--
-            GridViewItemCornerRadius is the corner radius defined in GridView template; make 
-            it bigger to match the radii of the gallery 
+            GridViewItemCornerRadius is the corner radius defined in GridView template; make
+            it bigger to match the radii of the gallery
         -->
         <CornerRadius x:Key="GridViewItemCornerRadius">8</CornerRadius>
         <CornerRadius x:Key="SmallGridViewItemCornerRadius">8</CornerRadius>
