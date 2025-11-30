@@ -110,7 +110,7 @@ namespace AdvancedPaste.Helpers
             return null;
         }
 
-        [GeneratedRegex(@"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$", RegexOptions.Compiled)]
+        [GeneratedRegex(@"^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$")]
         private static partial Regex HexColorCompiledRegex();
     }
 }
