@@ -3,22 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using PowerToys.Interop;
 
 namespace ScreencastModeUI
 {
@@ -32,16 +19,20 @@ namespace ScreencastModeUI
         public App()
         {
             InitializeComponent();
+            Logger.InitializeLogger("\\ScreencastMode\\ScreencastModeUI\\Logs");
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
             _window.Activate();
+
+            // Exit when PowerToys Runner exits (pattern from Peek)
+            var cmdArgs = Environment.GetCommandLineArgs();
+            if (cmdArgs?.Length > 1 && int.TryParse(cmdArgs[^1], out int runnerPid))
+            {
+                RunnerHelper.WaitForPowerToysRunner(runnerPid, () => Environment.Exit(0));
+            }
         }
     }
 }
