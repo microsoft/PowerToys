@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public ScreencastModeProperties()
         {
             ScreencastModeShortcut = new HotkeySettings(true, false, true, false, 83); // Win + Alt + S
-            DisplayPosition = new StringProperty("Center");
+            DisplayPosition = new StringProperty("TopRight");
             TextColor = new StringProperty("#FFFFFF");
             BackgroundColor = new StringProperty("#000000");
         }
