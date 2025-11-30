@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <!-- Images -->
-    <Content Include="$(SolutionDir)\src\modules\cmdpal\Microsoft.CmdPal.UI\Assets\$(CmdPalAssetSuffix)\**\*">
+    <Content Include=".\Assets\$(CmdPalAssetSuffix)\**\*">
       <DeploymentContent>true</DeploymentContent>
       <Link>Assets\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Content>
