@@ -540,7 +540,7 @@ We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
      shall survive.
 
      8.2.  If You initiate litigation by asserting a patent infringement
-     claim (excluding declatory judgment actions) against Initial Developer
+     claim (excluding declaratory judgment actions) against Initial Developer
      or a Contributor (the Initial Developer or Contributor against whom
      You file such action is referred to as "Participant")  alleging that:
 
