@@ -26,6 +26,12 @@ namespace PowerDisplay
     public partial class App : Application
 #pragma warning restore CA1001
     {
+        /// <summary>
+        /// Event name for signaling that PowerDisplay process is ready.
+        /// Must match the constant in C++ PowerDisplayModuleInterface.
+        /// </summary>
+        private const string ProcessReadyEventName = "Local\\PowerToys_PowerDisplay_Ready";
+
         private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
@@ -105,6 +111,10 @@ namespace PowerDisplay
                     "SettingsUpdated");
                 RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
                 RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
+
+                // Signal that process is ready to receive events
+                // This allows the C++ module to wait for initialization instead of using hardcoded Sleep
+                SignalProcessReady();
 
                 // Monitor Runner process (backup exit mechanism)
                 if (_powerToysRunnerPid > 0)
@@ -353,6 +363,27 @@ namespace PowerDisplay
             Logger.LogInfo("PowerDisplay shutting down");
             _trayIconService?.Destroy();
             Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// Signal that PowerDisplay process is ready to receive events.
+        /// Uses a ManualReset event so the C++ module can wait on it.
+        /// </summary>
+        private static void SignalProcessReady()
+        {
+            try
+            {
+                using var readyEvent = new EventWaitHandle(
+                    false,
+                    EventResetMode.ManualReset,
+                    ProcessReadyEventName);
+                readyEvent.Set();
+                Logger.LogInfo("Signaled process ready event");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to signal process ready event: {ex.Message}");
+            }
         }
     }
 }

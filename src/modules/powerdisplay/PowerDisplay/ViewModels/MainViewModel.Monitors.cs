@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -19,7 +20,7 @@ namespace PowerDisplay.ViewModels;
 /// </summary>
 public partial class MainViewModel
 {
-    private async Task InitializeAsync()
+    private async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -27,7 +28,7 @@ public partial class MainViewModel
             IsScanning = true;
 
             // Discover monitors
-            var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
+            var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
 
             // Update UI on the dispatcher thread
             _dispatcherQueue.TryEnqueue(() =>

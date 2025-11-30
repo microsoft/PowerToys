@@ -10,6 +10,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
+using PowerDisplay.Common.Utils;
 using PowerDisplay.Serialization;
 using PowerToys.Interop;
 
@@ -621,21 +622,8 @@ public partial class MainViewModel
     /// </summary>
     private void SignalMonitorsRefreshEvent()
     {
-        try
-        {
-            using (var eventHandle = new System.Threading.EventWaitHandle(
-                false,
-                System.Threading.EventResetMode.AutoReset,
-                Constants.RefreshPowerDisplayMonitorsEvent()))
-            {
-                eventHandle.Set();
-                Logger.LogInfo("Signaled refresh monitors event to Settings UI");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to signal refresh monitors event: {ex.Message}");
-        }
+        EventHelper.SignalEvent(Constants.RefreshPowerDisplayMonitorsEvent());
+        Logger.LogInfo("Signaled refresh monitors event to Settings UI");
     }
 
     /// <summary>

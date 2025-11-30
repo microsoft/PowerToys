@@ -142,11 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     // Explicitly signal PowerDisplay to refresh tray icon
                     // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
-                    using var eventHandle = new System.Threading.EventWaitHandle(
-                        false,
-                        System.Threading.EventResetMode.AutoReset,
-                        Constants.SettingsUpdatedPowerDisplayEvent());
-                    eventHandle.Set();
+                    EventHelper.SignalEvent(Constants.SettingsUpdatedPowerDisplayEvent());
                     Logger.LogInfo($"ShowSystemTrayIcon changed to {value}, signaled SettingsUpdatedPowerDisplayEvent");
                 }
             }
@@ -396,19 +392,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SignalSettingsUpdated()
         {
-            try
-            {
-                using var eventHandle = new System.Threading.EventWaitHandle(
-                    false,
-                    System.Threading.EventResetMode.AutoReset,
-                    Constants.SettingsUpdatedPowerDisplayEvent());
-                eventHandle.Set();
-                Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to signal SettingsUpdatedPowerDisplayEvent: {ex.Message}");
-            }
+            EventHelper.SignalEvent(Constants.SettingsUpdatedPowerDisplayEvent());
+            Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
         }
 
         public void Launch()
@@ -513,7 +498,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     for (int i = Monitors.Count - 1; i >= 0; i--)
                     {
                         var existingMonitor = Monitors[i];
-                        if (updatedMonitorsDict.TryGetValue(existingMonitor.InternalName, out var updatedMonitor))
+                        if (updatedMonitorsDict.TryGetValue(existingMonitor.InternalName, out var updatedMonitor)
+                            && updatedMonitor != null)
                         {
                             // Monitor still exists - update its properties in place
                             Logger.LogInfo($"[ReloadMonitors] Updating existing monitor: {existingMonitor.InternalName}");
@@ -661,13 +647,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         profile.Name));
 
                 // Signal PowerDisplay to apply profile
-                using (var eventHandle = new System.Threading.EventWaitHandle(
-                    false,
-                    System.Threading.EventResetMode.AutoReset,
-                    Constants.ApplyProfilePowerDisplayEvent()))
-                {
-                    eventHandle.Set();
-                }
+                EventHelper.SignalEvent(Constants.ApplyProfilePowerDisplayEvent());
 
                 Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
             }

@@ -181,7 +181,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeSelectColorPreset, out uint current, out uint max))
                     {
                         var presetName = VcpValueNames.GetFormattedName(0x14, (int)current);
-                        Logger.LogInfo($"[{monitor.Id}] Color temperature via 0x14: {presetName}");
+                        Logger.LogDebug($"[{monitor.Id}] Color temperature via 0x14: {presetName}");
                         return new BrightnessInfo((int)current, 0, (int)max);
                     }
 
@@ -266,7 +266,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     if (DdcCiNative.TryGetVCPFeature(monitor.Handle, VcpCodeInputSource, out uint current, out uint max))
                     {
                         var sourceName = VcpValueNames.GetFormattedName(0x60, (int)current);
-                        Logger.LogInfo($"[{monitor.Id}] Input source via 0x60: {sourceName}");
+                        Logger.LogDebug($"[{monitor.Id}] Input source via 0x60: {sourceName}");
                         return new BrightnessInfo((int)current, 0, (int)max);
                     }
 
@@ -322,7 +322,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                                 var verifyName = VcpValueNames.GetFormattedName(0x60, (int)verifyValue);
                                 if (verifyValue == (uint)inputSource)
                                 {
-                                    Logger.LogInfo($"[{monitor.Id}] Input source verified: {verifyName} (0x{verifyValue:X2})");
+                                    Logger.LogDebug($"[{monitor.Id}] Input source verified: {verifyName} (0x{verifyValue:X2})");
                                 }
                                 else
                                 {
@@ -409,7 +409,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                         if (!string.IsNullOrEmpty(capsString))
                         {
-                            Logger.LogInfo($"Got capabilities string (length: {capsString.Length})");
+                            Logger.LogDebug($"Got capabilities string (length: {capsString.Length})");
                             return capsString;
                         }
                     }

@@ -185,6 +185,38 @@ private:
         }
     }
 
+    // Helper method to wait for PowerDisplay.exe process to be ready
+    // Uses a named event for precise synchronization instead of hardcoded Sleep
+    void wait_for_process_ready()
+    {
+        HANDLE readyEvent = OpenEventW(SYNCHRONIZE, FALSE, PowerDisplayConstants::ProcessReadyEventName);
+        if (readyEvent)
+        {
+            Logger::trace(L"Waiting for PowerDisplay process ready signal...");
+            DWORD waitResult = WaitForSingleObject(readyEvent, PowerDisplayConstants::ProcessReadyTimeoutMs);
+            CloseHandle(readyEvent);
+
+            if (waitResult == WAIT_OBJECT_0)
+            {
+                Logger::trace(L"PowerDisplay process ready signal received");
+            }
+            else if (waitResult == WAIT_TIMEOUT)
+            {
+                Logger::warn(L"PowerDisplay process ready timeout after {}ms", PowerDisplayConstants::ProcessReadyTimeoutMs);
+            }
+            else
+            {
+                Logger::warn(L"WaitForSingleObject failed with error: {}", GetLastError());
+            }
+        }
+        else
+        {
+            // Fallback: if cannot open event, use a shorter delay
+            Logger::warn(L"Could not open PowerDisplay ready event, using fallback delay");
+            Sleep(PowerDisplayConstants::FallbackDelayMs);
+        }
+    }
+
 public:
     PowerDisplayModule()
     {
@@ -332,9 +364,8 @@ public:
                 {
                     Logger::trace(L"PowerDisplay process not running, launching before applying color temperature");
                     launch_process();
-                    // Wait for process to initialize and register event listeners
-                    // This prevents race condition where event is set before process is ready
-                    Sleep(1000);
+                    // Wait for process to signal ready
+                    wait_for_process_ready();
                 }
 
                 if (m_hApplyColorTemperatureEvent)
@@ -364,8 +395,8 @@ public:
                 {
                     Logger::trace(L"PowerDisplay process not running, launching before applying profile");
                     launch_process();
-                    // Wait for process to initialize and register event listeners
-                    Sleep(1000);
+                    // Wait for process to signal ready
+                    wait_for_process_ready();
                 }
 
                 if (m_hApplyProfileEvent)

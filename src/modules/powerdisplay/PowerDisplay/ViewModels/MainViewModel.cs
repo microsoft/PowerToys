@@ -80,7 +80,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         LoadProfiles();
 
         // Start initial discovery
-        _ = InitializeAsync();
+        _ = InitializeAsync(_cancellationTokenSource.Token);
     }
 
     public ObservableCollection<MonitorViewModel> Monitors

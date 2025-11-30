@@ -404,6 +404,13 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// <param name="orientation">Orientation: 0=normal, 1=90°, 2=180°, 3=270°</param>
     public async Task SetRotationAsync(int orientation)
     {
+        // Validate orientation range (0=normal, 1=90°, 2=180°, 3=270°)
+        if (orientation < 0 || orientation > 3)
+        {
+            Logger.LogWarning($"[{HardwareId}] Invalid rotation value: {orientation}. Must be 0-3.");
+            return;
+        }
+
         // If already at this orientation, do nothing
         if (CurrentRotation == orientation)
         {
