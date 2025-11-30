@@ -16,9 +16,9 @@ public partial class ScreencastModeViewModel : Observable
 {
     private GeneralSettings GeneralSettingsConfig { get; set; }
 
-    private readonly ScreencastModeSettings _screencastModeSettings;
-    private readonly ISettingsUtils _settingsUtils;
-    private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
+    private readonly ScreencastModeSettings screencastModeSettings;
+    private readonly ISettingsUtils settingsUtils;
+    private readonly ISettingsRepository<GeneralSettings> settingsRepository;
 
     private Func<string, int> SendConfigMSG { get; }
 
@@ -29,99 +29,104 @@ public partial class ScreencastModeViewModel : Observable
     {
         ArgumentNullException.ThrowIfNull(settingsRepository);
 
-        _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-        _settingsRepository = settingsRepository;
-        GeneralSettingsConfig = settingsRepository.SettingsConfig;
+        this.settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+        this.settingsRepository = settingsRepository;
+        this.GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
         // Load or create ScreencastMode settings
-        _screencastModeSettings = _settingsUtils.GetSettingsOrDefault<ScreencastModeSettings>(ScreencastModeSettings.ModuleName);
+        this.screencastModeSettings = this.settingsUtils.GetSettingsOrDefault<ScreencastModeSettings>(ScreencastModeSettings.ModuleName);
 
-        SendConfigMSG = ipcMSGCallBackFunc;
+        this.SendConfigMSG = ipcMSGCallBackFunc;
     }
 
     public bool IsEnabled
     {
-        get => GeneralSettingsConfig.Enabled.ScreencastMode;
+        get => this.GeneralSettingsConfig.Enabled.ScreencastMode;
         set
         {
-            if (GeneralSettingsConfig.Enabled.ScreencastMode != value)
+            if (this.GeneralSettingsConfig.Enabled.ScreencastMode != value)
             {
-                GeneralSettingsConfig.Enabled.ScreencastMode = value;
-                OnPropertyChanged(nameof(IsEnabled));
+                this.GeneralSettingsConfig.Enabled.ScreencastMode = value;
+                OnPropertyChanged(nameof(this.IsEnabled));
 
                 // Notify the runner about the state change
-                OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(this.GeneralSettingsConfig);
                 SendConfigMSG(outgoing.ToString());
 
                 // Also save settings
-                _settingsRepository.SettingsConfig = GeneralSettingsConfig;
+                this.settingsRepository.SettingsConfig = this.GeneralSettingsConfig;
             }
         }
     }
 
     public HotkeySettings ScreencastModeShortcut
     {
-        get => _screencastModeSettings.Properties.ScreencastModeShortcut;
+        get => this.screencastModeSettings.Properties.ScreencastModeShortcut;
         set
         {
-            if (_screencastModeSettings.Properties.ScreencastModeShortcut != value)
+            if (this.screencastModeSettings.Properties.ScreencastModeShortcut != value)
             {
-                _screencastModeSettings.Properties.ScreencastModeShortcut = value;
-                OnPropertyChanged(nameof(ScreencastModeShortcut));
+                this.screencastModeSettings.Properties.ScreencastModeShortcut = value;
+                OnPropertyChanged(nameof(this.ScreencastModeShortcut));
 
-                SaveAndNotifySettings();
+                this.SaveAndNotifySettings();
             }
         }
     }
 
     public string DisplayPosition
     {
-        get => _screencastModeSettings.Properties.DisplayPosition.Value;
+        get => this.screencastModeSettings.Properties.DisplayPosition.Value;
         set
         {
-            if (_screencastModeSettings.Properties.DisplayPosition.Value != value)
+            if (this.screencastModeSettings.Properties.DisplayPosition.Value != value)
             {
-                _screencastModeSettings.Properties.DisplayPosition.Value = value;
-                OnPropertyChanged(nameof(DisplayPosition));
+                this.screencastModeSettings.Properties.DisplayPosition.Value = value;
+                OnPropertyChanged(nameof(this.DisplayPosition));
 
-                SaveAndNotifySettings();
+                this.SaveAndNotifySettings();
             }
         }
     }
 
     public string TextColor
     {
-        get => _screencastModeSettings.Properties.TextColor.Value;
+        get => this.screencastModeSettings.Properties.TextColor.Value;
         set
         {
-            if (_screencastModeSettings.Properties.TextColor.Value != value)
+            if (this.screencastModeSettings.Properties.TextColor.Value != value)
             {
-                _screencastModeSettings.Properties.TextColor.Value = value;
-                OnPropertyChanged(nameof(TextColor));
-                SaveAndNotifySettings();
+                this.screencastModeSettings.Properties.TextColor.Value = value;
+                OnPropertyChanged(nameof(this.TextColor));
+                this.SaveAndNotifySettings();
             }
         }
     }
 
     public string BackgroundColor
     {
-        get => _screencastModeSettings.Properties.BackgroundColor.Value;
+        get => this.screencastModeSettings.Properties.BackgroundColor.Value;
         set
         {
-            if (_screencastModeSettings.Properties.BackgroundColor.Value != value)
+            if (this.screencastModeSettings.Properties.BackgroundColor.Value != value)
             {
-                _screencastModeSettings.Properties.BackgroundColor.Value = value;
-                OnPropertyChanged(nameof(BackgroundColor));
+                this.screencastModeSettings.Properties.BackgroundColor.Value = value;
+                OnPropertyChanged(nameof(this.BackgroundColor));
 
-                SaveAndNotifySettings();
+                this.SaveAndNotifySettings();
             }
         }
     }
 
+    public void RefreshEnabledState()
+    {
+        OnPropertyChanged(nameof(this.IsEnabled));
+    }
+
     private void SaveAndNotifySettings()
     {
-        _settingsUtils.SaveSettings(_screencastModeSettings.ToJsonString(), ScreencastModeSettings.ModuleName);
-        NotifySettingsChanged();
+        this.settingsUtils.SaveSettings(this.screencastModeSettings.ToJsonString(), ScreencastModeSettings.ModuleName);
+        this.NotifySettingsChanged();
     }
 
     private void NotifySettingsChanged()
@@ -132,11 +137,6 @@ public partial class ScreencastModeViewModel : Observable
                 CultureInfo.InvariantCulture,
                 "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                 ScreencastModeSettings.ModuleName,
-                JsonSerializer.Serialize(_screencastModeSettings)));
-    }
-
-    public void RefreshEnabledState()
-    {
-        OnPropertyChanged(nameof(IsEnabled));
+                JsonSerializer.Serialize(this.screencastModeSettings)));
     }
 }

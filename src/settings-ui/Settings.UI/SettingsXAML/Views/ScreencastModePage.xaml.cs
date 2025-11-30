@@ -17,18 +17,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ScreencastModePage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
             var settingsUtils = new SettingsUtils();
-            ViewModel = new ScreencastModeViewModel(
+            this.ViewModel = new ScreencastModeViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
-            DataContext = ViewModel;
+            DataContext = this.ViewModel;
         }
 
         public void RefreshEnabledState()
         {
-            ViewModel.RefreshEnabledState();
+            this.ViewModel.RefreshEnabledState();
         }
     }
 }
