@@ -11,5 +11,7 @@ class Trace
 public:
     static void RegisterProvider();
     static void UnregisterProvider();
-    static void MyEvent();
+
+    // Screencast Mode enabled/disabled state change
+    static void ScreencastModeEnabled(bool enabled);
 };
