@@ -251,7 +251,7 @@ internal static class MachineStuff
             MyRectangle activeMon = Common.GetMonitorContainingPoint(x, y);
             if (activeMon == null)
             {
-                // fallback to the screen bounds returned by WinForms for tests or when enumeration is unavailable
+                // fall back to the screen bounds returned by WinForms for tests or when enumeration is unavailable
                 activeMon = new MyRectangle() { Left = screenBounds.Left, Top = screenBounds.Top, Right = screenBounds.Right, Bottom = screenBounds.Bottom };
             }
 
