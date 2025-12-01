@@ -273,9 +273,10 @@ public partial class ShellViewModel : ObservableObject,
                 if (host is not null)
                 {
                     string extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    string commandType = command?.Name ?? command?.Id ?? "unknown";
+                    string commandId = command?.Id ?? "unknown";
+                    string commandName = command?.Name ?? "unknown";
                     WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
-                        new(extensionId, commandType, true, 0));
+                        new(extensionId, commandId, commandName, true, 0));
                 }
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
@@ -351,7 +352,8 @@ public partial class ShellViewModel : ObservableObject,
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var command = message.Command.Unsafe;
         string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        string commandType = command?.Name ?? command?.Id ?? "unknown";
+        string commandId = command?.Id ?? "unknown";
+        string commandName = command?.Name ?? "unknown";
         bool success = false;
 
         try
@@ -384,7 +386,7 @@ public partial class ShellViewModel : ObservableObject,
             // Telemetry: Send extension invocation metrics (always sent, even on failure)
             stopwatch.Stop();
             WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
-                new(extensionId, commandType, success, (ulong)stopwatch.ElapsedMilliseconds));
+                new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
 

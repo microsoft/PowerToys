@@ -8,4 +8,4 @@ namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 /// Message sent when an extension command or page is invoked.
 /// Captures extension usage metrics for telemetry tracking.
 /// </summary>
-public record ExtensionInvokedMessage(string ExtensionId, string CommandType, bool Success, ulong ExecutionTimeMs);
+public record ExtensionInvokedMessage(string ExtensionId, string CommandId, string CommandName, bool Success, ulong ExecutionTimeMs);

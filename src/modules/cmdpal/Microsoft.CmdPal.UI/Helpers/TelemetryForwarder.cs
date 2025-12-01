@@ -48,7 +48,8 @@ internal sealed class TelemetryForwarder :
     {
         PowerToysTelemetry.Log.WriteEvent(new CmdPalExtensionInvoked(
             message.ExtensionId,
-            message.CommandType,
+            message.CommandId,
+            message.CommandName,
             message.Success,
             message.ExecutionTimeMs));
     }

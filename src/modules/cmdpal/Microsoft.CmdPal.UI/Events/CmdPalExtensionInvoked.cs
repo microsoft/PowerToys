@@ -23,9 +23,14 @@ public class CmdPalExtensionInvoked : EventBase, IEvent
     public string ExtensionId { get; set; }
 
     /// <summary>
-    /// Gets or sets the display name of the command being invoked.
+    /// Gets or sets the non-localized identifier of the command being invoked.
     /// </summary>
-    public string CommandType { get; set; }
+    public string CommandId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the localized display name of the command being invoked.
+    /// </summary>
+    public string CommandName { get; set; }
 
     /// <summary>
     /// Gets or sets whether the command executed successfully.
@@ -37,11 +42,12 @@ public class CmdPalExtensionInvoked : EventBase, IEvent
     /// </summary>
     public ulong ExecutionTimeMs { get; set; }
 
-    public CmdPalExtensionInvoked(string extensionId, string commandType, bool success, ulong executionTimeMs)
+    public CmdPalExtensionInvoked(string extensionId, string commandId, string commandName, bool success, ulong executionTimeMs)
     {
         EventName = "CmdPal_ExtensionInvoked";
         ExtensionId = extensionId;
-        CommandType = commandType;
+        CommandId = commandId;
+        CommandName = commandName;
         Success = success;
         ExecutionTimeMs = executionTimeMs;
     }
