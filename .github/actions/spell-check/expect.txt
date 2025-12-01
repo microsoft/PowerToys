@@ -358,7 +358,6 @@ DCOM
 DComposition
 DCR
 Ddc
-DdcCi
 Ddcci
 DDEIf
 Deact
@@ -660,7 +659,7 @@ Hantai
 Hanzi
 Hardlines
 hardlinks
-HardwareId
+hardwareid
 HARDWAREINPUT
 Hashset
 hashtag
@@ -829,7 +828,7 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Interlop
-InternalName
+internalname
 intput
 INTRESOURCE
 INVALIDARG
@@ -863,7 +862,6 @@ Jsons
 jsonval
 jxr
 Kantai
-kelvin
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -1248,9 +1246,7 @@ oldtheme
 oleaut
 OLECHAR
 ollama
-ollama
 onebranch
-onnx
 onnx
 OOBEUI
 openas
@@ -1363,7 +1359,6 @@ Popups
 POPUPWINDOW
 POSITIONITEM
 powerdisplay
-PowerDisplay
 POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
@@ -1947,8 +1942,8 @@ vcgtq
 VCINSTALLDIR
 vcp
 VCP
-VcpCode
-VcpCodes
+vcpcode
+vcpcodes
 Vcpkg
 VCRT
 vcruntime
