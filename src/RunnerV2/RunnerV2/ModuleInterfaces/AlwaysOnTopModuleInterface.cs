@@ -62,14 +62,14 @@ namespace RunnerV2.ModuleInterfaces
 
         private void InitializeHotkey()
         {
-            Hotkeys.Clear();
-            Hotkeys.Add(((HotkeyEx)new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value) with { Identifier = _pinHotkeyAtom }, () =>
+            Shortcuts.Clear();
+            Shortcuts.Add((new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value, () =>
             {
                 if (!_process?.HasExited ?? false)
                 {
                     _pinEventWrapper?.Fire();
                 }
-            });
+            }));
         }
 
         public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
@@ -77,7 +77,7 @@ namespace RunnerV2.ModuleInterfaces
             InitializeHotkey();
         }
 
-        public Dictionary<HotkeyEx, Action> Hotkeys { get; } = [];
+        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get; } = [];
 
         public void Dispose()
         {
