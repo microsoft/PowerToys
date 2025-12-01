@@ -121,6 +121,9 @@ azureinference
 azureopenai
 backticks
 Backlight
+Badflags
+Badmode
+Badparam
 bbwe
 BCIE
 bck
@@ -189,7 +192,10 @@ CARETBLINKING
 Carlseibert
 CAtl
 caub
+CAuthn
+CAuthz
 CBN
+Cds
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -211,6 +217,7 @@ CHOOSEFONT
 cidl
 CIELCh
 cim
+CImp
 CImage
 cla
 CLASSDC
@@ -218,6 +225,7 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
+Clientedge
 clientid
 clientside
 CLIPBOARDUPDATE
@@ -245,6 +253,7 @@ Codespaces
 Coen
 cognitiveservices
 COINIT
+Coinit
 colid
 colorconv
 colorformat
@@ -351,6 +360,7 @@ DComposition
 DCR
 Ddc
 DdcCi
+Ddcci
 DDEIf
 Deact
 debouncer
@@ -400,18 +410,22 @@ DISABLENOSCROLL
 diskmgmt
 DISPLAYCHANGE
 DISPLAYCONFIG
+Displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
 Displayport
+diu
 divyan
 Dlg
 DLGFRAME
 DLGMODALFRAME
+Dlgmodalframe
 dlib
 dllhost
 dllmain
+Dmdo
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
@@ -428,6 +442,7 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
+DREGION
 drivedetectionwarning
 DROPFILES
 DSTINVERT
@@ -462,6 +477,7 @@ dwrite
 Dxva
 dxgi
 eab
+EAccess
 easeofaccess
 ecount
 Edid
@@ -469,6 +485,7 @@ EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
+EInvalid
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -478,14 +495,17 @@ ENABLETEMPLATE
 encodedlaunch
 encryptor
 ENDSESSION
+ENot
 ENSUREVISIBLE
 ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
 EOAC
+Eoac
 EPO
 epu
+EProvider
 ERASEBKGND
 EREOF
 EResize
@@ -577,7 +597,9 @@ FORMATDLGORD
 formatetc
 FORPARSING
 foundrylocal
+FPrimary
 FRAMECHANGED
+Framechanged
 frm
 FROMTOUCH
 fsanitize
@@ -635,6 +657,7 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hantai
 Hanzi
 Hardlines
 hardlinks
@@ -840,6 +863,7 @@ jpnime
 Jsons
 jsonval
 jxr
+Kantai
 kelvin
 keybd
 KEYBDDATA
@@ -983,6 +1007,7 @@ MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
+Maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
 mber
@@ -1013,6 +1038,7 @@ mikeclayton
 mindaro
 Minimizable
 MINIMIZEBOX
+Minimizebox
 MINIMIZEEND
 MINIMIZESTART
 MINMAXINFO
@@ -1032,6 +1058,7 @@ MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
 MONITORINFO
+Monitorinfo
 MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
@@ -1155,6 +1182,7 @@ NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
+Nomove
 NONANTIALIASED
 nonclient
 NONCLIENTMETRICSW
@@ -1176,6 +1204,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1183,9 +1212,11 @@ NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
+Notopmost
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
+Notupdated
 notwindows
 NOTXORPEN
 nowarn
@@ -1279,6 +1310,7 @@ PDBs
 PDEVMODE
 pdisp
 PDLL
+pdmodels
 pdo
 pdto
 pdtobj
@@ -1387,6 +1419,7 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+prot
 PRTL
 prvpane
 psapi
@@ -1414,12 +1447,14 @@ PTOKEN
 PToy
 ptstr
 pui
+pvct
 PWAs
 pwcs
 PWSTR
 pwsz
 pwtd
 QDC
+qdc
 qit
 QITAB
 QITABENT
@@ -1696,6 +1731,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+Staticedge
 STATSTG
 stdafx
 STDAPI
@@ -1758,6 +1794,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1797,6 +1834,7 @@ THEMECHANGED
 themeresources
 THH
 THICKFRAME
+Thickframe
 THISCOMPONENT
 throughs
 TILEDWINDOW
@@ -1881,6 +1919,7 @@ UOffset
 UOI
 UPDATENOW
 UPDATEREGISTRY
+Updateregistry
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -1925,6 +1964,7 @@ VERTRES
 VERTSIZE
 VESA
 VFT
+Vga
 vget
 vgetq
 viewmodels
@@ -1997,6 +2037,7 @@ winappsdk
 windir
 WINDOWCREATED
 WINDOWEDGE
+Windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
@@ -2021,6 +2062,7 @@ winlogon
 winmd
 winml
 WINNT
+Winnt
 winres
 winrt
 winsdk
