@@ -8,17 +8,17 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI;
 
-internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
+internal sealed partial class GridItemContainerStyleSelector : StyleSelector
 {
     public IGridPropertiesViewModel? GridProperties { get; set; }
 
-    public DataTemplate? Small { get; set; }
+    public Style? Small { get; set; }
 
-    public DataTemplate? Medium { get; set; }
+    public Style? Medium { get; set; }
 
-    public DataTemplate? Gallery { get; set; }
+    public Style? Gallery { get; set; }
 
-    protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
+    protected override Style? SelectStyleCore(object item, DependencyObject container)
     {
         return GridProperties switch
         {
