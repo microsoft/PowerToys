@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -58,6 +59,7 @@ public sealed partial class MainWindow : WindowEx,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
     private readonly uint WM_TASKBAR_RESTART;
     private readonly HWND _hwnd;
+    private readonly DispatcherTimer _autoGoHomeTimer;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
@@ -68,12 +70,16 @@ public sealed partial class MainWindow : WindowEx,
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+    private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     private WindowPosition _currentWindowPosition = new();
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _autoGoHomeTimer = new DispatcherTimer();
+        _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -108,7 +114,7 @@ public sealed partial class MainWindow : WindowEx,
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
-        RootShellPage.Loaded += RootShellPage_Loaded;
+        RootElement.Loaded += RootElementLoaded;
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -125,7 +131,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootShellPage.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -141,6 +147,15 @@ public sealed partial class MainWindow : WindowEx,
         HideWindow();
     }
 
+    private void OnAutoGoHomeTimerOnTick(object? s, object e)
+    {
+        _autoGoHomeTimer.Stop();
+
+        // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
+        // and prevent the user from opening its context menu.
+        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
+    }
+
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
     {
         if (e.Key == VirtualKey.GoBack)
@@ -151,10 +166,17 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
 
-    private void RootShellPage_Loaded(object sender, RoutedEventArgs e) =>
-
+    private void RootElementLoaded(object sender, RoutedEventArgs e)
+    {
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
+
+        // Add dev ribbon if enabled
+        if (!BuildInfo.IsCiBuild)
+        {
+            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+        }
+    }
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -220,6 +242,9 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
+
+        _autoGoHomeInterval = settings.AutoGoHomeInterval;
+        _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -279,6 +304,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
+        StopAutoGoHome();
+
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
         // Remember, IsIconic == "minimized", which is entirely different state
@@ -533,6 +560,25 @@ public sealed partial class MainWindow : WindowEx,
             // If the window was not cloaked, then leave it hidden.
             // Sure, it's not ideal, but at least it's not visible.
         }
+
+        // Start auto-go-home timer
+        RestartAutoGoHome();
+    }
+
+    private void StopAutoGoHome()
+    {
+        _autoGoHomeTimer.Stop();
+    }
+
+    private void RestartAutoGoHome()
+    {
+        if (_autoGoHomeInterval == Timeout.InfiniteTimeSpan)
+        {
+            return;
+        }
+
+        _autoGoHomeTimer.Stop();
+        _autoGoHomeTimer.Start();
     }
 
     private bool Cloak()
@@ -620,28 +666,28 @@ public sealed partial class MainWindow : WindowEx,
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        var scaleAdjustment = RootElement.XamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
         // (resizing, dragging) don't apply in this space.
-        var transform = RootShellPage.TransformToVisual(null);
+        var transform = RootElement.TransformToVisual(null);
 
         // Reserve 16px of space at the top for dragging.
         var topHeight = 16;
         var bounds = transform.TransformBounds(new Rect(
             0,
             topHeight,
-            RootShellPage.ActualWidth,
-            RootShellPage.ActualHeight));
+            RootElement.ActualWidth,
+            RootElement.ActualHeight));
         var contentRect = GetRect(bounds, scaleAdjustment);
         var rectArray = new RectInt32[] { contentRect };
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
         // Add a drag-able region on top
-        var w = RootShellPage.ActualWidth;
-        _ = RootShellPage.ActualHeight;
+        var w = RootElement.ActualWidth;
+        _ = RootElement.ActualHeight;
         var dragSides = new RectInt32[]
         {
             GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall

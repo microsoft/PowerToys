@@ -26,8 +26,9 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         // Setup
         var settings = new MockSettingsInterface();
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         // Act
         page.UpdateSearchText(string.Empty, query);
@@ -55,8 +56,9 @@ public class QueryTests : CommandPaletteUnitTestBase
         };
 
         var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 5);
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);
@@ -90,8 +92,9 @@ public class QueryTests : CommandPaletteUnitTestBase
         };
 
         var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 5);
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         mockHistoryItems.Add(new HistoryItem("another search5", DateTime.Parse("2024-01-06 13:00:00", CultureInfo.CurrentCulture)));
 
@@ -123,8 +126,9 @@ public class QueryTests : CommandPaletteUnitTestBase
         };
 
         var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 0);
+        var browserInfoService = new MockBrowserInfoService();
 
-        var page = new WebSearchListPage(settings);
+        var page = new WebSearchListPage(settings, browserInfoService);
 
         // Act
         page.UpdateSearchText("abcdef", string.Empty);
