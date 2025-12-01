@@ -53,8 +53,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         UpdateTags(li.Tags);
         Section = li.Section ?? string.Empty;
         IsSectionOrSeparator = IsSeparator(li);
-        UpdateProperty(nameof(Section));
-        UpdateProperty(nameof(IsSectionOrSeparator));
+        UpdateProperty(nameof(Section), nameof(IsSectionOrSeparator));
 
         UpdateAccessibleName();
     }
@@ -78,8 +77,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
-            UpdateProperty(nameof(Details));
-            UpdateProperty(nameof(HasDetails));
+            UpdateProperty(nameof(Details), nameof(HasDetails));
         }
 
         AddShowDetailsCommands();
@@ -110,14 +108,13 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 this.Section = model.Section ?? string.Empty;
                 break;
             case nameof(IsSectionOrSeparator):
-                this.IsSectionOrSeparator = !string.IsNullOrEmpty(Section) || IsSeparator(model);
+                this.IsSectionOrSeparator = !string.IsNullOrWhiteSpace(Section) || IsSeparator(model);
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
-                UpdateProperty(nameof(Details));
-                UpdateProperty(nameof(HasDetails));
+                UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
                 break;
             case nameof(MoreCommands):
@@ -161,8 +158,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 MoreCommands.Add(showDetailsContextItemViewModel);
             }
 
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
     }
 
@@ -194,8 +190,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             showDetailsContextItemViewModel.SlowInitializeProperties();
             MoreCommands.Add(showDetailsContextItemViewModel);
 
-            UpdateProperty(nameof(MoreCommands));
-            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
     }
 

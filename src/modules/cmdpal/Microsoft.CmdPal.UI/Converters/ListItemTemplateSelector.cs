@@ -32,7 +32,7 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
                     li.AllowFocusWhenDisabled = false;
                     li.AllowFocusOnInteraction = false;
                     li.IsHitTestVisible = false;
-                    dataTemplate = string.IsNullOrEmpty(element.Section) ? Separator : Section;
+                    dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
                 }
                 else
                 {

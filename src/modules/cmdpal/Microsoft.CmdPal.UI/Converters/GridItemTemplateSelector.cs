@@ -41,7 +41,7 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
         if (item is ListItemViewModel element && element.IsSectionOrSeparator)
         {
-            dataTemplate = string.IsNullOrEmpty(element.Section) ? Separator : Section;
+            dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
 
             if (dependencyObject is UIElement li)
             {
