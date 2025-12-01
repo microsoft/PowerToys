@@ -254,7 +254,7 @@ public partial class MainViewModel
 
         foreach (var setting in monitorSettings)
         {
-            // Find monitor by InternalName first (unique identifier), fallback to HardwareId for old profiles
+            // Find monitor by InternalName first (unique identifier), fall back to HardwareId for old profiles
             MonitorViewModel? monitorVm = null;
 
             if (!string.IsNullOrEmpty(setting.MonitorInternalName))

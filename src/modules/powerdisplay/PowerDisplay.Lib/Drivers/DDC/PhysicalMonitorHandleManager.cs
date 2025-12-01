@@ -42,7 +42,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Try to reuse existing handle if valid, otherwise use new handle
+        /// Try to reuse existing handle if valid; otherwise uses new handle
         /// Returns the handle to use and whether it was reused
         /// </summary>
         public (IntPtr Handle, bool WasReused) ReuseOrCreateHandle(string deviceKey, IntPtr newHandle)

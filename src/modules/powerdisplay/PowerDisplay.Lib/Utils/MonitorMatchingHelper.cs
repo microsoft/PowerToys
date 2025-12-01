@@ -152,7 +152,7 @@ namespace PowerDisplay.Common.Utils
 
         /// <summary>
         /// Generate a unique key for monitor matching based on hardware ID and internal name.
-        /// Uses HardwareId if available, otherwise falls back to Id (InternalName) or Name.
+        /// Uses HardwareId if available; otherwise falls back to Id (InternalName) or Name.
         /// </summary>
         /// <param name="monitor">The monitor data to generate a key for.</param>
         /// <returns>A unique string key for the monitor.</returns>

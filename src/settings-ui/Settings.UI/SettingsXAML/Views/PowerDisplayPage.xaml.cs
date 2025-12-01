@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private PowerDisplayViewModel ViewModel { get; set; }
 
-        // Flag to prevent re-entrant SelectionChanged handling during programmatic selection
+        // Flag to prevent reentrant SelectionChanged handling during programmatic selection
         private bool _isRestoringSelection;
 
         public PowerDisplayPage()
@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void ColorTemperatureComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Skip if we're programmatically restoring a selection (prevents re-entrant handling)
+            // Skip if we're programmatically restoring a selection (prevents reentrant handling)
             if (_isRestoringSelection)
             {
                 return;
@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            // Get old value: from RemovedItems if available, otherwise from current property
+            // Get old value: from RemovedItems if available; otherwise from current property
             int oldValue = (e.RemovedItems.Count > 0 && e.RemovedItems[0] is ColorPresetItem oldItem)
                 ? oldItem.VcpValue
                 : monitor.ColorTemperatureVcp;
@@ -142,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             else
             {
                 // User cancelled: revert ComboBox to previous selection (property unchanged)
-                // Use flag to prevent re-entrant event handling
+                // Use flag to prevent reentrant event handling
                 _isRestoringSelection = true;
                 try
                 {

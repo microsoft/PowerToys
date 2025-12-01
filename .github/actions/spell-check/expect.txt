@@ -347,12 +347,16 @@ DCBA
 DCOM
 DComposition
 DCR
+Ddc
+DdcCi
 DDEIf
 Deact
+debouncer
 debugbreak
 decryptor
 Dedup
 Deduplicator
+Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
@@ -629,6 +633,7 @@ hangeul
 Hanzi
 Hardlines
 hardlinks
+HardwareId
 HARDWAREINPUT
 Hashset
 hashtag
@@ -647,6 +652,8 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+hdmi
+HDMI
 hdr
 hdrop
 hdwwiz
@@ -793,6 +800,7 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Interlop
+InternalName
 intput
 INTRESOURCE
 INVALIDARG
@@ -825,6 +833,7 @@ jpnime
 Jsons
 jsonval
 jxr
+kelvin
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -1056,9 +1065,9 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1202,7 +1211,9 @@ oldtheme
 oleaut
 OLECHAR
 ollama
+ollama
 onebranch
+onnx
 onnx
 OOBEUI
 openas
@@ -1211,8 +1222,6 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1315,6 +1324,8 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerdisplay
+PowerDisplay
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1425,7 +1436,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1454,6 +1464,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1887,6 +1898,10 @@ vcamp
 VCENTER
 vcgtq
 VCINSTALLDIR
+vcp
+VCP
+VcpCode
+VcpCodes
 Vcpkg
 VCRT
 vcruntime
@@ -1899,6 +1914,7 @@ VERIFYCONTEXT
 VERSIONINFO
 VERTRES
 VERTSIZE
+VESA
 VFT
 vget
 vgetq

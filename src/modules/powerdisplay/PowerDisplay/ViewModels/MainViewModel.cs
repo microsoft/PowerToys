@@ -193,7 +193,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             {
                 var displayArea = displayAreas[index];
 
-                // Get monitor number: prefer MonitorManager's number, fallback to index+1
+                // Get monitor number: prefer MonitorManager's number, fall back to index+1
                 int monitorNumber = (index < monitors.Count)
                     ? monitors[index].MonitorNumber
                     : index + 1;
