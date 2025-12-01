@@ -37,7 +37,7 @@
                         Width="8"
                         Height="8"
                         Margin="8,0,8,0"
-                        Fill="{x:Bind ClipboardItem.Content, Mode=OneWay, Converter={StaticResource HexColorToBrushConverter}}"/>
+                        Fill="{x:Bind ClipboardItem.Content, Mode=OneWay, Converter={StaticResource HexColorToBrushConverter}}" />
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
