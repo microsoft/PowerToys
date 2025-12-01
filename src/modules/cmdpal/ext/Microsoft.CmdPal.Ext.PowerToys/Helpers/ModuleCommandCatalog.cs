@@ -22,8 +22,10 @@ internal static class ModuleCommandCatalog
         new AwakeModuleCommandProvider(),
         new AdvancedPasteModuleCommandProvider(),
         new WorkspacesModuleCommandProvider(),
+        new LightSwitchModuleCommandProvider(),
+        new PowerToysRunModuleCommandProvider(),
+        new ScreenRulerModuleCommandProvider(),
         new ColorPickerModuleCommandProvider(),
-        new DefaultSettingsModuleCommandProvider(),
     ];
 
     public static IListItem[] FilteredItems(string query)

@@ -25,6 +25,7 @@ internal static class PowerToysEventNames
     internal const string PowerToysRunInvoke = "Local\\PowerToysRunInvokeEvent-30f26ad7-d36d-4c0e-ab02-68bb5ff3c4ab";
     internal const string RegistryPreviewTrigger = "Local\\RegistryPreviewEvent-4C559468-F75A-4E7F-BC4F-9C9688316687";
     internal const string ShortcutGuideTrigger = "Local\\ShortcutGuide-TriggerEvent-d4275ad3-2531-4d19-9252-c0becbd9b496";
+    internal const string LightSwitchToggle = "Local\\PowerToys-LightSwitch-ToggleEvent-d8dc2f29-8c94-4ca1-8c5f-3e2b1e3c4f5a";
     internal const string WorkspacesLaunchEditor = "Local\\Workspaces-LaunchEditorEvent-a55ff427-cf62-4994-a2cd-9f72139296bf";
     internal const string WorkspacesHotkey = "Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0";
     internal const string CropAndLockThumbnail = "Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
