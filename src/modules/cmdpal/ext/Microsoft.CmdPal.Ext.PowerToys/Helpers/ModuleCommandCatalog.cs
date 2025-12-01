@@ -25,6 +25,8 @@ internal static class ModuleCommandCatalog
         new LightSwitchModuleCommandProvider(),
         new PowerToysRunModuleCommandProvider(),
         new ScreenRulerModuleCommandProvider(),
+        new ShortcutGuideModuleCommandProvider(),
+        new TextExtractorModuleCommandProvider(),
         new ColorPickerModuleCommandProvider(),
     ];
 
