@@ -7,6 +7,7 @@ using Common.UI;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Pages;
 
 namespace PowerToysExtension.Modules;
 
@@ -17,19 +18,39 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
         var title = SettingsDeepLink.SettingsWindow.ColorPicker.ModuleDisplayName();
         var icon = SettingsDeepLink.SettingsWindow.ColorPicker.ModuleIcon();
 
+        var commands = new List<ListItem>();
+
+        // Quick actions under MoreCommands.
         var more = new List<CommandContextItem>
         {
+            new CommandContextItem(new OpenColorPickerCommand()),
             new CommandContextItem(new CopyColorCommand()),
+            new CommandContextItem(new ColorPickerSavedColorsPage()),
         };
 
-        var item = new ListItem(new OpenInSettingsCommand(SettingsDeepLink.SettingsWindow.ColorPicker, title))
+        commands.Add(new ListItem(new OpenInSettingsCommand(SettingsDeepLink.SettingsWindow.ColorPicker, title))
         {
             Title = title,
             Subtitle = "Open Color Picker settings",
             Icon = icon,
             MoreCommands = more.ToArray(),
-        };
+        });
 
-        return [item];
+        // Direct entries in the module list.
+        commands.Add(new ListItem(new OpenColorPickerCommand())
+        {
+            Title = "Open Color Picker",
+            Subtitle = "Start a color pick session",
+            Icon = icon,
+        });
+
+        commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
+        {
+            Title = "Saved colors",
+            Subtitle = "Browse and copy saved colors",
+            Icon = icon,
+        });
+
+        return commands;
     }
 }

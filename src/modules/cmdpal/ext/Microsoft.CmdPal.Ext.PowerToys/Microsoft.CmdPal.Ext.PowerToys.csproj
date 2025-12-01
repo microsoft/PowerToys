@@ -57,6 +57,7 @@
 		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
 		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
 		<ProjectReference Include="..\..\..\Awake\Awake.ModuleServices\Awake.ModuleServices.csproj" />
+		<ProjectReference Include="..\..\..\colorPicker\ColorPicker.ModuleServices\ColorPicker.ModuleServices.csproj" />
 		<ProjectReference Include="..\..\..\Workspaces\Workspaces.ModuleServices\Workspaces.ModuleServices.csproj" />
 	</ItemGroup>
 

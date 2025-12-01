@@ -831,6 +831,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.ModuleContracts",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Awake.ModuleServices", "src\modules\awake\Awake.ModuleServices\Awake.ModuleServices.csproj", "{2141FF78-5F51-ED6B-E11B-C7079CCA1456}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorPicker.ModuleServices", "src\modules\colorPicker\ColorPicker.ModuleServices\ColorPicker.ModuleServices.csproj", "{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -5273,6 +5275,22 @@ Global
 		{2141FF78-5F51-ED6B-E11B-C7079CCA1456}.Release|x64.Build.0 = Release|x64
 		{2141FF78-5F51-ED6B-E11B-C7079CCA1456}.Release|x86.ActiveCfg = Release|x64
 		{2141FF78-5F51-ED6B-E11B-C7079CCA1456}.Release|x86.Build.0 = Release|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|Any CPU.Build.0 = Debug|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|x64.ActiveCfg = Debug|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|x64.Build.0 = Debug|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|x86.ActiveCfg = Debug|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Debug|x86.Build.0 = Debug|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|Any CPU.ActiveCfg = Release|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|Any CPU.Build.0 = Release|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|ARM64.Build.0 = Release|ARM64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|x64.ActiveCfg = Release|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|x64.Build.0 = Release|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|x86.ActiveCfg = Release|x64
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -5607,6 +5625,7 @@ Global
 		{D52AAF95-DE88-49EA-B28A-10E382BCD4AB} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 		{094E65D5-585E-4898-B465-97A47CD44380} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{2141FF78-5F51-ED6B-E11B-C7079CCA1456} = {127F38E0-40AA-4594-B955-5616BF206882}
+		{C9F3F4D1-A457-2A6E-DE4E-ED0DDB8DDA52} = {1D78B84B-CA39-406C-98F4-71F7EC266CC0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
