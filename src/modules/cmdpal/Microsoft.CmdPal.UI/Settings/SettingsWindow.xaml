@@ -27,9 +27,9 @@
         </Grid.RowDefinitions>
         <TitleBar
             x:Name="AppTitleBar"
-            IsTabStop="False"
             BackRequested="TitleBar_BackRequested"
             IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
+            IsTabStop="False"
             PaneToggleRequested="AppTitleBar_PaneToggleRequested">
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
             <TitleBar.LeftHeader>
@@ -94,7 +94,10 @@
                         </BreadcrumbBar.Resources>
                     </BreadcrumbBar>
                 </Grid>
-                <Frame x:Name="NavFrame" Grid.Row="1" Navigated="NavFrame_OnNavigated" />
+                <Frame
+                    x:Name="NavFrame"
+                    Grid.Row="1"
+                    Navigated="NavFrame_OnNavigated" />
             </Grid>
         </NavigationView>
     </Grid>
