@@ -215,7 +215,6 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return new OpenAIPromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            Temperature = 0.01,
         };
     }
 }

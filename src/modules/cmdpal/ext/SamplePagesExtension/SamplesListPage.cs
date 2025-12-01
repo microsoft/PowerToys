@@ -34,9 +34,9 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
-        new ListItem(new SampleGalleryListPage())
+        new ListItem(new SampleGridsListPage())
         {
-            Title = "Gallery List Page Command",
+            Title = "Grid views and galleries",
             Subtitle = "Displays items as a gallery",
         },
         new ListItem(new OnLoadPage())
