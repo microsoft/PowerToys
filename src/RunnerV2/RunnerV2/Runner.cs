@@ -15,8 +15,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ManagedCommon;
 using RunnerV2.Helpers;
+using RunnerV2.ModuleInterfaces;
 using Update;
 using static RunnerV2.NativeMethods;
 
@@ -28,11 +28,6 @@ namespace RunnerV2
 
         private const string TrayWindowClassName = "pt_tray_icon_window_class";
 
-        static Runner()
-        {
-            InitializeTrayWindow();
-        }
-
         public static List<IPowerToysModule> LoadedModules { get; } = [];
 
         public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
@@ -40,10 +35,12 @@ namespace RunnerV2
             new ModuleInterfaces.AlwaysOnTopModuleInterface(),
             new ModuleInterfaces.HostsModuleInterface(),
             new ModuleInterfaces.PowerAccentModuleInterface(),
+            new ModuleInterfaces.AdvancedPasteModuleInterface(),
         ];
 
         internal static bool Run(Action afterInitializationAction)
         {
+            InitializeTrayWindow();
             TrayIconManager.StartTrayIcon();
 
             Task.Run(UpdateUtilities.UninstallPreviousMsixVersions);
@@ -52,6 +49,8 @@ namespace RunnerV2
             {
                 ToggleModuleStateBasedOnEnabledProperty(module);
             }
+
+            CentralizedKeyboardHookManager.Start();
 
             afterInitializationAction();
 
@@ -116,16 +115,23 @@ namespace RunnerV2
                 {
                     /* Todo: conflict manager */
 
+                    if (!LoadedModules.Contains(module))
+                    {
+                        module.Enable();
+                        LoadedModules.Add(module);
+                    }
+
                     // ToArray is called to mitigate mutations while the foreach is executing
                     foreach (var hotkey in module.Hotkeys.ToArray())
                     {
                         HotkeyManager.EnableHotkey(hotkey.Key, hotkey.Value);
                     }
 
-                    if (!LoadedModules.Contains(module))
+                    CentralizedKeyboardHookManager.RemoveAllHooksFromModule(module.Name);
+
+                    foreach (var shortcut in module.Shortcuts.ToArray())
                     {
-                        module.Enable();
-                        LoadedModules.Add(module);
+                        CentralizedKeyboardHookManager.AddKeyboardHook(module.Name, shortcut.Hotkey, shortcut.Action);
                     }
 
                     return;
@@ -148,6 +154,8 @@ namespace RunnerV2
                 {
                     HotkeyManager.DisableHotkey(hotkey.Key);
                 }
+
+                CentralizedKeyboardHookManager.RemoveAllHooksFromModule(module.Name);
 
                 LoadedModules.Remove(module);
             }

@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 
 namespace RunnerV2
 {
@@ -186,5 +187,48 @@ namespace RunnerV2
             [MarshalAs(UnmanagedType.LPWStr)]
             public string LpszClassName;
         }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("Advapi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            [MarshalAs(UnmanagedType.LPWStr)] string StringSecurityDescriptor,
+            uint StringSDRevision,
+            out IntPtr SecurityDescriptor,
+            out uint SecurityDescriptorSize);
+
+        [DllImport("Advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool MakeAbsoluteSD(
+            IntPtr pSelfRelativeSD,
+            IntPtr pAbsoluteSD,
+            ref uint lpdwAbsoluteSDSize,
+            IntPtr pDacl,
+            ref uint lpdwDaclSize,
+            IntPtr pSacl,
+            ref uint lpdwSaclSize,
+            IntPtr pOwner,
+            ref uint lpdwOwnerSize,
+            IntPtr pPrimaryGroup,
+            ref uint lpdwPrimaryGroupSize);
+
+        [DllImport("ole32.dll", SetLastError = true)]
+        internal static extern int CoInitializeSecurity(
+            IntPtr pSecDesc,
+            int cAuthSvc,
+            IntPtr asAuthSvc,
+            IntPtr pReserved1,
+            uint dwAuthnLevel,
+            uint dwImpLevel,
+            IntPtr pAuthList,
+            uint dwCapabilities,
+            IntPtr pReserved3);
+
+        [DllImport("user32.dll")]
+        internal static extern uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
     }
 }

@@ -22,6 +22,20 @@ internal sealed class Program
 
     private static void Main(string[] args)
     {
+        string securityDescriptor =
+        "O:BA" // Owner: Builtin (local) administrator
+        + "G:BA" // Group: Builtin (local) administrator
+        + "D:"
+        + "(A;;0x7;;;PS)" // Access allowed on COM_RIGHTS_EXECUTE, _LOCAL, & _REMOTE for Personal self
+        + "(A;;0x7;;;IU)" // Access allowed on COM_RIGHTS_EXECUTE for Interactive Users
+        + "(A;;0x3;;;SY)" // Access allowed on COM_RIGHTS_EXECUTE, & _LOCAL for Local system
+        + "(A;;0x7;;;BA)" // Access allowed on COM_RIGHTS_EXECUTE, _LOCAL, & _REMOTE for Builtin (local) administrator
+        + "(A;;0x3;;;S-1-15-3-1310292540-1029022339-4008023048-2190398717-53961996-4257829345-603366646)" // Access allowed on COM_RIGHTS_EXECUTE, & _LOCAL for Win32WebViewHost package capability
+        + "S:"
+        + "(ML;;NX;;;LW)"; // Integrity label on No execute up for Low mandatory level
+
+        COMUtils.InitializeCOMSecurity(securityDescriptor);
+
         switch (ShouldRunInSpecialMode(args))
         {
             case SpecialMode.None:

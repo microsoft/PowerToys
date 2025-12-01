@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
@@ -22,6 +23,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -132,47 +134,44 @@ namespace AdvancedPaste
 
             if (cmdArgs?.Length > 2)
             {
-                ProcessNamedPipe(cmdArgs[2]);
+                TwoWayPipeMessageIPCManaged ipc = new(cmdArgs[2], string.Empty, async (m) => await OnNamedPipeMessage(m));
+                ipc.Start();
             }
-        }
-
-        private void ProcessNamedPipe(string pipeName)
-        {
-            void OnMessage(string message) => _dispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
-
-            Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout: TimeSpan.FromSeconds(10), OnMessage, CancellationToken.None));
         }
 
         private async Task OnNamedPipeMessage(string message)
         {
-            var messageParts = message.Split();
-            var messageType = messageParts.First();
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                var messageParts = message.Split();
+                var messageType = messageParts.First();
 
-            if (messageType == PowerToys.Interop.Constants.AdvancedPasteShowUIMessage())
-            {
-                await ShowWindow();
-            }
-            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
-            {
-                await viewModel.ExecutePasteFormatAsync(PasteFormats.Markdown, PasteActionSource.GlobalKeyboardShortcut);
-            }
-            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
-            {
-                await viewModel.ExecutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
-            }
-            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
-            {
-                await OnAdvancedPasteAdditionalActionHotkey(messageParts);
-            }
-            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
-            {
-                await OnAdvancedPasteCustomActionHotkey(messageParts);
-            }
-            else if (messageType == PowerToys.Interop.Constants.AdvancedPasteTerminateAppMessage())
-            {
-                Dispose();
-                Environment.Exit(0);
-            }
+                if (messageType == PowerToys.Interop.Constants.AdvancedPasteShowUIMessage())
+                {
+                    await ShowWindow();
+                }
+                else if (messageType == PowerToys.Interop.Constants.AdvancedPasteMarkdownMessage())
+                {
+                    await viewModel.ExecutePasteFormatAsync(PasteFormats.Markdown, PasteActionSource.GlobalKeyboardShortcut);
+                }
+                else if (messageType == PowerToys.Interop.Constants.AdvancedPasteJsonMessage())
+                {
+                    await viewModel.ExecutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
+                }
+                else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
+                {
+                    await OnAdvancedPasteAdditionalActionHotkey(messageParts);
+                }
+                else if (messageType == PowerToys.Interop.Constants.AdvancedPasteCustomActionMessage())
+                {
+                    await OnAdvancedPasteCustomActionHotkey(messageParts);
+                }
+                else if (messageType == PowerToys.Interop.Constants.AdvancedPasteTerminateAppMessage())
+                {
+                    Dispose();
+                    Environment.Exit(0);
+                }
+            });
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

@@ -5,9 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
 
-namespace ManagedCommon
+namespace RunnerV2.ModuleInterfaces
 {
     public interface IPowerToysModule
     {
@@ -22,6 +24,8 @@ namespace ManagedCommon
         public GpoRuleConfigured GpoRuleConfigured { get; }
 
         public Dictionary<HotkeyEx, Action> Hotkeys { get => []; }
+
+        public List<(HotkeySettings Hotkey, Action Action)> Shortcuts { get => []; }
 
         public Dictionary<string, Action> CustomActions { get => []; }
 
