@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<winuiex:WindowEx
+    xmlns:winuiex="using:WinUIEx"
+    x:Class="ClipPing.Overlays.TopOverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ClipPing.Overlays"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    IsTitleBarVisible="False"
+    IsShownInSwitchers="False"
+    IsResizable="False"
+    PresenterKind="Overlapped"
+    IsAlwaysOnTop="True">
+    <Window.SystemBackdrop>
+        <winuiex:TransparentTintBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="GridOverlay">
+        <Grid.Resources>
+            <Storyboard x:Name="EnterStoryboard" Completed="EnterStoryboard_Completed">
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="GridOverlay" Storyboard.TargetProperty="Opacity" Duration="Automatic">
+                    <DiscreteDoubleKeyFrame Value="0" KeyTime="0:0:0" />
+                    <EasingDoubleKeyFrame Value="1" KeyTime="0:0:0.1">
+                        <EasingDoubleKeyFrame.EasingFunction>
+                            <SineEase EasingMode="EaseOut" />
+                        </EasingDoubleKeyFrame.EasingFunction>
+                    </EasingDoubleKeyFrame>
+                    <EasingDoubleKeyFrame Value="0" KeyTime="0:0:0.4">
+                        <EasingDoubleKeyFrame.EasingFunction>
+                            <SineEase EasingMode="EaseInOut" />
+                        </EasingDoubleKeyFrame.EasingFunction>
+                    </EasingDoubleKeyFrame>
+                </DoubleAnimationUsingKeyFrames>
+            </Storyboard>
+        </Grid.Resources>
+        <Grid.Background>
+            <LinearGradientBrush x:Name="OverlayBrush" StartPoint="0,0" EndPoint="0,1" >
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Color="#7000FF00" Offset="0" />
+                    <GradientStop Color="#0000FF00" Offset=".1" />
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+        </Grid.Background>
+    </Grid>
+</winuiex:WindowEx>

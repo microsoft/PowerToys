@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AlwaysOnTop: return generalSettingsConfig.Enabled.AlwaysOnTop;
                 case ModuleType.Awake: return generalSettingsConfig.Enabled.Awake;
                 case ModuleType.CmdPal: return generalSettingsConfig.Enabled.CmdPal;
+                case ModuleType.ClipPing: return generalSettingsConfig.Enabled.ClipPing;
                 case ModuleType.ColorPicker: return generalSettingsConfig.Enabled.ColorPicker;
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.CursorWrap: return generalSettingsConfig.Enabled.CursorWrap;
@@ -88,6 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AdvancedPaste: generalSettingsConfig.Enabled.AdvancedPaste = isEnabled; break;
                 case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
                 case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
+                case ModuleType.ClipPing: generalSettingsConfig.Enabled.ClipPing = isEnabled; break;
                 case ModuleType.CmdPal: generalSettingsConfig.Enabled.CmdPal = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
@@ -125,6 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AdvancedPaste: return GPOWrapper.GetConfiguredAdvancedPasteEnabledValue();
                 case ModuleType.AlwaysOnTop: return GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
                 case ModuleType.Awake: return GPOWrapper.GetConfiguredAwakeEnabledValue();
+                case ModuleType.ClipPing: return GPOWrapper.GetConfiguredClipPingEnabledValue();
                 case ModuleType.CmdPal: return GPOWrapper.GetConfiguredCmdPalEnabledValue();
                 case ModuleType.ColorPicker: return GPOWrapper.GetConfiguredColorPickerEnabledValue();
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();

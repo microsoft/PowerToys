@@ -5485,6 +5485,45 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
   </data>
+  <data name="ClipPing.ModuleTitle" xml:space="preserve">
+    <value>ClipPing</value>
+    <comment>{Locked="ClipPing"}</comment>
+  </data>
+  <data name="Shell_ClipPing.Content" xml:space="preserve">
+    <value>ClipPing</value>
+    <comment>{Locked="ClipPing"}</comment>
+  </data>
+  <data name="ClipPing_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable ClipPing</value>
+    <comment>{Locked="ClipPing"}</comment>
+  </data>
+  <data name="ClipPing.ModuleDescription" xml:space="preserve">
+    <value>Displays a visual notification in the active window whenever something is copied into the clipboard.</value>
+  </data>
+  <data name="ClipPing_ShortDescription" xml:space="preserve">
+    <value>Displays a visual notification in the active window whenever something is copied into the clipboard.</value>
+  </data>
+  <data name="ClipPing_Settings.Header" xml:space="preserve">
+    <value>Overlay settings</value>
+  </data>
+  <data name="ClipPing_OverlayColor.Header" xml:space="preserve">
+    <value>Overlay color</value>
+  </data>
+  <data name="ClipPing_OverlayType.Header" xml:space="preserve">
+    <value>Overlay type</value>
+  </data>
+  <data name="ClipPing_Test.Header" xml:space="preserve">
+    <value>Test overlay</value>
+  </data>
+  <data name="ClipPing_TestOverlay.Content" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="ClipPing_OverlayTop.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="ClipPing_OverlayBorder.Content" xml:space="preserve">
+    <value>Border</value>
+  </data>
   <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
     <value>Search results</value>
   </data>

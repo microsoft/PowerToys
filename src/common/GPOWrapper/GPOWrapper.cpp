@@ -228,6 +228,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredClipPingEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredClipPingEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredWorkspacesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredWorkspacesEnabledValue());
