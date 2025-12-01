@@ -20,6 +20,7 @@ internal static class ModuleCommandCatalog
     private static readonly ModuleCommandProvider[] Providers =
     [
         new AwakeModuleCommandProvider(),
+        new AdvancedPasteModuleCommandProvider(),
         new WorkspacesModuleCommandProvider(),
         new ColorPickerModuleCommandProvider(),
         new DefaultSettingsModuleCommandProvider(),
