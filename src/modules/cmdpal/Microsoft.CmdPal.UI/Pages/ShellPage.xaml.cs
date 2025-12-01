@@ -345,7 +345,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Depending on the settings, either
             // * Go home, or
             // * Select the search text (if we should remain open on this page)
-            if (settings.HotkeyGoesHome)
+            if (settings.AutoGoHomeInterval == TimeSpan.Zero)
             {
                 GoHome(false);
             }

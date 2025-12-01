@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.RefreshEnabledState();
             UpdatePasteAIUIVisibility();
-            _ = UpdateFoundryLocalUIAsync(refreshFoundry: true);
+            _ = UpdateFoundryLocalUIAsync();
         }
 
         private void EnableAdvancedPasteAI() => ViewModel.EnableAI();
@@ -384,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private Task UpdateFoundryLocalUIAsync(bool refreshFoundry = false)
+        private Task UpdateFoundryLocalUIAsync()
         {
             string selectedType = ViewModel?.PasteAIProviderDraft?.ServiceType ?? string.Empty;
             bool isFoundryLocal = string.Equals(selectedType, "FoundryLocal", StringComparison.OrdinalIgnoreCase);
@@ -419,12 +419,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
             }
 
-            FoundryLocalPicker?.RequestLoad(refreshFoundry);
+            FoundryLocalPicker?.RequestLoad();
 
             return Task.CompletedTask;
         }
 
-        private async Task LoadFoundryLocalModelsAsync(bool refresh = false)
+        private async Task LoadFoundryLocalModelsAsync()
         {
             if (FoundryLocalPanel is null)
             {
@@ -456,9 +456,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     return;
                 }
 
-                IEnumerable<ModelDetails> cachedModelsEnumerable = refresh
-                    ? await provider.GetModelsAsync(ignoreCached: true, cancelationToken: cancellationToken)
-                    : await provider.GetModelsAsync(cancelationToken: cancellationToken);
+                IEnumerable<ModelDetails> cachedModelsEnumerable = await provider.GetModelsAsync(cancelationToken: cancellationToken).ConfigureAwait(false);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -467,9 +465,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 var cachedModels = cachedModelsEnumerable?.ToList() ?? new List<ModelDetails>();
 
-                UpdateFoundryCollections(cachedModels);
-                ShowFoundryAvailableState();
-                RestoreFoundrySelection(cachedModels);
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateFoundryCollections(cachedModels);
+                    ShowFoundryAvailableState();
+                    RestoreFoundrySelection(cachedModels);
+                });
             }
             catch (OperationCanceledException)
             {
@@ -478,12 +479,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch (Exception ex)
             {
                 var errorMessage = $"Unable to load Foundry Local models. {ex.Message}";
-                ShowFoundryUnavailableState(errorMessage);
                 System.Diagnostics.Debug.WriteLine($"[AdvancedPastePage] Failed to load Foundry Local models: {ex}");
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    ShowFoundryUnavailableState(errorMessage);
+                });
             }
             finally
             {
-                UpdateFoundrySaveButtonState();
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    UpdateFoundrySaveButtonState();
+                });
             }
         }
 
@@ -672,9 +679,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             UpdateFoundrySaveButtonState();
         }
 
-        private async void FoundryLocalPicker_LoadRequested(object sender, FoundryLocalModelPicker.FoundryLoadRequestedEventArgs args)
+        private async void FoundryLocalPicker_LoadRequested(object sender)
         {
-            await LoadFoundryLocalModelsAsync(args?.Refresh ?? false);
+            await LoadFoundryLocalModelsAsync();
         }
 
         private sealed class FoundryDownloadableModel : INotifyPropertyChanged
@@ -1089,7 +1096,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PasteAIProviderConfigurationDialog.Title = $"{displayName} provider configuration";
             }
 
-            await UpdateFoundryLocalUIAsync(refreshFoundry: true);
+            await UpdateFoundryLocalUIAsync();
             UpdatePasteAIUIVisibility();
             RefreshDialogBindings();
 
@@ -1118,7 +1125,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 : $"{titlePrefix} provider configuration";
 
             UpdatePasteAIUIVisibility();
-            await UpdateFoundryLocalUIAsync(refreshFoundry: false);
+            await UpdateFoundryLocalUIAsync();
             RefreshDialogBindings();
             PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(provider.Id, provider.ServiceType);
             await PasteAIProviderConfigurationDialog.ShowAsync();

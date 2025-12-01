@@ -41,6 +41,15 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.plugin_global_if_uri,
         false);
 
+    private readonly TextSetting _customSearchUri = new(
+        Namespaced(nameof(CustomSearchUri)),
+        Resources.plugin_custom_search_uri,
+        Resources.plugin_custom_search_uri,
+        string.Empty)
+    {
+        Placeholder = Resources.plugin_custom_search_uri_placeholder,
+    };
+
     private readonly ChoiceSetSetting _historyItemCount = new(
         Namespaced(HistoryItemCountLegacySettingsKey),
         Resources.plugin_history_item_count,
@@ -51,6 +60,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public int HistoryItemCount => int.TryParse(_historyItemCount.Value, out var value) && value >= 0 ? value : 0;
 
+    public string CustomSearchUri => _customSearchUri.Value ?? string.Empty;
+
     public IReadOnlyList<HistoryItem> HistoryItems => _history.HistoryItems;
 
     public SettingsManager()
@@ -59,6 +70,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
         Settings.Add(_globalIfURI);
         Settings.Add(_historyItemCount);
+        Settings.Add(_customSearchUri);
 
         LoadSettings();
 

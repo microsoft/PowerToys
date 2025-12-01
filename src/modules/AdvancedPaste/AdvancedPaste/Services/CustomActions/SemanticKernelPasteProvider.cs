@@ -157,8 +157,6 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
                 {
-                    Temperature = 0.01,
-                    MaxTokens = 2000,
                     FunctionChoiceBehavior = null,
                 },
                 _ => new PromptExecutionSettings(),
