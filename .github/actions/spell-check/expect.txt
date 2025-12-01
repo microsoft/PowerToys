@@ -56,6 +56,7 @@ ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
 AOklab
+aot
 APARTMENTTHREADED
 APeriod
 apicontract
@@ -1057,6 +1058,7 @@ msrc
 msstore
 msvcp
 MT
+mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1206,8 +1208,11 @@ OOBEUI
 openas
 opencode
 OPENFILENAME
+openrdp
 opensource
 openxmlformats
+ollama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1420,6 +1425,8 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
+remotedesktop
+rdp
 RDW
 READMODE
 READOBJECTS

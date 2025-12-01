@@ -24,32 +24,23 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
-        DataTemplate? dataTemplate = Medium;
-
-        if (GridProperties is SmallGridPropertiesViewModel)
-        {
-            dataTemplate = Small;
-        }
-        else if (GridProperties is MediumGridPropertiesViewModel)
-        {
-            dataTemplate = Medium;
-        }
-        else if (GridProperties is GalleryGridPropertiesViewModel)
-        {
-            dataTemplate = Gallery;
-        }
-
         if (item is ListItemViewModel element && element.IsSectionOrSeparator)
         {
-            dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
-
             if (dependencyObject is UIElement li)
             {
                 li.IsTabStop = false;
                 li.IsHitTestVisible = false;
             }
+
+            return string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
         }
 
-        return dataTemplate;
+        return GridProperties switch
+        {
+            SmallGridPropertiesViewModel => Small,
+            MediumGridPropertiesViewModel => Medium,
+            GalleryGridPropertiesViewModel => Gallery,
+            _ => Medium,
+        };
     }
 }

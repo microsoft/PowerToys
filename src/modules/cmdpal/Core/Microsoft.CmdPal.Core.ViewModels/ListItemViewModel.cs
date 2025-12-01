@@ -10,10 +10,9 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
-    : CommandItemViewModel(new(model), context)
+public partial class ListItemViewModel : CommandItemViewModel
 {
-    public new ExtensionObject<IListItem> Model { get; } = new(model);
+    public new ExtensionObject<IListItem> Model { get; }
 
     public List<TagViewModel>? Tags { get; set; }
 
@@ -33,6 +32,40 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     public bool HasDetails => Details is not null;
 
     public string AccessibleName { get; private set; } = string.Empty;
+
+    public bool ShowTitle { get; private set; }
+
+    public bool ShowSubtitle { get; private set; }
+
+    public bool LayoutShowsTitle
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                UpdateShowsTitle();
+            }
+        }
+    }
+
+    public bool LayoutShowsSubtitle
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                UpdateShowsSubtitle();
+            }
+        }
+    }
+
+    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
+        : base(new(model), context)
+    {
+        Model = new ExtensionObject<IListItem>(model);
+    }
 
     public override void InitializeProperties()
     {
@@ -98,17 +131,19 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         switch (propertyName)
         {
-            case nameof(Tags):
+            case nameof(model.Tags):
                 UpdateTags(model.Tags);
                 break;
-            case nameof(TextToSuggest):
-                this.TextToSuggest = model.TextToSuggest ?? string.Empty;
+            case nameof(model.TextToSuggest):
+                TextToSuggest = model.TextToSuggest ?? string.Empty;
+                UpdateProperty(nameof(TextToSuggest));
                 break;
-            case nameof(Section):
-                this.Section = model.Section ?? string.Empty;
+            case nameof(model.Section):
+                Section = model.Section ?? string.Empty;
+                UpdateProperty(nameof(Section));
                 break;
             case nameof(IsSectionOrSeparator):
-                this.IsSectionOrSeparator = !string.IsNullOrWhiteSpace(Section) || IsSeparator(model);
+                IsSectionOrSeparator = !string.IsNullOrWhiteSpace(Section) || IsSeparator(model);
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
@@ -117,16 +152,24 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
                 break;
-            case nameof(MoreCommands):
+            case nameof(model.MoreCommands):
+                UpdateProperty(nameof(MoreCommands));
                 AddShowDetailsCommands();
                 break;
-            case nameof(Title):
-            case nameof(Subtitle):
+            case nameof(model.Title):
+                UpdateProperty(nameof(Title));
+                UpdateShowsTitle();
                 UpdateAccessibleName();
                 break;
+            case nameof(model.Subtitle):
+                UpdateProperty(nameof(Subtitle));
+                UpdateShowsSubtitle();
+                UpdateAccessibleName();
+                break;
+            default:
+                UpdateProperty(propertyName);
+                break;
         }
-
-        UpdateProperty(propertyName);
     }
 
     // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
@@ -211,9 +254,30 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 // many COM exception issues.
                 Tags = [.. newTags];
 
-                UpdateProperty(nameof(Tags));
-                UpdateProperty(nameof(HasTags));
+                // We're already in UI thread, so just raise the events
+                OnPropertyChanged(nameof(Tags));
+                OnPropertyChanged(nameof(HasTags));
             });
+    }
+
+    private void UpdateShowsTitle()
+    {
+        var oldShowTitle = ShowTitle;
+        ShowTitle = LayoutShowsTitle;
+        if (oldShowTitle != ShowTitle)
+        {
+            UpdateProperty(nameof(ShowTitle));
+        }
+    }
+
+    private void UpdateShowsSubtitle()
+    {
+        var oldShowSubtitle = ShowSubtitle;
+        ShowSubtitle = LayoutShowsSubtitle && !string.IsNullOrWhiteSpace(Subtitle);
+        if (oldShowSubtitle != ShowSubtitle)
+        {
+            UpdateProperty(nameof(ShowSubtitle));
+        }
     }
 
     protected override void UnsafeCleanup()
