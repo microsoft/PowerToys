@@ -2,12 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 
 namespace PowerToysExtension.Helpers;
 
@@ -28,8 +29,12 @@ internal static class ColorSwatchIconFactory
 
             using var ms = new MemoryStream();
             bmp.Save(ms, ImageFormat.Png);
-            var iconData = IconInfo.FromStream(ms.AsRandomAccessStream()).Dark as IconData;
-            return iconData != null ? new IconInfo(iconData, iconData) : new IconInfo("\u25CF");
+            var ras = new InMemoryRandomAccessStream();
+            var writer = new DataWriter(ras);
+            writer.WriteBytes(ms.ToArray());
+            writer.StoreAsync().GetResults();
+            ras.Seek(0);
+            return IconInfo.FromStream(ras);
         }
         catch
         {

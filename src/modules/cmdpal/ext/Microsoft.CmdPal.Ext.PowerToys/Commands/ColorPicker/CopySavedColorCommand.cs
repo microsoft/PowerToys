@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using ColorPicker.ModuleServices;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -28,7 +30,30 @@ internal sealed partial class CopySavedColorCommand : InvokableCommand
     {
         try
         {
-            Clipboard.SetText(_copyValue);
+            if (Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                var thread = new Thread(() =>
+                {
+                    try
+                    {
+                        Clipboard.SetText(_copyValue);
+                        tcs.SetResult(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                tcs.Task.GetAwaiter().GetResult();
+            }
+            else
+            {
+                Clipboard.SetText(_copyValue);
+            }
+
             return CommandResult.ShowToast($"Copied {_copyValue}");
         }
         catch (Exception ex)

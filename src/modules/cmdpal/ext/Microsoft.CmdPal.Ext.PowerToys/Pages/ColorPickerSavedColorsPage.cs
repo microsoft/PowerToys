@@ -55,7 +55,8 @@ internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
             var copyValue = SelectPreferredFormat(saved);
             var subtitle = BuildSubtitle(saved);
 
-            return (IListItem)new CommandItem(new CopySavedColorCommand(saved, copyValue))
+            var command = new CopySavedColorCommand(saved, copyValue);
+            return (IListItem)new ListItem(new CommandItem(command))
             {
                 Title = saved.Hex,
                 Subtitle = subtitle,
@@ -75,23 +76,7 @@ internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
         RaiseItemsChanged(0);
     }
 
-    private static string SelectPreferredFormat(SavedColor saved)
-    {
-        // Prefer RGBA, then RGB, otherwise fallback to hex.
-        var rgba = saved.Formats.FirstOrDefault(f => f.Format.Equals("RGBA", StringComparison.OrdinalIgnoreCase));
-        if (rgba is not null)
-        {
-            return rgba.Value;
-        }
-
-        var rgb = saved.Formats.FirstOrDefault(f => f.Format.Equals("RGB", StringComparison.OrdinalIgnoreCase));
-        if (rgb is not null)
-        {
-            return rgb.Value;
-        }
-
-        return saved.Hex;
-    }
+    private static string SelectPreferredFormat(SavedColor saved) => saved.Hex;
 
     private static string BuildSubtitle(SavedColor saved)
     {
