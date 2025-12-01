@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(AwakeSettings))]
     [JsonSerializable(typeof(CmdNotFoundSettings))]
     [JsonSerializable(typeof(ColorPickerSettings))]
+    [JsonSerializable(typeof(CursorWrapSettings))]
     [JsonSerializable(typeof(ColorPickerSettingsVersion1))]
     [JsonSerializable(typeof(CropAndLockSettings))]
     [JsonSerializable(typeof(EnvironmentVariablesSettings))]
@@ -81,6 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(AwakeProperties))]
     [JsonSerializable(typeof(CmdPalProperties))]
     [JsonSerializable(typeof(ColorPickerProperties))]
+    [JsonSerializable(typeof(CursorWrapProperties))]
     [JsonSerializable(typeof(ColorPickerPropertiesVersion1))]
     [JsonSerializable(typeof(CropAndLockProperties))]
     [JsonSerializable(typeof(EnvironmentVariablesProperties))]
@@ -146,6 +148,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(List<VcpValueInfo>))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
     [JsonSerializable(typeof(SndLightSwitchSettings))]
+    [JsonSerializable(typeof(SndCursorWrapSettings))]
+
+    // AdvancedPaste AI Provider Types (for AOT compatibility)
+    [JsonSerializable(typeof(PasteAIConfiguration))]
+    [JsonSerializable(typeof(PasteAIProviderDefinition))]
+    [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
 
     // PowerDisplay Profile Types (for AOT compatibility)
     [JsonSerializable(typeof(ColorTemperatureOperation))]

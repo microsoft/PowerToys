@@ -15,8 +15,8 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="powertoys_env_path_user" Value="" KeyPath="yes" />
         </RegistryKey>
-        <!-- Append install folder to current user's PATH -->
-        <Environment Id="AddPowerToysToUserPath" Name="PATH" Action="set" Part="last" System="no" Value="[INSTALLFOLDER]" />
+        <!-- Append DSCModules folder to current user's PATH for DSC v3 usage -->
+        <Environment Id="AddPowerToysToUserPath" Name="PATH" Action="set" Part="last" System="no" Value="[DSCModulesReferenceFolder]" />
       </Component>
       <?else?>
       <Component Id="powertoys_env_path_machine" Bitness="always64">
@@ -24,8 +24,8 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="powertoys_env_path_machine" Value="" KeyPath="yes" />
         </RegistryKey>
-        <!-- Append install folder to machine PATH -->
-        <Environment Id="AddPowerToysToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[INSTALLFOLDER]" />
+        <!-- Append DSCModules folder to machine PATH for DSC v3 usage -->
+        <Environment Id="AddPowerToysToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[DSCModulesReferenceFolder]" />
       </Component>
       <?endif?>
       <Component Id="powertoys_toast_clsid" Bitness="always64">
@@ -60,16 +60,6 @@
           <RegistryValue Type="string" Name="Notice_md" Value="" KeyPath="yes" />
         </RegistryKey>
         <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" />
-      </Component>
-    </DirectoryRef>
-
-    <DirectoryRef Id="DSCModulesReferenceFolder">
-      <Component Id="PowerToysDSCReference" Guid="40869ACB-0BEB-4911-AE41-5E73BC1586A9" Bitness="always64">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="DSCModulesReference" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
-        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
       </Component>
     </DirectoryRef>
 
@@ -120,7 +110,6 @@
           <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes" />
         </RegistryKey>
         <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall" />
-        <RemoveFolder Id="RemoveDSCModulesReferenceFolder" Directory="DSCModulesReferenceFolder" On="uninstall" />
         <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall" />
         <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall" />
         <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall" />
@@ -128,16 +117,15 @@
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="PowerToysStartMenuShortcut" />
       <ComponentRef Id="powertoys_per_machine_comp" />
-  <?if $(var.PerUser) = "true" ?>
-  <ComponentRef Id="powertoys_env_path_user" />
-  <?else?>
-  <ComponentRef Id="powertoys_env_path_machine" />
-  <?endif?>
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
       <ComponentRef Id="DesktopShortcut" />
-      <ComponentRef Id="PowerToysDSCReference" />
+      <?if $(var.PerUser) = "true" ?>
+      <ComponentRef Id="powertoys_env_path_user" />
+      <?else?>
+      <ComponentRef Id="powertoys_env_path_machine" />
+      <?endif?>
       <?if $(var.PerUser) = "false" ?>
       <ComponentRef Id="PowerToysDSC" />
       <?endif?>

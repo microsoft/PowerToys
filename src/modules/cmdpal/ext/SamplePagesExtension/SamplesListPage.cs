@@ -5,6 +5,7 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using SamplePagesExtension.Pages;
+using SamplePagesExtension.Pages.IssueSpecificPages;
 
 namespace SamplePagesExtension;
 
@@ -33,9 +34,9 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
-        new ListItem(new SampleGalleryListPage())
+        new ListItem(new SampleGridsListPage())
         {
-            Title = "Gallery List Page Command",
+            Title = "Grid views and galleries",
             Subtitle = "Displays items as a gallery",
         },
         new ListItem(new OnLoadPage())
@@ -106,6 +107,11 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Evil samples",
             Subtitle = "Samples designed to break the palette in many different evil ways",
+        },
+        new ListItem(new AllIssueSamplesIndexPage())
+        {
+            Title = "Issue-specific samples",
+            Subtitle = "Samples designed to reproduce specific issues",
         }
     ];
 

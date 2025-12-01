@@ -350,7 +350,7 @@ namespace Awake.Core
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
                     },
-                    _ => HandleTimerCompletion("timed"),
+                    () => HandleTimerCompletion("timed"),
                     _tokenSource.Token);
         }
 

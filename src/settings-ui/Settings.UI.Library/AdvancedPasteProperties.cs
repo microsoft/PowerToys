@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,19 +24,60 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsJsonShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
-            IsAdvancedAIEnabled = false;
+            IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            EnableClipboardPreview = true;
+            PasteAIConfiguration = new();
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool IsAdvancedAIEnabled { get; set; }
+        public bool IsAIEnabled { get; set; }
+
+        private bool? _legacyAdvancedAIEnabled;
+
+        [JsonPropertyName("IsAdvancedAIEnabled")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public BoolProperty LegacyAdvancedAIEnabledProperty
+        {
+            get => null;
+            set
+            {
+                if (value is not null)
+                {
+                    LegacyAdvancedAIEnabled = value.Value;
+                }
+            }
+        }
+
+        [JsonIgnore]
+        public bool? LegacyAdvancedAIEnabled
+        {
+            get => _legacyAdvancedAIEnabled;
+            private set => _legacyAdvancedAIEnabled = value;
+        }
+
+        public bool TryConsumeLegacyAdvancedAIEnabled(out bool value)
+        {
+            if (_legacyAdvancedAIEnabled is bool flag)
+            {
+                value = flag;
+                _legacyAdvancedAIEnabled = null;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool CloseAfterLosingFocus { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableClipboardPreview { get; set; }
 
         [JsonPropertyName("advanced-paste-ui-hotkey")]
         public HotkeySettings AdvancedPasteUIShortcut { get; set; }
@@ -56,6 +98,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("additional-actions")]
         [CmdConfigureIgnoreAttribute]
         public AdvancedPasteAdditionalActions AdditionalActions { get; init; }
+
+        [JsonPropertyName("paste-ai-configuration")]
+        [CmdConfigureIgnoreAttribute]
+        public PasteAIConfiguration PasteAIConfiguration { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.AdvancedPasteProperties);

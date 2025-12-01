@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -18,6 +19,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -33,6 +35,8 @@ using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
@@ -48,23 +52,34 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<QuitMessage>,
     IDisposable
 {
+    private const int DefaultWidth = 800;
+    private const int DefaultHeight = 480;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
     private readonly uint WM_TASKBAR_RESTART;
     private readonly HWND _hwnd;
+    private readonly DispatcherTimer _autoGoHomeTimer;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
     private readonly LocalKeyboardListener _localKeyboardListener;
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+    private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
+
+    private WindowPosition _currentWindowPosition = new();
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _autoGoHomeTimer = new DispatcherTimer();
+        _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
 
@@ -73,6 +88,8 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
+        _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
+
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
 
@@ -80,7 +97,9 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        PositionCentered();
+        RestoreWindowPosition();
+        UpdateWindowPositionInMemory();
+
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -95,7 +114,7 @@ public sealed partial class MainWindow : WindowEx,
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
-        RootShellPage.Loaded += RootShellPage_Loaded;
+        RootElement.Loaded += RootElementLoaded;
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -112,7 +131,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootShellPage.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -126,16 +145,15 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
-
-        ApplyWindowStyle();
     }
 
-    private void ApplyWindowStyle()
+    private void OnAutoGoHomeTimerOnTick(object? s, object e)
     {
-        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
-        // Since tool windows have smaller corner radii, we need to force the normal ones
-        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, !Debugger.IsAttached);
-        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
+        _autoGoHomeTimer.Stop();
+
+        // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
+        // and prevent the user from opening its context menu.
+        WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -148,10 +166,17 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
 
-    private void RootShellPage_Loaded(object sender, RoutedEventArgs e) =>
-
+    private void RootElementLoaded(object sender, RoutedEventArgs e)
+    {
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
+
+        // Add dev ribbon if enabled
+        if (!BuildInfo.IsCiBuild)
+        {
+            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+        }
+    }
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -159,6 +184,25 @@ public sealed partial class MainWindow : WindowEx,
     {
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         PositionCentered(displayArea);
+    }
+
+    private void RestoreWindowPosition()
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>();
+        if (settings?.LastWindowPosition is not WindowPosition savedPosition)
+        {
+            PositionCentered();
+            return;
+        }
+
+        if (savedPosition.Width <= 0 || savedPosition.Height <= 0)
+        {
+            PositionCentered();
+            return;
+        }
+
+        var newRect = EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi);
+        AppWindow.MoveAndResize(newRect);
     }
 
     private void PositionCentered(DisplayArea displayArea)
@@ -175,6 +219,21 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
+    private void UpdateWindowPositionInMemory()
+    {
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
+        _currentWindowPosition = new WindowPosition
+        {
+            X = AppWindow.Position.X,
+            Y = AppWindow.Position.Y,
+            Width = AppWindow.Size.Width,
+            Height = AppWindow.Size.Height,
+            Dpi = (int)this.GetDpiForWindow(),
+            ScreenWidth = displayArea.WorkArea.Width,
+            ScreenHeight = displayArea.WorkArea.Height,
+        };
+    }
+
     private void HotReloadSettings()
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
@@ -183,6 +242,9 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
+
+        _autoGoHomeInterval = settings.AutoGoHomeInterval;
+        _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -242,6 +304,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
+        StopAutoGoHome();
+
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
         // Remember, IsIconic == "minimized", which is entirely different state
@@ -257,14 +321,22 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        if (target == MonitorBehavior.ToLast)
+        {
+            var newRect = EnsureWindowIsVisible(_currentWindowPosition.ToPhysicalWindowRectangle(), new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight), _currentWindowPosition.Dpi);
+            AppWindow.MoveAndResize(newRect);
+        }
+        else
+        {
+            var display = GetScreen(hwnd, target);
+            PositionCentered(display);
+        }
 
         // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
         // because that would make it hard to debug the app
         if (Debugger.IsAttached)
         {
-            ApplyWindowStyle();
+            _hiddenOwnerBehavior.ShowInTaskbar(this, true);
         }
 
         // Just to be sure, SHOW our hwnd.
@@ -279,6 +351,114 @@ public sealed partial class MainWindow : WindowEx,
         // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
         // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+    }
+
+    /// <summary>
+    /// Ensures that the window rectangle is visible on-screen.
+    /// </summary>
+    /// <param name="windowRect">The window rectangle in physical pixels.</param>
+    /// <param name="originalScreen">The desktop area the window was positioned on.</param>
+    /// <param name="originalDpi">The window's original DPI.</param>
+    /// <returns>
+    /// A window rectangle in physical pixels, moved to the nearest display and resized
+    /// if the DPI has changed.
+    /// </returns>
+    private static RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi)
+    {
+        var displayArea = DisplayArea.GetFromRect(windowRect, DisplayAreaFallback.Nearest);
+        if (displayArea is null)
+        {
+            return windowRect;
+        }
+
+        var workArea = displayArea.WorkArea;
+        if (workArea.Width <= 0 || workArea.Height <= 0)
+        {
+            // Fallback, nothing reasonable to do
+            return windowRect;
+        }
+
+        var effectiveDpi = GetEffectiveDpiFromDisplayId(displayArea);
+        if (originalDpi <= 0)
+        {
+            originalDpi = effectiveDpi; // use current DPI as baseline (no scaling adjustment needed)
+        }
+
+        var hasInvalidSize = windowRect.Width <= 0 || windowRect.Height <= 0;
+        if (hasInvalidSize)
+        {
+            windowRect = new RectInt32(windowRect.X, windowRect.Y, DefaultWidth, DefaultHeight);
+        }
+
+        // If we have a DPI change, scale the window rectangle accordingly
+        if (effectiveDpi != originalDpi)
+        {
+            var scalingFactor = effectiveDpi / (double)originalDpi;
+            windowRect = new RectInt32(
+                (int)Math.Round(windowRect.X * scalingFactor),
+                (int)Math.Round(windowRect.Y * scalingFactor),
+                (int)Math.Round(windowRect.Width * scalingFactor),
+                (int)Math.Round(windowRect.Height * scalingFactor));
+        }
+
+        var targetWidth = Math.Min(windowRect.Width, workArea.Width);
+        var targetHeight = Math.Min(windowRect.Height, workArea.Height);
+
+        // Ensure at least some minimum visible area (e.g., 100 pixels)
+        // This helps prevent the window from being entirely offscreen, regardless of display scaling.
+        const int minimumVisibleSize = 100;
+        var isOffscreen =
+            windowRect.X + minimumVisibleSize > workArea.X + workArea.Width ||
+            windowRect.X + windowRect.Width - minimumVisibleSize < workArea.X ||
+            windowRect.Y + minimumVisibleSize > workArea.Y + workArea.Height ||
+            windowRect.Y + windowRect.Height - minimumVisibleSize < workArea.Y;
+
+        // if the work area size has changed, re-center the window
+        var workAreaSizeChanged =
+            originalScreen.Width != workArea.Width ||
+            originalScreen.Height != workArea.Height;
+
+        int targetX;
+        int targetY;
+        var recenter = isOffscreen || workAreaSizeChanged || hasInvalidSize;
+        if (recenter)
+        {
+            targetX = workArea.X + ((workArea.Width - targetWidth) / 2);
+            targetY = workArea.Y + ((workArea.Height - targetHeight) / 2);
+        }
+        else
+        {
+            targetX = windowRect.X;
+            targetY = windowRect.Y;
+        }
+
+        return new RectInt32(targetX, targetY, targetWidth, targetHeight);
+    }
+
+    private static int GetEffectiveDpiFromDisplayId(DisplayArea displayArea)
+    {
+        var effectiveDpi = 96;
+
+        var hMonitor = (HMONITOR)Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
+        if (!hMonitor.IsNull)
+        {
+            var hr = PInvoke.GetDpiForMonitor(hMonitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
+            if (hr == 0)
+            {
+                effectiveDpi = (int)dpiX;
+            }
+            else
+            {
+                Logger.LogWarning($"GetDpiForMonitor failed with HRESULT: 0x{hr.Value:X8} on display {displayArea.DisplayId}");
+            }
+        }
+
+        if (effectiveDpi <= 0)
+        {
+            effectiveDpi = 96;
+        }
+
+        return effectiveDpi;
     }
 
     private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -380,6 +560,25 @@ public sealed partial class MainWindow : WindowEx,
             // If the window was not cloaked, then leave it hidden.
             // Sure, it's not ideal, but at least it's not visible.
         }
+
+        // Start auto-go-home timer
+        RestartAutoGoHome();
+    }
+
+    private void StopAutoGoHome()
+    {
+        _autoGoHomeTimer.Stop();
+    }
+
+    private void RestartAutoGoHome()
+    {
+        if (_autoGoHomeInterval == Timeout.InfiniteTimeSpan)
+        {
+            return;
+        }
+
+        _autoGoHomeTimer.Stop();
+        _autoGoHomeTimer.Start();
     }
 
     private bool Cloak()
@@ -419,6 +618,25 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
+        UpdateWindowPositionInMemory();
+
+        var settings = serviceProvider.GetService<SettingsModel>();
+        if (settings is not null)
+        {
+            settings.LastWindowPosition = new WindowPosition
+            {
+                X = _currentWindowPosition.X,
+                Y = _currentWindowPosition.Y,
+                Width = _currentWindowPosition.Width,
+                Height = _currentWindowPosition.Height,
+                Dpi = _currentWindowPosition.Dpi,
+                ScreenWidth = _currentWindowPosition.ScreenWidth,
+                ScreenHeight = _currentWindowPosition.ScreenHeight,
+            };
+
+            SettingsModel.SaveSettings(settings);
+        }
+
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
@@ -448,28 +666,28 @@ public sealed partial class MainWindow : WindowEx,
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        var scaleAdjustment = RootElement.XamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
         // (resizing, dragging) don't apply in this space.
-        var transform = RootShellPage.TransformToVisual(null);
+        var transform = RootElement.TransformToVisual(null);
 
         // Reserve 16px of space at the top for dragging.
         var topHeight = 16;
         var bounds = transform.TransformBounds(new Rect(
             0,
             topHeight,
-            RootShellPage.ActualWidth,
-            RootShellPage.ActualHeight));
+            RootElement.ActualWidth,
+            RootElement.ActualHeight));
         var contentRect = GetRect(bounds, scaleAdjustment);
         var rectArray = new RectInt32[] { contentRect };
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
         // Add a drag-able region on top
-        var w = RootShellPage.ActualWidth;
-        _ = RootShellPage.ActualHeight;
+        var w = RootElement.ActualWidth;
+        _ = RootElement.ActualHeight;
         var dragSides = new RectInt32[]
         {
             GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall
@@ -490,6 +708,9 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            // Save the current window position before hiding the window
+            UpdateWindowPositionInMemory();
+
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
             {
