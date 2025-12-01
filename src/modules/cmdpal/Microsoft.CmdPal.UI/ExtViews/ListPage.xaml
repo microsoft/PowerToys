@@ -21,10 +21,135 @@
             GridViewItemCornerRadius is the corner radius defined in GridView template; make
             it bigger to match the radii of the gallery
         -->
-        <CornerRadius x:Key="GridViewItemCornerRadius">8</CornerRadius>
+        <CornerRadius x:Key="GalleryGridViewItemContainerCornerRadius">6</CornerRadius>
+        <CornerRadius x:Key="IconGridViewItemContainerCornerRadius">4</CornerRadius>
+        <CornerRadius x:Key="GalleryGridViewItemRadius">4</CornerRadius>
         <CornerRadius x:Key="SmallGridViewItemCornerRadius">8</CornerRadius>
         <CornerRadius x:Key="MediumGridViewItemCornerRadius">8</CornerRadius>
-        <CornerRadius x:Key="GalleryGridViewItemCornerRadius">4</CornerRadius>
+
+        <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter
+                            x:Name="Root"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBorderBrush="{ThemeResource GridViewItemCheckBoxBorderBrush}"
+                            CheckBoxBrush="{ThemeResource GridViewItemCheckBoxBrush}"
+                            CheckBoxCornerRadius="{ThemeResource GridViewItemCheckBoxCornerRadius}"
+                            CheckBoxDisabledBorderBrush="{ThemeResource GridViewItemCheckBoxDisabledBorderBrush}"
+                            CheckBoxDisabledBrush="{ThemeResource GridViewItemCheckBoxDisabledBrush}"
+                            CheckBoxPointerOverBorderBrush="{ThemeResource GridViewItemCheckBoxPointerOverBorderBrush}"
+                            CheckBoxPointerOverBrush="{ThemeResource GridViewItemCheckBoxPointerOverBrush}"
+                            CheckBoxPressedBorderBrush="{ThemeResource GridViewItemCheckBoxPressedBorderBrush}"
+                            CheckBoxPressedBrush="{ThemeResource GridViewItemCheckBoxPressedBrush}"
+                            CheckBoxSelectedBrush="{ThemeResource GridViewItemCheckBoxSelectedBrush}"
+                            CheckBoxSelectedDisabledBrush="{ThemeResource GridViewItemCheckBoxSelectedDisabledBrush}"
+                            CheckBoxSelectedPointerOverBrush="{ThemeResource GridViewItemCheckBoxSelectedPointerOverBrush}"
+                            CheckBoxSelectedPressedBrush="{ThemeResource GridViewItemCheckBoxSelectedPressedBrush}"
+                            CheckBrush="{ThemeResource GridViewItemCheckBrush}"
+                            CheckDisabledBrush="{ThemeResource GridViewItemCheckDisabledBrush}"
+                            CheckMode="{ThemeResource GridViewItemCheckMode}"
+                            CheckPressedBrush="{ThemeResource GridViewItemCheckPressedBrush}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="{StaticResource IconGridViewItemContainerCornerRadius}"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource GridViewItemDragBackground}"
+                            DragForeground="{ThemeResource GridViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            PlaceholderBackground="{ThemeResource GridViewItemPlaceholderBackground}"
+                            PointerOverBackground="{ThemeResource GridViewItemBackgroundPointerOver}"
+                            PointerOverBorderBrush="{ThemeResource GridViewItemPointerOverBorderBrush}"
+                            PointerOverForeground="{ThemeResource GridViewItemForegroundPointerOver}"
+                            PressedBackground="{ThemeResource GridViewItemBackgroundPressed}"
+                            ReorderHintOffset="{ThemeResource GridViewItemReorderHintThemeOffset}"
+                            SelectedBackground="{ThemeResource GridViewItemBackgroundSelected}"
+                            SelectedBorderBrush="{ThemeResource GridViewItemSelectedBorderBrush}"
+                            SelectedBorderThickness="{ThemeResource GridViewItemSelectedBorderThickness}"
+                            SelectedDisabledBackground="{ThemeResource GridViewItemBackgroundSelectedDisabled}"
+                            SelectedDisabledBorderBrush="{ThemeResource GridViewItemSelectedDisabledBorderBrush}"
+                            SelectedForeground="{ThemeResource GridViewItemForegroundSelected}"
+                            SelectedInnerBorderBrush="{ThemeResource GridViewItemSelectedInnerBorderBrush}"
+                            SelectedPointerOverBackground="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"
+                            SelectedPointerOverBorderBrush="{ThemeResource GridViewItemSelectedPointerOverBorderBrush}"
+                            SelectedPressedBackground="{ThemeResource GridViewItemBackgroundSelectedPressed}"
+                            SelectedPressedBorderBrush="{ThemeResource GridViewItemSelectedPressedBorderBrush}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter
+                            x:Name="Root"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBorderBrush="{ThemeResource GridViewItemCheckBoxBorderBrush}"
+                            CheckBoxBrush="{ThemeResource GridViewItemCheckBoxBrush}"
+                            CheckBoxCornerRadius="{ThemeResource GridViewItemCheckBoxCornerRadius}"
+                            CheckBoxDisabledBorderBrush="{ThemeResource GridViewItemCheckBoxDisabledBorderBrush}"
+                            CheckBoxDisabledBrush="{ThemeResource GridViewItemCheckBoxDisabledBrush}"
+                            CheckBoxPointerOverBorderBrush="{ThemeResource GridViewItemCheckBoxPointerOverBorderBrush}"
+                            CheckBoxPointerOverBrush="{ThemeResource GridViewItemCheckBoxPointerOverBrush}"
+                            CheckBoxPressedBorderBrush="{ThemeResource GridViewItemCheckBoxPressedBorderBrush}"
+                            CheckBoxPressedBrush="{ThemeResource GridViewItemCheckBoxPressedBrush}"
+                            CheckBoxSelectedBrush="{ThemeResource GridViewItemCheckBoxSelectedBrush}"
+                            CheckBoxSelectedDisabledBrush="{ThemeResource GridViewItemCheckBoxSelectedDisabledBrush}"
+                            CheckBoxSelectedPointerOverBrush="{ThemeResource GridViewItemCheckBoxSelectedPointerOverBrush}"
+                            CheckBoxSelectedPressedBrush="{ThemeResource GridViewItemCheckBoxSelectedPressedBrush}"
+                            CheckBrush="{ThemeResource GridViewItemCheckBrush}"
+                            CheckDisabledBrush="{ThemeResource GridViewItemCheckDisabledBrush}"
+                            CheckMode="{ThemeResource GridViewItemCheckMode}"
+                            CheckPressedBrush="{ThemeResource GridViewItemCheckPressedBrush}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="{StaticResource GalleryGridViewItemContainerCornerRadius}"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource GridViewItemDragBackground}"
+                            DragForeground="{ThemeResource GridViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            PlaceholderBackground="{ThemeResource GridViewItemPlaceholderBackground}"
+                            PointerOverBackground="{ThemeResource GridViewItemBackgroundPointerOver}"
+                            PointerOverBorderBrush="{ThemeResource GridViewItemPointerOverBorderBrush}"
+                            PointerOverForeground="{ThemeResource GridViewItemForegroundPointerOver}"
+                            PressedBackground="{ThemeResource GridViewItemBackgroundPressed}"
+                            ReorderHintOffset="{ThemeResource GridViewItemReorderHintThemeOffset}"
+                            SelectedBackground="{ThemeResource GridViewItemBackgroundSelected}"
+                            SelectedBorderBrush="{ThemeResource GridViewItemSelectedBorderBrush}"
+                            SelectedBorderThickness="{ThemeResource GridViewItemSelectedBorderThickness}"
+                            SelectedDisabledBackground="{ThemeResource GridViewItemBackgroundSelectedDisabled}"
+                            SelectedDisabledBorderBrush="{ThemeResource GridViewItemSelectedDisabledBorderBrush}"
+                            SelectedForeground="{ThemeResource GridViewItemForegroundSelected}"
+                            SelectedInnerBorderBrush="{ThemeResource GridViewItemSelectedInnerBorderBrush}"
+                            SelectedPointerOverBackground="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"
+                            SelectedPointerOverBorderBrush="{ThemeResource GridViewItemSelectedPointerOverBorderBrush}"
+                            SelectedPressedBackground="{ThemeResource GridViewItemBackgroundSelectedPressed}"
+                            SelectedPressedBorderBrush="{ThemeResource GridViewItemSelectedPressedBorderBrush}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
@@ -44,6 +169,13 @@
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
             Small="{StaticResource SmallGridItemViewModelTemplate}" />
+
+        <cmdpalUI:GridItemContainerStyleSelector
+            x:Key="GridItemContainerStyleSelector"
+            Gallery="{StaticResource GalleryGridViewItemStyle}"
+            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
+            Medium="{StaticResource IconGridViewItemStyle}"
+            Small="{StaticResource IconGridViewItemStyle}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
@@ -186,7 +318,7 @@
                 VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 BorderThickness="0"
-                CornerRadius="{StaticResource GalleryGridViewItemCornerRadius}"
+                CornerRadius="{StaticResource GalleryGridViewItemRadius}"
                 Orientation="Vertical"
                 ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
 
@@ -196,7 +328,7 @@
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    CornerRadius="{StaticResource GalleryGridViewItemCornerRadius}">
+                    CornerRadius="{StaticResource GalleryGridViewItemRadius}">
                     <Viewbox
                         HorizontalAlignment="Center"
                         Stretch="UniformToFill"
@@ -286,6 +418,7 @@
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
+                            ItemContainerStyleSelector="{StaticResource GridItemContainerStyleSelector}"
                             ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
@@ -293,6 +426,7 @@
                             <GridView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </GridView.ItemContainerTransitions>
+                            <GridView.ItemContainerStyle />
                         </GridView>
                     </controls:Case>
                 </controls:SwitchPresenter>
