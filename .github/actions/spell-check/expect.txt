@@ -92,6 +92,7 @@ asf
 Ashcraft
 AShortcut
 ASingle
+ASUS
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
@@ -119,6 +120,7 @@ azureaiinference
 azureinference
 azureopenai
 backticks
+Backlight
 bbwe
 BCIE
 bck
@@ -402,6 +404,7 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+Displayport
 divyan
 Dlg
 DLGFRAME
@@ -436,6 +439,7 @@ dutil
 DVASPECT
 DVASPECTINFO
 DVD
+dvi
 dvr
 DVTARGETDEVICE
 dwflags
@@ -455,6 +459,7 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
+Dxva
 dxgi
 eab
 easeofaccess
@@ -706,6 +711,7 @@ hotkeys
 hotlight
 hotspot
 HPAINTBUFFER
+HPhysical
 HRAWINPUT
 HREDRAW
 hres
@@ -716,6 +722,7 @@ hsb
 HSCROLL
 hsi
 HSpeed
+HSync
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -1326,6 +1333,7 @@ POPUPWINDOW
 POSITIONITEM
 powerdisplay
 PowerDisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1536,6 +1544,7 @@ scrollviewer
 SDDL
 SDKDDK
 sdns
+Sdr
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1945,6 +1954,7 @@ VSM
 vso
 vsonline
 VSpeed
+VSync
 vstemplate
 vstest
 VSTHRD
