@@ -64,12 +64,12 @@ public:
         bool restorePreviewOnRelease{ false };
         int dialogX{ 0 };
         int dialogY{ 0 };
-        
+
         // Mouse tracking for timeline
         enum DragMode { None, TrimStart, Position, TrimEnd };
         DragMode dragMode{ None };
         bool isDragging{ false };
-        
+
         // Helper to convert time to pixel position
         int TimeToPixel(winrt::Windows::Foundation::TimeSpan time, int timelineWidth) const
         {
@@ -81,7 +81,7 @@ public:
             ratio = std::clamp(ratio, 0.0, 1.0);
             return static_cast<int>(ratio * timelineWidth);
         }
-        
+
         // Helper to convert pixel to time
         winrt::Windows::Foundation::TimeSpan PixelToTime(int pixel, int timelineWidth) const
         {

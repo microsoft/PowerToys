@@ -587,7 +587,7 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
             request.Sample(nullptr);
             CloseInternal();
         }
-    } 
+    }
     else if (auto audioStreamDescriptor = streamDescriptor.try_as<winrt::AudioStreamDescriptor>())
     {
         if (auto sample = m_audioGenerator->TryGetNextSample())
@@ -618,11 +618,11 @@ private:
     bool* m_pShouldTrim;
 
 public:
-    CTrimFileDialogEvents(HWND hParent, const std::wstring& videoPath, 
-                          std::wstring* pTrimmedPath, winrt::TimeSpan* pTrimStart, 
-                          winrt::TimeSpan* pTrimEnd, bool* pShouldTrim) 
+    CTrimFileDialogEvents(HWND hParent, const std::wstring& videoPath,
+                          std::wstring* pTrimmedPath, winrt::TimeSpan* pTrimStart,
+                          winrt::TimeSpan* pTrimEnd, bool* pShouldTrim)
         : m_cRef(1), m_hParent(hParent), m_videoPath(videoPath),
-          m_pTrimmedPath(pTrimmedPath), m_pTrimStart(pTrimStart), 
+          m_pTrimmedPath(pTrimmedPath), m_pTrimStart(pTrimStart),
           m_pTrimEnd(pTrimEnd), m_pShouldTrim(pShouldTrim)
     {
     }
@@ -680,10 +680,10 @@ public:
                     pOleWnd->GetWindow(&hFileDlg);
                 }
             }
-            
+
             // Use file dialog window as parent if found, otherwise use original parent
             HWND hParent = hFileDlg ? hFileDlg : m_hParent;
-            
+
             auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
             if (trimResult == IDOK)
             {
@@ -742,13 +742,13 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
     }
 
     // Set up event handler
-    CTrimFileDialogEvents* pEvents = new CTrimFileDialogEvents(hParent, originalVideoPath, 
+    CTrimFileDialogEvents* pEvents = new CTrimFileDialogEvents(hParent, originalVideoPath,
         &trimmedVideoPath, &trimStart, &trimEnd, &shouldTrim);
     DWORD dwCookie;
     saveDialog->Advise(pEvents, &dwCookie);
 
     HRESULT hr = saveDialog->Show(hParent);
-    
+
     saveDialog->Unadvise(dwCookie);
     pEvents->Release();
 
@@ -763,7 +763,7 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
         try
         {
             auto trimOp = TrimVideoAsync(originalVideoPath, trimStart, trimEnd);
-            
+
             // Pump messages while waiting for async operation
             while (trimOp.Status() == winrt::AsyncStatus::Started)
             {
@@ -775,7 +775,7 @@ std::wstring VideoRecordingSession::ShowSaveDialogWithTrim(
                 }
                 Sleep(10);
             }
-            
+
             auto trimmedPath = std::wstring(trimOp.GetResults());
 
             if (trimmedPath.empty())
@@ -888,13 +888,13 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
         ULARGE_INTEGER fileSize;
         fileSize.LowPart = fileInfo.nFileSizeLow;
         fileSize.HighPart = fileInfo.nFileSizeHigh;
-        
+
         // Estimate: ~10MB per minute for typical 1080p recording
         // Duration in 100-nanosecond units (10,000,000 = 1 second)
         int64_t estimatedSeconds = fileSize.QuadPart / (10 * 1024 * 1024 / 60);
         if (estimatedSeconds < 1) estimatedSeconds = 10; // minimum 10 seconds
         if (estimatedSeconds > 3600) estimatedSeconds = 3600; // max 1 hour
-        
+
         data.videoDuration = winrt::TimeSpan{ estimatedSeconds * 10000000LL };
         data.trimEnd = data.videoDuration;
     }
@@ -1170,7 +1170,7 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
         HPEN hOldTickPen = static_cast<HPEN>(SelectObject(hdcMem, hTickPen));
         SetBkMode(hdcMem, TRANSPARENT);
         SetTextColor(hdcMem, RGB(80, 80, 80));
-        
+
         // Use consistent font for all timeline text
         HFONT hTimelineFont = CreateFont(12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
@@ -1408,9 +1408,7 @@ static void StopPlayback(HWND hDlg, VideoRecordingSession::TrimDialogData* pData
         }
         RefreshPlaybackButtons(hDlg);
     }
-}
-
-static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSession::TrimDialogData* pData)
+}static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSession::TrimDialogData* pData)
 {
     if (!pData || !hDlg)
     {
@@ -1773,21 +1771,21 @@ static void DrawPlaybackButton(
     const bool isForwardControl = (pDIS->CtlID == IDC_TRIM_FORWARD);
     const bool isSkipStartControl = (pDIS->CtlID == IDC_TRIM_SKIP_START);
     const bool isSkipEndControl = (pDIS->CtlID == IDC_TRIM_SKIP_END);
-    
+
     // Check if skip buttons should be disabled based on position
     const bool atStart = (pData->currentPosition.count() <= pData->trimStart.count());
     const bool atEnd = (pData->currentPosition.count() >= pData->trimEnd.count());
-    
-    const bool isHover = isPlayControl ? pData->hoverPlay : 
-                        (isRewindControl ? pData->hoverRewind : 
+
+    const bool isHover = isPlayControl ? pData->hoverPlay :
+                        (isRewindControl ? pData->hoverRewind :
                         (isForwardControl ? pData->hoverForward :
                         (isSkipStartControl ? pData->hoverSkipStart : pData->hoverSkipEnd)));
     bool isDisabled = (pDIS->itemState & ODS_DISABLED) != 0;
-    
+
     // Disable skip start when at start, skip end when at end
     if (isSkipStartControl && atStart) isDisabled = true;
     if (isSkipEndControl && atEnd) isDisabled = true;
-    
+
     const bool isPressed = (pDIS->itemState & ODS_SELECTED) != 0;
     const bool isPlaying = pData->isPlaying.load(std::memory_order_relaxed);
 
@@ -1796,7 +1794,7 @@ static void DrawPlaybackButton(
     COLORREF bgColorBottom = RGB(35, 35, 40);
     COLORREF iconColor = RGB(220, 220, 220);
     COLORREF borderColor = RGB(80, 80, 85);
-    
+
     if (isHover && !isDisabled)
     {
         bgColorTop = RGB(60, 60, 65);
@@ -1829,13 +1827,13 @@ static void DrawPlaybackButton(
     // Draw gradient background circle
     Gdiplus::GraphicsPath path;
     path.AddEllipse(centerX - radius, centerY - radius, radius * 2, radius * 2);
-    
+
     Gdiplus::PathGradientBrush gradientBrush(&path);
     Gdiplus::Color colors[] = {
         Gdiplus::Color(255, GetRValue(bgColorTop), GetGValue(bgColorTop), GetBValue(bgColorTop)),
         Gdiplus::Color(255, GetRValue(bgColorBottom), GetGValue(bgColorBottom), GetBValue(bgColorBottom))
     };
-    
+
     // Create linear gradient from top to bottom
     Gdiplus::LinearGradientBrush linearGradient(
         Gdiplus::PointF(centerX, centerY - radius),
@@ -1843,9 +1841,9 @@ static void DrawPlaybackButton(
         Gdiplus::Color(255, GetRValue(bgColorTop), GetGValue(bgColorTop), GetBValue(bgColorTop)),
         Gdiplus::Color(255, GetRValue(bgColorBottom), GetGValue(bgColorBottom), GetBValue(bgColorBottom))
     );
-    
+
     graphics.FillEllipse(&linearGradient, centerX - radius, centerY - radius, radius * 2, radius * 2);
-    
+
     // Draw border
     Gdiplus::Pen borderPen(Gdiplus::Color(255, GetRValue(borderColor), GetGValue(borderColor), GetBValue(borderColor)), 1.0f);
     graphics.DrawEllipse(&borderPen, centerX - radius, centerY - radius, radius * 2, radius * 2);
@@ -1853,7 +1851,7 @@ static void DrawPlaybackButton(
     // Draw icons
     Gdiplus::SolidBrush iconBrush(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)));
     float iconSize = radius * 2.0f / 3.0f;
-    
+
     if (isPlayControl)
     {
         if (isPlaying)
@@ -1862,7 +1860,7 @@ static void DrawPlaybackButton(
             float barWidth = iconSize / 4.0f;
             float barHeight = iconSize;
             float gap = iconSize / 5.0f;
-            
+
             graphics.FillRectangle(&iconBrush,
                 centerX - gap - barWidth, centerY - barHeight / 2.0f,
                 barWidth, barHeight);
@@ -1888,7 +1886,7 @@ static void DrawPlaybackButton(
         // Draw small play triangle in appropriate direction
         float triWidth = iconSize * 3.0f / 5.0f;
         float triHeight = iconSize * 3.0f / 5.0f;
-        
+
         if (isRewindControl)
         {
             // Triangle pointing left
@@ -1916,14 +1914,14 @@ static void DrawPlaybackButton(
         float triWidth = iconSize * 2.0f / 3.0f;
         float triHeight = iconSize;
         float barWidth = iconSize / 6.0f;
-        
+
         if (isSkipStartControl)
         {
             // Bar on left, triangle pointing left
             graphics.FillRectangle(&iconBrush,
                 centerX - triWidth / 2.0f - barWidth, centerY - triHeight / 2.0f,
                 barWidth, triHeight);
-            
+
             Gdiplus::PointF tri[3] = {
                 Gdiplus::PointF(centerX + triWidth / 2.0f, centerY - triHeight / 2.0f),
                 Gdiplus::PointF(centerX - triWidth / 2.0f, centerY),
@@ -1940,7 +1938,7 @@ static void DrawPlaybackButton(
                 Gdiplus::PointF(centerX - triWidth / 2.0f, centerY + triHeight / 2.0f)
             };
             graphics.FillPolygon(&iconBrush, tri, 3);
-            
+
             graphics.FillRectangle(&iconBrush,
                 centerX + triWidth / 2.0f, centerY - triHeight / 2.0f,
                 barWidth, triHeight);
@@ -1983,9 +1981,9 @@ static LRESULT CALLBACK PlaybackButtonSubclassProc(
         const bool isRewindControl = (controlId == IDC_TRIM_REWIND);
         const bool isForwardControl = (controlId == IDC_TRIM_FORWARD);
         const bool isSkipStartControl = (controlId == IDC_TRIM_SKIP_START);
-                
-        bool& hoverFlag = isPlayControl ? pData->hoverPlay : 
-                         (isRewindControl ? pData->hoverRewind : 
+
+        bool& hoverFlag = isPlayControl ? pData->hoverPlay :
+                         (isRewindControl ? pData->hoverRewind :
                          (isForwardControl ? pData->hoverForward :
                          (isSkipStartControl ? pData->hoverSkipStart : pData->hoverSkipEnd)));
         if (!hoverFlag)
@@ -2003,9 +2001,9 @@ static LRESULT CALLBACK PlaybackButtonSubclassProc(
         const bool isRewindControl = (controlId == IDC_TRIM_REWIND);
         const bool isForwardControl = (controlId == IDC_TRIM_FORWARD);
         const bool isSkipStartControl = (controlId == IDC_TRIM_SKIP_START);
-        
-        bool& hoverFlag = isPlayControl ? pData->hoverPlay : 
-                         (isRewindControl ? pData->hoverRewind : 
+
+        bool& hoverFlag = isPlayControl ? pData->hoverPlay :
+                         (isRewindControl ? pData->hoverRewind :
                          (isForwardControl ? pData->hoverForward :
                          (isSkipStartControl ? pData->hoverSkipStart : pData->hoverSkipEnd)));
         if (hoverFlag)
@@ -2157,12 +2155,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             RECT rcFill = pDIS->rcItem;
             const int controlWidth = rcFill.right - rcFill.left;
             const int controlHeight = rcFill.bottom - rcFill.top;
-            
+
             // Create memory DC for double buffering to eliminate flicker
             HDC hdcMem = CreateCompatibleDC(pDIS->hDC);
             HBITMAP hbmMem = CreateCompatibleBitmap(pDIS->hDC, controlWidth, controlHeight);
             HBITMAP hbmOld = static_cast<HBITMAP>(SelectObject(hdcMem, hbmMem));
-            
+
             // Draw to memory DC
             RECT rcMem = { 0, 0, controlWidth, controlHeight };
             FillRect(hdcMem, &rcMem, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
@@ -2219,19 +2217,19 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 SetBkMode(hdcMem, TRANSPARENT);
                 DrawText(hdcMem, L"Preview not available", -1, &rcMem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
             }
-            
+
             // Copy the buffered image to the screen
             BitBlt(pDIS->hDC, rcFill.left, rcFill.top, controlWidth, controlHeight, hdcMem, 0, 0, SRCCOPY);
-            
+
             // Clean up
             SelectObject(hdcMem, hbmOld);
             DeleteObject(hbmMem);
             DeleteDC(hdcMem);
-            
+
             return TRUE;
         }
-        else if (pDIS->CtlID == IDC_TRIM_PLAY_PAUSE || pDIS->CtlID == IDC_TRIM_REWIND || 
-                 pDIS->CtlID == IDC_TRIM_FORWARD || pDIS->CtlID == IDC_TRIM_SKIP_START || 
+        else if (pDIS->CtlID == IDC_TRIM_PLAY_PAUSE || pDIS->CtlID == IDC_TRIM_REWIND ||
+                 pDIS->CtlID == IDC_TRIM_FORWARD || pDIS->CtlID == IDC_TRIM_SKIP_START ||
                  pDIS->CtlID == IDC_TRIM_SKIP_END)
         {
             DrawPlaybackButton(pDIS, pData);
@@ -2246,7 +2244,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         if (pData)
         {
             StopPlayback(hDlg, pData);
-            
+
             // Clean up MediaPlayer
             if (pData->mediaPlayer)
             {
@@ -2257,7 +2255,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 }
                 catch (...) {}
             }
-            
+
             HWND hTimeline = GetDlgItem(hDlg, IDC_TRIM_TIMELINE);
             if (hTimeline)
             {
@@ -2322,9 +2320,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             }
             return TRUE;
         }
-        break;
-
-    case WM_COMMAND:
+        break;    case WM_COMMAND:
         switch (LOWORD(wParam))
         {
         case IDC_TRIM_REWIND:
