@@ -48,11 +48,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ModuleEnabledChangedOnSettingsPage();
         }
 
-        private void DashboardListItemClick(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DashboardListItemClick(sender);
-        }
-
         private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
         {
             if (App.GetOobeWindow() == null)
@@ -65,16 +60,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             App.GetOobeWindow().Activate();
-        }
-
-        private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
-        }
-
-        private void SortByStatus_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
         }
     }
 }

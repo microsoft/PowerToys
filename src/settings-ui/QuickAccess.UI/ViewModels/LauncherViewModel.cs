@@ -4,15 +4,19 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Helpers;
 using Microsoft.PowerToys.QuickAccess.Services;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.ApplicationModel.Resources;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
@@ -24,7 +28,7 @@ public sealed class LauncherViewModel : Observable
     private readonly DispatcherQueue _dispatcherQueue;
     private GeneralSettings _generalSettings;
 
-    public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; }
+    public ObservableCollection<QuickAccessItem> FlyoutMenuItems { get; }
 
     public bool IsUpdateAvailable { get; private set; }
 
@@ -39,7 +43,7 @@ public sealed class LauncherViewModel : Observable
         _settingsRepository.SettingsChanged += OnSettingsChanged;
 
         _resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-        FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
+        FlyoutMenuItems = new ObservableCollection<QuickAccessItem>();
 
         AddFlyoutMenuItem(ModuleType.ColorPicker);
         AddFlyoutMenuItem(ModuleType.CmdPal);
@@ -72,14 +76,127 @@ public sealed class LauncherViewModel : Observable
             return;
         }
 
-        FlyoutMenuItems.Add(new FlyoutMenuItem
+        FlyoutMenuItems.Add(new QuickAccessItem
         {
-            Label = _resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+            Title = _resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
             Tag = moduleType,
             Visible = ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType),
-            ToolTip = GetModuleToolTip(moduleType),
+            Description = GetModuleToolTip(moduleType),
             Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+            Command = new RelayCommand(() => LaunchModule(moduleType)),
         });
+    }
+
+    private void LaunchModule(ModuleType moduleType)
+    {
+        bool moduleRun = true;
+
+        switch (moduleType)
+        {
+            case ModuleType.ColorPicker:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowColorPickerSharedEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.EnvironmentVariables:
+                {
+                    bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                    bool isElevated = _coordinator?.IsRunnerElevated ?? false;
+                    string eventName = !isElevated && launchAdmin
+                        ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
+                        : Constants.ShowEnvironmentVariablesSharedEvent();
+
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                    {
+                        eventHandle.Set();
+                    }
+                }
+
+                break;
+            case ModuleType.FancyZones:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.Hosts:
+                {
+                    bool launchAdmin = SettingsRepository<HostsSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+                    bool isElevated = _coordinator?.IsRunnerElevated ?? false;
+                    string eventName = !isElevated && launchAdmin
+                        ? Constants.ShowHostsAdminSharedEvent()
+                        : Constants.ShowHostsSharedEvent();
+
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+                    {
+                        eventHandle.Set();
+                    }
+                }
+
+                break;
+            case ModuleType.PowerLauncher:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerLauncherSharedEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.PowerOCR:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.RegistryPreview:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.MeasureTool:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.ShortcutGuide:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.CmdPal:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            case ModuleType.Workspaces:
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent()))
+                {
+                    eventHandle.Set();
+                }
+
+                break;
+            default:
+                moduleRun = false;
+                break;
+        }
+
+        if (moduleRun)
+        {
+            _coordinator?.OnModuleLaunched(moduleType);
+        }
+
+        _coordinator?.HideFlyout();
     }
 
     private string GetModuleToolTip(ModuleType moduleType)
@@ -111,7 +228,10 @@ public sealed class LauncherViewModel : Observable
         _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
         foreach (var item in FlyoutMenuItems)
         {
-            item.Visible = ModuleHelper.GetIsModuleEnabled(_generalSettings, item.Tag);
+            if (item.Tag is ModuleType moduleType)
+            {
+                item.Visible = ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
+            }
         }
     }
 }
