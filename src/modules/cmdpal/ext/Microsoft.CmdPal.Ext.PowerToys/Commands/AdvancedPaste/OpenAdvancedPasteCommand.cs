@@ -4,12 +4,9 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Pipes;
 using System.Runtime.InteropServices;
-using System.Text;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
 
 namespace PowerToysExtension.Commands;
 
@@ -27,60 +24,12 @@ internal sealed partial class OpenAdvancedPasteCommand : InvokableCommand
     {
         try
         {
-            // If an instance is already running, just bring it to front.
             if (TryActivateExisting())
             {
-                return CommandResult.GoHome("Advanced Paste opened");
+                return CommandResult.Dismiss();
             }
 
-            var installPath = PowerToysPathResolver.GetPowerToysInstallPath();
-            if (string.IsNullOrWhiteSpace(installPath))
-            {
-                return CommandResult.ShowToast("PowerToys install path not found.");
-            }
-
-            var exePath = Path.Combine(installPath, "WinUI3Apps", "PowerToys.AdvancedPaste.exe");
-            if (!File.Exists(exePath))
-            {
-                return CommandResult.ShowToast("Advanced Paste executable not found.");
-            }
-
-            var pipeName = $"powertoys_advanced_paste_{Guid.NewGuid()}";
-
-            using var server = new NamedPipeServerStream(
-                pipeName,
-                PipeDirection.Out,
-                1,
-                PipeTransmissionMode.Message,
-                PipeOptions.Asynchronous);
-
-            var psi = new ProcessStartInfo(exePath)
-            {
-                Arguments = $"{Process.GetCurrentProcessId()} {pipeName}",
-                WorkingDirectory = installPath,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-
-            var proc = Process.Start(psi);
-            if (proc is null)
-            {
-                return CommandResult.ShowToast("Failed to start Advanced Paste.");
-            }
-
-            if (!server.WaitForConnectionAsync().Wait(TimeSpan.FromSeconds(5)))
-            {
-                return CommandResult.ShowToast("Advanced Paste did not respond.");
-            }
-
-            using var writer = new StreamWriter(server, Encoding.Unicode, leaveOpen: true)
-            {
-                AutoFlush = true,
-            };
-
-            writer.Write("ShowUI\r\n");
-
-            return CommandResult.GoHome("Advanced Paste opened");
+            return CommandResult.ShowToast("Advanced Paste is not running. Please start it first.");
         }
         catch (Exception ex)
         {
@@ -92,35 +41,36 @@ internal sealed partial class OpenAdvancedPasteCommand : InvokableCommand
     {
         try
         {
-            foreach (var proc in Process.GetProcessesByName("PowerToys.AdvancedPaste"))
+            var processes = Process.GetProcessesByName("PowerToys.AdvancedPaste");
+            Logger.LogInfo($"AdvancedPaste: found {processes.Length} processes.");
+
+            foreach (var proc in processes)
             {
                 if (proc.HasExited)
                 {
+                    Logger.LogInfo($"AdvancedPaste: pid {proc.Id} already exited.");
                     continue;
                 }
 
-                // Wait briefly for a main window if it hasn't been created yet.
+                proc.Refresh();
                 var handle = proc.MainWindowHandle;
-                var waitUntil = DateTime.UtcNow + TimeSpan.FromMilliseconds(750);
-                while (handle == IntPtr.Zero && DateTime.UtcNow < waitUntil)
+
+                if (handle != IntPtr.Zero)
                 {
-                    proc.Refresh();
-                    handle = proc.MainWindowHandle;
-                    if (handle != IntPtr.Zero)
-                    {
-                        break;
-                    }
-                    System.Threading.Thread.Sleep(50);
+                    Logger.LogInfo($"AdvancedPaste: using MainWindowHandle for pid {proc.Id}.");
+                    ShowWindowAsync(handle, SW_RESTORE);
+                    SetForegroundWindow(handle);
+                    return true;
                 }
 
-                if (handle == IntPtr.Zero)
+                Logger.LogInfo($"AdvancedPaste: MainWindowHandle not ready for pid {proc.Id}; enumerating windows.");
+
+                if (TryBringProcessWindowToFront(proc.Id))
                 {
-                    continue;
+                    return true;
                 }
 
-                ShowWindowAsync(handle, SW_RESTORE);
-                SetForegroundWindow(handle);
-                return true;
+                Logger.LogInfo($"AdvancedPaste: no window found for pid {proc.Id}.");
             }
         }
         catch
@@ -130,11 +80,63 @@ internal sealed partial class OpenAdvancedPasteCommand : InvokableCommand
         return false;
     }
 
+#pragma warning disable SA1310 // Field names should not contain underscore
     private const int SW_RESTORE = 9;
+#pragma warning restore SA1310 // Field names should not contain underscore
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     private static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+    private static bool TryBringProcessWindowToFront(int pid)
+    {
+        try
+        {
+            var windowHandle = IntPtr.Zero;
+            EnumWindows(
+                (hwnd, lParam) =>
+                {
+                    var threadId = GetWindowThreadProcessId(hwnd, out var windowPid);
+                    if (threadId == 0)
+                    {
+                        Logger.LogInfo("AdvancedPaste: GetWindowThreadProcessId returned 0.");
+                        return true;
+                    }
+
+                    if (windowPid == pid)
+                    {
+                        windowHandle = hwnd;
+                        return false;
+                    }
+
+                    return true;
+                },
+                IntPtr.Zero);
+
+            if (windowHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            Logger.LogInfo($"AdvancedPaste: enumerated window handle for pid {pid}.");
+            ShowWindowAsync(windowHandle, SW_RESTORE);
+            SetForegroundWindow(windowHandle);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"AdvancedPaste: failed to enumerate/activate window for pid {pid}: {ex}");
+            return false;
+        }
+    }
 }
