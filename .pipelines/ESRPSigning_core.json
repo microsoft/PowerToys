@@ -291,6 +291,7 @@
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
                 "CommunityToolkit.WinUI.Controls.TitleBar.dll",
+                "CommunityToolkit.WinUI.Controls.OpacityMaskView.dll",
 
                 "NLog.dll",
                 "HtmlAgilityPack.dll",

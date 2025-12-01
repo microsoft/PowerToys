@@ -21,7 +21,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -160,7 +159,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
-            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
+            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
 
             if (!ViewModel.IsNested)
             {
@@ -346,7 +345,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Depending on the settings, either
             // * Go home, or
             // * Select the search text (if we should remain open on this page)
-            if (settings.HotkeyGoesHome)
+            if (settings.AutoGoHomeInterval == TimeSpan.Zero)
             {
                 GoHome(false);
             }
@@ -655,15 +654,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             default:
-            {
-                // The CommandBar is responsible for handling all the item keybindings,
-                // since the bound context item may need to then show another
-                // context menu
-                TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-                WeakReferenceMessenger.Default.Send(msg);
-                e.Handled = msg.Handled;
-                break;
-            }
+                {
+                    // The CommandBar is responsible for handling all the item keybindings,
+                    // since the bound context item may need to then show another
+                    // context menu
+                    TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                    WeakReferenceMessenger.Default.Send(msg);
+                    e.Handled = msg.Handled;
+                    break;
+                }
         }
     }
 

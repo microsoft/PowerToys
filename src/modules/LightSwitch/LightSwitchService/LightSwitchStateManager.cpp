@@ -17,12 +17,10 @@ LightSwitchStateManager::LightSwitchStateManager()
 void LightSwitchStateManager::OnSettingsChanged()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    Logger::info(L"[LightSwitchStateManager] Settings changed event received");
 
     // If manual override was active, clear it so new settings take effect
     if (_state.isManualOverride)
     {
-        Logger::info(L"[LightSwitchStateManager] Clearing manual override due to settings update.");
         _state.isManualOverride = false;
     }
 
@@ -33,7 +31,6 @@ void LightSwitchStateManager::OnSettingsChanged()
 void LightSwitchStateManager::OnTick(int currentMinutes)
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    Logger::debug(L"[LightSwitchStateManager] Tick received: {}", currentMinutes);
     EvaluateAndApplyIfNeeded();
 }
 
@@ -51,7 +48,7 @@ void LightSwitchStateManager::OnManualOverride()
 
         _state.isAppsLightActive = GetCurrentAppsTheme();
 
-        Logger::info(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
+        Logger::debug(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
                      (_state.isSystemLightActive ? L"light" : L"dark"),
                      (_state.isAppsLightActive ? L"light" : L"dark"));
     }
@@ -79,9 +76,9 @@ void LightSwitchStateManager::SyncInitialThemeState()
     std::lock_guard<std::mutex> lock(_stateMutex);
     _state.isSystemLightActive = GetCurrentSystemTheme();
     _state.isAppsLightActive = GetCurrentAppsTheme();
-    Logger::info(L"[LightSwitchStateManager] Synced initial state to current system theme ({})",
+    Logger::debug(L"[LightSwitchStateManager] Synced initial state to current system theme ({})",
                  _state.isSystemLightActive ? L"light" : L"dark");
-    Logger::info(L"[LightSwitchStateManager] Synced initial state to current apps theme ({})",
+    Logger::debug(L"[LightSwitchStateManager] Synced initial state to current apps theme ({})",
                  _state.isAppsLightActive ? L"light" : L"dark");
 }
 
@@ -127,7 +124,6 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     // Early exit: OFF mode just pauses activity
     if (_currentSettings.scheduleMode == ScheduleMode::Off)
     {
-        Logger::debug(L"[LightSwitchStateManager] Mode is OFF — pausing service logic.");
         _state.lastTickMinutes = now;
         return;
     }
@@ -145,7 +141,6 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         if (newDay || modeChangedToSun)
         {
-            Logger::info(L"[LightSwitchStateManager] Recalculating sun times (mode/day change).");
             auto [newLightTime, newDarkTime] = update_sun_times(_currentSettings);
             _state.lastEvaluatedDay = st.wDay;
             _state.effectiveLightMinutes = newLightTime + _currentSettings.sunrise_offset;
@@ -188,12 +183,10 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         if (crossedBoundary)
         {
-            Logger::info(L"[LightSwitchStateManager] Manual override cleared after crossing boundary.");
             _state.isManualOverride = false;
         }
         else
         {
-            Logger::debug(L"[LightSwitchStateManager] Manual override active — skipping auto apply.");
             _state.lastTickMinutes = now;
             return;
         }
@@ -206,7 +199,7 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     bool appsNeedsToChange = _currentSettings.changeApps && (_state.isAppsLightActive != shouldBeLight);
     bool systemNeedsToChange = _currentSettings.changeSystem && (_state.isSystemLightActive != shouldBeLight);
 
-    Logger::debug(
+    /* Logger::debug(
         L"[LightSwitchStateManager] now = {:02d}:{:02d}, light boundary = {:02d}:{:02d} ({}), dark boundary = {:02d}:{:02d} ({})",
         now / 60,
         now % 60,
@@ -215,12 +208,12 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
         _state.effectiveLightMinutes,
         _state.effectiveDarkMinutes / 60,
         _state.effectiveDarkMinutes % 60,
-        _state.effectiveDarkMinutes);
+        _state.effectiveDarkMinutes); */
 
-    Logger::debug("should be light = {}, apps needs change = {}, system needs change = {}",
+    /* Logger::debug("should be light = {}, apps needs change = {}, system needs change = {}",
                   shouldBeLight ? "true" : "false",
                   appsNeedsToChange ? "true" : "false",
-                  systemNeedsToChange ? "true" : "false");
+                  systemNeedsToChange ? "true" : "false"); */
 
     // Only apply theme if there's a change or no override active
     if (!_state.isManualOverride && (appsNeedsToChange || systemNeedsToChange))
@@ -230,10 +223,6 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         _state.isSystemLightActive = GetCurrentSystemTheme();
         _state.isAppsLightActive = GetCurrentAppsTheme();
-
-        Logger::debug(L"[LightSwitchStateManager] Synced post-apply theme state — System: {}, Apps: {}",
-                      _state.isSystemLightActive ? L"light" : L"dark",
-                      _state.isAppsLightActive ? L"light" : L"dark");
     }
 
     _state.lastTickMinutes = now;
