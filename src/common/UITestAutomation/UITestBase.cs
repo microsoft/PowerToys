@@ -29,6 +29,8 @@ namespace Microsoft.PowerToys.UITest
 
         public string? ScreenshotDirectory { get; set; }
 
+        public string? RecordingDirectory { get; set; }
+
         public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
 
         private readonly PowerToysModule scope;
@@ -36,6 +38,7 @@ namespace Microsoft.PowerToys.UITest
         private readonly string[]? commandLineArgs;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
+        private ScreenRecording? screenRecording;
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
@@ -63,13 +66,36 @@ namespace Microsoft.PowerToys.UITest
         {
             KeyboardHelper.SendKeys(Key.Win, Key.M);
             CloseOtherApplications();
-            if (IsInPipeline)
+            if (!IsInPipeline)
             {
-                ScreenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                string baseDirectory = this.TestContext.TestResultsDirectory ?? string.Empty;
+                ScreenshotDirectory = Path.Combine(baseDirectory, "UITestScreenshots_" + Guid.NewGuid().ToString());
                 Directory.CreateDirectory(ScreenshotDirectory);
+
+                RecordingDirectory = Path.Combine(baseDirectory, "UITestRecordings_" + Guid.NewGuid().ToString());
+                Directory.CreateDirectory(RecordingDirectory);
 
                 // Take screenshot every 1 second
                 screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, ScreenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+
+                // Start screen recording (requires FFmpeg)
+                try
+                {
+                    screenRecording = new ScreenRecording(RecordingDirectory);
+                    if (screenRecording.IsAvailable)
+                    {
+                        _ = screenRecording.StartRecordingAsync();
+                    }
+                    else
+                    {
+                        screenRecording = null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to start screen recording: {ex.Message}");
+                    screenRecording = null;
+                }
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
@@ -88,6 +114,20 @@ namespace Microsoft.PowerToys.UITest
             if (IsInPipeline)
             {
                 screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+
+                // Stop screen recording
+                if (screenRecording != null)
+                {
+                    try
+                    {
+                        screenRecording.StopRecordingAsync().GetAwaiter().GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to stop screen recording: {ex.Message}");
+                    }
+                }
+
                 Dispose();
                 if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
                     or UnitTestOutcome.Error
@@ -95,7 +135,13 @@ namespace Microsoft.PowerToys.UITest
                 {
                     Task.Delay(1000).Wait();
                     AddScreenShotsToTestResultsDirectory();
+                    AddRecordingsToTestResultsDirectory();
                     AddLogFilesToTestResultsDirectory();
+                }
+                else
+                {
+                    // Clean up recording if test passed
+                    CleanupRecordingDirectory();
                 }
             }
 
@@ -106,6 +152,7 @@ namespace Microsoft.PowerToys.UITest
         public void Dispose()
         {
             screenshotTimer?.Dispose();
+            screenRecording?.Dispose();
             GC.SuppressFinalize(this);
         }
 
@@ -596,6 +643,47 @@ namespace Microsoft.PowerToys.UITest
                 foreach (string file in Directory.GetFiles(ScreenshotDirectory))
                 {
                     this.TestContext.AddResultFile(file);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds screen recordings to test results directory when test fails.
+        /// </summary>
+        protected void AddRecordingsToTestResultsDirectory()
+        {
+            if (RecordingDirectory != null && Directory.Exists(RecordingDirectory))
+            {
+                // Add video files (MP4)
+                var videoFiles = Directory.GetFiles(RecordingDirectory, "*.mp4");
+                foreach (string file in videoFiles)
+                {
+                    this.TestContext.AddResultFile(file);
+                    var fileInfo = new FileInfo(file);
+                    Console.WriteLine($"Added video recording: {Path.GetFileName(file)} ({fileInfo.Length / 1024 / 1024:F1} MB)");
+                }
+
+                if (videoFiles.Length == 0)
+                {
+                    Console.WriteLine("No video recording available (FFmpeg not found). Screenshots are still captured.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans up recording directory when test passes.
+        /// </summary>
+        private void CleanupRecordingDirectory()
+        {
+            if (RecordingDirectory != null && Directory.Exists(RecordingDirectory))
+            {
+                try
+                {
+                    Directory.Delete(RecordingDirectory, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to cleanup recording directory: {ex.Message}");
                 }
             }
         }
