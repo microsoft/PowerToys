@@ -12,9 +12,8 @@ namespace LanguageModelProvider;
 
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
-    private IEnumerable<ModelDetails>? _downloadedModels;
-    private IEnumerable<FoundryCatalogModel>? _catalogModels;
     private FoundryClient? _foundryClient;
+    private IEnumerable<FoundryCatalogModel>? _catalogModels;
     private string? _serviceUrl;
 
     public static FoundryLocalModelProvider Instance { get; } = new();
@@ -43,15 +42,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             throw new InvalidOperationException(errorMessage);
         }
 
-        // Check if model is cached
-        var isInCache = _downloadedModels?.Any(m => m.ProviderModelDetails is FoundryCachedModel cached && cached.Name == modelId) ?? false;
-        if (!isInCache)
-        {
-            var errorMessage = $"The requested model '{modelId}' is not cached. Please download it using Foundry Local.";
-            Logger.LogError($"[FoundryLocal] {errorMessage}");
-            throw new InvalidOperationException(errorMessage);
-        }
-
         // Ensure the model is loaded before returning chat client
         var isLoaded = _foundryClient!.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
         if (!isLoaded)
@@ -74,7 +64,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         return new OpenAIClient(
             new ApiKeyCredential("none"),
-            new OpenAIClientOptions { Endpoint = endpointUri })
+            new OpenAIClientOptions { Endpoint = endpointUri, NetworkTimeout = TimeSpan.FromMinutes(5) })
             .GetChatClient(modelId)
             .AsIChatClient();
     }
@@ -100,30 +90,38 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         return $"new OpenAIClient(new ApiKeyCredential(\"none\"), new OpenAIClientOptions{{ Endpoint = new Uri(\"{_serviceUrl}/v1\") }}).GetChatClient(\"{modelId}\").AsIChatClient()";
     }
 
-    public async Task<IEnumerable<ModelDetails>> GetModelsAsync(bool ignoreCached = false, CancellationToken cancelationToken = default)
+    public async Task<IEnumerable<ModelDetails>> GetModelsAsync(CancellationToken cancelationToken = default)
     {
-        if (ignoreCached)
-        {
-            Logger.LogInfo("[FoundryLocal] Ignoring cached models, resetting");
-            Reset();
-        }
-
         await InitializeAsync(cancelationToken);
 
-        Logger.LogInfo($"[FoundryLocal] Returning {_downloadedModels?.Count() ?? 0} downloaded models");
-        return _downloadedModels ?? [];
-    }
+        if (_foundryClient == null)
+        {
+            return Array.Empty<ModelDetails>();
+        }
 
-    private void Reset()
-    {
-        _downloadedModels = null;
-        _catalogModels = null;
-        _ = InitializeAsync();
+        var cachedModels = await _foundryClient.ListCachedModels();
+        List<ModelDetails> downloadedModels = [];
+
+        foreach (var model in cachedModels)
+        {
+            Logger.LogInfo($"[FoundryLocal] Adding unmatched cached model: {model.Name}");
+            downloadedModels.Add(new ModelDetails
+            {
+                Id = $"fl-{model.Name}",
+                Name = model.Name,
+                Url = $"fl://{model.Name}",
+                Description = $"{model.Name} running locally with Foundry Local",
+                HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
+                ProviderModelDetails = model,
+            });
+        }
+
+        return downloadedModels;
     }
 
     private async Task InitializeAsync(CancellationToken cancelationToken = default)
     {
-        if (_foundryClient != null && _downloadedModels != null && _downloadedModels.Any() && _catalogModels != null && _catalogModels.Any())
+        if (_foundryClient != null && _catalogModels != null && _catalogModels.Any())
         {
             await _foundryClient.EnsureRunning().ConfigureAwait(false);
             return;
@@ -145,29 +143,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         var catalogModels = await _foundryClient.ListCatalogModels();
         Logger.LogInfo($"[FoundryLocal] Found {catalogModels.Count} catalog models");
         _catalogModels = catalogModels;
-
-        var cachedModels = await _foundryClient.ListCachedModels();
-        Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
-
-        List<ModelDetails> downloadedModels = [];
-
-        foreach (var model in cachedModels)
-        {
-            Logger.LogInfo($"[FoundryLocal] Adding unmatched cached model: {model.Name}");
-            downloadedModels.Add(new ModelDetails
-            {
-                Id = $"fl-{model.Name}",
-                Name = model.Name,
-                Url = $"fl://{model.Name}",
-                Description = $"{model.Name} running locally with Foundry Local",
-                HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
-                SupportedOnQualcomm = true,
-                ProviderModelDetails = model,
-            });
-        }
-
-        _downloadedModels = downloadedModels;
-        Logger.LogInfo($"[FoundryLocal] Initialization complete. Total downloaded models: {downloadedModels.Count}");
     }
 
     public async Task<bool> IsAvailable()

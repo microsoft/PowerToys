@@ -15,6 +15,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  <LangVersion>preview</LangVersion>
 
     <Version>$(CmdPalVersion)</Version>
 
@@ -25,10 +26,10 @@
   </PropertyGroup>
   
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-  <!-- <PropertyGroup>
+   <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
-    <CIBuild>true</CIBuild>
-  </PropertyGroup> -->
+    <GeneratePackageLocally>true</GeneratePackageLocally>
+  </PropertyGroup>--> 
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
@@ -37,7 +38,7 @@
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+  <PropertyGroup Condition="'$(CIBuild)' == 'true' or '$(GeneratePackageLocally)' == 'true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
     <AppxBundle>Never</AppxBundle>
     <AppxPackageTestDir>$(OutputPath)\AppPackages\Microsoft.CmdPal.UI_$(Version)_Test\</AppxPackageTestDir>
@@ -66,6 +67,7 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
@@ -118,6 +120,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.RemoteDesktop\Microsoft.CmdPal.Ext.RemoteDesktop.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
@@ -165,6 +168,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\SearchBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\DevRibbon.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Styles\TextBox.xaml">
@@ -233,5 +239,25 @@
     </Page>
   </ItemGroup>
   <!-- </AdaptiveCardsWorkaround> -->
+
+  <!-- Metadata for build information  -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PublishTrimmed</_Parameter1>
+      <_Parameter2>$(PublishTrimmed)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PublishAot</_Parameter1>
+      <_Parameter2>$(PublishAot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CIBuild</_Parameter1>
+      <_Parameter2>$(CIBuild)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>CommandPaletteBranding</_Parameter1>
+      <_Parameter2>$(CommandPaletteBranding)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 
 </Project>

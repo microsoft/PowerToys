@@ -6,5 +6,9 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public interface IGridPropertiesViewModel
 {
+    bool ShowTitle { get; }
+
+    bool ShowSubtitle { get; }
+
     void InitializeProperties();
 }
