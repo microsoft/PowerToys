@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="PowerDisplay.PowerDisplayXAML.IdentifyWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,13 +6,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Grid Background="Transparent">
-        <TextBlock x:Name="NumberText"
-                   Text="1"
-                   FontSize="200"
-                   FontWeight="Bold"
-                   FontFamily="Segoe UI"
-                   Foreground="White"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+        <TextBlock
+            x:Name="NumberText"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontFamily="Segoe UI"
+            FontSize="200"
+            FontWeight="Bold"
+            Foreground="White"
+            Text="1" />
     </Grid>
 </Window>

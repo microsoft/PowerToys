@@ -6,8 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
-    xmlns:pdmodels="using:PowerDisplay.Common.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pdmodels="using:PowerDisplay.Common.Models"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -187,9 +187,7 @@
                                         </tkcontrols:SettingsCard>
 
                                         <!--  VCP Capabilities  -->
-                                        <tkcontrols:SettingsCard
-                                            x:Uid="PowerDisplay_Monitor_VcpCapabilities"
-                                            Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_VcpCapabilities" Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <Button
                                                 x:Uid="PowerDisplay_Monitor_VcpDetails_Button"
                                                 Content="&#xE946;"

@@ -17,7 +17,7 @@ namespace PowerDisplay.Common.Services
     /// <summary>
     /// Manages monitor parameter state in a separate file from main settings.
     /// This avoids FileSystemWatcher feedback loops by separating read-only config (settings.json)
-    /// from frequently-updated state (monitor_state.json).
+    /// from frequently updated state (monitor_state.json).
     /// Simplified to use direct save strategy for reliability and simplicity (KISS principle).
     /// </summary>
     public partial class MonitorStateManager : IDisposable
