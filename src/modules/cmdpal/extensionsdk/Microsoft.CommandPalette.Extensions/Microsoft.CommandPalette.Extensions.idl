@@ -161,21 +161,13 @@ namespace Microsoft.CommandPalette.Extensions
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsData {}
 
-    [uuid("3A504082-0207-4B96-B6F6-04B59B37B5DE")]
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)] 
-    interface IDetailsSize requires INotifyPropChanged { }
-
-    [uuid("43A06F41-1FE8-4468-B3CD-77F5E3CE5CBE")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ISmallDetails requires IDetailsSize { }
-
-    [uuid("7D851F94-7865-484A-8F29-9A300A325A5A")]
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IMediumDetails requires IDetailsSize { }
-
-    [uuid("F3733D1D-562C-4ACF-B6EF-F5D8A5B6BF50")]
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ILargeDetails requires IDetailsSize { }
+    enum ContentSize
+    {
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+    };
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsElement {
@@ -188,7 +180,7 @@ namespace Microsoft.CommandPalette.Extensions
         String Title { get; };
         String Body { get; };
         IDetailsElement[] Metadata { get; };
-        IDetailsSize Size { get; };
+        ContentSize Size { get; };
     }
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsTags requires IDetailsData {

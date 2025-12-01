@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
@@ -12,13 +12,13 @@ public partial class DetailsSizeToGridLengthConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is IDetailsSizeViewModel sizeViewModel)
+        if (value is ContentSize size)
         {
-            var starValue = sizeViewModel switch
+            var starValue = size switch
             {
-                SmallDetailsViewModel => 3.0,
-                MediumDetailsViewModel => 2.0,
-                LargeDetailsViewModel => 1.0,
+                ContentSize.Small => 3.0,
+                ContentSize.Medium => 2.0,
+                ContentSize.Large => 1.0,
                 _ => 3.0,
             };
 

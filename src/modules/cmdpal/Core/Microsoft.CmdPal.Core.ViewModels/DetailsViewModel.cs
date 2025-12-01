@@ -19,7 +19,7 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
 
     public string Body { get; private set; } = string.Empty;
 
-    public IDetailsSizeViewModel? Size { get; private set; }
+    public ContentSize? Size { get; private set; }
 
     // Metadata is an array of IDetailsElement,
     //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
@@ -37,7 +37,7 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
         Body = model.Body ?? string.Empty;
         HeroImage = new(model.HeroImage);
         HeroImage.InitializeProperties();
-        Size = LoadDetailsSizeViewModel(model.Size);
+        Size = model.Size;
 
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(Body));
@@ -64,16 +64,5 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
                 }
             }
         }
-    }
-
-    private IDetailsSizeViewModel? LoadDetailsSizeViewModel(IDetailsSize? detailsSize)
-    {
-        return detailsSize switch
-        {
-            IMediumDetails mediumDetails => new MediumDetailsViewModel(mediumDetails),
-            ILargeDetails largeDetails => new LargeDetailsViewModel(largeDetails),
-            ISmallDetails smallDetails => new SmallDetailsViewModel(smallDetails),
-            _ => null,
-        };
     }
 }

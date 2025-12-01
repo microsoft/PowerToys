@@ -54,7 +54,7 @@ public partial class Details : BaseObservable, IDetails
 
 = [];
 
-    public virtual IDetailsSize Size
+    public virtual ContentSize Size
     {
         get;
         set
@@ -64,5 +64,5 @@ public partial class Details : BaseObservable, IDetails
         }
     }
 
-    = new SmallDetails();
+    = ContentSize.Small;
 }
