@@ -16,6 +16,9 @@
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
+#include "ZoomItIpc.h"
+#include "zoomit_mode.h"
+#include "zoomit_mode.h"
 
 #ifdef __ZOOMIT_POWERTOYS__
 #include <common/interop/shared_constants.h>
@@ -172,7 +175,6 @@ std::wstring	g_RecordingSaveLocationGIF;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
 std::shared_ptr<GifRecordingSession> g_GifRecordingSession = nullptr;
-
 type_pGetMonitorInfo		pGetMonitorInfo;
 type_MonitorFromPoint		pMonitorFromPoint;
 type_pSHAutoComplete		pSHAutoComplete;
@@ -7712,6 +7714,50 @@ HWND InitInstance( HINSTANCE hInstance, int nCmdShow )
 
 }
 
+// Dispatch commands coming from the PowerToys IPC channel.
+#ifdef __ZOOMIT_POWERTOYS__
+void ZoomIt_DispatchCommand(ZoomItIpc::Command cmd)
+{
+    auto post_hotkey = [](WPARAM id)
+    {
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_HOTKEY, id, 0);
+        }
+    };
+
+    switch (cmd)
+    {
+    case ZoomItIpc::Command::Zoom:
+        post_hotkey(ZOOM_HOTKEY);
+        Trace::ZoomItActivateZoom();
+        break;
+    case ZoomItIpc::Command::Draw:
+        post_hotkey(DRAW_HOTKEY);
+        Trace::ZoomItActivateDraw();
+        break;
+    case ZoomItIpc::Command::Break:
+        post_hotkey(BREAK_HOTKEY);
+        Trace::ZoomItActivateBreak();
+        break;
+    case ZoomItIpc::Command::LiveZoom:
+        post_hotkey(LIVE_HOTKEY);
+        Trace::ZoomItActivateLiveZoom();
+        break;
+    case ZoomItIpc::Command::Snip:
+        post_hotkey(SNIP_HOTKEY);
+        Trace::ZoomItActivateSnip();
+        break;
+    case ZoomItIpc::Command::Record:
+        post_hotkey(RECORD_HOTKEY);
+        Trace::ZoomItActivateRecord();
+        break;
+    default:
+        break;
+    }
+}
+#endif
+
 //----------------------------------------------------------------------------
 //
 // WinMain
@@ -7746,6 +7792,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
         // Initialize logger
         LoggerHelpers::init_logger(L"ZoomIt", L"", LogSettings::zoomItLoggerName);
+        ZoomItIpc::RunServer();
 
         ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
             if (err != ERROR_SUCCESS)
@@ -7986,3 +8033,4 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     return retCode;
 }
+#include "zoomit_mode.h"

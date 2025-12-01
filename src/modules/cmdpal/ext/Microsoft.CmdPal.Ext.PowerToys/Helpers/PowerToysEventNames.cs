@@ -30,4 +30,8 @@ internal static class PowerToysEventNames
     internal const string WorkspacesHotkey = "Local\\PowerToys-Workspaces-HotkeyEvent-2625C3C8-BAC9-4DB3-BCD6-3B4391A26FD0";
     internal const string CropAndLockThumbnail = "Local\\PowerToysCropAndLockThumbnailEvent-1637be50-da72-46b2-9220-b32b206b2434";
     internal const string CropAndLockReparent = "Local\\PowerToysCropAndLockReparentEvent-6060860a-76a1-44e8-8d0e-6355785e9c36";
+    internal const string FindMyMouseTrigger = "Local\\FindMyMouseTriggerEvent-5a9dc5f4-1c74-4f2f-a66f-1b9b6a2f9b23";
+    internal const string MouseHighlighterTrigger = "Local\\MouseHighlighterTriggerEvent-1e3c9c3d-3fdf-4f9a-9a52-31c9b3c3a8f4";
+    internal const string MouseCrosshairsTrigger = "Local\\MouseCrosshairsTriggerEvent-0d4c7f92-0a5c-4f5c-b64b-8a2a2f7e0b21";
+    internal const string MouseJumpShowPreview = "Local\\MouseJumpEvent-aa0be051-3396-4976-b7ba-1a9cc7d236a5";
 }

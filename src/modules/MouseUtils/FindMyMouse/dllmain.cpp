@@ -8,6 +8,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/color.h>
 #include <common/utils/string_utils.h>
+#include <common/interop/shared_constants.h>
+#include <atomic>
 
 namespace
 {
@@ -68,6 +70,12 @@ private:
 
     // Find My Mouse specific settings
     FindMyMouseSettings m_findMyMouseSettings;
+
+    // Event-driven trigger support
+    HANDLE m_triggerEventHandle = nullptr;
+    HANDLE m_terminateEventHandle = nullptr;
+    std::thread m_eventThread;
+    std::atomic_bool m_listening{ false };
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -150,6 +158,34 @@ public:
         m_enabled = true;
         Trace::EnableFindMyMouse(true);
         std::thread([=]() { FindMyMouseMain(m_hModule, m_findMyMouseSettings); }).detach();
+
+        // Start listening for external trigger event so we can invoke the same logic as the hotkey.
+        m_triggerEventHandle = CreateEventW(nullptr, false, false, CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT);
+        m_terminateEventHandle = CreateEventW(nullptr, false, false, nullptr);
+        if (m_triggerEventHandle && m_terminateEventHandle)
+        {
+            m_listening = true;
+            m_eventThread = std::thread([this]() {
+                HANDLE handles[2] = { m_triggerEventHandle, m_terminateEventHandle };
+                while (m_listening)
+                {
+                    auto res = WaitForMultipleObjects(2, handles, false, INFINITE);
+                    if (!m_listening)
+                    {
+                        break;
+                    }
+
+                    if (res == WAIT_OBJECT_0)
+                    {
+                        OnHotkeyEx();
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            });
+        }
     }
 
     // Disable the powertoy
@@ -158,6 +194,26 @@ public:
         m_enabled = false;
         Trace::EnableFindMyMouse(false);
         FindMyMouseDisable();
+
+        m_listening = false;
+        if (m_terminateEventHandle)
+        {
+            SetEvent(m_terminateEventHandle);
+        }
+        if (m_eventThread.joinable())
+        {
+            m_eventThread.join();
+        }
+        if (m_triggerEventHandle)
+        {
+            CloseHandle(m_triggerEventHandle);
+            m_triggerEventHandle = nullptr;
+        }
+        if (m_terminateEventHandle)
+        {
+            CloseHandle(m_terminateEventHandle);
+            m_terminateEventHandle = nullptr;
+        }
     }
 
     // Returns if the powertoys is enabled
@@ -216,7 +272,7 @@ inline static uint8_t LegacyOpacityToAlpha(int overlayOpacityPercent)
         overlayOpacityPercent = 100;
     }
 
-    // Round to nearest integer (0–255)
+    // Round to nearest integer (0â€“255)
     return static_cast<uint8_t>((overlayOpacityPercent * 255 + 50) / 100);
 }
 
