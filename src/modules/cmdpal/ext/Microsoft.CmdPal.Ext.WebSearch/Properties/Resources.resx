@@ -184,4 +184,13 @@
   <data name="open_url_fallback_title" xml:space="preserve">
     <value>Open URL</value>
   </data>
+  <data name="default_browser" xml:space="preserve">
+    <value>default browser</value>
+  </data>
+  <data name="plugin_custom_search_uri" xml:space="preserve">
+    <value>Custom search engine URL</value>
+  </data>
+  <data name="plugin_custom_search_uri_placeholder" xml:space="preserve">
+    <value>Use {query} or %s as the search query placeholder; e.g. https://www.bing.com/search?q={query}</value>
+  </data>
 </root>
