@@ -29,7 +29,7 @@ public abstract class KernelServiceBase(
     ICustomActionTransformService customActionTransformService) : IKernelService
 {
     private const string PromptParameterName = "prompt";
-    private const string DefaultSystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
+    private const string DefaultSystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content. If the input contains an image, you can see and analyze it directly. Do NOT use the ImageToText tool unless the user specifically asks to extract text (OCR) from the image.";
 
     private readonly IKernelQueryCacheService _queryCacheService = queryCacheService;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
@@ -67,14 +67,28 @@ public abstract class KernelServiceBase(
 
             LogResult(cacheUsed, isSavedQuery, kernel.GetOrAddActionChain(), usage);
 
+            var outputPackage = kernel.GetDataPackage();
+            var hasUsableData = await outputPackage.GetView().HasUsableDataAsync();
+
             if (kernel.GetLastError() is Exception ex)
             {
-                throw ex;
+                // If we have an error, but the AI provided a final text response, we can ignore the error (likely a tool failure that the AI handled).
+                // However, if we have usable data (e.g. from a successful tool call before the error?), we might want to keep it?
+                // In the case of ImageToText failure, outputPackage is empty (new DataPackage), hasUsableData is false.
+                // So we check if we can fallback to chat history.
+                var lastMessage = chatHistory.LastOrDefault();
+                bool hasAssistantResponse = lastMessage != null && lastMessage.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(lastMessage.Content);
+
+                if (!hasAssistantResponse && !hasUsableData)
+                {
+                    throw ex;
+                }
+
+                // If we have a response or data, we log the error but proceed.
+                Logger.LogWarning($"Kernel operation encountered an error but proceeded with available response/data: {ex.Message}");
             }
 
-            var outputPackage = kernel.GetDataPackage();
-
-            if (!(await outputPackage.GetView().HasUsableDataAsync()))
+            if (!hasUsableData)
             {
                 var lastMessage = chatHistory.LastOrDefault();
                 if (lastMessage != null && lastMessage.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(lastMessage.Content))
@@ -326,8 +340,16 @@ public abstract class KernelServiceBase(
             new ActionChainItem(PasteFormats.CustomTextTransformation, Arguments: new() { { PromptParameterName, fixedPrompt } }),
             async dataPackageView =>
             {
-                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
-                var result = await _customActionTransformService.TransformTextAsync(fixedPrompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
+                var imageBytes = await dataPackageView.GetImageAsPngBytesAsync();
+                var input = await dataPackageView.GetTextOrHtmlTextAsync();
+
+                if (string.IsNullOrEmpty(input) && imageBytes == null)
+                {
+                    // If we have no text and no image, try to get text via OCR or throw if nothing exists
+                    input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
+                }
+
+                var result = await _customActionTransformService.TransformAsync(fixedPrompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
 
@@ -345,7 +367,7 @@ public abstract class KernelServiceBase(
     private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformTextAsync(prompt, input, cancellationToken, progress))?.Content ?? string.Empty,
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, null, cancellationToken, progress))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 
