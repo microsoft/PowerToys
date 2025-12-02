@@ -5173,7 +5173,8 @@ LRESULT APIENTRY MainWndProc(
     case WM_IME_CHAR:
     case WM_CHAR:
 
-        if( (g_TypeMode != TypeModeOff) && iswprint(static_cast<TCHAR>(wParam)) || (static_cast<TCHAR>(wParam) == L'&')) {
+        if( (g_TypeMode != TypeModeOff) &&
+            (iswprint(static_cast<TCHAR>(wParam)) || (static_cast<TCHAR>(wParam) == L'&')) ) {
             g_HaveTyped = TRUE;
 
             TCHAR	 vKey = static_cast<TCHAR>(wParam);
@@ -5281,9 +5282,8 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_KEYDOWN:
 
-        if( (g_TypeMode != TypeModeOff) && g_HaveTyped && static_cast<char>(wParam) != VK_UP && static_cast<char>(wParam) != VK_DOWN &&
-            (isprint( static_cast<char>(wParam)) ||
-            wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK )) {
+        if( (g_TypeMode != TypeModeOff) && g_HaveTyped &&
+            (wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK) ) {
 
             if( wParam == VK_RETURN ) {
 
