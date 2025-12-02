@@ -32,6 +32,8 @@ namespace MouseWithoutBorders
     {
         private static MyRectangle newDesktopBounds;
         private static MyRectangle newPrimaryScreenBounds;
+        // temporary list used during enumeration
+        private static List<MyRectangle> newMonitorBounds;
         private static string activeDesktop;
 
         internal static string ActiveDesktop => Common.activeDesktop;
@@ -42,6 +44,10 @@ namespace MouseWithoutBorders
         }
 
         internal static readonly List<Point> SensitivePoints = new();
+
+            // List of monitor rectangles (in desktop coordinate space) populated by GetScreenConfig()
+            // Each entry describes a monitor's bounds: Left/Top/Right/Bottom
+            internal static List<MyRectangle> MonitorRects = new();
 
         private static bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref NativeMethods.RECT lprcMonitor, IntPtr dwData)
         {
@@ -70,7 +76,26 @@ namespace MouseWithoutBorders
                 Logger.Log(e);
             }
 
-            if (mi.rcMonitor.Left == 0 && mi.rcMonitor.Top == 0 && mi.rcMonitor.Right != 0 && mi.rcMonitor.Bottom != 0)
+            // MonitorInfoEx.dwFlags will include 1 when monitor is primary.
+            const uint MONITORINFOF_PRIMARY = 1;
+
+            // Add monitor rectangle to the temporary list (for GetScreenConfig to pick up)
+            if (newMonitorBounds == null)
+            {
+                newMonitorBounds = new List<MyRectangle>();
+            }
+
+            var thisRect = new MyRectangle()
+            {
+                Left = mi.rcMonitor.Left,
+                Top = mi.rcMonitor.Top,
+                Right = mi.rcMonitor.Right,
+                Bottom = mi.rcMonitor.Bottom
+            };
+
+            newMonitorBounds.Add(thisRect);
+
+            if ((mi.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY)
             {
                 // Primary screen
                 _ = Interlocked.Exchange(ref screenWidth, mi.rcMonitor.Right - mi.rcMonitor.Left);
@@ -122,6 +147,7 @@ namespace MouseWithoutBorders
                 Logger.LogDebug("==================== GetScreenConfig started");
                 newDesktopBounds = new MyRectangle();
                 newPrimaryScreenBounds = new MyRectangle();
+                newMonitorBounds = new List<MyRectangle>();
                 newDesktopBounds.Left = newPrimaryScreenBounds.Left = Screen.PrimaryScreen.Bounds.Left;
                 newDesktopBounds.Top = newPrimaryScreenBounds.Top = Screen.PrimaryScreen.Bounds.Top;
                 newDesktopBounds.Right = newPrimaryScreenBounds.Right = Screen.PrimaryScreen.Bounds.Right;
@@ -165,6 +191,12 @@ namespace MouseWithoutBorders
                 Interlocked.Exchange(ref MachineStuff.desktopBounds, newDesktopBounds);
                 Interlocked.Exchange(ref MachineStuff.primaryScreenBounds, newPrimaryScreenBounds);
 
+                // Replace the current monitor list with the newly enumerated list
+                lock (SensitivePoints)
+                {
+                    MonitorRects = newMonitorBounds ?? new List<MyRectangle>();
+                }
+
                 Logger.Log(string.Format(
                     CultureInfo.CurrentCulture,
                     "logon = {0} PrimaryScreenBounds = {1},{2},{3},{4} desktopBounds = {5},{6},{7},{8}",
@@ -184,6 +216,95 @@ namespace MouseWithoutBorders
             {
                 Logger.Log(e);
             }
+        }
+
+        // Return the monitor rect containing the given desktop coordinate point if any
+        internal static MyRectangle GetMonitorContainingPoint(int x, int y)
+        {
+            lock (SensitivePoints)
+            {
+                foreach (MyRectangle r in MonitorRects)
+                {
+                    if (x >= r.Left && x < r.Right && y >= r.Top && y < r.Bottom)
+                    {
+                        return r;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        internal static bool MonitorBelowExists(MyRectangle r, int x)
+        {
+            if (r == null) return false;
+            lock (SensitivePoints)
+            {
+                foreach (MyRectangle m in MonitorRects)
+                {
+                    if (m == r) continue;
+                    if (x >= m.Left && x < m.Right && m.Top >= r.Bottom)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool MonitorAboveExists(MyRectangle r, int x)
+        {
+            if (r == null) return false;
+            lock (SensitivePoints)
+            {
+                foreach (MyRectangle m in MonitorRects)
+                {
+                    if (m == r) continue;
+                    if (x >= m.Left && x < m.Right && m.Bottom <= r.Top)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool MonitorRightExists(MyRectangle r, int y)
+        {
+            if (r == null) return false;
+            lock (SensitivePoints)
+            {
+                foreach (MyRectangle m in MonitorRects)
+                {
+                    if (m == r) continue;
+                    if (y >= m.Top && y < m.Bottom && m.Left >= r.Right)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool MonitorLeftExists(MyRectangle r, int y)
+        {
+            if (r == null) return false;
+            lock (SensitivePoints)
+            {
+                foreach (MyRectangle m in MonitorRects)
+                {
+                    if (m == r) continue;
+                    if (y >= m.Top && y < m.Bottom && m.Right <= r.Left)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
 #if USING_SCREEN_SAVER_ROUTINES

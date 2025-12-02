@@ -62,6 +62,8 @@ internal static class MachineStuff
 
 #pragma warning disable SA1306 // Field should begin with a lower-case letter
     internal static MouseLocation SwitchLocation = new();
+    // Helper to allow unit tests to stub monitor detection.
+    internal static Func<Point, System.Drawing.Rectangle> GetScreenBoundsFromPoint = p => System.Windows.Forms.Screen.FromPoint(p).Bounds;
 #pragma warning restore SA1306
 
     internal static ID NewDesMachineID
@@ -238,19 +240,34 @@ internal static class MachineStuff
          * */
         if (desMachineID == Common.MachineID)
         {
-            if (x < desktopBounds.Left + SKIP_PIXELS)
+            // When the current (controller) machine has multiple monitors arranged in a row
+            // we should check the monitor that actually contains the pointer rather than
+            // using the union of all monitor bounds (desktopBounds). This fixes a bug
+            // where moving off the bottom of a monitor with a higher bottom would not
+            // trigger a switch even though the user was at the bottom of that specific monitor.
+            // prefer the internal list (populated by GetScreenConfig) for monitor adjacency checks
+            var screenBounds = GetScreenBoundsFromPoint(new Point(x, y));
+
+            MyRectangle activeMon = Common.GetMonitorContainingPoint(x, y);
+            if (activeMon == null)
+            {
+                // fall back to the screen bounds returned by WinForms for tests or when enumeration is unavailable
+                activeMon = new MyRectangle() { Left = screenBounds.Left, Top = screenBounds.Top, Right = screenBounds.Right, Bottom = screenBounds.Bottom };
+            }
+
+            if (x < activeMon.Left + SKIP_PIXELS && !Common.MonitorLeftExists(activeMon, y))
             {
                 return MoveLeft(x, y);
             }
-            else if (x >= desktopBounds.Right - SKIP_PIXELS)
+            else if (x >= activeMon.Right - SKIP_PIXELS && !Common.MonitorRightExists(activeMon, y))
             {
                 return MoveRight(x, y);
             }
-            else if (y < desktopBounds.Top + SKIP_PIXELS)
+            else if (y < activeMon.Top + SKIP_PIXELS && !Common.MonitorAboveExists(activeMon, x))
             {
                 return MoveUp(x, y);
             }
-            else if (y >= desktopBounds.Bottom - SKIP_PIXELS)
+            else if (y >= activeMon.Bottom - SKIP_PIXELS && !Common.MonitorBelowExists(activeMon, x))
             {
                 return MoveDown(x, y);
             }
@@ -261,19 +278,22 @@ internal static class MachineStuff
          * */
         else
         {
-            if (x < primaryScreenBounds.Left + SKIP_PIXELS)
+            // When the mouse position provided is relative to the primary screen
+            MyRectangle activePrim = Common.GetMonitorContainingPoint(x, y) ?? primaryScreenBounds;
+
+            if (x < activePrim.Left + SKIP_PIXELS && !Common.MonitorLeftExists(activePrim, y))
             {
                 return MoveLeft(x, y);
             }
-            else if (x >= primaryScreenBounds.Right - SKIP_PIXELS)
+            else if (x >= activePrim.Right - SKIP_PIXELS && !Common.MonitorRightExists(activePrim, y))
             {
                 return MoveRight(x, y);
             }
-            else if (y < primaryScreenBounds.Top + SKIP_PIXELS)
+            else if (y < activePrim.Top + SKIP_PIXELS && !Common.MonitorAboveExists(activePrim, x))
             {
                 return MoveUp(x, y);
             }
-            else if (y >= primaryScreenBounds.Bottom - SKIP_PIXELS)
+            else if (y >= activePrim.Bottom - SKIP_PIXELS && !Common.MonitorBelowExists(activePrim, x))
             {
                 return MoveDown(x, y);
             }
