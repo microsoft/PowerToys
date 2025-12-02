@@ -275,10 +275,19 @@ namespace Microsoft.PowerToys.UITest
                 using var process = Process.Start(startInfo);
                 if (process != null)
                 {
-                    // Close stdin to ensure FFmpeg doesn't wait for input
+                    // Close stdin immediately to ensure FFmpeg doesn't wait for input
                     process.StandardInput.Close();
 
+                    // Read output streams asynchronously to prevent deadlock
+                    var outputTask = process.StandardOutput.ReadToEndAsync();
+                    var errorTask = process.StandardError.ReadToEndAsync();
+
+                    // Wait for process to exit
                     await process.WaitForExitAsync();
+
+                    // Get the output
+                    string stdout = await outputTask;
+                    string stderr = await errorTask;
 
                     if (process.ExitCode == 0 && File.Exists(outputFilePath))
                     {
@@ -288,7 +297,6 @@ namespace Microsoft.PowerToys.UITest
                     else
                     {
                         Console.WriteLine($"FFmpeg encoding failed with exit code {process.ExitCode}");
-                        string stderr = await process.StandardError.ReadToEndAsync();
                         if (!string.IsNullOrWhiteSpace(stderr))
                         {
                             Console.WriteLine($"FFmpeg error: {stderr}");
