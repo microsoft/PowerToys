@@ -14,6 +14,15 @@ namespace PowerDisplay.Common.Models
     /// Monitor model that implements property change notification.
     /// Implements IMonitorData to provide a common interface for monitor hardware values.
     /// </summary>
+    /// <remarks>
+    /// <para><b>Monitor Identifier Hierarchy:</b></para>
+    /// <list type="bullet">
+    /// <item><see cref="Id"/>: Runtime identifier for UI and IPC (e.g., "DDC_GSM5C6D", "WMI_DISPLAY\BOE...")</item>
+    /// <item><see cref="HardwareId"/>: EDID-based identifier for persistent storage (e.g., "GSM5C6D")</item>
+    /// <item><see cref="DeviceKey"/>: Windows device path for handle management (e.g., "\\?\DISPLAY#...")</item>
+    /// </list>
+    /// <para>Use <see cref="Id"/> for lookups, <see cref="HardwareId"/> for saving state, <see cref="DeviceKey"/> for handle reuse.</para>
+    /// </remarks>
     public partial class Monitor : INotifyPropertyChanged, IMonitorData
     {
         private int _currentBrightness;
@@ -22,13 +31,23 @@ namespace PowerDisplay.Common.Models
         private bool _isAvailable = true;
 
         /// <summary>
-        /// Unique identifier (based on hardware ID)
+        /// Runtime unique identifier for UI lookups and IPC communication.
         /// </summary>
+        /// <remarks>
+        /// Format: "{Source}_{HardwareId}" where Source is "DDC" or "WMI".
+        /// Examples: "DDC_GSM5C6D", "WMI_DISPLAY\BOE0900...".
+        /// Use this for ViewModel lookups and MonitorManager method parameters.
+        /// </remarks>
         public string Id { get; set; } = string.Empty;
 
         /// <summary>
-        /// Hardware ID (EDID format like GSM5C6D)
+        /// EDID-based hardware identifier for persistent state storage.
         /// </summary>
+        /// <remarks>
+        /// Format: Manufacturer code + product code from EDID (e.g., "GSM5C6D" for LG monitors).
+        /// Use this for saving/loading monitor settings in MonitorStateManager.
+        /// Stable across reboots but not guaranteed unique if multiple identical monitors are connected.
+        /// </remarks>
         public string HardwareId { get; set; } = string.Empty;
 
         /// <summary>
@@ -224,8 +243,13 @@ namespace PowerDisplay.Common.Models
         public IntPtr Handle { get; set; } = IntPtr.Zero;
 
         /// <summary>
-        /// Device key - unique identifier part of device path
+        /// Windows device path fragment for physical monitor handle management.
         /// </summary>
+        /// <remarks>
+        /// Format: Registry-style path from DisplayDeviceInfo (e.g., "\\?\DISPLAY#GSM5C6D#...").
+        /// Used by PhysicalMonitorHandleManager to reuse handles across monitor discovery cycles.
+        /// Changes when monitor is reconnected to a different port.
+        /// </remarks>
         public string DeviceKey { get; set; } = string.Empty;
 
         /// <summary>
