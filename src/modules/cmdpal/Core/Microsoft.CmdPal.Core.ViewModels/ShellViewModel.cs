@@ -275,7 +275,7 @@ public partial class ShellViewModel : ObservableObject,
                     string extensionId = host.GetExtensionDisplayName() ?? "builtin";
                     string commandId = command?.Id ?? "unknown";
                     string commandName = command?.Name ?? "unknown";
-                    WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
+                    WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
                 }
 
@@ -315,7 +315,7 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
+                WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
             }
         }
@@ -385,7 +385,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             // Telemetry: Send extension invocation metrics (always sent, even on failure)
             stopwatch.Stop();
-            WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
+            WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                 new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
@@ -401,7 +401,7 @@ public partial class ShellViewModel : ObservableObject,
         var kind = result.Kind;
         CoreLogger.LogDebug($"handling {kind.ToString()}");
 
-        WeakReferenceMessenger.Default.Send<CmdPalInvokeResultMessage>(new(kind));
+        WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
         switch (kind)
         {
             case CommandResultKind.Dismiss:

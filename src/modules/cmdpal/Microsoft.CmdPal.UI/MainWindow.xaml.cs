@@ -49,7 +49,6 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
-    IRecipient<ExtensionInvokedMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
@@ -113,7 +112,6 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<ExtensionInvokedMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
         WeakReferenceMessenger.Default.Register<SearchQueryMessage>(this);
@@ -537,12 +535,6 @@ public sealed partial class MainWindow : WindowEx,
 
     // Session telemetry: Track metrics during the Command Palette session
     // These receivers increment counters that are sent when EndSession is called
-
-    public void Receive(ExtensionInvokedMessage message)
-    {
-        _sessionCommandsExecuted++;
-    }
-
     public void Receive(NavigateToPageMessage message)
     {
         _sessionPagesVisited++;
@@ -576,16 +568,25 @@ public sealed partial class MainWindow : WindowEx,
         if (_sessionStopwatch is not null)
         {
             _sessionStopwatch.Stop();
-            WeakReferenceMessenger.Default.Send<SessionDurationMessage>(new(
+            TelemetryForwarder.LogSessionDuration(
                 (ulong)_sessionStopwatch.ElapsedMilliseconds,
                 _sessionCommandsExecuted,
                 _sessionPagesVisited,
                 dismissalReason,
                 _sessionSearchQueriesCount,
                 _sessionMaxNavigationDepth,
-                _sessionErrorCount));
+                _sessionErrorCount);
             _sessionStopwatch = null;
         }
+    }
+
+    /// <summary>
+    /// Increments the session commands executed counter for telemetry.
+    /// Called by TelemetryForwarder when an extension command is invoked.
+    /// </summary>
+    internal void IncrementCommandsExecuted()
+    {
+        _sessionCommandsExecuted++;
     }
 
     private void HideWindow()
