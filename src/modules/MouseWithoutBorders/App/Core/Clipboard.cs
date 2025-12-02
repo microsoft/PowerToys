@@ -270,15 +270,15 @@ internal static class Clipboard
             int index = 0;
             int len;
             DATA package = new();
-            byte[] buf = new byte[Common.PACKAGE_SIZE_EX];
-            int dataStart = Common.PACKAGE_SIZE_EX - DATA_SIZE;
+            byte[] buf = new byte[Package.PACKAGE_SIZE_EX];
+            int dataStart = Package.PACKAGE_SIZE_EX - DATA_SIZE;
 
             while (true)
             {
                 if ((index + DATA_SIZE) > l)
                 {
                     len = l - index;
-                    Array.Clear(buf, 0, Common.PACKAGE_SIZE_EX);
+                    Array.Clear(buf, 0, Package.PACKAGE_SIZE_EX);
                 }
                 else
                 {
@@ -315,7 +315,7 @@ internal static class Clipboard
             }
 
             MemoryStream m = new();
-            int dataStart = Common.PACKAGE_SIZE_EX - DATA_SIZE;
+            int dataStart = Package.PACKAGE_SIZE_EX - DATA_SIZE;
             m.Write(data.Bytes, dataStart, DATA_SIZE);
             int unexpectedCount = 0;
 
@@ -809,27 +809,27 @@ internal static class Clipboard
                 MachineName = Common.MachineName,
             };
 
-            byte[] buf = new byte[Common.PACKAGE_SIZE_EX];
+            byte[] buf = new byte[Package.PACKAGE_SIZE_EX];
 
             NetworkStream ns = new(s);
-            enStream = Common.GetEncryptedStream(ns);
+            enStream = Encryption.GetEncryptedStream(ns);
             Common.SendOrReceiveARandomDataBlockPerInitialIV(enStream);
             Logger.LogDebug($"{nameof(ShakeHand)}: Writing header package.");
-            enStream.Write(package.Bytes, 0, Common.PACKAGE_SIZE_EX);
+            enStream.Write(package.Bytes, 0, Package.PACKAGE_SIZE_EX);
 
             Logger.LogDebug($"{nameof(ShakeHand)}: Sent: clientPush={clientPushData}, postAction={postAction}.");
 
-            deStream = Common.GetDecryptedStream(ns);
+            deStream = Encryption.GetDecryptedStream(ns);
             Common.SendOrReceiveARandomDataBlockPerInitialIV(deStream, false);
 
             Logger.LogDebug($"{nameof(ShakeHand)}: Reading header package.");
 
-            int bytesReceived = deStream.ReadEx(buf, 0, Common.PACKAGE_SIZE_EX);
+            int bytesReceived = deStream.ReadEx(buf, 0, Package.PACKAGE_SIZE_EX);
             package.Bytes = buf;
 
             string name = "Unknown";
 
-            if (bytesReceived == Common.PACKAGE_SIZE_EX)
+            if (bytesReceived == Package.PACKAGE_SIZE_EX)
             {
                 if (package.Type is PackageType.Clipboard or PackageType.ClipboardPush)
                 {
