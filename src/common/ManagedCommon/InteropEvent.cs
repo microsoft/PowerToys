@@ -11,6 +11,7 @@ namespace ManagedCommon
     {
         public const string AlwaysOnTopPin = "Local\\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8";
         public const string AlwaysOnTopTerminate = "Local\\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae";
+        public const string AwakeTerminate = "Local\\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe";
         public const string SettingsTerminate = "Local\\PowerToysRunnerTerminateSettingsEvent-c34cb661-2e69-4613-a1f8-4e39c25d7ef6";
 
         private IntPtr _eventHandle;

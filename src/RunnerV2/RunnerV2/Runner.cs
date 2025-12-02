@@ -32,10 +32,11 @@ namespace RunnerV2
 
         public static FrozenSet<IPowerToysModule> ModulesToLoad { get; } =
         [
-            new ModuleInterfaces.AlwaysOnTopModuleInterface(),
-            new ModuleInterfaces.HostsModuleInterface(),
-            new ModuleInterfaces.PowerAccentModuleInterface(),
-            new ModuleInterfaces.AdvancedPasteModuleInterface(),
+            new AlwaysOnTopModuleInterface(),
+            new HostsModuleInterface(),
+            new PowerAccentModuleInterface(),
+            new AdvancedPasteModuleInterface(),
+            new AwakeModuleInterface(),
         ];
 
         internal static bool Run(Action afterInitializationAction)
