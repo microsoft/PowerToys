@@ -23,5 +23,7 @@ public interface IQuickAccessCoordinator
 
     bool UpdateModuleEnabled(ModuleType moduleType, bool isEnabled);
 
+    void ReportBug();
+
     void OnModuleLaunched(ModuleType moduleType);
 }

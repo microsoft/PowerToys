@@ -70,6 +70,7 @@ public sealed partial class LaunchPage : Page
 
     public void ReportBugBtn_Click(object sender, RoutedEventArgs e)
     {
+        _coordinator?.ReportBug();
     }
 
     private void UpdateInfoBar_Tapped(object sender, TappedRoutedEventArgs e)

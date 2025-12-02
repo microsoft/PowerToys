@@ -87,6 +87,14 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
         return true;
     }
 
+    public void ReportBug()
+    {
+        if (!TrySendIpcMessage("{\"bugreport\": 0 }", "bug report request"))
+        {
+            Logger.LogWarning("QuickAccessCoordinator: failed to dispatch bug report request; IPC unavailable.");
+        }
+    }
+
     public void OnModuleLaunched(ModuleType moduleType)
     {
         Logger.LogInfo($"QuickAccessLauncher invoked module {moduleType}.");
@@ -136,6 +144,11 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
             return;
         }
 
+        TrySendIpcMessage(payload, "general settings update");
+    }
+
+    private bool TrySendIpcMessage(string payload, string operationDescription)
+    {
         lock (_ipcLock)
         {
             if (_ipcManager == null)
@@ -143,19 +156,21 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
                 if (!_ipcUnavailableLogged)
                 {
                     _ipcUnavailableLogged = true;
-                    Logger.LogWarning("QuickAccessCoordinator: unable to send settings update because IPC is not available.");
+                    Logger.LogWarning($"QuickAccessCoordinator: unable to send {operationDescription} because IPC is not available.");
                 }
 
-                return;
+                return false;
             }
 
             try
             {
                 _ipcManager.Send(payload);
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.LogError("QuickAccessCoordinator: failed to send general settings update to runner.", ex);
+                Logger.LogError($"QuickAccessCoordinator: failed to send {operationDescription}.", ex);
+                return false;
             }
         }
     }
