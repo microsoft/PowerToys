@@ -1,15 +1,7 @@
 #pragma once
 
 #include <compare>
-#include <filesystem>
-#include <optional>
-#include <string>
-#include <vector>
-#include <cwchar>
-#include <windows.h>
-
 #include <common/utils/gpo.h>
-#include <common/utils/process_path.h>
 
 /*
   DLL Interface for PowerToys. The powertoy_create() (see below) must return
@@ -45,13 +37,6 @@
 class PowertoyModuleIface
 {
 public:
-    struct CmdPalCommand
-    {
-        std::wstring name;
-        std::wstring method;
-        std::wstring description;
-    };
-
     /* Describes a hotkey which can trigger an action in the PowerToy */
     struct Hotkey
     {
@@ -168,86 +153,6 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration()
     {
         return powertoys_gpo::gpo_rule_configured_not_configured;
-    }
-
-    virtual std::wstring describe()
-    {
-        auto moduleName = std::wstring(get_name());
-        auto moduleKey = std::wstring(get_key());
-        std::wstring description = L"{\"name\":\"" + moduleKey + L"\",";
-        description += L"\"displayName\":\"" + moduleName + L"\",";
-        description += L"\"methods\":[";
-        description += L"{\"name\":\"navigateToSettings\",\"description\":\"Open " + moduleName + L" settings\"},";
-        description += L"{\"name\":\"enable\",\"description\":\"Enable the module\"},";
-        description += L"{\"name\":\"disable\",\"description\":\"Disable the module\"}";
-        description += L"]}";
-        return description;
-    }
-
-    virtual std::wstring invoke(const wchar_t* method, const wchar_t* /*jsonParams*/)
-    {
-        if (method != nullptr && wcscmp(method, L"navigateToSettings") == 0)
-        {
-            const auto moduleKey = std::wstring(get_key());
-            const auto exePath = get_module_folderpath() + L"\\PowerToys.exe";
-            if (!std::filesystem::exists(exePath))
-            {
-                return L"{\"ok\":false,\"error\":\"PowerToysExeNotFound\"}";
-            }
-
-            std::wstring args = L"--open-settings=" + moduleKey;
-            std::wstring commandLine = L"\"" + exePath + L"\" " + args;
-            std::vector<wchar_t> commandLineBuffer(commandLine.begin(), commandLine.end());
-            commandLineBuffer.push_back(L'\0');
-
-            STARTUPINFO startupInfo{};
-            startupInfo.cb = sizeof(startupInfo);
-            PROCESS_INFORMATION processInformation{};
-
-            if (CreateProcessW(exePath.c_str(),
-                               commandLineBuffer.data(),
-                               nullptr,
-                               nullptr,
-                               FALSE,
-                               0,
-                               nullptr,
-                               nullptr,
-                               &startupInfo,
-                               &processInformation))
-            {
-                CloseHandle(processInformation.hProcess);
-                CloseHandle(processInformation.hThread);
-                return L"{\"ok\":true}";
-            }
-
-            return L"{\"ok\":false,\"error\":\"LaunchFailed\"}";
-        }
-        else if (method != nullptr && wcscmp(method, L"enable") == 0)
-        {
-            try
-            {
-                enable();
-                return L"{\"ok\":true,\"result\":{\"enabled\":true}}";
-            }
-            catch (...)
-            {
-                return L"{\"ok\":false,\"error\":\"EnableFailed\"}";
-            }
-        }
-        else if (method != nullptr && wcscmp(method, L"disable") == 0)
-        {
-            try
-            {
-                disable();
-                return L"{\"ok\":true,\"result\":{\"enabled\":false}}";
-            }
-            catch (...)
-            {
-                return L"{\"ok\":false,\"error\":\"DisableFailed\"}";
-            }
-        }
-
-        return L"{\"ok\":false,\"error\":\"Method.NotFound\"}";
     }
 
     // Some actions like AdvancedPaste generate new inputs, which we don't want to catch again.

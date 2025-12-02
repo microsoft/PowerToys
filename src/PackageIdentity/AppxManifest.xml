@@ -6,12 +6,11 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
-  IgnorableNamespaces="uap uap2 uap3 com rescap desktop uap10 systemai">
+  IgnorableNamespaces="uap uap2 uap3 rescap desktop uap10 systemai">
   <Identity
     Name="Microsoft.PowerToys.SparseApp"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
@@ -67,51 +66,5 @@
         AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <!-- Temporarily disabled: PowerToys Command Palette Extension now packaged with its own manifest -->
-    <!--
-    <Application Id="CmdPalExt.PowerToys"
-                 Executable="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.exe"
-                 EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements
-        DisplayName="PowerToys Command Palette Extension"
-        Description="Expose PowerToys commands to Windows Command Palette"
-        BackgroundColor="transparent"
-        Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Images\Square150x150Logo.png" />
-      </uap:VisualElements>
-      <Extensions>
-        <com:Extension Category="windows.comServer">
-          <com:ComServer>
-            <com:ExeServer Executable="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.exe"
-                            Arguments="-RegisterProcessAsComServer"
-                            DisplayName="PowerToys Command Palette Extension">
-              <com:Class Id="3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55"
-                         DisplayName="PowerToys Command Palette Extension" />
-            </com:ExeServer>
-          </com:ComServer>
-        </com:Extension>
-        <uap3:Extension Category="windows.appExtension">
-          <uap3:AppExtension Name="com.microsoft.commandpalette"
-                             Id="PowerToys"
-                             PublicFolder="WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\Public"
-                             DisplayName="PowerToys"
-                             Description="Surface PowerToys commands inside Command Palette">
-            <uap3:Properties>
-              <CmdPalProvider xmlns="http://schemas.microsoft.com/commandpalette/2024/extension">
-                <Metadata DisplayName="PowerToys" Description="Built-in PowerToys commands." />
-                <Activation>
-                  <CreateInstance ClassId="3D0F0E1F-6F0C-4D5C-91C0-5C4A4B1A5D55" />
-                </Activation>
-                <SupportedInterfaces>
-                  <Commands />
-                </SupportedInterfaces>
-              </CmdPalProvider>
-            </uap3:Properties>
-          </uap3:AppExtension>
-        </uap3:Extension>
-      </Extensions>
-    </Application>
-    -->
   </Applications>
 </Package>
