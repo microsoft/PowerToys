@@ -194,77 +194,95 @@ public partial class InstallPackageListItem : ListItem
         var isInstalled = _package.InstalledVersion is not null;
 
         var installedState = isInstalled ?
-            (_package.IsUpdateAvailable ?
-                PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
+            (_package.IsUpdateAvailable ? PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
             PackageInstallCommandState.Install;
 
         // might be an uninstall command
         InstallPackageCommand installCommand = new(_package, installedState);
 
-        if (isInstalled)
+        if (_package.InstalledVersion is not null)
         {
-            this.Icon = installCommand.Icon;
-            this.Command = new NoOpCommand();
+#if DEBUG
+            var installerType = _package.InstalledVersion.GetMetadata(PackageVersionMetadataField.InstallerType);
+            Subtitle = installerType + " | " + Subtitle;
+#endif
+
             List<IContextItem> contextMenu = [];
-            CommandContextItem uninstallContextItem = new(installCommand)
+            Command = installCommand;
+            Icon = installedState switch
             {
-                IsCritical = true,
-                Icon = Icons.DeleteIcon,
+                PackageInstallCommandState.Install => Icons.DownloadIcon,
+                PackageInstallCommandState.Update => Icons.UpdateIcon,
+                PackageInstallCommandState.Uninstall => Icons.CompletedIcon,
+                _ => Icons.DownloadIcon,
             };
 
-            if (WinGetStatics.AppSearchCallback is not null)
+            TryLocateAndAppendActionForApp(contextMenu);
+
+            MoreCommands = contextMenu.ToArray();
+        }
+        else
+        {
+            _installCommand = new InstallPackageCommand(_package, installedState);
+            _installCommand.InstallStateChanged += InstallStateChangedHandler;
+            Command = _installCommand;
+            Icon = _installCommand.Icon;
+        }
+    }
+
+    private void TryLocateAndAppendActionForApp(List<IContextItem> contextMenu)
+    {
+        try
+        {
+            // Let's try to connect it to an installed app if possible
+            // This is a bit of dark magic, since there's no direct link between
+            // WinGet packages and installed apps.
+            var lookupByPackageName = WinGetStatics.AppSearchByPackageFamilyNameCallback;
+            if (lookupByPackageName is not null)
             {
-                var callback = WinGetStatics.AppSearchCallback;
-
-                if (_package.InstalledVersion is not null)
+                var names = _package.InstalledVersion.PackageFamilyNames;
+                for (var i = 0; i < names.Count; i++)
                 {
-                    var names = _package.InstalledVersion.PackageFamilyNames;
-                    for (var i = 0; i < names.Count; i++)
+                    var installedAppByPfn = lookupByPackageName(names[i]);
+                    if (installedAppByPfn is not null)
                     {
-                        var installedAppByPfn = callback(names[i]);
-                        if (installedAppByPfn is not null)
+                        contextMenu.Add(new Separator());
+                        contextMenu.Add(new CommandContextItem(installedAppByPfn.Command));
+                        foreach (var item in installedAppByPfn.MoreCommands)
                         {
-                            Command = installedAppByPfn.Command;
-                            foreach (var item in installedAppByPfn.MoreCommands)
-                            {
-                                contextMenu.Add(item);
-                            }
-
-                            break;
+                            contextMenu.Add(item);
                         }
-                    }
-                }
 
-                if (_package.InstalledVersion is not null)
-                {
-                    var productCodes = _package.InstalledVersion.ProductCodes;
-                    for (var i = 0; i < productCodes.Count; i++)
-                    {
-                        var installedAppByProductCode = callback(productCodes[i]);
-                        if (installedAppByProductCode is not null)
-                        {
-                            Command = installedAppByProductCode.Command;
-                            foreach (var item in installedAppByProductCode.MoreCommands)
-                            {
-                                contextMenu.Add(item);
-                            }
-                            break;
-                        }
+                        return;
                     }
                 }
             }
 
-            contextMenu.Add(uninstallContextItem);
-            this.MoreCommands = contextMenu.ToArray();
-            return;
+            var lookupByProductCode = WinGetStatics.AppSearchByProductCodeCallback;
+            if (lookupByProductCode is not null)
+            {
+                var productCodes = _package.InstalledVersion.ProductCodes;
+                for (var i = 0; i < productCodes.Count; i++)
+                {
+                    var installedAppByProductCode = lookupByProductCode(productCodes[i]);
+                    if (installedAppByProductCode is not null)
+                    {
+                        contextMenu.Add(new Separator());
+                        contextMenu.Add(new CommandContextItem(installedAppByProductCode.Command));
+                        foreach (var item in installedAppByProductCode.MoreCommands)
+                        {
+                            contextMenu.Add(item);
+                        }
+
+                        return;
+                    }
+                }
+            }
         }
-
-        // didn't find the app
-        _installCommand = new InstallPackageCommand(_package, installedState);
-        this.Command = _installCommand;
-
-        Icon = _installCommand.Icon;
-        _installCommand.InstallStateChanged += InstallStateChangedHandler;
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to retrieve app context menu items for package '{_package?.Name ?? "Unknown"}'", ex);
+        }
     }
 
     private void InstallStateChangedHandler(object? sender, InstallPackageCommand e)

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
@@ -79,7 +80,7 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         foreach (var item in items)
         {
-            if (item is AppListItem appItem && string.Equals(packageFamilyName, appItem.PackageFamilyName, StringComparison.OrdinalIgnoreCase))
+            if (item is AppListItem appItem && string.Equals(packageFamilyName, appItem.App.PackageFamilyName, StringComparison.OrdinalIgnoreCase))
             {
                 matches.Add(item);
                 if (!requireSingleMatch)
@@ -90,25 +91,48 @@ public partial class AllAppsCommandProvider : CommandProvider
             }
         }
 
-        if (requireSingleMatch)
-        {
-            return matches.Count == 1 ? matches[0] : null;
-        }
-
-        return null;
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
     }
 
     public ICommandItem? LookupAppByProductCode(string productCode, bool requireSingleMatch)
     {
-        /*
-         * msi.dll
-         * MsiEnumProductsEx
-         * MsiGetProductInfo
-         */
-        throw new InvalidOperationException("TODO:");
+        if (string.IsNullOrEmpty(productCode))
+        {
+            return null;
+        }
+
+        if (!UninstallRegistryAppLocator.TryGetInstallInfo(productCode, out _, out var candidates) || candidates.Count <= 0)
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.FullExecutablePath))
+            {
+                continue;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (string.Equals(appListItem.App.FullExecutablePath, candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(item);
+                    if (!requireSingleMatch)
+                    {
+                        return item;
+                    }
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
     }
 
-    public ICommandItem? LookupApp(string displayName)
+    public ICommandItem? LookupAppByDisplayName(string displayName)
     {
         var items = _page.GetItems();
 

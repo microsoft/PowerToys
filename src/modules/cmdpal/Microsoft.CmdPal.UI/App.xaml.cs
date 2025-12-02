@@ -134,8 +134,9 @@ public partial class App : Application
         try
         {
             var winget = new WinGetExtensionCommandsProvider();
-            ICommandItem? Callback(string query) => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true);
-            winget.SetAllLookup(Callback);
+            winget.SetAllLookup(
+                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
             services.AddSingleton<ICommandProvider>(winget);
         }
         catch (Exception ex)
