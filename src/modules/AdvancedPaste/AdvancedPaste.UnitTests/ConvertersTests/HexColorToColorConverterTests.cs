@@ -11,7 +11,6 @@ namespace AdvancedPaste.UnitTests.ConvertersTests;
 [TestClass]
 public sealed class HexColorToColorConverterTests
 {
-
     [TestMethod]
     public void TestConvert_ValidSixDigitHex_ReturnsColor()
     {
