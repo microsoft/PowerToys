@@ -43,6 +43,9 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private MemoryMappedFile? _positionMap;
     private MemoryMappedViewAccessor? _positionView;
     private PointInt32? _lastRequestedPosition;
+    private bool _isVisible;
+    private IntPtr _mouseHook;
+    private LowLevelMouseProc? _mouseHookDelegate;
 
     private const int DefaultWidth = 320;
     private const int DefaultHeight = 480;
@@ -118,6 +121,9 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         {
             _appWindow.Hide();
         }
+
+        _isVisible = false;
+        RemoveGlobalMouseHook();
     }
 
     internal void RequestHide()
@@ -231,6 +237,8 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         _hasSeenInteractiveActivation = true;
         _initialActivationHandled = true;
         Activate();
+        _isVisible = true;
+        EnsureGlobalMouseHook();
     }
 
     private void OnActivated(object sender, WindowActivatedEventArgs args)
@@ -363,6 +371,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
                 UncloakWindow();
             }
 
+            RemoveGlobalMouseHook();
             DisposePositionResources();
 
             _coordinator.Dispose();
@@ -404,6 +413,21 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     [DllImport("user32.dll", EntryPoint = "GetMonitorInfoW", SetLastError = true)]
     private static extern bool GetMonitorInfoNative(IntPtr hMonitor, ref MonitorInfo lpmi);
 
+    [DllImport("user32.dll", EntryPoint = "SetWindowsHookExW", SetLastError = true)]
+    private static extern IntPtr SetWindowsHookExNative(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", EntryPoint = "UnhookWindowsHookEx", SetLastError = true)]
+    private static extern bool UnhookWindowsHookExNative(IntPtr hhk);
+
+    [DllImport("user32.dll", EntryPoint = "CallNextHookEx", SetLastError = true)]
+    private static extern IntPtr CallNextHookExNative(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("kernel32.dll", EntryPoint = "GetModuleHandleW", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern IntPtr GetModuleHandleNative([MarshalAs(UnmanagedType.LPWStr)] string? lpModuleName);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowRect", SetLastError = true)]
+    private static extern bool GetWindowRectNative(IntPtr hWnd, out Rect rect);
+
     private static void BringToForeground(IntPtr hwnd)
     {
         if (hwnd == IntPtr.Zero)
@@ -434,6 +458,70 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         {
             SetForegroundWindowNative(hwnd);
         }
+    }
+
+    private void EnsureGlobalMouseHook()
+    {
+        if (_mouseHook != IntPtr.Zero)
+        {
+            return;
+        }
+
+        _mouseHookDelegate ??= LowLevelMouseHookCallback;
+        var moduleHandle = GetModuleHandleNative(null);
+        _mouseHook = SetWindowsHookExNative(WhMouseLl, _mouseHookDelegate, moduleHandle, 0);
+    }
+
+    private void RemoveGlobalMouseHook()
+    {
+        if (_mouseHook == IntPtr.Zero)
+        {
+            return;
+        }
+
+        UnhookWindowsHookExNative(_mouseHook);
+        _mouseHook = IntPtr.Zero;
+    }
+
+    private IntPtr LowLevelMouseHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0 && _isVisible && lParam != IntPtr.Zero && IsMouseButtonDownMessage(wParam))
+        {
+            var data = Marshal.PtrToStructure<LowLevelMouseInput>(lParam);
+            if (!IsPointInsideWindow(data.Point))
+            {
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_isVisible)
+                    {
+                        HideWindow();
+                    }
+                });
+            }
+        }
+
+        return CallNextHookExNative(_mouseHook, nCode, wParam, lParam);
+    }
+
+    private static bool IsMouseButtonDownMessage(IntPtr wParam)
+    {
+        var message = wParam.ToInt32();
+        return message == WmLbuttondown || message == WmRbuttondown || message == WmMbuttondown || message == WmXbuttondown;
+    }
+
+    private bool IsPointInsideWindow(NativePoint point)
+    {
+        if (_hwnd == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        if (!GetWindowRectNative(_hwnd, out var rect))
+        {
+            return false;
+        }
+
+        return point.X >= rect.Left && point.X <= rect.Right && point.Y >= rect.Top && point.Y <= rect.Bottom;
     }
 
     private void EnsureListenerInfrastructure()
@@ -754,7 +842,32 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         }
     }
 
+    private const int WhMouseLl = 14;
+    private const int WmLbuttondown = 0x0201;
+    private const int WmRbuttondown = 0x0204;
+    private const int WmMbuttondown = 0x0207;
+    private const int WmXbuttondown = 0x020B;
+
+    private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    private struct Rect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
+    private struct LowLevelMouseInput
+    {
+        public NativePoint Point;
+        public int MouseData;
+        public int Flags;
+        public int Time;
+        public IntPtr DwExtraInfo;
+    }
+
     private struct NativePoint
     {
         public int X;
@@ -768,14 +881,5 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         public Rect RcMonitor;
         public Rect RcWork;
         public uint DwFlags;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Rect
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
     }
 }
