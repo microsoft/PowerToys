@@ -224,7 +224,7 @@ CLASSDC
 CLASSNOTAVAILABLE
 clickable
 clickonce
-CLIENTEDGE
+clientedge
 clientid
 clientside
 CLIPBOARDUPDATE
@@ -251,7 +251,7 @@ codereview
 Codespaces
 Coen
 cognitiveservices
-COINIT
+coinit
 colid
 colorconv
 colorformat
@@ -405,7 +405,7 @@ DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
 DISPLAYCHANGE
-DISPLAYCONFIG
+displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
@@ -415,7 +415,7 @@ diu
 divyan
 Dlg
 DLGFRAME
-DLGMODALFRAME
+dlgmodalframe
 dlib
 dllhost
 dllmain
@@ -495,7 +495,7 @@ ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
-EOAC
+eoac
 EPO
 epu
 EProvider
@@ -654,7 +654,6 @@ Hantai
 Hanzi
 Hardlines
 hardlinks
-hardwareid
 HARDWAREINPUT
 Hashset
 hashtag
@@ -823,7 +822,6 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Interlop
-internalname
 intput
 INTRESOURCE
 INVALIDARG
@@ -1907,7 +1905,7 @@ unzoom
 UOffset
 UOI
 UPDATENOW
-UPDATEREGISTRY
+updateregistry
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -1936,7 +1934,6 @@ vcgtq
 VCINSTALLDIR
 vcp
 VCP
-vcpcode
 vcpcodes
 Vcpkg
 VCRT
@@ -2024,7 +2021,7 @@ winapi
 winappsdk
 windir
 WINDOWCREATED
-WINDOWEDGE
+windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
@@ -2048,7 +2045,7 @@ WINL
 winlogon
 winmd
 winml
-WINNT
+winnt
 winres
 winrt
 winsdk
