@@ -72,6 +72,7 @@ namespace AdvancedPaste
             }
 
             InitializeComponent();
+            StartShowUiEventListener();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
             {
@@ -141,6 +142,24 @@ namespace AdvancedPaste
             void OnMessage(string message) => _dispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
 
             Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout: TimeSpan.FromSeconds(10), OnMessage, CancellationToken.None));
+        }
+
+        private void StartShowUiEventListener()
+        {
+            var showEvent = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToys.Interop.Constants.AdvancedPasteShowUIEvent());
+            var thread = new Thread(() =>
+            {
+                while (true)
+                {
+                    if (showEvent.WaitOne())
+                    {
+                        _dispatcherQueue.TryEnqueue(async () => await ShowWindow());
+                    }
+                }
+            });
+
+            thread.IsBackground = true;
+            thread.Start();
         }
 
         private async Task OnNamedPipeMessage(string message)

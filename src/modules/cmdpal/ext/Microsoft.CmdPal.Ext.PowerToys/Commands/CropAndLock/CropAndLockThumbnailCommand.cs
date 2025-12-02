@@ -5,7 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using PowerToys.Interop;
 
 namespace PowerToysExtension.Commands;
 
@@ -19,14 +19,14 @@ internal sealed partial class CropAndLockThumbnailCommand : InvokableCommand
         Name = "Crop and Lock (Thumbnail)";
     }
 
-    public override CommandResult Invoke()
-    {
-        try
+        public override CommandResult Invoke()
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToysEventNames.CropAndLockThumbnail);
-            evt.Set();
-            return CommandResult.Dismiss();
-        }
+            try
+            {
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockThumbnailEvent());
+                evt.Set();
+                return CommandResult.Dismiss();
+            }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to start Crop and Lock (Thumbnail): {ex.Message}");

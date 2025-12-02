@@ -5,7 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using PowerToys.Interop;
 
 namespace PowerToysExtension.Commands;
 
@@ -23,7 +23,7 @@ internal sealed partial class OpenHostsEditorAdminCommand : InvokableCommand
     {
         try
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToysEventNames.HostsShowAdmin);
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowHostsAdminSharedEvent());
             evt.Set();
             return CommandResult.Dismiss();
         }

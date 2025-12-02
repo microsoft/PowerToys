@@ -23,6 +23,13 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AdvancedPasteAdditionalActionMessage();
         static hstring AdvancedPasteCustomActionMessage();
         static hstring AdvancedPasteTerminateAppMessage();
+        static hstring AdvancedPasteShowUIEvent();
+        static hstring AlwaysOnTopPinEvent();
+        static hstring MeasureToolTriggerEvent();
+        static hstring FindMyMouseTriggerEvent();
+        static hstring MouseHighlighterTriggerEvent();
+        static hstring MouseCrosshairsTriggerEvent();
+        static hstring LightSwitchToggleEvent();
         static hstring ShowPowerOCRSharedEvent();
         static hstring TerminatePowerOCRSharedEvent();
         static hstring MouseJumpShowPreviewEvent();

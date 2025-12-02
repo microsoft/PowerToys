@@ -5,7 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using PowerToys.Interop;
 
 namespace PowerToysExtension.Commands;
 
@@ -19,14 +19,14 @@ internal sealed partial class CropAndLockReparentCommand : InvokableCommand
         Name = "Crop and Lock (Reparent)";
     }
 
-    public override CommandResult Invoke()
-    {
-        try
+        public override CommandResult Invoke()
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToysEventNames.CropAndLockReparent);
-            evt.Set();
-            return CommandResult.Dismiss();
-        }
+            try
+            {
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockReparentEvent());
+                evt.Set();
+                return CommandResult.Dismiss();
+            }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to start Crop and Lock (Reparent): {ex.Message}");

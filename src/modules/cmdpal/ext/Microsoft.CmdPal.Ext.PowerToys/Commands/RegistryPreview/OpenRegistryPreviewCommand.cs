@@ -5,7 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using PowerToys.Interop;
 
 namespace PowerToysExtension.Commands;
 
@@ -19,14 +19,14 @@ internal sealed partial class OpenRegistryPreviewCommand : InvokableCommand
         Name = "Open Registry Preview";
     }
 
-    public override CommandResult Invoke()
-    {
-        try
+        public override CommandResult Invoke()
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToysEventNames.RegistryPreviewTrigger);
-            evt.Set();
-            return CommandResult.Dismiss();
-        }
+            try
+            {
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent());
+                evt.Set();
+                return CommandResult.Dismiss();
+            }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to open Registry Preview: {ex.Message}");

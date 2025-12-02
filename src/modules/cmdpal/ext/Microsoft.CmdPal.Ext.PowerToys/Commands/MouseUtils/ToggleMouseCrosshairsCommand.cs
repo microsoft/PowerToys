@@ -5,7 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToysExtension.Helpers;
+using PowerToys.Interop;
 
 namespace PowerToysExtension.Commands;
 
@@ -19,14 +19,14 @@ internal sealed partial class ToggleMouseCrosshairsCommand : InvokableCommand
         Name = "Toggle Mouse Crosshairs";
     }
 
-    public override CommandResult Invoke()
-    {
-        try
+        public override CommandResult Invoke()
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToysEventNames.MouseCrosshairsTrigger);
-            evt.Set();
-            return CommandResult.Dismiss();
-        }
+            try
+            {
+                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MouseCrosshairsTriggerEvent());
+                evt.Set();
+                return CommandResult.Dismiss();
+            }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to toggle Mouse Crosshairs: {ex.Message}");
