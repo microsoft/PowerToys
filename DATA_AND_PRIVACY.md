@@ -244,6 +244,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <th>Description</th>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.CmdNotFound_EnableCmdNotFound</td>
+    <td>Triggered when Command Not Found is enabled or disabled.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.CmdNotFoundInstallEvent</td>
     <td>Triggered when a Command Not Found is installed.</td>
   </tr>
@@ -255,6 +259,62 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.CmdNotFoundUninstallEvent</td>
     <td>Triggered when Command Not Found is uninstalled after being previously installed.</td>
   </tr>  
+</table>
+
+### Command Palette
+<table style="width:100%">
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_BeginInvoke</td>
+    <td>Triggered when the Command Palette is launched by the user.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ColdLaunch</td>
+    <td>Occurs when Command Palette starts for the first time (cold start).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_OpenPage</td>
+    <td>Triggered when a page is opened within the Command Palette, tracking navigation depth.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_OpenUri</td>
+    <td>Occurs when a URI is opened through the Command Palette, including whether it's a web URL.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ReactivateInstance</td>
+    <td>Triggered when an existing Command Palette instance is reactivated.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_RunCommand</td>
+    <td>Logs when a command is executed through the Command Palette, including admin elevation status.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_RunQuery</td>
+    <td>Triggered when a search query is performed, including result count and duration.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalDismissedOnEsc</td>
+    <td>Occurs when the Command Palette is dismissed by pressing the Escape key.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalDismissedOnLostFocus</td>
+    <td>Triggered when the Command Palette is dismissed due to losing focus.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalHotkeySummoned</td>
+    <td>Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalInvokeResult</td>
+    <td>Records the result type of a Command Palette invocation.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalProcessStarted</td>
+    <td>Triggered when the Command Palette process is started.</td>
+  </tr>
 </table>
 
 ### Crop And Lock
@@ -736,12 +796,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <th>Description</th>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.NewPlus_ChangedTemplateLocation</td>
+    <td>Triggered when the template folder location is changed.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.NewPlus_EventCopyTemplate</td>
     <td>Triggered when an item from New+ is created (copied to the current directory).</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.NewPlus_EventCopyTemplateResult</td>
     <td>Logs the success of item creation (copying).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_EventOpenTemplates</td>
+    <td>Triggered when the templates folder is opened.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.NewPlus_EventShowTemplateItems</td>
@@ -928,12 +996,8 @@ _If you want to find diagnostic data events in the source code, these two links 
     <th>Description</th>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.ShortcutGuide_EnableGuide</td>
-    <td>Triggered when Shortcut Guide is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ShortcutGuide_HideGuide</td>
-    <td>Occurs when Shortcut Guide is hidden from view.</td>
+    <td>Microsoft.PowerToys.ShortcutGuide_GuideSession</td>
+    <td>Logs a Shortcut Guide session including duration and how it was closed.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.ShortcutGuide_Settings</td>
