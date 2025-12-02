@@ -106,11 +106,17 @@ namespace PowerDisplay.Common.Utils
 
             string instancePath = instanceName.Substring(lastBackslash + 1);
 
-            // Remove trailing "_0" suffix if present
-            // e.g., "4&10fd3ab1&0&UID265988_0" -> "4&10fd3ab1&0&UID265988"
-            if (instancePath.EndsWith("_0", StringComparison.Ordinal))
+            // Remove trailing WMI instance index suffix (e.g., _0, _1, _12)
+            // WMI appends "_N" where N is the instance index to device instance paths
+            // See: https://learn.microsoft.com/en-us/windows/win32/wmicoreprov/wmimonitorid
+            int lastUnderscore = instancePath.LastIndexOf('_');
+            if (lastUnderscore > 0)
             {
-                instancePath = instancePath.Substring(0, instancePath.Length - 2);
+                string suffix = instancePath[(lastUnderscore + 1)..];
+                if (suffix.Length > 0 && suffix.All(char.IsDigit))
+                {
+                    instancePath = instancePath[..lastUnderscore];
+                }
             }
 
             if (string.IsNullOrEmpty(instancePath))

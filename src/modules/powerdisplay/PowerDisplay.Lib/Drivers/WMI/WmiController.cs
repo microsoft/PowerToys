@@ -62,10 +62,55 @@ namespace PowerDisplay.Common.Drivers.WMI
             return ex.HResult == WmiFeatureNotSupported || ex.HResult == WbemENotFound;
         }
 
+        /// <summary>
+        /// Escape special characters in WMI query strings.
+        /// WMI requires backslashes and single quotes to be escaped in WHERE clauses.
+        /// See: https://learn.microsoft.com/en-us/windows/win32/wmisdk/wql-sql-for-wmi
+        /// </summary>
+        /// <param name="value">The string value to escape.</param>
+        /// <returns>The escaped string safe for use in WMI queries.</returns>
+        private static string EscapeWmiString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            // WMI requires backslashes and single quotes to be escaped in WHERE clauses
+            // Backslash must be escaped first to avoid double-escaping the quote's backslash
+            return value.Replace("\\", "\\\\").Replace("'", "\\'");
+        }
+
+        /// <summary>
+        /// Extract hardware ID from WMI InstanceName.
+        /// InstanceName format: "DISPLAY\BOE0900\4&amp;10fd3ab1&amp;0&amp;UID265988_0"
+        /// Returns the second segment (e.g., "BOE0900") which is the manufacturer+product code.
+        /// </summary>
+        /// <param name="instanceName">The WMI InstanceName.</param>
+        /// <returns>The hardware ID extracted from the InstanceName, or empty string if extraction fails.</returns>
+        private static string ExtractHardwareIdFromInstanceName(string instanceName)
+        {
+            if (string.IsNullOrEmpty(instanceName))
+            {
+                return string.Empty;
+            }
+
+            // Split by backslash: ["DISPLAY", "BOE0900", "4&10fd3ab1&0&UID265988_0"]
+            var parts = instanceName.Split('\\');
+            if (parts.Length >= 2 && !string.IsNullOrEmpty(parts[1]))
+            {
+                // Return the second part (e.g., "BOE0900")
+                return parts[1];
+            }
+
+            return string.Empty;
+        }
+
         public string Name => "WMI Monitor Controller (WmiLight)";
 
         /// <summary>
-        /// Check if the specified monitor can be controlled
+        /// Check if the specified monitor can be controlled.
+        /// Verifies the specific monitor exists in WMI by filtering on InstanceName.
         /// </summary>
         public async Task<bool> CanControlMonitorAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -76,19 +121,28 @@ namespace PowerDisplay.Common.Drivers.WMI
                 return false;
             }
 
+            // If no InstanceName, we can't verify the specific monitor
+            if (string.IsNullOrEmpty(monitor.InstanceName))
+            {
+                return false;
+            }
+
             return await Task.Run(
                 () =>
                 {
                     try
                     {
                         using var connection = new WmiConnection(WmiNamespace);
-                        var query = $"SELECT * FROM {BrightnessQueryClass}";
+
+                        // Filter by InstanceName to verify this specific monitor exists
+                        var escapedInstanceName = EscapeWmiString(monitor.InstanceName);
+                        var query = $"SELECT InstanceName FROM {BrightnessQueryClass} WHERE InstanceName = '{escapedInstanceName}'";
                         var results = connection.CreateQuery(query).ToList();
                         return results.Count > 0;
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogWarning($"WMI CanControlMonitor check failed: {ex.Message}");
+                        Logger.LogWarning($"WMI CanControlMonitor check failed for '{monitor.InstanceName}': {ex.Message}");
                         return false;
                     }
                 },
@@ -108,7 +162,10 @@ namespace PowerDisplay.Common.Drivers.WMI
                     try
                     {
                         using var connection = new WmiConnection(WmiNamespace);
-                        var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass}";
+
+                        // Filter by InstanceName to target the specific monitor
+                        var escapedInstanceName = EscapeWmiString(monitor.InstanceName);
+                        var query = $"SELECT CurrentBrightness FROM {BrightnessQueryClass} WHERE InstanceName = '{escapedInstanceName}'";
                         var results = connection.CreateQuery(query);
 
                         foreach (var obj in results)
@@ -116,6 +173,9 @@ namespace PowerDisplay.Common.Drivers.WMI
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
                             return new BrightnessInfo(currentBrightness, 0, 100);
                         }
+
+                        // No match found - monitor may have been disconnected
+                        Logger.LogDebug($"WMI GetBrightness: No monitor found with InstanceName '{monitor.InstanceName}'");
                     }
                     catch (WmiException ex)
                     {
@@ -146,53 +206,58 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                     try
                     {
-                    using var connection = new WmiConnection(WmiNamespace);
-                    var query = $"SELECT * FROM {BrightnessMethodClass}";
-                    var results = connection.CreateQuery(query);
+                        using var connection = new WmiConnection(WmiNamespace);
 
-                    foreach (var obj in results)
-                    {
-                        // Call WmiSetBrightness method
-                        // Parameters: Timeout (uint32), Brightness (uint8)
-                        // Note: WmiLight requires string values for method parameters
-                        using (WmiMethod method = obj.GetMethod("WmiSetBrightness"))
-                        using (WmiMethodParameters inParams = method.CreateInParameters())
+                        // Filter by InstanceName to target the specific monitor
+                        var escapedInstanceName = EscapeWmiString(monitor.InstanceName);
+                        var query = $"SELECT * FROM {BrightnessMethodClass} WHERE InstanceName = '{escapedInstanceName}'";
+                        var results = connection.CreateQuery(query);
+
+                        foreach (var obj in results)
                         {
-                            inParams.SetPropertyValue("Timeout", "0");
-                            inParams.SetPropertyValue("Brightness", brightness.ToString(CultureInfo.InvariantCulture));
-
-                            uint result = obj.ExecuteMethod<uint>(
-                                method,
-                                inParams,
-                                out WmiMethodParameters outParams);
-
-                            // Check return value (0 indicates success)
-                            if (result == 0)
+                            // Call WmiSetBrightness method
+                            // Parameters: Timeout (uint32), Brightness (uint8)
+                            // Note: WmiLight requires string values for method parameters
+                            using (WmiMethod method = obj.GetMethod("WmiSetBrightness"))
+                            using (WmiMethodParameters inParams = method.CreateInParameters())
                             {
-                                return MonitorOperationResult.Success();
-                            }
-                            else
-                            {
-                                return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
+                                inParams.SetPropertyValue("Timeout", "0");
+                                inParams.SetPropertyValue("Brightness", brightness.ToString(CultureInfo.InvariantCulture));
+
+                                uint result = obj.ExecuteMethod<uint>(
+                                    method,
+                                    inParams,
+                                    out WmiMethodParameters outParams);
+
+                                // Check return value (0 indicates success)
+                                if (result == 0)
+                                {
+                                    return MonitorOperationResult.Success();
+                                }
+                                else
+                                {
+                                    return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
+                                }
                             }
                         }
-                    }
 
-                    return MonitorOperationResult.Failure("No WMI brightness methods found");
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return MonitorOperationResult.Failure("Access denied. Administrator privileges may be required.", 5);
-                }
-                catch (WmiException ex)
-                {
-                    return ClassifyWmiError(ex, "SetBrightness");
-                }
-                catch (Exception ex)
-                {
-                    return MonitorOperationResult.Failure($"Unexpected error during SetBrightness: {ex.Message}");
-                }
-            },
+                        // No match found - monitor may have been disconnected
+                        Logger.LogWarning($"WMI SetBrightness: No monitor found with InstanceName '{monitor.InstanceName}'");
+                        return MonitorOperationResult.Failure($"No WMI brightness method found for monitor '{monitor.InstanceName}'");
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return MonitorOperationResult.Failure("Access denied. Administrator privileges may be required.", 5);
+                    }
+                    catch (WmiException ex)
+                    {
+                        return ClassifyWmiError(ex, "SetBrightness");
+                    }
+                    catch (Exception ex)
+                    {
+                        return MonitorOperationResult.Failure($"Unexpected error during SetBrightness: {ex.Message}");
+                    }
+                },
                 cancellationToken);
         }
 
@@ -261,11 +326,15 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 name = info.Name;
                             }
 
+                            // Extract HardwareId from InstanceName for state persistence
+                            // e.g., "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0" -> "BOE0900"
+                            var hardwareId = ExtractHardwareIdFromInstanceName(instanceName);
+
                             var monitor = new Monitor
                             {
                                 Id = $"WMI_{instanceName}",
                                 Name = name,
-
+                                HardwareId = hardwareId,
                                 CurrentBrightness = currentBrightness,
                                 MinBrightness = 0,
                                 MaxBrightness = 100,
@@ -274,7 +343,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 ConnectionType = "Internal",
                                 CommunicationMethod = "WMI",
-                                Manufacturer = "Internal",
+                                Manufacturer = hardwareId.Length >= 3 ? hardwareId.Substring(0, 3) : "Internal",
                                 SupportsColorTemperature = false,
                                 MonitorNumber = Utils.MonitorMatchingHelper.GetMonitorNumberFromWmiInstanceName(instanceName, displayDevices),
                             };
