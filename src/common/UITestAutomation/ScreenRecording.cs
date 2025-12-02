@@ -250,9 +250,14 @@ namespace Microsoft.PowerToys.UITest
 
             try
             {
-                // Build ffmpeg command
+                // Build ffmpeg command with proper non-interactive flags
                 string inputPattern = Path.Combine(framesDirectory, "frame_%06d.jpg");
-                string args = $"-y -framerate {TargetFps} -i \"{inputPattern}\" -c:v libx264 -pix_fmt yuv420p -crf 23 \"{outputFilePath}\"";
+
+                // -y: overwrite without asking
+                // -nostdin: disable interaction
+                // -loglevel error: only show errors
+                // -stats: show encoding progress
+                string args = $"-y -nostdin -loglevel error -stats -framerate {TargetFps} -i \"{inputPattern}\" -c:v libx264 -pix_fmt yuv420p -crf 23 \"{outputFilePath}\"";
 
                 Console.WriteLine($"Encoding {capturedFrames.Count} frames to video...");
 
@@ -263,12 +268,16 @@ namespace Microsoft.PowerToys.UITest
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    RedirectStandardInput = true, // Important: redirect stdin to prevent hanging
                     CreateNoWindow = true,
                 };
 
                 using var process = Process.Start(startInfo);
                 if (process != null)
                 {
+                    // Close stdin to ensure FFmpeg doesn't wait for input
+                    process.StandardInput.Close();
+
                     await process.WaitForExitAsync();
 
                     if (process.ExitCode == 0 && File.Exists(outputFilePath))
@@ -279,6 +288,11 @@ namespace Microsoft.PowerToys.UITest
                     else
                     {
                         Console.WriteLine($"FFmpeg encoding failed with exit code {process.ExitCode}");
+                        string stderr = await process.StandardError.ReadToEndAsync();
+                        if (!string.IsNullOrWhiteSpace(stderr))
+                        {
+                            Console.WriteLine($"FFmpeg error: {stderr}");
+                        }
                     }
                 }
             }
