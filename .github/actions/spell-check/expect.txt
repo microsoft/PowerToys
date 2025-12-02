@@ -225,7 +225,6 @@ CLASSNOTAVAILABLE
 clickable
 clickonce
 CLIENTEDGE
-Clientedge
 clientid
 clientside
 CLIPBOARDUPDATE
@@ -253,7 +252,6 @@ Codespaces
 Coen
 cognitiveservices
 COINIT
-Coinit
 colid
 colorconv
 colorformat
@@ -408,7 +406,6 @@ DISABLENOSCROLL
 diskmgmt
 DISPLAYCHANGE
 DISPLAYCONFIG
-Displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
@@ -419,7 +416,6 @@ divyan
 Dlg
 DLGFRAME
 DLGMODALFRAME
-Dlgmodalframe
 dlib
 dllhost
 dllmain
@@ -500,7 +496,6 @@ ENTRYW
 ENU
 environmentvariables
 EOAC
-Eoac
 EPO
 epu
 EProvider
@@ -1913,7 +1908,6 @@ UOffset
 UOI
 UPDATENOW
 UPDATEREGISTRY
-Updateregistry
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -2031,7 +2025,6 @@ winappsdk
 windir
 WINDOWCREATED
 WINDOWEDGE
-Windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
@@ -2056,7 +2049,6 @@ winlogon
 winmd
 winml
 WINNT
-Winnt
 winres
 winrt
 winsdk

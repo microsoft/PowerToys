@@ -17,6 +17,16 @@
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="System.CodeDom">
+      <!-- This package is a transitive dependency, but we need to set it here so we can exclude the assets,
+           so it doesn't conflict with the dll coming from .NET SDK. -->
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Diagnostics.EventLog">
+      <!-- This package is a transitive dependency, but we need to set it here so we can exclude the assets,
+           so it doesn't conflict with the dll coming from .NET SDK. -->
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
