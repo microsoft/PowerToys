@@ -89,6 +89,7 @@
     <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
+    <PackageVersion Include="Shmuelie.WinRTServer" Version="2.1.1" />
     <!-- Don't update SkiaSharp.Views.WinUI to version 3.* branch as this brakes the HexBox control in Registry Preview. -->
     <PackageVersion Include="SkiaSharp.Views.WinUI" Version="2.88.9" />
     <PackageVersion Include="StreamJsonRpc" Version="2.21.69" />
