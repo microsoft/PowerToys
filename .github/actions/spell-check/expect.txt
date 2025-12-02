@@ -853,6 +853,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 lbl
+Lbuttondown
 LCh
 lcid
 LCIDTo
@@ -973,6 +974,7 @@ maxversiontested
 mber
 MBM
 MBR
+Mbuttondown
 MDICHILD
 MDL
 mdtext
@@ -1424,6 +1426,7 @@ RAWINPUTHEADER
 RAWMODE
 RAWPATH
 rbhid
+Rbuttondown
 rclsid
 RCZOOMIT
 remotedesktop
@@ -2062,6 +2065,7 @@ Wwanpp
 xap
 XAxis
 XButton
+Xbuttondown
 xclip
 xcopy
 XDeployment
