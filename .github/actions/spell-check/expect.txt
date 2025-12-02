@@ -1841,7 +1841,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
-uninstaller
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter
