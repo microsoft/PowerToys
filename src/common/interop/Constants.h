@@ -30,6 +30,12 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MouseHighlighterTriggerEvent();
         static hstring MouseCrosshairsTriggerEvent();
         static hstring LightSwitchToggleEvent();
+        static hstring ZoomItZoomEvent();
+        static hstring ZoomItDrawEvent();
+        static hstring ZoomItBreakEvent();
+        static hstring ZoomItLiveZoomEvent();
+        static hstring ZoomItSnipEvent();
+        static hstring ZoomItRecordEvent();
         static hstring ShowPowerOCRSharedEvent();
         static hstring TerminatePowerOCRSharedEvent();
         static hstring MouseJumpShowPreviewEvent();

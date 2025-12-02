@@ -16,14 +16,14 @@ internal sealed partial class ToggleScreenRulerCommand : InvokableCommand
         Name = "Toggle Screen Ruler";
     }
 
-        public override CommandResult Invoke()
+    public override CommandResult Invoke()
+    {
+        try
         {
-            try
-            {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent());
-                evt.Set();
-                return CommandResult.Dismiss();
-            }
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MeasureToolTriggerEvent());
+            evt.Set();
+            return CommandResult.Dismiss();
+        }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to toggle Screen Ruler: {ex.Message}");

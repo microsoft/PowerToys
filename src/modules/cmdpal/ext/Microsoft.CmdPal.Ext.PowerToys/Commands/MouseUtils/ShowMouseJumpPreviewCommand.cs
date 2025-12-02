@@ -19,14 +19,14 @@ internal sealed partial class ShowMouseJumpPreviewCommand : InvokableCommand
         Name = "Show Mouse Jump Preview";
     }
 
-        public override CommandResult Invoke()
+    public override CommandResult Invoke()
+    {
+        try
         {
-            try
-            {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MouseJumpShowPreviewEvent());
-                evt.Set();
-                return CommandResult.Dismiss();
-            }
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MouseJumpShowPreviewEvent());
+            evt.Set();
+            return CommandResult.Dismiss();
+        }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to show Mouse Jump preview: {ex.Message}");

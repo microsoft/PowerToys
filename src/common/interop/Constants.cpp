@@ -87,10 +87,6 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT;
     }
-    hstring Constants::MeasureToolTriggerEvent()
-    {
-        return CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT;
-    }
     hstring Constants::FindMyMouseTriggerEvent()
     {
         return CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT;
@@ -106,6 +102,30 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::LightSwitchToggleEvent()
     {
         return CommonSharedConstants::LIGHTSWITCH_TOGGLE_EVENT;
+    }
+    hstring Constants::ZoomItZoomEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_ZOOM_EVENT;
+    }
+    hstring Constants::ZoomItDrawEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_DRAW_EVENT;
+    }
+    hstring Constants::ZoomItBreakEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_BREAK_EVENT;
+    }
+    hstring Constants::ZoomItLiveZoomEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT;
+    }
+    hstring Constants::ZoomItSnipEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_SNIP_EVENT;
+    }
+    hstring Constants::ZoomItRecordEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_RECORD_EVENT;
     }
     hstring Constants::ShowPowerOCRSharedEvent()
     {

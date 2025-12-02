@@ -26,6 +26,12 @@ namespace PowerToys
             static String MouseHighlighterTriggerEvent();
             static String MouseCrosshairsTriggerEvent();
             static String LightSwitchToggleEvent();
+            static String ZoomItZoomEvent();
+            static String ZoomItDrawEvent();
+            static String ZoomItBreakEvent();
+            static String ZoomItLiveZoomEvent();
+            static String ZoomItSnipEvent();
+            static String ZoomItRecordEvent();
             static String ShowPowerOCRSharedEvent();
             static String TerminatePowerOCRSharedEvent();
             static String MouseJumpShowPreviewEvent();
