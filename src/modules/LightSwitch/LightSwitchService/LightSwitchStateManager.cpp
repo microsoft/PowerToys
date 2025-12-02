@@ -223,10 +223,56 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         _state.isSystemLightActive = GetCurrentSystemTheme();
         _state.isAppsLightActive = GetCurrentAppsTheme();
+
+        // Notify PowerDisplay to apply display profile if configured
+        NotifyPowerDisplay(shouldBeLight);
     }
 
     _state.lastTickMinutes = now;
 }
 
+// Notify PowerDisplay module about theme change to apply display profiles
+void LightSwitchStateManager::NotifyPowerDisplay(bool isLight)
+{
+    const auto& settings = LightSwitchSettings::settings();
 
+    // Check if any profile is enabled and configured
+    bool shouldNotify = false;
 
+    if (isLight && settings.enableLightModeProfile && !settings.lightModeProfile.empty())
+    {
+        shouldNotify = true;
+    }
+    else if (!isLight && settings.enableDarkModeProfile && !settings.darkModeProfile.empty())
+    {
+        shouldNotify = true;
+    }
+
+    if (!shouldNotify)
+    {
+        return;
+    }
+
+    try
+    {
+        // Signal PowerDisplay to check LightSwitch settings and apply appropriate profile
+        // PowerDisplay will read LightSwitch settings to determine which profile to apply
+        Logger::info(L"[LightSwitchStateManager] Notifying PowerDisplay about theme change (isLight: {})", isLight);
+
+        HANDLE hThemeChangedEvent = CreateEventW(nullptr, FALSE, FALSE, L"Local\\PowerToys_LightSwitch_ThemeChanged");
+        if (hThemeChangedEvent)
+        {
+            SetEvent(hThemeChangedEvent);
+            CloseHandle(hThemeChangedEvent);
+            Logger::info(L"[LightSwitchStateManager] Theme change event signaled to PowerDisplay");
+        }
+        else
+        {
+            Logger::warn(L"[LightSwitchStateManager] Failed to create theme change event (error: {})", GetLastError());
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"[LightSwitchStateManager] Failed to notify PowerDisplay");
+    }
+}

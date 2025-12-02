@@ -92,6 +92,7 @@ asf
 Ashcraft
 AShortcut
 ASingle
+ASUS
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
@@ -119,6 +120,10 @@ azureaiinference
 azureinference
 azureopenai
 backticks
+Backlight
+Badflags
+Badmode
+Badparam
 bbwe
 BCIE
 bck
@@ -187,7 +192,10 @@ CARETBLINKING
 Carlseibert
 CAtl
 caub
+CAuthn
+CAuthz
 CBN
+Cds
 cch
 CCHDEVICENAME
 CCHFORMNAME
@@ -209,13 +217,14 @@ CHOOSEFONT
 cidl
 CIELCh
 cim
+CImp
 CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
 clickable
 clickonce
-CLIENTEDGE
+clientedge
 clientid
 clientside
 CLIPBOARDUPDATE
@@ -242,7 +251,7 @@ codereview
 Codespaces
 Coen
 cognitiveservices
-COINIT
+coinit
 colid
 colorconv
 colorformat
@@ -320,7 +329,6 @@ CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
-CVS
 CWMO
 CXSCREEN
 CXSMICON
@@ -347,12 +355,16 @@ DCBA
 DCOM
 DComposition
 DCR
+Ddc
+Ddcci
 DDEIf
 Deact
+debouncer
 debugbreak
 decryptor
 Dedup
 Deduplicator
+Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
@@ -393,18 +405,21 @@ DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
 DISPLAYCHANGE
-DISPLAYCONFIG
+displayconfig
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+Displayport
+diu
 divyan
 Dlg
 DLGFRAME
-DLGMODALFRAME
+dlgmodalframe
 dlib
 dllhost
 dllmain
+Dmdo
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
@@ -421,6 +436,7 @@ DRAWCLIPBOARD
 DRAWFRAME
 drawingcolor
 dreamsofameaningfullife
+DREGION
 drivedetectionwarning
 DROPFILES
 DSTINVERT
@@ -432,6 +448,7 @@ dutil
 DVASPECT
 DVASPECTINFO
 DVD
+dvi
 dvr
 DVTARGETDEVICE
 dwflags
@@ -451,15 +468,18 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
+Dxva
 dxgi
 eab
+EAccess
 easeofaccess
 ecount
-Edid
+edid
 EDITKEYBOARD
 EDITSHORTCUTS
 EDITTEXT
 EFile
+EInvalid
 eku
 emojis
 ENABLEDELAYEDEXPANSION
@@ -469,14 +489,16 @@ ENABLETEMPLATE
 encodedlaunch
 encryptor
 ENDSESSION
+ENot
 ENSUREVISIBLE
 ENTERSIZEMOVE
 ENTRYW
 ENU
 environmentvariables
-EOAC
+eoac
 EPO
 epu
+EProvider
 ERASEBKGND
 EREOF
 EResize
@@ -568,7 +590,9 @@ FORMATDLGORD
 formatetc
 FORPARSING
 foundrylocal
+FPrimary
 FRAMECHANGED
+Framechanged
 frm
 FROMTOUCH
 fsanitize
@@ -626,6 +650,7 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hantai
 Hanzi
 Hardlines
 hardlinks
@@ -647,6 +672,8 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+hdmi
+HDMI
 hdr
 hdrop
 hdwwiz
@@ -699,6 +726,7 @@ hotkeys
 hotlight
 hotspot
 HPAINTBUFFER
+HPhysical
 HRAWINPUT
 HREDRAW
 hres
@@ -709,6 +737,7 @@ hsb
 HSCROLL
 hsi
 HSpeed
+HSync
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -825,6 +854,7 @@ jpnime
 Jsons
 jsonval
 jxr
+Kantai
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -967,6 +997,7 @@ MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
+Maximizebox
 MAXSHORTCUTSIZE
 maxversiontested
 mber
@@ -997,6 +1028,7 @@ mikeclayton
 mindaro
 Minimizable
 MINIMIZEBOX
+Minimizebox
 MINIMIZEEND
 MINIMIZESTART
 MINMAXINFO
@@ -1016,6 +1048,7 @@ MODALFRAME
 MODESPRUNED
 MONITORENUMPROC
 MONITORINFO
+Monitorinfo
 MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
@@ -1056,9 +1089,9 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1139,6 +1172,7 @@ NOMCX
 NOMINMAX
 NOMIRRORBITMAP
 NOMOVE
+Nomove
 NONANTIALIASED
 nonclient
 NONCLIENTMETRICSW
@@ -1160,6 +1194,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1167,9 +1202,11 @@ NOTIFYICONDATA
 NOTIFYICONDATAW
 NOTIMPL
 NOTOPMOST
+Notopmost
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
+Notupdated
 notwindows
 NOTXORPEN
 nowarn
@@ -1211,8 +1248,6 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1263,6 +1298,7 @@ PDBs
 PDEVMODE
 pdisp
 PDLL
+pdmodels
 pdo
 pdto
 pdtobj
@@ -1315,6 +1351,8 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerdisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1368,6 +1406,7 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+prot
 PRTL
 prvpane
 psapi
@@ -1395,12 +1434,14 @@ PTOKEN
 PToy
 ptstr
 pui
+pvct
 PWAs
 pwcs
 PWSTR
 pwsz
 pwtd
 QDC
+qdc
 qit
 QITAB
 QITABENT
@@ -1425,7 +1466,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1454,6 +1494,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1525,6 +1566,7 @@ scrollviewer
 SDDL
 SDKDDK
 sdns
+Sdr
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1676,6 +1718,7 @@ STARTUPINFOW
 startupscreen
 STATFLAG
 STATICEDGE
+Staticedge
 STATSTG
 stdafx
 STDAPI
@@ -1718,7 +1761,7 @@ SVGIO
 svgz
 SVSI
 SWFO
-SWP
+swp
 SWPNOSIZE
 SWPNOZORDER
 SWRESTORE
@@ -1738,6 +1781,7 @@ syskeydown
 SYSKEYUP
 SYSLIB
 SYSMENU
+Sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
@@ -1777,6 +1821,7 @@ THEMECHANGED
 themeresources
 THH
 THICKFRAME
+Thickframe
 THISCOMPONENT
 throughs
 TILEDWINDOW
@@ -1860,7 +1905,7 @@ unzoom
 UOffset
 UOI
 UPDATENOW
-UPDATEREGISTRY
+updateregistry
 updown
 UPGRADINGPRODUCTCODE
 upscaling
@@ -1887,6 +1932,9 @@ vcamp
 VCENTER
 vcgtq
 VCINSTALLDIR
+vcp
+VCP
+vcpcodes
 Vcpkg
 VCRT
 vcruntime
@@ -1899,7 +1947,9 @@ VERIFYCONTEXT
 VERSIONINFO
 VERTRES
 VERTSIZE
+VESA
 VFT
+Vga
 vget
 vgetq
 viewmodels
@@ -1929,6 +1979,7 @@ VSM
 vso
 vsonline
 VSpeed
+VSync
 vstemplate
 vstest
 VSTHRD
@@ -1970,7 +2021,7 @@ winapi
 winappsdk
 windir
 WINDOWCREATED
-WINDOWEDGE
+windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
@@ -1994,7 +2045,7 @@ WINL
 winlogon
 winmd
 winml
-WINNT
+winnt
 winres
 winrt
 winsdk
