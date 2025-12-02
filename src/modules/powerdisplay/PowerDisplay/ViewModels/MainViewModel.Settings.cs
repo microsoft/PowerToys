@@ -452,11 +452,11 @@ public partial class MainViewModel
     private void ApplyFeatureVisibility(MonitorViewModel monitorVm, PowerDisplaySettings settings)
     {
         var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m =>
-            m.HardwareId == monitorVm.HardwareId);
+            m.InternalName == monitorVm.InternalName);
 
         if (monitorSettings != null)
         {
-            Logger.LogInfo($"[Startup] Applying feature visibility for Hardware ID '{monitorVm.HardwareId}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}, InputSource={monitorSettings.EnableInputSource}, Rotation={monitorSettings.EnableRotation}");
+            Logger.LogInfo($"[Startup] Applying feature visibility for '{monitorVm.InternalName}': Contrast={monitorSettings.EnableContrast}, Volume={monitorSettings.EnableVolume}, InputSource={monitorSettings.EnableInputSource}, Rotation={monitorSettings.EnableRotation}");
 
             monitorVm.ShowContrast = monitorSettings.EnableContrast;
             monitorVm.ShowVolume = monitorSettings.EnableVolume;
@@ -465,7 +465,7 @@ public partial class MainViewModel
         }
         else
         {
-            Logger.LogWarning($"[Startup] No feature settings found for Hardware ID '{monitorVm.HardwareId}' - using defaults");
+            Logger.LogWarning($"[Startup] No feature settings found for '{monitorVm.InternalName}' - using defaults");
         }
     }
 
@@ -498,9 +498,9 @@ public partial class MainViewModel
             // Load current settings to preserve user preferences (including IsHidden)
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
 
-            // Create lookup of existing monitors by HardwareId to preserve settings
+            // Create lookup of existing monitors by InternalName to preserve settings
             var existingMonitorSettings = settings.Properties.Monitors
-                .ToDictionary(m => m.HardwareId, m => m);
+                .ToDictionary(m => m.InternalName, m => m);
 
             // Build monitor list using Settings UI's MonitorInfo model
             var monitors = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
@@ -516,10 +516,10 @@ public partial class MainViewModel
             foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden))
             {
                 // Only add if not already in the list (to avoid duplicates)
-                if (!monitors.Any(m => m.HardwareId == existingMonitor.HardwareId))
+                if (!monitors.Any(m => m.InternalName == existingMonitor.InternalName))
                 {
                     monitors.Add(existingMonitor);
-                    Logger.LogInfo($"[SaveMonitorsToSettings] Preserving hidden monitor in settings: {existingMonitor.Name} (HardwareId: {existingMonitor.HardwareId})");
+                    Logger.LogInfo($"[SaveMonitorsToSettings] Preserving hidden monitor in settings: {existingMonitor.Name} ({existingMonitor.InternalName})");
                 }
             }
 
@@ -607,7 +607,7 @@ public partial class MainViewModel
         Microsoft.PowerToys.Settings.UI.Library.MonitorInfo monitorInfo,
         Dictionary<string, Microsoft.PowerToys.Settings.UI.Library.MonitorInfo> existingSettings)
     {
-        if (existingSettings.TryGetValue(monitorInfo.HardwareId, out var existingMonitor))
+        if (existingSettings.TryGetValue(monitorInfo.InternalName, out var existingMonitor))
         {
             monitorInfo.IsHidden = existingMonitor.IsHidden;
             monitorInfo.EnableContrast = existingMonitor.EnableContrast;
