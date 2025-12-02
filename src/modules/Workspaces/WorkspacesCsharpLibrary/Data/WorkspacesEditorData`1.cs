@@ -28,4 +28,11 @@ public class WorkspacesEditorData<T>
     {
         return JsonSerializer.Serialize(data, WorkspacesJsonOptions.EditorOptions);
     }
+
+    [RequiresUnreferencedCode("JSON serialization uses reflection-based serializer.")]
+    [RequiresDynamicCode("JSON serialization uses reflection-based serializer.")]
+    public T Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<T>(json, WorkspacesJsonOptions.EditorOptions)!;
+    }
 }
