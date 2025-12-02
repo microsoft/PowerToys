@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToys.Interop;
 
@@ -30,9 +31,18 @@ internal sealed partial class ZoomItActionCommand : InvokableCommand
                 return CommandResult.ShowToast($"Unknown ZoomIt action: {_action}.");
             }
 
-            using var evt = EventWaitHandle.OpenExisting(eventName);
-            evt.Set();
-            return CommandResult.Dismiss();
+            var evt = EventWaitHandle.OpenExisting(eventName);
+            _ = Task.Run(async () =>
+            {
+                using (evt)
+                {
+                    // Hide CmdPal first, then signal shortly after so UI like snip/zoom won't capture it.
+                    await Task.Delay(50).ConfigureAwait(false);
+                    evt.Set();
+                }
+            });
+
+            return CommandResult.Hide();
         }
         catch (WaitHandleCannotBeOpenedException)
         {

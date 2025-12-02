@@ -30,6 +30,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <array>
 #include <vector>
 #endif // __ZOOMIT_POWERTOYS__
 
@@ -7734,14 +7735,17 @@ void ZoomIt_DispatchCommand(ZoomItCommand cmd)
     {
         if (g_hWndMain != nullptr)
         {
-            PostMessage(g_hWndMain, WM_HOTKEY, id, 0);
+            SendMessage(g_hWndMain, WM_HOTKEY, id, 0);
         }
     };
 
     switch (cmd)
     {
     case ZoomItCommand::Zoom:
-        post_hotkey(ZOOM_HOTKEY);
+        if (g_hWndMain != nullptr)
+        {
+            PostMessage(g_hWndMain, WM_COMMAND, IDC_ZOOM, 0);
+        }
         Trace::ZoomItActivateZoom();
         break;
     case ZoomItCommand::Draw:
@@ -7985,7 +7989,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
             return 1;
         }
-        std::vector<HANDLE> event_handles{
+        const std::array<HANDLE, 8> event_handles{
             m_reload_settings_event_handle,
             m_exit_event_handle,
             m_zoom_event_handle,
@@ -7995,16 +7999,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             m_snip_event_handle,
             m_record_event_handle,
         };
-        m_event_triggers_thread = std::thread([&]() {
+        const DWORD handle_count = static_cast<DWORD>(event_handles.size());
+        m_event_triggers_thread = std::thread([event_handles, handle_count]() {
             MSG msg;
             while (g_running)
             {
-                DWORD dwEvt = MsgWaitForMultipleObjects(static_cast<DWORD>(event_handles.size()), event_handles.data(), false, INFINITE, QS_ALLINPUT);
+                DWORD dwEvt = MsgWaitForMultipleObjects(handle_count, event_handles.data(), false, INFINITE, QS_ALLINPUT);
+                if (dwEvt == WAIT_FAILED)
+                {
+                    Logger::error(L"ZoomIt event wait failed. {}", get_last_error_or_default(GetLastError()));
+                    break;
+                }
                 if (!g_running)
                 {
                     break;
                 }
-                if (dwEvt == WAIT_OBJECT_0 + static_cast<DWORD>(event_handles.size()))
+                if (dwEvt == WAIT_OBJECT_0 + handle_count)
                 {
                     if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
                     {
@@ -8025,7 +8035,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                 case WAIT_OBJECT_0 + 1:
                 {
                     // Exit Event
-                    Logger::trace(L"Received an exit event.");
                     PostMessage(g_hWndMain, WM_QUIT, 0, 0);
                     break;
                 }
