@@ -269,8 +269,18 @@ public partial class ShellViewModel : ObservableObject,
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
 
+                // Telemetry: Track extension page navigation for session metrics
+                if (host is not null)
+                {
+                    string extensionId = host.GetExtensionDisplayName() ?? "builtin";
+                    string commandId = command?.Id ?? "unknown";
+                    string commandName = command?.Name ?? "unknown";
+                    WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
+                        new(extensionId, commandId, commandName, true, 0));
+                }
+
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -338,6 +348,14 @@ public partial class ShellViewModel : ObservableObject,
 
     private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
     {
+        // Telemetry: Track command execution time and success
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var command = message.Command.Unsafe;
+        string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+        string commandId = command?.Id ?? "unknown";
+        string commandName = command?.Name ?? "unknown";
+        bool success = false;
+
         try
         {
             // Call out to extension process.
@@ -348,15 +366,27 @@ public partial class ShellViewModel : ObservableObject,
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result);
 
+            success = true;
             _handleInvokeTask = null;
         }
         catch (Exception ex)
         {
+            success = false;
             _handleInvokeTask = null;
+
+            // Telemetry: Track errors for session metrics
+            WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
             host?.Log(ex.Message);
+        }
+        finally
+        {
+            // Telemetry: Send extension invocation metrics (always sent, even on failure)
+            stopwatch.Stop();
+            WeakReferenceMessenger.Default.Send<ExtensionInvokedMessage>(
+                new(extensionId, commandId, commandName, success, (ulong)stopwatch.ElapsedMilliseconds));
         }
     }
 

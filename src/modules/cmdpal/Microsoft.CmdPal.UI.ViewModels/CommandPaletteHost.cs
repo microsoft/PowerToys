@@ -34,6 +34,6 @@ public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHos
 
     public override string? GetExtensionDisplayName()
     {
-        return Extension?.ExtensionDisplayName;
+        return Extension?.ExtensionDisplayName ?? _builtInProvider?.DisplayName ?? _builtInProvider?.Id;
     }
 }

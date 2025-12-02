@@ -22,12 +22,16 @@ namespace Microsoft.CmdPal.UI;
 internal sealed class TelemetryForwarder :
     ITelemetryService,
     IRecipient<BeginInvokeMessage>,
-    IRecipient<CmdPalInvokeResultMessage>
+    IRecipient<CmdPalInvokeResultMessage>,
+    IRecipient<ExtensionInvokedMessage>,
+    IRecipient<SessionDurationMessage>
 {
     public TelemetryForwarder()
     {
         WeakReferenceMessenger.Default.Register<BeginInvokeMessage>(this);
         WeakReferenceMessenger.Default.Register<CmdPalInvokeResultMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExtensionInvokedMessage>(this);
+        WeakReferenceMessenger.Default.Register<SessionDurationMessage>(this);
     }
 
     public void Receive(CmdPalInvokeResultMessage message)
@@ -38,6 +42,28 @@ internal sealed class TelemetryForwarder :
     public void Receive(BeginInvokeMessage message)
     {
         PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
+    }
+
+    public void Receive(ExtensionInvokedMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalExtensionInvoked(
+            message.ExtensionId,
+            message.CommandId,
+            message.CommandName,
+            message.Success,
+            message.ExecutionTimeMs));
+    }
+
+    public void Receive(SessionDurationMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalSessionDuration(
+            message.DurationMs,
+            message.CommandsExecuted,
+            message.PagesVisited,
+            message.DismissalReason,
+            message.SearchQueriesCount,
+            message.MaxNavigationDepth,
+            message.ErrorCount));
     }
 
     public void LogRunQuery(string query, int resultCount, ulong durationMs)
