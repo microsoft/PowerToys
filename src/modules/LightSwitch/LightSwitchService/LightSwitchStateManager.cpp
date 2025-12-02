@@ -66,6 +66,14 @@ void LightSwitchStateManager::OnNightLightChange()
 
     bool newNightLightState = IsNightLightEnabled();
 
+    // In Follow Night Light mode, treat a Night Light toggle as a boundary
+    if (_state.lastAppliedMode == ScheduleMode::FollowNightLight && _state.isManualOverride)
+    {
+        Logger::info(L"[LightSwitchStateManager] Night Light changed while manual override active; "
+                     L"treating as a boundary and clearing manual override.");
+        _state.isManualOverride = false;
+    }
+
     if (newNightLightState != _state.isNightLightActive)
     {
         Logger::info(L"[LightSwitchStateManager] Night Light toggled to {}",
