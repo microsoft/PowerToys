@@ -144,6 +144,9 @@
     <ProjectReference Include="..\KeyboardManagerEditorLibrary\KeyboardManagerEditorLibrary.vcxproj">
       <Project>{23d2070d-e4ad-4add-85a7-083d9c76ad49}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\utils\utils.vcxproj">
+      <Project>{e8470e15-88c4-4c4b-b872-7f1a8f8e7d7e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="KeyboardManagerEditor.exe.manifest" />

@@ -14,9 +14,4 @@ namespace
     constexpr inline wchar_t POWERTOYS_BOOTSTRAPPER_MUTEX_NAME[] = L"Local\\PowerToys_Bootstrapper_InstanceMutex";
 }
 
-inline wil::unique_mutex_nothrow createAppMutex(const std::wstring& mutexName)
-{
-    wil::unique_mutex_nothrow result{ CreateMutexW(nullptr, TRUE, mutexName.c_str()) };
-
-    return GetLastError() == ERROR_ALREADY_EXISTS ? wil::unique_mutex_nothrow{} : std::move(result);
-}
+wil::unique_mutex_nothrow createAppMutex(const std::wstring& mutexName);

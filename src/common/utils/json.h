@@ -11,38 +11,11 @@ namespace json
 {
     using namespace winrt::Windows::Data::Json;
 
-    inline std::optional<JsonObject> from_file(std::wstring_view file_name)
-    {
-        try
-        {
-            std::ifstream file(file_name.data(), std::ios::binary);
-            if (file.is_open())
-            {
-                using isbi = std::istreambuf_iterator<char>;
-                std::string obj_str{ isbi{ file }, isbi{} };
-                return JsonValue::Parse(winrt::to_hstring(obj_str)).GetObjectW();
-            }
-            return std::nullopt;
-        }
-        catch (...)
-        {
-            return std::nullopt;
-        }
-    }
+    std::optional<JsonObject> from_file(std::wstring_view file_name);
 
-    inline void to_file(std::wstring_view file_name, const JsonObject& obj)
-    {
-        std::wstring obj_str{ obj.Stringify().c_str() };
-        std::ofstream{ file_name.data(), std::ios::binary } << winrt::to_string(obj_str);
-    }
+    void to_file(std::wstring_view file_name, const JsonObject& obj);
 
-    inline bool has(
-        const json::JsonObject& o,
-        std::wstring_view name,
-        const json::JsonValueType type = JsonValueType::Object)
-    {
-        return o.HasKey(name) && o.GetNamedValue(name).ValueType() == type;
-    }
+    bool has(const json::JsonObject& o, std::wstring_view name, const json::JsonValueType type = JsonValueType::Object);
 
     template<typename T>
     inline std::enable_if_t<std::is_arithmetic_v<T>, JsonValue> value(const T arithmetic)
@@ -56,20 +29,11 @@ namespace json
         return json::JsonValue::CreateStringValue(s);
     }
 
-    inline JsonValue value(const bool boolean)
-    {
-        return json::JsonValue::CreateBooleanValue(boolean);
-    }
+    JsonValue value(const bool boolean);
 
-    inline JsonValue value(JsonObject value)
-    {
-        return value.as<JsonValue>();
-    }
+    JsonValue value(JsonObject value);
 
-    inline JsonValue value(JsonValue value)
-    {
-        return value; // identity function overload for convenience
-    }
+    JsonValue value(JsonValue value);
 
     template<typename T, typename D = std::optional<T>>
         requires std::constructible_from<std::optional<T>, D>
