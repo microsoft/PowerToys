@@ -23,13 +23,16 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
         ];
 
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
+
     private readonly IRdpConnectionsManager _rdpConnectionsManager;
+    private readonly NoOpCommand _emptyCommand = new NoOpCommand();
 
     public FallbackRemoteDesktopItem(IRdpConnectionsManager rdpConnectionsManager)
-    : base(new OpenRemoteDesktopCommand(string.Empty), Resources.remotedesktop_title)
+    : base(Resources.remotedesktop_title)
     {
         _rdpConnectionsManager = rdpConnectionsManager;
 
+        Command = _emptyCommand;
         Title = string.Empty;
         Subtitle = string.Empty;
         Icon = Icons.RDPIcon;
@@ -41,7 +44,7 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
         {
             Title = string.Empty;
             Subtitle = string.Empty;
-            Command = new OpenRemoteDesktopCommand(string.Empty);
+            Command = _emptyCommand;
             return;
         }
 
@@ -68,7 +71,7 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
         {
             Title = string.Empty;
             Subtitle = string.Empty;
-            Command = new OpenRemoteDesktopCommand(string.Empty);
+            Command = _emptyCommand;
         }
     }
 }

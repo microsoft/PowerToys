@@ -73,13 +73,11 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery("   ");
 
         // Assert
-        Assert.AreEqual(Resources.remotedesktop_command_open, fallback.Title);
+        Assert.AreEqual(string.Empty, fallback.Title);
         Assert.AreEqual(string.Empty, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
-        Assert.IsNotNull(command);
-        Assert.AreEqual(Resources.remotedesktop_command_open, command.Name);
-        Assert.AreEqual(string.Empty, GetCommandHost(command));
+        Assert.IsNull(command);
     }
 
     [TestMethod]
@@ -93,13 +91,11 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery("not a valid host");
 
         // Assert
-        Assert.AreEqual(Resources.remotedesktop_command_open, fallback.Title);
+        Assert.AreEqual(string.Empty, fallback.Title);
         Assert.AreEqual(string.Empty, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
-        Assert.IsNotNull(command);
-        Assert.AreEqual(Resources.remotedesktop_command_open, command.Name);
-        Assert.AreEqual(string.Empty, GetCommandHost(command));
+        Assert.IsNull(command);
     }
 
     private static string GetCommandHost(OpenRemoteDesktopCommand command)
