@@ -878,7 +878,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEDRAW
-LIVEZOOM
+livezoom
 LLKH
 llkhf
 LMEM
