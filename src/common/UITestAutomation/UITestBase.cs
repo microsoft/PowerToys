@@ -128,7 +128,6 @@ namespace Microsoft.PowerToys.UITest
                     }
                 }
 
-                Dispose();
                 if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
                     or UnitTestOutcome.Error
                     or UnitTestOutcome.Unknown)
@@ -143,6 +142,8 @@ namespace Microsoft.PowerToys.UITest
                     // Clean up recording if test passed
                     CleanupRecordingDirectory();
                 }
+
+                Dispose();
             }
 
             this.Session.Cleanup();
