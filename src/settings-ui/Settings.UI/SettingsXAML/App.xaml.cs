@@ -41,9 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAdmin,
             ShowOobeWindow,
             ShowScoobeWindow,
-            ShowFlyout,
             ContainsSettingsWindow,
-            ContainsFlyoutPosition,
         }
 
         private const int RequiredArgumentsSetSettingQty = 4;
@@ -62,8 +60,6 @@ namespace Microsoft.PowerToys.Settings.UI
         public static int PowerToysPID { get; set; }
 
         public bool ShowOobe { get; set; }
-
-        public bool ShowFlyout { get; set; }
 
         public bool ShowScoobe { get; set; }
 
@@ -194,9 +190,7 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
             ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
             ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
-            ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
             bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
-            bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
 
             // To keep track of variable arguments
             int currentArgumentIndex = RequiredArgumentsLaunchedFromRunnerQty;
@@ -207,15 +201,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
 
                 currentArgumentIndex++;
-            }
-
-            int flyout_x = 0;
-            int flyout_y = 0;
-            if (containsFlyoutPosition)
-            {
-                // get the flyout position arguments
-                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
-                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
             }
 
             RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -238,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 return 0;
             });
 
-            if (!ShowOobe && !ShowScoobe && !ShowFlyout)
+            if (!ShowOobe && !ShowScoobe)
             {
                 settingsWindow = new MainWindow();
                 settingsWindow.Activate();
@@ -277,16 +262,6 @@ namespace Microsoft.PowerToys.Settings.UI
                     scoobeWindow.ExtendsContentIntoTitleBar = true;
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(scoobeWindow);
-                }
-                else if (ShowFlyout)
-                {
-                    POINT? p = null;
-                    if (containsFlyoutPosition)
-                    {
-                        p = new POINT(flyout_x, flyout_y);
-                    }
-
-                    ShellPage.OpenFlyoutCallback(p);
                 }
             }
         }
@@ -364,7 +339,6 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
-        private static FlyoutWindow flyoutWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -381,29 +355,14 @@ namespace Microsoft.PowerToys.Settings.UI
             return oobeWindow;
         }
 
-        public static FlyoutWindow GetFlyoutWindow()
-        {
-            return flyoutWindow;
-        }
-
         public static void SetOobeWindow(OobeWindow window)
         {
             oobeWindow = window;
         }
 
-        public static void SetFlyoutWindow(FlyoutWindow window)
-        {
-            flyoutWindow = window;
-        }
-
         public static void ClearOobeWindow()
         {
             oobeWindow = null;
-        }
-
-        public static void ClearFlyoutWindow()
-        {
-            flyoutWindow = null;
         }
 
         public static Type GetPage(string settingWindow)

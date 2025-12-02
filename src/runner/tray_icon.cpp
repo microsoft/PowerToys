@@ -82,7 +82,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     case ID_SETTINGS_MENU_COMMAND:
     {
         std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
-        open_settings_window(settings_window, false);
+        open_settings_window(settings_window);
     }
     break;
     case ID_CLOSE_MENU_COMMAND:
@@ -237,7 +237,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             case WM_LBUTTONDBLCLK:
             {
                 double_clicked = true;
-                open_settings_window(std::nullopt, false);
+                open_settings_window(std::nullopt);
                 break;
             }
             break;

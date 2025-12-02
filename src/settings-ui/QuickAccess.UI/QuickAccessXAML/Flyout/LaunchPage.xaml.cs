@@ -68,7 +68,7 @@ public sealed partial class LaunchPage : Page
         Frame.Navigate(typeof(AppsListPage), context, new SlideNavigationTransitionInfo { Effect = SlideNavigationTransitionEffect.FromRight });
     }
 
-    private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
+    public void ReportBugBtn_Click(object sender, RoutedEventArgs e)
     {
     }
 
