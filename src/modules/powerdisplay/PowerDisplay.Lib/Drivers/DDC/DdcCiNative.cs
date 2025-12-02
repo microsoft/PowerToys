@@ -238,7 +238,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // Parse the capabilities string
-                var capabilities = Utils.VcpCapabilitiesParser.Parse(capsString);
+                var parseResult = Utils.MccsCapabilitiesParser.Parse(capsString);
+                var capabilities = parseResult.Capabilities;
                 if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
                 {
                     Logger.LogDebug($"FetchCapabilities: Failed to parse capabilities string for handle 0x{hPhysicalMonitor:X}");

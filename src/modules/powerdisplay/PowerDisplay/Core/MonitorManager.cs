@@ -242,7 +242,16 @@ namespace PowerDisplay.Core
                 if (!string.IsNullOrEmpty(capsString))
                 {
                     monitor.CapabilitiesRaw = capsString;
-                    monitor.VcpCapabilitiesInfo = Common.Utils.VcpCapabilitiesParser.Parse(capsString);
+                    var parseResult = Common.Utils.MccsCapabilitiesParser.Parse(capsString);
+                    monitor.VcpCapabilitiesInfo = parseResult.Capabilities;
+
+                    if (parseResult.HasErrors)
+                    {
+                        foreach (var error in parseResult.Errors)
+                        {
+                            Logger.LogDebug($"Capabilities parse warning at {error.Position}: {error.Message}");
+                        }
+                    }
 
                     Logger.LogInfo($"Successfully parsed capabilities for {monitor.Id}: {monitor.VcpCapabilitiesInfo.SupportedVcpCodes.Count} VCP codes");
 

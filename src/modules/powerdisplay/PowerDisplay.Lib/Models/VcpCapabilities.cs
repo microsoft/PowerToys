@@ -33,6 +33,11 @@ namespace PowerDisplay.Common.Models
         public string? Protocol { get; set; }
 
         /// <summary>
+        /// MCCS version (e.g., "2.2", "2.1")
+        /// </summary>
+        public string? MccsVersion { get; set; }
+
+        /// <summary>
         /// Supported command codes
         /// </summary>
         public List<byte> SupportedCommands { get; set; } = new();

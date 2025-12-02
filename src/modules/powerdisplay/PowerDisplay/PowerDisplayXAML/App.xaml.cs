@@ -112,10 +112,6 @@ namespace PowerDisplay
                 RegisterViewModelEvent(Constants.ApplyColorTemperaturePowerDisplayEvent(), vm => vm.ApplyColorTemperatureFromSettings(), "ApplyColorTemperature");
                 RegisterViewModelEvent(Constants.ApplyProfilePowerDisplayEvent(), vm => vm.ApplyProfileFromSettings(), "ApplyProfile");
 
-                // Signal that process is ready to receive events
-                // This allows the C++ module to wait for initialization instead of using hardcoded Sleep
-                SignalProcessReady();
-
                 // Monitor Runner process (backup exit mechanism)
                 if (_powerToysRunnerPid > 0)
                 {
@@ -152,6 +148,9 @@ namespace PowerDisplay
                     // Standalone mode - activate and show window immediately
                     _mainWindow.Activate();
                     Logger.LogInfo("Window activated (standalone mode)");
+
+                    // Signal ready immediately in standalone mode
+                    SignalProcessReady();
                 }
                 else
                 {
@@ -159,20 +158,40 @@ namespace PowerDisplay
                     Logger.LogInfo("Window created, waiting for show event (PowerToys mode)");
 
                     // Start background initialization to scan monitors even when hidden
+                    // Signal process ready AFTER initialization completes to prevent race condition
                     _ = Task.Run(async () =>
                     {
                         // Give window a moment to finish construction
-                        await Task.Delay(500);
+                        await Task.Delay(100);
 
-                        // Trigger initialization on UI thread
+                        // Trigger initialization on UI thread and wait for completion
+                        var initComplete = new TaskCompletionSource<bool>();
                         _mainWindow?.DispatcherQueue.TryEnqueue(async () =>
                         {
-                            if (_mainWindow is MainWindow mainWindow)
+                            try
                             {
-                                await mainWindow.EnsureInitializedAsync();
-                                Logger.LogInfo("Background initialization completed");
+                                if (_mainWindow is MainWindow mainWindow)
+                                {
+                                    await mainWindow.EnsureInitializedAsync();
+                                    Logger.LogInfo("Background initialization completed");
+                                }
+
+                                initComplete.SetResult(true);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError($"Background initialization failed: {ex.Message}");
+                                initComplete.SetResult(false);
                             }
                         });
+
+                        // Wait for initialization to complete before signaling ready
+                        await initComplete.Task;
+
+                        // NOW signal that process is ready to receive events
+                        // This ensures window is fully initialized before C++ module can send Toggle/Show events
+                        SignalProcessReady();
+                        Logger.LogInfo("Process ready signal sent after initialization");
                     });
                 }
             }
