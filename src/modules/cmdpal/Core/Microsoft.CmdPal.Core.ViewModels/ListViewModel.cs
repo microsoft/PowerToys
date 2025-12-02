@@ -65,6 +65,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public bool IsMainPage { get; init; }
 
+    public bool IsTokenSearch { get; private set; }
+
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;
@@ -608,6 +610,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
+        if (model is IExtendedAttributesProvider haveProperties)
+        {
+            LoadExtendedAttributes(haveProperties.GetProperties().AsReadOnly());
+        }
+
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
     }
@@ -621,6 +628,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ISmallGridLayout smallGridLayout => new SmallGridPropertiesViewModel(smallGridLayout),
             _ => null,
         };
+    }
+
+    private void LoadExtendedAttributes(IReadOnlyDictionary<string, object> properties)
+    {
+        // Check if this is a token page
+        if (properties.TryGetValue("TokenSearch", out var isTokenSearchObj) &&
+            isTokenSearchObj is bool isTokenSearch)
+        {
+            IsTokenSearch = isTokenSearch;
+            UpdateProperty(nameof(IsTokenSearch));
+        }
     }
 
     public void LoadMoreIfNeeded()
