@@ -110,9 +110,9 @@ public partial class MainViewModel
         foreach (var monitor in monitors)
         {
             // Skip monitors that are marked as hidden in settings
-            if (hiddenMonitorIds.Contains(monitor.HardwareId))
+            if (hiddenMonitorIds.Contains(monitor.Id))
             {
-                Logger.LogInfo($"[UpdateMonitorList] Skipping hidden monitor: {monitor.Name} (HardwareId: {monitor.HardwareId})");
+                Logger.LogInfo($"[UpdateMonitorList] Skipping hidden monitor: {monitor.Name} ({monitor.Id})");
                 continue;
             }
 
@@ -211,9 +211,9 @@ public partial class MainViewModel
                 foreach (var monitor in e.AddedMonitors)
                 {
                     // Skip monitors that are marked as hidden
-                    if (hiddenMonitorIds.Contains(monitor.HardwareId))
+                    if (hiddenMonitorIds.Contains(monitor.Id))
                     {
-                        Logger.LogInfo($"[OnMonitorsChanged] Skipping hidden monitor (added): {monitor.Name} (HardwareId: {monitor.HardwareId})");
+                        Logger.LogInfo($"[OnMonitorsChanged] Skipping hidden monitor (added): {monitor.Name} ({monitor.Id})");
                         continue;
                     }
 
@@ -256,7 +256,7 @@ public partial class MainViewModel
         => new HashSet<string>(
             settings.Properties.Monitors
                 .Where(m => m.IsHidden)
-                .Select(m => m.HardwareId));
+                .Select(m => m.InternalName));
 
     /// <summary>
     /// Safe wrapper for initializing color temperature asynchronously
