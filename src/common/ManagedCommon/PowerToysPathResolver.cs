@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
 
@@ -20,6 +21,10 @@ namespace ManagedCommon
         /// <returns>The path to PowerToys installation directory, or null if not found</returns>
         public static string GetPowerToysInstallPath()
         {
+#if DEBUG
+            // In debug builds, resolve directly from the running process (no installer/registry involved).
+            return GetPathFromCurrentProcess();
+#else
             // Try to get path from Per-User installation first
             string path = GetPathFromRegistry(RegistryHive.CurrentUser);
             if (!string.IsNullOrEmpty(path))
@@ -35,58 +40,7 @@ namespace ManagedCommon
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the PowerToys executable path
-        /// </summary>
-        /// <returns>The full path to PowerToys.exe, or null if not found</returns>
-        public static string GetPowerToysExecutablePath()
-        {
-            string installPath = GetPowerToysInstallPath();
-            if (string.IsNullOrEmpty(installPath))
-            {
-                return null;
-            }
-
-            string exePath = Path.Combine(installPath, PowerToysExe);
-            return File.Exists(exePath) ? exePath : null;
-        }
-
-        /// <summary>
-        /// Checks if PowerToys is installed for the current user
-        /// </summary>
-        /// <returns>True if PowerToys is installed for the current user</returns>
-        public static bool IsPowerToysInstalled()
-        {
-            return !string.IsNullOrEmpty(GetPowerToysInstallPath());
-        }
-
-        /// <summary>
-        /// Gets the installation scope (perUser or perMachine)
-        /// </summary>
-        /// <returns>The installation scope, or null if not found</returns>
-        public static string GetInstallationScope()
-        {
-            // Check Per-User first
-            using (var key = Registry.CurrentUser.OpenSubKey(PowerToysRegistryKey))
-            {
-                if (key != null)
-                {
-                    return key.GetValue("InstallScope")?.ToString();
-                }
-            }
-
-            // Check Per-Machine
-            using (var key = Registry.LocalMachine.OpenSubKey(PowerToysRegistryKey))
-            {
-                if (key != null)
-                {
-                    return key.GetValue("InstallScope")?.ToString();
-                }
-            }
-
-            return null;
+#endif
         }
 
         private static string GetPathFromRegistry(RegistryHive hive)
@@ -164,6 +118,42 @@ namespace ManagedCommon
             catch (Exception)
             {
                 // Ignore registry access errors
+            }
+
+            return null;
+        }
+
+        private static string GetPathFromCurrentProcess()
+        {
+            try
+            {
+                // If we're running inside PowerToys.exe (dev/debug builds), use the executable location.
+                var processPath = Process.GetCurrentProcess().MainModule?.FileName;
+                if (!string.IsNullOrEmpty(processPath))
+                {
+                    var processDir = Path.GetDirectoryName(processPath);
+                    if (!string.IsNullOrEmpty(processDir) && File.Exists(Path.Combine(processDir, PowerToysExe)))
+                    {
+                        return processDir;
+                    }
+                }
+
+                // As a fallback, walk up from AppContext.BaseDirectory to find PowerToys.exe.
+                var directory = new DirectoryInfo(AppContext.BaseDirectory);
+                while (directory != null)
+                {
+                    var candidate = Path.Combine(directory.FullName, PowerToysExe);
+                    if (File.Exists(candidate))
+                    {
+                        return directory.FullName;
+                    }
+
+                    directory = directory.Parent;
+                }
+            }
+            catch
+            {
+                // Ignore reflection/process permission errors; caller will see null and handle accordingly.
             }
 
             return null;
