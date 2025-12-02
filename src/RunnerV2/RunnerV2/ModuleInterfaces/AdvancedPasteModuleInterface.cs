@@ -5,10 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.GPOWrapper;
@@ -64,18 +64,21 @@ namespace RunnerV2.ModuleInterfaces
             Process.Start("WinUI3Apps\\PowerToys.AdvancedPaste.exe", $"{Environment.ProcessId} {ipcName}");
         }
 
-        public void OnSettingsChanged()
+        public void OnSettingsChanged(string settingsKind, JsonElement jsonProperties)
         {
             PopulateShortcuts();
         }
 
         public void PopulateShortcuts()
         {
-            ArgumentNullException.ThrowIfNull(_ipc);
+            if (_ipc is null)
+            {
+                _ipc = new TwoWayPipeMessageIPCManaged(string.Empty, @"\\.\pipe\PowerToys.AdvancedPaste", (_) => { });
+            }
 
             Shortcuts.Clear();
 
-            AdvancedPasteSettings settings = new SettingsUtils().GetSettings<AdvancedPasteSettings>();
+            AdvancedPasteSettings settings = new SettingsUtils().GetSettingsOrDefault<AdvancedPasteSettings>(Name);
             Shortcuts.Add((settings.Properties.AdvancedPasteUIShortcut, () =>
                 _ipc.Send("ShowUI")
             ));
@@ -84,10 +87,17 @@ namespace RunnerV2.ModuleInterfaces
             Shortcuts.Add((settings.Properties.PasteAsJsonShortcut, () => _ipc.Send("PasteJson")));
 
             HotkeyAccessor[] hotkeyAccessors = settings.GetAllHotkeyAccessors();
-            for (int i = 4; i < hotkeyAccessors.Length; i++)
+            int additionalActionsCount = settings.Properties.AdditionalActions.GetAllActions().Count() - 2;
+            for (int i = 0; i < additionalActionsCount; i++)
             {
-                HotkeyAccessor hotkeyAccessor = hotkeyAccessors[i];
-                Shortcuts.Add((hotkeyAccessor.Value, () => _ipc.Send($"CustomPaste {i}")));
+                int scopedI = i;
+                Shortcuts.Add((hotkeyAccessors[4 + i].Value, () => _ipc.Send("AdditionalAction " + (3 + scopedI))));
+            }
+
+            for (int i = 4 + additionalActionsCount; i < hotkeyAccessors.Length; i++)
+            {
+                int scopedI = i;
+                Shortcuts.Add((hotkeyAccessors[i].Value, () => _ipc.Send("CustomAction " + (scopedI - 5 - additionalActionsCount))));
             }
         }
 

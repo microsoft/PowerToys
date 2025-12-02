@@ -25,6 +25,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using PowerToys.Interop;
 using Windows.Graphics;
+using WinRT;
 using WinUIEx;
 
 using static AdvancedPaste.Helpers.NativeMethods;
@@ -43,13 +44,6 @@ namespace AdvancedPaste
         public IHost Host { get; private set; }
 
         public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
-
-        private static readonly Dictionary<string, PasteFormats> AdditionalActionIPCKeys =
-                 typeof(PasteFormats).GetFields()
-                                     .Where(field => field.IsLiteral)
-                                     .Select(field => (Format: (PasteFormats)field.GetRawConstantValue(), field.GetCustomAttribute<PasteFormatMetadataAttribute>().IPCKey))
-                                     .Where(field => field.IPCKey != null)
-                                     .ToDictionary(field => field.IPCKey, field => field.Format);
 
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         private readonly OptionsViewModel viewModel;
@@ -187,14 +181,14 @@ namespace AdvancedPaste
             }
             else
             {
-                if (!AdditionalActionIPCKeys.TryGetValue(messageParts[1], out PasteFormats pasteFormat))
+                if (!int.TryParse(messageParts[1], CultureInfo.InvariantCulture, out int customActionId))
                 {
                     Logger.LogWarning($"Unexpected additional action type {messageParts[1]}");
                 }
                 else
                 {
                     await ShowWindow();
-                    await viewModel.ExecutePasteFormatAsync(pasteFormat, PasteActionSource.GlobalKeyboardShortcut);
+                    await viewModel.ExecutePasteFormatAsync((PasteFormats)customActionId, PasteActionSource.GlobalKeyboardShortcut);
                 }
             }
         }

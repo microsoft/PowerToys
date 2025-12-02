@@ -21,6 +21,11 @@ namespace RunnerV2.Helpers
 
         private static void OnKeyDown(int key)
         {
+            if ((VirtualKey)key == VirtualKey.RightMenu && _ctrlState)
+            {
+                _ctrlAltState = true;
+            }
+
             switch ((VirtualKey)key)
             {
                 case VirtualKey.Control:
@@ -41,6 +46,20 @@ namespace RunnerV2.Helpers
                 case VirtualKey.LeftWindows:
                 case VirtualKey.RightWindows:
                     _winState = true;
+                    break;
+                default:
+                    if (OnKeyboardEvent(new HotkeySettings
+                    {
+                        Code = key,
+                        Ctrl = _ctrlState,
+                        Alt = _altState,
+                        Shift = _shiftState,
+                        Win = _winState,
+                    }))
+                    {
+                        return;
+                    }
+
                     break;
             }
 
@@ -70,16 +89,15 @@ namespace RunnerV2.Helpers
                 case VirtualKey.RightWindows:
                     _winState = false;
                     break;
-                default:
-                    OnKeyboardEvent(new HotkeySettings
-                    {
-                        Code = key,
-                        Ctrl = _ctrlState,
-                        Alt = _altState,
-                        Shift = _shiftState,
-                        Win = _winState,
-                    });
-                    break;
+            }
+
+            // Correctly release Ctrl key if Ctrl+Alt (AltGr) was used.
+            if (_ctrlAltState && (VirtualKey)key == VirtualKey.RightMenu)
+            {
+                _ctrlAltState = false;
+                _ctrlState = false;
+
+                SendSingleKeyboardInput((short)VirtualKey.LeftControl, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
             }
 
             SendSingleKeyboardInput((short)key, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
@@ -89,6 +107,7 @@ namespace RunnerV2.Helpers
         private static bool _altState;
         private static bool _shiftState;
         private static bool _winState;
+        private static bool _ctrlAltState;
 
         private static bool _isActive;
 
@@ -114,8 +133,10 @@ namespace RunnerV2.Helpers
             _keyboardHooks.Remove(moduleName);
         }
 
-        private static void OnKeyboardEvent(HotkeySettings pressedHotkey)
+        private static bool OnKeyboardEvent(HotkeySettings pressedHotkey)
         {
+            bool shortcutHandled = false;
+
             foreach (var moduleHooks in _keyboardHooks.Values)
             {
                 foreach (var (hotkeySettings, action) in moduleHooks)
@@ -123,9 +144,12 @@ namespace RunnerV2.Helpers
                     if (hotkeySettings == pressedHotkey)
                     {
                         action();
+                        shortcutHandled = true;
                     }
                 }
             }
+
+            return shortcutHandled;
         }
 
         public static void Start()
@@ -147,7 +171,12 @@ namespace RunnerV2.Helpers
         // Function to send a single key event to the system which would be ignored by the hotkey control.
         private static void SendSingleKeyboardInput(short keyCode, uint keyStatus)
         {
-            NativeKeyboardHelper.INPUT inputShift = new()
+            if (IsExtendedVirtualKey(keyCode))
+            {
+               keyStatus |= (uint)NativeKeyboardHelper.KeyEventF.ExtendedKey;
+            }
+
+            NativeKeyboardHelper.INPUT input = new()
             {
                 type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
                 data = new NativeKeyboardHelper.InputUnion
@@ -161,9 +190,30 @@ namespace RunnerV2.Helpers
                 },
             };
 
-            NativeKeyboardHelper.INPUT[] inputs = [inputShift];
+            NativeKeyboardHelper.INPUT[] inputs = [input];
 
             _ = NativeMethods.SendInput(1, inputs, NativeKeyboardHelper.INPUT.Size);
+        }
+
+        private static bool IsExtendedVirtualKey(short vk)
+        {
+            return vk switch
+            {
+                0xA5 => true, // VK_RMENU (Right Alt - AltGr)
+                0xA3 => true, // VK_RCONTROL
+                0x2D => true, // VK_INSERT
+                0x2E => true, // VK_DELETE
+                0x23 => true, // VK_END
+                0x24 => true, // VK_HOME
+                0x21 => true, // VK_PRIOR (Page Up)
+                0x22 => true, // VK_NEXT (Page Down)
+                0x25 => true, // VK_LEFT
+                0x26 => true, // VK_UP
+                0x27 => true, // VK_RIGHT
+                0x28 => true, // VK_DOWN
+                0x90 => true, // VK_NUMLOCK
+                _ => false,
+            };
         }
     }
 }
