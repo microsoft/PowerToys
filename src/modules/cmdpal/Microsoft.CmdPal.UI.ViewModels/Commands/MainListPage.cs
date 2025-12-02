@@ -161,7 +161,7 @@ public partial class MainListPage : DynamicListPage,
             {
                 return _tlcManager
                     .TopLevelCommands
-                    .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
+                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
         }

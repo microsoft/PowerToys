@@ -550,4 +550,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
     <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
   </data>
+  <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
 </root>
