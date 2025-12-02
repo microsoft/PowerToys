@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.UITest
         {
             KeyboardHelper.SendKeys(Key.Win, Key.M);
             CloseOtherApplications();
-            if (!IsInPipeline)
+            if (IsInPipeline)
             {
                 string baseDirectory = this.TestContext.TestResultsDirectory ?? string.Empty;
                 ScreenshotDirectory = Path.Combine(baseDirectory, "UITestScreenshots_" + Guid.NewGuid().ToString());
