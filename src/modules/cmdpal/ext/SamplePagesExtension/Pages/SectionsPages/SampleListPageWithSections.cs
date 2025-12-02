@@ -24,7 +24,7 @@ internal sealed partial class SampleListPageWithSections : ListPage
 
     public override IListItem[] GetItems()
     {
-        var sectionList = new ListSection("This is a section list", [
+        var sectionList = new LiveSectionBuilder("This is a section list", [
                     new ListItem(new NoOpCommand())
                     {
                         Title = "Sample Title",
@@ -32,7 +32,7 @@ internal sealed partial class SampleListPageWithSections : ListPage
                         Icon = IconHelpers.FromRelativePath("Assets/Images/RedRectangle.png"),
                     },
                 ]).ToListItems();
-        var anotherSectionList = new ListSection("This is another section list", [
+        var anotherSectionList = new LiveSectionBuilder("This is another section list", [
                     new ListItem(new NoOpCommand())
                     {
                         Title = "Another Title",
@@ -53,7 +53,7 @@ internal sealed partial class SampleListPageWithSections : ListPage
                     },
                 ]).ToListItems();
 
-        var yesTheresAnother = new ListSection("There's another", [
+        var yesTheresAnother = new LiveSectionBuilder("There's another", [
             new ListItem(new NoOpCommand())
             {
                 Title = "Sample Title",

@@ -93,7 +93,7 @@ public partial class ListItemViewModel : CommandItemViewModel
 
     public bool IsSeparator(IListItem item)
     {
-        return Section is not null && item.Command is null;
+        return item.Command is null;
     }
 
     public override void SlowInitializeProperties()
@@ -140,10 +140,12 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(model.Section):
                 Section = model.Section ?? string.Empty;
-                UpdateProperty(nameof(Section));
+                IsSectionOrSeparator = IsSeparator(model);
+                UpdateProperty(nameof(Section), nameof(IsSectionOrSeparator));
                 break;
-            case nameof(IsSectionOrSeparator):
-                IsSectionOrSeparator = !string.IsNullOrWhiteSpace(Section) || IsSeparator(model);
+            case nameof(model.Command):
+                IsSectionOrSeparator = IsSeparator(model);
+                UpdateProperty(nameof(IsSectionOrSeparator));
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;

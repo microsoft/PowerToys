@@ -14,8 +14,6 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Separator { get; set; }
 
-    public IGridPropertiesViewModel? GridProperties { get; set; }
-
     public DataTemplate? Section { get; set; }
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
