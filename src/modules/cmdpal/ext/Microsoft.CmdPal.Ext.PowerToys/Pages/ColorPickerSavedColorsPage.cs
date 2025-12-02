@@ -22,7 +22,7 @@ internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
         Icon = IconHelpers.FromRelativePath("Assets\\ColorPicker.png");
         Title = "Saved colors";
         Name = "ColorPickerSavedColors";
-        Id = "com.microsoft.powertoys.colorpicker.savedcolors";
+        Id = "com.microsoft.powertoys.colorpicker.savedColors";
 
         _emptyContent = new CommandItem()
         {
