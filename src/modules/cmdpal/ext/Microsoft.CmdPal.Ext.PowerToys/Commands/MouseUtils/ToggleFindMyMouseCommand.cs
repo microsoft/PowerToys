@@ -19,14 +19,14 @@ internal sealed partial class ToggleFindMyMouseCommand : InvokableCommand
         Name = "Trigger Find My Mouse";
     }
 
-        public override CommandResult Invoke()
+    public override CommandResult Invoke()
+    {
+        try
         {
-            try
-            {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FindMyMouseTriggerEvent());
-                evt.Set();
-                return CommandResult.Dismiss();
-            }
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FindMyMouseTriggerEvent());
+            evt.Set();
+            return CommandResult.Dismiss();
+        }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to trigger Find My Mouse: {ex.Message}");

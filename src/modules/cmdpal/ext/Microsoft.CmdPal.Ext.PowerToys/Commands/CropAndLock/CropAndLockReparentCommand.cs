@@ -19,14 +19,14 @@ internal sealed partial class CropAndLockReparentCommand : InvokableCommand
         Name = "Crop and Lock (Reparent)";
     }
 
-        public override CommandResult Invoke()
+    public override CommandResult Invoke()
+    {
+        try
         {
-            try
-            {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockReparentEvent());
-                evt.Set();
-                return CommandResult.Dismiss();
-            }
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.CropAndLockReparentEvent());
+            evt.Set();
+            return CommandResult.Dismiss();
+        }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to start Crop and Lock (Reparent): {ex.Message}");

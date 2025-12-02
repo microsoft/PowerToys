@@ -19,14 +19,14 @@ internal sealed partial class ToggleShortcutGuideCommand : InvokableCommand
         Name = "Toggle Shortcut Guide";
     }
 
-        public override CommandResult Invoke()
+    public override CommandResult Invoke()
+    {
+        try
         {
-            try
-            {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent());
-                evt.Set();
-                return CommandResult.Dismiss();
-            }
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent());
+            evt.Set();
+            return CommandResult.Dismiss();
+        }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to toggle Shortcut Guide: {ex.Message}");

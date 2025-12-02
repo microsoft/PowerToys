@@ -40,7 +40,6 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring PowerAccentExitEvent();
         static hstring ShortcutGuideTriggerEvent();
         static hstring RegistryPreviewTriggerEvent();
-        static hstring MeasureToolTriggerEvent();
         static hstring GcodePreviewResizeEvent();
         static hstring BgcodePreviewResizeEvent();
         static hstring QoiPreviewResizeEvent();

@@ -19,14 +19,14 @@ internal sealed partial class OpenFancyZonesEditorCommand : InvokableCommand
         Name = "Open FancyZones Editor";
     }
 
-        public override CommandResult Invoke()
+    public override CommandResult Invoke()
+    {
+        try
         {
-            try
-            {
-                using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent());
-                evt.Set();
-                return CommandResult.Dismiss();
-            }
+            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.FZEToggleEvent());
+            evt.Set();
+            return CommandResult.Dismiss();
+        }
         catch (Exception ex)
         {
             return CommandResult.ShowToast($"Failed to open FancyZones editor: {ex.Message}");
