@@ -3,8 +3,6 @@
 #include <windows.h>
 #include <shlwapi.h>
 
-#pragma comment(lib, "Shlwapi.lib")
-
 #include <string>
 #include <thread>
 

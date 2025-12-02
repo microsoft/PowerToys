@@ -36,7 +36,7 @@ internal sealed class ZoomItModuleCommandProvider : ModuleCommandProvider
             Subtitle = "Enter break timer",
             Icon = icon,
         };
-        yield return new ListItem(new ZoomItActionCommand("livezoom", "ZoomIt: Live Zoom"))
+        yield return new ListItem(new ZoomItActionCommand("liveZoom", "ZoomIt: Live Zoom"))
         {
             Title = "ZoomIt: Live Zoom",
             Subtitle = "Toggle live zoom",

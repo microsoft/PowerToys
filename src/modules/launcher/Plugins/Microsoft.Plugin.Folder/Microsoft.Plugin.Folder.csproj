@@ -37,7 +37,6 @@
     <ProjectReference Include="..\..\Wox.Plugin\Wox.Plugin.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Community.PowerToys.Run.Plugin.WebSearch\Community.PowerToys.Run.Plugin.WebSearch.csproj" />
   </ItemGroup>
 
   <ItemGroup>

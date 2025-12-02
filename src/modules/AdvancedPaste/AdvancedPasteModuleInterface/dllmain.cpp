@@ -901,60 +901,6 @@ public:
     {
         return m_enabled;
     }
-
-    virtual std::wstring describe() override
-    {
-        try
-        {
-            auto baseDescription = PowertoyModuleIface::describe();
-            auto descriptionObject = winrt::Windows::Data::Json::JsonObject::Parse(winrt::hstring(baseDescription));
-            auto methodsArray = descriptionObject.GetNamedArray(L"methods");
-
-            winrt::Windows::Data::Json::JsonObject launchMethod;
-            launchMethod.SetNamedValue(L"name", winrt::Windows::Data::Json::JsonValue::CreateStringValue(L"launch"));
-            launchMethod.SetNamedValue(L"description", winrt::Windows::Data::Json::JsonValue::CreateStringValue(L"Open Advanced Paste UI"));
-            methodsArray.Append(launchMethod);
-
-            return descriptionObject.Stringify().c_str();
-        }
-        catch (...)
-        {
-            return PowertoyModuleIface::describe();
-        }
-    }
-
-    virtual std::wstring invoke(const wchar_t* method, const wchar_t* jsonParams) override
-    {
-        if (method != nullptr && wcscmp(method, L"launch") == 0)
-        {
-            if (!is_enabled())
-            {
-                try
-                {
-                    enable();
-                }
-                catch (...)
-                {
-                    return L"{\"ok\":false,\"error\":\"EnableFailed\"}";
-                }
-            }
-
-            try
-            {
-                m_process_manager.start();
-                m_process_manager.bring_to_front();
-                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
-                Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
-                return L"{\"ok\":true}";
-            }
-            catch (...)
-            {
-                return L"{\"ok\":false,\"error\":\"LaunchFailed\"}";
-            }
-        }
-
-        return PowertoyModuleIface::invoke(method, jsonParams);
-    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

@@ -25,7 +25,6 @@
     <ProjectReference Include="..\Microsoft.Plugin.Folder\Microsoft.Plugin.Folder.csproj">
       <Private>false</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.Plugin.Program.UnitTests\Microsoft.Plugin.Program.UnitTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
