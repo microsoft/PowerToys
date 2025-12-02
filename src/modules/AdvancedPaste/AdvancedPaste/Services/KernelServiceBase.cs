@@ -76,6 +76,16 @@ public abstract class KernelServiceBase(
 
             if (!(await outputPackage.GetView().HasUsableDataAsync()))
             {
+                var lastMessage = chatHistory.LastOrDefault();
+                if (lastMessage != null && lastMessage.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(lastMessage.Content))
+                {
+                    outputPackage = DataPackageHelpers.CreateFromText(lastMessage.Content);
+                    kernel.SetDataPackage(outputPackage);
+                }
+            }
+
+            if (!(await outputPackage.GetView().HasUsableDataAsync()))
+            {
                 throw new InvalidOperationException("No data was returned from the kernel operation");
             }
 
@@ -148,7 +158,21 @@ public abstract class KernelServiceBase(
         var systemPrompt = string.IsNullOrWhiteSpace(runtimeConfig.SystemPrompt) ? DefaultSystemPrompt : runtimeConfig.SystemPrompt;
         chatHistory.AddSystemMessage(systemPrompt);
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
-        chatHistory.AddUserMessage(prompt);
+
+        var imageBytes = await kernel.GetDataPackageView().GetImageAsPngBytesAsync();
+        if (imageBytes != null)
+        {
+            var collection = new ChatMessageContentItemCollection
+            {
+                new TextContent(prompt),
+                new ImageContent(imageBytes, "image/png"),
+            };
+            chatHistory.AddUserMessage(collection);
+        }
+        else
+        {
+            chatHistory.AddUserMessage(prompt);
+        }
 
         if (ShouldModerateAdvancedAI())
         {
