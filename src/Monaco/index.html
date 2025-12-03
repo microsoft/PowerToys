@@ -155,6 +155,22 @@
             });
 
             onContextMenu();
+
+            // Add a global listener for Ctrl/Cmd + C to trigger the copy command
+            // This ensures pressing Ctrl/Cmd+C will call the existing runCopyCommand()
+            // (listener is added after editor creation so `editor` is initialized)
+            document.addEventListener('keydown', function (e) {
+                try {
+                    var key = (e.key || '').toLowerCase();
+                    if ((e.ctrlKey || e.metaKey) && key === 'c') {
+                        runCopyCommand();
+                        e.preventDefault();
+                    }
+                } catch (err) {
+                    // swallow any errors to avoid breaking the previewer
+                    console.error('Error handling Ctrl/Cmd+C:', err);
+                }
+            });
         });
 
         function onContextMenu() {
@@ -164,7 +180,7 @@
             let contextMenuEntry = [...menus].find(entry => entry[0].id == 'EditorContext')
             let contextMenuLinks = contextMenuEntry[1]
 
-            let removableIds = ['editor.action.clipboardCutAction', 'editor.action.formatDocument', 'editor.action.formatSelection', 'editor.action.quickCommand', 'editor.action.quickOutline', 'editor.action.refactor', 'editor.action.sourceAction', 'editor.action.rename', undefined, 'editor.action.revealDefinition', 'editor.action.revealDeclaration', 'editor.action.goToTypeDefinition', 'editor.action.goToImplementation', 'editor.action.goToReferences', 'editor.action.changeAll']
+            let removableIds = ['editor.action.formatDocument', 'editor.action.formatSelection', 'editor.action.quickCommand', 'editor.action.quickOutline', 'editor.action.refactor', 'editor.action.sourceAction', 'editor.action.rename', undefined, 'editor.action.revealDefinition', 'editor.action.revealDeclaration', 'editor.action.goToTypeDefinition', 'editor.action.goToImplementation', 'editor.action.goToReferences', 'editor.action.changeAll']
 
             let removeById = (list, ids) => {
                 let node = list._first
@@ -177,6 +193,7 @@
 
             removeById(contextMenuLinks, removableIds)
         }
+        
     </script>
 </body>
 </html>
