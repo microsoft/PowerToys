@@ -1,0 +1,257 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.DevRibbon"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="LogEntryTemplate" x:DataType="viewModels:LogEntryViewModel">
+            <controls:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Header}">
+                <controls:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="{x:Bind SeverityGlyph}" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                        <ScrollViewer
+                            MaxWidth="1160"
+                            HorizontalScrollMode="Auto"
+                            VerticalScrollMode="Auto">
+                            <TextBlock
+                                FontFamily="Consolas"
+                                FontSize="11"
+                                Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}"
+                                IsTextSelectionEnabled="True"
+                                Text="{x:Bind Details}"
+                                TextWrapping="NoWrap" />
+                        </ScrollViewer>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+        </DataTemplate>
+
+        <converters:BoolToVisibilityConverter
+            x:Key="InvertedBoolToVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+
+    </UserControl.Resources>
+
+    <Grid>
+        <Border
+            x:Name="RootBorder"
+            Height="26"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Background="{ThemeResource SettingsCardBackground}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+            BorderThickness="1,0,1,1"
+            CornerRadius="0,0,8,8"
+            Opacity="0.3">
+            <Button
+                Padding="0"
+                CornerRadius="0,0,8,8"
+                FontSize="11"
+                PointerEntered="DevRibbonButton_PointerEntered"
+                PointerExited="DevRibbonButton_PointerExited">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Background="DarkOrange"
+                        Orientation="Horizontal"
+                        Visibility="{x:Bind VisibleIfGreaterThanZero(ViewModel.WarningCount), Mode=OneWay}">
+                        <FontIcon
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="12"
+                            Glyph="&#xE7BA;" />
+                        <TextBlock VerticalAlignment="Center">
+                            <Run Text="{x:Bind ViewModel.WarningCount, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Background="Maroon"
+                        Orientation="Horizontal"
+                        Visibility="{x:Bind VisibleIfGreaterThanZero(ViewModel.ErrorCount), Mode=OneWay}">
+                        <FontIcon
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="12"
+                            Glyph="&#xEA39;" />
+                        <TextBlock VerticalAlignment="Center">
+                            <Run Text="{x:Bind ViewModel.ErrorCount, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                    <Border Padding="8,4">
+                        <Border.Background>
+                            <SolidColorBrush Color="{x:Bind ViewModel.TagColor}" />
+                        </Border.Background>
+                        <TextBlock Padding="4" VerticalAlignment="Center">
+                            <Run Text="{x:Bind ViewModel.Tag}" />
+                        </TextBlock>
+                    </Border>
+                </StackPanel>
+
+                <Button.Flyout>
+                    <Flyout
+                        Placement="Bottom"
+                        ShouldConstrainToRootBounds="False"
+                        SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                                <Setter Property="MinWidth" Value="600" />
+                                <Setter Property="MaxWidth" Value="1200" />
+                                <Setter Property="Padding" Value="0" />
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+
+                        <Grid x:Name="FlyoutContent">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Padding="16" Spacing="8">
+
+                                <!--  Logs section  -->
+                                <TextBlock
+                                    Margin="1,0,0,6"
+                                    Style="{ThemeResource SettingsSectionHeaderTextBlockStyle}"
+                                    Text="Logs" />
+                                <ItemsControl ItemTemplate="{StaticResource LogEntryTemplate}" ItemsSource="{x:Bind ViewModel.LatestLogs, Mode=OneWay}" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Command="{x:Bind ViewModel.OpenLogFileCommand}" Content="Open Log File" />
+                                    <Button Command="{x:Bind ViewModel.OpenLogFolderCommand}" Content="Open Log Folder" />
+                                    <Button Command="{x:Bind ViewModel.ResetErrorCountersCommand}" Content="Clear Counters" />
+                                </StackPanel>
+
+                                <!--  Build info section  -->
+                                <TextBlock Style="{ThemeResource SettingsSectionHeaderTextBlockStyle}" Text="Build Info" />
+                                <Border
+                                    Padding="16"
+                                    Background="{ThemeResource SettingsCardBackground}"
+                                    BorderBrush="{ThemeResource SettingsCardBorderBrush}"
+                                    BorderThickness="1">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.Resources>
+                                            <Style
+                                                x:Key="KeyTextBlockStyle"
+                                                BasedOn="{StaticResource CaptionTextBlockStyle}"
+                                                TargetType="TextBlock">
+                                                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                                                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </Style>
+                                            <Style
+                                                x:Key="ValueTextBlockStyle"
+                                                BasedOn="{StaticResource CaptionTextBlockStyle}"
+                                                TargetType="TextBlock">
+                                                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                                                <Setter Property="TextAlignment" Value="Right" />
+                                            </Style>
+                                        </Grid.Resources>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Style="{StaticResource KeyTextBlockStyle}"
+                                            Text="Configuration:" />
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Style="{StaticResource ValueTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.BuildConfiguration, Mode=OneWay}" />
+
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Style="{StaticResource KeyTextBlockStyle}"
+                                            Text="AOT:" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Style="{StaticResource ValueTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.IsAot, Mode=OneWay}" />
+
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Style="{StaticResource KeyTextBlockStyle}"
+                                            Text="Trimmed:" />
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Style="{StaticResource ValueTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.IsPublishTrimmed, Mode=OneWay}" />
+
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+
+                            <!--  Footer  -->
+                            <Border
+                                Grid.Row="1"
+                                Padding="16"
+                                Background="{ThemeResource SettingsCardBackground}"
+                                BorderBrush="{ThemeResource SettingsCardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{ThemeResource ControlCornerRadius}"
+                                Visibility="{x:Bind ViewModel.IsAotReleaseConfiguration, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+                                <TextBlock Text="Warning: Test in Release/AOT configuration to verify everything works." TextWrapping="Wrap" />
+                            </Border>
+
+                        </Grid>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </Border>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="PointerOver">
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetName="RootBorder"
+                            Storyboard.TargetProperty="Opacity"
+                            To="1.0"
+                            Duration="0:0:0.1" />
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="SeverityStates">
+                <VisualState x:Name="NoLog" />
+                <VisualState x:Name="WarningLog">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SeverityIcon" Storyboard.TargetProperty="Glyph">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="&#xE7BA;" />
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </VisualState>
+                <VisualState x:Name="ErrorLog">
+                    <Storyboard>
+                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SeverityIcon" Storyboard.TargetProperty="Glyph">
+                            <DiscreteObjectKeyFrame KeyTime="0" Value="&#xEA39;" />
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

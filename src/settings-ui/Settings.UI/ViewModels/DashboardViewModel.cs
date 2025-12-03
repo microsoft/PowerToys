@@ -40,6 +40,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
+        // Master list of module items that is sorted and projected into AllModules.
+        private List<DashboardListItem> _moduleItems = new List<DashboardListItem>();
+
+        // Flag to prevent circular updates when a UI toggle triggers settings changes.
+        private bool _isUpdatingFromUI;
+
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
         public AllHotkeyConflictsData AllHotkeyConflictsData
@@ -74,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     generalSettingsConfig.DashboardSortOrder = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
-                    RefreshModuleList();
+                    SortModuleList();
                 }
             }
         }
@@ -96,8 +102,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            RefreshModuleList();
-            GetShortcutModules();
+            BuildModuleList();
+            SortModuleList();
+            RefreshShortcutModules();
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
@@ -129,11 +136,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
-        private void RefreshModuleList()
+        /// <summary>
+        /// Builds the master list of module items. Called once during initialization.
+        /// Each module item contains its configuration, enabled state, and GPO lock status.
+        /// </summary>
+        private void BuildModuleList()
         {
-            AllModules.Clear();
-
-            var moduleItems = new List<DashboardListItem>();
+            _moduleItems.Clear();
 
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
@@ -145,50 +154,147 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                    IsNew = moduleType == ModuleType.CursorWrap,
                     DashboardModuleItems = GetModuleItems(moduleType),
                 };
                 newItem.EnabledChangedCallback = EnabledChangedOnUI;
-                moduleItems.Add(newItem);
-            }
-
-            // Sort based on current sort order
-            var sortedItems = DashboardSortOrder switch
-            {
-                DashboardSortOrder.ByStatus => moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
-                _ => moduleItems.OrderBy(x => x.Label), // Default alphabetical
-            };
-
-            foreach (var item in sortedItems)
-            {
-                AllModules.Add(item);
+                _moduleItems.Add(newItem);
             }
         }
 
+        /// <summary>
+        /// Sorts the module list according to the current sort order and updates the AllModules collection.
+        /// On first call, populates AllModules. On subsequent calls, uses Move() to reorder items in-place
+        /// to avoid destroying and recreating UI elements.
+        /// </summary>
+        private void SortModuleList()
+        {
+            var sortedItems = (DashboardSortOrder switch
+            {
+                DashboardSortOrder.ByStatus => _moduleItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label),
+                _ => _moduleItems.OrderBy(x => x.Label), // Default alphabetical
+            }).ToList();
+
+            // If AllModules is empty (first load), just populate it.
+            if (AllModules.Count == 0)
+            {
+                foreach (var item in sortedItems)
+                {
+                    AllModules.Add(item);
+                }
+
+                return;
+            }
+
+            // Otherwise, update the collection in place using Move to avoid UI glitches.
+            for (int i = 0; i < sortedItems.Count; i++)
+            {
+                var currentItem = sortedItems[i];
+                var currentIndex = AllModules.IndexOf(currentItem);
+
+                if (currentIndex != -1 && currentIndex != i)
+                {
+                    AllModules.Move(currentIndex, i);
+                }
+            }
+
+            // Notify that DashboardSortOrder changed so the menu updates its checked state.
+            OnPropertyChanged(nameof(DashboardSortOrder));
+        }
+
+        /// <summary>
+        /// Refreshes module enabled/locked states by re-reading GPO configuration. Only
+        /// updates properties that have actually changed to minimize UI notifications
+        /// then re-sorts the list according to the current sort order.
+        /// </summary>
+        private void RefreshModuleList()
+        {
+            foreach (var item in _moduleItems)
+            {
+                GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(item.Tag);
+
+                // GPO can force-enable (Enabled) or force-disable (Disabled) a module.
+                // If Enabled: module is on and the user cannot disable it.
+                // If Disabled: module is off and the user cannot enable it.
+                // Otherwise, the setting is unlocked and the user can enable/disable it.
+                bool newEnabledState = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag));
+
+                // Lock the toggle when GPO is controlling the module.
+                bool newLockedState = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled;
+
+                // Only update if there's an actual change to minimize UI notifications.
+                if (item.IsEnabled != newEnabledState)
+                {
+                    item.IsEnabled = newEnabledState;
+                }
+
+                if (item.IsLocked != newLockedState)
+                {
+                    item.IsLocked = newLockedState;
+                }
+            }
+
+            SortModuleList();
+        }
+
+        /// <summary>
+        /// Callback invoked when a user toggles a module's enabled state in the UI.
+        /// Sets the _isUpdatingFromUI flag to prevent circular updates, then updates
+        /// settings, re-sorts if needed, and refreshes dependent collections.
+        /// </summary>
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
-            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
-
-            if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+            _isUpdatingFromUI = true;
+            try
             {
-                var settingsUtils = new SettingsUtils();
-                var settings = NewPlusViewModel.LoadSettings(settingsUtils);
-                NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
-            }
+                Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
 
-            // Request updated conflicts after module state change
-            RequestConflictData();
+                if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
+                {
+                    var settingsUtils = new SettingsUtils();
+                    var settings = NewPlusViewModel.LoadSettings(settingsUtils);
+                    NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
+                }
+
+                // Re-sort only required if sorting by enabled status.
+                if (DashboardSortOrder == DashboardSortOrder.ByStatus)
+                {
+                    SortModuleList();
+                }
+
+                // Always refresh shortcuts/actions to reflect enabled state changes.
+                RefreshShortcutModules();
+
+                // Request updated conflicts after module state change.
+                RequestConflictData();
+            }
+            finally
+            {
+                _isUpdatingFromUI = false;
+            }
         }
 
+        /// <summary>
+        /// Callback invoked when module enabled state changes from other parts of the
+        /// settings UI. Ignores the notification if it was triggered by a UI toggle
+        /// we're already handling, to prevent circular updates.
+        /// </summary>
         public void ModuleEnabledChangedOnSettingsPage()
         {
+            // Ignore if this was triggered by a UI change that we're already handling.
+            if (_isUpdatingFromUI)
+            {
+                return;
+            }
+
             try
             {
                 RefreshModuleList();
-                GetShortcutModules();
+                RefreshShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));
 
-                // Request updated conflicts after module state change
+                // Request updated conflicts after module state change.
                 RequestConflictData();
             }
             catch (Exception ex)
@@ -197,7 +303,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void GetShortcutModules()
+        /// <summary>
+        /// Rebuilds ShortcutModules and ActionModules collections by filtering AllModules
+        /// to only include enabled modules and their respective shortcut/action items.
+        /// </summary>
+        private void RefreshShortcutModules()
         {
             ShortcutModules.Clear();
             ActionModules.Clear();

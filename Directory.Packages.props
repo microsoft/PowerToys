@@ -7,6 +7,7 @@
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.1.0-beta" />
     <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.5" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
@@ -68,7 +69,7 @@
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.37" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.250907003" />

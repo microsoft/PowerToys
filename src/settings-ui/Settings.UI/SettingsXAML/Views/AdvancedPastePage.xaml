@@ -103,10 +103,7 @@
                                 </StackPanel>
                             </tkcontrols:SettingsExpander.Description>
                             <tkcontrols:SettingsExpander.ItemsHeader>
-                                <tkcontrols:SettingsCard
-                                    Description="Add online or local models"
-                                    Header="Model providers"
-                                    Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                                <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ModelProviders" Style="{StaticResource DefaultSettingsExpanderItemStyle}">
                                     <Button Content="Add model" Style="{StaticResource AccentButtonStyle}">
                                         <Button.Flyout>
                                             <MenuFlyout x:Name="AddProviderMenuFlyout" Opening="AddProviderMenuFlyout_Opening" />
@@ -130,16 +127,16 @@
                                                 <Button.Flyout>
                                                     <MenuFlyout>
                                                         <MenuFlyoutItem
+                                                            x:Uid="AdvancedPaste_Edit"
                                                             Click="EditPasteAIProviderButton_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE70F;}"
-                                                            Tag="{x:Bind}"
-                                                            Text="Edit" />
+                                                            Tag="{x:Bind}" />
                                                         <MenuFlyoutSeparator />
                                                         <MenuFlyoutItem
+                                                            x:Uid="AdvancedPaste_Remove"
                                                             Click="RemovePasteAIProviderButton_Click"
                                                             Icon="{ui:FontIcon Glyph=&#xE74D;}"
-                                                            Tag="{x:Bind}"
-                                                            Text="Remove" />
+                                                            Tag="{x:Bind}" />
                                                     </MenuFlyout>
                                                 </Button.Flyout>
                                             </Button>
@@ -171,6 +168,9 @@
                                 </InfoBar>
                             </tkcontrols:SettingsExpander.ItemsHeader>
                             <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
                                     ContentAlignment="Left"
@@ -429,12 +429,11 @@
         <!--  Paste AI provider dialog  -->
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
+            x:Uid="AdvancedPaste_EndpointDialog"
             Title="Paste with AI provider configuration"
             Closed="PasteAIProviderConfigurationDialog_Closed"
             PrimaryButtonClick="PasteAIProviderConfigurationDialog_PrimaryButtonClick"
-            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
-            PrimaryButtonText="Save"
-            SecondaryButtonText="Cancel">
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
             <ContentDialog.Resources>
                 <x:Double x:Key="ContentDialogMaxWidth">900</x:Double>
                 <x:Double x:Key="ContentDialogMaxHeight">700</x:Double>
@@ -496,46 +495,44 @@
                         Spacing="16">
                         <TextBox
                             x:Name="PasteAIModelNameTextBox"
+                            x:Uid="AdvancedPaste_ModelName"
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
-                            Header="Model name"
-                            PlaceholderText="gpt-4"
+                            PlaceholderText="gpt-4o"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.ModelName, Mode=TwoWay}" />
                         <TextBox
                             x:Name="PasteAIEndpointUrlTextBox"
+                            x:Uid="AdvancedPaste_EndpointURL"
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
-                            Header="Endpoint URL"
                             PlaceholderText="https://your-resource.openai.azure.com/"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.EndpointUrl, Mode=TwoWay}" />
-
                         <PasswordBox
                             x:Name="PasteAIApiKeyPasswordBox"
-                            MinWidth="200"
-                            Header="API key"
-                            PlaceholderText="Enter API Key" />
+                            x:Uid="AdvancedPaste_APIKey"
+                            MinWidth="200" />
                         <TextBox
                             x:Name="PasteAIApiVersionTextBox"
+                            x:Uid="AdvancedPaste_APIVersion"
                             MinWidth="200"
                             HorizontalAlignment="Stretch"
-                            Header="API version"
                             PlaceholderText="2024-10-01"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.ApiVersion, Mode=TwoWay}"
                             Visibility="Collapsed" />
                         <TextBox
                             x:Name="PasteAIDeploymentNameTextBox"
+                            x:Uid="AdvancedPaste_DeploymentName"
                             MinWidth="200"
-                            Header="Deployment name"
-                            PlaceholderText="gpt-4"
+                            PlaceholderText="gpt-4o"
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.DeploymentName, Mode=TwoWay}" />
                         <TextBox
                             x:Name="PasteAISystemPromptTextBox"
+                            x:Uid="AdvancedPaste_SystemPrompt"
                             MinWidth="200"
                             MinHeight="76"
                             HorizontalAlignment="Stretch"
                             AcceptsReturn="True"
                             Header="System prompt"
-                            PlaceholderText="You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content."
                             Text="{x:Bind ViewModel.PasteAIProviderDraft.SystemPrompt, Mode=TwoWay}"
                             TextWrapping="Wrap" />
                         <Grid
@@ -575,13 +572,10 @@
                             IsOn="{x:Bind ViewModel.PasteAIProviderDraft.EnableAdvancedAI, Mode=TwoWay}"
                             Toggled="PasteAIEnableAdvancedAICheckBox_Toggled"
                             Visibility="Collapsed">
-                            <ToolTipService.ToolTip>
-                                <TextBlock Text="" TextWrapping="Wrap" />
-                            </ToolTipService.ToolTip>
                             <ToggleSwitch.Header>
                                 <TextBlock>
-                                    <Run Text="Enable Advanced AI" /> <LineBreak />
-                                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Use built-in functions to handle complex tasks. Token consumption may increase." />
+                                    <Run x:Uid="AdvancedPaste_EnableAdvancedAI" /> <LineBreak />
+                                    <Run x:Uid="AdvancedPaste_EnableAdvancedAIDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </TextBlock>
                             </ToggleSwitch.Header>
                         </ToggleSwitch>

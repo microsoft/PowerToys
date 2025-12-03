@@ -11,14 +11,14 @@ public class GalleryGridPropertiesViewModel : IGridPropertiesViewModel
 {
     private readonly ExtensionObject<IGalleryGridLayout> _model;
 
+    public bool ShowTitle { get; private set; }
+
+    public bool ShowSubtitle { get; private set; }
+
     public GalleryGridPropertiesViewModel(IGalleryGridLayout galleryGridLayout)
     {
         _model = new(galleryGridLayout);
     }
-
-    public bool ShowTitle { get; set; }
-
-    public bool ShowSubtitle { get; set; }
 
     public void InitializeProperties()
     {

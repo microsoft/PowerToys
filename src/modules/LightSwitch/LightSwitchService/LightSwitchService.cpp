@@ -271,7 +271,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         if (wait == WAIT_OBJECT_0 + (hParent ? (hManualOverride ? 3 : 2) : 2))
         {
-            Logger::info(L"[LightSwitchService] Settings file changed event detected.");
             ResetEvent(hSettingsChanged);
             LightSwitchSettings::instance().LoadSettings();
             stateManager.OnSettingsChanged();

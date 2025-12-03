@@ -214,8 +214,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         var serviceType = GetRuntimeConfiguration().ServiceType;
         return new OpenAIPromptExecutionSettings
         {
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
-            Temperature = 0.01,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
         };
     }
 }
