@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runner", "src\runner\runner.vcxproj", "{9412D5C6-2CF2-4FC2-A601-B55508EA9B27}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -837,6 +837,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.RemoteDesktop", "src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.RemoteDesktop\Microsoft.CmdPal.Ext.RemoteDesktop.csproj", "{2B3FB837-23DE-629F-82C6-42304E7083C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj", "{DB34808A-FF91-D06E-A426-AFB5A8BD583B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deux", "Deux", "{023C058E-537A-4AB6-900A-36437EC17410}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{4F881A97-423A-4905-B219-677AD0184059}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CommandPalette.UI", "src\modules\Deux\UI\Microsoft.CommandPalette.UI\Microsoft.CommandPalette.UI.csproj", "{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -3056,6 +3062,18 @@ Global
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|ARM64.Build.0 = Release|ARM64
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|x64.ActiveCfg = Release|x64
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|x64.Build.0 = Release|x64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Debug|ARM64.Build.0 = Debug|ARM64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Debug|x64.ActiveCfg = Debug|x64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Debug|x64.Build.0 = Debug|x64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Debug|x64.Deploy.0 = Debug|x64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Release|ARM64.ActiveCfg = Release|ARM64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Release|ARM64.Build.0 = Release|ARM64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Release|ARM64.Deploy.0 = Release|ARM64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Release|x64.ActiveCfg = Release|x64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Release|x64.Build.0 = Release|x64
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3389,6 +3407,9 @@ Global
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{2B3FB837-23DE-629F-82C6-42304E7083C9} = {ECB8E0D1-7603-4E5C-AB10-D1E545E6F8E2}
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{023C058E-537A-4AB6-900A-36437EC17410} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
+		{4F881A97-423A-4905-B219-677AD0184059} = {023C058E-537A-4AB6-900A-36437EC17410}
+		{9EBE6DE4-58CD-CA14-7A21-B1E9DED261DB} = {4F881A97-423A-4905-B219-677AD0184059}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
