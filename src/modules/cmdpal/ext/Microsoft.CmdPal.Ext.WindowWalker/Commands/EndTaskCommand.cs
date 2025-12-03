@@ -2,13 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Messages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -70,11 +67,15 @@ internal sealed partial class EndTaskCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        if (KillProcess(_window))
+        var shouldDismiss = KillProcess(_window);
+
+        if (shouldDismiss)
         {
             return CommandResult.Dismiss();
         }
 
+        // Send message to refresh window list after killing process
+        WeakReferenceMessenger.Default.Send(new RefreshWindowsMessage());
         return CommandResult.KeepOpen();
     }
 }

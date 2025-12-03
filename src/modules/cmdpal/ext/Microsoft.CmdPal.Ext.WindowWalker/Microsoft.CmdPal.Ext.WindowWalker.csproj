@@ -14,6 +14,9 @@
     <None Remove="Assets\WindowWalker.svg" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   	<ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <!-- WASDK, WebView2, CmdPal Toolkit references now included via Common.ExtDependencies.props -->
