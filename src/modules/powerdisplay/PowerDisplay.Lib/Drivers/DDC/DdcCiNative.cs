@@ -160,60 +160,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Safe wrapper for getting advanced brightness information
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <param name="minBrightness">Minimum brightness</param>
-        /// <param name="currentBrightness">Current brightness</param>
-        /// <param name="maxBrightness">Maximum brightness</param>
-        /// <returns>True if successful</returns>
-        public static bool TryGetMonitorBrightness(IntPtr hPhysicalMonitor, out uint minBrightness, out uint currentBrightness, out uint maxBrightness)
-        {
-            minBrightness = 0;
-            currentBrightness = 0;
-            maxBrightness = 0;
-
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            try
-            {
-                return GetMonitorBrightness(hPhysicalMonitor, out minBrightness, out currentBrightness, out maxBrightness);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogDebug($"TryGetMonitorBrightness failed: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Safe wrapper for setting monitor brightness
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <param name="brightness">Brightness value</param>
-        /// <returns>True if successful</returns>
-        public static bool TrySetMonitorBrightness(IntPtr hPhysicalMonitor, uint brightness)
-        {
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            try
-            {
-                return SetMonitorBrightness(hPhysicalMonitor, brightness);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogDebug($"TrySetMonitorBrightness failed: {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Fetches VCP capabilities string from a monitor and returns a validation result.
         /// This is the slow I2C operation (~4 seconds per monitor) that should only be done once.
         /// The result is cached regardless of success or failure.
@@ -290,8 +236,8 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             try
             {
-                // Try a quick brightness read to verify connection
-                return TryGetMonitorBrightness(hPhysicalMonitor, out _, out _, out _);
+                // Try a quick brightness read via VCP 0x10 to verify connection
+                return TryGetVCPFeature(hPhysicalMonitor, NativeConstants.VcpCodeBrightness, out _, out _);
             }
             catch
             {

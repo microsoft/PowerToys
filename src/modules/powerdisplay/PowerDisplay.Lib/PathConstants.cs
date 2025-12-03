@@ -77,9 +77,16 @@ namespace PowerDisplay.Common
         public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
 
         /// <summary>
-        /// Event name for LightSwitch theme change notifications.
+        /// Event name for LightSwitch light theme change notifications.
+        /// Signaled when LightSwitch switches to light mode.
         /// </summary>
-        public const string LightSwitchThemeChangedEventName = "Local\\PowerToys_LightSwitch_ThemeChanged";
+        public const string LightSwitchLightThemeEventName = "Local\\PowerToys_LightSwitch_LightTheme";
+
+        /// <summary>
+        /// Event name for LightSwitch dark theme change notifications.
+        /// Signaled when LightSwitch switches to dark mode.
+        /// </summary>
+        public const string LightSwitchDarkThemeEventName = "Local\\PowerToys_LightSwitch_DarkTheme";
 
         /// <summary>
         /// Ensures the PowerDisplay folder exists. Creates it if necessary.

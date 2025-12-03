@@ -191,8 +191,9 @@ namespace PowerDisplay.Common.Utils
         }
 
         /// <summary>
-        /// Parse an identifier (lowercase letters and underscores).
-        /// identifier ::= [a-z_]+
+        /// Parse an identifier (letters, digits, and underscores).
+        /// identifier ::= [a-zA-Z0-9_]+
+        /// Note: MCCS uses identifiers like window1, window2, etc.
         /// </summary>
         private ReadOnlySpan<char> ParseIdentifier()
         {
@@ -242,8 +243,21 @@ namespace PowerDisplay.Common.Utils
                     break;
 
                 default:
-                    // Store unknown segments for potential future use
-                    Logger.LogDebug($"Unknown capabilities segment: {segment.Name}({segment.Content})");
+                    // Check for windowN pattern (window1, window2, etc.)
+                    if (segment.Name.Length > 6 &&
+                        segment.Name.StartsWith("window", StringComparison.OrdinalIgnoreCase) &&
+                        int.TryParse(segment.Name.AsSpan(6), out int windowNum))
+                    {
+                        var windowParser = new WindowParser(segment.Content);
+                        var windowCap = windowParser.Parse(windowNum);
+                        capabilities.Windows.Add(windowCap);
+                    }
+                    else
+                    {
+                        // Store unknown segments for potential future use
+                        Logger.LogDebug($"Unknown capabilities segment: {segment.Name}({segment.Content})");
+                    }
+
                     break;
             }
         }
@@ -351,7 +365,7 @@ namespace PowerDisplay.Common.Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsIdentifierChar(char c) =>
-            (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+            (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsHexDigit(char c) =>
@@ -587,6 +601,192 @@ namespace PowerDisplay.Common.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsHexDigit(char c) =>
             (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+    }
+
+    /// <summary>
+    /// Sub-parser for window segment content.
+    /// Parses: type(PIP) area(25 25 1895 1175) max(640 480) min(10 10) window(10)
+    /// </summary>
+    internal ref struct WindowParser
+    {
+        private ReadOnlySpan<char> _content;
+        private int _position;
+
+        public WindowParser(string content)
+        {
+            _content = content.AsSpan();
+            _position = 0;
+        }
+
+        /// <summary>
+        /// Parse window segment content into a WindowCapability.
+        /// </summary>
+        public WindowCapability Parse(int windowNumber)
+        {
+            string type = string.Empty;
+            var area = default(WindowArea);
+            var maxSize = default(WindowSize);
+            var minSize = default(WindowSize);
+            int windowId = 0;
+
+            // Parse sub-segments: type(...) area(...) max(...) min(...) window(...)
+            while (!IsAtEnd())
+            {
+                SkipWhitespace();
+                if (IsAtEnd())
+                {
+                    break;
+                }
+
+                var subSegment = ParseSubSegment();
+                if (subSegment.HasValue)
+                {
+                    switch (subSegment.Value.Name.ToLowerInvariant())
+                    {
+                        case "type":
+                            type = subSegment.Value.Content.Trim();
+                            break;
+                        case "area":
+                            area = ParseArea(subSegment.Value.Content);
+                            break;
+                        case "max":
+                            maxSize = ParseSize(subSegment.Value.Content);
+                            break;
+                        case "min":
+                            minSize = ParseSize(subSegment.Value.Content);
+                            break;
+                        case "window":
+                            _ = int.TryParse(subSegment.Value.Content.Trim(), out windowId);
+                            break;
+                    }
+                }
+            }
+
+            return new WindowCapability(windowNumber, type, area, maxSize, minSize, windowId);
+        }
+
+        private (string Name, string Content)? ParseSubSegment()
+        {
+            int start = _position;
+
+            // Parse identifier
+            while (!IsAtEnd() && IsIdentifierChar(Peek()))
+            {
+                _position++;
+            }
+
+            if (_position == start)
+            {
+                // No identifier found, skip character
+                if (!IsAtEnd())
+                {
+                    _position++;
+                }
+
+                return null;
+            }
+
+            var name = _content.Slice(start, _position - start).ToString();
+
+            SkipWhitespace();
+
+            // Expect '('
+            if (IsAtEnd() || Peek() != '(')
+            {
+                return null;
+            }
+
+            _position++; // consume '('
+
+            // Parse content with balanced parentheses
+            int contentStart = _position;
+            int depth = 1;
+
+            while (!IsAtEnd() && depth > 0)
+            {
+                char c = Peek();
+                if (c == '(')
+                {
+                    depth++;
+                }
+                else if (c == ')')
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        break;
+                    }
+                }
+
+                _position++;
+            }
+
+            var content = _content.Slice(contentStart, _position - contentStart).ToString();
+
+            if (!IsAtEnd() && Peek() == ')')
+            {
+                _position++; // consume ')'
+            }
+
+            return (name, content);
+        }
+
+        private static WindowArea ParseArea(string content)
+        {
+            var values = ParseIntList(content);
+            if (values.Length >= 4)
+            {
+                return new WindowArea(values[0], values[1], values[2], values[3]);
+            }
+
+            return default;
+        }
+
+        private static WindowSize ParseSize(string content)
+        {
+            var values = ParseIntList(content);
+            if (values.Length >= 2)
+            {
+                return new WindowSize(values[0], values[1]);
+            }
+
+            return default;
+        }
+
+        private static int[] ParseIntList(string content)
+        {
+            var parts = content.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var result = new List<int>(parts.Length);
+
+            foreach (var part in parts)
+            {
+                if (int.TryParse(part.Trim(), out int value))
+                {
+                    result.Add(value);
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private char Peek() => IsAtEnd() ? '\0' : _content[_position];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsAtEnd() => _position >= _content.Length;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SkipWhitespace()
+        {
+            while (!IsAtEnd() && char.IsWhiteSpace(Peek()))
+            {
+                _position++;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsIdentifierChar(char c) =>
+            (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
     }
 
     /// <summary>

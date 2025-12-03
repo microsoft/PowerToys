@@ -16,12 +16,13 @@ namespace PowerDisplay.Common.Utils
         /// </summary>
         private static readonly Dictionary<byte, string> CodeNames = new()
         {
-            // Control codes
+            // Control codes (0x00-0x0F)
+            { 0x00, "Code Page" },
             { 0x01, "Degauss" },
             { 0x02, "New Control Value" },
             { 0x03, "Soft Controls" },
 
-            // Geometry codes
+            // Preset operations (0x04-0x0A)
             { 0x04, "Restore Factory Defaults" },
             { 0x05, "Restore Brightness and Contrast" },
             { 0x06, "Restore Factory Geometry" },
@@ -48,7 +49,7 @@ namespace PowerDisplay.Common.Utils
             { 0x1E, "Auto Setup" },
             { 0x1F, "Auto Color Setup" },
 
-            // Geometry codes
+            // Geometry controls (0x20-0x4C)
             { 0x20, "Horizontal Position" },
             { 0x22, "Horizontal Size" },
             { 0x24, "Horizontal Pincushion" },
@@ -57,6 +58,7 @@ namespace PowerDisplay.Common.Utils
             { 0x29, "Horizontal Convergence M/G" },
             { 0x2A, "Horizontal Linearity" },
             { 0x2C, "Horizontal Linearity Balance" },
+            { 0x2E, "Gray Scale Expansion" },
             { 0x30, "Vertical Position" },
             { 0x32, "Vertical Size" },
             { 0x34, "Vertical Pincushion" },
@@ -107,12 +109,21 @@ namespace PowerDisplay.Common.Utils
             { 0x73, "LUT Size" },
             { 0x74, "Single Point LUT Operation" },
             { 0x75, "Block LUT Operation" },
+            { 0x76, "Remote Procedure Call" },
+            { 0x78, "Display Identification Data Operation" },
+            { 0x7A, "Adjust Focal Plane" },
+            { 0x7C, "Adjust Zoom" },
+            { 0x7E, "Trapezoid" },
+            { 0x80, "Keystone" },
+            { 0x82, "Horizontal Mirror (Flip)" },
+            { 0x84, "Vertical Mirror (Flip)" },
 
-            // Color calibration codes
+            // Image adjustment codes (0x86-0x9F)
             { 0x86, "Display Scaling" },
             { 0x87, "Sharpness" },
             { 0x88, "Velocity Scan Modulation" },
             { 0x8A, "Color Saturation" },
+            { 0x8B, "TV Channel Up/Down" },
             { 0x8C, "TV Sharpness" },
             { 0x8D, "Audio Mute/Screen Blank" },
             { 0x8E, "TV Contrast" },
@@ -141,6 +152,7 @@ namespace PowerDisplay.Common.Utils
             { 0xA5, "Window Select" },
             { 0xA6, "Window Size" },
             { 0xA7, "Window Transparency" },
+            { 0xA8, "Window Control" },
             { 0xAA, "Screen Orientation" },
             { 0xAC, "Horizontal Frequency" },
             { 0xAE, "Vertical Frequency" },
@@ -169,6 +181,9 @@ namespace PowerDisplay.Common.Utils
             { 0xC9, "Display Firmware Level" },
             { 0xCA, "OSD" },
             { 0xCC, "OSD Language" },
+            { 0xCD, "Status Indicators" },
+            { 0xCE, "Auxiliary Display Size" },
+            { 0xCF, "Auxiliary Display Data" },
             { 0xD0, "Output Select" },
             { 0xD2, "Asset Tag" },
             { 0xD4, "Stereo Video Mode" },
@@ -177,11 +192,15 @@ namespace PowerDisplay.Common.Utils
             { 0xD8, "Scan Mode" },
             { 0xD9, "Image Mode" },
             { 0xDA, "On Screen Display" },
+            { 0xDB, "Backlight Level: White" },
             { 0xDC, "Display Application" },
+            { 0xDD, "Application Enable Key" },
             { 0xDE, "Scratch Pad" },
-
-            // Information codes
             { 0xDF, "VCP Version" },
+
+            // Manufacturer specific codes (0xE0-0xFF)
+            // Per MCCS 2.2a: "The 32 control codes E0h through FFh have been
+            // allocated to allow manufacturers to issue their own specific controls."
             { 0xE0, "Manufacturer Specific" },
             { 0xE1, "Manufacturer Specific" },
             { 0xE2, "Manufacturer Specific" },

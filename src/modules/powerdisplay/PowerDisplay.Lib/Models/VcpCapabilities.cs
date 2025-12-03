@@ -48,6 +48,16 @@ namespace PowerDisplay.Common.Models
         public Dictionary<byte, VcpCodeInfo> SupportedVcpCodes { get; set; } = new();
 
         /// <summary>
+        /// Window capabilities for PIP/PBP support
+        /// </summary>
+        public List<WindowCapability> Windows { get; set; } = new();
+
+        /// <summary>
+        /// Check if display supports PIP/PBP windows
+        /// </summary>
+        public bool HasWindowSupport => Windows.Count > 0;
+
+        /// <summary>
         /// Check if a specific VCP code is supported
         /// </summary>
         public bool SupportsVcpCode(byte code) => SupportedVcpCodes.ContainsKey(code);
@@ -175,5 +185,130 @@ namespace PowerDisplay.Common.Models
 
             return $"0x{Code:X2} ({Name}): Continuous";
         }
+    }
+
+    /// <summary>
+    /// Window size (width and height)
+    /// </summary>
+    public readonly struct WindowSize
+    {
+        /// <summary>
+        /// Width in pixels
+        /// </summary>
+        public int Width { get; }
+
+        /// <summary>
+        /// Height in pixels
+        /// </summary>
+        public int Height { get; }
+
+        public WindowSize(int width, int height)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        public override string ToString() => $"{Width}x{Height}";
+    }
+
+    /// <summary>
+    /// Window area coordinates (top-left and bottom-right)
+    /// </summary>
+    public readonly struct WindowArea
+    {
+        /// <summary>
+        /// Top-left X coordinate
+        /// </summary>
+        public int X1 { get; }
+
+        /// <summary>
+        /// Top-left Y coordinate
+        /// </summary>
+        public int Y1 { get; }
+
+        /// <summary>
+        /// Bottom-right X coordinate
+        /// </summary>
+        public int X2 { get; }
+
+        /// <summary>
+        /// Bottom-right Y coordinate
+        /// </summary>
+        public int Y2 { get; }
+
+        /// <summary>
+        /// Width of the area
+        /// </summary>
+        public int Width => X2 - X1;
+
+        /// <summary>
+        /// Height of the area
+        /// </summary>
+        public int Height => Y2 - Y1;
+
+        public WindowArea(int x1, int y1, int x2, int y2)
+        {
+            X1 = x1;
+            Y1 = y1;
+            X2 = x2;
+            Y2 = y2;
+        }
+
+        public override string ToString() => $"({X1},{Y1})-({X2},{Y2})";
+    }
+
+    /// <summary>
+    /// Window capability information for PIP/PBP displays
+    /// </summary>
+    public readonly struct WindowCapability
+    {
+        /// <summary>
+        /// Window number (1, 2, 3, etc.)
+        /// </summary>
+        public int WindowNumber { get; }
+
+        /// <summary>
+        /// Window type (e.g., "PIP", "PBP")
+        /// </summary>
+        public string Type { get; }
+
+        /// <summary>
+        /// Window area coordinates
+        /// </summary>
+        public WindowArea Area { get; }
+
+        /// <summary>
+        /// Maximum window size
+        /// </summary>
+        public WindowSize MaxSize { get; }
+
+        /// <summary>
+        /// Minimum window size
+        /// </summary>
+        public WindowSize MinSize { get; }
+
+        /// <summary>
+        /// Window identifier
+        /// </summary>
+        public int WindowId { get; }
+
+        public WindowCapability(
+            int windowNumber,
+            string type,
+            WindowArea area,
+            WindowSize maxSize,
+            WindowSize minSize,
+            int windowId)
+        {
+            WindowNumber = windowNumber;
+            Type = type ?? string.Empty;
+            Area = area;
+            MaxSize = maxSize;
+            MinSize = minSize;
+            WindowId = windowId;
+        }
+
+        public override string ToString() =>
+            $"Window{WindowNumber}: Type={Type}, Area={Area}, Max={MaxSize}, Min={MinSize}";
     }
 }

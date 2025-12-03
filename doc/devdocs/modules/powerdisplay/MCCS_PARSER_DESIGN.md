@@ -42,8 +42,12 @@ MccsCapabilitiesParser (main parser)
 ├── VcpEntryParser (sub-parser for vcp() content)
 │   └── TryParseEntry()      → VcpEntry
 │
-└── VcpNameParser (sub-parser for vcpname() content)
-    └── TryParseEntry()      → (byte code, string name)
+├── VcpNameParser (sub-parser for vcpname() content)
+│   └── TryParseEntry()      → (byte code, string name)
+│
+└── WindowParser (sub-parser for windowN() content)
+    ├── Parse()              → WindowCapability
+    └── ParseSubSegment()    → (name, content)?
 ```
 
 ### Design Principles
@@ -146,6 +150,25 @@ Examples:
 | `vcp(...)` | VCP code entries | VcpEntryParser |
 | `mccs_ver(...)` | MCCS version | Direct assignment |
 | `vcpname(...)` | Custom VCP names | VcpNameParser |
+| `windowN(...)` | PIP/PBP window capabilities | WindowParser |
+
+### Window Segment Format
+
+The `windowN` segment (where N is 1, 2, 3, etc.) describes PIP/PBP window capabilities:
+
+```
+window1(type(PIP) area(25 25 1895 1175) max(640 480) min(10 10) window(10))
+```
+
+| Sub-field | Format | Description |
+|-----------|--------|-------------|
+| `type` | `type(PIP)` or `type(PBP)` | Window type (Picture-in-Picture or Picture-by-Picture) |
+| `area` | `area(x1 y1 x2 y2)` | Window area coordinates in pixels |
+| `max` | `max(width height)` | Maximum window dimensions |
+| `min` | `min(width height)` | Minimum window dimensions |
+| `window` | `window(id)` | Window identifier |
+
+All sub-fields are optional; missing fields default to zero values.
 
 ## Error Handling
 
@@ -195,10 +218,3 @@ if (result.HasErrors)
 3. **Nested parentheses** in VCP values
 4. **Unknown segments** (logged but not fatal)
 5. **Malformed input** (partial results returned)
-
-## Future Extensions
-
-- Add `edid()` segment parsing
-- Add `window()` segment parsing
-- Add validation levels (VALID/USABLE/INVALID like ddcutil)
-- Add source generation for AOT compatibility

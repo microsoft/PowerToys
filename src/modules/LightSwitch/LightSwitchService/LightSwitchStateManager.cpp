@@ -255,20 +255,25 @@ void LightSwitchStateManager::NotifyPowerDisplay(bool isLight)
 
     try
     {
-        // Signal PowerDisplay to check LightSwitch settings and apply appropriate profile
-        // PowerDisplay will read LightSwitch settings to determine which profile to apply
+        // Signal PowerDisplay with the specific theme event
+        // Using separate events for light/dark eliminates race conditions where PowerDisplay
+        // might read the registry before LightSwitch has finished updating it
+        const wchar_t* eventName = isLight
+            ? L"Local\\PowerToys_LightSwitch_LightTheme"
+            : L"Local\\PowerToys_LightSwitch_DarkTheme";
+
         Logger::info(L"[LightSwitchStateManager] Notifying PowerDisplay about theme change (isLight: {})", isLight);
 
-        HANDLE hThemeChangedEvent = CreateEventW(nullptr, FALSE, FALSE, L"Local\\PowerToys_LightSwitch_ThemeChanged");
-        if (hThemeChangedEvent)
+        HANDLE hThemeEvent = CreateEventW(nullptr, FALSE, FALSE, eventName);
+        if (hThemeEvent)
         {
-            SetEvent(hThemeChangedEvent);
-            CloseHandle(hThemeChangedEvent);
-            Logger::info(L"[LightSwitchStateManager] Theme change event signaled to PowerDisplay");
+            SetEvent(hThemeEvent);
+            CloseHandle(hThemeEvent);
+            Logger::info(L"[LightSwitchStateManager] Theme event signaled to PowerDisplay: {}", eventName);
         }
         else
         {
-            Logger::warn(L"[LightSwitchStateManager] Failed to create theme change event (error: {})", GetLastError());
+            Logger::warn(L"[LightSwitchStateManager] Failed to create theme event (error: {})", GetLastError());
         }
     }
     catch (...)

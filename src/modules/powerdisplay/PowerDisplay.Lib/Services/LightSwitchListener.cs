@@ -8,16 +8,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.Win32;
 
 namespace PowerDisplay.Common.Services
 {
     /// <summary>
     /// Listens for LightSwitch theme change events and notifies subscribers.
     /// Encapsulates all LightSwitch integration logic including:
-    /// - Background thread management for event listening
+    /// - Background thread management for event listening (light/dark theme events)
     /// - LightSwitch settings file parsing
-    /// - System theme detection
+    /// Theme is determined directly from which event was signaled (not from registry).
     /// </summary>
     public sealed partial class LightSwitchListener : IDisposable
     {
@@ -96,18 +95,29 @@ namespace PowerDisplay.Common.Services
             {
                 Logger.LogInfo($"{LogPrefix} Event listener thread started");
 
-                using var themeChangedEvent = new EventWaitHandle(false, EventResetMode.AutoReset, PathConstants.LightSwitchThemeChangedEventName);
+                // Use separate events for light and dark themes to avoid race conditions
+                // where we might read the registry before LightSwitch has updated it
+                using var lightThemeEvent = new EventWaitHandle(false, EventResetMode.AutoReset, PathConstants.LightSwitchLightThemeEventName);
+                using var darkThemeEvent = new EventWaitHandle(false, EventResetMode.AutoReset, PathConstants.LightSwitchDarkThemeEventName);
+
+                var waitHandles = new WaitHandle[] { lightThemeEvent, darkThemeEvent };
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    // Wait for LightSwitch to signal theme change (with timeout to allow cancellation check)
-                    if (themeChangedEvent.WaitOne(TimeSpan.FromSeconds(1)))
-                    {
-                        Logger.LogInfo($"{LogPrefix} Theme change event received");
+                    // Wait for either light or dark theme event (with timeout to allow cancellation check)
+                    int index = WaitHandle.WaitAny(waitHandles, TimeSpan.FromSeconds(1));
 
-                        // Process the theme change
-                        _ = Task.Run(() => ProcessThemeChange(), CancellationToken.None);
+                    if (index == WaitHandle.WaitTimeout)
+                    {
+                        continue;
                     }
+
+                    // Determine theme from which event was signaled
+                    bool isLightMode = index == 0; // 0 = lightThemeEvent, 1 = darkThemeEvent
+                    Logger.LogInfo($"{LogPrefix} Theme event received: {(isLightMode ? "Light" : "Dark")}");
+
+                    // Process the theme change with the known theme
+                    _ = Task.Run(() => ProcessThemeChange(isLightMode), CancellationToken.None);
                 }
 
                 Logger.LogInfo($"{LogPrefix} Event listener thread stopping");
@@ -118,21 +128,13 @@ namespace PowerDisplay.Common.Services
             }
         }
 
-        private void ProcessThemeChange()
+        private void ProcessThemeChange(bool isLightMode)
         {
             try
             {
-                Logger.LogInfo($"{LogPrefix} Processing theme change");
+                Logger.LogInfo($"{LogPrefix} Processing theme change to {(isLightMode ? "light" : "dark")} mode");
 
-                var result = ReadLightSwitchSettings();
-
-                if (result == null)
-                {
-                    // Settings not found or integration disabled
-                    return;
-                }
-
-                var (isLightMode, profileToApply) = result.Value;
+                var profileToApply = ReadProfileFromLightSwitchSettings(isLightMode);
 
                 if (string.IsNullOrEmpty(profileToApply) || profileToApply == "(None)")
                 {
@@ -152,10 +154,12 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Reads LightSwitch settings and determines which profile to apply
+        /// Reads LightSwitch settings and returns the profile name to apply for the given theme.
+        /// The theme is determined by which event was signaled (light or dark), not by reading the registry.
         /// </summary>
-        /// <returns>Tuple of (isLightMode, profileName) or null if integration is disabled/unavailable</returns>
-        private static (bool IsLightMode, string? ProfileToApply)? ReadLightSwitchSettings()
+        /// <param name="isLightMode">Whether the theme is light mode (determined from the signaled event)</param>
+        /// <returns>The profile name to apply, or null if not configured</returns>
+        private static string? ReadProfileFromLightSwitchSettings(bool isLightMode)
         {
             try
             {
@@ -186,23 +190,15 @@ namespace PowerDisplay.Common.Services
                     return null;
                 }
 
-                // Determine current theme
-                bool isLightMode = IsSystemInLightMode();
-                Logger.LogInfo($"{LogPrefix} Current system theme: {(isLightMode ? "Light" : "Dark")}");
-
-                // Get the appropriate profile name
-                string? profileToApply = null;
-
+                // Get the appropriate profile name based on the theme from the event
                 if (isLightMode)
                 {
-                    profileToApply = GetProfileFromSettings(properties, "enable_light_mode_profile", "light_mode_profile");
+                    return GetProfileFromSettings(properties, "enable_light_mode_profile", "light_mode_profile");
                 }
                 else
                 {
-                    profileToApply = GetProfileFromSettings(properties, "enable_dark_mode_profile", "dark_mode_profile");
+                    return GetProfileFromSettings(properties, "enable_dark_mode_profile", "dark_mode_profile");
                 }
-
-                return (isLightMode, profileToApply);
             }
             catch (Exception ex)
             {
@@ -226,31 +222,6 @@ namespace PowerDisplay.Common.Services
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Check if Windows is currently in light mode
-        /// </summary>
-        public static bool IsSystemInLightMode()
-        {
-            try
-            {
-                using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                if (key != null)
-                {
-                    var value = key.GetValue("SystemUsesLightTheme");
-                    if (value is int intValue)
-                    {
-                        return intValue == 1;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"{LogPrefix} Failed to read system theme: {ex.Message}");
-            }
-
-            return false; // Default to dark mode
         }
 
         public void Dispose()

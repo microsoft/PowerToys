@@ -140,41 +140,6 @@ namespace PowerDisplay.Common.Drivers
             IntPtr pszASCIICapabilitiesString,
             uint dwCapabilitiesStringLengthInCharacters);
 
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetMonitorBrightness(
-            IntPtr hPhysicalMonitor,
-            out uint pdwMinimumBrightness,
-            out uint pdwCurrentBrightness,
-            out uint pdwMaximumBrightness);
-
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool SetMonitorBrightness(
-            IntPtr hPhysicalMonitor,
-            uint dwNewBrightness);
-
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetMonitorContrast(
-            IntPtr hPhysicalMonitor,
-            out uint pdwMinimumContrast,
-            out uint pdwCurrentContrast,
-            out uint pdwMaximumContrast);
-
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool SetMonitorContrast(
-            IntPtr hPhysicalMonitor,
-            uint dwNewContrast);
-
-        [LibraryImport("Dxva2.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool GetMonitorCapabilities(
-            IntPtr hPhysicalMonitor,
-            out uint pdwMonitorCapabilities,
-            out uint pdwSupportedColorTemperatures);
-
         // ==================== Kernel32.dll ====================
         [LibraryImport("kernel32.dll")]
         internal static partial uint GetLastError();

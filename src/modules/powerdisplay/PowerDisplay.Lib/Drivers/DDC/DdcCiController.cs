@@ -96,57 +96,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Set monitor brightness using VCP code 0x10
         /// </summary>
-        public async Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(monitor);
-            brightness = Math.Clamp(brightness, 0, 100);
-
-            return await Task.Run(
-                () =>
-                {
-                    var physicalHandle = GetPhysicalHandle(monitor);
-                    if (physicalHandle == IntPtr.Zero)
-                    {
-                        return MonitorOperationResult.Failure("No physical handle found");
-                    }
-
-                    try
-                    {
-                        var currentInfo = GetBrightnessInfoCore(monitor.Id, physicalHandle);
-                        if (!currentInfo.IsValid)
-                        {
-                            Logger.LogWarning($"[{monitor.Id}] Cannot read current brightness");
-                            return MonitorOperationResult.Failure("Cannot read current brightness");
-                        }
-
-                        uint targetValue = (uint)currentInfo.FromPercentage(brightness);
-
-                        // First try high-level API
-                        if (DdcCiNative.TrySetMonitorBrightness(physicalHandle, targetValue))
-                        {
-                            Logger.LogInfo($"[{monitor.Id}] Set brightness to {brightness}% via high-level API");
-                            return MonitorOperationResult.Success();
-                        }
-
-                        // Try VCP code 0x10 (standard brightness)
-                        if (DdcCiNative.TrySetVCPFeature(physicalHandle, VcpCodeBrightness, targetValue))
-                        {
-                            Logger.LogInfo($"[{monitor.Id}] Set brightness to {brightness}% via 0x10");
-                            return MonitorOperationResult.Success();
-                        }
-
-                        var lastError = GetLastError();
-                        Logger.LogError($"[{monitor.Id}] Failed to set brightness, error: {lastError}");
-                        return MonitorOperationResult.Failure($"Failed to set brightness via DDC/CI", (int)lastError);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"[{monitor.Id}] Exception setting brightness: {ex.Message}");
-                        return MonitorOperationResult.Failure($"Exception setting brightness: {ex.Message}");
-                    }
-                },
-                cancellationToken);
-        }
+        public Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
+            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, brightness, 0, 100, cancellationToken);
 
         /// <summary>
         /// Set monitor contrast
@@ -785,8 +736,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Core implementation for getting brightness information using high-level API or VCP code 0x10.
-        /// Used by both GetBrightnessAsync and SetBrightnessAsync.
+        /// Core implementation for getting brightness information using VCP code 0x10.
         /// </summary>
         /// <param name="monitorId">Monitor ID for logging.</param>
         /// <param name="physicalHandle">Physical monitor handle.</param>
@@ -799,15 +749,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return BrightnessInfo.Invalid;
             }
 
-            // First try high-level API
-            if (DdcCiNative.TryGetMonitorBrightness(physicalHandle, out uint min, out uint current, out uint max))
-            {
-                Logger.LogDebug($"[{monitorId}] Brightness via high-level API: {current}/{max}");
-                return new BrightnessInfo((int)current, (int)min, (int)max);
-            }
-
-            // Try VCP code 0x10 (standard brightness)
-            if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out current, out max))
+            if (DdcCiNative.TryGetVCPFeature(physicalHandle, VcpCodeBrightness, out uint current, out uint max))
             {
                 Logger.LogDebug($"[{monitorId}] Brightness via VCP 0x10: {current}/{max}");
                 return new BrightnessInfo((int)current, 0, (int)max);

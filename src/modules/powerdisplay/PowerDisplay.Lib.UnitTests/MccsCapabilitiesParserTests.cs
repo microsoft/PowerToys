@@ -584,4 +584,158 @@ public class MccsCapabilitiesParserTests
         // Assert
         Assert.AreEqual(SimpleCapabilities, result.Capabilities.Raw);
     }
+
+    [TestMethod]
+    public void Parse_Window1Segment_ParsesCorrectly()
+    {
+        // Arrange - Full window segment with all fields
+        var input = "(vcp(10)window1(type(PIP) area(25 25 1895 1175) max(640 480) min(10 10) window(10)))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.IsTrue(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual(1, result.Capabilities.Windows.Count);
+
+        var window = result.Capabilities.Windows[0];
+        Assert.AreEqual(1, window.WindowNumber);
+        Assert.AreEqual("PIP", window.Type);
+        Assert.AreEqual(25, window.Area.X1);
+        Assert.AreEqual(25, window.Area.Y1);
+        Assert.AreEqual(1895, window.Area.X2);
+        Assert.AreEqual(1175, window.Area.Y2);
+        Assert.AreEqual(640, window.MaxSize.Width);
+        Assert.AreEqual(480, window.MaxSize.Height);
+        Assert.AreEqual(10, window.MinSize.Width);
+        Assert.AreEqual(10, window.MinSize.Height);
+        Assert.AreEqual(10, window.WindowId);
+    }
+
+    [TestMethod]
+    public void Parse_MultipleWindows_ParsesAll()
+    {
+        // Arrange - Two windows (PIP and PBP)
+        var input = "(window1(type(PIP) area(0 0 640 480))window2(type(PBP) area(640 0 1280 480)))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.IsTrue(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual(2, result.Capabilities.Windows.Count);
+
+        var window1 = result.Capabilities.Windows[0];
+        Assert.AreEqual(1, window1.WindowNumber);
+        Assert.AreEqual("PIP", window1.Type);
+        Assert.AreEqual(0, window1.Area.X1);
+        Assert.AreEqual(640, window1.Area.X2);
+
+        var window2 = result.Capabilities.Windows[1];
+        Assert.AreEqual(2, window2.WindowNumber);
+        Assert.AreEqual("PBP", window2.Type);
+        Assert.AreEqual(640, window2.Area.X1);
+        Assert.AreEqual(1280, window2.Area.X2);
+    }
+
+    [TestMethod]
+    public void Parse_WindowWithMissingFields_HandlesGracefully()
+    {
+        // Arrange - Window with only type and area (missing max, min, window)
+        var input = "(window1(type(PIP) area(0 0 640 480)))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.IsTrue(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual(1, result.Capabilities.Windows.Count);
+
+        var window = result.Capabilities.Windows[0];
+        Assert.AreEqual(1, window.WindowNumber);
+        Assert.AreEqual("PIP", window.Type);
+        Assert.AreEqual(640, window.Area.X2);
+        Assert.AreEqual(480, window.Area.Y2);
+
+        // Default values for missing fields
+        Assert.AreEqual(0, window.MaxSize.Width);
+        Assert.AreEqual(0, window.MinSize.Width);
+        Assert.AreEqual(0, window.WindowId);
+    }
+
+    [TestMethod]
+    public void Parse_WindowWithOnlyType_ParsesType()
+    {
+        // Arrange
+        var input = "(window1(type(PBP)))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.IsTrue(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual(1, result.Capabilities.Windows.Count);
+        Assert.AreEqual("PBP", result.Capabilities.Windows[0].Type);
+    }
+
+    [TestMethod]
+    public void Parse_NoWindowSegment_HasWindowSupportFalse()
+    {
+        // Arrange
+        var input = "(prot(monitor)vcp(10 12))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.IsFalse(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual(0, result.Capabilities.Windows.Count);
+    }
+
+    [TestMethod]
+    public void Parse_WindowAreaDimensions_CalculatesCorrectly()
+    {
+        // Arrange
+        var input = "(window1(area(100 200 500 600)))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        var area = result.Capabilities.Windows[0].Area;
+        Assert.AreEqual(400, area.Width);  // 500 - 100
+        Assert.AreEqual(400, area.Height); // 600 - 200
+    }
+
+    [TestMethod]
+    public void Parse_RealWorldMccsWindowExample_ParsesCorrectly()
+    {
+        // Arrange - Example from MCCS 2.2a specification
+        var input = "(prot(display)type(lcd)model(PD3220U)cmds(01 02 03)vcp(10 12)mccs_ver(2.2)window1(type(PIP) area(25 25 1895 1175) max(640 480) min(10 10) window(10)))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.AreEqual("lcd", result.Capabilities.Type);
+        Assert.AreEqual("PD3220U", result.Capabilities.Model);
+        Assert.AreEqual("2.2", result.Capabilities.MccsVersion);
+        Assert.IsTrue(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual("PIP", result.Capabilities.Windows[0].Type);
+    }
+
+    [TestMethod]
+    public void Parse_WindowWithExtraSpaces_HandlesCorrectly()
+    {
+        // Arrange - Extra spaces in content
+        var input = "(window1(  type( PIP )  area( 0   0   640   480 )  ))";
+
+        // Act
+        var result = MccsCapabilitiesParser.Parse(input);
+
+        // Assert
+        Assert.IsTrue(result.Capabilities.HasWindowSupport);
+        Assert.AreEqual("PIP", result.Capabilities.Windows[0].Type);
+        Assert.AreEqual(640, result.Capabilities.Windows[0].Area.X2);
+    }
 }
