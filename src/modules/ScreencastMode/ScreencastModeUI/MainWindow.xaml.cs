@@ -282,26 +282,35 @@ namespace ScreencastModeUI
 
                 switch (_displayPosition)
                 {
+                    // Top left
                     case "TopLeft":
+                    case "Top Left":
                         x = workArea.X + scaledMargin;
                         y = workArea.Y + scaledMargin;
                         break;
 
+                    // Top right
                     case "TopRight":
+                    case "Top Right":
                         x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
                         y = workArea.Y + scaledMargin;
                         break;
 
+                    // Bottom left
                     case "BottomLeft":
+                    case "Bottom Left":
                         x = workArea.X + scaledMargin;
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
 
+                    // Bottom right
                     case "BottomRight":
+                    case "Bottom Right":
                         x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
 
+                    // Center / default
                     case "Center":
                     default:
                         x = workArea.X + ((workArea.Width - scaledWidth) / 2);
