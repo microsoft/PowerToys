@@ -101,10 +101,10 @@ public sealed partial class SettingsWindow : WindowEx,
         var pageType = page switch
         {
             "General" => typeof(GeneralPage),
+            "Appearance" => typeof(AppearancePage),
             "Extensions" => typeof(ExtensionsPage),
             _ => null,
         };
-
         if (pageType is not null)
         {
             NavFrame.Navigate(pageType);
@@ -246,6 +246,12 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             NavView.SelectedItem = GeneralPageNavItem;
             var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(AppearancePage))
+        {
+            NavView.SelectedItem = AppearancePageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
             BreadCrumbs.Add(new(pageType, pageType));
         }
         else if (e.SourcePageType == typeof(ExtensionsPage))

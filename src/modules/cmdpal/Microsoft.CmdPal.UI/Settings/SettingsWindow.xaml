@@ -63,6 +63,11 @@
                     Icon="{ui:FontIcon Glyph=&#xE80F;}"
                     Tag="General" />
                 <NavigationViewItem
+                    x:Name="AppearancePageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Appearance"
+                    Icon="{ui:FontIcon Glyph=&#xE790;}"
+                    Tag="Appearance" />
+                <NavigationViewItem
                     x:Name="ExtensionPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"

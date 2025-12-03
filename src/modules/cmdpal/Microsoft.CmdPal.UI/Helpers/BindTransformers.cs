@@ -10,6 +10,8 @@ internal static class BindTransformers
 {
     public static bool Negate(bool value) => !value;
 
+    public static Visibility NegateVisibility(Visibility value) => value == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
     public static Visibility EmptyToCollapsed(string? input)
         => string.IsNullOrEmpty(input) ? Visibility.Collapsed : Visibility.Visible;
 

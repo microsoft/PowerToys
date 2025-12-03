@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.CommandPalettePreview"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Border
+        Width="200"
+        Height="120"
+        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="8"
+        Translation="0,0,8">
+        <Grid>
+            <Border
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                Visibility="{x:Bind h:BindTransformers.NegateVisibility(ShowBackgroundImage), Mode=OneWay}">
+                <Border.Background>
+                    <AcrylicBrush
+                        FallbackColor="{x:Bind PreviewBackgroundColor, Mode=OneWay}"
+                        TintColor="{x:Bind PreviewBackgroundColor, Mode=OneWay}"
+                        TintOpacity="{x:Bind PreviewBackgroundOpacity, Mode=OneWay}" />
+                </Border.Background>
+            </Border>
+            <local:BlurImageControl
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BlurAmount="{x:Bind PreviewBackgroundImageBlurAmount, Mode=OneWay}"
+                ImageBrightness="{x:Bind PreviewBackgroundImageBrightness, Mode=OneWay}"
+                ImageSource="{x:Bind PreviewBackgroundImageSource, Mode=OneWay}"
+                ImageStretch="{x:Bind ToStretch(PreviewBackgroundImageFit), Mode=OneWay}"
+                IsHitTestVisible="False"
+                TintColor="{x:Bind PreviewBackgroundImageTint, Mode=OneWay}"
+                TintIntensity="{x:Bind ToTintIntensity(PreviewBackgroundImageTintIntensity), Mode=OneWay}"
+                Visibility="{x:Bind ShowBackgroundImage, Mode=OneWay}" />
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="100" />
+                    <RowDefinition Height="20" />
+                </Grid.RowDefinitions>
+
+                <Border
+                    x:Name="ContentPreview"
+                    Grid.Row="0"
+                    Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border BorderBrush="{ThemeResource CmdPal.TopBarBorderBrush}" BorderThickness="0,0,0,1" />
+                    </Grid>
+
+                </Border>
+
+                <Border
+                    x:Name="CommandBarPreview"
+                    Grid.Row="1"
+                    Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource CmdPal.CommandBarBorderBrush}"
+                    BorderThickness="0,1,0,0" />
+            </Grid>
+
+        </Grid>
+    </Border>
+</UserControl>

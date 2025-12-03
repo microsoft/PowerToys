@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +29,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     private readonly IServiceProvider _serviceProvider;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public AppearanceSettingsViewModel Appearance { get; }
 
     public HotkeySettings? Hotkey
     {
@@ -168,6 +171,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         _settings = settings;
         _serviceProvider = serviceProvider;
+
+        var themeService = serviceProvider.GetRequiredService<IThemeService>();
+        Appearance = new AppearanceSettingsViewModel(themeService, _settings);
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
