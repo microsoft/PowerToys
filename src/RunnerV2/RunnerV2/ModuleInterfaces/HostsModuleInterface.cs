@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
+using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
@@ -18,10 +19,7 @@ namespace RunnerV2.ModuleInterfaces
 
         public void Disable()
         {
-            foreach (var process in Process.GetProcessesByName("PowerToys.Hosts.exe"))
-            {
-                process.Kill();
-            }
+            ProcessHelper.ScheudleProcessKill("PowerToys.Hosts", 0);
         }
 
         public void Enable()

@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.GPOWrapper;
 using PowerToys.Interop;
+using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
@@ -33,14 +34,7 @@ namespace RunnerV2.ModuleInterfaces
                 _ipc = null;
             }
 
-            Task.Run(async () =>
-            {
-                await Task.Delay(500);
-                foreach (var process in Process.GetProcessesByName("PowerToys.AdvancedPaste.exe"))
-                {
-                    process.Kill();
-                }
-            });
+            ProcessHelper.ScheudleProcessKill("PowerToys.AdvancedPaste");
         }
 
         private TwoWayPipeMessageIPCManaged? _ipc;

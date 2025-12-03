@@ -39,6 +39,7 @@ namespace RunnerV2
             new AdvancedPasteModuleInterface(),
             new AwakeModuleInterface(),
             new CmdNotFoundModuleInterface(),
+            new ColorPickerModuleInterface(),
         ];
 
         internal static bool Run(Action afterInitializationAction)

@@ -8,6 +8,7 @@ using System.Globalization;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
+using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
@@ -26,6 +27,8 @@ namespace RunnerV2.ModuleInterfaces
             InteropEvent terminateEventWrapper = new(InteropEvent.AwakeTerminate);
             terminateEventWrapper.Fire();
             terminateEventWrapper.Dispose();
+
+            ProcessHelper.ScheudleProcessKill("PowerToys.Awake");
         }
 
         public void Enable()

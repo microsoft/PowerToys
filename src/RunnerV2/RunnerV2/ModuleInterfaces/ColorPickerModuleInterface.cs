@@ -6,7 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
@@ -14,27 +17,27 @@ using RunnerV2.Helpers;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    public partial class AlwaysOnTopModuleInterface : IPowerToysModule, IDisposable
+    internal sealed partial class ColorPickerModuleInterface : IPowerToysModule, IDisposable
     {
-        public bool Enabled => new SettingsUtils().GetSettings<GeneralSettings>().Enabled.AlwaysOnTop;
+        public string Name => "ColorPicker";
 
-        public string Name => "AlwaysOnTop";
+        public bool Enabled => new SettingsUtils().GetSettingsOrDefault<GeneralSettings>().Enabled.ColorPicker;
 
-        public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
+        public GpoRuleConfigured GpoRuleConfigured => GPOWrapper.GetConfiguredColorPickerEnabledValue();
 
         private Process? _process;
 
-        private InteropEvent? _pinEventWrapper;
+        private InteropEvent? _showUiEventWrapper;
 
         public void Disable()
         {
-            InteropEvent terminateEventWrapper = new(InteropEvent.AlwaysOnTopTerminate);
+            InteropEvent terminateEventWrapper = new(InteropEvent.ColorPickerTerminate);
             terminateEventWrapper.Fire();
             terminateEventWrapper.Dispose();
-            _pinEventWrapper?.Dispose();
-            _pinEventWrapper = null;
+            _showUiEventWrapper?.Dispose();
+            _showUiEventWrapper = null;
 
-            ProcessHelper.ScheudleProcessKill("PowerToys.AlwaysOnTop");
+            ProcessHelper.ScheudleProcessKill("PowerToys.ColorPickerUI");
         }
 
         public void Enable()
@@ -44,11 +47,11 @@ namespace RunnerV2.ModuleInterfaces
                 return;
             }
 
-            _pinEventWrapper = new InteropEvent(InteropEvent.AlwaysOnTopPin);
+            _showUiEventWrapper = new InteropEvent(InteropEvent.ColorPickerShow);
 
             var psi = new ProcessStartInfo
             {
-                FileName = "PowerToys.AlwaysOnTop.exe",
+                FileName = "PowerToys.ColorPickerUI.exe",
                 Arguments = Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
                 UseShellExecute = true,
             };
@@ -56,7 +59,7 @@ namespace RunnerV2.ModuleInterfaces
             _process = Process.Start(psi);
         }
 
-        public AlwaysOnTopModuleInterface()
+        public ColorPickerModuleInterface()
         {
             InitializeHotkey();
         }
@@ -64,11 +67,11 @@ namespace RunnerV2.ModuleInterfaces
         private void InitializeHotkey()
         {
             Shortcuts.Clear();
-            Shortcuts.Add((new SettingsUtils().GetSettings<AlwaysOnTopSettings>(Name).Properties.Hotkey.Value, () =>
+            Shortcuts.Add((new SettingsUtils().GetSettings<ColorPickerSettings>(Name).Properties.ActivationShortcut, () =>
             {
                 if (!_process?.HasExited ?? false)
                 {
-                    _pinEventWrapper?.Fire();
+                    _showUiEventWrapper?.Fire();
                 }
             }));
         }
@@ -83,7 +86,7 @@ namespace RunnerV2.ModuleInterfaces
         public void Dispose()
         {
             _process?.Dispose();
-            _pinEventWrapper?.Dispose();
+            _showUiEventWrapper?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
