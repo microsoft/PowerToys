@@ -29,7 +29,7 @@ public abstract class KernelServiceBase(
     ICustomActionTransformService customActionTransformService) : IKernelService
 {
     private const string PromptParameterName = "prompt";
-    private const string DefaultSystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content. If the input contains an image, you can see and analyze it directly. Do NOT use the ImageToText tool unless the user specifically asks to extract text (OCR) from the image.";
+    private const string DefaultSystemPrompt = "You are an agent who is tasked with helping users paste their clipboard data. You have functions available to help you with this task. Call function when necessary to help user finish the transformation task. You never need to ask permission, always try to do as the user asks. The user will only input one message and will not be available for further questions, so try your best. The user will put in a request to format their clipboard data and you will fulfill it. Do not output anything else besides the reformatted clipboard content.";
 
     private readonly IKernelQueryCacheService _queryCacheService = queryCacheService;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
@@ -359,15 +359,22 @@ public abstract class KernelServiceBase(
             new ActionChainItem(format, Arguments: new() { { PromptParameterName, prompt } }),
             async dataPackageView =>
             {
-                var input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
-                string output = await GetPromptBasedOutput(format, prompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
+                var imageBytes = await dataPackageView.GetImageAsPngBytesAsync();
+                var input = await dataPackageView.GetTextOrHtmlTextAsync();
+
+                if (string.IsNullOrEmpty(input) && imageBytes == null)
+                {
+                    input = await dataPackageView.GetClipboardTextOrThrowAsync(kernel.GetCancellationToken());
+                }
+
+                string output = await GetPromptBasedOutput(format, prompt, input, imageBytes, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
             });
 
-    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
+    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, null, cancellationToken, progress))?.Content ?? string.Empty,
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformAsync(prompt, input, imageBytes, cancellationToken, progress))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 

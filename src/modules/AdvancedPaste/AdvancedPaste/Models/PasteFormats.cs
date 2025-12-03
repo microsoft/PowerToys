@@ -46,7 +46,7 @@ public enum PasteFormats
         CanPreview = true,
         SupportedClipboardFormats = ClipboardFormat.Image,
         IPCKey = AdvancedPasteAdditionalActions.PropertyNames.ImageToText,
-        KernelFunctionDescription = "Takes an image in the clipboard and extracts all text from it using OCR.")]
+        KernelFunctionDescription = "Takes an image in the clipboard and extracts all text from it using OCR. Use this ONLY when the user explicitly asks to extract text or OCR.")]
     ImageToText,
 
     [PasteFormatMetadata(
@@ -118,8 +118,8 @@ public enum PasteFormats
         IconGlyph = "\uE945",
         RequiresAIService = true,
         CanPreview = true,
-        SupportedClipboardFormats = ClipboardFormat.Text,
-        KernelFunctionDescription = "Takes input instructions and transforms clipboard text (not TXT files) with these input instructions, putting the result back on the clipboard. This uses AI to accomplish the task.",
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Image,
+        KernelFunctionDescription = "Takes input instructions and transforms clipboard content (text or image) with these input instructions. Use this function for ANY image analysis, description, or transformation tasks that are not simple OCR.",
         RequiresPrompt = true)]
     CustomTextTransformation,
 }
