@@ -40,7 +40,7 @@ internal sealed partial class OpenRemoteDesktopCommand : BaseObservable, IInvoka
     {
         using var process = new Process();
         process.StartInfo.UseShellExecute = false;
-        process.StartInfo.WorkingDirectory = Environment.SpecialFolder.MyDocuments.ToString();
+        process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         process.StartInfo.FileName = "mstsc";
 
         if (!string.IsNullOrWhiteSpace(_rdpHost))
