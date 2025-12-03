@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapperProjection;
 using RunnerV2;
@@ -22,6 +23,8 @@ internal sealed class Program
 
     private static void Main(string[] args)
     {
+        Logger.InitializeLogger("\\RunnerLogs");
+
         string securityDescriptor =
         "O:BA" // Owner: Builtin (local) administrator
         + "G:BA" // Group: Builtin (local) administrator

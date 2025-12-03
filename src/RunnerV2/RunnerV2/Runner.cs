@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ManagedCommon;
 using RunnerV2.Helpers;
 using RunnerV2.ModuleInterfaces;
 using Update;
@@ -37,10 +38,13 @@ namespace RunnerV2
             new PowerAccentModuleInterface(),
             new AdvancedPasteModuleInterface(),
             new AwakeModuleInterface(),
+            new CmdNotFoundModuleInterface(),
         ];
 
         internal static bool Run(Action afterInitializationAction)
         {
+            Logger.LogInfo("Runner started");
+
             InitializeTrayWindow();
             TrayIconManager.StartTrayIcon();
 
