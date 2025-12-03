@@ -46,8 +46,11 @@
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}" />
 
         <fp:FilePreview
+            x:Name="FilePreviewer"
             Grid.Row="1"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
+            MediaVolume="{x:Bind ViewModel.MediaVolume, Mode=OneWay}"
+            MediaVolumeChanged="FilePreviewer_MediaVolumeChanged"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />

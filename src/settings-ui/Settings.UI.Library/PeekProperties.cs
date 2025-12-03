@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CloseAfterLosingFocus = new BoolProperty(false);
             ConfirmFileDelete = new BoolProperty(true);
             EnableSpaceToActivate = new BoolProperty(true); // Toggle is ON by default for new users. No impact on existing users.
+            MediaVolume = new DoubleProperty(1.0); // Default volume is 100%
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -31,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty ConfirmFileDelete { get; set; }
 
         public BoolProperty EnableSpaceToActivate { get; set; }
+
+        public DoubleProperty MediaVolume { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PeekProperties);
     }

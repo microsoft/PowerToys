@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Peek.FilePreviewer.Previewers.MediaPreviewer.Models;
@@ -10,6 +11,10 @@ namespace Peek.FilePreviewer.Controls
 {
     public sealed partial class AudioControl : UserControl
     {
+        public event EventHandler<double>? VolumeChanged;
+
+        private bool _isSettingVolume;
+
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
             nameof(Source),
             typeof(AudioPreviewData),
@@ -21,6 +26,12 @@ namespace Peek.FilePreviewer.Controls
             typeof(string),
             typeof(AudioControl),
             new PropertyMetadata(null));
+
+        public static readonly DependencyProperty MediaVolumeProperty = DependencyProperty.Register(
+            nameof(MediaVolume),
+            typeof(double),
+            typeof(AudioControl),
+            new PropertyMetadata(1.0, new PropertyChangedCallback((d, e) => ((AudioControl)d).MediaVolumePropertyChanged())));
 
         public AudioPreviewData? Source
         {
@@ -34,9 +45,27 @@ namespace Peek.FilePreviewer.Controls
             set { SetValue(ToolTipTextProperty, value); }
         }
 
+        public double MediaVolume
+        {
+            get { return (double)GetValue(MediaVolumeProperty); }
+            set { SetValue(MediaVolumeProperty, value); }
+        }
+
         public AudioControl()
         {
             this.InitializeComponent();
+            PlayerElement.MediaPlayer.VolumeChanged += MediaPlayer_VolumeChanged;
+        }
+
+        private void MediaPlayer_VolumeChanged(Windows.Media.Playback.MediaPlayer sender, object args)
+        {
+            if (!_isSettingVolume)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    VolumeChanged?.Invoke(this, sender.Volume);
+                });
+            }
         }
 
         private void SourcePropertyChanged()
@@ -45,6 +74,32 @@ namespace Peek.FilePreviewer.Controls
             {
                 PlayerElement.MediaPlayer.Pause();
                 PlayerElement.MediaPlayer.Source = null;
+            }
+            else
+            {
+                // Apply saved volume when source changes
+                ApplyVolume();
+            }
+        }
+
+        private void MediaVolumePropertyChanged()
+        {
+            ApplyVolume();
+        }
+
+        private void ApplyVolume()
+        {
+            if (PlayerElement.MediaPlayer != null)
+            {
+                _isSettingVolume = true;
+                try
+                {
+                    PlayerElement.MediaPlayer.Volume = MediaVolume;
+                }
+                finally
+                {
+                    _isSettingVolume = false;
+                }
             }
         }
 

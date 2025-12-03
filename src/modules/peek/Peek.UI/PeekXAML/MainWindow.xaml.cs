@@ -284,6 +284,11 @@ namespace Peek.UI
             Uninitialize();
         }
 
+        private void FilePreviewer_MediaVolumeChanged(object? sender, double volume)
+        {
+            ViewModel.MediaVolume = volume;
+        }
+
         private bool IsNewSingleSelectedItem(SelectedItem selectedItem)
         {
             try
