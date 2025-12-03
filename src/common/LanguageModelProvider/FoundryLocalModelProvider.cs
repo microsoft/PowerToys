@@ -64,7 +64,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
         return new OpenAIClient(
             new ApiKeyCredential("none"),
-            new OpenAIClientOptions { Endpoint = endpointUri })
+            new OpenAIClientOptions { Endpoint = endpointUri, NetworkTimeout = TimeSpan.FromMinutes(5) })
             .GetChatClient(modelId)
             .AsIChatClient();
     }
