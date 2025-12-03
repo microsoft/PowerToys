@@ -3,13 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using KeystrokeOverlayUI.Models;
 
 namespace KeystrokeOverlayUI
@@ -68,7 +68,8 @@ namespace KeystrokeOverlayUI
                             {
                                 Debug.WriteLine($"KeystrokeListener: short read {buffer.Length} of {length}, reconnecting");
                                 break; // broken frame/connection, reconnect
-                            }
+                        }
+
                             string json = Encoding.UTF8.GetString(buffer);
 
                             // 3. Deserialize (case-insensitive to match native lowercase keys)
@@ -85,8 +86,9 @@ namespace KeystrokeOverlayUI
                             catch (JsonException je)
                             {
                                 Debug.WriteLine($"KeystrokeListener: JSON deserialization failed: {je.Message}");
-                                // Skip this frame and continue reading
-                            }
+
+                            // Skip this frame and continue reading
+                        }
                     }
                 }
                 catch (Exception)
