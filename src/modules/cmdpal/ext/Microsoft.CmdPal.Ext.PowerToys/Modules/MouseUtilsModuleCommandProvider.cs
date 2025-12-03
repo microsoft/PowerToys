@@ -38,6 +38,13 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
             Icon = icon,
         };
 
+        yield return new ListItem(new ToggleCursorWrapCommand())
+        {
+            Title = "Toggle Cursor Wrap",
+            Subtitle = "Wrap the cursor across monitor edges",
+            Icon = icon,
+        };
+
         yield return new ListItem(new ShowMouseJumpPreviewCommand())
         {
             Title = "Show Mouse Jump Preview",

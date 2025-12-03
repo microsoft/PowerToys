@@ -99,6 +99,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT;
     }
+    hstring Constants::CursorWrapTriggerEvent()
+    {
+        return CommonSharedConstants::CURSOR_WRAP_TRIGGER_EVENT;
+    }
     hstring Constants::LightSwitchToggleEvent()
     {
         return CommonSharedConstants::LIGHTSWITCH_TOGGLE_EVENT;
