@@ -69,33 +69,9 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <ListView
+        <controls:ModuleList
             Grid.Row="1"
-            Margin="0,16,0,0"
-            ItemsSource="{x:Bind ViewModel.FlyoutMenuItems}"
-            SelectionMode="None">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    <Setter Property="Padding" Value="0" />
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Padding="0,0,0,16" Orientation="Vertical" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
-                    <controls:ModuleSettingsCard
-                        HorizontalAlignment="Stretch"
-                        Icon="{x:Bind Icon, Mode=OneWay}"
-                        IsLocked="{x:Bind IsLocked, Mode=OneWay}"
-                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                        Label="{x:Bind Label, Mode=OneWay}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            IsItemClickable="False"
+            ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
     </Grid>
 </Page>

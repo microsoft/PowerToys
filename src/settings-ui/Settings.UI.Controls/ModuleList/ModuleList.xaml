@@ -6,10 +6,23 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Controls.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk="using:CommunityToolkit.WinUI"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:ModuleListSortOptionToBooleanConverter x:Key="ModuleListSortOptionToBooleanConverter" />
+        <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToVisibilityConverter"
+            FalseValue="Collapsed"
+            TrueValue="Visible" />
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="ReverseBoolToVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
+        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
     </UserControl.Resources>
 
     <controls:Card
@@ -55,14 +68,54 @@
             </ItemsRepeater.Layout>
             <ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="controls:ModuleListItem">
-                    <controls:ModuleSettingsCard
-                        Click="ModuleSettingsCard_Click"
-                        Icon="{x:Bind Icon}"
-                        IsLocked="{x:Bind IsLocked}"
-                        IsNew="{x:Bind IsNew}"
-                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                        Label="{x:Bind Label}"
-                        Tag="{x:Bind Tag}" />
+                    <tkcontrols:SettingsCard
+                        MinHeight="0"
+                        Padding="12,4,12,4"
+                        tk:FrameworkElementExtensions.AncestorType="ItemsRepeater"
+                        Background="Transparent"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="0,1,0,0"
+                        Click="OnSettingsCardClick"
+                        CornerRadius="0"
+                        IsClickEnabled="{Binding (tk:FrameworkElementExtensions.Ancestor).IsItemClickable, RelativeSource={RelativeSource Self}}">
+                        <tkcontrols:SettingsCard.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                                <!--  InfoBadge  -->
+                                <InfoBadge
+                                    x:Name="NewInfoBadge"
+                                    Margin="4,0,0,0"
+                                    Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                                    Visibility="{x:Bind IsNew, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <FontIcon
+                                    Width="20"
+                                    Margin="4,0,0,0"
+                                    FontSize="16"
+                                    Glyph="&#xE72E;"
+                                    Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock Text="This setting is managed by your organization" TextWrapping="WrapWholeWords" />
+                                    </ToolTipService.ToolTip>
+                                </FontIcon>
+                            </StackPanel>
+                        </tkcontrols:SettingsCard.Header>
+
+                        <tkcontrols:SettingsCard.HeaderIcon>
+                            <ImageIcon>
+                                <ImageIcon.Source>
+                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+                        </tkcontrols:SettingsCard.HeaderIcon>
+
+                        <ToggleSwitch
+                            HorizontalAlignment="Right"
+                            AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                            OffContent=""
+                            OnContent="" />
+                    </tkcontrols:SettingsCard>
                 </DataTemplate>
             </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>

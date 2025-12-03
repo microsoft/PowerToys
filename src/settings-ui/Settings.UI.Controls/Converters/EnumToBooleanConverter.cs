@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,10 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls.Converters
                 return false;
             }
 
+            // Get the enum value as string
             var enumString = value.ToString();
             var parameterString = parameter.ToString();
 
-            return string.Equals(enumString, parameterString, StringComparison.OrdinalIgnoreCase);
+            return enumString!.Equals(parameterString, StringComparison.OrdinalIgnoreCase);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

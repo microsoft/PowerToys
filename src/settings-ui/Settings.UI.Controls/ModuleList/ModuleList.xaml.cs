@@ -14,6 +14,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.InitializeComponent();
         }
 
+        public bool IsItemClickable
+        {
+            get => (bool)GetValue(IsItemClickableProperty);
+            set => SetValue(IsItemClickableProperty, value);
+        }
+
+        public static readonly DependencyProperty IsItemClickableProperty = DependencyProperty.Register(nameof(IsItemClickable), typeof(bool), typeof(ModuleList), new PropertyMetadata(true));
+
         public object ItemsSource
         {
             get => (object)GetValue(ItemsSourceProperty);
@@ -48,12 +56,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             SortOption = ModuleListSortOption.ByStatus;
         }
 
-        private void ModuleSettingsCard_Click(object sender, RoutedEventArgs e)
+        private void OnSettingsCardClick(object sender, RoutedEventArgs e)
         {
-            if (sender is ModuleSettingsCard card && card.DataContext is ModuleListItem item)
-            {
-                item.ClickCommand?.Execute(item.Tag);
-            }
+            // TO DO:
+            // ViewModel.DashboardListItemClick(sender);
         }
     }
 }

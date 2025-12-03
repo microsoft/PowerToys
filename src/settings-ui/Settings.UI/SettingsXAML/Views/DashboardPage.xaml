@@ -165,7 +165,6 @@
                                 Margin="8,0,12,12"
                                 ItemsSource="{x:Bind ViewModel.QuickAccessItems, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.QuickAccessItems.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
-
                             <TextBlock
                                 x:Uid="NoActionsToShow"
                                 Margin="12"
