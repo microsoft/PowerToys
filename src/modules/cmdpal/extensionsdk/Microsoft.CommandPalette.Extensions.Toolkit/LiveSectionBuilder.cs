@@ -10,13 +10,9 @@ public sealed partial class LiveSectionBuilder
 
     public string SectionTitle { get; set; } = string.Empty;
 
-    private ListItem CreateSectionListItem()
+    private Separator CreateSectionListItem()
     {
-        return new ListItem
-        {
-            Section = SectionTitle,
-            Command = null,
-        };
+        return new Separator(SectionTitle);
     }
 
     public LiveSectionBuilder(string sectionName, IListItem[] items)
