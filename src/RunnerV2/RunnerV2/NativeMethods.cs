@@ -5,7 +5,7 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using Microsoft.PowerToys.Settings.UI.Helpers;
+using ManagedCommon;
 
 namespace RunnerV2
 {

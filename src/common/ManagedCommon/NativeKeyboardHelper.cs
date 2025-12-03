@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.PowerToys.Settings.UI.Helpers
+namespace ManagedCommon
 {
     public static class NativeKeyboardHelper
     {

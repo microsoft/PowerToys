@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using PowerToys.Interop;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace ManagedCommon
 {
     public delegate void KeyEvent(int key);
 
@@ -14,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public delegate bool FilterAccessibleKeyboardEvents(int key, UIntPtr extraInfo);
 
-    public class HotkeySettingsControlHook : IDisposable
+    public partial class HotkeySettingsControlHook : IDisposable
     {
         private const int WmKeyDown = 0x100;
         private const int WmKeyUp = 0x101;
