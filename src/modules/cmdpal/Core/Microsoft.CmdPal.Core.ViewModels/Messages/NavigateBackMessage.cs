@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
-public record NavigateBackMessage(bool FromBackspace = false, bool FromEscape = false)
-{
-}
+public record NavigateBackMessage(bool FromBackspace = false);

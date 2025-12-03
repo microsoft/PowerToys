@@ -138,7 +138,7 @@ public sealed partial class SearchBar : UserControl,
             switch (Settings.EscapeKeyBehaviorSetting)
             {
                 case EscapeKeyBehavior.AlwaysGoBack:
-                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new(FromEscape: true));
+                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
                     break;
 
                 case EscapeKeyBehavior.AlwaysDismiss:
@@ -153,7 +153,7 @@ public sealed partial class SearchBar : UserControl,
                 default:
                     if (string.IsNullOrEmpty(FilterBox.Text))
                     {
-                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new(FromEscape: true));
+                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
                     }
                     else
                     {
