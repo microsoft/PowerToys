@@ -60,7 +60,7 @@ namespace Awake.Core
         {
             _tokenSource = new CancellationTokenSource();
             _stateQueue = [];
-            ModuleSettings = new SettingsUtils();
+            ModuleSettings = SettingsUtils.GlobalDefaultInstance;
         }
 
         internal static void StartMonitor()

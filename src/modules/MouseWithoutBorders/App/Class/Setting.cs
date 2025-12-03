@@ -192,7 +192,7 @@ namespace MouseWithoutBorders.Class
 
         internal Settings()
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.GlobalDefaultInstance;
 
             _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
             {

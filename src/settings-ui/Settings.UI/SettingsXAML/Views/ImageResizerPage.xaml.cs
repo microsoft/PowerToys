@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ImageResizerPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             Func<string, string> loader = resourceLoader.GetString;
 

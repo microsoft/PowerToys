@@ -29,7 +29,7 @@ namespace PowerOCR.Settings
         [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.GlobalDefaultInstance;
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             PreferredLanguage = new SettingItem<string>(string.Empty);
 

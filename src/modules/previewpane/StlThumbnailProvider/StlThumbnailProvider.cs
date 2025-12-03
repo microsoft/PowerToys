@@ -155,7 +155,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
             {
                 try
                 {
-                    var moduleSettings = new SettingsUtils();
+                    var moduleSettings = SettingsUtils.GlobalDefaultInstance;
 
                     var colorString = moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.StlThumbnailColor.Value;
 

@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ColorPickerPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
             ViewModel = new ColorPickerViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

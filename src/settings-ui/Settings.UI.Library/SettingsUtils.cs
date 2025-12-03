@@ -22,7 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private readonly ISettingsPath _settingsPath;
         private readonly JsonSerializerOptions _serializerOptions;
 
-        public SettingsUtils()
+        public static SettingsUtils GlobalDefaultInstance { get; } = new SettingsUtils();
+
+        private SettingsUtils()
             : this(new FileSystem())
         {
         }
@@ -234,7 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = GlobalDefaultInstance;
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
 
@@ -247,7 +249,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static (bool Success, string Message, string Severity) RestoreSettings()
         {
             var settingsBackupAndRestoreUtilsX = SettingsBackupAndRestoreUtils.Instance;
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = GlobalDefaultInstance;
             var appBasePath = Path.GetDirectoryName(settingsUtils._settingsPath.GetSettingsPath(string.Empty, string.Empty));
             string settingsBackupAndRestoreDir = settingsBackupAndRestoreUtilsX.GetSettingsBackupAndRestoreDir();
             return settingsBackupAndRestoreUtilsX.RestoreSettings(appBasePath, settingsBackupAndRestoreDir);
