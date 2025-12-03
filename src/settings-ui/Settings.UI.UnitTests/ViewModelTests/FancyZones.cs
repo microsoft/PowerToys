@@ -6,6 +6,7 @@ using System;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -98,6 +99,22 @@ namespace ViewModelTests
         {
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
             mockFancyZonesSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<FancyZonesSettings>();
+        }
+
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Reset singleton instances to prevent state pollution between tests
+            ResetSettingsRepository<GeneralSettings>();
+            ResetSettingsRepository<FancyZonesSettings>();
+        }
+
+        private void ResetSettingsRepository<T>()
+            where T : class, ISettingsConfig, new()
+        {
+            var repositoryType = typeof(SettingsRepository<T>);
+            var field = repositoryType.GetField("settingsRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            field?.SetValue(null, null);
         }
 
         [TestMethod]

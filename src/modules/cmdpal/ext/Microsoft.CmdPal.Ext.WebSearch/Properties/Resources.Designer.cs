@@ -160,6 +160,24 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom search engine URL.
+        /// </summary>
+        public static string plugin_custom_search_uri {
+            get {
+                return ResourceManager.GetString("plugin_custom_search_uri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use {query} or %s as the search query placeholder; e.g. https://www.bing.com/search?q={query}.
+        /// </summary>
+        public static string plugin_custom_search_uri_placeholder {
+            get {
+                return ResourceManager.GetString("plugin_custom_search_uri_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Searches the web with your default search engine.
         /// </summary>
         public static string plugin_description {

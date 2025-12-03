@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -113,7 +114,7 @@ public sealed partial class MainWindow : WindowEx,
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
-        RootShellPage.Loaded += RootShellPage_Loaded;
+        RootElement.Loaded += RootElementLoaded;
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -130,7 +131,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootShellPage.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
+        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -165,10 +166,17 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
 
-    private void RootShellPage_Loaded(object sender, RoutedEventArgs e) =>
-
+    private void RootElementLoaded(object sender, RoutedEventArgs e)
+    {
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
+
+        // Add dev ribbon if enabled
+        if (!BuildInfo.IsCiBuild)
+        {
+            RootElement.Children.Add(new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) });
+        }
+    }
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -658,28 +666,28 @@ public sealed partial class MainWindow : WindowEx,
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        var scaleAdjustment = RootElement.XamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
         // (resizing, dragging) don't apply in this space.
-        var transform = RootShellPage.TransformToVisual(null);
+        var transform = RootElement.TransformToVisual(null);
 
         // Reserve 16px of space at the top for dragging.
         var topHeight = 16;
         var bounds = transform.TransformBounds(new Rect(
             0,
             topHeight,
-            RootShellPage.ActualWidth,
-            RootShellPage.ActualHeight));
+            RootElement.ActualWidth,
+            RootElement.ActualHeight));
         var contentRect = GetRect(bounds, scaleAdjustment);
         var rectArray = new RectInt32[] { contentRect };
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
         // Add a drag-able region on top
-        var w = RootShellPage.ActualWidth;
-        _ = RootShellPage.ActualHeight;
+        var w = RootElement.ActualWidth;
+        _ = RootElement.ActualHeight;
         var dragSides = new RectInt32[]
         {
             GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall
