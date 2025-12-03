@@ -17,11 +17,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             PreferredLanguage = string.Empty;
+            DefaultOutputMode = 0; // 0 = Default, 1 = SingleLine, 2 = Table
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
 
         public string PreferredLanguage { get; set; }
+
+        public int DefaultOutputMode { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PowerOcrProperties);

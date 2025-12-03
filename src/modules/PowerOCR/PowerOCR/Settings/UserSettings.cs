@@ -32,6 +32,7 @@ namespace PowerOCR.Settings
             _settingsUtils = new SettingsUtils();
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             PreferredLanguage = new SettingItem<string>(string.Empty);
+            DefaultOutputMode = new SettingItem<int>(0);
 
             LoadSettingsFromJson();
 
@@ -42,6 +43,8 @@ namespace PowerOCR.Settings
         public SettingItem<string> ActivationShortcut { get; private set; }
 
         public SettingItem<string> PreferredLanguage { get; private set; }
+
+        public SettingItem<int> DefaultOutputMode { get; private set; }
 
         private void LoadSettingsFromJson()
         {
@@ -70,6 +73,7 @@ namespace PowerOCR.Settings
                             {
                                 ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
                                 PreferredLanguage.Value = settings.Properties.PreferredLanguage.ToString();
+                                DefaultOutputMode.Value = settings.Properties.DefaultOutputMode;
                             }
 
                             retry = false;

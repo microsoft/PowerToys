@@ -178,6 +178,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int DefaultOutputMode
+        {
+            get => _powerOcrSettings.Properties.DefaultOutputMode;
+            set
+            {
+                if (_powerOcrSettings.Properties.DefaultOutputMode != value)
+                {
+                    _powerOcrSettings.Properties.DefaultOutputMode = value;
+                    OnPropertyChanged(nameof(DefaultOutputMode));
+
+                    _settingsUtils.SaveSettings(_powerOcrSettings.ToJsonString(), PowerOcrSettings.ModuleName);
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         internal void UpdateLanguages()
         {
             int preferredLanguageIndex = -1;

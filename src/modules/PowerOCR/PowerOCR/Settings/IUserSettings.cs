@@ -10,5 +10,7 @@ public interface IUserSettings
 
     SettingItem<string> PreferredLanguage { get; }
 
+    SettingItem<int> DefaultOutputMode { get; }
+
     void SendSettingsTelemetry();
 }

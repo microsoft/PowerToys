@@ -66,6 +66,16 @@
                             Loaded="TextExtractor_ComboBox_Loaded"
                             SelectedIndex="{x:Bind Path=ViewModel.LanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="TextExtractorDefaultOutputMode" x:Uid="TextExtractor_DefaultOutputMode">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="TextExtractorDefaultOutputModeComboBox"
+                            SelectedIndex="{x:Bind Path=ViewModel.DefaultOutputMode, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="TextExtractor_DefaultOutputMode_None" />
+                            <ComboBoxItem x:Uid="TextExtractor_DefaultOutputMode_SingleLine" />
+                            <ComboBoxItem x:Uid="TextExtractor_DefaultOutputMode_Table" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

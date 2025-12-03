@@ -3974,6 +3974,21 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
   </data>
+  <data name="TextExtractor_DefaultOutputMode.Header" xml:space="preserve">
+    <value>Default output format</value>
+  </data>
+  <data name="TextExtractor_DefaultOutputMode.Description" xml:space="preserve">
+    <value>Choose the default formatting method when capturing text</value>
+  </data>
+  <data name="TextExtractor_DefaultOutputMode_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="TextExtractor_DefaultOutputMode_SingleLine.Content" xml:space="preserve">
+    <value>Single line</value>
+  </data>
+  <data name="TextExtractor_DefaultOutputMode_Table.Content" xml:space="preserve">
+    <value>Table</value>
+  </data>
   <data name="Alternate_OOBE_AlwaysOnTop_Description.Text" xml:space="preserve">
     <value>Pin a window so that:</value>
   </data>
