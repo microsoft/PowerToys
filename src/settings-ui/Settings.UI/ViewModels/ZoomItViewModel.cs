@@ -693,22 +693,65 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.BreakShowBackgroundFile.Value = value;
                     OnPropertyChanged(nameof(BreakShowBackgroundFile));
+                    OnPropertyChanged(nameof(BreakBackgroundSelectionIndex));
                     NotifySettingsChanged();
                 }
             }
         }
 
-        public int BreakShowDesktopOrImageFileIndex
+        public bool BreakShowDesktop
         {
-            get => _zoomItSettings.Properties.BreakShowDesktop.Value ? 0 : 1;
+            get => _zoomItSettings.Properties.BreakShowDesktop.Value;
             set
             {
-                bool newValue = value == 0;
-                if (_zoomItSettings.Properties.BreakShowDesktop.Value != newValue)
+                if (_zoomItSettings.Properties.BreakShowDesktop.Value != value)
                 {
-                    _zoomItSettings.Properties.BreakShowDesktop.Value = newValue;
-                    OnPropertyChanged(nameof(BreakShowDesktopOrImageFileIndex));
+                    _zoomItSettings.Properties.BreakShowDesktop.Value = value;
+                    OnPropertyChanged(nameof(BreakShowDesktop));
+                    OnPropertyChanged(nameof(BreakBackgroundSelectionIndex));
                     NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int BreakBackgroundSelectionIndex
+        {
+            get
+            {
+                if (!BreakShowBackgroundFile)
+                {
+                    return 0;
+                }
+
+                return BreakShowDesktop ? 1 : 2;
+            }
+
+            set
+            {
+                int clampedValue = Math.Clamp(value, 0, 2);
+                switch (clampedValue)
+                {
+                    case 0:
+                        BreakShowBackgroundFile = false;
+                        break;
+                    case 1:
+                        if (!BreakShowBackgroundFile)
+                        {
+                            BreakShowBackgroundFile = true;
+                        }
+
+                        BreakShowDesktop = true;
+                        break;
+                    case 2:
+                        if (!BreakShowBackgroundFile)
+                        {
+                            BreakShowBackgroundFile = true;
+                        }
+
+                        BreakShowDesktop = false;
+                        break;
+                    default:
+                        break;
                 }
             }
         }

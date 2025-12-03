@@ -264,8 +264,7 @@
 
 
                             <tkcontrols:SettingsCard Name="ZoomItBreakShowBackgroundBitmap" x:Uid="ZoomIt_Break_ShowBackgroundBitmap">
-                                <ComboBox>
-                                    <!--  TO DO: Set the SelectedIndex  -->
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.BreakBackgroundSelectionIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ZoomIt_Break_BackgroundImage_None" />
                                     <ComboBoxItem x:Uid="ZoomIt_Break_ShowFadedDesktop" />
                                     <ComboBoxItem x:Uid="ZoomIt_Break_ShowImageFile" />
@@ -291,20 +290,6 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-
-                    <!--  - DELETE  -->
-                    <tkcontrols:SettingsExpander IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=TwoWay}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Name="ZoomItBreakShowDesktopOrImageFile" x:Uid="ZoomIt_Break_ShowDesktopOrImageFile">
-                                <RadioButtons SelectedIndex="{x:Bind ViewModel.BreakShowDesktopOrImageFileIndex, Mode=TwoWay}">
-                                    <RadioButton x:Uid="ZoomIt_Break_ShowFadedDesktop" />
-                                    <RadioButton x:Uid="ZoomIt_Break_ShowImageFile" />
-                                </RadioButtons>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
-                    <!--  - DELETE END  -->
 
                 </controls:SettingsGroup>
 
