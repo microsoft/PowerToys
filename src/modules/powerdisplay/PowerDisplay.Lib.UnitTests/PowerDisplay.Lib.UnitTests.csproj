@@ -15,6 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Hide build log files from Solution Explorer -->
+    <None Remove="*.log" />
+    <None Remove="*.binlog" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MSTest" />
     <PackageReference Include="Moq" />
     <PackageReference Include="System.CodeDom">

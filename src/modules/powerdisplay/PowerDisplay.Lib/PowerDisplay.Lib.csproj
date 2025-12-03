@@ -27,6 +27,11 @@
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Hide build log files from Solution Explorer -->
+    <None Remove="*.log" />
+    <None Remove="*.binlog" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
