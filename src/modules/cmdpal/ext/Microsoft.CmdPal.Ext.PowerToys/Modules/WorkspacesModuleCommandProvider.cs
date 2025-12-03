@@ -36,6 +36,13 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
             ],
         });
 
+        items.Add(new ListItem(new OpenWorkspaceEditorCommand())
+        {
+            Title = "Workspaces: Open editor",
+            Subtitle = "Create or edit workspaces",
+            Icon = IconHelpers.FromRelativePath("Assets\\Workspaces.png"),
+        });
+
         // Per-workspace entries via the shared service.
         foreach (var workspace in LoadWorkspaces())
         {

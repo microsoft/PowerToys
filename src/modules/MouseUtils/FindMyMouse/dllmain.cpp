@@ -94,6 +94,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Ensure threads/handles are cleaned up before destruction
+        disable();
         delete this;
     }
 

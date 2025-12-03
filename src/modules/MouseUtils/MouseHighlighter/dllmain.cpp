@@ -80,6 +80,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Tear down threads/handles before deletion to avoid abort() on joinable threads during shutdown
+        disable();
         delete this;
     }
 

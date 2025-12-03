@@ -144,11 +144,9 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
-        UninstallKeyboardHook();
-        StopXTimer();
-        StopYTimer();
+        // Ensure all background threads/handles are torn down before destruction to avoid std::terminate/abort on joinable threads
+        disable();
         g_instance.store(nullptr, std::memory_order_release);
-        // Release shared state so worker threads (if any) exit when weak_ptr lock fails
         m_state.reset();
         delete this;
     }
