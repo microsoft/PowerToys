@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -66,6 +66,15 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         public static string command_item_title {
             get {
                 return ResourceManager.GetString("command_item_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to default browser.
+        /// </summary>
+        public static string default_browser {
+            get {
+                return ResourceManager.GetString("default_browser", resourceCulture);
             }
         }
         
@@ -147,6 +156,24 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         public static string plugin_browser {
             get {
                 return ResourceManager.GetString("plugin_browser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom search engine URL.
+        /// </summary>
+        public static string plugin_custom_search_uri {
+            get {
+                return ResourceManager.GetString("plugin_custom_search_uri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use {query} or %s as the search query placeholder; e.g. https://www.bing.com/search?q={query}.
+        /// </summary>
+        public static string plugin_custom_search_uri_placeholder {
+            get {
+                return ResourceManager.GetString("plugin_custom_search_uri_placeholder", resourceCulture);
             }
         }
         

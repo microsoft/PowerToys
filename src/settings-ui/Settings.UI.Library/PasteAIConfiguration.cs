@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public AIServiceType ActiveServiceTypeKind => ActiveProvider?.ServiceTypeKind ?? AIServiceType.OpenAI;
 
         public override string ToString()
-            => JsonSerializer.Serialize(this);
+            => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PasteAIConfiguration);
 
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
