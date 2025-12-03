@@ -1634,6 +1634,7 @@ slnx
 SMALLICON
 smartphone
 smileys
+SMTC
 SMTO
 SNAPPROCESS
 snk
