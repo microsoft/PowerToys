@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using PowerToysExtension.Helpers;
 
 namespace PowerToysExtension;
 
@@ -24,4 +26,21 @@ public sealed partial class PowerToysCommandsProvider : CommandProvider
             Subtitle = "PowerToys commands and settings",
         }
     ];
+
+    public override IFallbackCommandItem[] FallbackCommands()
+    {
+        var items = ModuleCommandCatalog.FilteredItems(string.Empty);
+        var fallbacks = new List<IFallbackCommandItem>(items.Length);
+        foreach (var item in items)
+        {
+            if (item?.Command is not ICommand cmd)
+            {
+                continue;
+            }
+
+            fallbacks.Add(new PowerToysFallbackCommandItem(cmd, item.Title, item.Subtitle, item.Icon, item.MoreCommands));
+        }
+
+        return fallbacks.ToArray();
+    }
 }
