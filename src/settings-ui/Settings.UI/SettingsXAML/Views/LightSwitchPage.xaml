@@ -169,12 +169,18 @@
                                         IsClosable="False"
                                         IsOpen="True"
                                         Severity="Informational">
-                                        <TextBlock>
-                                            <Run x:Uid="LightSwitch_FollowNightLightCardMessage" />
-                                            <Hyperlink Click="OpenNightLightSettings_Click">
-                                                <Run x:Uid="LightSwitch_NightLightSettingsButton" />
-                                            </Hyperlink>
-                                        </TextBlock>
+                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center">
+                                                <Run x:Uid="LightSwitch_FollowNightLightCardMessage" />
+                                            </TextBlock>
+
+                                            <HyperlinkButton
+                                                x:Uid="LightSwitch_NightLightSettingsButton"
+                                                Margin="3,0,0,0"
+                                                Padding="0"
+                                                Click="OpenNightLightSettings_Click" />
+                                        </StackPanel>
+
                                     </InfoBar>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
