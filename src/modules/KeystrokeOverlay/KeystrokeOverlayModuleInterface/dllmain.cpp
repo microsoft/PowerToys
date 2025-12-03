@@ -11,9 +11,6 @@
 #include <common/utils/logger_helper.h>
 
 #include "trace.h"
-#include "EventQueue.h"
-#include "Batcher.h"
-#include "KeystrokeEvent.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -39,10 +36,10 @@ const static wchar_t* MODULE_NAME = L"Keystroke Overlay";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
-const static wchar_t* ll_keyboard = L"ll_keyboard";
 const static wchar_t* win_hook_event = L"win_hook_event";
-static SpscRing<KeystrokeEvent, 1024> g_eventQueue;
-static Batcher g_batcher(g_eventQueue);
+// Note: low-level keyboard hook and batching are handled by the external
+// KeystrokeServer.exe. The module no longer declares an internal event queue
+// or batcher to avoid duplicate IPC servers.
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
@@ -71,6 +68,8 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
+    // Handle for the hidden keystroke server process started by this module
+    HANDLE m_hServerProcess = nullptr;
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -97,7 +96,42 @@ private:
         }
         
         m_hProcess = p_info.hProcess;
-        CloseHandle(p_info.hThread); 
+        CloseHandle(p_info.hThread);
+
+        // Launch the hidden keystroke server executable located next to this module DLL
+        // Resolve folder of this module using __ImageBase
+        WCHAR modulePath[MAX_PATH] = { 0 };
+        if (GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), modulePath, ARRAYSIZE(modulePath)) != 0)
+        {
+            std::wstring folder = modulePath;
+            size_t pos = folder.find_last_of(L"\\/");
+            if (pos != std::wstring::npos) folder.resize(pos + 1);
+
+            std::wstring serverPath = folder + L"KeystrokeServer.exe"; // ensure exe is named exactly like this
+            std::wstring serverCmd = serverPath + L" " + std::to_wstring(powertoys_pid);
+
+            STARTUPINFOW si = {};
+            si.cb = sizeof(si);
+            si.dwFlags = STARTF_USESHOWWINDOW;
+            si.wShowWindow = SW_HIDE;
+
+            PROCESS_INFORMATION piServer = {};
+            DWORD creationFlags = CREATE_NO_WINDOW;
+
+            // CreateProcessW may modify the command line buffer, so pass a modifiable pointer
+            if (!CreateProcessW(serverPath.c_str(), &serverCmd[0], nullptr, nullptr, FALSE, creationFlags, nullptr, nullptr, &si, &piServer))
+            {
+                DWORD err = GetLastError();
+                std::wstring msg = L"KeystrokeServer failed to start with error: " + std::to_wstring(err);
+                Logger::error(msg);
+            }
+            else
+            {
+                m_hServerProcess = piServer.hProcess;
+                CloseHandle(piServer.hThread);
+                Logger::trace(L"KeystrokeServer started successfully");
+            }
+        }
     }
 
     void terminate_process()
@@ -109,6 +143,13 @@ private:
             TerminateProcess(m_hProcess, 0);
             CloseHandle(m_hProcess);
             m_hProcess = nullptr;
+        }
+        if (m_hServerProcess)
+        {
+            Logger::trace(L"Terminating KeystrokeServer process");
+            TerminateProcess(m_hServerProcess, 0);
+            CloseHandle(m_hServerProcess);
+            m_hServerProcess = nullptr;
         }
     }
 
@@ -141,14 +182,12 @@ public:
     }
 
     // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
-    // list.
+    // nullptr as the last element of the array. We no longer request ll_keyboard
+    // events from the runner because the external KeystrokeServer.exe owns the
+    // low-level keyboard hook and IPC delivery.
     virtual const wchar_t** get_events()
     {
-        static const wchar_t* events[] = { ll_keyboard,
-                                          win_hook_event,
-                                          nullptr };
-
+        static const wchar_t* events[] = { win_hook_event, nullptr };
         return events;
     }
 
@@ -284,11 +323,12 @@ public:
     }
 
     // Enable the powertoy
+
+    // where the keystrokeoverlay.exe is/should be launched
     virtual void enable()
     {
         launch_process();
         m_enabled = true;
-        g_batcher.Start(); // Start the worker thread
         Trace::EnableKeystrokeOverlay(true);
     }
 
@@ -297,7 +337,7 @@ public:
     {
         terminate_process();
         m_enabled = false;
-        g_batcher.Stop(); // Stop the worker thread
+        // External server handles batching; nothing else to stop here.
         Trace::EnableKeystrokeOverlay(false);
     }
 
@@ -310,39 +350,7 @@ public:
     // Handle incoming event, data is event-specific
     virtual intptr_t signal_event(const wchar_t* name, intptr_t data)
     {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            if (!m_enabled) return 0;
-
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            
-            // 3. Convert WinHook data to your KeystrokeEvent
-            KeystrokeEvent kEvent;
-            
-            // Map WM_ messages to your Type enum
-            if (event.wParam == WM_KEYDOWN || event.wParam == WM_SYSKEYDOWN) 
-                kEvent.type = KeystrokeEvent::Type::Down;
-            else if (event.wParam == WM_KEYUP || event.wParam == WM_SYSKEYUP) 
-                kEvent.type = KeystrokeEvent::Type::Up;
-            else 
-                return 0; // Ignore others for now
-
-            kEvent.vk = event.lParam->vkCode;
-            kEvent.ts_micros = GetTickCount64() * 1000; 
-            kEvent.ch = 0; // Character translation requires MapVirtualKey or ToUnicode APIs here if desired
-
-            // Capture Modifier states (simplified for example)
-            kEvent.mods[0] = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-            kEvent.mods[1] = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
-            kEvent.mods[2] = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-            kEvent.mods[3] = (GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0;
-
-            // Push to queue (non-blocking)
-            g_eventQueue.try_push(kEvent);
-
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
+        if (wcscmp(name, win_hook_event) == 0)
         {
             /* auto& event = *(reinterpret_cast<WinHookEvent*>(data)); */
             // Return value is ignored
