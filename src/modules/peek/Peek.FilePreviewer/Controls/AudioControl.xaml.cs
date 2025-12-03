@@ -41,10 +41,20 @@ namespace Peek.FilePreviewer.Controls
 
         private void SourcePropertyChanged()
         {
+            var mediaPlayer = PlayerElement.MediaPlayer;
+
             if (Source == null)
             {
-                PlayerElement.MediaPlayer.Pause();
-                PlayerElement.MediaPlayer.Source = null;
+                mediaPlayer.Pause();
+                mediaPlayer.Source = null;
+
+                // Disable CommandManager to remove the app from SMTC media player panel
+                mediaPlayer.CommandManager.IsEnabled = false;
+            }
+            else
+            {
+                // Re-enable CommandManager when a new source is set so transport controls work
+                mediaPlayer.CommandManager.IsEnabled = true;
             }
         }
 
