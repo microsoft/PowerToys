@@ -602,8 +602,10 @@ namespace UITests_FancyZones
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             this.Find<ToggleSwitch>("FancyZonesQuickLayoutSwitch").Toggle(flag);
 
-            tries = 24;
-            Pull(tries, "up");
+            // Go back and forth to make sure settigns applied
+            this.Find<NavigationViewItem>("Workspaces").Click();
+            Task.Delay(200).Wait();
+            this.Find<NavigationViewItem>("FancyZones").Click();
         }
 
         private void TryReaction()
