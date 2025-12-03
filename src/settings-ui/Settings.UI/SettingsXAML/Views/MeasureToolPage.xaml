@@ -86,6 +86,7 @@
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Centimeters" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Millimeters" />
+                            <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Points" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 

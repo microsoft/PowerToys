@@ -13,12 +13,13 @@ struct Measurement
         Inch = 2,
         Centimetre = 4,
         Millimetre = 8,
+        Point = 16,
     };
 
     D2D1_RECT_F rect = {}; // corners are inclusive
 
     float px2mmRatio = 0;
-    static winrt::hstring abbreviations[4]; // Abbreviations of units.
+    static winrt::hstring abbreviations[5]; // Abbreviations of units.
 
     Measurement(const Measurement&) = default;
     Measurement& operator=(const Measurement&) = default;
