@@ -45,6 +45,34 @@ namespace
     const std::wstring GPS_LONGITUDE_REF = L"/app1/ifd/gps/{ushort=3}";         // GPSLongitudeRef
     const std::wstring GPS_ALTITUDE = L"/app1/ifd/gps/{ushort=6}";              // GPSAltitude
     const std::wstring GPS_ALTITUDE_REF = L"/app1/ifd/gps/{ushort=5}";          // GPSAltitudeRef
+
+    // HEIC/HEIF-specific EXIF metadata paths
+    // HEIC stores EXIF data directly under /ifd instead of /app1/ifd
+    const std::wstring HEIC_EXIF_DATE_TAKEN = L"/ifd/exif/{ushort=36867}";      // DateTimeOriginal
+    const std::wstring HEIC_EXIF_DATE_DIGITIZED = L"/ifd/exif/{ushort=36868}";  // DateTimeDigitized
+    const std::wstring HEIC_EXIF_DATE_MODIFIED = L"/ifd/{ushort=306}";          // DateTime
+    const std::wstring HEIC_EXIF_CAMERA_MAKE = L"/ifd/{ushort=271}";            // Make
+    const std::wstring HEIC_EXIF_CAMERA_MODEL = L"/ifd/{ushort=272}";           // Model
+    const std::wstring HEIC_EXIF_LENS_MODEL = L"/ifd/exif/{ushort=42036}";      // LensModel
+    const std::wstring HEIC_EXIF_ISO = L"/ifd/exif/{ushort=34855}";             // ISOSpeedRatings
+    const std::wstring HEIC_EXIF_APERTURE = L"/ifd/exif/{ushort=33437}";        // FNumber
+    const std::wstring HEIC_EXIF_SHUTTER_SPEED = L"/ifd/exif/{ushort=33434}";   // ExposureTime
+    const std::wstring HEIC_EXIF_FOCAL_LENGTH = L"/ifd/exif/{ushort=37386}";    // FocalLength
+    const std::wstring HEIC_EXIF_EXPOSURE_BIAS = L"/ifd/exif/{ushort=37380}";   // ExposureBiasValue
+    const std::wstring HEIC_EXIF_FLASH = L"/ifd/exif/{ushort=37385}";           // Flash
+    const std::wstring HEIC_EXIF_ORIENTATION = L"/ifd/{ushort=274}";            // Orientation
+    const std::wstring HEIC_EXIF_COLOR_SPACE = L"/ifd/exif/{ushort=40961}";     // ColorSpace
+    const std::wstring HEIC_EXIF_WIDTH = L"/ifd/exif/{ushort=40962}";           // PixelXDimension
+    const std::wstring HEIC_EXIF_HEIGHT = L"/ifd/exif/{ushort=40963}";          // PixelYDimension
+    const std::wstring HEIC_EXIF_ARTIST = L"/ifd/{ushort=315}";                 // Artist
+    const std::wstring HEIC_EXIF_COPYRIGHT = L"/ifd/{ushort=33432}";            // Copyright
+
+    // HEIC GPS paths
+    const std::wstring HEIC_GPS_LATITUDE = L"/ifd/gps/{ushort=2}";              // GPSLatitude
+    const std::wstring HEIC_GPS_LATITUDE_REF = L"/ifd/gps/{ushort=1}";          // GPSLatitudeRef
+    const std::wstring HEIC_GPS_LONGITUDE = L"/ifd/gps/{ushort=4}";             // GPSLongitude
+    const std::wstring HEIC_GPS_LONGITUDE_REF = L"/ifd/gps/{ushort=3}";         // GPSLongitudeRef
+    const std::wstring HEIC_GPS_ALTITUDE = L"/ifd/gps/{ushort=6}";              // GPSAltitude
     
     
     // Documentation: https://developer.adobe.com/xmp/docs/XMPNamespaces/xmp/
@@ -525,33 +553,33 @@ void WICMetadataExtractor::ExtractAllEXIFFields(IWICMetadataQueryReader* reader,
     if (!reader)
         return;
     
-    // Extract date/time fields
-    metadata.dateTaken = ReadDateTime(reader, EXIF_DATE_TAKEN);
-    metadata.dateDigitized = ReadDateTime(reader, EXIF_DATE_DIGITIZED);
-    metadata.dateModified = ReadDateTime(reader, EXIF_DATE_MODIFIED);
+    // Extract date/time fields - try standard JPEG/TIFF paths first, then HEIC paths as alternatives
+    metadata.dateTaken = ReadDateTimeWithFallback(reader, EXIF_DATE_TAKEN, HEIC_EXIF_DATE_TAKEN);
+    metadata.dateDigitized = ReadDateTimeWithFallback(reader, EXIF_DATE_DIGITIZED, HEIC_EXIF_DATE_DIGITIZED);
+    metadata.dateModified = ReadDateTimeWithFallback(reader, EXIF_DATE_MODIFIED, HEIC_EXIF_DATE_MODIFIED);
     
     // Extract camera information
-    metadata.cameraMake = ReadString(reader, EXIF_CAMERA_MAKE);
-    metadata.cameraModel = ReadString(reader, EXIF_CAMERA_MODEL);
-    metadata.lensModel = ReadString(reader, EXIF_LENS_MODEL);
+    metadata.cameraMake = ReadStringWithFallback(reader, EXIF_CAMERA_MAKE, HEIC_EXIF_CAMERA_MAKE);
+    metadata.cameraModel = ReadStringWithFallback(reader, EXIF_CAMERA_MODEL, HEIC_EXIF_CAMERA_MODEL);
+    metadata.lensModel = ReadStringWithFallback(reader, EXIF_LENS_MODEL, HEIC_EXIF_LENS_MODEL);
     
     // Extract shooting parameters
-    metadata.iso = ReadInteger(reader, EXIF_ISO);
-    metadata.aperture = ReadDouble(reader, EXIF_APERTURE);
-    metadata.shutterSpeed = ReadDouble(reader, EXIF_SHUTTER_SPEED);
-    metadata.focalLength = ReadDouble(reader, EXIF_FOCAL_LENGTH);
-    metadata.exposureBias = ReadDouble(reader, EXIF_EXPOSURE_BIAS);
-    metadata.flash = ReadInteger(reader, EXIF_FLASH);
+    metadata.iso = ReadIntegerWithFallback(reader, EXIF_ISO, HEIC_EXIF_ISO);
+    metadata.aperture = ReadDoubleWithFallback(reader, EXIF_APERTURE, HEIC_EXIF_APERTURE);
+    metadata.shutterSpeed = ReadDoubleWithFallback(reader, EXIF_SHUTTER_SPEED, HEIC_EXIF_SHUTTER_SPEED);
+    metadata.focalLength = ReadDoubleWithFallback(reader, EXIF_FOCAL_LENGTH, HEIC_EXIF_FOCAL_LENGTH);
+    metadata.exposureBias = ReadDoubleWithFallback(reader, EXIF_EXPOSURE_BIAS, HEIC_EXIF_EXPOSURE_BIAS);
+    metadata.flash = ReadIntegerWithFallback(reader, EXIF_FLASH, HEIC_EXIF_FLASH);
     
     // Extract image properties
-    metadata.width = ReadInteger(reader, EXIF_WIDTH);
-    metadata.height = ReadInteger(reader, EXIF_HEIGHT);
-    metadata.orientation = ReadInteger(reader, EXIF_ORIENTATION);
-    metadata.colorSpace = ReadInteger(reader, EXIF_COLOR_SPACE);
+    metadata.width = ReadIntegerWithFallback(reader, EXIF_WIDTH, HEIC_EXIF_WIDTH);
+    metadata.height = ReadIntegerWithFallback(reader, EXIF_HEIGHT, HEIC_EXIF_HEIGHT);
+    metadata.orientation = ReadIntegerWithFallback(reader, EXIF_ORIENTATION, HEIC_EXIF_ORIENTATION);
+    metadata.colorSpace = ReadIntegerWithFallback(reader, EXIF_COLOR_SPACE, HEIC_EXIF_COLOR_SPACE);
     
     // Extract author information
-    metadata.author = ReadString(reader, EXIF_ARTIST);
-    metadata.copyright = ReadString(reader, EXIF_COPYRIGHT);
+    metadata.author = ReadStringWithFallback(reader, EXIF_ARTIST, HEIC_EXIF_ARTIST);
+    metadata.copyright = ReadStringWithFallback(reader, EXIF_COPYRIGHT, HEIC_EXIF_COPYRIGHT);
 }
 
 void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata)
@@ -561,10 +589,30 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
         return;
     }
 
+    // Try standard JPEG/TIFF paths first, then HEIC paths as alternatives
     auto lat = ReadMetadata(reader, GPS_LATITUDE);
+    if (!lat)
+    {
+        lat = ReadMetadata(reader, HEIC_GPS_LATITUDE);
+    }
+
     auto lon = ReadMetadata(reader, GPS_LONGITUDE);
+    if (!lon)
+    {
+        lon = ReadMetadata(reader, HEIC_GPS_LONGITUDE);
+    }
+
     auto latRef = ReadMetadata(reader, GPS_LATITUDE_REF);
+    if (!latRef)
+    {
+        latRef = ReadMetadata(reader, HEIC_GPS_LATITUDE_REF);
+    }
+
     auto lonRef = ReadMetadata(reader, GPS_LONGITUDE_REF);
+    if (!lonRef)
+    {
+        lonRef = ReadMetadata(reader, HEIC_GPS_LONGITUDE_REF);
+    }
 
     if (lat && lon)
     {
@@ -585,6 +633,11 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
     }
 
     auto alt = ReadMetadata(reader, GPS_ALTITUDE);
+    if (!alt)
+    {
+        alt = ReadMetadata(reader, HEIC_GPS_ALTITUDE);
+    }
+
     if (alt)
     {
         metadata.altitude = MetadataFormatHelper::ParseGPSRational(alt->Get());
@@ -903,6 +956,58 @@ std::optional<PropVariantValue> WICMetadataExtractor::ReadMetadata(IWICMetadataQ
     }
 
     return std::nullopt;
+}
+
+std::optional<SYSTEMTIME> WICMetadataExtractor::ReadDateTimeWithFallback(
+    IWICMetadataQueryReader* reader,
+    const std::wstring& primaryPath,
+    const std::wstring& fallbackPath)
+{
+    auto result = ReadDateTime(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadDateTime(reader, fallbackPath);
+    }
+    return result;
+}
+
+std::optional<std::wstring> WICMetadataExtractor::ReadStringWithFallback(
+    IWICMetadataQueryReader* reader,
+    const std::wstring& primaryPath,
+    const std::wstring& fallbackPath)
+{
+    auto result = ReadString(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadString(reader, fallbackPath);
+    }
+    return result;
+}
+
+std::optional<int64_t> WICMetadataExtractor::ReadIntegerWithFallback(
+    IWICMetadataQueryReader* reader,
+    const std::wstring& primaryPath,
+    const std::wstring& fallbackPath)
+{
+    auto result = ReadInteger(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadInteger(reader, fallbackPath);
+    }
+    return result;
+}
+
+std::optional<double> WICMetadataExtractor::ReadDoubleWithFallback(
+    IWICMetadataQueryReader* reader,
+    const std::wstring& primaryPath,
+    const std::wstring& fallbackPath)
+{
+    auto result = ReadDouble(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadDouble(reader, fallbackPath);
+    }
+    return result;
 }
 
 // GPS parsing functions have been moved to MetadataFormatHelper for better testability
