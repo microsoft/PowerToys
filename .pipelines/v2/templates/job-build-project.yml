@@ -480,6 +480,30 @@ jobs:
       }
     displayName: Locate the CmdPal MSIX
 
+  - pwsh: |-
+      $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.Ext.PowerToys_*.msix"
+      Write-Host "Found $($Packages.Count) CmdPal PowerToys extension MSIX package(s):"
+      foreach ($pkg in $Packages) {
+          Write-Host "  - $($pkg.FullName)"
+      }
+      
+      if ($Packages.Count -gt 0) {
+          $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.Ext\.PowerToys_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+          if ($PlatformPackage) {
+              $Package = $PlatformPackage
+              Write-Host "Using platform-specific package: $($Package.FullName)"
+          } else {
+              $Package = $Packages | Select-Object -First 1
+              Write-Host "Using first available package: $($Package.FullName)"
+          }
+          
+          $PackageFilename = $Package.FullName
+          Write-Host "##vso[task.setvariable variable=CmdPalExtPowerToysPackagePath]${PackageFilename}"
+      } else {
+          Write-Warning "No CmdPal PowerToys extension MSIX packages found!"
+      }
+    displayName: Locate the CmdPal PowerToys extension MSIX
+
   - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
         & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
@@ -504,6 +528,38 @@ jobs:
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
 
+    - pwsh: |-
+        if ([string]::IsNullOrWhiteSpace("$(CmdPalExtPowerToysPackagePath)")) {
+            Write-Host "No CmdPal PowerToys extension MSIX package found; skipping signing."
+            exit 0
+        }
+        & "$(MakeAppxPath)" unpack /p "$(CmdPalExtPowerToysPackagePath)" /d "$(JobOutputDirectory)/CmdPalExtPowerToysPackageContents"
+      displayName: Unpack the CmdPal PowerToys extension MSIX for signing
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign CmdPal PowerToys extension MSIX content
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(JobOutputDirectory)/CmdPalExtPowerToysPackageContents'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+      condition: ne(variables['CmdPalExtPowerToysPackagePath'], '')
+
+    - pwsh: |-
+        if ([string]::IsNullOrWhiteSpace("$(CmdPalExtPowerToysPackagePath)")) {
+            Write-Host "No CmdPal PowerToys extension MSIX package found; skipping signing."
+            exit 0
+        }
+        $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx_ext" -ErrorAction:Ignore
+        $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalExtPowerToysPackagePath)")
+        & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalExtPowerToysPackageContents"
+        Copy-Item -Force $PackageFilename "$(CmdPalExtPowerToysPackagePath)"
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/CmdPalExtPowerToysPackageContents" -ErrorAction:Ignore
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx_ext" -ErrorAction:Ignore
+      displayName: Re-pack the CmdPal PowerToys extension package after signing
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys
@@ -527,6 +583,14 @@ jobs:
   - pwsh: |-
       Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
     displayName: Stage the final CmdPal package
+
+  - pwsh: |-
+      if ([string]::IsNullOrWhiteSpace("$(CmdPalExtPowerToysPackagePath)")) {
+          Write-Host "No CmdPal PowerToys extension MSIX package found; skipping staging."
+          exit 0
+      }
+      Copy-Item -Verbose -Force "$(CmdPalExtPowerToysPackagePath)" "$(JobOutputDirectory)"
+    displayName: Stage the final CmdPal PowerToys extension package
 
 
 

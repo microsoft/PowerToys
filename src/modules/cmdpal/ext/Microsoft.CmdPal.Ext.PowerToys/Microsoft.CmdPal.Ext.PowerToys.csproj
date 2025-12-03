@@ -7,15 +7,19 @@
 		<RootNamespace>PowerToysExtension</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
-		<UseWinUI>false</UseWinUI>
-		<UseWindowsForms>false</UseWindowsForms>
+		<PackageVersion>$(Version).0</PackageVersion>
 		<EnableMsixTooling>true</EnableMsixTooling>
-		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 		<Nullable>enable</Nullable>
-		<Platforms>x64;ARM64;AnyCPU</Platforms>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(CIBuild)' == 'true'">
+		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+		<AppxBundle>Never</AppxBundle>
+		<AppxPackageTestDir>$(OutputPath)\AppPackages\$(MSBuildProjectName)_$(PackageVersion)_Test\</AppxPackageTestDir>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -27,10 +31,6 @@
 		<Content Include="Assets\StoreLogo.png" />
 		<Content Include="Assets\Wide310x150Logo.scale-200.png" />
 		<Content Include="Assets\FileLocksmith.png" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
 	<ItemGroup>
