@@ -319,7 +319,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
                 g_nightLightWatcher = std::make_unique<NightLightRegistryObserver>(
                     HKEY_CURRENT_USER,
-                    L"Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current\\default$windows.data.bluelightreduction.bluelightreductionstate\\windows.data.bluelightreduction.bluelightreductionstate",
+                    NIGHT_LIGHT_REGISTRY_PATH,
                     []() {
                         if (g_stateManagerPtr)
                             g_stateManagerPtr->OnNightLightChange();
