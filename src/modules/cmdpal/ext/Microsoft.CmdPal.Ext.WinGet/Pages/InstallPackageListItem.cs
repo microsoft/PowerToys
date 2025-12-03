@@ -206,10 +206,13 @@ public partial class InstallPackageListItem : ListItem
             this.Icon = installCommand.Icon;
             this.Command = new NoOpCommand();
             List<IContextItem> contextMenu = [];
-            CommandContextItem uninstallContextItem = new(installCommand)
+
+            // Only set IsCritical for uninstall operations, not updates
+            var isUninstall = installedState == PackageInstallCommandState.Uninstall;
+            CommandContextItem packageContextItem = new(installCommand)
             {
-                IsCritical = true,
-                Icon = Icons.DeleteIcon,
+                IsCritical = isUninstall,
+                Icon = isUninstall ? Icons.DeleteIcon : installCommand.Icon,
             };
 
             if (WinGetStatics.AppSearchCallback is not null)
@@ -223,7 +226,7 @@ public partial class InstallPackageListItem : ListItem
                 }
             }
 
-            contextMenu.Add(uninstallContextItem);
+            contextMenu.Add(packageContextItem);
             this.MoreCommands = contextMenu.ToArray();
             return;
         }
