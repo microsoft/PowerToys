@@ -22,6 +22,8 @@
 		<Nullable>enable</Nullable>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.ScreencastModeUI.pri</ProjectPriFileName>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+	
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -50,5 +52,9 @@
 		<Content Include="Assets\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="ScreencastModeUI\obj\x64\Debug\net8.0-windows10.0.19041.0\ScreencastModeUI.AssemblyInfo.cs" />
 	</ItemGroup>
 </Project>

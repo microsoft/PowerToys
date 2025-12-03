@@ -375,7 +375,7 @@ namespace ScreencastModeUI
             }
             else
             {
-                // Add regular key
+                // Build what the text *would* look like if we added this key
                 var keyInfo = new KeyInfo
                 {
                     Key = key,
@@ -383,11 +383,13 @@ namespace ScreencastModeUI
                 };
 
                 _pressedKeys.Add(keyInfo);
+                var preview = BuildDisplayText();
 
-                // Limit to max keys
-                while (_pressedKeys.Count > MaxKeysToDisplay)
+                // If that overflows our rough limit, start a fresh sequence with just this key
+                if (WillOverflow(preview))
                 {
-                    _pressedKeys.RemoveAt(0);
+                    _pressedKeys.Clear();
+                    _pressedKeys.Add(keyInfo);
                 }
             }
 
@@ -461,6 +463,13 @@ namespace ScreencastModeUI
             return string.Join("  ", parts);
         }
 
+        private bool WillOverflow(string nextText)
+        {
+            // Rough width check using character count vs. a max visible chars estimate
+            const int maxVisibleChars = 40; // tune this based on your font/width
+            return nextText.Length > maxVisibleChars;
+        }
+
         private void ClearKeys()
         {
             _pressedKeys.Clear();
@@ -471,6 +480,12 @@ namespace ScreencastModeUI
         private void HideTimer_Tick(object? sender, object e)
         {
             _hideTimer.Stop();
+
+            // Clear all tracked keys and modifiers when the overlay times out
+            _pressedKeys.Clear();
+            _activeModifiers.Clear();
+
+            KeystrokeText.Text = string.Empty;
             KeystrokePanel.Visibility = Visibility.Collapsed;
         }
 
@@ -525,6 +540,7 @@ namespace ScreencastModeUI
 
         private static string GetKeyDisplayName(VirtualKey key)
         {
+            // Handle common special keys first
             return key switch
             {
                 VirtualKey.LeftWindows or VirtualKey.RightWindows => "Win",
@@ -547,7 +563,7 @@ namespace ScreencastModeUI
                 VirtualKey.End => "End",
                 VirtualKey.Insert => "Ins",
 
-                // Numpad keys
+                // Numpad
                 VirtualKey.NumberPad0 => "Num 0",
                 VirtualKey.NumberPad1 => "Num 1",
                 VirtualKey.NumberPad2 => "Num 2",
@@ -559,7 +575,7 @@ namespace ScreencastModeUI
                 VirtualKey.NumberPad8 => "Num 8",
                 VirtualKey.NumberPad9 => "Num 9",
 
-                // Function keys
+                // F-keys
                 VirtualKey.F1 => "F1",
                 VirtualKey.F2 => "F2",
                 VirtualKey.F3 => "F3",
@@ -573,7 +589,26 @@ namespace ScreencastModeUI
                 VirtualKey.F11 => "F11",
                 VirtualKey.F12 => "F12",
 
-                _ => key.ToString(),
+                // Letters A-Z
+                >= VirtualKey.A and <= VirtualKey.Z => ((char)('A' + ((int)key - (int)VirtualKey.A))).ToString(),
+
+                // Numbers 0-9
+                >= VirtualKey.Number0 and <= VirtualKey.Number9 => ((char)('0' + ((int)key - (int)VirtualKey.Number0))).ToString(),
+
+                // Punctuation using raw VK codes (these exist in VirtualKey)
+                (VirtualKey)0xBD => "-",        // VK_OEM_MINUS
+                (VirtualKey)0xBB => "=",        // VK_OEM_PLUS
+                (VirtualKey)0xDB => "[",        // VK_OEM_4
+                (VirtualKey)0xDD => "]",        // VK_OEM_6
+                (VirtualKey)0xDC => "\\",       // VK_OEM_5
+                (VirtualKey)0xBA => ";",        // VK_OEM_1
+                (VirtualKey)0xDE => "'",        // VK_OEM_7
+                (VirtualKey)0xBC => ",",        // VK_OEM_COMMA
+                (VirtualKey)0xBE => ".",        // VK_OEM_PERIOD
+                (VirtualKey)0xBF => "/",        // VK_OEM_2
+                (VirtualKey)0xC0 => "`",        // VK_OEM_3
+
+                _ => key.ToString(), // Fallback
             };
         }
 
