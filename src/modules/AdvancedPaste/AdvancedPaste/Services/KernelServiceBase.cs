@@ -75,7 +75,7 @@ public abstract class KernelServiceBase(
                 // If we have an error, but the AI provided a final text response, we can ignore the error (likely a tool failure that the AI handled).
                 // However, if we have usable data (e.g. from a successful tool call before the error?), we might want to keep it?
                 // In the case of ImageToText failure, outputPackage is empty (new DataPackage), hasUsableData is false.
-                // So we check if we can fallback to chat history.
+                // So we check if there is a valid response in the chat history.
                 var lastMessage = chatHistory.LastOrDefault();
                 bool hasAssistantResponse = lastMessage != null && lastMessage.Role == AuthorRole.Assistant && !string.IsNullOrEmpty(lastMessage.Content);
 
