@@ -37,18 +37,22 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
         Body = model.Body ?? string.Empty;
         HeroImage = new(model.HeroImage);
         HeroImage.InitializeProperties();
-        Size = model.Size;
 
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(Body));
         UpdateProperty(nameof(HeroImage));
-        UpdateProperty(nameof(Size));
 
         var meta = model.Metadata;
         if (meta is not null)
         {
             foreach (var element in meta)
             {
+                if (element.Data is IDetailsSize)
+                {
+                    Size = (element.Data as IDetailsSize)?.Size;
+                    UpdateProperty(nameof(Size));
+                }
+
                 DetailsElementViewModel? vm = element.Data switch
                 {
                     IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),

@@ -36,7 +36,7 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                 {
                     Title = "This item has medium details size",
                     Body = "Each of these items can have a `Body` formatted with **Markdown**",
-                    Size = ContentSize.Medium,
+                    Metadata = [new DetailsElement() { Data = new DetailsSize(ContentSize.Medium) },],
                 },
             },
             new ListItem(new NoOpCommand())
@@ -46,7 +46,7 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                 {
                     Title = "List Item 1",
                     Body = "Each of these items can have a `Body` formatted with **Markdown**",
-                    Size = ContentSize.Large,
+                    Metadata = [new DetailsElement() { Data = new DetailsSize(ContentSize.Large) },],
                 },
             },
             new ListItem(new NoOpCommand())
@@ -95,13 +95,13 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                 {
                     Title = "Metadata Example",
                     Body = "Each of the sections below is some sample metadata",
-                    Size = ContentSize.Large,
                     Metadata = [
                         new DetailsElement()
                         {
                             Key = "Plain text",
                             Data = new DetailsLink() { Text = "Set just the text to get text metadata" },
                         },
+                        new DetailsElement() { Data = new DetailsSize(ContentSize.Large) },
                         new DetailsElement()
                         {
                             Key = "Links",

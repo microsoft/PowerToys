@@ -53,16 +53,4 @@ public partial class Details : BaseObservable, IDetails
     }
 
 = [];
-
-    public virtual ContentSize Size
-    {
-        get;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(Size));
-        }
-    }
-
-    = ContentSize.Small;
 }
