@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using KeystrokeOverlayUI.Models;
 
 namespace KeystrokeOverlayUI
@@ -50,20 +51,42 @@ namespace KeystrokeOverlayUI
 
                     while (client.IsConnected && !token.IsCancellationRequested)
                     {
-                        // 1. Read Length (4 bytes / DWORD) matching PipeServer.cpp
-                        int length = reader.ReadInt32();
+                            // 1. Read Length (4 bytes / DWORD) matching PipeServer.cpp
+                            int length = reader.ReadInt32();
 
-                        // 2. Read JSON Payload
-                        byte[] buffer = reader.ReadBytes(length);
-                        string json = Encoding.UTF8.GetString(buffer);
+                            // Sanity-check length (same guard as native side)
+                            const int MaxFrameSize = 8 * 1024 * 1024;
+                            if (length <= 0 || length > MaxFrameSize)
+                            {
+                                Debug.WriteLine($"KeystrokeListener: invalid frame length {length}, reconnecting");
+                                break; // break inner loop and reconnect
+                            }
 
-                        // 3. Deserialize
-                        var batch = JsonSerializer.Deserialize<KeystrokeBatch>(json);
+                            // 2. Read JSON Payload
+                            byte[] buffer = reader.ReadBytes(length);
+                            if (buffer.Length != length)
+                            {
+                                Debug.WriteLine($"KeystrokeListener: short read {buffer.Length} of {length}, reconnecting");
+                                break; // broken frame/connection, reconnect
+                            }
+                            string json = Encoding.UTF8.GetString(buffer);
 
-                        if (batch != null)
-                        {
-                            OnBatchReceived?.Invoke(batch);
-                        }
+                            // 3. Deserialize (case-insensitive to match native lowercase keys)
+                            try
+                            {
+                                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                                var batch = JsonSerializer.Deserialize<KeystrokeBatch>(json, options);
+
+                                if (batch != null)
+                                {
+                                    OnBatchReceived?.Invoke(batch);
+                                }
+                            }
+                            catch (JsonException je)
+                            {
+                                Debug.WriteLine($"KeystrokeListener: JSON deserialization failed: {je.Message}");
+                                // Skip this frame and continue reading
+                            }
                     }
                 }
                 catch (Exception)
