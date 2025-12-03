@@ -55,6 +55,12 @@ namespace PowerRenameLib
         std::optional<int64_t> ReadInteger(IWICMetadataQueryReader* reader, const std::wstring& path);
         std::optional<double> ReadDouble(IWICMetadataQueryReader* reader, const std::wstring& path);
 
+        // Field reading with fallback for HEIC/TIFF format support
+        std::optional<SYSTEMTIME> ReadDateTimeWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
+        std::optional<std::wstring> ReadStringWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
+        std::optional<int64_t> ReadIntegerWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
+        std::optional<double> ReadDoubleWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
+
         // Helper methods
         std::optional<PropVariantValue> ReadMetadata(IWICMetadataQueryReader* reader, const std::wstring& path);
 

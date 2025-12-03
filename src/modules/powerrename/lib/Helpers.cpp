@@ -349,12 +349,15 @@ bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataTyp
         // - JPEG (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
         // - TIFF (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding  
         // - PNG (text chunks)
+        // - HEIC/HEIF (requires HEIF Image Extension on Windows 10 1809+)
         static const std::unordered_set<std::wstring> supportedExtensions = {
             L".jpg",
             L".jpeg",
             L".png",
             L".tif",
-            L".tiff"
+            L".tiff",
+            L".heic",
+            L".heif"
         };
 
         // If file type doesn't support metadata, no need to check patterns

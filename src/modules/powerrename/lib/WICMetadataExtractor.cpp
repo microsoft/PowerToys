@@ -18,7 +18,7 @@ namespace
 {
     // Documentation: https://learn.microsoft.com/en-us/windows/win32/wic/-wic-native-image-format-metadata-queries
 
-    // WIC metadata property paths
+    // WIC metadata property paths for JPEG (uses /app1/ifd/... structure)
     const std::wstring EXIF_DATE_TAKEN = L"/app1/ifd/exif/{ushort=36867}";      // DateTimeOriginal
     const std::wstring EXIF_DATE_DIGITIZED = L"/app1/ifd/exif/{ushort=36868}";  // DateTimeDigitized  
     const std::wstring EXIF_DATE_MODIFIED = L"/app1/ifd/{ushort=306}";           // DateTime
@@ -38,13 +38,42 @@ namespace
     const std::wstring EXIF_ARTIST = L"/app1/ifd/{ushort=315}";                 // Artist
     const std::wstring EXIF_COPYRIGHT = L"/app1/ifd/{ushort=33432}";            // Copyright
     
-    // GPS paths
+    // GPS paths for JPEG
     const std::wstring GPS_LATITUDE = L"/app1/ifd/gps/{ushort=2}";              // GPSLatitude
     const std::wstring GPS_LATITUDE_REF = L"/app1/ifd/gps/{ushort=1}";          // GPSLatitudeRef
     const std::wstring GPS_LONGITUDE = L"/app1/ifd/gps/{ushort=4}";             // GPSLongitude
     const std::wstring GPS_LONGITUDE_REF = L"/app1/ifd/gps/{ushort=3}";         // GPSLongitudeRef
     const std::wstring GPS_ALTITUDE = L"/app1/ifd/gps/{ushort=6}";              // GPSAltitude
     const std::wstring GPS_ALTITUDE_REF = L"/app1/ifd/gps/{ushort=5}";          // GPSAltitudeRef
+    
+    // Alternative metadata paths for HEIC/HEIF and TIFF (uses /ifd/... structure without /app1)
+    // HEIC stores EXIF metadata differently than JPEG - it doesn't use the APP1 container
+    const std::wstring HEIC_DATE_TAKEN = L"/ifd/exif/{ushort=36867}";           // DateTimeOriginal
+    const std::wstring HEIC_DATE_DIGITIZED = L"/ifd/exif/{ushort=36868}";       // DateTimeDigitized
+    const std::wstring HEIC_DATE_MODIFIED = L"/ifd/{ushort=306}";                // DateTime
+    const std::wstring HEIC_CAMERA_MAKE = L"/ifd/{ushort=271}";                 // Make
+    const std::wstring HEIC_CAMERA_MODEL = L"/ifd/{ushort=272}";                // Model
+    const std::wstring HEIC_LENS_MODEL = L"/ifd/exif/{ushort=42036}";           // LensModel
+    const std::wstring HEIC_ISO = L"/ifd/exif/{ushort=34855}";                  // ISOSpeedRatings
+    const std::wstring HEIC_APERTURE = L"/ifd/exif/{ushort=33437}";             // FNumber
+    const std::wstring HEIC_SHUTTER_SPEED = L"/ifd/exif/{ushort=33434}";        // ExposureTime
+    const std::wstring HEIC_FOCAL_LENGTH = L"/ifd/exif/{ushort=37386}";         // FocalLength
+    const std::wstring HEIC_EXPOSURE_BIAS = L"/ifd/exif/{ushort=37380}";        // ExposureBiasValue
+    const std::wstring HEIC_FLASH = L"/ifd/exif/{ushort=37385}";                // Flash
+    const std::wstring HEIC_ORIENTATION = L"/ifd/{ushort=274}";                 // Orientation
+    const std::wstring HEIC_COLOR_SPACE = L"/ifd/exif/{ushort=40961}";          // ColorSpace
+    const std::wstring HEIC_WIDTH = L"/ifd/exif/{ushort=40962}";                // PixelXDimension
+    const std::wstring HEIC_HEIGHT = L"/ifd/exif/{ushort=40963}";               // PixelYDimension
+    const std::wstring HEIC_ARTIST = L"/ifd/{ushort=315}";                      // Artist
+    const std::wstring HEIC_COPYRIGHT = L"/ifd/{ushort=33432}";                 // Copyright
+    
+    // GPS paths for HEIC/HEIF
+    const std::wstring HEIC_GPS_LATITUDE = L"/ifd/gps/{ushort=2}";              // GPSLatitude
+    const std::wstring HEIC_GPS_LATITUDE_REF = L"/ifd/gps/{ushort=1}";          // GPSLatitudeRef
+    const std::wstring HEIC_GPS_LONGITUDE = L"/ifd/gps/{ushort=4}";             // GPSLongitude
+    const std::wstring HEIC_GPS_LONGITUDE_REF = L"/ifd/gps/{ushort=3}";         // GPSLongitudeRef
+    const std::wstring HEIC_GPS_ALTITUDE = L"/ifd/gps/{ushort=6}";              // GPSAltitude
+    const std::wstring HEIC_GPS_ALTITUDE_REF = L"/ifd/gps/{ushort=5}";          // GPSAltitudeRef
     
     
     // Documentation: https://developer.adobe.com/xmp/docs/XMPNamespaces/xmp/
@@ -525,33 +554,33 @@ void WICMetadataExtractor::ExtractAllEXIFFields(IWICMetadataQueryReader* reader,
     if (!reader)
         return;
     
-    // Extract date/time fields
-    metadata.dateTaken = ReadDateTime(reader, EXIF_DATE_TAKEN);
-    metadata.dateDigitized = ReadDateTime(reader, EXIF_DATE_DIGITIZED);
-    metadata.dateModified = ReadDateTime(reader, EXIF_DATE_MODIFIED);
+    // Extract date/time fields - try JPEG paths first, then HEIC/TIFF paths
+    metadata.dateTaken = ReadDateTimeWithFallback(reader, EXIF_DATE_TAKEN, HEIC_DATE_TAKEN);
+    metadata.dateDigitized = ReadDateTimeWithFallback(reader, EXIF_DATE_DIGITIZED, HEIC_DATE_DIGITIZED);
+    metadata.dateModified = ReadDateTimeWithFallback(reader, EXIF_DATE_MODIFIED, HEIC_DATE_MODIFIED);
     
     // Extract camera information
-    metadata.cameraMake = ReadString(reader, EXIF_CAMERA_MAKE);
-    metadata.cameraModel = ReadString(reader, EXIF_CAMERA_MODEL);
-    metadata.lensModel = ReadString(reader, EXIF_LENS_MODEL);
+    metadata.cameraMake = ReadStringWithFallback(reader, EXIF_CAMERA_MAKE, HEIC_CAMERA_MAKE);
+    metadata.cameraModel = ReadStringWithFallback(reader, EXIF_CAMERA_MODEL, HEIC_CAMERA_MODEL);
+    metadata.lensModel = ReadStringWithFallback(reader, EXIF_LENS_MODEL, HEIC_LENS_MODEL);
     
     // Extract shooting parameters
-    metadata.iso = ReadInteger(reader, EXIF_ISO);
-    metadata.aperture = ReadDouble(reader, EXIF_APERTURE);
-    metadata.shutterSpeed = ReadDouble(reader, EXIF_SHUTTER_SPEED);
-    metadata.focalLength = ReadDouble(reader, EXIF_FOCAL_LENGTH);
-    metadata.exposureBias = ReadDouble(reader, EXIF_EXPOSURE_BIAS);
-    metadata.flash = ReadInteger(reader, EXIF_FLASH);
+    metadata.iso = ReadIntegerWithFallback(reader, EXIF_ISO, HEIC_ISO);
+    metadata.aperture = ReadDoubleWithFallback(reader, EXIF_APERTURE, HEIC_APERTURE);
+    metadata.shutterSpeed = ReadDoubleWithFallback(reader, EXIF_SHUTTER_SPEED, HEIC_SHUTTER_SPEED);
+    metadata.focalLength = ReadDoubleWithFallback(reader, EXIF_FOCAL_LENGTH, HEIC_FOCAL_LENGTH);
+    metadata.exposureBias = ReadDoubleWithFallback(reader, EXIF_EXPOSURE_BIAS, HEIC_EXPOSURE_BIAS);
+    metadata.flash = ReadIntegerWithFallback(reader, EXIF_FLASH, HEIC_FLASH);
     
     // Extract image properties
-    metadata.width = ReadInteger(reader, EXIF_WIDTH);
-    metadata.height = ReadInteger(reader, EXIF_HEIGHT);
-    metadata.orientation = ReadInteger(reader, EXIF_ORIENTATION);
-    metadata.colorSpace = ReadInteger(reader, EXIF_COLOR_SPACE);
+    metadata.width = ReadIntegerWithFallback(reader, EXIF_WIDTH, HEIC_WIDTH);
+    metadata.height = ReadIntegerWithFallback(reader, EXIF_HEIGHT, HEIC_HEIGHT);
+    metadata.orientation = ReadIntegerWithFallback(reader, EXIF_ORIENTATION, HEIC_ORIENTATION);
+    metadata.colorSpace = ReadIntegerWithFallback(reader, EXIF_COLOR_SPACE, HEIC_COLOR_SPACE);
     
     // Extract author information
-    metadata.author = ReadString(reader, EXIF_ARTIST);
-    metadata.copyright = ReadString(reader, EXIF_COPYRIGHT);
+    metadata.author = ReadStringWithFallback(reader, EXIF_ARTIST, HEIC_ARTIST);
+    metadata.copyright = ReadStringWithFallback(reader, EXIF_COPYRIGHT, HEIC_COPYRIGHT);
 }
 
 void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata)
@@ -561,10 +590,22 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
         return;
     }
 
+    // Try JPEG paths first, then HEIC/TIFF paths
     auto lat = ReadMetadata(reader, GPS_LATITUDE);
+    if (!lat)
+        lat = ReadMetadata(reader, HEIC_GPS_LATITUDE);
+    
     auto lon = ReadMetadata(reader, GPS_LONGITUDE);
+    if (!lon)
+        lon = ReadMetadata(reader, HEIC_GPS_LONGITUDE);
+    
     auto latRef = ReadMetadata(reader, GPS_LATITUDE_REF);
+    if (!latRef)
+        latRef = ReadMetadata(reader, HEIC_GPS_LATITUDE_REF);
+    
     auto lonRef = ReadMetadata(reader, GPS_LONGITUDE_REF);
+    if (!lonRef)
+        lonRef = ReadMetadata(reader, HEIC_GPS_LONGITUDE_REF);
 
     if (lat && lon)
     {
@@ -585,6 +626,8 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
     }
 
     auto alt = ReadMetadata(reader, GPS_ALTITUDE);
+    if (!alt)
+        alt = ReadMetadata(reader, HEIC_GPS_ALTITUDE);
     if (alt)
     {
         metadata.altitude = MetadataFormatHelper::ParseGPSRational(alt->Get());
@@ -753,7 +796,7 @@ std::optional<double> WICMetadataExtractor::ReadDouble(IWICMetadataQueryReader* 
                 // ExposureBias (EXIF tag 37380) uses SRATIONAL type (signed rational)
                 // which can represent negative values like -0.33 EV for exposure compensation.
                 // Most other EXIF fields use RATIONAL type (unsigned) for values like aperture, shutter speed.
-                if (path == EXIF_EXPOSURE_BIAS)
+                if (path == EXIF_EXPOSURE_BIAS || path == HEIC_EXPOSURE_BIAS)
                 {
                     // Parse as signed rational: int32_t / int32_t
                     result = MetadataFormatHelper::ParseSingleSRational(propVar->Get().caub.pElems, 0);
@@ -788,7 +831,7 @@ std::optional<double> WICMetadataExtractor::ReadDouble(IWICMetadataQueryReader* 
                 {
                     // ExposureBias (EXIF tag 37380) may be stored as VT_I8 in some WIC implementations
                     // It represents a signed rational (SRATIONAL) packed into a 64-bit integer
-                    if (path == EXIF_EXPOSURE_BIAS)
+                    if (path == EXIF_EXPOSURE_BIAS || path == HEIC_EXPOSURE_BIAS)
                     {
                         // Parse signed rational from int64: low 32 bits = numerator, high 32 bits = denominator
                         // Some implementations may reverse the order, so we try both
@@ -827,7 +870,7 @@ std::optional<double> WICMetadataExtractor::ReadDouble(IWICMetadataQueryReader* 
                 {
                     // ExposureBias (EXIF tag 37380) may be stored as VT_UI8 in some WIC implementations
                     // Even though it's unsigned, we need to reinterpret it as signed for SRATIONAL
-                    if (path == EXIF_EXPOSURE_BIAS)
+                    if (path == EXIF_EXPOSURE_BIAS || path == HEIC_EXPOSURE_BIAS)
                     {
                         // Parse signed rational from uint64 (reinterpret as signed)
                         // Low 32 bits = numerator, high 32 bits = denominator
@@ -903,6 +946,49 @@ std::optional<PropVariantValue> WICMetadataExtractor::ReadMetadata(IWICMetadataQ
     }
 
     return std::nullopt;
+}
+
+// Fallback methods for HEIC/TIFF format support
+// These methods try the primary path first (JPEG format), then fallback to alternative paths (HEIC/TIFF format)
+
+std::optional<SYSTEMTIME> WICMetadataExtractor::ReadDateTimeWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath)
+{
+    auto result = ReadDateTime(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadDateTime(reader, fallbackPath);
+    }
+    return result;
+}
+
+std::optional<std::wstring> WICMetadataExtractor::ReadStringWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath)
+{
+    auto result = ReadString(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadString(reader, fallbackPath);
+    }
+    return result;
+}
+
+std::optional<int64_t> WICMetadataExtractor::ReadIntegerWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath)
+{
+    auto result = ReadInteger(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadInteger(reader, fallbackPath);
+    }
+    return result;
+}
+
+std::optional<double> WICMetadataExtractor::ReadDoubleWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath)
+{
+    auto result = ReadDouble(reader, primaryPath);
+    if (!result.has_value())
+    {
+        result = ReadDouble(reader, fallbackPath);
+    }
+    return result;
 }
 
 // GPS parsing functions have been moved to MetadataFormatHelper for better testability
