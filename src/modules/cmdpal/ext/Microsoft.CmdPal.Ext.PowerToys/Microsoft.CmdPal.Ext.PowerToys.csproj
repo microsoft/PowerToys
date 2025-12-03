@@ -7,7 +7,7 @@
 		<RootNamespace>PowerToysExtension</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
-		<PackageVersion>$(Version).0</PackageVersion>
+		<PackageVersion>$(Version)</PackageVersion>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -16,7 +16,7 @@
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(CIBuild)' == 'true'">
+	<PropertyGroup>
 		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<AppxBundle>Never</AppxBundle>
 		<AppxPackageTestDir>$(OutputPath)\AppPackages\$(MSBuildProjectName)_$(PackageVersion)_Test\</AppxPackageTestDir>

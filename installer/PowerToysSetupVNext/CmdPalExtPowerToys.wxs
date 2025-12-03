@@ -5,15 +5,7 @@
   <Fragment>
     <DirectoryRef Id="WinUI3AppsInstallFolder">
       <Directory Id="CmdPalExtensionsInstallFolder" Name="CmdPalExtensions">
-        <Directory Id="CmdPalExtPowerToysInstallFolder" Name="Microsoft.CmdPal.Ext.PowerToys">
-          <Directory Id="CmdPalExtPowerToysDepsInstallFolder" Name="Dependencies">
-          <?if $(sys.BUILDARCH) = x64 ?>
-            <Directory Id="CmdPalExtPowerToysDepsX64InstallFolder" Name="x64" />
-          <?else?>
-            <Directory Id="CmdPalExtPowerToysDepsArm64InstallFolder" Name="arm64" />
-          <?endif?>
-          </Directory>
-        </Directory>
+        <Directory Id="CmdPalExtPowerToysInstallFolder" Name="Microsoft.CmdPal.Ext.PowerToys" />
       </Directory>
     </DirectoryRef>
 
@@ -30,41 +22,14 @@
       </Component>
     </DirectoryRef>
 
-  <?if $(sys.BUILDARCH) = x64 ?>
-    <DirectoryRef Id="CmdPalExtPowerToysDepsX64InstallFolder" FileSource="$(var.CmdPalExtPowerToysBuildDir)AppPackages\Microsoft.CmdPal.Ext.PowerToys_$(var.CmdPalExtPowerToysVersion)_Test\Dependencies\x64">
-      <Component Id="Module_CmdPal_Ext_PowerToys_Deps" Guid="A8F7A6D9-3D58-4D8D-9DF8-4B011E18BA22" Bitness="always64">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="Module_CmdPal_Ext_PowerToys_Deps" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Id="Microsoft.WindowsAppRuntime.1.8.msix" Source="$(var.CmdPalExtPowerToysBuildDir)AppPackages\Microsoft.CmdPal.Ext.PowerToys_$(var.CmdPalExtPowerToysVersion)_Test\Dependencies\x64\Microsoft.WindowsAppRuntime.1.8.msix" />
-      </Component>
-    </DirectoryRef>
-  <?else?>
-    <DirectoryRef Id="CmdPalExtPowerToysDepsArm64InstallFolder" FileSource="$(var.CmdPalExtPowerToysBuildDir)AppPackages\Microsoft.CmdPal.Ext.PowerToys_$(var.CmdPalExtPowerToysVersion)_Test\Dependencies\arm64">
-      <Component Id="Module_CmdPal_Ext_PowerToys_Deps" Guid="A8F7A6D9-3D58-4D8D-9DF8-4B011E18BA22" Bitness="always64">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="Module_CmdPal_Ext_PowerToys_Deps" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Id="Microsoft.WindowsAppRuntime.1.8.msix" Source="$(var.CmdPalExtPowerToysBuildDir)AppPackages\Microsoft.CmdPal.Ext.PowerToys_$(var.CmdPalExtPowerToysVersion)_Test\Dependencies\arm64\Microsoft.WindowsAppRuntime.1.8.msix" />
-      </Component>
-    </DirectoryRef>
-  <?endif?>
-
     <ComponentGroup Id="CmdPalExtPowerToysComponentGroup">
       <Component Id="RemoveCmdPalExtPowerToysFolder" Guid="E09A8F26-74D8-42FD-88F1-9A3D6B5C7799" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveCmdPalExtPowerToysFolder" Value="" KeyPath="yes" />
         </RegistryKey>
         <RemoveFolder Id="RemoveCmdPalExtPowerToysInstallDirFolder" Directory="CmdPalExtPowerToysInstallFolder" On="uninstall" />
-        <RemoveFolder Id="RemoveCmdPalExtPowerToysDepsInstallDirFolder" Directory="CmdPalExtPowerToysDepsInstallFolder" On="uninstall" />
-    <?if $(sys.BUILDARCH) = x64 ?>
-        <RemoveFolder Id="RemoveCmdPalExtPowerToysDepsX64InstallDirFolder" Directory="CmdPalExtPowerToysDepsX64InstallFolder" On="uninstall" />
-    <?else?>
-        <RemoveFolder Id="RemoveCmdPalExtPowerToysDepsArm64InstallDirFolder" Directory="CmdPalExtPowerToysDepsArm64InstallFolder" On="uninstall" />
-    <?endif?>
       </Component>
       <ComponentRef Id="Module_CmdPal_Ext_PowerToys" />
-      <ComponentRef Id="Module_CmdPal_Ext_PowerToys_Deps" />
     </ComponentGroup>
   </Fragment>
 </Wix>
