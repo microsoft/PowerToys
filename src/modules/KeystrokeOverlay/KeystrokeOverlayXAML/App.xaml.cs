@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 
@@ -12,9 +11,9 @@ namespace KeystrokeOverlayUI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application, IDisposable
+    public partial class App : Application
     {
-        private MainWindow window;
+        private Window _window;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -23,6 +22,8 @@ namespace KeystrokeOverlayUI
         /// </summary>
         public App()
         {
+            InitializeComponent();
+
             string appLanguage = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))
             {
@@ -30,32 +31,17 @@ namespace KeystrokeOverlayUI
             }
 
             Logger.InitializeLogger("\\KeystrokeOverlay\\Logs");
-
-            this.InitializeComponent();
-
             UnhandledException += App_UnhandledException;
         }
 
         /// <summary>
-        /// Invoked when the application is launched normally by the end user.
+        /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            // if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeystrokeOverlayEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-            // {
-            //     Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled.");
-            //     Environment.Exit(0);
-            //     return;
-            // }
-            window = new MainWindow();
-            window.Activate();
-        }
-
-        public void Dispose()
-        {
-            window?.Dispose();
-            GC.SuppressFinalize(this);
+            _window = new MainWindow();
+            _window.Activate();
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

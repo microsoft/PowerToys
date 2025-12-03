@@ -2,47 +2,51 @@
     x:Class="KeystrokeOverlayUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:KeystrokeOverlayUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="using:KeystrokeOverlayUI"
-    xmlns:models="using:KeystrokeOverlayUI.Models"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     mc:Ignorable="d"
->
+    Title="KeystrokeOverlayUI">
 
-    <!-- This Grid acts as the draggable area -->
-    <Grid Background="Transparent" 
-          Padding="10"
-          PointerPressed="OnPointerPressed"
-          PointerMoved="OnPointerMoved"
-          PointerReleased="OnPointerReleased">
+    <Border x:Name="RootGrid"
+            Loaded="RootGrid_Loaded"
+            SizeChanged="RootGrid_SizeChanged"
+            PointerPressed="RootGrid_PointerPressed"
+            Padding="15,12"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-        <!-- This ItemsControl will display all keys in the ActiveKeys collection -->
-        <ItemsControl ItemsSource="{x:Bind ActiveKeys}">
+        <ItemsControl ItemsSource="{x:Bind ViewModel.PressedKeys, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <!-- Keys will be arranged horizontally -->
-                    <StackPanel Orientation="Horizontal" Spacing="8"/>
+                <StackPanel Orientation="Horizontal" Spacing="10" SizeChanged="StackPanel_SizeChanged"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
             <ItemsControl.ItemTemplate>
-                <!-- 
-                  This DataTemplate tells the ItemsControl how to display each 'KeyModel'.
-                  It uses our 'KeyVisual' UserControl and binds properties to it.
-                  
-                  The KeyText binds to the KeyModel's 'Text' property.
-                  
-                  The style properties (FontSize, Background, Foreground) bind to the
-                  'Settings' object, which is a property on the main Window.
-                -->
-                <DataTemplate x:DataType="models:KeyModel">
-                    <local:KeyVisual
-                        KeyText="{x:Bind Text}"
-                        KeyFontSize="{x:Bind Settings.TextSize, Mode=OneWay}"
-                        KeyBackground="{x:Bind Settings.BackgroundBrush, Mode=OneWay}"
-                        KeyForeground="{x:Bind Settings.TextBrush, Mode=OneWay}"/>
+                <DataTemplate>
+                    <controls:KeyVisual
+                        Content="{Binding Text}"
+                        VerticalAlignment="Center"
+                        IsTabStop="False"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Padding="12,6"
+                        CornerRadius="4"
+                        Opacity="{Binding Opacity}"
+                        FontSize="{Binding TextSize}"
+                        Foreground="{Binding DataContext.TextBrush, ElementName=RootGrid}"
+                        Background="{Binding DataContext.BackgroundBrush, ElementName=RootGrid}">
+
+                    <controls:KeyVisual.OpacityTransition>
+                        <ScalarTransition />
+                    </controls:KeyVisual.OpacityTransition>
+
+                </controls:KeyVisual>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-    </Grid>
+        </Border>
+    
 </Window>
