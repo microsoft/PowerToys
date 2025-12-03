@@ -17,8 +17,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
-using PowerDisplay.Core;
-using PowerDisplay.Core.Interfaces;
 using PowerDisplay.Helpers;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;

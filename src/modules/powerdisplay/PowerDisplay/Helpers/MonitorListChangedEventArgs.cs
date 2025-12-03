@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using PowerDisplay.Common.Models;
 
-namespace PowerDisplay.Core.Interfaces
+namespace PowerDisplay.Helpers
 {
     /// <summary>
     /// Monitor list changed event arguments

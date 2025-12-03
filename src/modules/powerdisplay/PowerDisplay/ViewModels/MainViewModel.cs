@@ -17,7 +17,6 @@ using Microsoft.UI.Windowing;
 using PowerDisplay.Commands;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
-using PowerDisplay.Core;
 using PowerDisplay.Helpers;
 using PowerDisplay.PowerDisplayXAML;
 

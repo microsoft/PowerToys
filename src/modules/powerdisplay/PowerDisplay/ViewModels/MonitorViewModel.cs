@@ -16,7 +16,7 @@ using PowerDisplay.Commands;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Configuration;
-using PowerDisplay.Core;
+using PowerDisplay.Helpers;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;

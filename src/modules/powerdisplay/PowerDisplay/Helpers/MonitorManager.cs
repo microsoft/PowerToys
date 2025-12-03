@@ -15,10 +15,9 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
-using PowerDisplay.Core.Interfaces;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
-namespace PowerDisplay.Core
+namespace PowerDisplay.Helpers
 {
     /// <summary>
     /// Monitor manager for unified control of all monitors

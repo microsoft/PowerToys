@@ -29,25 +29,6 @@ namespace PowerDisplay.Common.Utils
         };
 
         /// <summary>
-        /// Reverse mapping from Kelvin to VCP value. Auto-generated from VcpToKelvinMap.
-        /// </summary>
-        private static readonly Dictionary<int, int> KelvinToVcpMap = BuildReverseMap(VcpToKelvinMap);
-
-        /// <summary>
-        /// Builds a reverse lookup dictionary from the source mapping.
-        /// </summary>
-        private static Dictionary<int, int> BuildReverseMap(Dictionary<int, int> source)
-        {
-            var result = new Dictionary<int, int>();
-            foreach (var kvp in source)
-            {
-                result[kvp.Value] = kvp.Key;
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Converts a VCP color temperature preset value to approximate Kelvin temperature.
         /// </summary>
         /// <param name="vcpValue">The VCP preset value (e.g., 0x05).</param>
@@ -55,16 +36,6 @@ namespace PowerDisplay.Common.Utils
         public static int VcpToKelvin(int vcpValue)
         {
             return VcpToKelvinMap.TryGetValue(vcpValue, out var kelvin) ? kelvin : 0;
-        }
-
-        /// <summary>
-        /// Converts a Kelvin temperature to VCP color temperature preset value.
-        /// </summary>
-        /// <param name="kelvin">The Kelvin temperature (e.g., 6500).</param>
-        /// <returns>The VCP preset value (e.g., 0x05), or 0x05 (6500K) as default if unknown.</returns>
-        public static int KelvinToVcp(int kelvin)
-        {
-            return KelvinToVcpMap.TryGetValue(kelvin, out var vcpValue) ? vcpValue : 0x05;
         }
 
         /// <summary>
@@ -104,34 +75,6 @@ namespace PowerDisplay.Common.Utils
         {
             return VcpValueNames.GetName(NativeConstants.VcpCodeSelectColorPreset, vcpValue);
         }
-
-        /// <summary>
-        /// Formats a percentage value for display.
-        /// </summary>
-        /// <param name="value">Value (0-100).</param>
-        /// <returns>Formatted string like "50%".</returns>
-        public static string FormatPercentage(int value) => $"{value}%";
-
-        /// <summary>
-        /// Formats a brightness value for display.
-        /// </summary>
-        /// <param name="brightness">Brightness value (0-100).</param>
-        /// <returns>Formatted string like "50%".</returns>
-        public static string FormatBrightness(int brightness) => FormatPercentage(brightness);
-
-        /// <summary>
-        /// Formats a contrast value for display.
-        /// </summary>
-        /// <param name="contrast">Contrast value (0-100).</param>
-        /// <returns>Formatted string like "50%".</returns>
-        public static string FormatContrast(int contrast) => FormatPercentage(contrast);
-
-        /// <summary>
-        /// Formats a volume value for display.
-        /// </summary>
-        /// <param name="volume">Volume value (0-100).</param>
-        /// <returns>Formatted string like "50%".</returns>
-        public static string FormatVolume(int volume) => FormatPercentage(volume);
 
         /// <summary>
         /// Checks if a VCP value represents a known color temperature preset.

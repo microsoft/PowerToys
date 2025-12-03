@@ -124,47 +124,6 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Get current rotation for a specific monitor.
-        /// </summary>
-        /// <param name="monitorNumber">Monitor number (1, 2, 3...)</param>
-        /// <returns>Current orientation (0-3), or -1 if failed</returns>
-        public int GetCurrentRotation(int monitorNumber)
-        {
-            if (monitorNumber <= 0)
-            {
-                return -1;
-            }
-
-            string adapterName = $"\\\\.\\DISPLAY{monitorNumber}";
-            return GetCurrentRotationByAdapterName(adapterName);
-        }
-
-        /// <summary>
-        /// Get current rotation by adapter name.
-        /// </summary>
-        /// <param name="adapterName">Adapter name (e.g., "\\.\DISPLAY1")</param>
-        /// <returns>Current orientation (0-3), or -1 if failed</returns>
-        public unsafe int GetCurrentRotationByAdapterName(string adapterName)
-        {
-            try
-            {
-                DevMode devMode = default;
-                devMode.DmSize = (short)sizeof(DevMode);
-
-                if (EnumDisplaySettings(adapterName, EnumCurrentSettings, &devMode))
-                {
-                    return devMode.DmDisplayOrientation;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"GetCurrentRotation: Exception for {adapterName}: {ex.Message}");
-            }
-
-            return -1;
-        }
-
-        /// <summary>
         /// Get human-readable error message for ChangeDisplaySettings result code.
         /// </summary>
         private static string GetChangeDisplaySettingsErrorMessage(int resultCode)
