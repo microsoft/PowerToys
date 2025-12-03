@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
+using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -33,6 +34,6 @@ internal sealed partial class CloseWindowCommand : InvokableCommand
         }
 
         _window.CloseThisWindow();
-        return CommandResult.Dismiss();
+        return SettingsManager.Instance.OpenAfterKillAndClose ? CommandResult.KeepOpen() : CommandResult.Dismiss();
     }
 }
