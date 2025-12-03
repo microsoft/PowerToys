@@ -585,7 +585,7 @@ public sealed partial class ListPage : Page,
 
         try
         {
-            // Try to compute using container positions; if not available, fallback to simple +/-1.
+            // Try to compute using container positions; if not available, fall back to simple +/-1.
             var currentContainer = ItemView.ContainerFromIndex(currentIndex) as FrameworkElement;
             if (currentContainer is not null && currentContainer.ActualWidth != 0 && currentContainer.ActualHeight != 0)
             {
