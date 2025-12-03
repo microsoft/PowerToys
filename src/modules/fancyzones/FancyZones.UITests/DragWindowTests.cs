@@ -407,6 +407,11 @@ namespace UITests_FancyZones
             this.Scroll(6, "Down"); // Pull the settings page up to make sure the settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
 
+            // Go back and forth to make sure settings applied
+            this.Find<NavigationViewItem>("Workspaces").Click();
+            Task.Delay(200).Wait();
+            this.Find<NavigationViewItem>("FancyZones").Click();
+
             this.Find<Microsoft.PowerToys.UITest.Button>(By.AccessibilityId("LaunchLayoutEditorButton")).Click(false, 500, 10000);
             this.Session.Attach(PowerToysModule.FancyZone);
 
