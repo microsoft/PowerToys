@@ -27,7 +27,7 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
 
-            <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter"/>
+            <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
