@@ -76,7 +76,7 @@ namespace Peek.FilePreviewer
             InitializeComponent();
 
             // Re-enable CommandManager when a new video source is set
-            // This ensures SMTC integration works after it was disabled when clearing the source
+            // This ensures System Media Transport Controls integration works after it was disabled
             VideoPreview.MediaPlayer.SourceChanged += VideoMediaPlayer_SourceChanged;
         }
 
@@ -272,12 +272,12 @@ namespace Peek.FilePreviewer
 
         partial void OnPreviewerChanging(IPreviewer? value)
         {
-            // Stop video playback and clear SMTC (System Media Transport Controls)
+            // Stop video playback and clear System Media Transport Controls
             var videoMediaPlayer = VideoPreview.MediaPlayer;
             videoMediaPlayer.Pause();
             videoMediaPlayer.Source = null;
 
-            // Disable CommandManager to remove the app from SMTC media player panel
+            // Disable CommandManager to remove the app from System Media Transport Controls panel
             videoMediaPlayer.CommandManager.IsEnabled = false;
 
             VideoPreview.Source = null;
