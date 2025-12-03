@@ -8,7 +8,7 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>false</UseWinUI>
-		<UseWindowsForms>true</UseWindowsForms>
+		<UseWindowsForms>false</UseWindowsForms>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
@@ -64,15 +64,12 @@
 
 	<!-- Exclude legacy Helper folder in favor of Helpers -->
 
-	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
-		<PublishTrimmed>true</PublishTrimmed>
-		<PublishSingleFile>true</PublishSingleFile>
+	<PropertyGroup>
+		<!-- Always build/publish AOT so the extension ships as native code -->
+		<SelfContained>true</SelfContained>
 		<PublishAot>true</PublishAot>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-		<PublishTrimmed>false</PublishTrimmed>
 		<PublishSingleFile>false</PublishSingleFile>
-		<PublishAot>false</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
 	</PropertyGroup>
 </Project>
