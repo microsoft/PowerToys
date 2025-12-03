@@ -838,6 +838,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Remote
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj", "{DB34808A-FF91-D06E-A426-AFB5A8BD583B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileLocksmithCLI", "src\modules\FileLocksmith\FileLocksmithCLI\FileLocksmithCLI.vcxproj", "{12345678-1234-1234-1234-1234567890AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -3056,6 +3058,14 @@ Global
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|ARM64.Build.0 = Release|ARM64
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|x64.ActiveCfg = Release|x64
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B}.Release|x64.Build.0 = Release|x64
+		{12345678-1234-1234-1234-1234567890AB}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{12345678-1234-1234-1234-1234567890AB}.Debug|ARM64.Build.0 = Debug|ARM64
+		{12345678-1234-1234-1234-1234567890AB}.Debug|x64.ActiveCfg = Debug|x64
+		{12345678-1234-1234-1234-1234567890AB}.Debug|x64.Build.0 = Debug|x64
+		{12345678-1234-1234-1234-1234567890AB}.Release|ARM64.ActiveCfg = Release|ARM64
+		{12345678-1234-1234-1234-1234567890AB}.Release|ARM64.Build.0 = Release|ARM64
+		{12345678-1234-1234-1234-1234567890AB}.Release|x64.ActiveCfg = Release|x64
+		{12345678-1234-1234-1234-1234567890AB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3389,6 +3399,7 @@ Global
 		{A66E9270-5D93-EC9C-F06E-CE7295BB9A6C} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{2B3FB837-23DE-629F-82C6-42304E7083C9} = {ECB8E0D1-7603-4E5C-AB10-D1E545E6F8E2}
 		{DB34808A-FF91-D06E-A426-AFB5A8BD583B} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{12345678-1234-1234-1234-1234567890AB} = {AB82E5DD-C32D-4F28-9746-2C780846188E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
