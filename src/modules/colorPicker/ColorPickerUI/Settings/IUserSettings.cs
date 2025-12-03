@@ -35,6 +35,8 @@ namespace ColorPicker.Settings
 
         SettingItem<bool> ShowColorName { get; }
 
+        SettingItem<bool> CopyColorToClipboard { get; }
+
         void SendSettingsTelemetry();
     }
 }

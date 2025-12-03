@@ -253,6 +253,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CopyColorToClipboard
+        {
+            get => _colorPickerSettings.Properties.CopyColorToClipboard;
+            set
+            {
+                if (_colorPickerSettings.Properties.CopyColorToClipboard != value)
+                {
+                    _colorPickerSettings.Properties.CopyColorToClipboard = value;
+                    OnPropertyChanged(nameof(CopyColorToClipboard));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
         public Dictionary<string, string> ColorFormatsPreview

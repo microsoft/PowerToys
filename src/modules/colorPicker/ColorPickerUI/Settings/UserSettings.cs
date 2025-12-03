@@ -56,6 +56,7 @@ namespace ColorPicker.Settings
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
             ShowColorName = new SettingItem<bool>(false);
+            CopyColorToClipboard = new SettingItem<bool>(true);
 
             LoadSettingsFromJson();
 
@@ -94,6 +95,8 @@ namespace ColorPicker.Settings
         public ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>> VisibleColorFormats { get; private set; } = new ObservableCollection<System.Collections.Generic.KeyValuePair<string, string>>();
 
         public SettingItem<bool> ShowColorName { get; }
+
+        public SettingItem<bool> CopyColorToClipboard { get; }
 
         private void LoadSettingsFromJson()
         {
@@ -135,6 +138,7 @@ namespace ColorPicker.Settings
                                 SecondaryClickAction.Value = settings.Properties.SecondaryClickAction;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
                                 ShowColorName.Value = settings.Properties.ShowColorName;
+                                CopyColorToClipboard.Value = settings.Properties.CopyColorToClipboard;
 
                                 List<string> savedColorHistory = new List<string>();
                                 try

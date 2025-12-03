@@ -189,7 +189,11 @@ namespace ColorPicker.ViewModels
             switch (action)
             {
                 case ColorPickerClickAction.PickColorThenEditor:
-                    ClipboardHelper.CopyToClipboard(ColorText);
+                    if (_userSettings.CopyColorToClipboard.Value)
+                    {
+                        ClipboardHelper.CopyToClipboard(ColorText);
+                    }
+
                     UpdateColorHistory(GetColorString());
 
                     _appStateHandler.OpenColorEditor();
@@ -197,7 +201,11 @@ namespace ColorPicker.ViewModels
                     break;
 
                 case ColorPickerClickAction.PickColorAndClose:
-                    ClipboardHelper.CopyToClipboard(ColorText);
+                    if (_userSettings.CopyColorToClipboard.Value)
+                    {
+                        ClipboardHelper.CopyToClipboard(ColorText);
+                    }
+
                     UpdateColorHistory(GetColorString());
 
                     _appStateHandler.EndUserSession();

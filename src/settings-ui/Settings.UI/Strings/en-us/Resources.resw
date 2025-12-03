@@ -1863,6 +1863,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
     <value>Displays the color name while picking a color</value>
   </data>
+  <data name="ColorPicker_CopyColorToClipboard.Header" xml:space="preserve">
+    <value>Copy color to clipboard</value>
+  </data>
+  <data name="ColorPicker_CopyColorToClipboard.Description" xml:space="preserve">
+    <value>Automatically copy the selected color to the clipboard when a color is picked</value>
+  </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
     <comment>The size of the image</comment>

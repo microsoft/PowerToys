@@ -104,6 +104,10 @@
                     <tkcontrols:SettingsCard Name="ColorPickerShowColorName" x:Uid="ColorPicker_ShowColorName">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="ColorPickerCopyColorToClipboard" x:Uid="ColorPicker_CopyColorToClipboard">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding CopyColorToClipboard, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
                 we can hit a state where the cursor doesn't reset
