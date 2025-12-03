@@ -276,8 +276,11 @@ namespace UITests_FancyZones
 
             this.Find<ToggleSwitch>("FancyZonesWindowSwitchingToggle").Toggle(switchWindowEnable);
 
-            Task.Delay(500).Wait(); // Wait for the setting to be applied
-            this.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
+            // Go back and forth to make sure settigns applied
+            this.Find<NavigationViewItem>("Workspaces").Click();
+            Task.Delay(200).Wait();
+            this.Find<NavigationViewItem>("FancyZones").Click();
+
             this.Find<Button>("Open layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
 
