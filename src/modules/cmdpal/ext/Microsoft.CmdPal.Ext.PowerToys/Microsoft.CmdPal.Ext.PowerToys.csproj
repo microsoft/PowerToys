@@ -17,6 +17,11 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<AppxBundle>Never</AppxBundle>
 		<AppxPackageTestDir>$(OutputPath)\AppPackages\$(MSBuildProjectName)_$(PackageVersion)_Test\</AppxPackageTestDir>
