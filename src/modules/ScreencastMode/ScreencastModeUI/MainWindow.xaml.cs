@@ -26,7 +26,7 @@ namespace ScreencastModeUI
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private const int MaxKeysToDisplay = 22;
+        // private const int MaxKeysToDisplay = 22;
         private const int DefaultHideDelayMs = 2000;
         private const int WindowWidth = 400;
         private const int WindowHeight = 60;
@@ -39,7 +39,6 @@ namespace ScreencastModeUI
         private readonly DispatcherTimer _settingsDebounceTimer;
         private KeyboardListener? _keyboardListener;
         private System.IO.FileSystemWatcher? _settingsWatcher;
-        private DateTime _lastSettingsChange = DateTime.MinValue;
 
         private string _textColor = "#FFFFFF";
         private string _backgroundColor = "#000000";
@@ -159,7 +158,6 @@ namespace ScreencastModeUI
         {
             // Use debounce to avoid multiple rapid reloads
             // Without this, the color would not change, possibly due to file locking
-            _lastSettingsChange = DateTime.Now;
             DispatcherQueue.TryEnqueue(() =>
             {
                 _settingsDebounceTimer.Stop();
@@ -361,14 +359,14 @@ namespace ScreencastModeUI
         private void HandleKeyDown(VirtualKey key)
         {
             // Check if it's a modifier key
-            if (IsModifierKey(key))
+            if (KeyDisplayNameProvider.IsModifierKey(key))
             {
-                var normalizedKey = NormalizeModifierKey(key);
+                var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
                 _activeModifiers.Add(normalizedKey);
             }
 
             // Check if it's a clear key (arrows, backspace, escape)
-            else if (IsClearKey(key))
+            else if (KeyDisplayNameProvider.IsClearKey(key))
             {
                 ClearKeys();
             }
@@ -397,9 +395,9 @@ namespace ScreencastModeUI
 
         private void HandleKeyUp(VirtualKey key)
         {
-            if (IsModifierKey(key))
+            if (KeyDisplayNameProvider.IsModifierKey(key))
             {
-                var normalizedKey = NormalizeModifierKey(key);
+                var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
                 _activeModifiers.Remove(normalizedKey);
             }
         }
@@ -437,14 +435,14 @@ namespace ScreencastModeUI
                 var keyText = new StringBuilder();
 
                 // Add modifiers for this key
-                foreach (var modifier in keyInfo.Modifiers.OrderBy(GetModifierOrder))
+                foreach (var modifier in keyInfo.Modifiers.OrderBy(KeyDisplayNameProvider.GetModifierOrder))
                 {
-                    keyText.Append(GetKeyDisplayName(modifier));
+                    keyText.Append(KeyDisplayNameProvider.GetKeyDisplayName(modifier));
                     keyText.Append(" + ");
                 }
 
                 // Add the key itself
-                keyText.Append(GetKeyDisplayName(keyInfo.Key));
+                keyText.Append(KeyDisplayNameProvider.GetKeyDisplayName(keyInfo.Key));
 
                 parts.Add(keyText.ToString());
             }
@@ -454,7 +452,7 @@ namespace ScreencastModeUI
             {
                 var modifierText = string.Join(
                     " + ",
-                    _activeModifiers.OrderBy(GetModifierOrder).Select(GetKeyDisplayName));
+                    _activeModifiers.OrderBy(KeyDisplayNameProvider.GetModifierOrder).Select(KeyDisplayNameProvider.GetKeyDisplayName));
 
                 parts.Add(modifierText);
             }
@@ -486,129 +484,6 @@ namespace ScreencastModeUI
 
             KeystrokeText.Text = string.Empty;
             KeystrokePanel.Visibility = Visibility.Collapsed;
-        }
-
-        private static bool IsModifierKey(VirtualKey key)
-        {
-            return key is VirtualKey.Shift or
-                   VirtualKey.LeftShift or
-                   VirtualKey.RightShift or
-                   VirtualKey.Control or
-                   VirtualKey.LeftControl or
-                   VirtualKey.RightControl or
-                   VirtualKey.Menu or // Alt
-                   VirtualKey.LeftMenu or
-                   VirtualKey.RightMenu or
-                   VirtualKey.LeftWindows or
-                   VirtualKey.RightWindows;
-        }
-
-        private static VirtualKey NormalizeModifierKey(VirtualKey key)
-        {
-            return key switch
-            {
-                VirtualKey.LeftShift or VirtualKey.RightShift => VirtualKey.Shift,
-                VirtualKey.LeftControl or VirtualKey.RightControl => VirtualKey.Control,
-                VirtualKey.LeftMenu or VirtualKey.RightMenu => VirtualKey.Menu,
-                VirtualKey.LeftWindows or VirtualKey.RightWindows => VirtualKey.LeftWindows,
-                _ => key,
-            };
-        }
-
-        private static bool IsClearKey(VirtualKey key)
-        {
-            return key is VirtualKey.Up or
-                   VirtualKey.Down or
-                   VirtualKey.Left or
-                   VirtualKey.Right or
-                   VirtualKey.Back or
-                   VirtualKey.Escape;
-        }
-
-        private static int GetModifierOrder(VirtualKey key)
-        {
-            return key switch
-            {
-                VirtualKey.LeftWindows => 0,
-                VirtualKey.Control => 1,
-                VirtualKey.Menu => 2,
-                VirtualKey.Shift => 3,
-                _ => 4,
-            };
-        }
-
-        private static string GetKeyDisplayName(VirtualKey key)
-        {
-            // Handle common special keys first
-            return key switch
-            {
-                VirtualKey.LeftWindows or VirtualKey.RightWindows => "Win",
-                VirtualKey.Control => "Ctrl",
-                VirtualKey.Menu => "Alt",
-                VirtualKey.Shift => "Shift",
-                VirtualKey.Space => "Space",
-                VirtualKey.Enter => "Enter",
-                VirtualKey.Tab => "Tab",
-                VirtualKey.Back => "Backspace",
-                VirtualKey.Escape => "Esc",
-                VirtualKey.Delete => "Del",
-                VirtualKey.Up => "↑",
-                VirtualKey.Down => "↓",
-                VirtualKey.Left => "←",
-                VirtualKey.Right => "→",
-                VirtualKey.PageUp => "PgUp",
-                VirtualKey.PageDown => "PgDn",
-                VirtualKey.Home => "Home",
-                VirtualKey.End => "End",
-                VirtualKey.Insert => "Ins",
-
-                // Numpad
-                VirtualKey.NumberPad0 => "Num 0",
-                VirtualKey.NumberPad1 => "Num 1",
-                VirtualKey.NumberPad2 => "Num 2",
-                VirtualKey.NumberPad3 => "Num 3",
-                VirtualKey.NumberPad4 => "Num 4",
-                VirtualKey.NumberPad5 => "Num 5",
-                VirtualKey.NumberPad6 => "Num 6",
-                VirtualKey.NumberPad7 => "Num 7",
-                VirtualKey.NumberPad8 => "Num 8",
-                VirtualKey.NumberPad9 => "Num 9",
-
-                // F-keys
-                VirtualKey.F1 => "F1",
-                VirtualKey.F2 => "F2",
-                VirtualKey.F3 => "F3",
-                VirtualKey.F4 => "F4",
-                VirtualKey.F5 => "F5",
-                VirtualKey.F6 => "F6",
-                VirtualKey.F7 => "F7",
-                VirtualKey.F8 => "F8",
-                VirtualKey.F9 => "F9",
-                VirtualKey.F10 => "F10",
-                VirtualKey.F11 => "F11",
-                VirtualKey.F12 => "F12",
-
-                // Letters A-Z
-                >= VirtualKey.A and <= VirtualKey.Z => ((char)('A' + ((int)key - (int)VirtualKey.A))).ToString(),
-
-                // Numbers 0-9
-                >= VirtualKey.Number0 and <= VirtualKey.Number9 => ((char)('0' + ((int)key - (int)VirtualKey.Number0))).ToString(),
-
-                // Punctuation using raw VK codes (these exist in VirtualKey)
-                (VirtualKey)0xBD => "-",        // VK_OEM_MINUS
-                (VirtualKey)0xBB => "=",        // VK_OEM_PLUS
-                (VirtualKey)0xDB => "[",        // VK_OEM_4
-                (VirtualKey)0xDD => "]",        // VK_OEM_6
-                (VirtualKey)0xDC => "\\",       // VK_OEM_5
-                (VirtualKey)0xBA => ";",        // VK_OEM_1
-                (VirtualKey)0xDE => "'",        // VK_OEM_7
-                (VirtualKey)0xBC => ",",        // VK_OEM_COMMA
-                (VirtualKey)0xBE => ".",        // VK_OEM_PERIOD
-                (VirtualKey)0xBF => "/",        // VK_OEM_2
-                (VirtualKey)0xC0 => "`",        // VK_OEM_3
-
-                _ => key.ToString(), // Fallback
-            };
         }
 
         /// <summary>
