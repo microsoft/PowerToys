@@ -248,6 +248,25 @@ namespace KeystrokeOverlayUI
             }
         }
 
+        private AppWindow GetAppWindow()
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(this);
+            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            return AppWindow.GetFromWindowId(wndId);
+        }
+
+        private void HideAppWindow()
+        {
+            var appWindow = GetAppWindow();
+            appWindow?.Hide();
+        }
+
+        private void ShowAppWindow()
+        {
+            var appWindow = GetAppWindow();
+            appWindow?.Show();
+        }
+
         private void StackPanel_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // 1. Get the StackPanel that holds the keys
@@ -259,6 +278,18 @@ namespace KeystrokeOverlayUI
             // 2. Ask the StackPanel how big it WANTS to be (ignoring current window constraints)
             stackPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             var desiredSize = stackPanel.DesiredSize;
+
+            if (desiredSize.Width == 0 || desiredSize.Height == 0 || ViewModel.PressedKeys.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("No content to display, hiding overlay.");
+                HideAppWindow();
+                return;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Showing Overlay Content");
+                ShowAppWindow();
+            }
 
             // 3. Add the padding from the outer Border (RootGrid)
             //    (Your XAML has Padding="15,12", so we must add that back in)
