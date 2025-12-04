@@ -84,8 +84,6 @@ namespace ScreencastModeUI
             try
             {
                 // Use WinUIEx properties to configure the overlay window
-                // These avoid direct P/Invoke to user32.dll
-
                 // Remove title bar and window chrome
                 this.ExtendsContentIntoTitleBar = true;
                 this.IsTitleBarVisible = false;
@@ -160,6 +158,7 @@ namespace ScreencastModeUI
         private void OnSettingsFileChanged(object sender, System.IO.FileSystemEventArgs e)
         {
             // Use debounce to avoid multiple rapid reloads
+            // Without this, the color would not change, possibly due to file locking
             _lastSettingsChange = DateTime.Now;
             DispatcherQueue.TryEnqueue(() =>
             {
@@ -282,35 +281,26 @@ namespace ScreencastModeUI
 
                 switch (_displayPosition)
                 {
-                    // Top left
-                    case "TopLeft":
                     case "Top Left":
                         x = workArea.X + scaledMargin;
                         y = workArea.Y + scaledMargin;
                         break;
 
-                    // Top right
-                    case "TopRight":
                     case "Top Right":
                         x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
                         y = workArea.Y + scaledMargin;
                         break;
 
-                    // Bottom left
-                    case "BottomLeft":
                     case "Bottom Left":
                         x = workArea.X + scaledMargin;
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
 
-                    // Bottom right
-                    case "BottomRight":
                     case "Bottom Right":
                         x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
 
-                    // Center / default
                     case "Center":
                     default:
                         x = workArea.X + ((workArea.Width - scaledWidth) / 2);
@@ -318,7 +308,7 @@ namespace ScreencastModeUI
                         break;
                 }
 
-                // Use WinUIEx's MoveAndResize method - no P/Invoke needed
+                // Use WinUIEx's MoveAndResize method
                 this.MoveAndResize(x, y, WindowWidth, WindowHeight);
 
                 // Center the keystroke panel within the window
