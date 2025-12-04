@@ -40,6 +40,8 @@ public sealed partial class AppListItem : ListItem
 
     public string AppIdentifier => _app.AppIdentifier;
 
+    public AppItem App => _app;
+
     public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
     {
         Command = _appCommand = new AppCommand(app);
@@ -81,6 +83,12 @@ public sealed partial class AppListItem : ListItem
         {
             metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.ExePath } });
         }
+
+#if DEBUG
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] AppIdentifier", Data = new DetailsLink() { Text = _app.AppIdentifier } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] ExePath", Data = new DetailsLink() { Text = _app.ExePath } });
+        metadata.Add(new DetailsElement() { Key = "[DEBUG] IcoPath", Data = new DetailsLink() { Text = _app.IcoPath } });
+#endif
 
         // Icon
         IconInfo? heroImage = null;
