@@ -5,14 +5,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dockVm="using:Microsoft.CmdPal.UI.ViewModels.Dock"
+    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <Grid>
         <Grid.Resources>
-            <Flyout x:Key="AddItemsFlyout">
-                <Grid Width="300" Height="400">
+            <!--  Flyout for adding items to a dock area  -->
+            <Flyout x:Key="AddItemsFlyout" Placement="Bottom">
+                <Grid Width="300" MaxHeight="400">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -25,29 +27,43 @@
                         Text="Add Dock Item" />
 
                     <ListView
+                        x:Name="AvailableItemsListView"
                         Grid.Row="1"
+                        MaxHeight="350"
                         IsItemClickEnabled="True"
                         ItemClick="AvailableItemsListView_ItemClick"
-                        ItemsSource="{x:Bind DockBands, Mode=OneWay}"
                         SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="dockVm:DockBandSettingsViewModel">
-                                <Grid Height="48" Padding="8">
+                                <Grid
+                                    Height="48"
+                                    Padding="8"
+                                    ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="32" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <!--<Image
+                                    <local:IconBox
                                         Width="24"
                                         Height="24"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Source="{x:Bind Icon}" />-->
-                                    <TextBlock
+                                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                    <StackPanel
                                         Grid.Column="1"
-                                        Margin="8,0,0,0"
                                         VerticalAlignment="Center"
-                                        Text="{x:Bind Title}" />
+                                        Spacing="2">
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Text="{x:Bind Title}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind Description}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -55,10 +71,13 @@
                 </Grid>
             </Flyout>
 
-            <Flyout x:Key="DockItemOptionsFlyout">
-                <Grid Width="250">
+            <!--  Flyout for editing a pinned dock item  -->
+            <Flyout
+                x:Key="DockItemOptionsFlyout"
+                Closed="DockItemOptionsFlyout_Closed"
+                Placement="Bottom">
+                <Grid Width="280">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -66,105 +85,229 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock
+                        x:Name="OptionsFlyoutTitle"
                         Margin="0,0,0,16"
                         FontSize="16"
                         FontWeight="SemiBold"
                         Text="Dock Item Options" />
 
-                    <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                    <StackPanel Grid.Row="1" Margin="0,0,0,16">
                         <TextBlock
-                            Margin="0,0,0,4"
+                            Margin="0,0,0,8"
                             FontSize="12"
-                            Text="Mode" />
-                        <ComboBox HorizontalAlignment="Stretch" SelectedIndex="0">
-                            <ComboBoxItem Content="Icon only" />
-                            <ComboBoxItem Content="Expanded" />
+                            Text="Show Labels" />
+                        <ComboBox
+                            x:Name="ShowLabelsComboBox"
+                            HorizontalAlignment="Stretch"
+                            SelectionChanged="ShowLabelsComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Default" Tag="0" />
+                            <ComboBoxItem Content="Show Labels" Tag="1" />
+                            <ComboBoxItem Content="Hide Labels" Tag="2" />
                         </ComboBox>
                     </StackPanel>
 
-                    <!--<ToggleSwitch
-                        Grid.Row="2"
-                        Margin="0,0,0,16"
-                        Header="Show text label"
-                      />
-
                     <Border
-                        Grid.Row="3"
+                        Grid.Row="2"
                         Height="1"
                         Margin="0,0,0,16"
                         Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
                     <Button
-                        Grid.Row="4"
+                        Grid.Row="3"
                         HorizontalAlignment="Stretch"
                         Click="UnpinButton_Click"
-                        Content="Unpin from dock"
-                        Style="{StaticResource AccentButtonStyle}" />-->
+                        Content="Unpin from dock" />
                 </Grid>
             </Flyout>
+
+            <!--  Template for dock band items in the editor  -->
+            <DataTemplate x:Key="DockBandItemTemplate" x:DataType="dockVm:DockBandSettingsViewModel">
+                <Grid
+                    Padding="8,4"
+                    Background="Transparent"
+                    ToolTipService.ToolTip="{x:Bind Title}">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Orientation="Vertical"
+                        Spacing="4">
+                        <local:IconBox
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                        <!--<TextBlock
+                            MaxWidth="60"
+                            HorizontalAlignment="Center"
+                            FontSize="10"
+                            Text="{x:Bind Title}"
+                            TextAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />-->
+                    </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <!--  Style for horizontal ListView items  -->
+            <Style
+                x:Key="DockEditorListViewItemStyle"
+                BasedOn="{StaticResource DefaultListViewItemStyle}"
+                TargetType="ListViewItem">
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="4" />
+                <Setter Property="Margin" Value="2,0" />
+            </Style>
         </Grid.Resources>
 
+        <!--  Main dock editor bar  -->
         <Grid
-            Height="48"
-            Margin="64"
-            Padding="8,0,8,0"
+            Height="64"
+            Padding="12,8"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1">
+            BorderThickness="1"
+            CornerRadius="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" Spacing="8">
+            <!--  Start (Left) Section  -->
+            <StackPanel
+                Grid.Column="0"
+                HorizontalAlignment="Left"
+                Orientation="Horizontal"
+                Spacing="4">
                 <ListView
-                    x:Name="LeftListView"
+                    x:Name="StartListView"
+                    MinWidth="48"
                     AllowDrop="True"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     CanDragItems="True"
                     CanReorderItems="True"
-                    DragItemsStarting="LeftListView_DragItemsStarting"
-                    DragOver="LeftListView_DragOver"
-                    Drop="LeftListView_Drop"
+                    CornerRadius="8"
+                    DragItemsCompleted="ListView_DragItemsCompleted"
+                    DragItemsStarting="ListView_DragItemsStarting"
+                    DragOver="ListView_DragOver"
+                    Drop="StartListView_Drop"
                     IsItemClickEnabled="True"
-                    ItemClick="LeftListView_ItemClick"
+                    ItemClick="DockItem_Click"
+                    ItemContainerStyle="{StaticResource DockEditorListViewItemStyle}"
+                    ItemTemplate="{StaticResource DockBandItemTemplate}"
+                    ItemsSource="{x:Bind StartItems, Mode=OneWay}"
                     SelectionMode="None">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="8" />
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
-                    <ListView.ItemContainerStyle>
-                        <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                            <Setter Property="MinWidth" Value="0" />
-                            <Setter Property="Padding" Value="4" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:DockItem">
-                            <StackPanel Orientation="Vertical" Spacing="4">
-                                <Image
-                                    Width="24"
-                                    Height="24"
-                                    Source="{x:Bind IconPath}" />
-                                <TextBlock
-                                    MaxWidth="60"
-                                    FontSize="10"
-                                    Text="{x:Bind Name}"
-                                    TextAlignment="Center"
-                                    TextWrapping="Wrap"
-                                    Visibility="{x:Bind ShowTextLabel, Mode=OneWay}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
                 </ListView>
                 <Button
-                    x:Name="LeftAddButton"
-                    Click="LeftAddButton_Click"
+                    x:Name="StartAddButton"
+                    VerticalAlignment="Center"
+                    Click="AddButton_Click"
                     Flyout="{StaticResource AddItemsFlyout}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon Glyph="&#xE710;" />
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Add item to start">
+                    <FontIcon FontSize="12" Glyph="&#xE710;" />
                 </Button>
+            </StackPanel>
+
+            <!--  Center Section  -->
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="4">
+                <Button
+                    x:Name="CenterAddButtonLeft"
+                    VerticalAlignment="Center"
+                    Click="AddButton_Click"
+                    Flyout="{StaticResource AddItemsFlyout}"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Add item to center"
+                    Visibility="Collapsed">
+                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                </Button>
+                <ListView
+                    x:Name="CenterListView"
+                    MinWidth="48"
+                    AllowDrop="True"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CanDragItems="True"
+                    CanReorderItems="True"
+                    CornerRadius="8"
+                    DragItemsCompleted="ListView_DragItemsCompleted"
+                    DragItemsStarting="ListView_DragItemsStarting"
+                    DragOver="ListView_DragOver"
+                    Drop="CenterListView_Drop"
+                    IsItemClickEnabled="True"
+                    ItemClick="DockItem_Click"
+                    ItemContainerStyle="{StaticResource DockEditorListViewItemStyle}"
+                    ItemTemplate="{StaticResource DockBandItemTemplate}"
+                    ItemsSource="{x:Bind CenterItems, Mode=OneWay}"
+                    SelectionMode="None">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
+                <Button
+                    x:Name="CenterAddButton"
+                    VerticalAlignment="Center"
+                    Click="AddButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Add item to center">
+                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                </Button>
+            </StackPanel>
+
+            <!--  End (Right) Section  -->
+            <StackPanel
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="4">
+                <Button
+                    x:Name="EndAddButton"
+                    VerticalAlignment="Center"
+                    Click="AddButton_Click"
+                    Flyout="{StaticResource AddItemsFlyout}"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Add item to end">
+                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                </Button>
+                <ListView
+                    x:Name="EndListView"
+                    MinWidth="48"
+                    AllowDrop="True"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    CanDragItems="True"
+                    CanReorderItems="True"
+                    CornerRadius="8"
+                    DragItemsCompleted="ListView_DragItemsCompleted"
+                    DragItemsStarting="ListView_DragItemsStarting"
+                    DragOver="ListView_DragOver"
+                    Drop="EndListView_Drop"
+                    IsItemClickEnabled="True"
+                    ItemClick="DockItem_Click"
+                    ItemContainerStyle="{StaticResource DockEditorListViewItemStyle}"
+                    ItemTemplate="{StaticResource DockBandItemTemplate}"
+                    ItemsSource="{x:Bind EndItems, Mode=OneWay}"
+                    SelectionMode="None">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                </ListView>
             </StackPanel>
         </Grid>
     </Grid>

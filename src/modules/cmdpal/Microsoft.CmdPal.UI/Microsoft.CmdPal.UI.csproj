@@ -69,6 +69,7 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\DockEditor.xaml" />
     <None Remove="Controls\KeyVisual\KeyCharPresenter.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="IsEnabledTextBlock.xaml" />
@@ -199,6 +200,12 @@
     <Content Update="Assets\WinGetLogo.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\DockEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

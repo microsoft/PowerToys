@@ -40,10 +40,7 @@
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Size  -->
-                    <controls:SettingsCard Header="Dock Size">
-                        <controls:SettingsCard.Description>
-                            Choose the size of your dock
-                        </controls:SettingsCard.Description>
+                    <controls:SettingsCard Description="Choose the size of your dock" Header="Dock size">
                         <ComboBox
                             x:Name="DockSizeComboBox"
                             MinWidth="120"
@@ -55,29 +52,43 @@
                     </controls:SettingsCard>
 
                     <!--  Dock Position  -->
-                    <controls:SettingsCard Header="Dock Position">
+                    <controls:SettingsCard Description="Choose where the dock appears on your screen" Header="Dock position">
                         <controls:SettingsCard.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
                         </controls:SettingsCard.HeaderIcon>
-                        <controls:SettingsCard.Description>
-                            Choose where the dock appears on your screen
-                        </controls:SettingsCard.Description>
                         <ComboBox
                             x:Name="DockPositionComboBox"
                             MinWidth="120"
                             SelectedIndex="{x:Bind SelectedSideIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Left" />
-                            <ComboBoxItem Content="Top" />
-                            <ComboBoxItem Content="Right" />
-                            <ComboBoxItem Content="Bottom" />
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE90C;" />
+                                    <TextBlock Text="Left" />
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE90E;" Rotation="180" />
+                                    <TextBlock Text="Top" />
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE90D;" />
+                                    <TextBlock Text="Right" />
+                                </StackPanel>
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE90E;" />
+                                    <TextBlock Text="Bottom" />
+                                </StackPanel>
+                            </ComboBoxItem>
                         </ComboBox>
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard Header="Background Style">
-                        <controls:SettingsCard.Description>
-                            Choose the background effect for your dock
-                        </controls:SettingsCard.Description>
+                    <controls:SettingsCard Description="Choose the background effect for your dock" Header="Background style">
                         <ComboBox
                             x:Name="BackdropComboBox"
                             MinWidth="120"
@@ -89,20 +100,19 @@
                     </controls:SettingsCard>
 
                     <!--  Show Labels  -->
-                    <controls:SettingsCard Header="Show Labels">
-                        <controls:SettingsCard.Description>
-                            Choose whether to show labels for dock items by default.
-                        </controls:SettingsCard.Description>
+                    <controls:SettingsCard Description="Choose whether to show labels for dock items by default." Header="Show labels">
 
                         <ToggleSwitch
                             IsOn="{x:Bind ShowLabels, Mode=TwoWay}"
                             OffContent="Hide labels"
-                            OnContent="Show Labels" />
+                            OnContent="Show labels" />
 
                     </controls:SettingsCard>
 
                     <!--  Bands Section  -->
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <cpControls:DockEditor Height="150" DockItems="{x:Bind AllDockBandItems, Mode=OneWay}" />
 
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">
                         <ItemsRepeater.ItemTemplate>
@@ -148,15 +158,14 @@
                                         </ComboBox>
                                         <ComboBox MinWidth="120" SelectedIndex="{x:Bind ShowLabelsIndex, Mode=TwoWay}">
                                             <ComboBoxItem Content="Default" />
-                                            <ComboBoxItem Content="Show Labels" />
-                                            <ComboBoxItem Content="Hide Labels" />
+                                            <ComboBoxItem Content="Show labels" />
+                                            <ComboBoxItem Content="Hide labels" />
                                         </ComboBox>
                                     </StackPanel>
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
-
                 </StackPanel>
             </Grid>
         </ScrollViewer>
