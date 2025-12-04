@@ -18,7 +18,6 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <ProjectPriFileName>PowerToys.KeystrokeOverlayUI.pri</ProjectPriFileName>
     
     <!-- Platform Settings -->
     <Platforms>x64;ARM64</Platforms>
@@ -28,12 +27,6 @@
     <!-- Allow unsafe blocks if you do any P/Invoke, good practice to enable in PT modules -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-    <ItemGroup>
-    <Compile Remove="Controls\KeyVisuals\**" />
-    <EmbeddedResource Remove="Controls\KeyVisuals\**" />
-    <None Remove="Controls\KeyVisuals\**" />
-    <Page Remove="Controls\KeyVisuals\**" />
-  </ItemGroup>
 
   <ItemGroup>
 	<PackageReference Include="CommunityToolkit.Mvvm" />
@@ -43,7 +36,6 @@
     <PackageReference Include="System.Text.Json" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
-
 
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
@@ -60,12 +52,11 @@
     <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
   <!-- Ensure Views are compiled correctly -->
   <ItemGroup>
-    <Page Update="Views\KeyVisual.xaml">
+    <Page Update="Controls\KeyVisual\KeyVisual.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <!-- If you have other views in subfolders, ensure they are updated here -->
@@ -88,7 +79,4 @@
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
     <ApplicationIcon>Assets\KeystrokeOverlay\Icon.ico</ApplicationIcon>
   </PropertyGroup>
-  <ItemGroup>
-    <PRIResource Remove="Controls\KeyVisuals\**" />
-  </ItemGroup>
 </Project>
