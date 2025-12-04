@@ -22,7 +22,7 @@ internal sealed partial class SampleListPageWithDetails : ListPage
         return [
             new ListItem(new NoOpCommand())
             {
-                Title = "Details on ListItems (Snall)",
+                Title = "Details on ListItems (Small)",
                 Details = new Details()
                 {
                     Title = "This item has default details size",
