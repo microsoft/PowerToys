@@ -30,7 +30,6 @@
         Title="{x:Bind Title, Mode=OneWay}"
         MinWidth="400"
         Padding="0"
-        VerticalAlignment="Top"
         DividerVisibility="Collapsed">
         <controls:Card.TitleContent>
             <Button
@@ -71,7 +70,7 @@
                     <tkcontrols:SettingsCard
                         MinHeight="0"
                         Padding="12,4,12,4"
-                        tk:FrameworkElementExtensions.AncestorType="ItemsRepeater"
+                        tk:FrameworkElementExtensions.AncestorType="controls:ModuleList"
                         Background="Transparent"
                         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                         BorderThickness="0,1,0,0"

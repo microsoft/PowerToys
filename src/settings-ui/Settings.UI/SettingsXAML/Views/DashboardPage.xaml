@@ -228,6 +228,7 @@
                         x:Uid="UtilitiesHeader"
                         Grid.RowSpan="2"
                         Grid.Column="1"
+                        VerticalAlignment="Top"
                         ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}"
                         SortOption="{x:Bind ViewModel.DashboardSortOrder, Mode=TwoWay, Converter={StaticResource EnumToModuleListSortOptionConverter}}" />
                 </Grid>

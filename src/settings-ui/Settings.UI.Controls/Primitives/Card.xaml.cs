@@ -11,9 +11,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         public static readonly DependencyProperty TitleContentProperty = DependencyProperty.Register(nameof(TitleContent), typeof(object), typeof(Card), new PropertyMetadata(defaultValue: null, OnVisualPropertyChanged));
 
-        public object TitleContent
+        public object? TitleContent
         {
-            get => (object)GetValue(TitleContentProperty);
+            get => (object?)GetValue(TitleContentProperty);
             set => SetValue(TitleContentProperty, value);
         }
 

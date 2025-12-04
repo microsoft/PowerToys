@@ -89,6 +89,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
                     var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
+                    // Save settings to file
+                    new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
+
                     this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                     {
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());

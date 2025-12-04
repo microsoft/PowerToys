@@ -32,6 +32,7 @@ public sealed partial class AppsListPage : Page
             _context = context;
             ViewModel = context.AllAppsViewModel;
             DataContext = ViewModel;
+            ViewModel.RefreshSettings();
         }
     }
 

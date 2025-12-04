@@ -43,6 +43,43 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
         _window.RequestHide();
     }
 
+    public void OpenSettingsForModule(ModuleType moduleType)
+    {
+        var settingsWindow = moduleType switch
+        {
+            ModuleType.AdvancedPaste => SettingsDeepLink.SettingsWindow.AdvancedPaste,
+            ModuleType.AlwaysOnTop => SettingsDeepLink.SettingsWindow.AlwaysOnTop,
+            ModuleType.Awake => SettingsDeepLink.SettingsWindow.Awake,
+            ModuleType.ColorPicker => SettingsDeepLink.SettingsWindow.ColorPicker,
+            ModuleType.CmdPal => SettingsDeepLink.SettingsWindow.CmdPal,
+            ModuleType.CropAndLock => SettingsDeepLink.SettingsWindow.CropAndLock,
+            ModuleType.EnvironmentVariables => SettingsDeepLink.SettingsWindow.EnvironmentVariables,
+            ModuleType.FancyZones => SettingsDeepLink.SettingsWindow.FancyZones,
+            ModuleType.FileLocksmith => SettingsDeepLink.SettingsWindow.FileLocksmith,
+            ModuleType.Hosts => SettingsDeepLink.SettingsWindow.Hosts,
+            ModuleType.ImageResizer => SettingsDeepLink.SettingsWindow.ImageResizer,
+            ModuleType.KeyboardManager => SettingsDeepLink.SettingsWindow.KBM,
+            ModuleType.LightSwitch => SettingsDeepLink.SettingsWindow.LightSwitch,
+            ModuleType.MouseWithoutBorders => SettingsDeepLink.SettingsWindow.MouseWithoutBorders,
+            ModuleType.NewPlus => SettingsDeepLink.SettingsWindow.NewPlus,
+            ModuleType.Peek => SettingsDeepLink.SettingsWindow.Peek,
+            ModuleType.PowerRename => SettingsDeepLink.SettingsWindow.PowerRename,
+            ModuleType.PowerLauncher => SettingsDeepLink.SettingsWindow.PowerLauncher,
+            ModuleType.PowerAccent => SettingsDeepLink.SettingsWindow.PowerAccent,
+            ModuleType.RegistryPreview => SettingsDeepLink.SettingsWindow.RegistryPreview,
+            ModuleType.MeasureTool => SettingsDeepLink.SettingsWindow.MeasureTool,
+            ModuleType.ShortcutGuide => SettingsDeepLink.SettingsWindow.ShortcutGuide,
+            ModuleType.PowerOCR => SettingsDeepLink.SettingsWindow.PowerOCR,
+            ModuleType.Workspaces => SettingsDeepLink.SettingsWindow.Workspaces,
+            ModuleType.ZoomIt => SettingsDeepLink.SettingsWindow.ZoomIt,
+            ModuleType.FindMyMouse or ModuleType.MouseHighlighter or ModuleType.MouseJump or ModuleType.MousePointerCrosshairs or ModuleType.CursorWrap => SettingsDeepLink.SettingsWindow.MouseUtils,
+            _ => SettingsDeepLink.SettingsWindow.Dashboard,
+        };
+
+        SettingsDeepLink.OpenSettings(settingsWindow, true);
+        _window.RequestHide();
+    }
+
     public void OpenGeneralSettingsForUpdates()
     {
         SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview, true);

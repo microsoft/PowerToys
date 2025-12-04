@@ -239,6 +239,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         Activate();
         _isVisible = true;
         EnsureGlobalMouseHook();
+        ShellHost.RefreshIfAppsList();
     }
 
     private void OnActivated(object sender, WindowActivatedEventArgs args)

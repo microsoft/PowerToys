@@ -57,4 +57,12 @@ public sealed partial class ShellPage : Page
         var context = new FlyoutNavigationContext(_launcherViewModel, _allAppsViewModel, _coordinator);
         ContentFrame.Navigate(typeof(LaunchPage), context, new SlideNavigationTransitionInfo { Effect = SlideNavigationTransitionEffect.FromLeft });
     }
+
+    internal void RefreshIfAppsList()
+    {
+        if (ContentFrame.Content is AppsListPage appsListPage)
+        {
+            appsListPage.ViewModel?.RefreshSettings();
+        }
+    }
 }

@@ -13,6 +13,7 @@ using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.ApplicationModel.Resources;
 
@@ -71,6 +72,14 @@ public sealed class AllAppsViewModel : Observable
         });
     }
 
+    public void RefreshSettings()
+    {
+        if (_settingsRepository.ReloadSettings())
+        {
+            OnSettingsChanged(_settingsRepository.SettingsConfig);
+        }
+    }
+
     private void RefreshFlyoutMenuItems()
     {
         var desiredItems = new List<FlyoutMenuItem>();
@@ -109,6 +118,7 @@ public sealed class AllAppsViewModel : Observable
                     Tag = moduleType,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     EnabledChangedCallback = EnabledChangedOnUI,
+                    ClickCommand = new RelayCommand(() => _coordinator.OpenSettingsForModule(moduleType)),
                 });
             }
         }

@@ -9,9 +9,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class ModuleList : UserControl
     {
+        private object? _sortButton;
+
         public ModuleList()
         {
             this.InitializeComponent();
+            _sortButton = ModulesCard.TitleContent;
+            UpdateHeaderVisibility();
         }
 
         public bool IsItemClickable
@@ -44,7 +48,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(TitleProperty, value);
         }
 
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(ModuleList), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(ModuleList), new PropertyMetadata(default(string), OnTitleChanged));
+
+        private static void OnTitleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((ModuleList)d).UpdateHeaderVisibility();
+        }
+
+        private void UpdateHeaderVisibility()
+        {
+            if (ModulesCard == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Title))
+            {
+                ModulesCard.TitleContent = null;
+            }
+            else
+            {
+                ModulesCard.TitleContent = _sortButton;
+            }
+        }
 
         private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
         {
@@ -58,8 +84,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void OnSettingsCardClick(object sender, RoutedEventArgs e)
         {
-            // TO DO:
-            // ViewModel.DashboardListItemClick(sender);
+            if (sender is FrameworkElement element && element.DataContext is ModuleListItem item)
+            {
+                item.ClickCommand?.Execute(item.Tag);
+            }
         }
     }
 }

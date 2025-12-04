@@ -82,6 +82,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     generalSettingsConfig.DashboardSortOrder = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
+                    // Save settings to file
+                    new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
+
                     SendConfigMSG(outgoing.ToString());
                     SortModuleList();
                 }

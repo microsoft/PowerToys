@@ -6,33 +6,30 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
-public sealed class FlyoutMenuItem : INotifyPropertyChanged
+public sealed class FlyoutMenuItem : ModuleListItem
 {
     private bool _visible;
-    private bool _isEnabled;
-
-    public string Label { get; set; } = string.Empty;
-
-    public string Icon { get; set; } = string.Empty;
 
     public string ToolTip { get; set; } = string.Empty;
 
-    public ModuleType Tag { get; set; }
-
-    public bool IsLocked { get; set; }
-
-    public bool IsEnabled
+    public new ModuleType Tag
     {
-        get => _isEnabled;
+        get => (ModuleType)(base.Tag ?? ModuleType.PowerLauncher);
+        set => base.Tag = value;
+    }
+
+    public override bool IsEnabled
+    {
+        get => base.IsEnabled;
         set
         {
-            if (_isEnabled != value)
+            if (base.IsEnabled != value)
             {
-                _isEnabled = value;
-                OnPropertyChanged();
+                base.IsEnabled = value;
                 EnabledChangedCallback?.Invoke(this);
             }
         }
@@ -51,12 +48,5 @@ public sealed class FlyoutMenuItem : INotifyPropertyChanged
                 OnPropertyChanged();
             }
         }
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

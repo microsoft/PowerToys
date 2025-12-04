@@ -21,11 +21,11 @@
         BorderThickness="{x:Bind BorderThickness, Mode=OneWay}"
         CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" MinHeight="44" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="TitleGrid">
+        <Grid x:Name="TitleGrid" MinHeight="44">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
