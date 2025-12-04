@@ -181,14 +181,75 @@ namespace Microsoft.PowerToys.UITest
                 ExitExe(runnerProcessInfo.FileName);
                 runner = Process.Start(runnerProcessInfo);
 
-                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
+                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 3);
 
                 // Exit CmdPal UI before launching new process if use installer for test
                 ExitExeByName("Microsoft.CmdPal.UI");
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to launch PowerToys Settings: {ex.Message}", ex);
+                // Visual debugging: Execute command via CMD with visible window
+                Debug.WriteLine($"Failed to launch PowerToys Settings. Executing visual debug...");
+
+                var debugCmdInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/k \"{locationPath + runnerPath}\" --open-settings",
+                    UseShellExecute = true,
+                    CreateNoWindow = false,
+                    WindowStyle = ProcessWindowStyle.Normal,
+                };
+
+                try
+                {
+                    Process.Start(debugCmdInfo);
+                }
+                catch (Exception cmdEx)
+                {
+                    Debug.WriteLine($"Failed to start debug CMD: {cmdEx.Message}");
+                }
+
+                // Show Task Manager filtered by "Power"
+                try
+                {
+                    var taskMgrInfo = new ProcessStartInfo
+                    {
+                        FileName = "taskmgr.exe",
+                        Arguments = "/0",
+                        UseShellExecute = true,
+                    };
+                    Process.Start(taskMgrInfo);
+
+                    // Give Task Manager time to open
+                    Thread.Sleep(3000);
+
+                    // List all "Power" processes in debug output
+                    Debug.WriteLine("\n=== PowerToys Related Processes ===");
+                    var powerProcesses = Process.GetProcesses()
+                        .Where(p => p.ProcessName.Contains("Power", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                    foreach (var proc in powerProcesses)
+                    {
+                        try
+                        {
+                            Debug.WriteLine($"Process: {proc.ProcessName}, ID: {proc.Id}, Path: {proc.MainModule?.FileName ?? "N/A"}");
+                        }
+                        catch
+                        {
+                            Debug.WriteLine($"Process: {proc.ProcessName}, ID: {proc.Id}, Path: [Access Denied]");
+                        }
+                    }
+
+                    Debug.WriteLine("=================================\n");
+                }
+                catch (Exception tmEx)
+                {
+                    Debug.WriteLine($"Failed to show Task Manager: {tmEx.Message}");
+                }
+
+                Thread.Sleep(3000);
+                throw new InvalidOperationException($"Failed to launch PowerToys Settings: {ex.Message}\nRunner Path: {locationPath + runnerPath}\nCheck CMD window and Task Manager for details.", ex);
             }
         }
 
