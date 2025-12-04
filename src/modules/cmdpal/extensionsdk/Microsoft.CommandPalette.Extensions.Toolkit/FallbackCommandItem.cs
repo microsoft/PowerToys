@@ -6,7 +6,12 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IFallbackHandler
 {
-    private IFallbackHandler? _fallbackHandler;
+    private readonly IFallbackHandler? _fallbackHandler;
+
+    public FallbackCommandItem(string displayTitle)
+    {
+        DisplayTitle = displayTitle;
+    }
 
     public FallbackCommandItem(ICommand command, string displayTitle)
         : base(command)

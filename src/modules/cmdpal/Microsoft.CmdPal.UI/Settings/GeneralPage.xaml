@@ -51,8 +51,18 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Never" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Immediately" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After10Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After20Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After30Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After60Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After90Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After120Seconds" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_After180Seconds" />
+                        </ComboBox>
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />

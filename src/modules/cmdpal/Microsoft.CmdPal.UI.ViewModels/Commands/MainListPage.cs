@@ -36,6 +36,7 @@ public partial class MainListPage : DynamicListPage,
         "com.microsoft.cmdpal.builtin.websearch",
         "com.microsoft.cmdpal.builtin.windowssettings",
         "com.microsoft.cmdpal.builtin.datetime",
+        "com.microsoft.cmdpal.builtin.remotedesktop",
     ];
 
     private readonly IServiceProvider _serviceProvider;
@@ -161,7 +162,7 @@ public partial class MainListPage : DynamicListPage,
             {
                 return _tlcManager
                     .TopLevelCommands
-                    .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
+                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
         }

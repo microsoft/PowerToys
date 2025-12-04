@@ -1,0 +1,1041 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/common/">
+    <Project Path="src/common/AllExperiments/AllExperiments.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/CalculatorEngineCommon/CalculatorEngineCommon.vcxproj" Id="2cf78cf7-8feb-4be1-9591-55fa25b48fc6" />
+    <Project Path="src/common/Common.Search/Common.Search.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/Common.UI/Common.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/COMUtils/COMUtils.vcxproj" Id="7319089e-46d6-4400-bc65-e39bdf1416ee" />
+    <Project Path="src/common/Display/Display.vcxproj" Id="caba8dfb-823b-4bf2-93ac-3f31984150d9" />
+    <Project Path="src/common/FilePreviewCommon/FilePreviewCommon.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/GPOWrapper/GPOWrapper.vcxproj" Id="e599c30b-9dc8-4e5a-bf27-93d4ccede788" />
+    <Project Path="src/common/GPOWrapperProjection/GPOWrapperProjection.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/LanguageModelProvider/LanguageModelProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/ManagedCommon/ManagedCommon.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/ManagedCsWin32/ManagedCsWin32.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/ManagedTelemetry/Telemetry/ManagedTelemetry.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/SettingsAPI/SettingsAPI.vcxproj" Id="6955446d-23f7-4023-9bb3-8657f904af99" />
+    <Project Path="src/common/Themes/Themes.vcxproj" Id="98537082-0fdb-40de-abd8-0dc5a4269bab" />
+    <Project Path="src/common/UITestAutomation/UITestAutomation.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/UnitTests-CommonLib/UnitTests-CommonLib.vcxproj" Id="1a066c63-64b3-45f8-92fe-664e1cce8077" />
+    <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
+    <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
+  </Folder>
+  <Folder Name="/common/interop/">
+    <Project Path="src/common/interop/interop-tests/Common.Interop.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/interop/PowerToys.Interop.vcxproj" Id="f055103b-f80b-4d0c-bf48-057c55620033" />
+  </Folder>
+  <Folder Name="/common/log/">
+    <Project Path="src/common/logger/logger.vcxproj" Id="d9b8fc84-322a-4f9f-bbb9-20915c47ddfd">
+      <BuildDependency Project="src/logging/logging.vcxproj" />
+    </Project>
+    <Project Path="src/logging/logging.vcxproj" Id="7e1e3f13-2bd6-3f75-a6a7-873a2b55c60f" />
+  </Folder>
+  <Folder Name="/common/notifications/">
+    <Project Path="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" Id="0b593a6c-4143-4337-860e-db5710fb87db" />
+    <Project Path="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" Id="031ac72e-fa28-4ab7-b690-6f7b9c28aa73">
+      <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
+    </Project>
+    <Project Path="src/common/notifications/notifications.vcxproj" Id="1d5be09d-78c0-4fd7-af00-ae7c1af7c525" />
+  </Folder>
+  <Folder Name="/common/Telemetry/">
+    <File Path="src/common/Telemetry/ProjectTelemetry.h" />
+    <File Path="src/common/Telemetry/TelemetryBase.cs" />
+    <File Path="src/common/Telemetry/TraceBase.h" />
+    <File Path="src/common/Telemetry/TraceLoggingDefines.h" />
+    <Project Path="src/common/Telemetry/EtwTrace/EtwTrace.vcxproj" Id="8f021b46-362b-485c-bfba-ccf83e820cbd" />
+  </Folder>
+  <Folder Name="/common/utils/">
+    <File Path="src/common/utils/appMutex.h" />
+    <File Path="src/common/utils/color.h" />
+    <File Path="src/common/utils/com_object_factory.h" />
+    <File Path="src/common/utils/elevation.h" />
+    <File Path="src/common/utils/EventLocker.h" />
+    <File Path="src/common/utils/EventWaiter.h" />
+    <File Path="src/common/utils/excluded_apps.h" />
+    <File Path="src/common/utils/exec.h" />
+    <File Path="src/common/utils/game_mode.h" />
+    <File Path="src/common/utils/gpo.h" />
+    <File Path="src/common/utils/HDropIterator.h" />
+    <File Path="src/common/utils/HttpClient.h" />
+    <File Path="src/common/utils/json.h" />
+    <File Path="src/common/utils/language_helper.h" />
+    <File Path="src/common/utils/logger_helper.h" />
+    <File Path="src/common/utils/modulesRegistry.h" />
+    <File Path="src/common/utils/MsiUtils.h" />
+    <File Path="src/common/utils/MsWindowsSettings.h" />
+    <File Path="src/common/utils/OnThreadExecutor.h" />
+    <File Path="src/common/utils/os-detect.h" />
+    <File Path="src/common/utils/package.h" />
+    <File Path="src/common/utils/ProcessWaiter.h" />
+    <File Path="src/common/utils/process_path.h" />
+    <File Path="src/common/utils/registry.h" />
+    <File Path="src/common/utils/resources.h" />
+    <File Path="src/common/utils/serialized.h" />
+    <File Path="src/common/utils/shell_ext_registration.h" />
+    <File Path="src/common/utils/string_utils.h" />
+    <File Path="src/common/utils/timeutil.h" />
+    <File Path="src/common/utils/UnhandledExceptionHandler.h" />
+    <File Path="src/common/utils/winapi_error.h" />
+    <File Path="src/common/utils/window.h" />
+  </Folder>
+  <Folder Name="/DSC/">
+    <Project Path="src/dsc/PowerToys.Settings.DSC.Schema.Generator/PowerToys.Settings.DSC.Schema.Generator.csproj">
+      <BuildDependency Project="src/settings-ui/Settings.UI/PowerToys.Settings.csproj" />
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/DSC/v3/">
+    <Project Path="src/dsc/v3/PowerToys.DSC.UnitTests/PowerToys.DSC.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/" />
+  <Folder Name="/modules/AdvancedPaste/">
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste/AdvancedPaste.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/AdvancedPaste/AdvancedPasteModuleInterface/AdvancedPasteModuleInterface.vcxproj" Id="fc373b24-3293-453c-aaf5-cf2909dcee6a" />
+  </Folder>
+  <Folder Name="/modules/AdvancedPaste/Tests/">
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.FuzzTests/AdvancedPaste.FuzzTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.UnitTests/AdvancedPaste.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/AlwaysOnTop/">
+    <Project Path="src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.vcxproj" Id="1dc3be92-ce89-43fb-8110-9c043a2fe7a2" />
+    <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />
+  </Folder>
+  <Folder Name="/modules/awake/">
+    <Project Path="src/modules/awake/Awake/Awake.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" Id="5e7360a8-d048-4ed3-8f09-0bfd64c5529a" />
+  </Folder>
+  <Folder Name="/modules/cmdNotFound/">
+    <Project Path="src/modules/cmdNotFound/CmdNotFoundModuleInterface/CmdNotFoundModuleInterface.vcxproj" Id="0014d652-901f-4456-8d65-06fc5f997fb0" />
+  </Folder>
+  <Folder Name="/modules/colorpicker/">
+    <Project Path="src/modules/colorPicker/ColorPicker/ColorPicker.vcxproj" Id="655c9af2-18d3-4da6-80e4-85504a7722ba">
+      <BuildDependency Project="src/common/logger/logger.vcxproj" />
+    </Project>
+    <Project Path="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/colorpicker/Tests/">
+    <Project Path="src/modules/colorPicker/ColorPickerUI.UnitTests/ColorPickerUI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/CommandPalette/">
+    <Project Path="src/modules/cmdpal/CmdPalKeyboardService/CmdPalKeyboardService.vcxproj" Id="5f63c743-f6ce-4dba-a200-2b3f8a14e8c2" />
+    <Project Path="src/modules/cmdpal/CmdPalModuleInterface/CmdPalModuleInterface.vcxproj" Id="0adeb797-c8c7-4ffa-acd5-2af6cad7ecd8" />
+  </Folder>
+  <Folder Name="/modules/CommandPalette/Built-in Extensions/">
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Microsoft.CmdPal.Ext.Apps.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Bookmark/Microsoft.CmdPal.Ext.Bookmarks.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Calc/Microsoft.CmdPal.Ext.Calc.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.ClipboardHistory/Microsoft.CmdPal.Ext.ClipboardHistory.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Indexer/Microsoft.CmdPal.Ext.Indexer.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Registry/Microsoft.CmdPal.Ext.Registry.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.RemoteDesktop/Microsoft.CmdPal.Ext.RemoteDesktop.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Shell/Microsoft.CmdPal.Ext.Shell.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.System/Microsoft.CmdPal.Ext.System.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Microsoft.CmdPal.Ext.TimeDate.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WebSearch/Microsoft.CmdPal.Ext.WebSearch.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsServices/Microsoft.CmdPal.Ext.WindowsServices.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsSettings/Microsoft.CmdPal.Ext.WindowsSettings.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowsTerminal/Microsoft.CmdPal.Ext.WindowsTerminal.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WindowWalker/Microsoft.CmdPal.Ext.WindowWalker.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.WinGet/Microsoft.CmdPal.Ext.WinGet.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/CommandPalette/Core/">
+    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.Common/Microsoft.CmdPal.Core.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.ViewModels/Microsoft.CmdPal.Core.ViewModels.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/CommandPalette/Extension SDK/">
+    <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.vcxproj" Id="305dd37e-c85d-4b08-aafe-7381fa890463" />
+  </Folder>
+  <Folder Name="/modules/CommandPalette/Sample Extensions/">
+    <Project Path="src/modules/cmdpal/ext/ProcessMonitorExtension/ProcessMonitorExtension.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/SamplePagesExtension/SamplePagesExtension.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/CommandPalette/Tests/">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Apps.UnitTests/Microsoft.CmdPal.Ext.Apps.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Bookmarks.UnitTests/Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Calc.UnitTests/Microsoft.CmdPal.Ext.Calc.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests/Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Registry.UnitTests/Microsoft.CmdPal.Ext.Registry.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests/Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Shell.UnitTests/Microsoft.CmdPal.Ext.Shell.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.System.UnitTests/Microsoft.CmdPal.Ext.System.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.TimeDate.UnitTests/Microsoft.CmdPal.Ext.TimeDate.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.UnitTestsBase/Microsoft.CmdPal.Ext.UnitTestBase.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.WebSearch.UnitTests/Microsoft.CmdPal.Ext.WebSearch.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.WindowWalker.UnitTests/Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/Microsoft.CmdPal.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/CommandPalette/UI/">
+    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Microsoft.CmdPal.UI.ViewModels.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI/Microsoft.CmdPal.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/Microsoft.Terminal.UI/Microsoft.Terminal.UI.vcxproj" Id="6515f03f-e56d-4db4-b23d-ac4fb80db36f" />
+  </Folder>
+  <Folder Name="/modules/CropAndLock/">
+    <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
+    <Project Path="src/modules/CropAndLock/CropAndLockModuleInterface/CropAndLockModuleInterface.vcxproj" Id="3157fa75-86cf-4ee2-8f62-c43f776493c6" />
+  </Folder>
+  <Folder Name="/modules/EnvironmentVariables/">
+    <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariables.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/EnvironmentVariables/EnvironmentVariablesModuleInterface/EnvironmentVariablesModuleInterface.vcxproj" Id="b9420661-b0e4-4241-abd4-4a27a1f64250" />
+    <Project Path="src/modules/EnvironmentVariables/EnvironmentVariablesUILib/EnvironmentVariablesUILib.csproj" />
+  </Folder>
+  <Folder Name="/modules/fancyzones/">
+    <Project Path="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZones/FancyZones.vcxproj" Id="ff1d7936-842a-4bbb-8bea-e9fe796de700" />
+    <Project Path="src/modules/fancyzones/FancyZonesEditorCommon/FancyZonesEditorCommon.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" Id="f9c68edf-ac74-4b77-9af1-005d9c9f6a99" />
+    <Project Path="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" Id="48804216-2a0e-4168-a6d8-9cd068d14227" />
+  </Folder>
+  <Folder Name="/modules/fancyzones/Tests/">
+    <Project Path="src/modules/fancyzones/FancyZones.FuzzTests/FancyZones.FuzzTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZones.UITests/FancyZones.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests/FancyZonesEditor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZonesEditor.UnitTests/FancyZonesEditor.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/fancyzones/FancyZonesTests/UnitTests/UnitTests.vcxproj" Id="9c6a7905-72d4-4bf5-b256-abfdaef68ae9">
+      <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/FileLocksmith/">
+    <Project Path="src/modules/FileLocksmith/FileLocksmithContextMenu/FileLocksmithContextMenu.vcxproj" Id="799a50d8-de89-4ed1-8ff8-ad5a9ed8c0ca" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithExt/FileLocksmithExt.vcxproj" Id="57175ec7-92a5-4c1e-8244-e3fbca2a81de" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithLib/FileLocksmithLib.vcxproj" Id="9d52fd25-ef90-4f9a-a015-91efc5daf54f" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithLibInterop/FileLocksmithLibInterop.vcxproj" Id="c604b37e-9d0e-4484-8778-e8b31b0e1b3a" />
+    <Project Path="src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/Hosts/">
+    <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Hosts/HostsModuleInterface/HostsModuleInterface.vcxproj" Id="b41b888c-7db8-4747-b262-4062e05a230d" />
+    <Project Path="src/modules/Hosts/HostsUILib/HostsUILib.csproj" />
+  </Folder>
+  <Folder Name="/modules/Hosts/Tests/">
+    <Project Path="src/modules/Hosts/Hosts.FuzzTests/HostsEditor.FuzzTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Hosts/Hosts.Tests/HostsEditor.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Hosts/Hosts.UITests/HostsEditor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/imageresizer/">
+    <Project Path="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" Id="0b43679e-edfa-4da0-ad30-f4628b308b1b" />
+    <Project Path="src/modules/imageresizer/ImageResizerContextMenu/ImageResizerContextMenu.vcxproj" Id="93b72a06-c8bd-484f-a6f7-c9f280b150bf" />
+    <Project Path="src/modules/imageresizer/ImageResizerLib/ImageResizerLib.vcxproj" Id="18b3db45-4ffe-4d01-97d6-5223feee1853" />
+    <Project Path="src/modules/imageresizer/ui/ImageResizerUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/imageresizer/Tests/">
+    <Project Path="src/modules/imageresizer/tests/ImageResizer.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/interface/">
+    <File Path="src/modules/interface/powertoy_module_interface.h" />
+  </Folder>
+  <Folder Name="/modules/keyboardmanager/">
+    <Project Path="src/modules/keyboardmanager/common/KeyboardManagerCommon.vcxproj" Id="8affa899-0b73-49ec-8c50-0fadda57b2fc" />
+    <Project Path="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" Id="89f34af7-1c34-4a72-aa6e-534bcf972bd9" />
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.vcxproj" Id="8df78b53-200e-451f-9328-01eb907193ae" />
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorLibrary/KeyboardManagerEditorLibrary.vcxproj" Id="23d2070d-e4ad-4add-85a7-083d9c76ad49" />
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorLibraryWrapper/KeyboardManagerEditorLibraryWrapper.vcxproj" Id="4382a954-179a-4078-92af-715187dfff50" />
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorUI/KeyboardManagerEditorUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEngine/KeyboardManagerEngine.vcxproj" Id="ba661f5b-1d5a-4ffc-9bf1-fc39df280bdd" />
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManagerEngineLibrary.vcxproj" Id="e496b7fc-1e99-4bab-849b-0e8367040b02" />
+  </Folder>
+  <Folder Name="/modules/keyboardmanager/Tests/">
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
+    <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
+  </Folder>
+  <Folder Name="/modules/launcher/">
+    <Project Path="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" Id="e364f67b-bb12-4e91-b639-355866ebcd8b">
+      <BuildDependency Project="src/modules/launcher/PowerLauncher/PowerLauncher.csproj" />
+    </Project>
+    <Project Path="src/modules/launcher/PowerLauncher.Telemetry/PowerLauncher.Telemetry.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/PowerLauncher/PowerLauncher.csproj">
+      <BuildDependency Project="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/Community.PowerToys.Run.Plugin.UnitConverter.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/Community.PowerToys.Run.Plugin.ValueGenerator.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.VSCodeWorkspaces/Community.PowerToys.Run.Plugin.VSCodeWorkspaces.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.WebSearch/Community.PowerToys.Run.Plugin.WebSearch.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.Plugin.Folder/Microsoft.Plugin.Folder.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/Microsoft.Plugin.Indexer.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.Plugin.Program/Microsoft.Plugin.Program.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.Plugin.Shell/Microsoft.Plugin.Shell.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.Plugin.Uri/Microsoft.Plugin.Uri.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Microsoft.Plugin.WindowWalker.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Microsoft.PowerToys.Run.Plugin.Calculator.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/Microsoft.PowerToys.Run.Plugin.OneNote.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.PowerToys/Microsoft.PowerToys.Run.Plugin.PowerToys.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Registry/Microsoft.PowerToys.Run.Plugin.Registry.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Service/Microsoft.PowerToys.Run.Plugin.Service.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Microsoft.PowerToys.Run.Plugin.System.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Microsoft.PowerToys.Run.Plugin.TimeDate.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.WindowsSettings/Microsoft.PowerToys.Run.Plugin.WindowsSettings.csproj" />
+      <BuildDependency Project="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.WindowsTerminal/Microsoft.PowerToys.Run.Plugin.WindowsTerminal.csproj" />
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Wox.Infrastructure/Wox.Infrastructure.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Wox.Plugin/Wox.Plugin.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/launcher/Plugins/">
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/Community.PowerToys.Run.Plugin.UnitConverter.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator/Community.PowerToys.Run.Plugin.ValueGenerator.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.VSCodeWorkspaces/Community.PowerToys.Run.Plugin.VSCodeWorkspaces.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.WebSearch/Community.PowerToys.Run.Plugin.WebSearch.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Folder/Microsoft.Plugin.Folder.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Indexer/Microsoft.Plugin.Indexer.csproj">
+      <BuildDependency Project="src/modules/launcher/Wox.Plugin/Wox.Plugin.csproj" />
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Program/Microsoft.Plugin.Program.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Shell/Microsoft.Plugin.Shell.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Uri/Microsoft.Plugin.Uri.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker/Microsoft.Plugin.WindowWalker.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/Microsoft.PowerToys.Run.Plugin.Calculator.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.History/Microsoft.PowerToys.Run.Plugin.History.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.OneNote/Microsoft.PowerToys.Run.Plugin.OneNote.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.PowerToys/Microsoft.PowerToys.Run.Plugin.PowerToys.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Registry/Microsoft.PowerToys.Run.Plugin.Registry.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Service/Microsoft.PowerToys.Run.Plugin.Service.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System/Microsoft.PowerToys.Run.Plugin.System.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Microsoft.PowerToys.Run.Plugin.TimeDate.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.WindowsSettings/Microsoft.PowerToys.Run.Plugin.WindowsSettings.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.WindowsTerminal/Microsoft.PowerToys.Run.Plugin.WindowsTerminal.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/launcher/Tests/">
+    <File Path="src/modules/launcher/Plugins/Microsoft.Plugin.Folder.UnitTests/Microsoft.Plugin.Folder.UnitTests.csproj" />
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter.UnitTest/Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests/Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Program.UnitTests/Microsoft.Plugin.Program.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Uri.UnitTests/Microsoft.Plugin.Uri.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.WindowWalker.UnitTests/Microsoft.Plugin.WindowWalker.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest/Microsoft.PowerToys.Run.Plugin.Calculator.UnitTest.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Registry.UnitTest/Microsoft.PowerToys.Run.Plugin.Registry.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.System.UnitTests/Microsoft.PowerToys.Run.Plugin.System.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests/Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.WindowsTerminal.UnitTests/Microsoft.Plugin.WindowsTerminal.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Wox.Test/Wox.Test.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/LightSwitch/">
+    <Project Path="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" Id="38177d56-6ad1-4adf-88c9-2843a7932166" />
+    <Project Path="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" Id="08e71c67-6a7e-4ca1-b04e-2fb336410bac" />
+  </Folder>
+  <Folder Name="/modules/LightSwitch/Tests/">
+    <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests/LightSwitch.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/MeasureTool/">
+    <Project Path="src/modules/MeasureTool/MeasureToolCore/PowerToys.MeasureToolCore.vcxproj" Id="54a93af7-60c7-4f6c-99d2-fbb1f75f853a">
+      <BuildDependency Project="src/common/Display/Display.vcxproj" />
+      <BuildDependency Project="src/common/SettingsAPI/SettingsAPI.vcxproj" />
+      <BuildDependency Project="src/common/version/version.vcxproj" />
+    </Project>
+    <Project Path="src/modules/MeasureTool/MeasureToolModuleInterface/MeasureToolModuleInterface.vcxproj" Id="92c39820-9f84-4529-bc7d-22aae514d63b" />
+    <Project Path="src/modules/MeasureTool/MeasureToolUI/MeasureToolUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/MeasureTool/Tests/">
+    <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests/ScreenRuler.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/MouseUtils/">
+    <Project Path="src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj" Id="48a1db8c-5df8-4fb3-9e14-2b67f3f2d8b5" />
+    <Project Path="src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj" Id="e94fd11c-0591-456f-899f-efc0ca548336" />
+    <Project Path="src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.vcxproj" Id="782a61be-9d85-4081-b35c-1ccc9dcc1e88" />
+    <Project Path="src/modules/MouseUtils/MouseJump.Common/MouseJump.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
+    <Project Path="src/modules/MouseUtils/MouseJumpUI/MouseJumpUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
+  </Folder>
+  <Folder Name="/modules/MouseUtils/Tests/">
+    <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/MouseWithoutBorders/">
+    <Project Path="src/modules/MouseWithoutBorders/App/Helper/MouseWithoutBordersHelper.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseWithoutBorders/App/MouseWithoutBorders.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseWithoutBorders/App/Service/MouseWithoutBordersService.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseWithoutBorders/ModuleInterface/MouseWithoutBordersModuleInterface.vcxproj" Id="2833c9c6-ab32-4048-a5c7-a70898337b57" />
+  </Folder>
+  <Folder Name="/modules/MouseWithoutBorders/Tests/">
+    <Project Path="src/modules/MouseWithoutBorders/MouseWithoutBorders.UnitTests/MouseWithoutBorders.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/New+/">
+    <Project Path="src/modules/NewPlus/NewShellExtensionContextMenu.win10/NewPlus.ShellExtension.win10.vcxproj" Id="0db0f63a-d2f8-4da3-a650-2d0b8724218e" />
+    <Project Path="src/modules/NewPlus/NewShellExtensionContextMenu/NewShellExtensionContextMenu.vcxproj" Id="8acb33d9-c95b-47d4-8363-9731ee0930a0" />
+  </Folder>
+  <Folder Name="/modules/Peek/">
+    <Project Path="src/modules/peek/Peek.Common/Peek.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/peek/Peek.FilePreviewer/Peek.FilePreviewer.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/peek/Peek.UI/Peek.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+    <Project Path="src/modules/peek/Peek.UITests/Peek.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/peek/peek/peek.vcxproj" Id="a1425b53-3d61-4679-8623-e64a0d3d0a48" />
+  </Folder>
+  <Folder Name="/modules/PowerAccent/">
+    <Project Path="src/modules/poweraccent/PowerAccent.Core/PowerAccent.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/poweraccent/PowerAccent.UI/PowerAccent.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/poweraccent/PowerAccentKeyboardService/PowerAccentKeyboardService.vcxproj" Id="c97d9a5d-206c-454e-997e-009e227d7f02" />
+    <Project Path="src/modules/poweraccent/PowerAccentModuleInterface/PowerAccentModuleInterface.vcxproj" Id="34a354c5-23c7-4343-916c-c52daf4fc39d" />
+  </Folder>
+  <Folder Name="/modules/PowerOCR/">
+    <Project Path="src/modules/PowerOCR/PowerOCR/PowerOCR.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/PowerOCR/PowerOCRModuleInterface/PowerOCRModuleInterface.vcxproj" Id="6ab6a2d6-f859-4a82-9184-0bd29c9f07d1" />
+  </Folder>
+  <Folder Name="/modules/PowerOCR/Tests/">
+    <Project Path="src/modules/PowerOCR/PowerOCR-UITests/PowerOCR.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/powerrename/">
+    <Project Path="src/modules/powerrename/dll/PowerRenameExt.vcxproj" Id="b25ac7a5-fb9f-4789-b392-d5c85e948670">
+      <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
+    </Project>
+    <Project Path="src/modules/powerrename/lib/PowerRenameLib.vcxproj" Id="51920f1f-c28c-4adf-8660-4238766796c2" />
+    <Project Path="src/modules/powerrename/PowerRenameContextMenu/PowerRenameContextMenu.vcxproj" Id="1dbbb112-4bb1-444b-8ebb-e66555c76ba6" />
+    <Project Path="src/modules/powerrename/PowerRenameUILib/PowerRenameUI.vcxproj" Id="27718999-c175-450a-861c-89f911e16a88" />
+    <Project Path="src/modules/powerrename/testapp/PowerRenameTest.vcxproj" Id="a3935cf4-46c5-4a88-84d3-6b12e16e6ba2" />
+  </Folder>
+  <Folder Name="/modules/powerrename/Tests/">
+    <Project Path="src/modules/powerrename/PowerRename.FuzzingTest/PowerRename.FuzzingTest.vcxproj" Id="2694e2fb-dcd5-4bff-a418-b6c3c7ce3b8e">
+      <Build Solution="*|ARM64" Project="false" />
+    </Project>
+    <Project Path="src/modules/powerrename/PowerRenameUITest/PowerRename.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/powerrename/unittests/PowerRenameLibUnitTests.vcxproj" Id="2151f984-e006-4a9f-92ef-c6dde3dc8413">
+      <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
+      <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/previewpane/">
+    <Project Path="src/modules/previewpane/BgcodePreviewHandler/BgcodePreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/BgcodePreviewHandlerCpp/BgcodePreviewHandlerCpp.vcxproj" Id="f6088a11-1c9e-4420-aa90-cf7e78dd7f1c" />
+    <Project Path="src/modules/previewpane/BgcodeThumbnailProvider/BgcodeThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/BgcodeThumbnailProviderCpp/BgcodeThumbnailProviderCpp.vcxproj" Id="47b0678c-806b-4fe1-9f50-46ba88989532" />
+    <Project Path="src/modules/previewpane/Common/PreviewHandlerCommon.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/GcodePreviewHandler/GcodePreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/GcodePreviewHandlerCpp/GcodePreviewHandlerCpp.vcxproj" Id="5a5dd09d-723a-44d3-8f2b-293584c3d731" />
+    <Project Path="src/modules/previewpane/GcodeThumbnailProvider/GcodeThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/GcodeThumbnailProviderCpp/GcodeThumbnailProviderCpp.vcxproj" Id="56cc2f10-6e41-453d-be16-c593a5e58482" />
+    <Project Path="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/MarkdownPreviewHandlerCpp/MarkdownPreviewHandlerCpp.vcxproj" Id="ed9a1ac6-aeb0-4569-a6e9-e1696182b545" />
+    <Project Path="src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/MonacoPreviewHandlerCpp/MonacoPreviewHandlerCpp.vcxproj" Id="b3e869c4-8210-4ebd-a621-ff4c4afcbfa9" />
+    <Project Path="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/PdfPreviewHandlerCpp/PdfPreviewHandlerCpp.vcxproj" Id="54f7c616-fd41-4e62-bff9-015686914f4d" />
+    <Project Path="src/modules/previewpane/PdfThumbnailProvider/PdfThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/PdfThumbnailProviderCpp/PdfThumbnailProviderCpp.vcxproj" Id="ca5518ed-0458-4b09-8f53-4122b9888655" />
+    <Project Path="src/modules/previewpane/powerpreview/powerpreview.vcxproj" Id="217df501-135c-4e38-bfc8-99d4821032ea">
+      <BuildDependency Project="src/common/version/version.vcxproj" />
+    </Project>
+    <Project Path="src/modules/previewpane/QoiPreviewHandler/QoiPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/QoiPreviewHandlerCpp/QoiPreviewHandlerCpp.vcxproj" Id="3baf9c81-a194-4925-a035-5e24a5d1e542" />
+    <Project Path="src/modules/previewpane/QoiThumbnailProvider/QoiThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/QoiThumbnailProviderCpp/QoiThumbnailProviderCpp.vcxproj" Id="ccb5e44f-84d9-4203-83c6-1c9ec9302bc7" />
+    <Project Path="src/modules/previewpane/StlThumbnailProvider/StlThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/StlThumbnailProviderCpp/StlThumbnailProviderCpp.vcxproj" Id="d6dcc3ae-18c0-488a-b978-baa9e3cff09d" />
+    <Project Path="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/SvgPreviewHandlerCpp/SvgPreviewHandlerCpp.vcxproj" Id="143f13e3-d2e3-4d83-b035-356612d99956" />
+    <Project Path="src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProviderCpp.vcxproj" Id="2bbc9e33-21ec-401c-84da-bb6590a9b2aa" />
+  </Folder>
+  <Folder Name="/modules/previewpane/Tests/">
+    <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-BgcodeThumbnailProvider/Preview.BgcodeThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-GcodePreviewHandler/Preview.GcodePreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-GcodeThumbnailProvider/Preview.GcodeThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-MarkdownPreviewHandler/Preview.MarkdownPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-PdfPreviewHandler/Preview.PdfPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-PdfThumbnailProvider/Preview.PdfThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-PreviewHandlerCommon/Preview.PreviewHandlerCommon.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-QoiPreviewHandler/Preview.QoiPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-QoiThumbnailProvider/Preview.QoiThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-StlThumbnailProvider/Preview.StlThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-SvgPreviewHandler/Preview.SvgPreviewHandler.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/UnitTests-SvgThumbnailProvider/Preview.SvgThumbnailProvider.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/RegistryPreview/">
+    <Project Path="src/modules/registrypreview/RegistryPreview/RegistryPreview.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/registrypreview/RegistryPreviewExt/RegistryPreviewExt.vcxproj" Id="697c6af9-0a48-49a9-866c-67da12384015" />
+    <Project Path="src/modules/registrypreview/RegistryPreviewUILib/RegistryPreviewUILib.csproj" />
+  </Folder>
+  <Folder Name="/modules/RegistryPreview/Test/">
+    <Project Path="src/modules/registrypreview/RegistryPreview.FuzzTests/RegistryPreview.FuzzTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/modules/shortcutguide/">
+    <Project Path="src/modules/ShortcutGuide/ShortcutGuide/ShortcutGuide.vcxproj" Id="2edb3eb4-fa92-4bff-b2d8-566584837231" />
+    <Project Path="src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj" Id="2d604c07-51fc-46bb-9eb7-75aecc7f5e81" />
+  </Folder>
+  <Folder Name="/modules/Workspaces/">
+    <Project Path="src/modules/Workspaces/WorkspacesCsharpLibrary/WorkspacesCsharpLibrary.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesEditor/WorkspacesEditor.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesLauncher/WorkspacesLauncher.vcxproj" Id="2cac093e-5fcf-4102-9c2c-ac7dd5d9eb96" />
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI/WorkspacesLauncherUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesLib/WorkspacesLib.vcxproj" Id="b31fcc55-b5a4-4ea7-b414-2dceae6af332" />
+    <Project Path="src/modules/Workspaces/WorkspacesModuleInterface/WorkspacesModuleInterface.vcxproj" Id="45285df2-9742-4eca-9ac9-58951fc26489" />
+    <Project Path="src/modules/Workspaces/WorkspacesSnapshotTool/WorkspacesSnapshotTool.vcxproj" Id="3d63307b-9d27-44fd-b033-b26f39245b85" />
+    <Project Path="src/modules/Workspaces/WorkspacesWindowArranger/WorkspacesWindowArranger.vcxproj" Id="37d07516-4185-43a4-924f-3c7a5d95ecf6" />
+  </Folder>
+  <Folder Name="/modules/Workspaces/Tests/">
+    <Project Path="src/modules/Workspaces/WorkspacesEditorUITest/Workspaces.Editor.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesLib.UnitTests/WorkspacesLibUnitTests.vcxproj" Id="a85d4d9f-9a39-4b5d-8b5a-9f2d5c9a8b4c" />
+  </Folder>
+  <Folder Name="/modules/Workspaces/WindowProperties/">
+    <File Path="src/modules/Workspaces/WindowProperties/WorkspacesWindowPropertyUtils.h" />
+  </Folder>
+  <Folder Name="/modules/Workspaces/workspaces-common/">
+    <File Path="src/modules/Workspaces/workspaces-common/GuidUtils.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/InvokePoint.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/MonitorEnumerator.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/MonitorUtils.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/VirtualDesktop.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/WindowEnumerator.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/WindowFilter.h" />
+    <File Path="src/modules/Workspaces/workspaces-common/WindowUtils.h" />
+  </Folder>
+  <Folder Name="/modules/ZoomIt/">
+    <Project Path="src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj" Id="0a84f764-3a88-44cd-aa96-41bdbd48627b" />
+    <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
+    <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
+  </Folder>
+  <Folder Name="/settings-ui/">
+    <Project Path="src/settings-ui/Settings.UI.Library/Settings.UI.Library.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/settings-ui/Settings.UI.XamlIndexBuilder/Settings.UI.XamlIndexBuilder.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/settings-ui/Settings.UI/PowerToys.Settings.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/settings-ui/Tests/">
+    <Project Path="src/settings-ui/Settings.UI.UnitTests/Settings.UI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".vsconfig" />
+    <File Path="Cpp.Build.props" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="src/.editorconfig" />
+    <File Path="src/Common.Dotnet.AotCompatibility.props" />
+    <File Path="src/Common.Dotnet.CsWinRT.props" />
+    <File Path="src/Common.SelfContained.props" />
+    <File Path="src/Monaco.props" />
+    <File Path="src/Solution.props" />
+    <File Path="src/Version.props" />
+  </Folder>
+  <Project Path="src/ActionRunner/ActionRunner.vcxproj" Id="d29ddd63-e2cf-4657-9fd5-2aede4257e5d">
+    <BuildDependency Project="src/common/updating/updating.vcxproj" />
+  </Project>
+  <Project Path="src/PackageIdentity/PackageIdentity.vcxproj" Id="e2a5a82e-1e5b-4c8d-9a4f-2b1a8f9e5c3d" />
+  <Project Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
+    <BuildDependency Project="src/ActionRunner/ActionRunner.vcxproj" />
+    <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
+    <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />
+    <BuildDependency Project="src/common/updating/updating.vcxproj" />
+    <BuildDependency Project="src/modules/awake/Awake/Awake.csproj" />
+    <BuildDependency Project="src/modules/awake/AwakeModuleInterface/AwakeModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/colorPicker/ColorPicker/ColorPicker.vcxproj" />
+    <BuildDependency Project="src/modules/colorPicker/ColorPickerUI/ColorPickerUI.csproj" />
+    <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
+    <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
+    <BuildDependency Project="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
+    <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
+    <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
+    <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
+    <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
+    <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
+    <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
+    <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />
+    <BuildDependency Project="src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj" />
+    <BuildDependency Project="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj" />
+    <BuildDependency Project="src/modules/previewpane/powerpreview/powerpreview.vcxproj" />
+    <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
+    <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
+  </Project>
+  <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
+  <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
+</Solution>
