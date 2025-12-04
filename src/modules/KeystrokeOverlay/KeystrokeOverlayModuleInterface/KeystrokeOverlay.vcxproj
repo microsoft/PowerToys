@@ -7,10 +7,14 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>KeystrokeOverlay</RootNamespace>
     <ProjectName>KeystrokeOverlayModuleInterface</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -22,10 +26,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetName>PowerToys.$(ProjectName)</TargetName>
+    <TargetName>PowerToys.KeystrokeOverlayModuleInterface</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -48,6 +52,9 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\KeystrokeOverlayXAML\Assets\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <!-- Link dependencies -->

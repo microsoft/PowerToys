@@ -151,6 +151,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="Assets\Settings\Modules\KeystrokeOverlay.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="Assets\Settings\icon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

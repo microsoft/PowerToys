@@ -11,6 +11,7 @@
 #include <common/utils/logger_helper.h>
 
 #include "trace.h"
+#include <iostream>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -33,6 +34,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
 
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"Keystroke Overlay";
+const static wchar_t* MODULE_KEY = L"KeystrokeOverlay";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
@@ -111,6 +113,10 @@ private:
             size_t pos = folder.find_last_of(L"\\/");
             if (pos != std::wstring::npos) folder.resize(pos + 1);
 
+            std::wstring errrrrrr = L"Launching KeystrokeServer from folder: " + folder + L"\n";
+            OutputDebugStringW(errrrrrr.c_str()); // visible in Visual Studio Output / DebugView
+            Logger::trace(errrrrrr);
+
             std::wstring serverPath = folder + L"KeystrokeServer.exe"; // ensure exe is named exactly like this
             std::wstring serverCmd = serverPath + L" " + std::to_wstring(powertoys_pid);
 
@@ -163,7 +169,7 @@ public:
     {
         init_settings();
         app_name = MODULE_NAME;
-        app_key = MODULE_NAME;
+        app_key = MODULE_KEY;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "KeystrokeOverlay");
         Logger::info("Keystroke Overlay ModuleInterface object is constructing");
     };
@@ -182,7 +188,7 @@ public:
 
     virtual const wchar_t* get_key() override
     {
-        return app_key.c_str();
+        return MODULE_KEY;
     }
 
     // Return array of the names of all events that this powertoy listens for, with
