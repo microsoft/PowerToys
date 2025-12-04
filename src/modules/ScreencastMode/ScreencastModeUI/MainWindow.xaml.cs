@@ -66,16 +66,12 @@ namespace ScreencastModeUI
             SetupKeyboardHook();
             ApplyColorSettings();
 
-            // Start hidden
             KeystrokePanel.Visibility = Visibility.Collapsed;
 
-            // Subscribe to settings change notifications to reflect live changes
             SubscribeToSettingsChanges();
 
-            // Configure window as a small overlay using WinUIEx
             ConfigureOverlayWindow();
 
-            // Set initial position based on display position setting
             UpdateWindowPosition();
         }
 
