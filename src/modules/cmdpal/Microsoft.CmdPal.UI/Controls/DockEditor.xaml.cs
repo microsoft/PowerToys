@@ -18,7 +18,6 @@ public sealed partial class DockEditor : UserControl
     private DockBandSettingsViewModel? _draggedItem;
     private ObservableCollection<DockBandSettingsViewModel>? _sourceCollection;
     private DockEditorPinArea _targetArea;
-    private DockBandSettingsViewModel? _currentContextItem;
 
     public Orientation Orientation
     {
@@ -206,31 +205,19 @@ public sealed partial class DockEditor : UserControl
 
     private void UnpinButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_currentContextItem == null)
+        if (sender is Button btn && btn.DataContext is DockBandSettingsViewModel contextItem)
         {
-            return;
+            // Remove from all UI collections
+            StartItems.Remove(contextItem);
+            CenterItems.Remove(contextItem);
+            EndItems.Remove(contextItem);
+
+            // Refresh available items
+            RefreshAvailableItems();
+
+            // Close the flyout
+            CloseFlyoutFromSender(sender);
         }
-
-        // Remove from all UI collections
-        StartItems.Remove(_currentContextItem);
-        CenterItems.Remove(_currentContextItem);
-        EndItems.Remove(_currentContextItem);
-
-        // Set pin side to None
-        _currentContextItem.PinSideIndex = 0;
-
-        // Refresh available items
-        RefreshAvailableItems();
-
-        _currentContextItem = null;
-
-        // Close the flyout
-        CloseFlyoutFromSender(sender);
-    }
-
-    private void DockItemOptionsFlyout_Closed(object sender, object e)
-    {
-        _currentContextItem = null;
     }
 
     private void ListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)

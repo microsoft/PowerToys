@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
@@ -82,6 +83,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
     {
         get => (int)ShowLabels;
         set => ShowLabels = (ShowLabelsOption)value;
+    }
+
+    [RelayCommand]
+    private void Unpin()
+    {
+        PinSideIndex = 0;
     }
 
     private DockPinSide PinSide

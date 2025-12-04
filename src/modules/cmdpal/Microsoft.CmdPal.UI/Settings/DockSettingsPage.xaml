@@ -112,7 +112,7 @@
                     <!--  Bands Section  -->
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <Grid BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                        <cpControls:DockEditor Height="148" DockItems="{x:Bind AllDockBandItems, Mode=OneWay}" />
+                        <cpControls:DockEditor Height="56" DockItems="{x:Bind AllDockBandItems, Mode=OneWay}" />
                     </Grid>
 
                     <!--<ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">

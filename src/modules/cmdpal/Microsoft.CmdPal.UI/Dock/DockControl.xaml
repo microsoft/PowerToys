@@ -41,14 +41,12 @@
                     Style="{StaticResource TaskBarButtonStyle}"
                     Tapped="BandItem_Tapped"
                     ToolTipService.ToolTip="{x:Bind Tooltip, Mode=OneWay}">
-
                     <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" Background="Transparent">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
                         <StackPanel
                             Grid.Column="0"
                             VerticalAlignment="Center"
