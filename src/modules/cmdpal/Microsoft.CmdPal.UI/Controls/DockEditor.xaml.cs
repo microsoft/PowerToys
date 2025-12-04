@@ -20,6 +20,19 @@ public sealed partial class DockEditor : UserControl
     private DockEditorPinArea _targetArea;
     private DockBandSettingsViewModel? _currentContextItem;
 
+    public Orientation Orientation
+    {
+        get => (Orientation)GetValue(OrientationProperty);
+        set => SetValue(OrientationProperty, value);
+    }
+
+    public static readonly DependencyProperty OrientationProperty =
+        DependencyProperty.Register(
+            nameof(Orientation),
+            typeof(Orientation),
+            typeof(DockEditor),
+            new PropertyMetadata(Orientation.Horizontal, OnOrientationChanged));
+
     /// <summary>
     /// Gets or sets the collection of all dock band items to display and manage.
     /// </summary>
@@ -69,6 +82,21 @@ public sealed partial class DockEditor : UserControl
         }
     }
 
+    private static void OnOrientationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockEditor editor)
+        {
+            if (editor.Orientation == Orientation.Horizontal)
+            {
+                VisualStateManager.GoToState(editor, "HorizontalState", true);
+            }
+            else
+            {
+                VisualStateManager.GoToState(editor, "VerticalState", true);
+            }
+        }
+    }
+
     private void LoadItems()
     {
         StartItems.Clear();
@@ -82,7 +110,7 @@ public sealed partial class DockEditor : UserControl
 
         foreach (var item in DockItems)
         {
-            // Use PinSideIndex: 0 = None, 1 = Start, 2 = End
+            // PinSideIndex: 0 = None, 1 = Start, 2 = End
             switch (item.PinSideIndex)
             {
                 case 1: // Start
@@ -154,7 +182,6 @@ public sealed partial class DockEditor : UserControl
         selectedItem.PinSideIndex = _targetArea switch
         {
             DockEditorPinArea.Start => 1,
-            DockEditorPinArea.Center => 1, // Center maps to Start
             DockEditorPinArea.End => 2,
             _ => 0,
         };
@@ -175,42 +202,6 @@ public sealed partial class DockEditor : UserControl
 
         // Close the flyout
         CloseFlyoutFromSender(sender);
-    }
-
-    private void DockItem_Click(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is not DockBandSettingsViewModel clickedItem)
-        {
-            return;
-        }
-
-        _currentContextItem = clickedItem;
-
-        // Update the flyout title
-        OptionsFlyoutTitle.Text = clickedItem.Title;
-
-        // Set the combo box to the current show labels setting
-        ShowLabelsComboBox.SelectedIndex = clickedItem.ShowLabelsIndex;
-
-        // Show the flyout attached to the clicked item
-        if (sender is ListView listView)
-        {
-            var container = listView.ContainerFromItem(clickedItem) as ListViewItem;
-            if (container != null && Resources.TryGetValue("DockItemOptionsFlyout", out var flyoutResource) && flyoutResource is Flyout flyout)
-            {
-                flyout.ShowAt(container);
-            }
-        }
-    }
-
-    private void ShowLabelsComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_currentContextItem == null || sender is not ComboBox comboBox)
-        {
-            return;
-        }
-
-        _currentContextItem.ShowLabelsIndex = comboBox.SelectedIndex;
     }
 
     private void UnpinButton_Click(object sender, RoutedEventArgs e)
@@ -323,7 +314,6 @@ public sealed partial class DockEditor : UserControl
             _draggedItem.PinSideIndex = targetArea switch
             {
                 DockEditorPinArea.Start => 1,
-                DockEditorPinArea.Center => 1, // Center maps to Start
                 DockEditorPinArea.End => 2,
                 _ => 0,
             };
@@ -394,6 +384,11 @@ public sealed partial class DockEditor : UserControl
 
             element = VisualTreeHelper.GetParent(element);
         }
+    }
+
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        AvailableItemsListView.ItemsSource = AvailableItems;
     }
 }
 

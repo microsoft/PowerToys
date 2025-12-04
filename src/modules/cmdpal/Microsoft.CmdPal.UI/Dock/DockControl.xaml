@@ -163,7 +163,6 @@
                     ItemTemplate="{StaticResource DockBandTemplate}"
                     ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                     Layout="{StaticResource ItemsOrientation}">
-
                     <ItemsRepeater.Transitions>
                         <TransitionCollection />
                     </ItemsRepeater.Transitions>
@@ -180,6 +179,10 @@
                     <TransitionCollection />
                 </ItemsRepeater.Transitions>
             </ItemsRepeater>
+            <cpcontrols:DockEditor
+                Grid.RowSpan="2"
+                Grid.ColumnSpan="2"
+                Visibility="Collapsed" />
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="DockOrientation">

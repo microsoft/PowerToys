@@ -8,6 +8,7 @@
     xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <Grid>
@@ -71,68 +72,71 @@
                 </Grid>
             </Flyout>
 
-            <!--  Flyout for editing a pinned dock item  -->
-            <Flyout
-                x:Key="DockItemOptionsFlyout"
-                Closed="DockItemOptionsFlyout_Closed"
-                Placement="Bottom">
-                <Grid Width="280">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock
-                        x:Name="OptionsFlyoutTitle"
-                        Margin="0,0,0,16"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Text="Dock Item Options" />
-
-                    <StackPanel Grid.Row="1" Margin="0,0,0,16">
-                        <TextBlock
-                            Margin="0,0,0,8"
-                            FontSize="12"
-                            Text="Show Labels" />
-                        <ComboBox
-                            x:Name="ShowLabelsComboBox"
-                            HorizontalAlignment="Stretch"
-                            SelectionChanged="ShowLabelsComboBox_SelectionChanged">
-                            <ComboBoxItem Content="Default" Tag="0" />
-                            <ComboBoxItem Content="Show Labels" Tag="1" />
-                            <ComboBoxItem Content="Hide Labels" Tag="2" />
-                        </ComboBox>
-                    </StackPanel>
-
-                    <Border
-                        Grid.Row="2"
-                        Height="1"
-                        Margin="0,0,0,16"
-                        Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
-                    <Button
-                        Grid.Row="3"
-                        HorizontalAlignment="Stretch"
-                        Click="UnpinButton_Click"
-                        Content="Unpin from dock" />
-                </Grid>
-            </Flyout>
-
             <!--  Template for dock band items in the editor  -->
             <DataTemplate x:Key="DockBandItemTemplate" x:DataType="dockVm:DockBandSettingsViewModel">
                 <Grid
                     Padding="8,4"
                     Background="Transparent"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
                     ToolTipService.ToolTip="{x:Bind Title}">
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Orientation="Vertical"
-                        Spacing="4">
+                    <Button Style="{StaticResource SubtleButtonStyle}">
+                        <Button.Flyout>
+                            <Flyout Placement="Bottom">
+                                <Grid Width="280">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <StackPanel
+                                        Margin="0,0,0,16"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                        <local:IconBox
+                                            x:Name="OptionsFlyoutIcons"
+                                            Width="24"
+                                            Height="24"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                        <TextBlock
+                                            x:Name="OptionsFlyoutTitle"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind Title, Mode=OneWay}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Margin="0,0,0,16">
+                                        <TextBlock
+                                            Margin="0,0,0,8"
+                                            FontSize="12"
+                                            Text="Show labels" />
+                                        <ComboBox
+                                            x:Name="ShowLabelsComboBox"
+                                            HorizontalAlignment="Stretch"
+                                            SelectedIndex="{x:Bind ShowLabelsIndex, Mode=TwoWay}">
+                                            <ComboBoxItem Content="Default" />
+                                            <ComboBoxItem Content="Show" />
+                                            <ComboBoxItem Content="Hide" />
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <Border
+                                        Grid.Row="2"
+                                        Height="1"
+                                        Margin="0,0,0,16"
+                                        Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                    <Button
+                                        Grid.Row="3"
+                                        HorizontalAlignment="Stretch"
+                                        Click="UnpinButton_Click"
+                                        Content="Unpin from dock" />
+                                </Grid>
+                            </Flyout>
+                        </Button.Flyout>
                         <local:IconBox
                             Width="24"
                             Height="24"
@@ -140,15 +144,7 @@
                             VerticalAlignment="Center"
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
                             SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
-                        <!--<TextBlock
-                            MaxWidth="60"
-                            HorizontalAlignment="Center"
-                            FontSize="10"
-                            Text="{x:Bind Title}"
-                            TextAlignment="Center"
-                            TextTrimming="CharacterEllipsis"
-                            TextWrapping="NoWrap" />-->
-                    </StackPanel>
+                    </Button>
                 </Grid>
             </DataTemplate>
 
@@ -165,21 +161,21 @@
         </Grid.Resources>
 
         <!--  Main dock editor bar  -->
-        <Grid
-            Height="64"
-            Padding="12,8"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
+        <Grid Padding="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="EndColumn" Width="*" />
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition x:Name="EndRow" Height="Auto" />
+            </Grid.RowDefinitions>
 
             <!--  Start (Left) Section  -->
             <StackPanel
+                x:Name="StartPanel"
                 Grid.Column="0"
                 HorizontalAlignment="Left"
                 Orientation="Horizontal"
@@ -187,6 +183,7 @@
                 <ListView
                     x:Name="StartListView"
                     MinWidth="48"
+                    VerticalAlignment="Center"
                     AllowDrop="True"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     CanDragItems="True"
@@ -196,8 +193,7 @@
                     DragItemsStarting="ListView_DragItemsStarting"
                     DragOver="ListView_DragOver"
                     Drop="StartListView_Drop"
-                    IsItemClickEnabled="True"
-                    ItemClick="DockItem_Click"
+                    IsItemClickEnabled="False"
                     ItemContainerStyle="{StaticResource DockEditorListViewItemStyle}"
                     ItemTemplate="{StaticResource DockBandItemTemplate}"
                     ItemsSource="{x:Bind StartItems, Mode=OneWay}"
@@ -215,16 +211,19 @@
                     Flyout="{StaticResource AddItemsFlyout}"
                     Style="{StaticResource SubtleButtonStyle}"
                     ToolTipService.ToolTip="Add item to start">
-                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    <FontIcon FontSize="16" Glyph="&#xE710;" />
                 </Button>
             </StackPanel>
 
-            <!--  Center Section  -->
+            <!--  Center Section (hidden for now)  -->
             <StackPanel
+                x:Name="CenterPanel"
                 Grid.Column="1"
                 HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 Orientation="Horizontal"
-                Spacing="4">
+                Spacing="4"
+                Visibility="Collapsed">
                 <Button
                     x:Name="CenterAddButtonLeft"
                     VerticalAlignment="Center"
@@ -233,11 +232,12 @@
                     Style="{StaticResource SubtleButtonStyle}"
                     ToolTipService.ToolTip="Add item to center"
                     Visibility="Collapsed">
-                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    <FontIcon FontSize="16" Glyph="&#xE710;" />
                 </Button>
                 <ListView
                     x:Name="CenterListView"
                     MinWidth="48"
+                    VerticalAlignment="Center"
                     AllowDrop="True"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     CanDragItems="True"
@@ -247,8 +247,7 @@
                     DragItemsStarting="ListView_DragItemsStarting"
                     DragOver="ListView_DragOver"
                     Drop="CenterListView_Drop"
-                    IsItemClickEnabled="True"
-                    ItemClick="DockItem_Click"
+                    IsItemClickEnabled="False"
                     ItemContainerStyle="{StaticResource DockEditorListViewItemStyle}"
                     ItemTemplate="{StaticResource DockBandItemTemplate}"
                     ItemsSource="{x:Bind CenterItems, Mode=OneWay}"
@@ -265,12 +264,13 @@
                     Click="AddButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
                     ToolTipService.ToolTip="Add item to center">
-                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    <FontIcon FontSize="16" Glyph="&#xE710;" />
                 </Button>
             </StackPanel>
 
             <!--  End (Right) Section  -->
             <StackPanel
+                x:Name="EndPanel"
                 Grid.Column="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
@@ -282,11 +282,12 @@
                     Flyout="{StaticResource AddItemsFlyout}"
                     Style="{StaticResource SubtleButtonStyle}"
                     ToolTipService.ToolTip="Add item to end">
-                    <FontIcon FontSize="12" Glyph="&#xE710;" />
+                    <FontIcon FontSize="16" Glyph="&#xE710;" />
                 </Button>
                 <ListView
                     x:Name="EndListView"
                     MinWidth="48"
+                    VerticalAlignment="Center"
                     AllowDrop="True"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     CanDragItems="True"
@@ -296,8 +297,7 @@
                     DragItemsStarting="ListView_DragItemsStarting"
                     DragOver="ListView_DragOver"
                     Drop="EndListView_Drop"
-                    IsItemClickEnabled="True"
-                    ItemClick="DockItem_Click"
+                    IsItemClickEnabled="False"
                     ItemContainerStyle="{StaticResource DockEditorListViewItemStyle}"
                     ItemTemplate="{StaticResource DockBandItemTemplate}"
                     ItemsSource="{x:Bind EndItems, Mode=OneWay}"
@@ -310,5 +310,23 @@
                 </ListView>
             </StackPanel>
         </Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="OrientationStates">
+                <VisualState x:Name="Horizontal" />
+                <VisualState x:Name="Vertical">
+                    <VisualState.Setters>
+                        <Setter Target="StartPanel.Orientation" Value="Vertical" />
+                        <Setter Target="CenterPanel.Orientation" Value="Vertical" />
+                        <Setter Target="EndPanel.Orientation" Value="Vertical" />
+                        <Setter Target="CenterPanel.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterPanel.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterPanel.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterPanel.(Grid.Row)" Value="2" />
+                        <Setter Target="EndColumn.Width" Value="Auto" />
+                        <Setter Target="EndRow.Height" Value="*" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>
