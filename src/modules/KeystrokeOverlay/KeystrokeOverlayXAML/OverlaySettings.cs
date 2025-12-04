@@ -95,7 +95,7 @@ namespace KeystrokeOverlayUI
                     try
                     {
                         string json = File.ReadAllText(_settingsFilePath);
-                        var root = JsonSerializer.Deserialize<ModuleSettingsRoot>(json);
+                        var root = JsonSerializer.Deserialize(json, ModuleSettingsJsonContext.Default.ModuleSettingsRoot);
 
                         if (root?.Properties != null)
                         {

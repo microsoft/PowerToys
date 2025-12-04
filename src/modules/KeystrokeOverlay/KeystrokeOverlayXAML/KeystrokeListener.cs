@@ -77,7 +77,7 @@ namespace KeystrokeOverlayUI
                         // 3. Deserialize (case-insensitive to match native lowercase keys)
                         try
                         {
-                            var batch = JsonSerializer.Deserialize<KeystrokeEvent>(json, CachedJsonOptions);
+                            var batch = JsonSerializer.Deserialize(json, KeystrokeEventJsonContext.Default.KeystrokeEvent);
 
                             if (!batch.Equals(default(KeystrokeEvent)))
                             {
