@@ -56,6 +56,13 @@ namespace PowerDisplay.Common.Utils
                     return 0;
                 }
 
+                // Log all available devices for debugging
+                Logger.LogDebug($"GetMonitorNumberFromWmiInstanceName: Searching for devicePath='{devicePath}' in {displayDevices.Count} devices");
+                foreach (var d in displayDevices)
+                {
+                    Logger.LogDebug($"  - Adapter: {d.AdapterName}, DeviceKey: {d.DeviceKey}");
+                }
+
                 // Find matching device by checking if DeviceKey contains our device path
                 foreach (var device in displayDevices)
                 {

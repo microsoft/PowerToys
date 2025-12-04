@@ -228,7 +228,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             get
             {
                 // Show monitor number only when there are multiple monitors and MonitorNumber is valid
-                if (TotalMonitorCount > 0 && MonitorNumber > 0)
+                if (TotalMonitorCount > 1 && MonitorNumber > 0)
                 {
                     return $"{Name} {MonitorNumber}";
                 }
