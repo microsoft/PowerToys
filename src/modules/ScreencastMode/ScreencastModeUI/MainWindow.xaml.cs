@@ -354,13 +354,33 @@ namespace ScreencastModeUI
 
         private void HandleKeyDown(VirtualKey key)
         {
+            // 1) Modifier keys (Ctrl, Win, Alt, Shift)
             if (KeyDisplayNameProvider.IsModifierKey(key))
             {
                 var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
                 _activeModifiers.Add(normalizedKey);
+
+                // If there is already content in the overlay, show this modifier as a separate entry
+                if (_pressedKeys.Count > 0)
+                {
+                    var keyInfo = new KeyInfo
+                    {
+                        Key = normalizedKey,
+                        Modifiers = new HashSet<VirtualKey>(), // no extra modifiers for this entry
+                    };
+
+                    _pressedKeys.Add(keyInfo);
+
+                    var preview = BuildDisplayText();
+                    if (WillOverflow(preview))
+                    {
+                        _pressedKeys.Clear();
+                        _pressedKeys.Add(keyInfo);
+                    }
+                }
             }
 
-            // Backspace and Esc: clear previous sequence, then show just this key
+            // 2) Clear keys (Backspace, Esc or whatever IsClearKey returns true for)
             else if (KeyDisplayNameProvider.IsClearKey(key))
             {
                 _pressedKeys.Clear();
@@ -373,7 +393,7 @@ namespace ScreencastModeUI
                 });
             }
 
-            // Everything else, including arrow keys: normal behavior
+            // 3) Normal keys
             else
             {
                 var keyInfo = new KeyInfo
@@ -383,8 +403,8 @@ namespace ScreencastModeUI
                 };
 
                 _pressedKeys.Add(keyInfo);
-                var preview = BuildDisplayText();
 
+                var preview = BuildDisplayText();
                 if (WillOverflow(preview))
                 {
                     _pressedKeys.Clear();
