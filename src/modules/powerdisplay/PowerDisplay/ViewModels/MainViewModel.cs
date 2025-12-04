@@ -38,6 +38,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly ISettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly LightSwitchListener _lightSwitchListener;
+    private readonly DisplayChangeWatcher _displayChangeWatcher;
 
     private ObservableCollection<MonitorViewModel> _monitors;
     private ObservableCollection<PowerDisplayProfile> _profiles;
@@ -77,6 +78,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
 
         // Load profiles for quick apply feature
         LoadProfiles();
+
+        // Initialize display change watcher for auto-refresh on monitor plug/unplug
+        _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue);
+        _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
 
         // Start initial discovery
         _ = InitializeAsync(_cancellationTokenSource.Token);
@@ -236,6 +241,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _cancellationTokenSource?.Cancel();
 
         // Dispose all resources safely (don't throw from Dispose)
+        SafeDispose(_displayChangeWatcher, "DisplayChangeWatcher");
         SafeDispose(_lightSwitchListener, "LightSwitchListener");
 
         // Dispose monitor view models
@@ -303,5 +309,31 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Handles display configuration changes detected by the DisplayChangeWatcher.
+    /// Triggers a monitor refresh to update the UI.
+    /// </summary>
+    private async void OnDisplayChanged(object? sender, EventArgs e)
+    {
+        Logger.LogInfo("[MainViewModel] Display change detected, refreshing monitors...");
+        await RefreshMonitorsAsync();
+    }
+
+    /// <summary>
+    /// Starts watching for display changes. Call after initialization is complete.
+    /// </summary>
+    public void StartDisplayWatching()
+    {
+        _displayChangeWatcher.Start();
+    }
+
+    /// <summary>
+    /// Stops watching for display changes.
+    /// </summary>
+    public void StopDisplayWatching()
+    {
+        _displayChangeWatcher.Stop();
     }
 }

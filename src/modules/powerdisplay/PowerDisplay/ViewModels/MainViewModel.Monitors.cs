@@ -39,6 +39,9 @@ public partial class MainViewModel
                     IsScanning = false;
                     IsInitialized = true;
 
+                    // Start watching for display changes after initialization
+                    StartDisplayWatching();
+
                     if (monitors.Count > 0)
                     {
                         StatusText = $"Found {monitors.Count} monitors";

@@ -173,28 +173,51 @@ src/modules/powerdisplay/
 │   │   └── IMonitorController.cs     # Controller abstraction
 │   ├── Models/
 │   │   ├── Monitor.cs                # Runtime monitor data
+│   │   ├── MonitorOperationResult.cs # Operation result enum
 │   │   ├── PowerDisplayProfile.cs    # Profile definition
+│   │   ├── PowerDisplayProfiles.cs   # Profile collection
 │   │   └── ProfileMonitorSetting.cs  # Per-monitor settings
 │   ├── Services/
-│   │   ├── ProfileService.cs         # Profile persistence
-│   │   ├── MonitorStateManager.cs    # State persistence
-│   │   └── LightSwitchListener.cs    # Theme change listener
+│   │   ├── LightSwitchListener.cs    # Theme change listener
+│   │   ├── MonitorStateManager.cs    # State persistence (debounced)
+│   │   └── ProfileService.cs         # Profile persistence
 │   └── Utils/
+│       ├── ColorTemperatureHelper.cs # Color temp utilities
 │       ├── MccsCapabilitiesParser.cs # DDC/CI capabilities parser
-│       └── ColorTemperatureHelper.cs
+│       └── VcpCapabilities.cs        # VCP capabilities model
 │
 ├── PowerDisplay/                     # WinUI 3 application
-│   ├── Core/
-│   │   └── MonitorManager.cs         # Discovery orchestrator
+│   ├── Assets/                       # App icons and images
+│   ├── Common/
+│   │   ├── Debouncer/
+│   │   │   └── SimpleDebouncer.cs    # Slider input debouncing
+│   │   └── Models/
+│   │       └── Monitor.cs            # UI-layer monitor model
+│   ├── Converters/                   # XAML value converters
+│   ├── Helpers/
+│   │   ├── DisplayChangeWatcher.cs   # Monitor hot-plug detection (WinRT DeviceWatcher)
+│   │   ├── DisplayRotationService.cs # Display rotation control
+│   │   ├── MonitorManager.cs         # Discovery orchestrator
+│   │   ├── NativeMethodsHelper.cs    # Window positioning
+│   │   ├── TrayIconService.cs        # System tray integration
+│   │   └── WindowHelpers.cs          # Window utilities
+│   ├── Strings/                      # Localization resources
+│   ├── Styles/                       # Custom control styles
 │   ├── ViewModels/
-│   │   ├── MainViewModel.cs
-│   │   └── MonitorViewModel.cs
+│   │   ├── MainViewModel.cs          # Main VM (partial class)
+│   │   ├── MainViewModel.Monitors.cs # Monitor discovery methods
+│   │   ├── MainViewModel.Profiles.cs # Profile management methods
+│   │   ├── MainViewModel.Settings.cs # Settings persistence methods
+│   │   └── MonitorViewModel.cs       # Per-monitor VM
 │   └── Views/
-│       └── MainWindow.xaml
+│       ├── MainWindow.xaml           # Main UI window
+│       └── MainWindow.xaml.cs
 │
 └── PowerDisplayModuleInterface/      # C++ DLL (module interface)
     ├── dllmain.cpp                   # PowertoyModuleIface impl
-    └── Constants.h                   # Module constants
+    ├── Constants.h                   # Module constants
+    ├── pch.h / pch.cpp               # Precompiled headers
+    └── trace.h / trace.cpp           # Telemetry tracing
 ```
 
 ---
@@ -221,6 +244,7 @@ flowchart TB
             MainViewModel
             MonitorViewModel
             MonitorManager
+            DisplayChangeWatcher["DisplayChangeWatcher<br/>(Hot-Plug Detection)"]
         end
 
         subgraph PowerDisplayLib["PowerDisplay.Lib"]
@@ -259,6 +283,7 @@ flowchart TB
     LightSwitchListener -.->|"ThemeChanged event"| MainViewModel
     MainViewModel --> MonitorViewModel
     MonitorViewModel --> MonitorManager
+    DisplayChangeWatcher -.->|"DisplayChanged event"| MainViewModel
 
     %% App to Lib services
     MainViewModel --> ProfileService
@@ -284,6 +309,35 @@ flowchart TB
     style Storage fill:#e1bee7,stroke:#8e24aa
     style Hardware fill:#b2dfdb,stroke:#00897b
 ```
+
+---
+
+### DisplayChangeWatcher - Monitor Hot-Plug Detection
+
+The `DisplayChangeWatcher` component provides automatic detection of monitor connect/disconnect events using the WinRT DeviceWatcher API.
+
+**Key Features:**
+- Uses `DisplayMonitor.GetDeviceSelector()` to watch for display device changes
+- Implements 1-second debouncing to coalesce rapid connect/disconnect events
+- Triggers `DisplayChanged` event to notify `MainViewModel` for monitor list refresh
+- Runs continuously after initial monitor discovery completes
+
+**Implementation Details:**
+```csharp
+// Device selector for display monitors
+string selector = DisplayMonitor.GetDeviceSelector();
+_deviceWatcher = DeviceInformation.CreateWatcher(selector);
+
+// Events monitored
+_deviceWatcher.Added += OnDeviceAdded;      // New monitor connected
+_deviceWatcher.Removed += OnDeviceRemoved;  // Monitor disconnected
+_deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
+```
+
+**Debouncing Strategy:**
+- Each device change event schedules a `DisplayChanged` event after 1 second
+- Subsequent events within the debounce window cancel the previous timer
+- This prevents excessive refreshes when multiple monitors change simultaneously
 
 ---
 
@@ -620,7 +674,8 @@ flowchart TB
 
     InitLoop --> UpdateCollection["Update _monitors Collection"]
     UpdateCollection --> FireEvent["Fire MonitorsChanged Event"]
-    FireEvent --> End([Discovery Complete])
+    FireEvent --> StartWatcher["Start DisplayChangeWatcher"]
+    StartWatcher --> End([Discovery Complete])
 
     style ParallelDiscover fill:#e3f2fd
     style InitLoop fill:#e8f5e9
@@ -1058,11 +1113,12 @@ classDiagram
 
 1. **Hardware Cursor Brightness**: Support for displays with hardware cursor brightness
 2. **Multi-GPU Support**: Better handling of monitors across different GPUs
-3. **Monitor Hot-Plug**: Improved detection and recovery for monitor connect/disconnect
+3. ~~**Monitor Hot-Plug**: Improved detection and recovery for monitor connect/disconnect~~ **Implemented** - `DisplayChangeWatcher` uses WinRT DeviceWatcher + DisplayMonitor API with 1-second debouncing
 4. **Advanced Color Management**: Integration with Windows Color Management
 5. **Scheduled Profiles**: Time-based automatic profile switching (beyond LightSwitch)
 6. **Monitor Groups**: Ability to control multiple monitors as a single entity
 7. **Remote Control**: Network-based control for multi-system setups
+8. ~~**Display Rotation**: Control display orientation~~ **Implemented** - `DisplayRotationService` uses Windows ChangeDisplaySettingsEx API
 
 ---
 
