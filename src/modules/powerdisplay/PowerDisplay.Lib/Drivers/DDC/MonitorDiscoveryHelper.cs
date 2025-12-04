@@ -127,19 +127,52 @@ namespace PowerDisplay.Common.Drivers.DDC
                 string hardwareId = string.Empty;
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
-                // Try to find matching monitor info
-                foreach (var kvp in monitorDisplayInfo.Values)
+                // Step 1: Extract HardwareId from displayDevice.DeviceID
+                // DeviceID format: \\?\DISPLAY#GSM5C6D#5&1234&0&UID#{GUID}
+                // We need to extract "GSM5C6D" (the second segment after DISPLAY#)
+                string? extractedHardwareId = null;
+                if (displayDevice != null && !string.IsNullOrEmpty(displayDevice.DeviceID))
                 {
-                    if (!string.IsNullOrEmpty(kvp.HardwareId))
+                    extractedHardwareId = ExtractHardwareIdFromDeviceId(displayDevice.DeviceID);
+                }
+
+                // Step 2: Find matching MonitorDisplayInfo by HardwareId
+                MonitorDisplayInfo? matchedInfo = null;
+                if (!string.IsNullOrEmpty(extractedHardwareId))
+                {
+                    foreach (var kvp in monitorDisplayInfo.Values)
                     {
-                        hardwareId = kvp.HardwareId;
-
-                        if (!string.IsNullOrEmpty(kvp.FriendlyName) && !kvp.FriendlyName.Contains("Generic"))
+                        // Match by HardwareId (e.g., "GSM5C6D" matches "GSM5C6D")
+                        if (!string.IsNullOrEmpty(kvp.HardwareId) &&
+                            kvp.HardwareId.Equals(extractedHardwareId, StringComparison.OrdinalIgnoreCase))
                         {
-                            name = kvp.FriendlyName;
+                            matchedInfo = kvp;
+                            break;
                         }
+                    }
+                }
 
-                        break;
+                // Step 3: Fallback to first match if no direct match found (for backward compatibility)
+                if (matchedInfo == null)
+                {
+                    foreach (var kvp in monitorDisplayInfo.Values)
+                    {
+                        if (!string.IsNullOrEmpty(kvp.HardwareId))
+                        {
+                            matchedInfo = kvp;
+                            break;
+                        }
+                    }
+                }
+
+                // Step 4: Use matched info
+                if (matchedInfo.HasValue)
+                {
+                    hardwareId = matchedInfo.Value.HardwareId;
+                    if (!string.IsNullOrEmpty(matchedInfo.Value.FriendlyName) &&
+                        !matchedInfo.Value.FriendlyName.Contains("Generic"))
+                    {
+                        name = matchedInfo.Value.FriendlyName;
                     }
                 }
 
@@ -162,9 +195,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // If still no good name, use default value
+                // Note: Don't include index in the name - let DisplayName property handle numbering
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))
                 {
-                    name = $"External Display {index + 1}";
+                    name = "External Display";
                 }
 
                 // Get current brightness
@@ -200,6 +234,37 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogError($"DDC: CreateMonitorFromPhysical exception: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Extract HardwareId from DeviceID string.
+        /// DeviceID format: \\?\DISPLAY#GSM5C6D#5&amp;1234&amp;0&amp;UID#{GUID}
+        /// Returns the second segment (e.g., "GSM5C6D") which is the manufacturer+product code.
+        /// </summary>
+        private static string? ExtractHardwareIdFromDeviceId(string deviceId)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                return null;
+            }
+
+            // Find "DISPLAY#" and extract the next segment before the next "#"
+            const string displayPrefix = "DISPLAY#";
+            int startIndex = deviceId.IndexOf(displayPrefix, StringComparison.OrdinalIgnoreCase);
+            if (startIndex < 0)
+            {
+                return null;
+            }
+
+            startIndex += displayPrefix.Length;
+            int endIndex = deviceId.IndexOf('#', startIndex);
+            if (endIndex < 0)
+            {
+                return null;
+            }
+
+            var hardwareId = deviceId.Substring(startIndex, endIndex - startIndex);
+            return string.IsNullOrEmpty(hardwareId) ? null : hardwareId;
         }
 
         /// <summary>

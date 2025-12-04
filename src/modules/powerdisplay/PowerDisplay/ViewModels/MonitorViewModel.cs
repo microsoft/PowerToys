@@ -278,9 +278,24 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     public int MonitorNumber => _monitor.MonitorNumber;
 
     /// <summary>
-    /// Gets the display name
+    /// Gets the display name - includes monitor number when multiple monitors exist.
+    /// Follows the same logic as Settings UI's MonitorInfo.DisplayName for consistency.
     /// </summary>
-    public string DisplayName => Name;
+    public string DisplayName
+    {
+        get
+        {
+            var monitorCount = _mainViewModel?.Monitors?.Count ?? 0;
+
+            // Show monitor number only when there are multiple monitors and MonitorNumber is valid
+            if (monitorCount > 1 && MonitorNumber > 0)
+            {
+                return $"{Name} {MonitorNumber}";
+            }
+
+            return Name;
+        }
+    }
 
     public string Manufacturer => _monitor.Manufacturer;
 
