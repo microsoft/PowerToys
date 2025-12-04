@@ -259,13 +259,11 @@ namespace ScreencastModeUI
         {
             try
             {
-                // Use WinUIEx and WinUI 3 APIs for positioning
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
                 var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
                 var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
                 var workArea = displayArea.WorkArea;
 
-                // Get DPI scale using WinUIEx
                 double dpiScale = (float)this.GetDpiForWindow() / 96;
                 int scaledWidth = (int)(WindowWidth * dpiScale);
                 int scaledHeight = (int)(WindowHeight * dpiScale);
@@ -285,32 +283,38 @@ namespace ScreencastModeUI
                         y = workArea.Y + scaledMargin;
                         break;
 
+                    case "Top Center":
+                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
+                        y = workArea.Y + scaledMargin;
+                        break;
+
+                    case "Center":
+                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
+                        y = workArea.Y + ((workArea.Height - scaledHeight) / 2);
+                        break;
+
                     case "Bottom Left":
                         x = workArea.X + scaledMargin;
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
 
-                    case "Bottom Right":
-                        x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
+                    case "Bottom Center":
+                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
 
-                    case "Center":
+                    case "Bottom Right":
                     default:
-                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
+                        x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
                         y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
                         break;
                 }
 
-                // Use WinUIEx's MoveAndResize method
                 this.MoveAndResize(x, y, WindowWidth, WindowHeight);
 
-                // Center the keystroke panel within the window
                 KeystrokePanel.HorizontalAlignment = HorizontalAlignment.Center;
                 KeystrokePanel.VerticalAlignment = VerticalAlignment.Center;
                 KeystrokePanel.Margin = new Thickness(0);
-
-                Logger.LogInfo($"Updated window position to: {_displayPosition} at ({x}, {y})");
             }
             catch (Exception ex)
             {
