@@ -154,8 +154,7 @@ namespace ScreencastModeUI.Keyboard
                    VirtualKey.Down or
                    VirtualKey.Left or
                    VirtualKey.Right or
-
-                   // VirtualKey.Back or
+                   VirtualKey.Back or
                    VirtualKey.Escape;
         }
 

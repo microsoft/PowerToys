@@ -354,15 +354,17 @@ namespace ScreencastModeUI
 
         private void HandleKeyDown(VirtualKey key)
         {
-            // Check if it's a modifier key
+            // 1) Modifier keys: just track them
             if (KeyDisplayNameProvider.IsModifierKey(key))
             {
                 var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
                 _activeModifiers.Add(normalizedKey);
             }
-            else if (key == VirtualKey.Back)
+
+            // 2) Clear keys (Backspace, Esc, arrows):
+            //    clear previous sequence, then show only this key
+            else if (KeyDisplayNameProvider.IsClearKey(key))
             {
-                // Clear old sequence, but show Backspace itself
                 _pressedKeys.Clear();
                 _activeModifiers.Clear();
 
@@ -373,11 +375,7 @@ namespace ScreencastModeUI
                 });
             }
 
-            // Check if it's a clear key (arrows, escape)
-            else if (KeyDisplayNameProvider.IsClearKey(key))
-            {
-                ClearKeys();
-            }
+            // 3) Normal keys: append with current modifiers, respecting overflow
             else
             {
                 var keyInfo = new KeyInfo
