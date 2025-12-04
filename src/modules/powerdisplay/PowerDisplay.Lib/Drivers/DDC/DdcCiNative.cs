@@ -482,6 +482,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // Get information for each path
+                // The path index corresponds to Windows Display Settings "Identify" number
                 for (int i = 0; i < pathCount; i++)
                 {
                     var path = paths[i];
@@ -497,7 +498,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                             HardwareId = hardwareId ?? string.Empty,
                             AdapterId = path.TargetInfo.AdapterId,
                             TargetId = path.TargetInfo.Id,
+                            MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
                         };
+
+                        Logger.LogDebug($"QueryDisplayConfig path[{i}]: HardwareId={hardwareId}, FriendlyName={friendlyName}, MonitorNumber={i + 1}");
                     }
                 }
             }
@@ -610,5 +614,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         public LUID AdapterId { get; set; }
 
         public uint TargetId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the monitor number based on QueryDisplayConfig path index.
+        /// This matches the number shown in Windows Display Settings "Identify" feature.
+        /// 1-based index (paths[0] = 1, paths[1] = 2, etc.)
+        /// </summary>
+        public int MonitorNumber { get; set; }
     }
 }

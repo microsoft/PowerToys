@@ -106,6 +106,34 @@ namespace PowerDisplay.Common.Drivers.WMI
             return string.Empty;
         }
 
+        /// <summary>
+        /// Get monitor number from MonitorDisplayInfo dictionary by matching HardwareId.
+        /// Uses QueryDisplayConfig path index which matches Windows Display Settings "Identify" feature.
+        /// </summary>
+        /// <param name="hardwareId">The hardware ID to match (e.g., "LEN4038", "BOE0900").</param>
+        /// <param name="monitorDisplayInfos">Dictionary of monitor display info from QueryDisplayConfig.</param>
+        /// <returns>Monitor number (1-based) or 0 if not found.</returns>
+        private static int GetMonitorNumberFromDisplayInfo(string hardwareId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
+        {
+            if (string.IsNullOrEmpty(hardwareId) || monitorDisplayInfos == null || monitorDisplayInfos.Count == 0)
+            {
+                return 0;
+            }
+
+            foreach (var kvp in monitorDisplayInfos)
+            {
+                if (!string.IsNullOrEmpty(kvp.Value.HardwareId) &&
+                    kvp.Value.HardwareId.Equals(hardwareId, StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogDebug($"WMI: Matched HardwareId '{hardwareId}' to MonitorNumber {kvp.Value.MonitorNumber}");
+                    return kvp.Value.MonitorNumber;
+                }
+            }
+
+            Logger.LogWarning($"WMI: Could not find MonitorNumber for HardwareId '{hardwareId}'");
+            return 0;
+        }
+
         public string Name => "WMI Monitor Controller (WmiLight)";
 
         /// <summary>
@@ -309,8 +337,8 @@ namespace PowerDisplay.Common.Drivers.WMI
                         }
                     }
 
-                    // Pre-fetch display devices once to avoid repeated Win32 API calls in the loop
-                    var displayDevices = Drivers.DDC.DdcCiNative.GetAllDisplayDevices();
+                    // Get MonitorDisplayInfo from QueryDisplayConfig - this provides the correct monitor numbers
+                    var monitorDisplayInfos = Drivers.DDC.DdcCiNative.GetAllMonitorDisplayInfo();
 
                     // Create monitor objects for each supported brightness instance
                     foreach (var obj in brightnessResults)
@@ -330,6 +358,10 @@ namespace PowerDisplay.Common.Drivers.WMI
                             // e.g., "DISPLAY\BOE0900\4&10fd3ab1&0&UID265988_0" -> "BOE0900"
                             var hardwareId = ExtractHardwareIdFromInstanceName(instanceName);
 
+                            // Get MonitorNumber from QueryDisplayConfig by matching HardwareId
+                            // This matches Windows Display Settings "Identify" feature
+                            int monitorNumber = GetMonitorNumberFromDisplayInfo(hardwareId, monitorDisplayInfos);
+
                             var monitor = new Monitor
                             {
                                 Id = $"WMI_{instanceName}",
@@ -345,7 +377,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 CommunicationMethod = "WMI",
                                 Manufacturer = hardwareId.Length >= 3 ? hardwareId.Substring(0, 3) : "Internal",
                                 SupportsColorTemperature = false,
-                                MonitorNumber = Utils.MonitorMatchingHelper.GetMonitorNumberFromWmiInstanceName(instanceName, displayDevices),
+                                MonitorNumber = monitorNumber,
                             };
 
                             monitors.Add(monitor);

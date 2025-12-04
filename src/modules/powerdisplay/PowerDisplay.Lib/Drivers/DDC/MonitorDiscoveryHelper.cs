@@ -220,7 +220,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     CommunicationMethod = "DDC/CI",
                     Manufacturer = ExtractManufacturer(name),
                     CapabilitiesStatus = "unknown",
-                    MonitorNumber = MonitorMatchingHelper.ParseDisplayNumber(adapterName),
+                    MonitorNumber = GetMonitorNumber(matchedInfo),
                     Orientation = GetMonitorOrientation(adapterName),
                 };
 
@@ -305,6 +305,21 @@ namespace PowerDisplay.Common.Drivers.DDC
             // Return first word as manufacturer
             var firstWord = name.Split(' ')[0];
             return firstWord.Length > 2 ? firstWord : "Unknown";
+        }
+
+        /// <summary>
+        /// Get monitor number from MonitorDisplayInfo (QueryDisplayConfig path index).
+        /// This matches the number shown in Windows Display Settings "Identify" feature.
+        /// </summary>
+        private int GetMonitorNumber(MonitorDisplayInfo? matchedInfo)
+        {
+            if (matchedInfo.HasValue && matchedInfo.Value.MonitorNumber > 0)
+            {
+                return matchedInfo.Value.MonitorNumber;
+            }
+
+            // No match found - return 0 (will not display number suffix)
+            return 0;
         }
 
         /// <summary>
