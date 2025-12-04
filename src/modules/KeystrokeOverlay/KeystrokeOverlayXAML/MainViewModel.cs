@@ -1,9 +1,15 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KeystrokeOverlayUI.Controls;
+using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
@@ -15,40 +21,77 @@ namespace KeystrokeOverlayUI
         // Changed from string to KeyVisualItem to support individual properties
         public ObservableCollection<KeyVisualItem> PressedKeys { get; } = new();
 
-        private readonly int _textSize = 100;
+        [ObservableProperty]
+        private int _timeoutMs = 3000;
 
-        public SolidColorBrush TextBrush => new SolidColorBrush(TextColorWithAlpha);
-        public SolidColorBrush BackgroundBrush => new SolidColorBrush(BackgroundColorWithAlpha);
+        [ObservableProperty]
+        private int _textSize = 24;
 
-        private readonly string _textColor = "#FFFFFF";
-        private readonly int _textOpacity = 100;
-        private readonly string _backgroundColor = "#000000";
-        private readonly int _backgroundOpacity = 50;
+        [ObservableProperty]
+        private double _textOpacity = 100;
 
-        public Color TextColorWithAlpha => GetColorWithAlpha(_textColor, _textOpacity);
-        public Color BackgroundColorWithAlpha => GetColorWithAlpha(_backgroundColor, _backgroundOpacity);
+        [ObservableProperty]
+        private double _backgroundOpacity = 50;
 
-        private Color GetColorWithAlpha(string hex, int opacity)
+        [ObservableProperty]
+        private SolidColorBrush _textColor = new(Colors.White);
+
+        [ObservableProperty]
+        private SolidColorBrush _backgroundColor = new(Colors.Black);
+
+        [ObservableProperty]
+        private bool _isDraggable = true;
+
+        [ObservableProperty]
+        private int _displayMode = 0;
+
+        public void ApplySettings(ModuleProperties props)
         {
-            Color color = ParseColor(hex);
-            byte alpha = (byte)(opacity * 2.55);
-            return Color.FromArgb(alpha, color.R, color.G, color.B);
+            TimeoutMs = props.OverlayTimeout.Value;
+            TextSize = props.TextSize.Value;
+
+            // Opacity in JSON is 0-100, XAML needs 0.0-1.0
+            TextOpacity = props.TextOpacity.Value / 100.0;
+            BackgroundOpacity = props.BackgroundOpacity.Value / 100.0;
+
+            TextColor = GetBrushFromHex(props.TextColor.Value);
+            BackgroundColor = GetBrushFromHex(props.BackgroundColor.Value);
+
+            IsDraggable = props.IsDraggable.Value;
+            DisplayMode = props.DisplayMode.Value;
         }
 
-        private static Color ParseColor(string hex)
+        private SolidColorBrush GetBrushFromHex(string hex)
         {
-            if (string.IsNullOrEmpty(hex)) return Colors.Black;
-            var span = hex.AsSpan();
-            if (span[0] == '#') span = span[1..];
-            if (span.Length != 6) return Colors.Black;
             try
             {
-                byte r = byte.Parse(span[..2], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                byte g = byte.Parse(span.Slice(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                byte b = byte.Parse(span.Slice(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                return Color.FromArgb(255, r, g, b);
+                // Handles #RRGGBB or #AARRGGBB
+                hex = hex.Replace("#", string.Empty);
+                byte a = 255;
+                byte r = 0, g = 0, b = 0;
+
+                var provider = CultureInfo.InvariantCulture;
+
+                if (hex.Length == 6)
+                {
+                    r = byte.Parse(hex.AsSpan(0, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    g = byte.Parse(hex.AsSpan(2, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    b = byte.Parse(hex.AsSpan(4, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                }
+                else if (hex.Length == 8)
+                {
+                    a = byte.Parse(hex.AsSpan(0, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    r = byte.Parse(hex.AsSpan(2, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    g = byte.Parse(hex.AsSpan(4, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    b = byte.Parse(hex.AsSpan(6, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                }
+
+                return new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
-            catch { return Colors.Black; }
+            catch
+            {
+                return new SolidColorBrush(Colors.Magenta);
+            } // Error fallback
         }
 
         // ---------------------------
@@ -58,10 +101,10 @@ namespace KeystrokeOverlayUI
         {
             if (textSize == -1)
             {
-                textSize = _textSize;
+                textSize = TextSize;
             }
 
-            var newItem = new KeyVisualItem { Text = key, Opacity = 1.0, TextSize = textSize};
+            var newItem = new KeyVisualItem { Text = key, Opacity = 1.0, TextSize = textSize };
             PressedKeys.Add(newItem);
 
             UpdateOpacities();
@@ -90,7 +133,10 @@ namespace KeystrokeOverlayUI
                 var item = PressedKeys[i];
 
                 // If the item is currently running its "death animation", skip it
-                if (item.IsExiting) continue;
+                if (item.IsExiting)
+                {
+                    continue;
+                }
 
                 // Calculate index from the end (Newest = 0)
                 int indexFromEnd = PressedKeys.Count - 1 - i;
@@ -111,33 +157,10 @@ namespace KeystrokeOverlayUI
             // Mark as exiting so UpdateOpacities doesn't fight us
             item.IsExiting = true;
 
-            //// Trigger the fade out (XAML ScalarTransition handles the animation)
-            //item.Opacity = 0;
+            PressedKeys.Remove(item);
 
-            //// Wait for the transition to finish (approx 300ms)
-            //await Task.Delay(300);
-
-            if (PressedKeys.Contains(item))
-            {
-                PressedKeys.Remove(item);
-                // Re-adjust remaining keys
-                UpdateOpacities();
-            }
+            // Re-adjust remaining keys
+            UpdateOpacities();
         }
-    }
-
-    // Wrapper class for the keys
-    public partial class KeyVisualItem : ObservableObject
-    {
-        [ObservableProperty]
-        private string _text;
-
-        [ObservableProperty]
-        private int _textSize;
-
-        [ObservableProperty]
-        private double _opacity = 1.0;
-
-        public bool IsExiting { get; set; } = false;
     }
 }

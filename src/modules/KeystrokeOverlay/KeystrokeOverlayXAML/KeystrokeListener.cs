@@ -10,12 +10,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using KeystrokeOverlayUI.Models;
+using KeystrokeOverlayUI.Controls;
 
 namespace KeystrokeOverlayUI
 {
     public class KeystrokeListener : IDisposable
     {
+        private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
         public void Dispose()
         {
             Stop();
@@ -25,7 +27,7 @@ namespace KeystrokeOverlayUI
         private const string PipeName = "KeystrokeOverlayPipe";
         private CancellationTokenSource _cts;
 
-        public event Action<KeystrokeBatch> OnBatchReceived;
+        public event Action<KeystrokeEvent> OnBatchReceived;
 
         public void Start()
         {
@@ -51,43 +53,42 @@ namespace KeystrokeOverlayUI
 
                     while (client.IsConnected && !token.IsCancellationRequested)
                     {
-                            // 1. Read Length (4 bytes / DWORD) matching PipeServer.cpp
-                            int length = reader.ReadInt32();
+                        // 1. Read Length (4 bytes / DWORD) matching PipeServer.cpp
+                        int length = reader.ReadInt32();
 
-                            // Sanity-check length (same guard as native side)
-                            const int MaxFrameSize = 8 * 1024 * 1024;
-                            if (length <= 0 || length > MaxFrameSize)
-                            {
-                                Debug.WriteLine($"KeystrokeListener: invalid frame length {length}, reconnecting");
-                                break; // break inner loop and reconnect
-                            }
-
-                            // 2. Read JSON Payload
-                            byte[] buffer = reader.ReadBytes(length);
-                            if (buffer.Length != length)
-                            {
-                                Debug.WriteLine($"KeystrokeListener: short read {buffer.Length} of {length}, reconnecting");
-                                break; // broken frame/connection, reconnect
+                        // Sanity-check length (same guard as native side)
+                        const int MaxFrameSize = 8 * 1024 * 1024;
+                        if (length <= 0 || length > MaxFrameSize)
+                        {
+                            Debug.WriteLine($"KeystrokeListener: invalid frame length {length}, reconnecting");
+                            break; // break inner loop and reconnect
                         }
 
-                            string json = Encoding.UTF8.GetString(buffer);
+                        // 2. Read JSON Payload
+                        byte[] buffer = reader.ReadBytes(length);
+                        if (buffer.Length != length)
+                        {
+                            Debug.WriteLine($"KeystrokeListener: short read {buffer.Length} of {length}, reconnecting");
+                            break; // broken frame/connection, reconnect
+                    }
 
-                            // 3. Deserialize (case-insensitive to match native lowercase keys)
-                            try
+                        string json = Encoding.UTF8.GetString(buffer);
+
+                        // 3. Deserialize (case-insensitive to match native lowercase keys)
+                        try
+                        {
+                            var batch = JsonSerializer.Deserialize<KeystrokeEvent>(json, CachedJsonOptions);
+
+                            if (!batch.Equals(default(KeystrokeEvent)))
                             {
-                                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                                var batch = JsonSerializer.Deserialize<KeystrokeBatch>(json, options);
-
-                                if (batch != null)
-                                {
-                                    OnBatchReceived?.Invoke(batch);
-                                }
+                                OnBatchReceived?.Invoke(batch);
                             }
-                            catch (JsonException je)
-                            {
-                                Debug.WriteLine($"KeystrokeListener: JSON deserialization failed: {je.Message}");
+                        }
+                        catch (JsonException je)
+                        {
+                            Debug.WriteLine($"KeystrokeListener: JSON deserialization failed: {je.Message}");
 
-                            // Skip this frame and continue reading
+                        // Skip this frame and continue reading
                         }
                     }
                 }

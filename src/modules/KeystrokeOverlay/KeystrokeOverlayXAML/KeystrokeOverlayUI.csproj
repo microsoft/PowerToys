@@ -28,10 +28,17 @@
     <!-- Allow unsafe blocks if you do any P/Invoke, good practice to enable in PT modules -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+    <ItemGroup>
+    <Compile Remove="Controls\KeyVisuals\**" />
+    <EmbeddedResource Remove="Controls\KeyVisuals\**" />
+    <None Remove="Controls\KeyVisuals\**" />
+    <Page Remove="Controls\KeyVisuals\**" />
+  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
+	<PackageReference Include="CommunityToolkit.Mvvm"/>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.Text.Json" />
     <Manifest Include="$(ApplicationManifest)" />

@@ -48,6 +48,7 @@ struct ModuleSettings
 
     bool is_draggable = true;
     int overlay_timeout = 3000;
+    int display_mode = 0; // NEW: 0=Standard, 1=Compact, etc. (Define your modes)
     
     int text_size = 24;
     int text_opacity = 100;
@@ -56,6 +57,9 @@ struct ModuleSettings
 
     std::wstring text_color = L"#FFFFFF";
     std::wstring bg_color = L"#000000";
+
+    PowerToysSettings::HotkeyObject switch_monitor_hotkey =
+        PowerToysSettings::HotkeyObject::from_settings(true, false, false, true, 0xBF); // Default: Win+Ctrl+/
 
 } g_settings;
 
@@ -214,6 +218,21 @@ public:
             g_settings.is_draggable         // property value.
         );
 
+        settings.add_int_spinner(
+            L"display_mode", // property name
+            L"Display Mode", // description
+            g_settings.display_mode, // current value
+            0, // Min value (e.g., LastFiveKeystrokes)
+            2, // Max value (e.g., ShortcutsOnly)
+            1 // Step
+        );
+
+        settings.add_hotkey(
+            L"switch_monitor_hotkey",
+            L"Move to Next Monitor",
+            g_settings.switch_monitor_hotkey
+        );
+
         // Overlay Timeout Spinner
         settings.add_int_spinner(
             L"overlay_timeout",              // property name
@@ -307,6 +326,14 @@ public:
             if (auto v = values.get_string_value(L"background_color")) {
                 g_settings.bg_color = *v;
             }
+            if (auto v = values.get_int_value(L"display_mode"))
+            {
+                g_settings.display_mode = *v;
+            }
+            if (auto v = values.get_json(L"switch_monitor_hotkey"))
+            {
+                g_settings.switch_monitor_hotkey = PowerToysSettings::HotkeyObject::from_json(*v);
+            }
 
             // Save to disk so the C# App can read the updated settings.json
             // If you don't need to do any custom processing of the settings, proceed
@@ -348,16 +375,16 @@ public:
     }
 
     // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data)
-    {
-        if (wcscmp(name, win_hook_event) == 0)
-        {
-            /* auto& event = *(reinterpret_cast<WinHookEvent*>(data)); */
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
+    // virtual intptr_t signal_event(const wchar_t* name, intptr_t data)
+    // {
+    //    if (wcscmp(name, win_hook_event) == 0)
+    //    {
+    //        /* auto& event = *(reinterpret_cast<WinHookEvent*>(data)); */
+    //        // Return value is ignored
+    //        return 0;
+    //    }
+    //    return 0;
+    // }
 };
 
 // Load the settings file.
@@ -389,6 +416,14 @@ void KeystrokeOverlay::init_settings()
         }
         if (auto v = settings.get_string_value(L"background_color")) {
             g_settings.bg_color = *v;
+        }
+        if (auto v = settings.get_int_value(L"display_mode"))
+        {
+            g_settings.display_mode = *v;
+        }
+        if (auto v = settings.get_json(L"switch_monitor_hotkey"))
+        {
+            g_settings.switch_monitor_hotkey = PowerToysSettings::HotkeyObject::from_json(*v);
         }
     }
     catch (std::exception&)

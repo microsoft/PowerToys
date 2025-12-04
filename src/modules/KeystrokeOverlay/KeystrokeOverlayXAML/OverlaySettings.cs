@@ -9,6 +9,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
@@ -17,155 +18,113 @@ using Windows.UI;
 
 namespace KeystrokeOverlayUI
 {
-    public partial class OverlaySettings : INotifyPropertyChanged, IDisposable
+    public class OverlaySettings : IDisposable
     {
-        // Path to the PowerToys settings file
-        private static readonly string SettingsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft\\PowerToys\\Keystroke Overlay\\settings.json");
+        // Event to notify ViewModel when settings change
+        public event Action<ModuleProperties> SettingsUpdated;
 
+        private const string ModuleName = "Keystroke Overlay";
+        private readonly string _settingsFilePath;
         private FileSystemWatcher _watcher;
-        private SettingsRoot _currentConfig;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public OverlaySettings()
         {
-            // 1. Load initial defaults
-            _currentConfig = new SettingsRoot();
-            LoadSettings();
-
-            // 2. Watch for changes (live updates from Settings Dashboard)
-            SetupWatcher();
+            // Path: %LOCALAPPDATA%\Microsoft\PowerToys\Keystroke Overlay\settings.json
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            _settingsFilePath = Path.Combine(localAppData, "Microsoft", "PowerToys", ModuleName, "settings.json");
         }
 
-        private void LoadSettings()
+        public void Initialize()
         {
-            try
-            {
-                if (File.Exists(SettingsPath))
-                {
-                    string json = File.ReadAllText(SettingsPath);
-                    var data = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            // 1. Load initial settings
+            LoadSettings();
 
-                    if (data?.Properties != null)
-                    {
-                        _currentConfig = data.Properties;
-                        RefreshBrushes();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                /* Fail silently or log */
-            }
+            // 2. Watch for changes
+            SetupWatcher();
         }
 
         private void SetupWatcher()
         {
             try
             {
-                string dir = Path.GetDirectoryName(SettingsPath);
-                if (Directory.Exists(dir))
+                string folder = Path.GetDirectoryName(_settingsFilePath);
+                if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
                 {
-                    _watcher = new FileSystemWatcher(dir, "settings.json");
-                    _watcher.Changed += (s, e) =>
-                    {
-                        // Slight delay to ensure file write is complete
-                        System.Threading.Thread.Sleep(100);
-
-                        // Dispatch to UI thread if necessary, or just reload data
-                        // (Since we are just updating data properties, direct reload is usually fine,
-                        // but PropertyChanged must be raised on UI thread if using advanced bindings)
-                        LoadSettings();
-                    };
-                    _watcher.EnableRaisingEvents = true;
+                    return;
                 }
+
+                _watcher = new FileSystemWatcher(folder, "settings.json")
+                {
+                    NotifyFilter = NotifyFilters.LastWrite,
+                    EnableRaisingEvents = true,
+                };
+
+                // Debounce logic (FileWatcher often fires twice)
+                DateTime lastRead = DateTime.MinValue;
+                _watcher.Changed += (s, e) =>
+                {
+                    if ((DateTime.Now - lastRead).TotalMilliseconds < 500)
+                    {
+                        return;
+                    }
+
+                    lastRead = DateTime.Now;
+
+                    // Give the writing process (dllmain) a moment to close the file
+                    Task.Delay(100).ContinueWith(_ => LoadSettings());
+                };
             }
             catch
             {
+                // Watcher might fail if permissions are weird, just ignore
             }
         }
 
-        private void RefreshBrushes()
+        private void LoadSettings()
         {
-            // Notify UI that all properties might have changed
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TextSize)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OverlayTimeout)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDraggable)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BackgroundBrush)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TextBrush)));
-        }
-
-        // --- Properties bound in XAML ---
-        public int TextSize => _currentConfig.TextSize.Value;
-
-        public int OverlayTimeout => _currentConfig.OverlayTimeout.Value;
-
-        public bool IsDraggable => _currentConfig.IsDraggable.Value;
-
-        // Convert the "Int" color from JSON to a XAML Brush
-        public SolidColorBrush BackgroundBrush => GetBrush(_currentConfig.BackgroundColor.Value, _currentConfig.BackgroundOpacity.Value);
-
-        public SolidColorBrush TextBrush => GetBrush(_currentConfig.TextColor.Value, _currentConfig.TextOpacity.Value);
-
-        // Helper to convert BGR/RGB int + Opacity to Brush
-        private SolidColorBrush GetBrush(string colorStr, int opacityPercent)
-        {
-            // Default fallback
-            Color c = Colors.Black;
+            if (!File.Exists(_settingsFilePath))
+            {
+                return;
+            }
 
             try
             {
-                if (!string.IsNullOrEmpty(colorStr))
+                // Retry loop in case file is locked by dllmain
+                for (int i = 0; i < 3; i++)
                 {
-                    // Parse "#RRGGBB"
-                    colorStr = colorStr.Replace("#", string.Empty);
-                    byte r = Convert.ToByte(colorStr.Substring(0, 2), 16);
-                    byte g = Convert.ToByte(colorStr.Substring(2, 2), 16);
-                    byte b = Convert.ToByte(colorStr.Substring(4, 2), 16);
-                    c = Color.FromArgb(255, r, g, b);
+                    try
+                    {
+                        string json = File.ReadAllText(_settingsFilePath);
+                        var root = JsonSerializer.Deserialize<ModuleSettingsRoot>(json);
+
+                        if (root?.Properties != null)
+                        {
+                            SettingsUpdated?.Invoke(root.Properties);
+                        }
+
+                        break;
+                    }
+                    catch (IOException)
+                    {
+                        System.Threading.Thread.Sleep(50);
+                    }
                 }
             }
             catch
             {
+                // Log error or ignore
             }
-
-            byte alpha = (byte)(opacityPercent * 2.55);
-            return new SolidColorBrush(Color.FromArgb(alpha, c.R, c.G, c.B));
         }
 
-        // IDisposable implementation for CA1001
         public void Dispose()
         {
-            Dispose(true);
+            if (_watcher != null)
+            {
+                _watcher.Dispose();
+                _watcher = null;
+            }
+
             GC.SuppressFinalize(this);
         }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_watcher != null)
-                {
-                    _watcher.Dispose();
-                    _watcher = null;
-                }
-            }
-        }
     }
-
-    // public class HotkeySettings
-    // {
-    //     [JsonPropertyName("win")]
-    //     public bool Win { get; set; }
-    //     [JsonPropertyName("ctrl")]
-    //     public bool Ctrl { get; set; }
-    //     [JsonPropertyName("alt")]
-    //     public bool Alt { get; set; }
-    //     [JsonPropertyName("shift")]
-    //     public bool Shift { get; set; }
-    //     [JsonPropertyName("code")]
-    //     public int Code { get; set; }
-    // }
 }
