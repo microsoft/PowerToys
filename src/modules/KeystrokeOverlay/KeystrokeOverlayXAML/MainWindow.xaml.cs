@@ -79,6 +79,11 @@ namespace KeystrokeOverlayUI
             _keystrokeListener.OnBatchReceived += OnKeyReceived;
             _keystrokeListener.Start();
 
+            if (ViewModel.IsDraggable)
+            {
+                RunStartupSequence();
+            }
+
             ViewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.IsDraggable))
@@ -258,7 +263,7 @@ namespace KeystrokeOverlayUI
             // 3. Add the padding from the outer Border (RootGrid)
             //    (Your XAML has Padding="15,12", so we must add that back in)
             double totalWidth = desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right;
-            double totalHeight = desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom;
+            double totalHeight = desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
 
             // 4. Resize the window
             ResizeAppWindow(totalWidth, totalHeight);
