@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Padding="24,32,24,0">
+        <Grid Padding="24,12,24,0">
             <TextBlock
                 x:Uid="AllAppsTxt"
                 VerticalAlignment="Center"
@@ -37,7 +37,7 @@
                         <FontIcon FontSize="16" Glyph="&#xE8CB;" />
                     </Button.Content>
                     <Button.Flyout>
-                        <MenuFlyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
                             <ToggleMenuFlyoutItem
                                 x:Uid="Dashboard_SortAlphabetical"
                                 Click="SortAlphabetical_Click"
@@ -69,9 +69,12 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <controls:ModuleList
-            Grid.Row="1"
-            IsItemClickable="False"
-            ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
+        <Grid Grid.Row="1">
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <controls:ModuleList IsItemClickable="False" ItemsSource="{x:Bind ViewModel.FlyoutMenuItems, Mode=OneWay}" />
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

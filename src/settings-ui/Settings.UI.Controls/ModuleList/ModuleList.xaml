@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.ModuleList"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -30,6 +30,7 @@
         Title="{x:Bind Title, Mode=OneWay}"
         MinWidth="400"
         Padding="0"
+        VerticalAlignment="Top"
         DividerVisibility="Collapsed">
         <controls:Card.TitleContent>
             <Button
