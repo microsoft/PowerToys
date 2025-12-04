@@ -27,6 +27,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveCmdPalExtPowerToysFolder" Value="" KeyPath="yes" />
         </RegistryKey>
+        <RemoveFile Id="RemoveFilesCmdPalExtPowerToysInstallDir" Directory="CmdPalExtPowerToysInstallFolder" Name="*" On="uninstall" />
         <RemoveFolder Id="RemoveCmdPalExtPowerToysInstallDirFolder" Directory="CmdPalExtPowerToysInstallFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="Module_CmdPal_Ext_PowerToys" />
