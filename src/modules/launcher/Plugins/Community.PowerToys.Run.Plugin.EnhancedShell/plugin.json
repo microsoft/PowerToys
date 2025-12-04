@@ -1,0 +1,14 @@
+{
+  "ID": "E7A9D8B3F4C54A2E9B6D1F8C3E5A7B9D",
+  "ActionKeyword": "cmd",
+  "IsGlobal": false,
+  "Name": "Enhanced Shell",
+  "Author": "Community",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://github.com/microsoft/PowerToys",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.EnhancedShell.dll",
+  "IcoPathDark": "Images\\shell.dark.png",
+  "IcoPathLight": "Images\\shell.light.png",
+  "DynamicLoading": false
+}
