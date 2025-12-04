@@ -182,10 +182,6 @@ namespace Microsoft.CommandPalette.Extensions
         IDetailsElement[] Metadata { get; };
     }
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IDetailsSize requires IDetailsData {
-        ContentSize Size { get; };
-    }
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsTags requires IDetailsData {
         ITag[] Tags { get; };
     }
