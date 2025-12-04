@@ -130,13 +130,13 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
     <ProjectReference Include="..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
-    <!-- <ProjectReference Include="..\Microsoft.CmdPal.Dock.UI\Microsoft.CmdPal.Dock.UI.csproj" /> -->
 
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.PerformanceMonitor\Microsoft.CmdPal.Ext.PerformanceMonitor.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Registry\Microsoft.CmdPal.Ext.Registry.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.TimeDate\Microsoft.CmdPal.Ext.TimeDate.csproj" />
