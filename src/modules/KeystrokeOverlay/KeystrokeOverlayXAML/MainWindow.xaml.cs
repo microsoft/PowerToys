@@ -53,11 +53,17 @@ namespace KeystrokeOverlayUI
 
         public MainWindow()
         {
+            this.SystemBackdrop = null;
+            this.Content = new Grid()
+            {
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
+            };
+
             InitializeComponent();
 
-            RootGrid.DataContext = ViewModel;
+            HideAppWindow();
 
-            UseThemeBackground();
+            RootGrid.DataContext = ViewModel;
 
             _overlaySettings.SettingsUpdated += (props) =>
             {
@@ -82,23 +88,6 @@ namespace KeystrokeOverlayUI
             };
         }
 
-        private void UseThemeBackground()
-        {
-            // Use the theme background brush so the app matches the current theme.
-            try
-            {
-                var themeBrush = Application.Current?.Resources["ApplicationPageBackgroundThemeBrush"] as Microsoft.UI.Xaml.Media.Brush;
-                if (themeBrush != null)
-                {
-                    RootGrid.Background = themeBrush;
-                }
-            }
-            catch
-            {
-                // Ignore if the resource isn't present — app will keep whatever background was set in XAML.
-            }
-        }
-
         private void ConfigureOverlayWindow()
         {
             // get app window
@@ -121,6 +110,8 @@ namespace KeystrokeOverlayUI
                 presenter.IsMaximizable = false;      // Don't allow maximize
                 presenter.SetBorderAndTitleBar(false, false); // Remove standard Windows chrome
             }
+
+            HideAppWindow();
         }
 
         private async void RunStartupSequence(bool isDraggable = false)
@@ -128,8 +119,11 @@ namespace KeystrokeOverlayUI
             if (isDraggable)
             {
                 // 10 second duration for the "Drag to Position" message + positioning time
-                ViewModel.RegisterKey("Drag to Position", durationMs: 5000, textSize: 40);
-                await Task.Delay(5000);
+                for (int index = 10; index > 0; index--)
+                {
+                    ViewModel.RegisterKey($"Drag to Position ({index})", durationMs: 1000, textSize: 30);
+                    await Task.Delay(1000);
+                }
             }
 
             // clear instructions + pause briefly
