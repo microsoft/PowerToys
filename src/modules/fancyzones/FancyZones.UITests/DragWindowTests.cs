@@ -51,15 +51,16 @@ namespace UITests_FancyZones
         {
             SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
 
-            // ClearOpenWindows
-            ClearOpenWindows();
-
             // kill all processes related to FancyZones Editor to ensure a clean state
             Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
 
             AppZoneHistory.DeleteFile();
-            this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
+
+            // ClearOpenWindows - do this after file operations to ensure Session is ready
+            ClearOpenWindows();
+
+            RestartScopeExe();
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
@@ -122,8 +123,6 @@ namespace UITests_FancyZones
             string appZoneHistoryJson = AppZoneHistory.GetData();
             string? zoneNumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
             Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout was unexpectedly set.");
-
-            Clean();
         }
 
         /// <summary>
@@ -170,8 +169,6 @@ namespace UITests_FancyZones
 
             // check the zone color is activated
             Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
-
-            Clean();
         }
 
         /// <summary>
@@ -216,8 +213,6 @@ namespace UITests_FancyZones
 
             Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
             Assert.AreNotEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone deactivation failed.");
-
-            Clean();
         }
 
         /// <summary>
@@ -265,8 +260,6 @@ namespace UITests_FancyZones
 
             Session.ReleaseKey(Key.Shift);
             Session.PerformMouseAction(MouseActionType.LeftUp);
-
-            Clean();
         }
 
         /// <summary>
@@ -283,8 +276,6 @@ namespace UITests_FancyZones
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOn)}]  Window transparency failed.");
-
-            Clean();
         }
 
         /// <summary>
@@ -301,8 +292,6 @@ namespace UITests_FancyZones
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
-
-            Clean();
         }
 
         /// <summary>
@@ -350,8 +339,6 @@ namespace UITests_FancyZones
             Assert.AreEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
 
             Session.PerformMouseAction(MouseActionType.LeftUp);
-
-            Clean();
         }
 
         private void Clean()
@@ -377,7 +364,7 @@ namespace UITests_FancyZones
                 desktopButtonName = "Show Desktop";
             }
 
-            this.Find<Microsoft.PowerToys.UITest.Button>(By.Name(desktopButtonName), 5000, true).Click(false, 500, 2000);
+            this.Find<Microsoft.PowerToys.UITest.Button>(By.Name(desktopButtonName), 5000, true).Click(false, 500, 1000);
         }
 
         // Setup custom layout with 1 subzones
