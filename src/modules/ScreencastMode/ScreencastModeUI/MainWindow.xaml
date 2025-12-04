@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+    
 <winuiex:WindowEx
     x:Class="ScreencastModeUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -14,6 +15,10 @@
     MinWidth="200"
     MinHeight="40"
     IsShownInSwitchers="False">
+
+    <winuiex:WindowEx.SystemBackdrop>
+        <winuiex:TransparentTintBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
 
     <Grid x:Name="RootGrid" Background="Transparent">
         <Border
