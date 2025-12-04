@@ -33,6 +33,7 @@
         <Converters:LayoutTypeCustomToVisibilityConverter x:Key="LayoutTypeCustomToVisibilityConverter" />
         <Converters:LayoutTypeTemplateToVisibilityConverter x:Key="LayoutTypeTemplateToVisibilityConverter" />
         <Converters:LayoutModelTypeBlankToVisibilityConverter x:Key="LayoutModelTypeBlankToVisibilityConverter" />
+        <Converters:LayoutTypeDeletableToVisibilityConverter x:Key="LayoutTypeDeletableToVisibilityConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <ContextMenu x:Key="LayoutContextMenu" Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}">
@@ -68,11 +69,11 @@
                     <ui:FontIcon Glyph="&#xE8C8;" />
                 </MenuItem.Icon>
             </MenuItem>
-            <Separator Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}" />
+            <Separator Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeDeletableToVisibilityConverter}}" />
             <MenuItem
                 Click="DeleteLayout_Click"
                 Header="{x:Static props:Resources.Delete}"
-                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeDeletableToVisibilityConverter}}">
                 <MenuItem.Icon>
                     <ui:FontIcon Glyph="&#xE74D;" />
                 </MenuItem.Icon>
@@ -437,7 +438,7 @@
                         Click="DeleteLayout_Click"
                         Style="{StaticResource IconOnlyButtonStyle}"
                         ToolTip="{x:Static props:Resources.Delete}"
-                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                        Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeDeletableToVisibilityConverter}}">
                         <Button.Content>
                             <TextBlock
                                 AutomationProperties.Name="{x:Static props:Resources.Delete}"
