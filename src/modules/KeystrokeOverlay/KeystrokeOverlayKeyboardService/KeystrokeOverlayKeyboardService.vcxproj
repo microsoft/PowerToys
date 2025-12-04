@@ -22,7 +22,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

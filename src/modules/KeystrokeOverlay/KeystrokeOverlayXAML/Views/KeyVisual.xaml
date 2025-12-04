@@ -15,7 +15,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
         <TextBlock Text="{x:Bind KeyText, Mode=OneWay}"
-                   FontSize="{x:Bind KeyFontSize, Mode=OneWay}"
+                   FontSize="24"
                    Foreground="{x:Bind KeyForeground, Mode=OneWay}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"

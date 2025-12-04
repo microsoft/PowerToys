@@ -30,11 +30,7 @@ namespace KeystrokeOverlayUI
 
         // --- KeyFontSize DependencyProperty ---
         // Binds to the TextSize setting
-        public double KeyFontSize
-        {
-            get { return (double)GetValue(KeyFontSizeProperty); }
-            set { SetValue(KeyFontSizeProperty, value); }
-        }
+        public double KeyFontSize { get; set; } = 12.0; // or any valid positive number
 
         public static readonly DependencyProperty KeyFontSizeProperty =
             DependencyProperty.Register(nameof(KeyFontSize), typeof(double), typeof(KeyVisual), new PropertyMetadata(24.0));
