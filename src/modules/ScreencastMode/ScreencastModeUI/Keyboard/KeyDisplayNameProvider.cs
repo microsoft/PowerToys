@@ -150,11 +150,7 @@ namespace ScreencastModeUI.Keyboard
         /// <returns>True if the key should clear the display; otherwise, false.</returns>
         public static bool IsClearKey(VirtualKey key)
         {
-            return key is VirtualKey.Up or
-                   VirtualKey.Down or
-                   VirtualKey.Left or
-                   VirtualKey.Right or
-                   VirtualKey.Back or
+            return key is VirtualKey.Back or
                    VirtualKey.Escape;
         }
 
