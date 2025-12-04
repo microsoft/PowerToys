@@ -52,7 +52,9 @@
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedItem="{x:Bind ViewModel.DisplayPosition, Mode=TwoWay}">
                             <x:String>Top Left</x:String>
                             <x:String>Top Right</x:String>
+                            <x:String>Top Center</x:String>
                             <x:String>Center</x:String>
+                            <x:String>Bottom Center</x:String>
                             <x:String>Bottom Left</x:String>
                             <x:String>Bottom Right</x:String>
                         </ComboBox>
