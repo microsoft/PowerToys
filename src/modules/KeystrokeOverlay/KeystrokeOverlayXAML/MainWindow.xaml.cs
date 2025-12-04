@@ -33,6 +33,8 @@ namespace KeystrokeOverlayUI
     {
         public MainViewModel ViewModel { get; set; } = new();
 
+        private const bool DEBUGMODE = true;
+
         private readonly KeystrokeListener _keystrokeListener = new();
 
         private readonly OverlaySettings _overlaySettings = new();
@@ -55,6 +57,33 @@ namespace KeystrokeOverlayUI
 
             RootGrid.DataContext = ViewModel;
 
+            UseThemeBackground();
+
+            _overlaySettings.SettingsUpdated += (props) =>
+            {
+                DispatcherQueue.TryEnqueue(() => ViewModel.ApplySettings(props));
+            };
+            _overlaySettings.Initialize();
+
+            _keystrokeListener.OnBatchReceived += OnKeyReceived;
+            _keystrokeListener.Start();
+
+            ConfigureOverlayWindow();
+
+            RunStartupSequence(isDraggable: ViewModel.IsDraggable);
+
+            // listener for changes to IsDraggable to re-run startup sequence
+            ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.IsDraggable))
+                {
+                    RunStartupSequence(isDraggable: ViewModel.IsDraggable);
+                }
+            };
+        }
+
+        private void UseThemeBackground()
+        {
             // Use the theme background brush so the app matches the current theme.
             try
             {
@@ -68,85 +97,12 @@ namespace KeystrokeOverlayUI
             {
                 // Ignore if the resource isn't present — app will keep whatever background was set in XAML.
             }
-
-            _overlaySettings.SettingsUpdated += (props) =>
-            {
-                // Ensure we update on UI Thread
-                DispatcherQueue.TryEnqueue(() => ViewModel.ApplySettings(props));
-            };
-            _overlaySettings.Initialize();
-
-            _keystrokeListener.OnBatchReceived += OnKeyReceived;
-            _keystrokeListener.Start();
-
-            if (ViewModel.IsDraggable)
-            {
-                RunStartupSequence();
-            }
-
-            ViewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(MainViewModel.IsDraggable))
-                {
-                    RunStartupSequence();
-                }
-            };
-
-            ConfigureOverlayWindow();
-        }
-
-        private void OnKeyReceived(KeystrokeEvent kEvent)
-        {
-            // IMPORTANT: Dispatch to UI Thread
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                // We typically only want to show the key when it is pressed down (IsPressed = true)
-                // If you want to show releases, remove this check.
-                if (kEvent.IsPressed)
-                {
-                    string keyName = GetKeyName(kEvent.VirtualKey);
-                    ViewModel.RegisterKey(keyName);
-                }
-            });
-        }
-
-        private async void RunStartupSequence()
-        {
-            // STEP 1: Show the instruction message
-            // We give it a long duration (e.g., 10 seconds) so it doesn't fade
-            // while the user is trying to grab it.
-            ViewModel.RegisterKey("Drag to Position", durationMs: 10000, textSize: 40);
-
-            // STEP 2: Wait for the user to position the window
-            // This gives them 4 seconds to drag it before the test starts.
-            await Task.Delay(5000);
-
-            // STEP 3: Clear the instruction message
-            ViewModel.ClearKeys();
-
-            // Short pause for visual cleanliness
-            await Task.Delay(500);
-
-            // STEP 4: Start the actual simulation
-            SimulateTestKeys();
-        }
-
-        private async void SimulateTestKeys()
-        {
-            string[] testKeys = { "A", "B", "C", "D", "E", "F", "G" };
-            foreach (var key in testKeys)
-            {
-                ViewModel.RegisterKey(key);
-                await Task.Delay(300);
-            }
         }
 
         private void ConfigureOverlayWindow()
         {
-            // Get the AppWindow for this XAML Window
-            IntPtr hWnd = WindowNative.GetWindowHandle(this);
-            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
+            // get app window
+            var appWindow = GetAppWindow();
 
             if (appWindow != null)
             {
@@ -167,57 +123,76 @@ namespace KeystrokeOverlayUI
             }
         }
 
+        private async void RunStartupSequence(bool isDraggable = false)
+        {
+            if (isDraggable)
+            {
+                // 10 second duration for the "Drag to Position" message + positioning time
+                ViewModel.RegisterKey("Drag to Position", durationMs: 5000, textSize: 40);
+                await Task.Delay(5000);
+            }
+
+            // clear instructions + pause briefly
+            ViewModel.ClearKeys();
+            await Task.Delay(500);
+
+            // start simulating test keys
+            // change this to false to disable test keys on startup
+            if (DEBUGMODE)
+            {
+                SimulateTestKeys();
+            }
+        }
+
+        private async void SimulateTestKeys()
+        {
+            // Simulate some test key presses for demonstration
+            string[] testKeys = { "A", "B", "C", "D", "E", "F", "G" };
+            foreach (var key in testKeys)
+            {
+                ViewModel.RegisterKey(key);
+                await Task.Delay(300);
+            }
+        }
+
+        private void OnKeyReceived(KeystrokeEvent kEvent)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                // We typically only want to show the key when it is pressed down (IsPressed = true)
+                // If you want to show releases, remove this check.
+                if (kEvent.IsPressed)
+                {
+                    string keyName = GetKeyName(kEvent.VirtualKey);
+                    ViewModel.RegisterKey(keyName);
+                }
+            });
+        }
+
+        private string GetKeyName(uint virtualKey)
+        {
+            // Simple conversion using built-in WinUI/System enums
+            var key = (Windows.System.VirtualKey)virtualKey;
+
+            return key switch
+            {
+                Windows.System.VirtualKey.Space => "Space",
+                Windows.System.VirtualKey.Enter => "Enter",
+                Windows.System.VirtualKey.Back => "Backspace",
+
+                // Add other special cases here
+                _ => key.ToString(),
+            };
+        }
+
+        // ---------------------------
+        // XAML Event Handlers
+        // ---------------------------
         private void RootGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            AdjustWindowToContent();
-        }
-
-        private void RootGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (sender is Border border)
-            {
-                // Access the new size from the event arguments
-                double newWidth = e.NewSize.Width;
-                double newHeight = e.NewSize.Height;
-
-                // You can also get the actual dimensions using ActualWidth and ActualHeight
-                double actualWidth = border.ActualWidth;
-                double actualHeight = border.ActualHeight;
-
-                // Perform any actions needed when the size changes
-                // System.Diagnostics.Debug.WriteLine($"Border size changed to: {newWidth}x{newHeight}");
-            }
-        }
-
-        private void AdjustWindowToContent()
-        {
-            IntPtr hWnd = WindowNative.GetWindowHandle(this);
-            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
-
-            if (appWindow != null)
-            {
-                // 1. THE FIX: Ask the RootGrid how big it WANTS to be,
-                //    assuming it has infinite space (ignoring current window size).
-                RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-
-                // 2. Use DesiredSize (what it wants) instead of ActualWidth (what it is currently forced to be)
-                var desiredSize = RootGrid.DesiredSize;
-
-                // 3. Get the scale factor
-                double scale = RootGrid.XamlRoot.RasterizationScale;
-
-                // 4. Calculate dimensions (Round UP to avoid cutting off pixels)
-                int newWidth = (int)Math.Ceiling(desiredSize.Width * scale);
-                int newHeight = (int)Math.Ceiling(desiredSize.Height * scale);
-
-                // 5. Resize
-                // We add a check to stop resizing if we are already at the right size
-                if (appWindow.Size.Width != newWidth || appWindow.Size.Height != newHeight)
-                {
-                    appWindow.Resize(new Windows.Graphics.SizeInt32(newWidth, newHeight));
-                }
-            }
+            RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var desiredSize = RootGrid.DesiredSize;
+            ResizeAppWindow(desiredSize.Width, desiredSize.Height);
         }
 
         private void RootGrid_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -239,7 +214,6 @@ namespace KeystrokeOverlayUI
                 int result = SendMessage(hWnd, WMNCLBUTTONDOWN, HTCAPTION, 0);
                 if (result == 0)
                 {
-                    // Optionally log or handle the error if needed
                     ManagedCommon.Logger.LogWarning("SendMessage failed to initiate window drag.");
                 }
 
@@ -248,6 +222,41 @@ namespace KeystrokeOverlayUI
             }
         }
 
+        private void StackPanel_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is not StackPanel stackPanel)
+            {
+                return;
+            }
+
+            // measure the StackPanel to get its desired size
+            stackPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var desiredSize = stackPanel.DesiredSize;
+
+            // hide window if no content
+            if (desiredSize.Width == 0 || desiredSize.Height == 0 || ViewModel.PressedKeys.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("No content to display, hiding overlay.");
+                HideAppWindow();
+                return;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Showing Overlay Content");
+                ShowAppWindow();
+            }
+
+            // calculate total size including padding
+            double totalWidth = desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right;
+            double totalHeight = desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
+
+            // resize the app window
+            ResizeAppWindow(totalWidth, totalHeight);
+        }
+
+        // ---------------------------
+        // AppWindow Helper Methods
+        // ---------------------------
         private AppWindow GetAppWindow()
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
@@ -267,44 +276,9 @@ namespace KeystrokeOverlayUI
             appWindow?.Show();
         }
 
-        private void StackPanel_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // 1. Get the StackPanel that holds the keys
-            if (sender is not StackPanel stackPanel)
-            {
-                return;
-            }
-
-            // 2. Ask the StackPanel how big it WANTS to be (ignoring current window constraints)
-            stackPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            var desiredSize = stackPanel.DesiredSize;
-
-            if (desiredSize.Width == 0 || desiredSize.Height == 0 || ViewModel.PressedKeys.Count == 0)
-            {
-                System.Diagnostics.Debug.WriteLine("No content to display, hiding overlay.");
-                HideAppWindow();
-                return;
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("Showing Overlay Content");
-                ShowAppWindow();
-            }
-
-            // 3. Add the padding from the outer Border (RootGrid)
-            //    (Your XAML has Padding="15,12", so we must add that back in)
-            double totalWidth = desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right;
-            double totalHeight = desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
-
-            // 4. Resize the window
-            ResizeAppWindow(totalWidth, totalHeight);
-        }
-
         private void ResizeAppWindow(double widthDIPs, double heightDIPs)
         {
-            IntPtr hWnd = WindowNative.GetWindowHandle(this);
-            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
+            var appWindow = GetAppWindow();
 
             if (appWindow != null)
             {
@@ -321,23 +295,9 @@ namespace KeystrokeOverlayUI
             }
         }
 
-        private string GetKeyName(uint virtualKey)
-        {
-            // Simple conversion using built-in WinUI/System enums
-            // You can expand this for better symbols (e.g. "Command", "Option") later
-            var key = (Windows.System.VirtualKey)virtualKey;
-
-            return key switch
-            {
-                Windows.System.VirtualKey.Space => "Space",
-                Windows.System.VirtualKey.Enter => "Enter",
-                Windows.System.VirtualKey.Back => "Backspace",
-
-                // Add other special cases here
-                _ => key.ToString(),
-            };
-        }
-
+        // ---------------------------
+        // General Dispose Pattern
+        // ---------------------------
         public void Dispose()
         {
             Dispose(true);
