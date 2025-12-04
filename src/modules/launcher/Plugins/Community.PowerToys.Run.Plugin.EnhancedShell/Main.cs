@@ -149,12 +149,16 @@ namespace Community.PowerToys.Run.Plugin.EnhancedShell
 
         private Result CreateHistoryResult(ShellCommand command)
         {
+            var minutesSinceExecution = (DateTime.Now - command.ExecutedAt).TotalMinutes;
+            const int baseScore = 900;
+            const int minScore = 0;
+
             return new Result
             {
                 Title = command.Command,
                 SubTitle = $"Last used: {command.ExecutedAt:g} ({command.ShellType})",
                 IcoPath = "Images\\shell.light.png",
-                Score = 900 - (int)(DateTime.Now - command.ExecutedAt).TotalMinutes,
+                Score = Math.Max(minScore, baseScore - (int)minutesSinceExecution),
                 Action = context =>
                 {
                     _context.API.ChangeQuery($"{_context.CurrentPluginMetadata.ActionKeyword} {command.Command}");
