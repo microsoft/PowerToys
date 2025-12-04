@@ -5,28 +5,34 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <!-- Use the module-specific output folder so the C++ DLL finds the EXE -->
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    
-    <!-- Naming and Identity -->
-    <AssemblyName>PowerToys.KeystrokeOverlay</AssemblyName>
-    <RootNamespace>KeystrokeOverlay</RootNamespace>
-    
-    <!-- WinUI 3 Packaging Settings -->
+
+    <AssemblyName>PowerToys.KeystrokeOverlayUI</AssemblyName>
+    <RootNamespace>PowerToys.KeystrokeOverlayUI</RootNamespace>
+
     <WindowsPackageType>None</WindowsPackageType>
+
+    <!-- 🔥 Forces Microsoft.UI.Xaml.dll + all WinAppSDK files into EXE folder -->
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     
     <!-- Platform Settings -->
     <Platforms>x64;ARM64</Platforms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    
-    <!-- Allow unsafe blocks if you do any P/Invoke, good practice to enable in PT modules -->
+
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+</PropertyGroup>
+
+<ItemGroup>
+  <RuntimeHostConfigurationOption Include="MVVMTOOLKIT_ENABLE_INOTIFYPROPERTYCHANGING_SUPPORT" Value="true" />
+</ItemGroup>
 
   <ItemGroup>
 	<PackageReference Include="CommunityToolkit.Mvvm" />

@@ -293,6 +293,8 @@ internal sealed partial class SampleListPage : ListPage
     }
 
     internal sealed partial class ListItemChangingCommandInTime : ListItem
+    {
+        private readonly EverChangingCommand[] _commands =
         [
             new("Water", TimeSpan.FromSeconds(2), "🐬", "🐳", "🐟", "🦈"),
             new("Faces", TimeSpan.FromSeconds(2), "😁", "🥺", "😍"),
