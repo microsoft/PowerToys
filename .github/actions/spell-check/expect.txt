@@ -980,6 +980,7 @@ mdtxt
 mdwn
 meme
 memicmp
+mera
 MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY

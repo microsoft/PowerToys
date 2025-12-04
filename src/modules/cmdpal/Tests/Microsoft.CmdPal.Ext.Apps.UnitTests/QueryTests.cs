@@ -4,6 +4,7 @@
 
 using System.Linq;
 using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -41,5 +42,58 @@ public class QueryTests : CommandPaletteUnitTestBase
         var calculatorResult = Query("cal", allItems).FirstOrDefault();
         Assert.IsNotNull(calculatorResult);
         Assert.AreEqual("Calculator", calculatorResult.Title);
+    }
+
+    [TestMethod]
+    [DataRow("camera", "Câmera", true, DisplayName = "Portuguese: camera matches Câmera")]
+    [DataRow("camera", "câmera", true, DisplayName = "Portuguese: camera matches câmera (lowercase)")]
+    [DataRow("cafe", "Café", true, DisplayName = "French: cafe matches Café")]
+    [DataRow("resume", "Résumé", true, DisplayName = "French: resume matches Résumé")]
+    [DataRow("nino", "Niño", true, DisplayName = "Spanish: nino matches Niño")]
+    [DataRow("espanol", "Español", true, DisplayName = "Spanish: espanol matches Español")]
+    [DataRow("uber", "Über", true, DisplayName = "German: uber matches Über")]
+    [DataRow("naive", "Naïve", true, DisplayName = "English: naive matches Naïve")]
+    [DataRow("fiancee", "Fiancée", true, DisplayName = "French: fiancee matches Fiancée")]
+    [DataRow("cliche", "Cliché", true, DisplayName = "French: cliche matches Cliché")]
+    [DataRow("CAMERA", "câmera", true, DisplayName = "Case insensitive: CAMERA matches câmera")]
+    [DataRow("test", "Câmera", false, DisplayName = "Non-matching: test does not match Câmera")]
+    public void FuzzyMatcherHandlesDiacritics(string query, string target, bool shouldMatch)
+    {
+        // Act
+        var score = FuzzyStringMatcher.ScoreFuzzy(query, target);
+
+        // Assert
+        if (shouldMatch)
+        {
+            Assert.IsTrue(score > 0, $"Expected '{query}' to match '{target}' but score was {score}");
+        }
+        else
+        {
+            Assert.AreEqual(0, score, $"Expected '{query}' not to match '{target}' but score was {score}");
+        }
+    }
+
+    [TestMethod]
+    public void QueryMatchesAppsWithDiacritics()
+    {
+        // Arrange - simulating Brazilian Portuguese "Câmera" app
+        var mockCache = new MockAppCache();
+        var cameraApp = TestDataHelper.CreateTestUWPApplication("Câmera");
+        mockCache.AddUWPApplication(cameraApp);
+
+        var page = new AllAppsPage(mockCache);
+
+        // Act
+        var allItems = page.GetItems();
+
+        // Assert - searching without accent should find the app
+        var result = Query("camera", allItems).FirstOrDefault();
+        Assert.IsNotNull(result, "Searching 'camera' should find 'Câmera' app");
+        Assert.AreEqual("Câmera", result.Title);
+
+        // Also verify exact match works
+        var exactResult = Query("Câmera", allItems).FirstOrDefault();
+        Assert.IsNotNull(exactResult, "Searching 'Câmera' should find 'Câmera' app");
+        Assert.AreEqual("Câmera", exactResult.Title);
     }
 }
