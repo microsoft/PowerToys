@@ -312,6 +312,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             monitor.SupportsColorTemperature = result.SupportsColorTemperature;
             monitor.SupportsVolume = result.SupportsVolume;
             monitor.SupportsInputSource = result.SupportsInputSource;
+
+            // WMI monitors always support brightness control, even without DDC/CI capabilities
+            // They control brightness through the Windows WMI interface
+            if (string.Equals(monitor.CommunicationMethod, "WMI", StringComparison.OrdinalIgnoreCase))
+            {
+                monitor.SupportsBrightness = true;
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
