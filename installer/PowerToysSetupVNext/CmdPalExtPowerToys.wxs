@@ -9,6 +9,16 @@
       </Directory>
     </DirectoryRef>
 
+    <DirectoryRef Id="CmdPalExtensionsInstallFolder">
+      <Component Id="RemoveCmdPalExtensionsFolder" Guid="7F3E7A36-0F28-4BB5-9D68-8B7E0A6886C6" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveCmdPalExtensionsFolder" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFile Id="RemoveFilesCmdPalExtensionsInstallDir" Directory="CmdPalExtensionsInstallFolder" Name="*" On="uninstall" />
+        <RemoveFolder Id="RemoveCmdPalExtensionsInstallFolder" Directory="CmdPalExtensionsInstallFolder" On="uninstall" />
+      </Component>
+    </DirectoryRef>
+
     <DirectoryRef Id="CmdPalExtPowerToysInstallFolder" FileSource="$(var.CmdPalExtPowerToysBuildDir)AppPackages\Microsoft.CmdPal.Ext.PowerToys_$(var.CmdPalExtPowerToysVersion)_Test">
       <Component Id="Module_CmdPal_Ext_PowerToys" Guid="1B7E5C7E-7F3B-40D4-BF57-6B9F5E3A6B02" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
@@ -27,10 +37,10 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveCmdPalExtPowerToysFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFile Id="RemoveFilesCmdPalExtensionsInstallDir" Directory="CmdPalExtensionsInstallFolder" Name="*" On="uninstall" />
         <RemoveFile Id="RemoveFilesCmdPalExtPowerToysInstallDir" Directory="CmdPalExtPowerToysInstallFolder" Name="*" On="uninstall" />
         <RemoveFolder Id="RemoveCmdPalExtPowerToysInstallDirFolder" Directory="CmdPalExtPowerToysInstallFolder" On="uninstall" />
       </Component>
+      <ComponentRef Id="RemoveCmdPalExtensionsFolder" />
       <ComponentRef Id="Module_CmdPal_Ext_PowerToys" />
     </ComponentGroup>
   </Fragment>
