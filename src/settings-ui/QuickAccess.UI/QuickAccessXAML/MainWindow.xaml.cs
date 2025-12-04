@@ -40,9 +40,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
     // Prevent auto-hide until the window actually gained focus once.
     private bool _hasSeenInteractiveActivation;
-    private MemoryMappedFile? _positionMap;
-    private MemoryMappedViewAccessor? _positionView;
-    private PointInt32? _lastRequestedPosition;
     private bool _isVisible;
     private IntPtr _mouseHook;
     private LowLevelMouseProc? _mouseHookDelegate;
@@ -140,7 +137,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
     private void InitializeEventListeners()
     {
-        InitializePositionMapping();
         if (!string.IsNullOrEmpty(_launchContext.ShowEventName))
         {
             try
@@ -173,60 +169,26 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         if (_hwnd != IntPtr.Zero)
         {
             UncloakWindow();
-            var positionApplied = TryReadRequestedPosition(out var requestedPosition);
-            if (!positionApplied && _lastRequestedPosition.HasValue)
-            {
-                requestedPosition = _lastRequestedPosition.Value;
-                positionApplied = true;
-            }
-
-            if (positionApplied)
-            {
-                _lastRequestedPosition = requestedPosition;
-            }
 
             ShowWindowNative(_hwnd, SwShow);
 
             var flags = SwpNoSize | SwpShowWindow;
             var targetX = 0;
             var targetY = 0;
-            if (!positionApplied)
-            {
-                flags |= SwpNoMove;
-            }
-            else
-            {
-                var windowSize = _appWindow?.Size;
-                var windowWidth = windowSize?.Width ?? DefaultWidth;
-                var windowHeight = windowSize?.Height ?? DefaultHeight;
 
-                targetX = requestedPosition.X - (windowWidth / 2);
-                targetY = requestedPosition.Y - windowHeight;
+            var windowSize = _appWindow?.Size;
+            var windowWidth = windowSize?.Width ?? DefaultWidth;
+            var windowHeight = windowSize?.Height ?? DefaultHeight;
 
-                var monitorHandle = MonitorFromPointNative(new NativePoint { X = requestedPosition.X, Y = requestedPosition.Y }, MonitorDefaulttonearest);
-                if (monitorHandle != IntPtr.Zero)
+            GetCursorPos(out var cursorPosition);
+            var monitorHandle = MonitorFromPointNative(cursorPosition, MonitorDefaulttonearest);
+            if (monitorHandle != IntPtr.Zero)
+            {
+                var monitorInfo = new MonitorInfo { CbSize = Marshal.SizeOf<MonitorInfo>() };
+                if (GetMonitorInfoNative(monitorHandle, ref monitorInfo))
                 {
-                    var monitorInfo = new MonitorInfo { CbSize = Marshal.SizeOf<MonitorInfo>() };
-                    if (GetMonitorInfoNative(monitorHandle, ref monitorInfo))
-                    {
-                        var minX = monitorInfo.RcWork.Left;
-                        var maxX = monitorInfo.RcWork.Right - windowWidth;
-                        if (maxX < minX)
-                        {
-                            maxX = minX;
-                        }
-
-                        targetX = Math.Clamp(targetX, minX, maxX);
-
-                        var minY = monitorInfo.RcWork.Top;
-                        var maxY = monitorInfo.RcWork.Bottom - windowHeight;
-                        if (maxY < minY)
-                        {
-                            maxY = minY;
-                        }
-
-                        targetY = Math.Clamp(targetY, minY, maxY);
-                    }
+                    targetX = monitorInfo.RcWork.Right - windowWidth;
+                    targetY = monitorInfo.RcWork.Bottom - windowHeight;
                 }
             }
 
@@ -373,7 +335,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             }
 
             RemoveGlobalMouseHook();
-            DisposePositionResources();
 
             _coordinator.Dispose();
         }
@@ -665,141 +626,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         thread = null;
     }
 
-    private void InitializePositionMapping()
-    {
-        if (string.IsNullOrEmpty(_launchContext.PositionMapName) || _positionMap != null)
-        {
-            return;
-        }
-
-        try
-        {
-            _positionMap = MemoryMappedFile.OpenExisting(_launchContext.PositionMapName!, MemoryMappedFileRights.Read);
-            _positionView = _positionMap.CreateViewAccessor(0, sizeof(int) * 3, MemoryMappedFileAccess.Read);
-        }
-        catch (FileNotFoundException)
-        {
-        }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-    }
-
-    private bool TryReadRequestedPosition(out PointInt32 position)
-    {
-        position = default;
-        if (_positionView == null)
-        {
-            return false;
-        }
-
-        const int xOffset = 0;
-        const int yOffset = sizeof(int);
-        const int sequenceOffset = sizeof(int) * 2;
-
-        for (var attempt = 0; attempt < 3; attempt++)
-        {
-            int startSequence;
-            try
-            {
-                startSequence = _positionView.ReadInt32(sequenceOffset);
-            }
-            catch (ObjectDisposedException)
-            {
-                return false;
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-
-            if ((startSequence & 1) != 0)
-            {
-                Thread.Yield();
-                continue;
-            }
-
-            int x;
-            int y;
-            try
-            {
-                x = _positionView.ReadInt32(xOffset);
-                y = _positionView.ReadInt32(yOffset);
-            }
-            catch (ObjectDisposedException)
-            {
-                return false;
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-
-            int endSequence;
-            try
-            {
-                endSequence = _positionView.ReadInt32(sequenceOffset);
-            }
-            catch (ObjectDisposedException)
-            {
-                return false;
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-
-            if (startSequence == endSequence)
-            {
-                position = new PointInt32(x, y);
-                return true;
-            }
-
-            Thread.Yield();
-        }
-
-        return false;
-    }
-
-    private void DisposePositionResources()
-    {
-        try
-        {
-            _positionView?.Dispose();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-
-        _positionView = null;
-
-        try
-        {
-            _positionMap?.Dispose();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
-
-        _positionMap = null;
-        _lastRequestedPosition = null;
-    }
-
     private void CustomizeWindowChrome()
     {
         if (_hwnd == IntPtr.Zero)
@@ -847,6 +673,10 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private const int WmLbuttondown = 0x0201;
     private const int WmRbuttondown = 0x0204;
     private const int WmMbuttondown = 0x0207;
+
+    [DllImport("user32.dll")]
+    private static extern bool GetCursorPos(out NativePoint lpPoint);
+
     private const int WmXbuttondown = 0x020B;
 
     private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);

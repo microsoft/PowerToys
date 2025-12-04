@@ -17,23 +17,13 @@ extern void receive_json_send_to_main_thread(const std::wstring& msg);
 
 namespace
 {
-    struct PositionPayload
-    {
-        LONG x;
-        LONG y;
-        LONG sequence;
-    };
-
     wil::unique_handle quick_access_process;
     wil::unique_handle show_event;
     wil::unique_handle exit_event;
-    wil::unique_handle position_mapping;
     std::wstring show_event_name;
     std::wstring exit_event_name;
-    std::wstring position_mapping_name;
     std::wstring runner_pipe_name;
     std::wstring app_pipe_name;
-    PositionPayload* position_payload = nullptr;
     std::unique_ptr<TwoWayPipeMessageIPC> quick_access_ipc;
     std::mutex quick_access_mutex;
 
@@ -62,19 +52,11 @@ namespace
             quick_access_ipc.reset();
         }
 
-        if (position_payload)
-        {
-            UnmapViewOfFile(position_payload);
-            position_payload = nullptr;
-        }
-
         quick_access_process.reset();
         show_event.reset();
         exit_event.reset();
-        position_mapping.reset();
         show_event_name.clear();
         exit_event_name.clear();
-        position_mapping_name.clear();
         runner_pipe_name.clear();
         app_pipe_name.clear();
     }
@@ -98,8 +80,6 @@ namespace
         command_line += show_event_name;
         command_line += L"\" --exit-event=\"";
         command_line += exit_event_name;
-        command_line += L"\" --position-map=\"";
-        command_line += position_mapping_name;
         command_line += L"\"";
         if (!runner_pipe_name.empty())
         {
@@ -137,7 +117,6 @@ namespace QuickAccessHost
 
         show_event_name = build_event_name(L"_Show");
         exit_event_name = build_event_name(L"_Exit");
-        position_mapping_name = build_event_name(L"_Position");
 
         show_event.reset(CreateEventW(nullptr, FALSE, FALSE, show_event_name.c_str()));
         if (!show_event)
@@ -154,27 +133,6 @@ namespace QuickAccessHost
             reset_state_locked();
             return;
         }
-
-        position_mapping.reset(CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(PositionPayload), position_mapping_name.c_str()));
-        if (!position_mapping)
-        {
-            Logger::error(L"QuickAccessHost: failed to create position mapping. error={}.", GetLastError());
-            reset_state_locked();
-            return;
-        }
-
-        auto view = MapViewOfFile(position_mapping.get(), FILE_MAP_ALL_ACCESS, 0, 0, sizeof(PositionPayload));
-        if (!view)
-        {
-            Logger::error(L"QuickAccessHost: failed to map position view. error={}.", GetLastError());
-            reset_state_locked();
-            return;
-        }
-
-        position_payload = static_cast<PositionPayload*>(view);
-        position_payload->x = 0;
-        position_payload->y = 0;
-        position_payload->sequence = 0;
 
         runner_pipe_name = L"\\\\.\\pipe\\powertoys_quick_access_runner_";
         app_pipe_name = L"\\\\.\\pipe\\powertoys_quick_access_ui_";
@@ -258,17 +216,10 @@ namespace QuickAccessHost
         CloseHandle(process_info.hThread);
     }
 
-    void show(const POINT& position)
+    void show()
     {
         start();
         std::scoped_lock lock(quick_access_mutex);
-        if (position_payload)
-        {
-            InterlockedIncrement(&position_payload->sequence);
-            InterlockedExchange(&position_payload->x, position.x);
-            InterlockedExchange(&position_payload->y, position.y);
-            InterlockedIncrement(&position_payload->sequence);
-        }
 
         if (show_event)
         {

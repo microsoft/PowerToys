@@ -6,7 +6,7 @@
 namespace QuickAccessHost
 {
     void start();
-    void show(const POINT& position);
+    void show();
     void stop();
     bool is_running();
 }
