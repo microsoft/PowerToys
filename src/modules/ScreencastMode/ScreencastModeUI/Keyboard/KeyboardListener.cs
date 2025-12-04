@@ -89,8 +89,6 @@ namespace ScreencastModeUI.Keyboard
                 UnhookWindowsHookEx(_windowsHookHandle);
                 _windowsHookHandle = nint.Zero;
             }
-
-            // REMOVED: FreeLibrary logic
         }
     }
 }
