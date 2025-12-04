@@ -75,55 +75,6 @@ namespace UITests_FancyZones
         }
 
         /// <summary>
-        /// Test Use Shift key to activate zones while dragging a window in FancyZones Zone Behaviour Settings
-        /// <list type="bullet">
-        /// <item>
-        /// <description>Verifies that holding Shift while dragging shows all zones as expected.</description>
-        /// </item>
-        /// </list>
-        /// </summary>
-        [TestMethod("FancyZones.Settings.TestShowZonesOnShiftDuringDrag")]
-        [TestCategory("FancyZones_Dragging #1")]
-        public void TestShowZonesOnShiftDuringDrag()
-        {
-            string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
-
-            var windowRect = Session.GetMainWindowRect();
-            int startX = windowRect.Left + 70;
-            int startY = windowRect.Top + 25;
-            int endX = startX + 300;
-            int endY = startY + 300;
-
-            var (initialColor, withShiftColor) = RunDragInteractions(
-              preAction: () =>
-              {
-                  Session.MoveMouseTo(startX, startY);
-                  Session.PerformMouseAction(MouseActionType.LeftDown);
-                  Session.MoveMouseTo(endX, endY);
-              },
-              postAction: () =>
-              {
-                  Session.PressKey(Key.Shift);
-                  Task.Delay(500).Wait();
-              },
-              releaseAction: () =>
-              {
-                  Session.ReleaseKey(Key.Shift);
-                  Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
-              },
-              testCaseName: testCaseName);
-
-            string zoneColorWithoutShift = GetOutWindowPixelColor(30);
-
-            Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
-            Assert.AreEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
-
-            Session.PerformMouseAction(MouseActionType.LeftUp);
-
-            Clean();
-        }
-
-        /// <summary>
         /// Test dragging a window during Shift key press in FancyZones Zone Behaviour Settings
         /// <list type="bullet">
         /// <item>
@@ -350,6 +301,55 @@ namespace UITests_FancyZones
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
+
+            Clean();
+        }
+
+        /// <summary>
+        /// Test Use Shift key to activate zones while dragging a window in FancyZones Zone Behaviour Settings
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that holding Shift while dragging shows all zones as expected.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [TestMethod("FancyZones.Settings.TestShowZonesOnShiftDuringDrag")]
+        [TestCategory("FancyZones_Dragging #1")]
+        public void TestShowZonesOnShiftDuringDrag()
+        {
+            string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
+
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 300;
+            int endY = startY + 300;
+
+            var (initialColor, withShiftColor) = RunDragInteractions(
+              preAction: () =>
+              {
+                  Session.MoveMouseTo(startX, startY);
+                  Session.PerformMouseAction(MouseActionType.LeftDown);
+                  Session.MoveMouseTo(endX, endY);
+              },
+              postAction: () =>
+              {
+                  Session.PressKey(Key.Shift);
+                  Task.Delay(500).Wait();
+              },
+              releaseAction: () =>
+              {
+                  Session.ReleaseKey(Key.Shift);
+                  Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
+              },
+              testCaseName: testCaseName);
+
+            string zoneColorWithoutShift = GetOutWindowPixelColor(30);
+
+            Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
+            Assert.AreEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
+
+            Session.PerformMouseAction(MouseActionType.LeftUp);
 
             Clean();
         }
