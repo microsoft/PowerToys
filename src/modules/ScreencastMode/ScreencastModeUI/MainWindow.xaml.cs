@@ -360,15 +360,26 @@ namespace ScreencastModeUI
                 var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
                 _activeModifiers.Add(normalizedKey);
             }
+            else if (key == VirtualKey.Back)
+            {
+                // Clear old sequence, but show Backspace itself
+                _pressedKeys.Clear();
+                _activeModifiers.Clear();
 
-            // Check if it's a clear key (arrows, backspace, escape)
+                _pressedKeys.Add(new KeyInfo
+                {
+                    Key = key,
+                    Modifiers = new HashSet<VirtualKey>(),
+                });
+            }
+
+            // Check if it's a clear key (arrows, escape)
             else if (KeyDisplayNameProvider.IsClearKey(key))
             {
                 ClearKeys();
             }
             else
             {
-                // Build what the text *would* look like if we added this key
                 var keyInfo = new KeyInfo
                 {
                     Key = key,
@@ -378,7 +389,6 @@ namespace ScreencastModeUI
                 _pressedKeys.Add(keyInfo);
                 var preview = BuildDisplayText();
 
-                // If that overflows our rough limit, start a fresh sequence with just this key
                 if (WillOverflow(preview))
                 {
                     _pressedKeys.Clear();
