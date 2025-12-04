@@ -49,17 +49,19 @@ namespace PowerRenameLib
         void ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata);
         void ExtractAllXMPFields(IWICMetadataQueryReader* reader, XMPMetadata& metadata);
 
-        // Field reading helpers
+        // Field reading helpers (single path)
         std::optional<SYSTEMTIME> ReadDateTime(IWICMetadataQueryReader* reader, const std::wstring& path);
         std::optional<std::wstring> ReadString(IWICMetadataQueryReader* reader, const std::wstring& path);
         std::optional<int64_t> ReadInteger(IWICMetadataQueryReader* reader, const std::wstring& path);
         std::optional<double> ReadDouble(IWICMetadataQueryReader* reader, const std::wstring& path);
 
-        // Field reading helpers with alternative path support (for HEIC/HEIF format)
-        std::optional<SYSTEMTIME> ReadDateTimeWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
-        std::optional<std::wstring> ReadStringWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
-        std::optional<int64_t> ReadIntegerWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
-        std::optional<double> ReadDoubleWithFallback(IWICMetadataQueryReader* reader, const std::wstring& primaryPath, const std::wstring& fallbackPath);
+        // Field reading helpers with multiple path support (for cross-format compatibility)
+        // These methods try each path in order until metadata is found
+        std::optional<SYSTEMTIME> ReadDateTimeFromPaths(IWICMetadataQueryReader* reader, const std::vector<std::wstring>& paths);
+        std::optional<std::wstring> ReadStringFromPaths(IWICMetadataQueryReader* reader, const std::vector<std::wstring>& paths);
+        std::optional<int64_t> ReadIntegerFromPaths(IWICMetadataQueryReader* reader, const std::vector<std::wstring>& paths);
+        std::optional<double> ReadDoubleFromPaths(IWICMetadataQueryReader* reader, const std::vector<std::wstring>& paths);
+        std::optional<PropVariantValue> ReadMetadataFromPaths(IWICMetadataQueryReader* reader, const std::vector<std::wstring>& paths);
 
         // Helper methods
         std::optional<PropVariantValue> ReadMetadata(IWICMetadataQueryReader* reader, const std::wstring& path);

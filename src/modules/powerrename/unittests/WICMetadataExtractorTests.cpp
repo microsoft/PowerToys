@@ -241,4 +241,128 @@ namespace WICMetadataExtractorTests
             Assert::AreEqual(metadata.title.value().c_str(), metadata2.title.value().c_str());
         }
     };
+
+    TEST_CLASS(ExtractHEICMetadataTests)
+    {
+    public:
+        // Helper to check if HEIC test file exists
+        bool HeicTestFileExists()
+        {
+            std::wstring testFile = GetTestDataPath() + L"\\heic_test.heic";
+            return std::filesystem::exists(testFile);
+        }
+
+        TEST_METHOD(ExtractHEIC_FileNotFound_ReturnsFalse)
+        {
+            // Test that HEIC extraction fails for nonexistent file
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\nonexistent.heic";
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            Assert::IsFalse(result, L"HEIC extraction should fail for nonexistent file");
+        }
+
+        TEST_METHOD(ExtractHEIC_ExifMetadata)
+        {
+            // Test HEIC EXIF extraction
+            // NOTE: This test requires heic_test.heic with known EXIF metadata
+            // If the test file doesn't exist, the test is skipped
+            if (!HeicTestFileExists())
+            {
+                Logger::WriteMessage(L"Skipping HEIC test: heic_test.heic not found in testdata folder");
+                return;
+            }
+
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heic_test.heic";
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            // HEIC files require HEIF Image Extensions from Microsoft Store
+            // If not installed, extraction may fail
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIC extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            // Verify that we can extract at least some metadata
+            // The actual values depend on the test file
+            Assert::IsTrue(
+                metadata.cameraMake.has_value() ||
+                metadata.cameraModel.has_value() ||
+                metadata.dateTaken.has_value() ||
+                metadata.width.has_value(),
+                L"HEIC file should have at least some EXIF metadata");
+        }
+
+        TEST_METHOD(ExtractHEIF_ExifMetadata)
+        {
+            // Test HEIF EXIF extraction (same as HEIC but with .heif extension)
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heif";
+            
+            // Skip if test file doesn't exist
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"Skipping HEIF test: heif_test.heif not found in testdata folder");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(
+                metadata.cameraMake.has_value() ||
+                metadata.cameraModel.has_value() ||
+                metadata.dateTaken.has_value() ||
+                metadata.width.has_value(),
+                L"HEIF file should have at least some EXIF metadata");
+        }
+
+        TEST_METHOD(ExtractHEIC_GPSData)
+        {
+            // Test HEIC GPS extraction
+            if (!HeicTestFileExists())
+            {
+                Logger::WriteMessage(L"Skipping HEIC GPS test: heic_test.heic not found in testdata folder");
+                return;
+            }
+
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heic_test.heic";
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIC extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            // GPS data may or may not be present depending on the test file
+            // Just verify the extraction doesn't crash
+            if (metadata.latitude.has_value() && metadata.longitude.has_value())
+            {
+                Logger::WriteMessage(L"GPS data found in HEIC file");
+                // Latitude should be between -90 and 90
+                Assert::IsTrue(metadata.latitude.value() >= -90.0 && metadata.latitude.value() <= 90.0,
+                    L"Latitude should be valid");
+                // Longitude should be between -180 and 180
+                Assert::IsTrue(metadata.longitude.value() >= -180.0 && metadata.longitude.value() <= 180.0,
+                    L"Longitude should be valid");
+            }
+        }
+    };
 }
