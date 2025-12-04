@@ -231,7 +231,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private string GenerateDefaultProfileName()
         {
             // Use shared ProfileHelper for consistent profile name generation
-            var existingNames = ViewModel.Profiles.Select(p => p.Name);
+            var existingNames = ViewModel.Profiles.Select(p => p.Name).ToHashSet();
             return ProfileHelper.GenerateUniqueProfileName(existingNames);
         }
     }
