@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -16,9 +17,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
 using WyHash;
 
+#pragma warning disable SA1649
+#pragma warning disable SA1402
+
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem
+public sealed partial class TopLevelViewModel : ObservableObject, IListItem, INormalizedTitles
 {
     private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
@@ -33,6 +37,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private HotkeySettings? _hotkey;
     private IIconInfo? _initialIcon;
+    private FuzzyMatchTarget _normalizedTitle;
+    private FuzzyMatchTarget _normalizedSubtitle;
 
     private CommandAlias? Alias { get; set; }
 
@@ -55,6 +61,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     public string Title => _commandItemViewModel.Title;
 
     public string Subtitle => _commandItemViewModel.Subtitle;
+
+    public FuzzyMatchTarget NormalizedTitle => _normalizedTitle;
+
+    public FuzzyMatchTarget NormalizedSubtitle => _normalizedSubtitle;
+
+    public FuzzyMatchTarget NormalizedExtensionName { get; }
 
     public IIconInfo Icon => _commandItemViewModel.Icon;
 
@@ -188,6 +200,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         IsFallback = isFallback;
         ExtensionHost = extensionHost;
 
+        NormalizedExtensionName = new FuzzyMatchTarget(extensionHost.Extension?.PackageDisplayName ?? string.Empty);
+
         item.PropertyChanged += Item_PropertyChanged;
 
         // UpdateAlias();
@@ -211,6 +225,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
             UpdateInitialIcon(false);
         }
+
+        UpdateNormalizedStrings();
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -231,6 +247,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             else if (e.PropertyName == nameof(CommandItem.Icon))
             {
                 UpdateInitialIcon();
+            }
+            else if (e.PropertyName is nameof(Title) or nameof(Subtitle))
+            {
+                UpdateNormalizedStrings();
             }
         }
     }
@@ -323,6 +343,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         // manually seeding with 0, so that the hash is stable across launches
         var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
         _generatedId = $"{_commandProviderId}{result}";
+    }
+
+    private void UpdateNormalizedStrings()
+    {
+        _normalizedTitle = new FuzzyMatchTarget(Title);
+        _normalizedSubtitle = new FuzzyMatchTarget(Subtitle);
     }
 
     private void DoOnUiThread(Action action)
