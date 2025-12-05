@@ -4,6 +4,8 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -207,6 +209,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             _settings.EnableDock = value;
             Save();
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(value));
         }
     }
 

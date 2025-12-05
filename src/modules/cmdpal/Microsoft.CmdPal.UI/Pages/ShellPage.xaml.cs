@@ -16,6 +16,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -49,6 +50,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
+    IRecipient<ShowHideDockMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -97,6 +99,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
+        WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
@@ -106,8 +110,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
 
-        _dockWindow = new DockWindow();
-        _dockWindow.Show();
+        if (App.Current.Services.GetService<SettingsModel>()!.EnableDock)
+        {
+            _dockWindow = new DockWindow();
+            _dockWindow.Show();
+        }
     }
 
     /// <summary>
@@ -460,6 +467,27 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             SearchBox.SelectSearch();
         }
+    }
+
+    public void Receive(ShowHideDockMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.ShowDock)
+            {
+                if (_dockWindow is null)
+                {
+                    _dockWindow = new DockWindow();
+                }
+
+                _dockWindow.Show();
+            }
+            else if (_dockWindow is not null)
+            {
+                _dockWindow.Close();
+                _dockWindow = null;
+            }
+        });
     }
 
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());

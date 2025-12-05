@@ -612,6 +612,12 @@ public sealed partial class DockWindow : WindowEx,
         var settings = serviceProvider.GetService<SettingsModel>();
         settings?.SettingsChanged -= SettingsChangedHandler;
         DisposeAcrylic();
+
+        // Remove our appbar registration
+        DestroyAppBar(_hwnd);
+
+        // Unhook the window procedure
+        ShowDesktop.RemoveHook();
     }
 }
 
