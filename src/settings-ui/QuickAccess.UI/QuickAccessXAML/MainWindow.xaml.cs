@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.QuickAccess.Flyout;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
@@ -43,6 +44,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private bool _isVisible;
     private IntPtr _mouseHook;
     private LowLevelMouseProc? _mouseHookDelegate;
+    private CancellationTokenSource? _trimCts;
 
     private const int DefaultWidth = 320;
     private const int DefaultHeight = 480;
@@ -122,11 +124,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         _isVisible = false;
         RemoveGlobalMouseHook();
 
-        // Reduce memory usage when hidden
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
+        ScheduleMemoryTrim();
     }
 
     internal void RequestHide()
@@ -139,6 +137,43 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         {
             _dispatcherQueue.TryEnqueue(HideWindow);
         }
+    }
+
+    private void ScheduleMemoryTrim()
+    {
+        CancelMemoryTrim();
+        _trimCts = new CancellationTokenSource();
+        var token = _trimCts.Token;
+
+        // Delay the trim to avoid aggressive GC during quick toggles
+        Task.Delay(2000, token).ContinueWith(
+            _ =>
+        {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            TrimMemory();
+        },
+            token,
+            TaskContinuationOptions.None,
+            TaskScheduler.Default);
+    }
+
+    private void CancelMemoryTrim()
+    {
+        _trimCts?.Cancel();
+        _trimCts?.Dispose();
+        _trimCts = null;
+    }
+
+    private void TrimMemory()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
     }
 
     private void InitializeEventListeners()
@@ -172,6 +207,8 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
     private void ShowWindow()
     {
+        CancelMemoryTrim();
+
         if (_hwnd != IntPtr.Zero)
         {
             UncloakWindow();
