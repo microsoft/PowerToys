@@ -48,7 +48,7 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
     private ListItem _diskItem;
     private ListItem? _networkItem;
 
-    public override string Id => "com.microsoft.cmdpal.PerformanceMonitor";
+    public override string Id => "com.microsoft.cmdpal.performanceMonitor";
 
     public override string Title => "Performance monitor";
 

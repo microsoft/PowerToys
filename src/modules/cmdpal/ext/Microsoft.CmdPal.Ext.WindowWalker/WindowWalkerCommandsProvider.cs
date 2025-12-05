@@ -51,15 +51,22 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
 
 #pragma warning disable SA1402 // File may only contain a single type
 
+/// <summary>
+/// The Window Walker band is a single command item that is used to create a
+/// band in the dock. The command for this band item is a ListPage for the open
+/// windows. The dock will then display each of the items on this list page as
+/// individual buttons.
+/// </summary>
 internal sealed partial class WindowsDockBand : CommandItem
 {
+    private readonly IntPtr _hookHandle;
     private WINEVENTPROC _hookProc;
-    private IntPtr _hookHandle = IntPtr.Zero;
     private WindowWalkerListPage _page;
 
     public WindowsDockBand()
     {
-        Title = Resources.window_walker_top_level_command_title;
+        // TODO!Loc
+        Title = "EXPERIMENTAL: Open windows"; // Resources.window_walker_top_level_command_title;
         Subtitle = Resources.windowwalker_name;
 
         var testSettings = new SettingsManager();

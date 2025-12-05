@@ -27,6 +27,15 @@ public class DockSettings
     public List<DockBandSettings> EndBands { get; set; } = [];
 
     public bool ShowLabels { get; set; } = true;
+
+    public DockSettings()
+    {
+        // Initialize with default values
+        StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.home" });
+
+        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceMonitor" });
+        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockband" });
+    }
 }
 
 /// <summary>
