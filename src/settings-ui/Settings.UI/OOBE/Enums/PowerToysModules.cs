@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         FileExplorer,
         ImageResizer,
         KBM,
+        KeystrokeOverlay,
         LightSwitch,
         MouseUtils,
         MouseWithoutBorders,
