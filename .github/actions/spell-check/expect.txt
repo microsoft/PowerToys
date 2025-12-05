@@ -1846,6 +1846,8 @@ uitests
 UITo
 ULONGLONG
 ums
+UMax
+UMin
 uncompilable
 UNCPRIORITY
 UNDNAME
