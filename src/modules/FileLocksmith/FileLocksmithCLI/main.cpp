@@ -2,18 +2,27 @@
 #include "FileLocksmithLib/FileLocksmith.h"
 #include <common/utils/json.h>
 #include <iostream>
+#include <sstream>
 
-void print_usage()
+struct CommandResult
 {
-    std::wcout << L"Usage: FileLocksmithCLI.exe [options] <path1> [path2] ...\n"
-               << L"Options:\n"
-               << L"  --kill      Kill processes locking the files\n"
-               << L"  --json      Output results in JSON format\n"
-               << L"  --wait      Wait for files to be unlocked\n"
-               << L"  --help      Show this help message\n";
+    int exit_code;
+    std::wstring output;
+};
+
+std::wstring get_usage()
+{
+    std::wstringstream ss;
+    ss << L"Usage: FileLocksmithCLI.exe [options] <path1> [path2] ...\n"
+       << L"Options:\n"
+       << L"  --kill      Kill processes locking the files\n"
+       << L"  --json      Output results in JSON format\n"
+       << L"  --wait      Wait for files to be unlocked\n"
+       << L"  --help      Show this help message\n";
+    return ss.str();
 }
 
-void print_json(const std::vector<ProcessResult>& results)
+std::wstring get_json(const std::vector<ProcessResult>& results)
 {
     json::JsonObject root;
     json::JsonArray processes;
@@ -36,28 +45,31 @@ void print_json(const std::vector<ProcessResult>& results)
     }
 
     root.SetNamedValue(L"processes", processes);
-    std::wcout << root.Stringify().c_str() << std::endl;
+    return root.Stringify();
 }
 
-void print_text(const std::vector<ProcessResult>& results)
+std::wstring get_text(const std::vector<ProcessResult>& results)
 {
+    std::wstringstream ss;
     if (results.empty())
     {
-        std::wcout << L"No processes found locking the file(s)." << std::endl;
-        return;
+        ss << L"No processes found locking the file(s)." << std::endl;
+        return ss.str();
     }
 
-    std::wcout << L"PID\tUser\tProcess" << std::endl;
+    ss << L"PID\tUser\tProcess" << std::endl;
     for (const auto& result : results)
     {
-        std::wcout << result.pid << L"\t" 
-                   << result.user << L"\t" 
-                   << result.name << std::endl;
+        ss << result.pid << L"\t" 
+           << result.user << L"\t" 
+           << result.name << std::endl;
     }
+    return ss.str();
 }
 
-void kill_processes(const std::vector<ProcessResult>& results)
+std::wstring kill_processes(const std::vector<ProcessResult>& results)
 {
+    std::wstringstream ss;
     for (const auto& result : results)
     {
         HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, result.pid);
@@ -65,29 +77,27 @@ void kill_processes(const std::vector<ProcessResult>& results)
         {
             if (TerminateProcess(hProcess, 0))
             {
-                std::wcout << L"Terminated process " << result.pid << L" (" << result.name << L")" << std::endl;
+                ss << L"Terminated process " << result.pid << L" (" << result.name << L")" << std::endl;
             }
             else
             {
-                std::wcerr << L"Failed to terminate process " << result.pid << L" (" << result.name << L")" << std::endl;
+                ss << L"Failed to terminate process " << result.pid << L" (" << result.name << L")" << std::endl;
             }
             CloseHandle(hProcess);
         }
         else
         {
-            std::wcerr << L"Failed to open process " << result.pid << L" (" << result.name << L")" << std::endl;
+            ss << L"Failed to open process " << result.pid << L" (" << result.name << L")" << std::endl;
         }
     }
+    return ss.str();
 }
 
-int wmain(int argc, wchar_t* argv[])
+CommandResult run_command(int argc, wchar_t* argv[])
 {
-    winrt::init_apartment();
-
     if (argc < 2)
     {
-        print_usage();
-        return 1;
+        return { 1, get_usage() };
     }
 
     bool json_output = false;
@@ -112,8 +122,7 @@ int wmain(int argc, wchar_t* argv[])
         }
         else if (arg == L"--help")
         {
-            print_usage();
-            return 0;
+            return { 0, get_usage() };
         }
         else
         {
@@ -123,49 +132,58 @@ int wmain(int argc, wchar_t* argv[])
 
     if (paths.empty())
     {
-        std::wcerr << L"Error: No paths specified." << std::endl;
-        return 1;
+        return { 1, L"Error: No paths specified.\n" };
     }
 
     if (wait)
     {
+        std::wstringstream ss;
         if (json_output)
         {
-             std::wcerr << L"Warning: --wait is incompatible with --json. Ignoring --json." << std::endl;
+             ss << L"Warning: --wait is incompatible with --json. Ignoring --json." << std::endl;
              json_output = false;
         }
         
-        std::wcout << L"Waiting for files to be unlocked..." << std::endl;
+        ss << L"Waiting for files to be unlocked..." << std::endl;
         while (true)
         {
             auto results = find_processes_recursive(paths);
             if (results.empty())
             {
-                std::wcout << L"Files unlocked." << std::endl;
+                ss << L"Files unlocked." << std::endl;
                 break;
             }
             Sleep(1000);
         }
-        return 0;
+        return { 0, ss.str() };
     }
 
     auto results = find_processes_recursive(paths);
+    std::wstringstream output_ss;
 
     if (kill)
     {
-        kill_processes(results);
+        output_ss << kill_processes(results);
         // Re-check after killing
         results = find_processes_recursive(paths);
     }
 
     if (json_output)
     {
-        print_json(results);
+        output_ss << get_json(results) << std::endl;
     }
     else
     {
-        print_text(results);
+        output_ss << get_text(results);
     }
 
-    return 0;
+    return { 0, output_ss.str() };
+}
+
+int wmain(int argc, wchar_t* argv[])
+{
+    winrt::init_apartment();
+    auto result = run_command(argc, argv);
+    std::wcout << result.output;
+    return result.exit_code;
 }
