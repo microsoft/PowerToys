@@ -774,6 +774,7 @@ INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
+Inno
 INPC
 inproc
 INPUTHARDWARE
@@ -1849,6 +1850,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter
