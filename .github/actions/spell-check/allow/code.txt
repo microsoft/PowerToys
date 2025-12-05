@@ -328,3 +328,9 @@ FFF
 HHH
 riday
 YYY
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug
