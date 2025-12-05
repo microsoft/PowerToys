@@ -1,6 +1,6 @@
 ---
 mode: 'agent'
-model: GPT-5-Codex (Preview)
+model: Claude Sonnet 4.5
 description: 'Generate a PowerToys-ready pull request description from the local diff.'
 ---
 
