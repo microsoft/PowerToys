@@ -81,68 +81,62 @@ private:
     void init_settings();
 
     // Launch and terminate the Keystroke Overlay process.
+    // Launch and terminate the Keystroke Overlay process.
     void launch_process()
     {
         Logger::trace(L"Launching Keystroke Overlay process");
         unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"" + std::to_wstring(powertoys_pid);
-        std::wstring application_path = L"PowerToys.KeystrokeOverlay.exe";
-        std::wstring full_command_path = application_path + L" " + executable_args.data();
-        Logger::trace(L"PowerToys KeystrokeOverlay launching: " + full_command_path);
-
-        STARTUPINFO info = { sizeof(info) };
-        PROCESS_INFORMATION p_info = {};
-        if (!CreateProcess(application_path.c_str(), full_command_path.data(), NULL, NULL, true, NULL, NULL, NULL, &info, &p_info))
-        {
-            DWORD error = GetLastError();
-            std::wstring message = L"Keystroke Overlay failed to start with error: ";
-            message += std::to_wstring(error);
-            Logger::error(message);
-        }
-        
-        m_hProcess = p_info.hProcess;
-        CloseHandle(p_info.hThread);
-
-        // Launch the hidden keystroke server executable located next to this module DLL
-        // Resolve folder of this module using __ImageBase
+        //
+        // Determine the folder where this module's DLL lives
+        //
         WCHAR modulePath[MAX_PATH] = { 0 };
-        if (GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), modulePath, ARRAYSIZE(modulePath)) != 0)
+        if (GetModuleFileNameW(reinterpret_cast<HMODULE>(&__ImageBase), modulePath, ARRAYSIZE(modulePath)) == 0)
         {
-            std::wstring folder = modulePath;
-            size_t pos = folder.find_last_of(L"\\/");
-            if (pos != std::wstring::npos) folder.resize(pos + 1);
-
-            std::wstring errrrrrr = L"Launching KeystrokeServer from folder: " + folder + L"\n";
-            OutputDebugStringW(errrrrrr.c_str()); // visible in Visual Studio Output / DebugView
-            Logger::trace(errrrrrr);
-
-            std::wstring serverPath = folder + L"KeystrokeServer.exe"; // ensure exe is named exactly like this
-            std::wstring serverCmd = serverPath + L" " + std::to_wstring(powertoys_pid);
-
-            STARTUPINFOW si = {};
-            si.cb = sizeof(si);
-            si.dwFlags = STARTF_USESHOWWINDOW;
-            si.wShowWindow = SW_HIDE;
-
-            PROCESS_INFORMATION piServer = {};
-            DWORD creationFlags = CREATE_NO_WINDOW;
-
-            // CreateProcessW may modify the command line buffer, so pass a modifiable pointer
-            if (!CreateProcessW(serverPath.c_str(), &serverCmd[0], nullptr, nullptr, FALSE, creationFlags, nullptr, nullptr, &si, &piServer))
-            {
-                DWORD err = GetLastError();
-                std::wstring msg = L"KeystrokeServer failed to start with error: " + std::to_wstring(err);
-                Logger::error(msg);
-            }
-            else
-            {
-                m_hServerProcess = piServer.hProcess;
-                CloseHandle(piServer.hThread);
-                Logger::trace(L"KeystrokeServer started successfully");
-            }
+            Logger::error(L"GetModuleFileNameW failed — cannot launch KeystrokeOverlay");
+            return;
         }
+
+        std::wstring folder = modulePath;
+        size_t pos = folder.find_last_of(L"\\/");
+        if (pos != std::wstring::npos)
+            folder.resize(pos + 1);
+
+        //
+        // Build absolute path to KeystrokeOverlay.exe
+        //
+        std::wstring exePath = folder + L"PowerToys.KeystrokeOverlay.exe";
+        std::wstring cmdLine = exePath + L" " + std::to_wstring(powertoys_pid);
+
+        Logger::trace(L"Launching KeystrokeOverlay UI from: " + exePath);
+
+        //
+        // Launch the UI application
+        //
+        STARTUPINFOW si{};
+        si.cb = sizeof(si);
+        PROCESS_INFORMATION pi{};
+
+        if (!CreateProcessW(
+            exePath.c_str(),       // lpApplicationName
+            &cmdLine[0],           // lpCommandLine (modifiable buffer)
+            nullptr, nullptr,
+            FALSE,                 // inherit handles
+            0,                     // flags
+            nullptr, nullptr,
+            &si, &pi))
+        {
+            DWORD err = GetLastError();
+            Logger::error(L"KeystrokeOverlay.exe failed to start with error: " + std::to_wstring(err));
+            return;
+        }
+
+        m_hProcess = pi.hProcess;
+        CloseHandle(pi.hThread);
+
+        Logger::trace(L"KeystrokeOverlay.exe started successfully");
     }
+
 
     void terminate_process()
     {

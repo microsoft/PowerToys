@@ -1,41 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <!-- Standard PowerToys Imports -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+
+    <!-- IMPORTANT: Rename UI EXE so that Runner can launch it -->
+    <AssemblyName>PowerToys.KeystrokeOverlay</AssemblyName>
+    <RootNamespace>PowerToys.KeystrokeOverlayUI</RootNamespace>
+
+    <!-- Output folder must match where Runner searches -->
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+
     <UseWinUI>true</UseWinUI>
     <ApplicationManifest>app.manifest</ApplicationManifest>
 
-    <AssemblyName>PowerToys.KeystrokeOverlayUI</AssemblyName>
-    <RootNamespace>PowerToys.KeystrokeOverlayUI</RootNamespace>
-
+    <!-- PowerToys WinAppSDK settings (must stay enabled) -->
     <WindowsPackageType>None</WindowsPackageType>
-
-    <!-- 🔥 Forces Microsoft.UI.Xaml.dll + all WinAppSDK files into EXE folder -->
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    
-    <!-- Platform Settings -->
+    <!-- Platform settings -->
     <Platforms>x64;ARM64</Platforms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-</PropertyGroup>
-
-<ItemGroup>
-  <RuntimeHostConfigurationOption Include="MVVMTOOLKIT_ENABLE_INOTIFYPROPERTYCHANGING_SUPPORT" Value="true" />
-</ItemGroup>
+  </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="CommunityToolkit.Mvvm" />
+    <RuntimeHostConfigurationOption Include="MVVMTOOLKIT_ENABLE_INOTIFYPROPERTYCHANGING_SUPPORT"
+                                    Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DO NOT specify version numbers — PowerToys manages versions repo-wide -->
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
@@ -43,16 +47,8 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <!--
-    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-    Tools extension to be activated for this project even if the Windows App SDK Nuget
-    package has not yet been restored.
-  -->
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
-  </ItemGroup>
+  <!-- Required PowerToys common library references -->
   <ItemGroup>
-    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
@@ -60,24 +56,14 @@
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
   </ItemGroup>
 
-  <!-- Ensure Views are compiled correctly -->
+  <!-- Ensure WinUI pages compile -->
   <ItemGroup>
     <Page Update="Controls\KeyVisual\KeyVisual.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <!-- If you have other views in subfolders, ensure they are updated here -->
   </ItemGroup>
-	
-  <!--
-    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
-    Explorer "Package and Publish" context menu entry to be enabled for this project even if
-    the Windows App SDK Nuget package has not yet been restored.
-  -->
-  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-  </PropertyGroup>
 
-  <!-- Publish Properties -->
+  <!-- Publish Properties (required for flattening like other PT modules) -->
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
@@ -85,4 +71,5 @@
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
     <ApplicationIcon>Assets\KeystrokeOverlay\Icon.ico</ApplicationIcon>
   </PropertyGroup>
+
 </Project>
