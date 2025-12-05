@@ -148,7 +148,7 @@ public static class LayoutVisualizer
         }
         else
         {
-            // > 11 zones: fallback to grid layout
+            // > 11 zones: use grid layout
             int rows = 1;
             while (zoneCount / rows >= rows)
             {
