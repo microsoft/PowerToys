@@ -62,8 +62,8 @@ namespace registry
         const wchar_t INSTALL_SCOPE_REG_KEY[] = L"Software\\Classes\\powertoys\\";
         const wchar_t UNINSTALL_REG_KEY[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
         
-        // Bundle UpgradeCode from PowerToys.wxs
-        const wchar_t BUNDLE_UPGRADE_CODE[] = L"6341382d-c0a9-4238-9188-be9607e3fab2";
+        // Bundle UpgradeCode from PowerToys.wxs (with braces as stored in registry)
+        const wchar_t BUNDLE_UPGRADE_CODE[] = L"{6341382D-C0A9-4238-9188-BE9607E3FAB2}";
 
         enum class InstallScope
         {
