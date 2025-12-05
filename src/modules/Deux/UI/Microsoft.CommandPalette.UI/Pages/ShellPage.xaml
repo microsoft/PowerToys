@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+ <?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="Microsoft.CommandPalette.UI.Pages.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.CommandPalette.UI.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,6 +13,14 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+        </ResourceDictionary>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -26,178 +35,6 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!--  Back button and search box  -->
-            <Grid
-                x:Name="TopBarGrid"
-                Padding="0,12,0,12"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <!--  Back button  -->
-                <StackPanel Orientation="Horizontal">
-                    <Image
-                        Width="20"
-                        Margin="20,0,6,0"
-                        HorizontalAlignment="Center"
-                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                        AutomationProperties.AccessibilityView="Raw"
-                        Source="ms-appx:///Assets/icon.svg"
-                        Visibility="{x:Bind viewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-                        <animations:Implicit.ShowAnimations>
-                            <animations:OpacityAnimation
-                                EasingMode="EaseIn"
-                                EasingType="Cubic"
-                                From="0"
-                                To="1.0"
-                                Duration="0:0:0.187" />
-                            <animations:ScaleAnimation
-                                EasingMode="EaseIn"
-                                EasingType="Cubic"
-                                From="0.5"
-                                To="1"
-                                Duration="0:0:0.187" />
-                        </animations:Implicit.ShowAnimations>
-                        <animations:Implicit.HideAnimations>
-                            <animations:OpacityAnimation
-                                EasingMode="EaseOut"
-                                EasingType="Cubic"
-                                From="1.0"
-                                To="0"
-                                Duration="0:0:0.187" />
-                            <animations:ScaleAnimation
-                                EasingMode="EaseOut"
-                                EasingType="Cubic"
-                                From="1"
-                                To="0.5"
-                                Duration="0:0:0.187" />
-                        </animations:Implicit.HideAnimations>
-                    </Image>
-                    <Button
-                        x:Name="BackButton"
-                        x:Uid="BackButton"
-                        Margin="4,0,4,0"
-                        Padding="4"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                        Content="{ui:FontIcon Glyph=&#xE76B;,
-                                              FontSize=14}"
-                        FontSize="16"
-                        Style="{StaticResource SubtleButtonStyle}"
-                        Visibility="{x:Bind viewModel.IsNested, Mode=OneWay}">
-                        <animations:Implicit.ShowAnimations>
-                            <animations:OpacityAnimation
-                                EasingMode="EaseIn"
-                                EasingType="Cubic"
-                                From="0"
-                                To="1.0"
-                                Duration="0:0:0.333" />
-                            <animations:ScaleAnimation
-                                From="0.5"
-                                To="1"
-                                Duration="0:0:0.333" />
-                            <animations:TranslationAnimation
-                                From="16,0,0"
-                                To="0,0,0"
-                                Duration="0:0:0.333" />
-                        </animations:Implicit.ShowAnimations>
-                        <animations:Implicit.HideAnimations>
-                            <animations:OpacityAnimation
-                                EasingMode="EaseOut"
-                                EasingType="Cubic"
-                                From="1.0"
-                                To="0"
-                                Duration="0:0:0.333" />
-                            <animations:ScaleAnimation
-                                EasingMode="EaseOut"
-                                EasingType="Cubic"
-                                From="1"
-                                To="0.5"
-                                Duration="0:0:0.333" />
-                            <animations:TranslationAnimation
-                                EasingMode="EaseOut"
-                                EasingType="Cubic"
-                                From="0,0,0"
-                                To="16,0,0"
-                                Duration="0:0:0.187" />
-                        </animations:Implicit.HideAnimations>
-                    </Button>
-                </StackPanel>
-                <!--  Search box: wrapped in a grid to enable RepositionThemeTransitions  -->
-                <Grid Grid.Column="1" HorizontalAlignment="Stretch">
-                    
-                    <Grid.Transitions>
-                        <TransitionCollection>
-                            <RepositionThemeTransition />
-                        </TransitionCollection>
-                    </Grid.Transitions>
-                </Grid>
-            </Grid>
-
-            <Grid x:Name="ContentGrid" Grid.Row="1">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
-                    <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <Frame
-                    Name="RootFrame"
-                    AutomationProperties.AutomationControlType="Pane"
-                    AutomationProperties.LandmarkType="Navigation"
-                    AutomationProperties.LiveSetting="Assertive"
-                    IsNavigationStackEnabled="True" />
-
-                <ScrollViewer
-                    x:Name="DetailsContent"
-                    Grid.Column="1"
-                    Margin="4"
-                    HorizontalAlignment="Stretch"
-                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource ControlCornerRadius}"
-                    Visibility="Collapsed">
-                    <animations:Implicit.ShowAnimations>
-                        <animations:OpacityAnimation
-                            From="0"
-                            To="1.0"
-                            Duration="0:0:0.187" />
-                        <animations:TranslationAnimation
-                            From="24,0,0"
-                            To="0,0,0"
-                            Duration="0:0:0.187" />
-                    </animations:Implicit.ShowAnimations>
-                    <animations:Implicit.HideAnimations>
-                        <animations:OpacityAnimation
-                            From="1.0"
-                            To="0"
-                            Duration="0:0:0.187" />
-                        <animations:TranslationAnimation
-                            From="0,0,0"
-                            To="24,0,0"
-                            Duration="0:0:0.187" />
-                    </animations:Implicit.HideAnimations>
-                    <Grid Margin="16">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                    </Grid>
-                </ScrollViewer>
-                <!--  /DetailsContent  -->
-            </Grid>
         </Grid>
     </Grid>
 </Page>

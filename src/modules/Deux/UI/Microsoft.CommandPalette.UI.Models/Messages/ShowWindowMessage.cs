@@ -4,6 +4,6 @@
 
 namespace Microsoft.CommandPalette.UI.Models.Messages;
 
-public record OpenSettingsMessage()
+public record ShowWindowMessage(IntPtr Hwnd)
 {
 }

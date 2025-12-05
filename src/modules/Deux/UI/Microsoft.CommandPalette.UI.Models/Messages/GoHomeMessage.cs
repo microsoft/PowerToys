@@ -4,6 +4,7 @@
 
 namespace Microsoft.CommandPalette.UI.Models.Messages;
 
-public record OpenSettingsMessage()
+// TODO! sticking these properties here feels like leaking the UI into the models
+public record GoHomeMessage(bool WithAnimation = true, bool FocusSearch = true)
 {
 }

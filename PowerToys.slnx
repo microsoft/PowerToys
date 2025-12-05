@@ -356,6 +356,29 @@
     <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
     <Project Path="src/modules/CropAndLock/CropAndLockModuleInterface/CropAndLockModuleInterface.vcxproj" Id="3157fa75-86cf-4ee2-8f62-c43f776493c6" />
   </Folder>
+  <Folder Name="/modules/Deux/" />
+  <Folder Name="/modules/Deux/SDK/">
+    <Project Path="src/modules/Deux/SDK/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Deux/SDK/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.vcxproj" Id="7997dad4-31d6-496b-95db-6c028d699370" />
+  </Folder>
+  <Folder Name="/modules/Deux/UI/">
+    <Project Path="src/modules/Deux/UI/Microsoft.CommandPalette.UI.Models/Microsoft.CommandPalette.UI.Models.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Deux/UI/Microsoft.CommandPalette.UI.ViewModels/Microsoft.CommandPalette.UI.ViewModels.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Deux/UI/Microsoft.CommandPalette.UI/Microsoft.CommandPalette.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
   <Folder Name="/modules/EnvironmentVariables/">
     <Project Path="src/modules/EnvironmentVariables/EnvironmentVariables/EnvironmentVariables.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

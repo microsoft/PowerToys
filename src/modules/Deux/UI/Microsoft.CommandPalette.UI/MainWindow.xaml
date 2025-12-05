@@ -10,7 +10,9 @@
     Height="480"
     MinWidth="320"
     MinHeight="240"
+    Activated="MainWindow_Activated"
+    Closed="MainWindow_Closed"
     mc:Ignorable="d">
-    <Frame x:Name="RootElement">
-    </Frame>
+    <Grid x:Name="RootElement">
+    </Grid>
 </winuiex:WindowEx>
