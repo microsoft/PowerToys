@@ -8,9 +8,9 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<PackageVersion>$(Version)</PackageVersion>
-		<!-- Force MSIX package version to align with the global PowerToys version -->
-		<AppxPackageVersion>$(Version).0</AppxPackageVersion>
-		<ApplicationDisplayVersion>$(Version).0</ApplicationDisplayVersion>
+		<!-- Keep the MSIX version in sync with the PowerToys version -->
+		<AppxPackageVersion>$(Version)</AppxPackageVersion>
+		<ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

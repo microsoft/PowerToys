@@ -3,6 +3,7 @@
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
   <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
