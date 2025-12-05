@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -2703,7 +2703,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
@@ -2827,7 +2827,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
+    <value>Highlight the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
@@ -2916,7 +2916,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
-    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
+    <value>Highlight mouse clicks.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
@@ -2961,7 +2961,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
-    <value>Mouse Pointer Crosshairs draws crosshairs centered on the mouse pointer.</value>
+    <value>Draw crosshairs centered on the mouse pointer.</value>
     <comment>"Mouse Pointer Crosshairs" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MousePointerCrosshairs.Header" xml:space="preserve">
@@ -3410,7 +3410,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
-    <value>Transform your clipboard content with the power of AI. An cloud or local endpoint is required.</value>
+    <value>Transform your clipboard content with the power of AI. A cloud or local endpoint is required.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -5159,25 +5159,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
-  <data name="CmdPal.ModuleTitle" xml:space="preserve">
-    <value>Command Palette</value>
-  </data>
-  <data name="CmdPal_ShortDescription" xml:space="preserve">
-    <value>A better quick launcher</value>
-  </data>
-  <data name="CmdPal_ActivationDescription" xml:space="preserve">
-    <value>Open Command Palette</value>
-  </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
     <value>Enable Command Palette</value>
-    <comment>"Command Palette" is the name of the utility.</comment>
-  </data>
-  <data name="CmdPal.ModuleDescription" xml:space="preserve">
-    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
-    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
@@ -5185,11 +5172,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Oobe_CmdPal.Description" xml:space="preserve">
     <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal.Title" xml:space="preserve">
     <value>Command Palette</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
     <value>and start typing!</value>
@@ -5222,14 +5209,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="RetryLabel.Text" xml:space="preserve">
     <value>Retry</value>
   </data>
-  <data name="CmdPal_Activation_GroupSettings.Header" xml:space="preserve">
-    <value>Activation</value>
-  </data>
-  <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
-  </data>
-  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
-    <value>Open Command Palette settings to customize the activation shortcut</value>
+  <data name="CmdPal_Settings.Header" xml:space="preserve">
+    <value>Settings</value>
   </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>
@@ -5693,14 +5674,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Foundry Local model</value>
     <comment>Do not localize "Foundry Local", it's a product name</comment>
   </data>
-  <data name="AdvancedPaste_FL_UseCLIToDownloadModels.Text" xml:space="preserve">
+  <data name="AdvancedPaste_FL_UseCliToDownloadModels.Text" xml:space="preserve">
     <value>Use the Foundry Local CLI to download models that run locally on-device. They'll appear here.</value>
     <comment>Do not localize "Foundry Local", it's a product name</comment>
   </data>
   <data name="AdvancedPaste_FL_RefreshModelList.Text" xml:space="preserve">
     <value>Refresh model list</value>
   </data>
-  <data name="AdvancedPaste_FL_FLNotavailableYet.Text" xml:space="preserve">
+  <data name="AdvancedPaste_FL_FLNotAvailableYet.Text" xml:space="preserve">
     <value>Foundry Local is not available on this device yet.</value>
     <comment>Do not localize "Foundry Local", it's a product name</comment>
   </data>
@@ -5752,5 +5733,52 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
     <value>Display a preview of the current clipboard content</value>
+  </data>
+  <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="AdvancedPaste_FL_PreviewMessage.Message" xml:space="preserve">
+    <value>Foundry Local is still in public preview</value>
+    <comment>Do not loc "Foundry Local"</comment>
+  </data>
+  <data name="CmdPal_Settings.Description" xml:space="preserve">
+    <value>Configure the activation shortcut, extensions, behavior and much more</value>
+  </data>
+  <data name="CmdPal_Launch.Header" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ShortDescription" xml:space="preserve">
+    <value>A better quick launcher</value>
+  </data>
+  <data name="CmdPal_Description.Text" xml:space="preserve">
+    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+  </data>
+  <data name="CmdPal.ModuleTitle" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
+    <value>Powerful extensions help you do more</value>
+  </data>
+  <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
+    <value>Extensible</value>
+  </data>
+  <data name="CmdPal_FastDescription.Text" xml:space="preserve">
+    <value>Find files and launch apps in an instant</value>
+  </data>
+  <data name="CmdPal_FastHeader.Text" xml:space="preserve">
+    <value>Fast</value>
+  </data>
+  <data name="CmdPal_ModernHeader.Text" xml:space="preserve">
+    <value>Beautiful</value>
+  </data>
+  <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
+    <value>A modern UI built with Fluent Design</value>
+    <comment>Fluent Design is a product name, do not loc</comment>
   </data>
 </root>

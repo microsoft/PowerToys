@@ -20,13 +20,15 @@
     <winuiex:WindowEx.SystemBackdrop>
         <MicaBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
-    <Grid>
+    <Grid x:Name="RootElement">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TitleBar
             x:Name="AppTitleBar"
+            BackRequested="TitleBar_BackRequested"
+            IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
             IsTabStop="False"
             PaneToggleRequested="AppTitleBar_PaneToggleRequested">
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
@@ -56,10 +58,12 @@
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
+                    x:Name="GeneralPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_General"
                     Icon="{ui:FontIcon Glyph=&#xE80F;}"
                     Tag="General" />
                 <NavigationViewItem
+                    x:Name="ExtensionPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
@@ -90,7 +94,10 @@
                         </BreadcrumbBar.Resources>
                     </BreadcrumbBar>
                 </Grid>
-                <Frame x:Name="NavFrame" Grid.Row="1" />
+                <Frame
+                    x:Name="NavFrame"
+                    Grid.Row="1"
+                    Navigated="NavFrame_OnNavigated" />
             </Grid>
         </NavigationView>
     </Grid>
