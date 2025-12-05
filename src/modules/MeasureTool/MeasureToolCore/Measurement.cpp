@@ -34,6 +34,8 @@ namespace
                 return pixels * px2mmRatio / 10.0f;
             case Measurement::Unit::Millimetre:
                 return pixels * px2mmRatio;
+            case Measurement::Unit::Point:
+                return pixels * px2mmRatio / 10.0f / 2.54f * 72.0f;
             default:
                 return pixels;
             }
@@ -50,6 +52,8 @@ namespace
                 return pixels / 96.0f * 2.54f;
             case Measurement::Unit::Millimetre:
                 return pixels / 96.0f / 10.0f * 2.54f;
+            case Measurement::Unit::Point:
+                return pixels / 96.0f * 72.0f;
             default:
                 return pixels;
             }
@@ -57,7 +61,7 @@ namespace
     }
 }
 
-winrt::hstring Measurement::abbreviations[4]{};
+winrt::hstring Measurement::abbreviations[5]{};
 
 inline float Measurement::Width(const Unit units) const
 {
@@ -81,6 +85,8 @@ Measurement::Unit Measurement::GetUnitFromIndex(int index)
         return Measurement::Unit::Centimetre;
     case 3:
         return Measurement::Unit::Millimetre;
+    case 4:
+        return Measurement::Unit::Point;
     default:
         return Measurement::Unit::Pixel;
     }
@@ -94,6 +100,7 @@ void Measurement::InitResources()
     abbreviations[1] = mm.GetValue(L"Resources/MeasurementUnitAbbrInch").ValueAsString();
     abbreviations[2] = mm.GetValue(L"Resources/MeasurementUnitAbbrCentimetre").ValueAsString();
     abbreviations[3] = mm.GetValue(L"Resources/MeasurementUnitAbbrMillimetre").ValueAsString();
+    abbreviations[4] = mm.GetValue(L"Resources/MeasurementUnitAbbrPoint").ValueAsString();
 }
 
 const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
@@ -108,6 +115,8 @@ const wchar_t* Measurement::GetUnitAbbreviation(Measurement::Unit units)
         return abbreviations[2].c_str();
     case Unit::Millimetre:
         return abbreviations[3].c_str();
+    case Unit::Point:
+        return abbreviations[4].c_str();
     default:
         return L"??";
     }
@@ -175,6 +184,13 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
                                         Measurement::GetUnitAbbreviation(unit));
 
             break;
+        case Measurement::Unit::Point:
+            result.strLen += swprintf_s(buf + result.strLen,
+                                        bufSize - result.strLen,
+                                        L" %s",
+                                        Measurement::GetUnitAbbreviation(unit));
+
+            break;
         }
         if (paren)
         {
@@ -188,6 +204,7 @@ Measurement::PrintResult Measurement::Print(wchar_t* buf,
         Measurement::Unit::Millimetre,
         Measurement::Unit::Inch,
         Measurement::Unit::Centimetre,
+        Measurement::Unit::Point,
     };
     // We only use two units at most, it would be to long otherwise.
     for each (Measurement::Unit unit in allUnits)
