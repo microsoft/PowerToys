@@ -209,7 +209,11 @@ IFACEMETHODIMP MediaPreviewHandler::DoPreview()
 
 IFACEMETHODIMP MediaPreviewHandler::Unload()
 {
-    TerminateProcess(m_process, 0);
+    if (m_process)
+    {
+        TerminateProcess(m_process, 0);
+        m_process = NULL;
+    }
     return S_OK;
 }
 
