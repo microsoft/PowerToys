@@ -61,11 +61,15 @@
 	<Message Importance="High" Text="Updated final manifest path to $(OriginalApplicationManifest)" />
   </Target>
   <ItemGroup>
+    <None Remove="Pages\ShellPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <AdditionalFiles Include="NativeMethods.txt" />
   </ItemGroup>
 
 
   <ItemGroup>
+	<PackageReference Include="CommunityToolkit.Mvvm" />
 	<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
 	<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
 	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
@@ -157,5 +161,12 @@
 	</ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\Microsoft.CommandPalette.UI.Models\Microsoft.CommandPalette.UI.Models.csproj" />
+    <ProjectReference Include="..\Microsoft.CommandPalette.UI.ViewModels\Microsoft.CommandPalette.UI.ViewModels.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

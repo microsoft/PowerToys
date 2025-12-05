@@ -3,24 +3,29 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using Microsoft.CommandPalette.UI.Pages;
 using Microsoft.Extensions.Logging;
-using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
+using WinUIEx;
 
 namespace Microsoft.CommandPalette.UI;
 
 /// <summary>
 /// An empty window that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : WindowEx
 {
     private readonly ILogger logger;
+    private readonly ShellPage shellPage;
 
-    public MainWindow(ILogger logger)
+    public MainWindow(ShellPage shellPage, ILogger logger)
     {
         InitializeComponent();
         this.logger = logger;
+        this.shellPage = shellPage;
+
+        RootElement.Content = this.shellPage;
     }
 
     public void HandleLaunchNonUI(AppActivationArguments? activatedEventArgs)

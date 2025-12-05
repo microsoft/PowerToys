@@ -28,7 +28,7 @@
   <Properties>
     <DisplayName>ms-resource:AppNameDev</DisplayName>
     <PublisherDisplayName>A Lone Developer</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\Dev\StoreLogo.png</Logo>
     <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
   </Properties>
 
@@ -49,10 +49,10 @@
         DisplayName="ms-resource:AppNameDev"
         Description="ms-resource:AppDescriptionDev"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"  Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        Square150x150Logo="Assets\Dev\Square150x150Logo.png"
+        Square44x44Logo="Assets\Dev\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Dev\Wide310x150Logo.png"  Square71x71Logo="Assets\Dev\SmallTile.png" Square310x310Logo="Assets\Dev\LargeTile.png"/>
+        <uap:SplashScreen Image="Assets\Dev\SplashScreen.png" />
       </uap:VisualElements>
 
       <Extensions>
@@ -72,7 +72,7 @@
 
         <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="x-cmdpal">
-            <uap:Logo>Assets\StoreLogo.png</uap:Logo>
+            <uap:Logo>Assets\Dev\StoreLogo.png</uap:Logo>
             <uap:DisplayName>Command Palette Dev URI scheme</uap:DisplayName>
           </uap:Protocol>
         </uap:Extension>

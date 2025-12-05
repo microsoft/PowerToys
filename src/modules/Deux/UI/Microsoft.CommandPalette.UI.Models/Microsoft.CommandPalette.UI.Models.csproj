@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+	
+  <PropertyGroup>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CommandPalette</OutputPath>
+	<!-- For MVVM Toolkit Partial Properties/AOT support -->
+	<LangVersion>preview</LangVersion>
+	<!-- Disable SA1313 for Primary Constructor fields conflict https://learn.microsoft.com/dotnet/csharp/programming-guide/classes-and-structs/instance-constructors#primary-constructors  -->
+	<NoWarn>SA1313;</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<CsWinRTIncludes>AdaptiveCards.ObjectModel.WinUI3;AdaptiveCards.Rendering.WinUI3</CsWinRTIncludes>
+	<CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+	<PackageReference Include="CommunityToolkit.Common" />
+	<PackageReference Include="CommunityToolkit.Mvvm" />
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+	<PackageReference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+
+  <!-- <AdaptiveCardsWorkaround> -->
+  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
+    Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
+  <PropertyGroup>
+	<AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
+  </PropertyGroup>
+ 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\SDK\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\" />
+  </ItemGroup>
+  
+</Project>
