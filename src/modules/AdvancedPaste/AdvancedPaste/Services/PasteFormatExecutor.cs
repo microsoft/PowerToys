@@ -37,7 +37,7 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomAct
             pasteFormat.Format switch
             {
                 PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery, cancellationToken, progress),
-                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText((await _customActionTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetClipboardTextOrThrowAsync(cancellationToken), cancellationToken, progress))?.Content ?? string.Empty),
+                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText((await _customActionTransformService.TransformAsync(pasteFormat.Prompt, await clipboardData.GetTextOrHtmlTextAsync(), await clipboardData.GetImageAsPngBytesAsync(), cancellationToken, progress))?.Content ?? string.Empty),
                 _ => await TransformHelpers.TransformAsync(format, clipboardData, cancellationToken, progress),
             });
     }
