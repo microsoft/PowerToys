@@ -76,56 +76,6 @@ namespace UITests_FancyZones
         }
 
         /// <summary>
-        /// Test dragging a window during Shift key press in FancyZones Zone Behaviour Settings
-        /// <list type="bullet">
-        /// <item>
-        /// <description>Verifies that dragging activates zones as expected.</description>
-        /// </item>
-        /// </list>
-        /// </summary>
-        [TestMethod("FancyZones.Settings.TestShowZonesOnDragDuringShift")]
-        [TestCategory("FancyZones_Dragging #2")]
-        public void TestShowZonesOnDragDuringShift()
-        {
-            string testCaseName = nameof(TestShowZonesOnDragDuringShift);
-
-            var windowRect = Session.GetMainWindowRect();
-            int startX = windowRect.Left + 70;
-            int startY = windowRect.Top + 25;
-            int endX = startX + 300;
-            int endY = startY + 300;
-
-            var (initialColor, withDragColor) = RunDragInteractions(
-                preAction: () =>
-                {
-                    Session.PressKey(Key.Shift);
-                    Task.Delay(100).Wait();
-                },
-                postAction: () =>
-                {
-                    Session.MoveMouseTo(startX, startY);
-                    Session.PerformMouseAction(MouseActionType.LeftDown);
-                    Session.MoveMouseTo(endX, endY);
-                    Task.Delay(1000).Wait();
-                },
-                releaseAction: () =>
-                {
-                    Session.PerformMouseAction(MouseActionType.LeftUp);
-                    Session.ReleaseKey(Key.Shift);
-                    Task.Delay(100).Wait();
-                },
-                testCaseName: testCaseName);
-
-            Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
-            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
-
-            // double check by app-zone-history.json
-            string appZoneHistoryJson = AppZoneHistory.GetData();
-            string? zoneNumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
-            Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout was unexpectedly set.");
-        }
-
-        /// <summary>
         /// Test toggling zones using a non-primary mouse click during window dragging.
         /// <list type="bullet">
         /// <item>
@@ -341,10 +291,54 @@ namespace UITests_FancyZones
             Session.PerformMouseAction(MouseActionType.LeftUp);
         }
 
-        private void Clean()
+        /// <summary>
+        /// Test dragging a window during Shift key press in FancyZones Zone Behaviour Settings
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that dragging activates zones as expected.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [TestMethod("FancyZones.Settings.TestShowZonesOnDragDuringShift")]
+        [TestCategory("FancyZones_Dragging #2")]
+        public void TestShowZonesOnDragDuringShift()
         {
-            // clean app zone history file
-            AppZoneHistory.DeleteFile();
+            string testCaseName = nameof(TestShowZonesOnDragDuringShift);
+
+            var windowRect = Session.GetMainWindowRect();
+            int startX = windowRect.Left + 70;
+            int startY = windowRect.Top + 25;
+            int endX = startX + 300;
+            int endY = startY + 300;
+
+            var (initialColor, withDragColor) = RunDragInteractions(
+                preAction: () =>
+                {
+                    Session.PressKey(Key.Shift);
+                    Task.Delay(100).Wait();
+                },
+                postAction: () =>
+                {
+                    Session.MoveMouseTo(startX, startY);
+                    Session.PerformMouseAction(MouseActionType.LeftDown);
+                    Session.MoveMouseTo(endX, endY);
+                    Task.Delay(1000).Wait();
+                },
+                releaseAction: () =>
+                {
+                    Session.PerformMouseAction(MouseActionType.LeftUp);
+                    Session.ReleaseKey(Key.Shift);
+                    Task.Delay(100).Wait();
+                },
+                testCaseName: testCaseName);
+
+            Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
+            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
+
+            // double check by app-zone-history.json
+            string appZoneHistoryJson = AppZoneHistory.GetData();
+            string? zoneNumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
+            Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout was unexpectedly set.");
         }
 
         // Helper method to ensure the desktop has no open windows by clicking the "Show Desktop" button
