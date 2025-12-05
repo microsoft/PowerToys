@@ -192,14 +192,14 @@ jobs:
     displayName: Verify XAML formatting
 
   - pwsh: |-
-      & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
-    displayName: Verify Nuget package versions for PowerToys.sln
+      & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
+    displayName: Verify Nuget package versions for PowerToys.slnx
 
   - pwsh: |-
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.slnx'
     displayName: Verify ARM64 configurations
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
@@ -252,7 +252,7 @@ jobs:
     ${{ else }}:
       displayName: Build PowerToys main project
     inputs:
-      solution: 'PowerToys.sln'
+      solution: 'PowerToys.slnx'
       vsVersion: 17.0
       msbuildArgs: >-
         -restore -graph
@@ -275,7 +275,7 @@ jobs:
     displayName: Generate DSC artifacts for ARM64
     condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
-      solution: PowerToys.sln
+      solution: PowerToys.slnx
       vsVersion: 17.0
       msbuildArgs: >-
         -restore

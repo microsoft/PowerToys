@@ -773,6 +773,7 @@ INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
+Inno
 INPC
 inproc
 INPUTHARDWARE
@@ -1629,6 +1630,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnx
 SMALLICON
 smartphone
 smileys
@@ -1847,6 +1849,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter
