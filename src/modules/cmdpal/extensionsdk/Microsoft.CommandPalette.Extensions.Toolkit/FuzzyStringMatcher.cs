@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 // Inspired by the fuzzy.rs from edit.exe
@@ -115,9 +118,29 @@ public static class FuzzyStringMatcher
         return (scores[area - 1], positions);
     }
 
+    /// <summary>
+    /// Normalizes a string for fuzzy matching by converting to uppercase and removing diacritical marks.
+    /// This allows matching "camera" with "Câmera", "camêra", etc.
+    /// </summary>
     private static string FoldCase(string input)
     {
-        return input.ToUpperInvariant();
+        // First convert to uppercase
+        var upper = input.ToUpperInvariant();
+
+        // Normalize to decomposed form (separates base characters from combining marks)
+        var normalized = upper.Normalize(NormalizationForm.FormKD);
+
+        // Remove combining marks (diacritical marks like accents, tildes, etc.)
+        var sb = new StringBuilder(normalized.Length);
+        foreach (var c in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.ToString();
     }
 
     private static int ComputeCharScore(
