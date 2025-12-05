@@ -192,7 +192,6 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                 PreviewBrowser.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
-                PreviewBrowser.KeyboardAccelerators.Add(GetCtrlCAccelerator());
             }
             catch (Exception ex)
             {
@@ -200,27 +199,6 @@ namespace Peek.FilePreviewer.Controls
             }
 
             Navigate();
-        }
-
-        private KeyboardAccelerator GetCtrlCAccelerator()
-        {
-            var ctrlCAccelerator = new KeyboardAccelerator
-            {
-                Key = VirtualKey.C,
-                Modifiers = VirtualKeyModifiers.Control,
-            };
-
-            // Handle Ctrl+C to copy selected text from WebView2
-            ctrlCAccelerator.Invoked += async (s, e) =>
-            {
-                if (PreviewBrowser.CoreWebView2 != null)
-                {
-                    await PreviewBrowser.CoreWebView2.ExecuteScriptAsync("runCopyCommand()");
-                    e.Handled = true;
-                }
-            };
-
-            return ctrlCAccelerator;
         }
 
         private List<Control> GetContextMenuItems(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
