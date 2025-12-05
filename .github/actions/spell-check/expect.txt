@@ -273,6 +273,7 @@ CONTROLPARENT
 copiedcolorrepresentation
 coppied
 copyable
+copycolortoclipboard
 COPYPEN
 coreclr
 COREWINDOW
