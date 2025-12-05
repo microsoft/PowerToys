@@ -37,14 +37,32 @@ namespace Peek.FilePreviewer.Controls
         public AudioControl()
         {
             this.InitializeComponent();
+
+            // Re-enable CommandManager when a new audio source is set via SourceChanged event
+            // This ensures CommandManager is enabled only after MediaPlayer source is actually set
+            PlayerElement.MediaPlayer.SourceChanged += AudioMediaPlayer_SourceChanged;
+        }
+
+        private void AudioMediaPlayer_SourceChanged(Windows.Media.Playback.MediaPlayer sender, object args)
+        {
+            // Re-enable CommandManager when a new source is set so transport controls work
+            if (sender.Source != null)
+            {
+                sender.CommandManager.IsEnabled = true;
+            }
         }
 
         private void SourcePropertyChanged()
         {
+            var mediaPlayer = PlayerElement.MediaPlayer;
+
             if (Source == null)
             {
-                PlayerElement.MediaPlayer.Pause();
-                PlayerElement.MediaPlayer.Source = null;
+                mediaPlayer.Pause();
+                mediaPlayer.Source = null;
+
+                // Disable CommandManager to remove the app from System Media Transport Controls panel
+                mediaPlayer.CommandManager.IsEnabled = false;
             }
         }
 
