@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public static class NormalizationHelper
+public static class FuzzyStringMatchNormalizationHelper
 {
     private const int StackAllocThreshold = 256;
 
