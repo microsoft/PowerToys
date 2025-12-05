@@ -545,7 +545,6 @@ jobs:
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-        condition: ne(variables['CmdPalExtPowerToysPackagePath'], '')
 
     - pwsh: |-
         if ([string]::IsNullOrWhiteSpace("$(CmdPalExtPowerToysPackagePath)")) {
