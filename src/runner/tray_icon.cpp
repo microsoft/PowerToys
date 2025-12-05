@@ -5,6 +5,7 @@
 #include "general_settings.h"
 #include "centralized_hotkeys.h"
 #include "centralized_kb_hook.h"
+#include "quick_access_host.h"
 #include <Windows.h>
 
 #include <common/utils/resources.h>
@@ -69,9 +70,9 @@ void change_menu_item_text(const UINT item_id, wchar_t* new_text)
     SetMenuItemInfoW(h_menu, item_id, false, &menuitem);
 }
 
-void open_quick_access_flyout_window(const POINT flyout_position)
+void open_quick_access_flyout_window()
 {
-    open_settings_window(std::nullopt, true, flyout_position);
+    QuickAccessHost::show();
 }
 
 void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
@@ -81,7 +82,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     case ID_SETTINGS_MENU_COMMAND:
     {
         std::wstring settings_window{ winrt::to_hstring(ESettingsWindowNames_to_string(static_cast<ESettingsWindowNames>(lparam))) };
-        open_settings_window(settings_window, false);
+        open_settings_window(settings_window);
     }
     break;
     case ID_CLOSE_MENU_COMMAND:
@@ -113,9 +114,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     }
     case ID_QUICK_ACCESS_MENU_COMMAND:
     {
-        POINT mouse_pointer;
-        GetCursorPos(&mouse_pointer);
-        open_quick_access_flyout_window(mouse_pointer);
+        open_quick_access_flyout_window();
         break;
     }
     }
@@ -126,7 +125,7 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
-        open_quick_access_flyout_window(tray_icon_click_point);
+        open_quick_access_flyout_window();
     }
 }
 
@@ -218,9 +217,6 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 // ignore event if this is the second click of a double click
                 if (!double_click_timer_running)
                 {
-                    // save the cursor position for sending where to show the popup.
-                    GetCursorPos(&tray_icon_click_point);
-
                     // start timer for detecting single or double click
                     double_click_timer_running = true;
                     double_clicked = false;
@@ -236,7 +232,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
             case WM_LBUTTONDBLCLK:
             {
                 double_clicked = true;
-                open_settings_window(std::nullopt, false);
+                open_settings_window(std::nullopt);
                 break;
             }
             break;

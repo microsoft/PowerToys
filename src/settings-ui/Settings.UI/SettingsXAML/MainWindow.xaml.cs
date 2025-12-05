@@ -89,6 +89,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
                     var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
+                    // Save settings to file
+                    new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
+
                     this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
                     {
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());
@@ -123,40 +127,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 }
 
                 App.GetOobeWindow().Activate();
-            });
-
-            // open flyout
-            ShellPage.SetOpenFlyoutCallback((POINT? p) =>
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    if (App.GetFlyoutWindow() == null)
-                    {
-                        App.SetFlyoutWindow(new FlyoutWindow(p));
-                    }
-
-                    FlyoutWindow flyout = App.GetFlyoutWindow();
-                    flyout.FlyoutAppearPosition = p;
-                    flyout.Activate();
-
-                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
-                    // Need to call SetForegroundWindow to actually gain focus.
-                    WindowHelpers.BringToForeground(flyout.GetWindowHandle());
-                });
-            });
-
-            // disable flyout hiding
-            ShellPage.SetDisableFlyoutHidingCallback(() =>
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    if (App.GetFlyoutWindow() == null)
-                    {
-                        App.SetFlyoutWindow(new FlyoutWindow(null));
-                    }
-
-                    App.GetFlyoutWindow().ViewModel.DisableHiding();
-                });
             });
 
             this.InitializeComponent();

@@ -8,43 +8,38 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.UI;
 using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class DashboardListItem : INotifyPropertyChanged
+    public partial class DashboardListItem : ModuleListItem
     {
         private bool _visible;
-        private bool _isEnabled;
-
-        public string Label { get; set; }
-
-        public bool IsNew { get; set; }
-
-        public string Icon { get; set; }
 
         public string ToolTip { get; set; }
 
-        public ModuleType Tag { get; set; }
-
-        public bool IsLocked { get; set; }
-
-        public bool IsEnabled
+        public new ModuleType Tag
         {
-            get => _isEnabled;
+            get => (ModuleType)base.Tag!;
+            set => base.Tag = value;
+        }
+
+        public Action<DashboardListItem> EnabledChangedCallback { get; set; }
+
+        public override bool IsEnabled
+        {
+            get => base.IsEnabled;
             set
             {
-                if (_isEnabled != value)
+                if (base.IsEnabled != value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged();
+                    base.IsEnabled = value;
                     EnabledChangedCallback?.Invoke(this);
                 }
             }
         }
-
-        public Action<DashboardListItem> EnabledChangedCallback { get; set; }
 
         public bool Visible
         {
@@ -57,13 +52,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged();
                 }
             }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public ObservableCollection<DashboardModuleItem> DashboardModuleItems { get; set; } = new ObservableCollection<DashboardModuleItem>();

@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -39,6 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
+        public ObservableCollection<QuickAccessItem> QuickAccessItems { get; set; } = new ObservableCollection<QuickAccessItem>();
 
         // Master list of module items that is sorted and projected into AllModules.
         private List<DashboardListItem> _moduleItems = new List<DashboardListItem>();
@@ -79,6 +82,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     generalSettingsConfig.DashboardSortOrder = value;
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
+
+                    // Save settings to file
+                    new SettingsUtils().SaveSettings(generalSettingsConfig.ToJsonString());
+
                     SendConfigMSG(outgoing.ToString());
                     SortModuleList();
                 }
@@ -95,6 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
 
             // Initialize dashboard sort order from settings
             _dashboardSortOrder = generalSettingsConfig.DashboardSortOrder;
@@ -105,6 +113,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             BuildModuleList();
             SortModuleList();
             RefreshShortcutModules();
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            dispatcher.BeginInvoke(() =>
+            {
+                generalSettingsConfig = newSettings;
+                generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+                ModuleEnabledChangedOnSettingsPage();
+            });
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
@@ -156,6 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                     IsNew = moduleType == ModuleType.CursorWrap,
                     DashboardModuleItems = GetModuleItems(moduleType),
+                    ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
                 newItem.EnabledChangedCallback = EnabledChangedOnUI;
                 _moduleItems.Add(newItem);
@@ -311,6 +330,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ShortcutModules.Clear();
             ActionModules.Clear();
+            QuickAccessItems.Clear();
 
             foreach (var x in AllModules.Where(x => x.IsEnabled))
             {
@@ -355,6 +375,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     ActionModules.Add(newItem);
                     newItem.EnabledChangedCallback = x.EnabledChangedCallback;
+
+                    foreach (DashboardModuleButtonItem item in filteredItems)
+                    {
+                        QuickAccessItems.Add(new QuickAccessItem
+                        {
+                            Title = item.ButtonTitle,
+                            Description = item.ButtonDescription,
+                            Icon = item.ButtonGlyph,
+                            Command = new RelayCommand(() => item.ButtonClickHandler?.Invoke(null, null)),
+                            Tag = x.Tag,
+                        });
+                    }
                 }
             }
         }
@@ -694,7 +726,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void DashboardListItemClick(object sender)
         {
-            if (sender is SettingsCard card && card.Tag is ModuleType moduleType)
+            if (sender is ModuleType moduleType)
             {
                 NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
             }
