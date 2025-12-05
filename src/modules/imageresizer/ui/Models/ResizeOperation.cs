@@ -167,49 +167,89 @@ namespace ImageResizer.Models
 
         private BitmapSource Transform(BitmapSource source)
         {
-            var originalWidth = source.PixelWidth;
-            var originalHeight = source.PixelHeight;
-            var width = _settings.SelectedSize.GetPixelWidth(originalWidth, source.DpiX);
-            var height = _settings.SelectedSize.GetPixelHeight(originalHeight, source.DpiY);
+            int originalWidth = source.PixelWidth;
+            int originalHeight = source.PixelHeight;
 
-            if (_settings.IgnoreOrientation
-                && !_settings.SelectedSize.HasAuto
-                && _settings.SelectedSize.Unit != ResizeUnit.Percent
-                && originalWidth < originalHeight != (width < height))
+            // Convert from the chosen size unit to pixels, if necessary.
+            double width = _settings.SelectedSize.GetPixelWidth(originalWidth, source.DpiX);
+            double height = _settings.SelectedSize.GetPixelHeight(originalHeight, source.DpiY);
+
+            // Swap target width/height dimensions if orientation correction is required.
+            // Ensures that we don't try to fit a landscape image into a portrait box by
+            // distorting it, unless specific Auto/Percent rules are applied.
+            bool canSwapDimensions = _settings.IgnoreOrientation &&
+                !_settings.SelectedSize.HasAuto &&
+                _settings.SelectedSize.Unit != ResizeUnit.Percent;
+
+            if (canSwapDimensions)
             {
-                var temp = width;
-                width = height;
-                height = temp;
+                bool isInputLandscape = originalWidth > originalHeight;
+                bool isInputPortrait = originalHeight > originalWidth;
+                bool isTargetLandscape = width > height;
+                bool isTargetPortrait = height > width;
+
+                // Swap dimensions if there is a mismatch between input and target.
+                if ((isInputLandscape && isTargetPortrait) ||
+                    (isInputPortrait && isTargetLandscape))
+                {
+                    (width, height) = (height, width);
+                }
             }
 
-            var scaleX = width / originalWidth;
-            var scaleY = height / originalHeight;
+            double scaleX = width / originalWidth;
+            double scaleY = height / originalHeight;
 
+            // Normalize scales based on the chosen Fit/Fill mode.
             if (_settings.SelectedSize.Fit == ResizeFit.Fit)
             {
+                // Fit: use the smaller scale to ensure the image fits within the target.
                 scaleX = Math.Min(scaleX, scaleY);
                 scaleY = scaleX;
             }
             else if (_settings.SelectedSize.Fit == ResizeFit.Fill)
             {
+                // Fill: use the larger scale to ensure the target area is fully covered.
+                // This often results in one dimension overflowing, which is handled by
+                // cropping later.
                 scaleX = Math.Max(scaleX, scaleY);
                 scaleY = scaleX;
             }
 
-            if (_settings.ShrinkOnly
-                && _settings.SelectedSize.Unit != ResizeUnit.Percent
-                && (scaleX >= 1 || scaleY >= 1))
+            // Handle Shrink Only mode.
+            if (_settings.ShrinkOnly && _settings.SelectedSize.Unit != ResizeUnit.Percent)
             {
-                return source;
+                // Shrink Only mode should never return an image larger than the original.
+                if (scaleX > 1 || scaleY > 1)
+                {
+                    return source;
+                }
+
+                // Allow for crop-only when in Fill mode.
+                // At this point, the scale is <= 1.0. In Fill mode, it is possible for
+                // the scale to be 1.0 (no resize needed) while the target dimensions are
+                // smaller than the originals, requiring a crop.
+                bool isFillCropRequired = _settings.SelectedSize.Fit == ResizeFit.Fill &&
+                    (originalWidth > width || originalHeight > height);
+
+                // If the scale is exactly 1.0 and a crop isn't required, we return the
+                // original image to prevent a re-encode.
+                if (scaleX == 1 && scaleY == 1 && !isFillCropRequired)
+                {
+                    return source;
+                }
             }
 
+            // Apply the scaling.
             var scaledBitmap = new TransformedBitmap(source, new ScaleTransform(scaleX, scaleY));
+
+            // Apply the centered crop for Fill mode, if necessary. Applies when Fill
+            // mode caused the scaled image to exceed the target dimensions.
             if (_settings.SelectedSize.Fit == ResizeFit.Fill
                 && (scaledBitmap.PixelWidth > width
                 || scaledBitmap.PixelHeight > height))
             {
-                var x = (int)(((originalWidth * scaleX) - width) / 2);
-                var y = (int)(((originalHeight * scaleY) - height) / 2);
+                int x = (int)(((originalWidth * scaleX) - width) / 2);
+                int y = (int)(((originalHeight * scaleY) - height) / 2);
 
                 return new CroppedBitmap(scaledBitmap, new Int32Rect(x, y, (int)width, (int)height));
             }
