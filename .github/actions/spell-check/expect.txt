@@ -56,6 +56,7 @@ ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
 AOklab
+aot
 APARTMENTTHREADED
 APeriod
 apicontract
@@ -772,6 +773,7 @@ INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
+Inno
 INPC
 inproc
 INPUTHARDWARE
@@ -1057,6 +1059,7 @@ msrc
 msstore
 msvcp
 MT
+mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1206,8 +1209,11 @@ OOBEUI
 openas
 opencode
 OPENFILENAME
+openrdp
 opensource
 openxmlformats
+ollama
+onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1420,6 +1426,8 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
+remotedesktop
+rdp
 RDW
 READMODE
 READOBJECTS
@@ -1622,6 +1630,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnx
 SMALLICON
 smartphone
 smileys
@@ -1692,6 +1701,7 @@ stringtable
 stringval
 Strm
 strret
+STRSAFE
 stscanf
 sttngs
 Stubless
@@ -1839,6 +1849,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter
