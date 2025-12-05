@@ -210,6 +210,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             _settings.EnableDock = value;
             Save();
             WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(value));
+            WeakReferenceMessenger.Default.Send(new ReloadCommandsMessage()); // TODO! we need to update the MoreCommands of all top level items, but we don't _really_ want to reload
         }
     }
 
