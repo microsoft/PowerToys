@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -30,7 +32,7 @@ public sealed partial class ContextMenu : UserControl,
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
-        if (ViewModel != null)
+        if (ViewModel is not null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
@@ -38,6 +40,9 @@ public sealed partial class ContextMenu : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
+        ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+        ViewModel.ResetContextMenu();
+
         UpdateUiForStackChange();
     }
 
@@ -80,7 +85,7 @@ public sealed partial class ContextMenu : UserControl,
         }
     }
 
-    private void CommandsDropdown_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void CommandsDropdown_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)
         {
@@ -108,6 +113,24 @@ public sealed partial class ContextMenu : UserControl,
         else if (result == ContextKeybindingResult.Unhandled)
         {
             e.Handled = false;
+        }
+    }
+
+    /// <summary>
+    /// Handles Escape to close the context menu and return focus to the "More" button.
+    /// </summary>
+    private void UserControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape)
+        {
+            // Close the context menu (if not already handled)
+            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
+
+            // Find the parent CommandBar and set focus to MoreCommandsButton
+            var parent = this.FindParent<CommandBar>();
+            parent?.FocusMoreCommandsButton();
+
+            e.Handled = true;
         }
     }
 
@@ -170,8 +193,6 @@ public sealed partial class ContextMenu : UserControl,
 
             e.Handled = true;
         }
-
-        CommandsDropdown_KeyDown(sender, e);
     }
 
     private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -188,6 +209,8 @@ public sealed partial class ContextMenu : UserControl,
 
             e.Handled = true;
         }
+
+        CommandsDropdown_PreviewKeyDown(sender, e);
     }
 
     private void NavigateUp()
@@ -266,7 +289,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private bool IsSeparator(object item)
     {
-        return item is SeparatorContextItemViewModel;
+        return item is SeparatorViewModel;
     }
 
     private void UpdateUiForStackChange()

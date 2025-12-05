@@ -1,13 +1,17 @@
 #pragma once
 
 #include "PowerRenameInterfaces.h"
+#include "MetadataTypes.h"
+#include "MetadataPatternExtractor.h"
 
 #include <string>
 
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source);
 HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, DWORD flags, bool isFolder);
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime);
+HRESULT GetMetadataFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, const PowerRenameLib::MetadataPatternMap& patterns);
 bool isFileTimeUsed(_In_ PCWSTR source);
+bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataType, _In_opt_ PCWSTR filePath = nullptr, bool isFolder = false);
 bool ShellItemArrayContainsRenamableItem(_In_ IShellItemArray* shellItemArray);
 bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource);
 HRESULT GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items);

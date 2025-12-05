@@ -19,30 +19,46 @@ public class CommandPaletteTestBase : UITestBase
     {
     }
 
-    protected void SetSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
-    }
+    protected void SetSearchBox(string text) => SetSearchBoxText(text);
 
-    protected void SetFilesExtensionSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Search for files and folders...").SetText(text, true).Text, text);
-    }
+    protected void SetFilesExtensionSearchBox(string text) => SetSearchBoxText(text);
 
-    protected void SetCalculatorExtensionSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Type an equation...").SetText(text, true).Text, text);
-    }
+    protected void SetCalculatorExtensionSearchBox(string text) => SetSearchBoxText(text);
 
-    protected void SetTimeAndDaterExtensionSearchBox(string text)
+    protected void SetTimeAndDaterExtensionSearchBox(string text) => SetSearchBoxText(text);
+
+    private void SetSearchBoxText(string text)
     {
-        Assert.AreEqual(this.Find<TextBox>("Search values or type a custom time stamp...").SetText(text, true).Text, text);
+        Assert.AreEqual(this.Find<TextBox>(By.AccessibilityId("MainSearchBox")).SetText(text, true).Text, text);
     }
 
     protected void OpenContextMenu()
     {
-        var contextMenuButton = this.Find<Button>("More");
+        var contextMenuButton = this.Find<Button>(By.AccessibilityId("MoreContextMenuButton"));
         Assert.IsNotNull(contextMenuButton, "Context menu button not found.");
         contextMenuButton.Click();
+    }
+
+    protected void FindDefaultAppDialogAndClickButton()
+    {
+        try
+        {
+            // win11
+            var chooseDialog = FindByClassName("NamedContainerAutomationPeer", global: true);
+
+            chooseDialog.Find<Button>("Just once").Click();
+        }
+        catch
+        {
+            try
+            {
+                // win10
+                var chooseDialog = FindByClassName("Shell_Flyout", global: true);
+                chooseDialog.Find<Button>("OK").Click();
+            }
+            catch
+            {
+            }
+        }
     }
 }

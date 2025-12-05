@@ -33,6 +33,8 @@ namespace Microsoft.PowerToys.UITest
         Workspaces,
         PowerRename,
         CommandPalette,
+        ScreenRuler,
+        LightSwitch,
     }
 
     /// <summary>
@@ -92,9 +94,7 @@ namespace Microsoft.PowerToys.UITest
         private ModuleConfigData()
         {
             // Check if we should use installer paths from environment variable
-            string? useInstallerForTestEnv =
-                            Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
-            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
 
             // Module information including executable name, window name, and optional subdirectory
             ModuleInfo = new Dictionary<PowerToysModule, ModuleInfo>
@@ -106,6 +106,8 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor"),
                 [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename", "WinUI3Apps"),
                 [PowerToysModule.CommandPalette] = new ModuleInfo("Microsoft.CmdPal.UI.exe", "PowerToys Command Palette", "WinUI3Apps\\CmdPal"),
+                [PowerToysModule.ScreenRuler] = new ModuleInfo("PowerToys.MeasureToolUI.exe", "PowerToys.ScreenRuler", "WinUI3Apps"),
+                [PowerToysModule.LightSwitch] = new ModuleInfo("PowerToys.LightSwitch.exe", "PowerToys.LightSwitch", "LightSwitchService"),
             };
         }
 

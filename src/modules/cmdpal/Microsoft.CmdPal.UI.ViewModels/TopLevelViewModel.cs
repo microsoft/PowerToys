@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,6 +32,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private string _generatedId = string.Empty;
 
     private HotkeySettings? _hotkey;
+    private IIconInfo? _initialIcon;
 
     private CommandAlias? Alias { get; set; }
 
@@ -47,12 +49,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
+    public string CommandProviderId => _commandProviderId;
+
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
 
     public string Subtitle => _commandItemViewModel.Subtitle;
 
     public IIconInfo Icon => _commandItemViewModel.Icon;
+
+    public IIconInfo InitialIcon => _initialIcon ?? _commandItemViewModel.Icon;
 
     ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
 
@@ -107,6 +113,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         get => Alias?.Alias ?? string.Empty;
         set
         {
+            var previousAlias = Alias?.Alias ?? string.Empty;
+
             if (string.IsNullOrEmpty(value))
             {
                 Alias = null;
@@ -123,9 +131,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
                 }
             }
 
-            HandleChangeAlias();
-            OnPropertyChanged(nameof(AliasText));
-            OnPropertyChanged(nameof(IsDirectAlias));
+            // Only call HandleChangeAlias if there was an actual change.
+            if (previousAlias != Alias?.Alias)
+            {
+                HandleChangeAlias();
+                OnPropertyChanged(nameof(AliasText));
+                OnPropertyChanged(nameof(IsDirectAlias));
+            }
         }
     }
 
@@ -196,6 +208,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 DisplayTitle = fallback.DisplayTitle;
             }
+
+            UpdateInitialIcon(false);
         }
     }
 
@@ -205,14 +219,38 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         {
             PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
 
-            if (e.PropertyName == "IsInitialized")
+            if (e.PropertyName is "IsInitialized" or nameof(CommandItemViewModel.Command))
             {
                 GenerateId();
 
                 FetchAliasFromAliasManager();
                 UpdateHotkey();
                 UpdateTags();
+                UpdateInitialIcon();
             }
+            else if (e.PropertyName == nameof(CommandItem.Icon))
+            {
+                UpdateInitialIcon();
+            }
+        }
+    }
+
+    private void UpdateInitialIcon(bool raiseNotification = true)
+    {
+        if (_initialIcon != null || !_commandItemViewModel.Icon.IsSet)
+        {
+            return;
+        }
+
+        _initialIcon = _commandItemViewModel.Icon;
+
+        if (raiseNotification)
+        {
+            DoOnUiThread(
+                () =>
+                {
+                    PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(InitialIcon)));
+                });
         }
     }
 
@@ -237,7 +275,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void FetchAliasFromAliasManager()
     {
         var am = _serviceProvider.GetService<AliasManager>();
-        if (am != null)
+        if (am is not null)
         {
             var commandAlias = am.AliasFromId(Id);
             if (commandAlias is not null)
@@ -251,7 +289,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void UpdateHotkey()
     {
         var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
-        if (hotkey != null)
+        if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;
         }
@@ -261,12 +299,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         List<Tag> tags = [];
 
-        if (Hotkey != null)
+        if (Hotkey is not null)
         {
             tags.Add(new Tag() { Text = Hotkey.ToString() });
         }
 
-        if (Alias != null)
+        if (Alias is not null)
         {
             tags.Add(new Tag() { Text = Alias.SearchPrefix });
         }
@@ -350,5 +388,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     public PerformCommandMessage GetPerformCommandMessage()
     {
         return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(TopLevelViewModel)}: {Id} ({Title}) - display: {DisplayTitle} - fallback: {IsFallback} - enabled: {IsEnabled}";
     }
 }

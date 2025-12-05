@@ -4,7 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 
@@ -20,6 +22,9 @@ namespace Microsoft.PowerToys.UITest
 
         public required Session Session { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the tests are running in a CI/CD pipeline.
+        /// </summary>
         public bool IsInPipeline { get; }
 
         public string? ScreenshotDirectory { get; set; }
@@ -34,8 +39,8 @@ namespace Microsoft.PowerToys.UITest
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
-            this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
-            Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
+            this.IsInPipeline = EnvironmentConfig.IsInPipeline;
+            Console.WriteLine($"Running tests on platform: {EnvironmentConfig.Platform}");
             if (IsInPipeline)
             {
                 NativeMethods.ChangeDisplayResolution(1920, 1080);
@@ -56,6 +61,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            KeyboardHelper.SendKeys(Key.Win, Key.M);
             CloseOtherApplications();
             if (IsInPipeline)
             {
@@ -89,6 +95,7 @@ namespace Microsoft.PowerToys.UITest
                 {
                     Task.Delay(1000).Wait();
                     AddScreenShotsToTestResultsDirectory();
+                    AddLogFilesToTestResultsDirectory();
                 }
             }
 
@@ -245,6 +252,174 @@ namespace Microsoft.PowerToys.UITest
         public bool Has(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.Has<Element>(name, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element using partial name matching (contains).
+        /// Useful for finding windows with variable titles like "filename.txt - Notepad" or "filename - Notepad".
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="partialName">Part of the name to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByPartialName<T>(string partialName, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            return Session.Find<T>(By.XPath($"//*[contains(@Name, '{partialName}')]"), timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element using partial name matching (contains).
+        /// </summary>
+        /// <param name="partialName">Part of the name to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByPartialName(string partialName, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByPartialName<Element>(partialName, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Base method for finding elements by selector and filtering by name pattern.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="selector">The selector to find initial candidates.</param>
+        /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <param name="errorMessage">Custom error message when no element is found.</param>
+        /// <returns>The found element.</returns>
+        private T FindByNamePattern<T>(By selector, string namePattern, int timeoutMS = 5000, bool global = false, string? errorMessage = null)
+            where T : Element, new()
+        {
+            var elements = Session.FindAll<T>(selector, timeoutMS, global);
+            var regex = new Regex(namePattern, RegexOptions.IgnoreCase);
+
+            foreach (var element in elements)
+            {
+                var name = element.GetAttribute("Name");
+                if (!string.IsNullOrEmpty(name) && regex.IsMatch(name))
+                {
+                    return element;
+                }
+            }
+
+            throw new NoSuchElementException(errorMessage ?? $"No element found matching pattern: {namePattern}");
+        }
+
+        /// <summary>
+        /// Finds an element using regular expression pattern matching.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="pattern">Regular expression pattern to match against the Name attribute.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByPattern<T>(string pattern, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            return FindByNamePattern<T>(By.XPath("//*[@Name]"), pattern, timeoutMS, global, $"No element found matching pattern: {pattern}");
+        }
+
+        /// <summary>
+        /// Finds an element using regular expression pattern matching.
+        /// </summary>
+        /// <param name="pattern">Regular expression pattern to match against the Name attribute.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByPattern(string pattern, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByPattern<Element>(pattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element by ClassName only.
+        /// Returns the first element found with the specified ClassName.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByClassName<T>(string className, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            return Session.Find<T>(By.ClassName(className), timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element by ClassName only.
+        /// Returns the first element found with the specified ClassName.
+        /// </summary>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByClassName(string className, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByClassName<Element>(className, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element by ClassName and matches its Name attribute using regex pattern matching.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByClassNameAndNamePattern<T>(string className, string namePattern, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            return FindByNamePattern<T>(By.ClassName(className), namePattern, timeoutMS, global, $"No element with ClassName '{className}' found matching name pattern: {namePattern}");
+        }
+
+        /// <summary>
+        /// Finds an element by ClassName and matches its Name attribute using regex pattern matching.
+        /// </summary>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByClassNameAndNamePattern(string className, string namePattern, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByClassNameAndNamePattern<Element>(className, namePattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds a Notepad window regardless of whether the file extension is shown in the title.
+        /// Handles both "filename.txt - Notepad" and "filename - Notepad" formats.
+        /// Uses ClassName to efficiently find Notepad windows first, then matches the filename.
+        /// </summary>
+        /// <param name="baseFileName">The base filename without extension (e.g., "test" for "test.txt").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found Notepad window element.</returns>
+        protected Element FindNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
+        {
+            string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?(\s*-\s*|\s+)Notepad$";
+            return FindByClassNameAndNamePattern("Notepad", pattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an Explorer window regardless of the folder or file name display format.
+        /// Handles various Explorer window title formats like "FolderName", "FileName", "FolderName - File Explorer", etc.
+        /// Uses ClassName to efficiently find Explorer windows first, then matches the folder or file name.
+        /// </summary>
+        /// <param name="folderName">The folder or file name to search for (e.g., "Documents", "Desktop", "test.txt").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found Explorer window element.</returns>
+        protected Element FindExplorerWindow(string folderName, int timeoutMS = 5000, bool global = false)
+        {
+            string pattern = $@"^{Regex.Escape(folderName)}(\s*-\s*(File\s+Explorer|Windows\s+Explorer))?$";
+            return FindByClassNameAndNamePattern("CabinetWClass", pattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an Explorer window by partial folder path.
+        /// Useful when the full path might be displayed in the title.
+        /// </summary>
+        /// <param name="partialPath">Part of the folder path to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found Explorer window element.</returns>
+        protected Element FindExplorerByPartialPath(string partialPath, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByPartialName(partialPath, timeoutMS, global);
         }
 
         /// <summary>
@@ -422,6 +597,92 @@ namespace Microsoft.PowerToys.UITest
                 {
                     this.TestContext.AddResultFile(file);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Copies PowerToys log files to test results directory when test fails.
+        /// Renames files to include the directory structure after \PowerToys.
+        /// </summary>
+        protected void AddLogFilesToTestResultsDirectory()
+        {
+            try
+            {
+                var localAppDataLow = Path.Combine(
+                    Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty,
+                    "AppData",
+                    "LocalLow",
+                    "Microsoft",
+                    "PowerToys");
+
+                if (Directory.Exists(localAppDataLow))
+                {
+                    CopyLogFilesFromDirectory(localAppDataLow, string.Empty);
+                }
+
+                var localAppData = Path.Combine(
+                    Environment.GetEnvironmentVariable("LOCALAPPDATA") ?? string.Empty,
+                    "Microsoft",
+                    "PowerToys");
+
+                if (Directory.Exists(localAppData))
+                {
+                    CopyLogFilesFromDirectory(localAppData, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't fail the test if log file copying fails
+                Console.WriteLine($"Failed to copy log files: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Recursively copies log files from a directory and renames them with directory structure.
+        /// </summary>
+        /// <param name="sourceDir">Source directory to copy from</param>
+        /// <param name="relativePath">Relative path from PowerToys folder</param>
+        private void CopyLogFilesFromDirectory(string sourceDir, string relativePath)
+        {
+            if (!Directory.Exists(sourceDir))
+            {
+                return;
+            }
+
+            // Process log files in current directory
+            var logFiles = Directory.GetFiles(sourceDir, "*.log");
+            foreach (var logFile in logFiles)
+            {
+                try
+                {
+                    var fileName = Path.GetFileName(logFile);
+                    var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                    var extension = Path.GetExtension(fileName);
+
+                    // Create new filename with directory structure
+                    var directoryPart = string.IsNullOrEmpty(relativePath) ? string.Empty : relativePath.Replace("\\", "-") + "-";
+                    var newFileName = $"{directoryPart}{fileNameWithoutExt}{extension}";
+
+                    // Copy file to test results directory with new name
+                    var testResultsDir = TestContext.TestResultsDirectory ?? Path.GetTempPath();
+                    var destinationPath = Path.Combine(testResultsDir, newFileName);
+
+                    File.Copy(logFile, destinationPath, true);
+                    TestContext.AddResultFile(destinationPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to copy log file {logFile}: {ex.Message}");
+                }
+            }
+
+            // Recursively process subdirectories
+            var subdirectories = Directory.GetDirectories(sourceDir);
+            foreach (var subdir in subdirectories)
+            {
+                var dirName = Path.GetFileName(subdir);
+                var newRelativePath = string.IsNullOrEmpty(relativePath) ? dirName : Path.Combine(relativePath, dirName);
+                CopyLogFilesFromDirectory(subdir, newRelativePath);
             }
         }
 

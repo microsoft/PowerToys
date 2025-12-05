@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -37,6 +38,9 @@ namespace Microsoft.PowerToys.UITest
         private PowerToysModule scope;
         private string[]? commandLineArgs;
 
+        /// <summary>
+        /// Gets a value indicating whether to use installer paths for testing.
+        /// </summary>
         private bool UseInstallerForTest { get; }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
@@ -45,9 +49,7 @@ namespace Microsoft.PowerToys.UITest
             this.scope = scope;
             this.commandLineArgs = commandLineArgs;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
-            string? useInstallerForTestEnv =
-                Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
-            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
             this.locationPath = UseInstallerForTest ? string.Empty : Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             CheckWinAppDriverAndRoot();
@@ -136,6 +138,10 @@ namespace Microsoft.PowerToys.UITest
             {
                 TryLaunchPowerToysSettings(opts);
             }
+            else if (scope == PowerToysModule.CommandPalette && UseInstallerForTest)
+            {
+                TryLaunchCommandPalette(opts);
+            }
             else
             {
                 opts.AddAdditionalCapability("app", appPath);
@@ -163,48 +169,77 @@ namespace Microsoft.PowerToys.UITest
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
         {
-            CheckWinAppDriverAndRoot();
-
-            var runnerProcessInfo = new ProcessStartInfo
+            try
             {
-                FileName = locationPath + runnerPath,
-                Verb = "runas",
-                Arguments = "--open-settings",
-            };
-
-            ExitExe(runnerProcessInfo.FileName);
-            runner = Process.Start(runnerProcessInfo);
-            Thread.Sleep(5000);
-
-            // Exit CmdPal UI before launching new process if use installer for test
-            ExitExeByName("Microsoft.CmdPal.UI");
-
-            if (root != null)
-            {
-                const int maxRetries = 5;
-                const int delayMs = 5000;
-                var windowName = "PowerToys Settings";
-
-                for (int attempt = 1; attempt <= maxRetries; attempt++)
+                var runnerProcessInfo = new ProcessStartInfo
                 {
-                    var settingsWindow = ApiHelper.FindDesktopWindowHandler(
-                        [windowName, AdministratorPrefix + windowName]);
+                    FileName = locationPath + runnerPath,
+                    Verb = "runas",
+                    Arguments = "--open-settings",
+                };
 
-                    if (settingsWindow.Count > 0)
-                    {
-                        var hexHwnd = settingsWindow[0].HWnd.ToString("x");
-                        opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
-                        return;
-                    }
+                ExitExe(runnerProcessInfo.FileName);
+                runner = Process.Start(runnerProcessInfo);
 
-                    if (attempt < maxRetries)
-                    {
-                        Thread.Sleep(delayMs);
-                    }
-                    else
-                    {
-                        throw new TimeoutException("Failed to find PowerToys Settings window after multiple attempts.");
-                    }
+                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
+
+                // Exit CmdPal UI before launching new process if use installer for test
+                ExitExeByName("Microsoft.CmdPal.UI");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to launch PowerToys Settings: {ex.Message}", ex);
+            }
+        }
+
+        private void TryLaunchCommandPalette(AppiumOptions opts)
+        {
+            try
+            {
+                // Exit any existing CmdPal UI process
+                ExitExeByName("Microsoft.CmdPal.UI");
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c start shell:appsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
+
+                var process = Process.Start(processStartInfo);
+                process?.WaitForExit();
+
+                WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to launch Command Palette: {ex.Message}", ex);
+            }
+        }
+
+        private void WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
+        {
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                var window = ApiHelper.FindDesktopWindowHandler(
+                    [windowName, AdministratorPrefix + windowName]);
+
+                if (window.Count > 0)
+                {
+                    var hexHwnd = window[0].HWnd.ToString("x");
+                    opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
+                    return;
+                }
+
+                if (attempt < maxRetries)
+                {
+                    Thread.Sleep(delayMs);
+                }
+                else
+                {
+                    throw new TimeoutException($"Failed to find {windowName} window after multiple attempts.");
                 }
             }
         }

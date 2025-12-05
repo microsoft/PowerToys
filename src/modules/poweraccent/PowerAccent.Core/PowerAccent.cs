@@ -20,6 +20,7 @@ public partial class PowerAccent : IDisposable
 
     // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
     private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
+    private const double ScreenMinPadding = 150;
 
     private bool _visible;
     private string[] _characters = Array.Empty<string>();
@@ -117,8 +118,8 @@ public partial class PowerAccent : IDisposable
         if (_settingService.SortByUsageFrequency)
         {
             characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
-                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character)).
-                ToArray<string>();
+                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character))
+                .ToArray<string>();
         }
         else if (!_usageInfo.Empty())
         {
@@ -332,9 +333,22 @@ public partial class PowerAccent : IDisposable
         return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
     }
 
+    public double GetDisplayMaxWidth()
+    {
+        return WindowsFunctions.GetActiveDisplay().Size.Width - ScreenMinPadding;
+    }
+
     public Position GetToolbarPosition()
     {
         return _settingService.Position;
+    }
+
+    public void SaveUsageInfo()
+    {
+        if (_settingService.SortByUsageFrequency)
+        {
+            _usageInfo.Save();
+        }
     }
 
     public void Dispose()

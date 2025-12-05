@@ -32,9 +32,18 @@ public partial class InstallPackageListItem : ListItem
     {
         _package = package;
 
-        var version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
+        PackageVersionInfo? version = null;
+        try
+        {
+            version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Could not get package version", e);
+        }
+
         var versionTagText = "Unknown";
-        if (version != null)
+        if (version is not null)
         {
             versionTagText = version.Version == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : version.Version;
         }
@@ -57,20 +66,27 @@ public partial class InstallPackageListItem : ListItem
         }
         catch (COMException ex)
         {
-            Logger.LogWarning($"{ex.ErrorCode}");
+            Logger.LogWarning($"GetCatalogPackageMetadata error {ex.ErrorCode}");
         }
 
-        if (metadata != null)
+        if (metadata is not null)
         {
-            if (metadata.Tags.Where(t => t.Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase)).Any())
+            for (var i = 0; i < metadata.Tags.Count; i++)
             {
-                if (_installCommand != null)
+                if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    _installCommand.SkipDependencies = true;
+                    if (_installCommand is not null)
+                    {
+                        _installCommand.SkipDependencies = true;
+                    }
+
+                    break;
                 }
             }
 
-            var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
+            var description = string.IsNullOrEmpty(metadata.Description) ?
+                metadata.ShortDescription :
+                metadata.Description;
             var detailsBody = $"""
 
 {description}
@@ -116,9 +132,11 @@ public partial class InstallPackageListItem : ListItem
             // These can be l o n g
             { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
-        var docs = metadata.Documentations.ToArray();
-        foreach (var item in docs)
+        var docs = metadata.Documentations;
+        var count = docs.Count;
+        for (var i = 0; i < count; i++)
         {
+            var item = docs[i];
             simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
         }
 
@@ -141,7 +159,7 @@ public partial class InstallPackageListItem : ListItem
             }
         }
 
-        if (metadata.Tags.Any())
+        if (metadata.Tags.Count > 0)
         {
             DetailsElement pair = new()
             {
@@ -169,52 +187,102 @@ public partial class InstallPackageListItem : ListItem
         {
             // Handle other exceptions
             ExtensionHost.LogMessage($"[WinGet] UpdatedInstalledStatus throw exception: {ex.Message}");
+            Logger.LogError($"[WinGet] UpdatedInstalledStatus throw exception", ex);
             return;
         }
 
-        var isInstalled = _package.InstalledVersion != null;
+        var isInstalled = _package.InstalledVersion is not null;
 
         var installedState = isInstalled ?
-            (_package.IsUpdateAvailable ?
-                PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
+            (_package.IsUpdateAvailable ? PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
             PackageInstallCommandState.Install;
 
         // might be an uninstall command
         InstallPackageCommand installCommand = new(_package, installedState);
 
-        if (isInstalled)
+        if (_package.InstalledVersion is not null)
         {
-            this.Icon = installCommand.Icon;
-            this.Command = new NoOpCommand();
+#if DEBUG
+            var installerType = _package.InstalledVersion.GetMetadata(PackageVersionMetadataField.InstallerType);
+            Subtitle = installerType + " | " + Subtitle;
+#endif
+
             List<IContextItem> contextMenu = [];
-            CommandContextItem uninstallContextItem = new(installCommand)
+            Command = installCommand;
+            Icon = installedState switch
             {
-                IsCritical = true,
-                Icon = Icons.DeleteIcon,
+                PackageInstallCommandState.Install => Icons.DownloadIcon,
+                PackageInstallCommandState.Update => Icons.UpdateIcon,
+                PackageInstallCommandState.Uninstall => Icons.CompletedIcon,
+                _ => Icons.DownloadIcon,
             };
 
-            if (WinGetStatics.AppSearchCallback != null)
+            TryLocateAndAppendActionForApp(contextMenu);
+
+            MoreCommands = contextMenu.ToArray();
+        }
+        else
+        {
+            _installCommand = new InstallPackageCommand(_package, installedState);
+            _installCommand.InstallStateChanged += InstallStateChangedHandler;
+            Command = _installCommand;
+            Icon = _installCommand.Icon;
+        }
+    }
+
+    private void TryLocateAndAppendActionForApp(List<IContextItem> contextMenu)
+    {
+        try
+        {
+            // Let's try to connect it to an installed app if possible
+            // This is a bit of dark magic, since there's no direct link between
+            // WinGet packages and installed apps.
+            var lookupByPackageName = WinGetStatics.AppSearchByPackageFamilyNameCallback;
+            if (lookupByPackageName is not null)
             {
-                var callback = WinGetStatics.AppSearchCallback;
-                var installedApp = callback(_package.DefaultInstallVersion == null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
-                if (installedApp != null)
+                var names = _package.InstalledVersion.PackageFamilyNames;
+                for (var i = 0; i < names.Count; i++)
                 {
-                    this.Command = installedApp.Command;
-                    contextMenu = [.. installedApp.MoreCommands];
+                    var installedAppByPfn = lookupByPackageName(names[i]);
+                    if (installedAppByPfn is not null)
+                    {
+                        contextMenu.Add(new Separator());
+                        contextMenu.Add(new CommandContextItem(installedAppByPfn.Command));
+                        foreach (var item in installedAppByPfn.MoreCommands)
+                        {
+                            contextMenu.Add(item);
+                        }
+
+                        return;
+                    }
                 }
             }
 
-            contextMenu.Add(uninstallContextItem);
-            this.MoreCommands = contextMenu.ToArray();
-            return;
+            var lookupByProductCode = WinGetStatics.AppSearchByProductCodeCallback;
+            if (lookupByProductCode is not null)
+            {
+                var productCodes = _package.InstalledVersion.ProductCodes;
+                for (var i = 0; i < productCodes.Count; i++)
+                {
+                    var installedAppByProductCode = lookupByProductCode(productCodes[i]);
+                    if (installedAppByProductCode is not null)
+                    {
+                        contextMenu.Add(new Separator());
+                        contextMenu.Add(new CommandContextItem(installedAppByProductCode.Command));
+                        foreach (var item in installedAppByProductCode.MoreCommands)
+                        {
+                            contextMenu.Add(item);
+                        }
+
+                        return;
+                    }
+                }
+            }
         }
-
-        // didn't find the app
-        _installCommand = new InstallPackageCommand(_package, installedState);
-        this.Command = _installCommand;
-
-        Icon = _installCommand.Icon;
-        _installCommand.InstallStateChanged += InstallStateChangedHandler;
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to retrieve app context menu items for package '{_package?.Name ?? "Unknown"}'", ex);
+        }
     }
 
     private void InstallStateChangedHandler(object? sender, InstallPackageCommand e)
@@ -233,10 +301,10 @@ public partial class InstallPackageListItem : ListItem
             Stopwatch s = new();
             Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
             s.Start();
-            var refs = WinGetStatics.AvailableCatalogs.ToArray();
-
-            foreach (var catalog in refs)
+            var refs = WinGetStatics.AvailableCatalogs;
+            for (var i = 0; i < refs.Count; i++)
             {
+                var catalog = refs[i];
                 var operation = catalog.RefreshPackageCatalogAsync();
                 operation.Wait();
             }

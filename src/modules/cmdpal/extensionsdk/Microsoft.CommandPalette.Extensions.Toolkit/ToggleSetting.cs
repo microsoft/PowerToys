@@ -26,15 +26,69 @@ public sealed class ToggleSetting : Setting<bool>
 
     public override Dictionary<string, object> ToDictionary()
     {
-        return new Dictionary<string, object>
+        var items = new List<Dictionary<string, object>>();
+
+        if (!string.IsNullOrEmpty(Label))
         {
-            { "type", "Input.Toggle" },
-            { "title", Label },
-            { "id", Key },
-            { "label", Description },
-            { "value", JsonSerializer.Serialize(Value, JsonSerializationContext.Default.Boolean) },
-            { "isRequired", IsRequired },
-            { "errorMessage", ErrorMessage },
+            items.Add(
+                new()
+                {
+                    { "type", "TextBlock" },
+                    { "text", Label },
+                    { "wrap", true },
+                });
+        }
+
+        if (!(string.IsNullOrEmpty(Description) || string.Equals(Description, Label, StringComparison.OrdinalIgnoreCase)))
+        {
+            items.Add(
+                new()
+                {
+                    { "type", "TextBlock" },
+                    { "text", Description },
+                    { "isSubtle", true },
+                    { "size", "Small" },
+                    { "spacing", "Small" },
+                    { "wrap", true },
+                });
+        }
+
+        return new()
+        {
+            { "type", "ColumnSet" },
+            {
+                "columns", new List<Dictionary<string, object>>
+                {
+                    new()
+                    {
+                        { "type", "Column" },
+                        { "width", "20px" },
+                        {
+                            "items", new List<Dictionary<string, object>>
+                            {
+                                new()
+                                {
+                                    { "type", "Input.Toggle" },
+                                    { "title", " " },
+                                    { "id", Key },
+                                    { "value", JsonSerializer.Serialize(Value, JsonSerializationContext.Default.Boolean) },
+                                    { "isRequired", IsRequired },
+                                    { "errorMessage", ErrorMessage },
+                                },
+                            }
+                        },
+                        { "verticalContentAlignment", "Center" },
+                    },
+                    new()
+                    {
+                        { "type", "Column" },
+                        { "width", "stretch" },
+                        { "items", items },
+                        { "verticalContentAlignment", "Center" },
+                    },
+                }
+            },
+            { "spacing", "Medium" },
         };
     }
 
@@ -43,7 +97,7 @@ public sealed class ToggleSetting : Setting<bool>
     public override void Update(JsonObject payload)
     {
         // If the key doesn't exist in the payload, don't do anything
-        if (payload[Key] != null)
+        if (payload[Key] is not null)
         {
             // Adaptive cards returns boolean values as a string "true"/"false", cause of course.
             var strFromJson = payload[Key]?.GetValue<string>() ?? string.Empty;

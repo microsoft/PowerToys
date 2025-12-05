@@ -2,32 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
-using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDisposable
 {
-    private readonly Action<string>? _addToHistory;
-    private CancellationTokenSource? _cancellationTokenSource;
-    private Task? _currentUpdateTask;
+    private static readonly char[] _systemDirectoryRoots = ['\\', '/'];
 
-    public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory)
+    private readonly Action<string>? _addToHistory;
+    private readonly ITelemetryService _telemetryService;
+    private CancellationTokenSource? _cancellationTokenSource;
+
+    public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
         : base(
             new NoOpCommand() { Id = "com.microsoft.run.fallback" },
-            Resources.shell_command_display_title)
+            ResourceLoaderInstance.GetString("shell_command_display_title"))
     {
         Title = string.Empty;
-        Subtitle = Properties.Resources.generic_run_command;
+        Subtitle = ResourceLoaderInstance.GetString("generic_run_command");
         Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.
         _addToHistory = addToHistory;
+        _telemetryService = telemetryService;
     }
 
     public override void UpdateQuery(string query)
@@ -40,48 +39,26 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
 
         try
         {
-            // Save the latest update task
-            _currentUpdateTask = DoUpdateQueryAsync(query, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // DO NOTHING HERE
-            return;
+            DoUpdateQuery(query, cancellationToken);
         }
         catch (Exception)
         {
             // Handle other exceptions
             return;
         }
-
-        // Await the task to ensure only the latest one gets processed
-        _ = ProcessUpdateResultsAsync(_currentUpdateTask);
     }
 
-    private async Task ProcessUpdateResultsAsync(Task updateTask)
-    {
-        try
-        {
-            await updateTask;
-        }
-        catch (OperationCanceledException)
-        {
-            // Handle cancellation gracefully
-        }
-        catch (Exception)
-        {
-            // Handle other exceptions
-        }
-    }
-
-    private async Task DoUpdateQueryAsync(string query, CancellationToken cancellationToken)
+    private void DoUpdateQuery(string query, CancellationToken cancellationToken)
     {
         // Check for cancellation at the start
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         var searchText = query.Trim();
-        var expanded = Environment.ExpandEnvironmentVariables(searchText);
-        searchText = expanded;
+        Expand(ref searchText);
+
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             Command = null;
@@ -89,7 +66,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellListPageHelpers.NormalizeCommandLineAndArgs(searchText, out var exe, out var args);
 
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
@@ -105,22 +82,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
             var timeoutToken = combinedCts.Token;
 
-            // Use Task.Run with timeout for file system operations
-            var fileSystemTask = Task.Run(
-                () =>
-                {
-                    exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
-                    pathIsDir = Directory.Exists(exe);
-                },
-                CancellationToken.None);
-
-            // Wait for either completion or timeout
-            await fileSystemTask.WaitAsync(timeoutToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            // Main cancellation token was cancelled, re-throw
-            throw;
+            exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath, cancellationToken);
+            pathIsDir = Directory.Exists(exe);
         }
         catch (TimeoutException)
         {
@@ -139,12 +102,15 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
 
         // Check for cancellation before updating UI properties
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, _addToHistory);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, _addToHistory, telemetryService: _telemetryService);
             Title = exeItem.Title;
             Subtitle = exeItem.Subtitle;
             Icon = exeItem.Icon;
@@ -153,16 +119,16 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query, _addToHistory);
+            var pathItem = new PathListItem(exe, query, _addToHistory, _telemetryService);
+            Command = pathItem.Command;
+            MoreCommands = pathItem.MoreCommands;
             Title = pathItem.Title;
             Subtitle = pathItem.Subtitle;
             Icon = pathItem.Icon;
-            Command = pathItem.Command;
-            MoreCommands = pathItem.MoreCommands;
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            Command = new OpenUrlWithHistoryCommand(searchText, _addToHistory) { Result = CommandResult.Dismiss() };
+            Command = new OpenUrlWithHistoryCommand(searchText, _addToHistory, _telemetryService) { Result = CommandResult.Dismiss() };
             Title = searchText;
         }
         else
@@ -172,7 +138,10 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
 
         // Final cancellation check
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
     }
 
     public void Dispose()
@@ -184,17 +153,70 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     internal static bool SuppressFileFallbackIf(string query)
     {
         var searchText = query.Trim();
-        var expanded = Environment.ExpandEnvironmentVariables(searchText);
-        searchText = expanded;
+        Expand(ref searchText);
+
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             return false;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
         var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
 
         return exeExists || pathIsDir;
+    }
+
+    private static void Expand(ref string searchText)
+    {
+        if (searchText.Length == 0)
+        {
+            return;
+        }
+
+        var singleCharQuery = searchText.Length == 1;
+
+        searchText = Environment.ExpandEnvironmentVariables(searchText);
+
+        if (!TryExpandHome(ref searchText))
+        {
+            TryExpandRoot(ref searchText);
+        }
+    }
+
+    private static bool TryExpandHome(ref string searchText)
+    {
+        if (searchText[0] == '~')
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (searchText.Length == 1)
+            {
+                searchText = home;
+            }
+            else if (_systemDirectoryRoots.Contains(searchText[1]))
+            {
+                searchText = Path.Combine(home, searchText[2..]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryExpandRoot(ref string searchText)
+    {
+        if (_systemDirectoryRoots.Contains(searchText[0]) && (searchText.Length == 1 || !_systemDirectoryRoots.Contains(searchText[1])))
+        {
+            var root = Path.GetPathRoot(Environment.SystemDirectory);
+            if (root != null)
+            {
+                searchText = searchText.Length == 1 ? root : Path.Combine(root, searchText[1..]);
+                return true;
+            }
+        }
+
+        return false;
     }
 }

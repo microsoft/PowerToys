@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
@@ -125,6 +125,10 @@ public class ExtensionWrapper : IExtensionWrapper
                                 // We don't really need to throw this exception.
                                 // We'll just return out nothing.
                                 return;
+                            }
+                            else if (hr.Value != 0)
+                            {
+                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr.Value}");
                             }
 
                             // Marshal.ThrowExceptionForHR(hr);

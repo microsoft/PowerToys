@@ -22,6 +22,7 @@
         MinHeight="32"
         VerticalAlignment="Stretch"
         VerticalContentAlignment="Stretch"
+        AutomationProperties.AutomationId="MainSearchBox"
         KeyDown="FilterBox_KeyDown"
         PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
         PreviewKeyDown="FilterBox_PreviewKeyDown"

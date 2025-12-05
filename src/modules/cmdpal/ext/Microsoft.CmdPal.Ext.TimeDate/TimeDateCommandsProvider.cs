@@ -12,10 +12,10 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
-public partial class TimeDateCommandsProvider : CommandProvider
+public sealed partial class TimeDateCommandsProvider : CommandProvider
 {
     private readonly CommandItem _command;
-    private static readonly SettingsManager _settingsManager = new();
+    private static readonly SettingsManager _settingsManager = new SettingsManager();
     private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_plugin_description);
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
@@ -23,7 +23,7 @@ public partial class TimeDateCommandsProvider : CommandProvider
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
-        Id = "DateTime";
+        Id = "com.microsoft.cmdpal.builtin.datetime";
         _command = new CommandItem(_timeDateExtensionPage)
         {
             Icon = _timeDateExtensionPage.Icon,

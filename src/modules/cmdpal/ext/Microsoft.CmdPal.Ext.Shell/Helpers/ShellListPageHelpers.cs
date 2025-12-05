@@ -2,13 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Shell.Commands;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -16,37 +11,6 @@ namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 public class ShellListPageHelpers
 {
-    private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(Properties.Resources.cmd_has_been_executed_times);
-    private readonly SettingsManager _settings;
-
-    public ShellListPageHelpers(SettingsManager settings)
-    {
-        _settings = settings;
-    }
-
-    private ListItem GetCurrentCmd(string cmd)
-    {
-        var result = new ListItem(new ExecuteItem(cmd, _settings))
-        {
-            Title = cmd,
-            Subtitle = Properties.Resources.cmd_plugin_name + ": " + Properties.Resources.cmd_execute_through_shell,
-            Icon = new IconInfo(string.Empty),
-        };
-
-        return result;
-    }
-
-    public List<CommandContextItem> LoadContextMenus(ListItem listItem)
-    {
-        var resultList = new List<CommandContextItem>
-            {
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.Administrator)),
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.OtherUser )),
-            };
-
-        return resultList;
-    }
-
     internal static bool FileExistInPath(string filename)
     {
         return FileExistInPath(filename, out var _);
@@ -54,50 +18,10 @@ public class ShellListPageHelpers
 
     internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
-        fullPath = string.Empty;
-
-        if (File.Exists(filename))
-        {
-            token?.ThrowIfCancellationRequested();
-            fullPath = Path.GetFullPath(filename);
-            return true;
-        }
-        else
-        {
-            var values = Environment.GetEnvironmentVariable("PATH");
-            if (values != null)
-            {
-                foreach (var path in values.Split(';'))
-                {
-                    var path1 = Path.Combine(path, filename);
-                    if (File.Exists(path1))
-                    {
-                        fullPath = Path.GetFullPath(path1);
-                        return true;
-                    }
-
-                    token?.ThrowIfCancellationRequested();
-
-                    var path2 = Path.Combine(path, filename + ".exe");
-                    if (File.Exists(path2))
-                    {
-                        fullPath = Path.GetFullPath(path2);
-                        return true;
-                    }
-
-                    token?.ThrowIfCancellationRequested();
-                }
-
-                return false;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        return ShellHelpers.FileExistInPath(filename, out fullPath, token ?? CancellationToken.None);
     }
 
-    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory)
+    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
         var li = new ListItem();
 
@@ -109,7 +33,7 @@ public class ShellListPageHelpers
             return null;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
 
         var exeExists = false;
         var pathIsDir = false;
@@ -139,7 +63,7 @@ public class ShellListPageHelpers
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory, telemetryService);
             li.Command = exeItem.Command;
             li.Title = exeItem.Title;
             li.Subtitle = exeItem.Subtitle;
@@ -148,7 +72,7 @@ public class ShellListPageHelpers
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query, addToHistory);
+            var pathItem = new PathListItem(exe, query, addToHistory, telemetryService);
             li.Command = pathItem.Command;
             li.Title = pathItem.Title;
             li.Subtitle = pathItem.Subtitle;
@@ -157,7 +81,7 @@ public class ShellListPageHelpers
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            li.Command = new OpenUrlWithHistoryCommand(searchText) { Result = CommandResult.Dismiss() };
+            li.Command = new OpenUrlWithHistoryCommand(searchText, addToHistory, telemetryService) { Result = CommandResult.Dismiss() };
             li.Title = searchText;
         }
         else
@@ -165,11 +89,129 @@ public class ShellListPageHelpers
             return null;
         }
 
-        if (li != null)
+        if (li is not null)
         {
             li.TextToSuggest = searchText;
         }
 
         return li;
+    }
+
+    /// <summary>
+    /// This is a version of ParseExecutableAndArgs that handles whitespace in
+    /// paths better. It will try to find the first matching executable in the
+    /// input string.
+    ///
+    /// If the input is quoted, it will treat everything inside the quotes as
+    /// the executable. If the input is not quoted, it will try to find the
+    /// first segment that matches
+    /// </summary>
+    public static void NormalizeCommandLineAndArgs(string input, out string executable, out string arguments)
+    {
+        var normalized = CommandLineNormalizer.NormalizeCommandLine(input, allowDirectory: true);
+        var segments = normalized.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        executable = string.Empty;
+        arguments = string.Empty;
+        if (segments.Length == 0)
+        {
+            return;
+        }
+
+        executable = segments[0];
+        if (segments.Length > 1)
+        {
+            arguments = ArgumentBuilder.BuildArguments(segments[1..]);
+        }
+    }
+
+    private static class ArgumentBuilder
+    {
+        internal static string BuildArguments(string[] arguments)
+        {
+            if (arguments.Length <= 0)
+            {
+                return string.Empty;
+            }
+
+            var stringBuilder = new StringBuilder();
+            foreach (var argument in arguments)
+            {
+                AppendArgument(stringBuilder, argument);
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private static void AppendArgument(StringBuilder stringBuilder, string argument)
+        {
+            if (stringBuilder.Length > 0)
+            {
+                stringBuilder.Append(' ');
+            }
+
+            if (argument.Length == 0 || ShouldBeQuoted(argument))
+            {
+                stringBuilder.Append('\"');
+                var index = 0;
+                while (index < argument.Length)
+                {
+                    var c = argument[index++];
+                    if (c == '\\')
+                    {
+                        var numBackSlash = 1;
+                        while (index < argument.Length && argument[index] == '\\')
+                        {
+                            index++;
+                            numBackSlash++;
+                        }
+
+                        if (index == argument.Length)
+                        {
+                            stringBuilder.Append('\\', numBackSlash * 2);
+                        }
+                        else if (argument[index] == '\"')
+                        {
+                            stringBuilder.Append('\\', (numBackSlash * 2) + 1);
+                            stringBuilder.Append('\"');
+                            index++;
+                        }
+                        else
+                        {
+                            stringBuilder.Append('\\', numBackSlash);
+                        }
+
+                        continue;
+                    }
+
+                    if (c == '\"')
+                    {
+                        stringBuilder.Append('\\');
+                        stringBuilder.Append('\"');
+                        continue;
+                    }
+
+                    stringBuilder.Append(c);
+                }
+
+                stringBuilder.Append('\"');
+            }
+            else
+            {
+                stringBuilder.Append(argument);
+            }
+        }
+
+        private static bool ShouldBeQuoted(string s)
+        {
+            foreach (var c in s)
+            {
+                if (char.IsWhiteSpace(c) || c == '\"')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

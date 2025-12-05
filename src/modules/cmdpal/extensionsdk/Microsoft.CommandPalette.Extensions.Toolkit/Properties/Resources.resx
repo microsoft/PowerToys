@@ -126,6 +126,12 @@
   <data name="CopyTextCommand_CopiedToClipboard" xml:space="preserve">
     <value>Copied to clipboard</value>
   </data>
+  <data name="CopyPathTextCommand_Name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="CopyPathTextCommand_Result" xml:space="preserve">
+    <value>Copied path to clipboard</value>
+  </data>
   <data name="OpenUrlCommand_Open" xml:space="preserve">
     <value>Open</value>
   </data>
@@ -134,5 +140,21 @@
   </data>
   <data name="ShowFileInFolderCommand_ShowInFolder" xml:space="preserve">
     <value>Show in folder</value>
+  </data>
+  <data name="OpenInConsoleCommand_Name" xml:space="preserve">
+    <value>Open path in console</value>
+  </data>
+  <data name="OpenPropertiesCommand_Name" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="OpenFileCommand_Name" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="OpenWithCommand_Name" xml:space="preserve">
+    <value>Open with</value>
+  </data>
+  <data name="copy_failed" xml:space="preserve">
+    <value>Copy failed ({0}). Please try again.</value>
+    <comment>{0} is the error message</comment>
   </data>
 </root>

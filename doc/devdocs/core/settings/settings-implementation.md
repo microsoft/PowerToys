@@ -71,6 +71,41 @@ When the user changes settings in the UI:
 3. The runner calls the `set_config` function on the appropriate module
 4. The module parses the JSON and applies the new settings
 
+# Shortcut Conflict Detection
+
+Steps to enable conflict detection for a hotkey:
+
+### 1. Implement module interface for hotkeys
+Ensure the module interface provides either `size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size)` or `std::optional<HotkeyEx> GetHotkeyEx()`.
+
+- If not yet implemented, you need to add it so that it returns all hotkeys used by the module.
+- **Important**: The order of the returned hotkeys matters. This order is used as an index to uniquely identify each hotkey for conflict detection and lookup.
+- For reference, see: `src/modules/AdvancedPaste/AdvancedPasteModuleInterface/dllmain.cpp`
+
+### 2. Implement IHotkeyConfig in the module settings (UI side)
+Make sure the module’s settings file inherits from `IHotkeyConfig` and implements `HotkeyAccessor[] GetAllHotkeyAccessors()`.
+
+- This method should return all hotkeys used in the module.
+- **Important**: The order of the returned hotkeys must be consistent with step 1 (`get_hotkeys()` or `GetHotkeyEx()`).
+- For reference, see: `src/settings-ui/Settings.UI.Library/AdvancedPasteSettings.cs`
+- **_Note:_** `HotkeyAccessor` is a wrapper around HotkeySettings. 
+It provides both `getter` and `setter` methods to read and update the corresponding hotkey.
+Additionally, each `HotkeyAccessor` requires a resource string that describes the purpose of the hotkey.
+This string is typically defined in: `src/settings-ui/Settings.UI/Strings/en-us/Resources.resw`
+
+### 3. Update the module’s ViewModel
+The corresponding ViewModel should inherit from `PageViewModelBase` and implement `Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()`.
+
+- This method should return all hotkeys, maintaining the same order as in steps 1 and 2.
+- For reference, see: `src/settings-ui/Settings.UI/ViewModels/AdvancedPasteViewModel.cs`
+
+### 4. Ensure the module’s Views call `OnPageLoaded()`
+Once the module’s view is loaded, make sure to invoke the ViewModel’s `OnPageLoaded()` method:
+```cs
+Loaded += (s, e) => ViewModel.OnPageLoaded();
+```
+- For reference, see: `src/settings-ui/Settings.UI/SettingsXAML/Views/AdvancedPaste.xaml.cs`
+
 ## Debugging Settings
 
 To debug settings issues:

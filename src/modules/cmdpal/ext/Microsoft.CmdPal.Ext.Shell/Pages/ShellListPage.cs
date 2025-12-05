@@ -2,15 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -18,15 +11,15 @@ namespace Microsoft.CmdPal.Ext.Shell.Pages;
 
 internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 {
-    private readonly ShellListPageHelpers _helper;
-
-    private readonly List<ListItem> _topLevelItems = [];
     private readonly Dictionary<string, ListItem> _historyItems = [];
     private readonly List<ListItem> _currentHistoryItems = [];
 
     private readonly IRunHistoryService _historyService;
+    private readonly ITelemetryService? _telemetryService;
 
-    private RunExeItem? _exeItem;
+    private readonly Dictionary<string, ListItem> _currentPathItems = new();
+
+    private ListItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
 
@@ -35,27 +28,26 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private bool _loadedInitialHistory;
 
-    public ShellListPage(SettingsManager settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
+    private string _currentSubdir = string.Empty;
+
+    public ShellListPage(
+        ISettingsInterface settingsManager,
+        IRunHistoryService runHistoryService,
+        ITelemetryService? telemetryService)
     {
         Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
-        Name = Resources.cmd_plugin_name;
-        PlaceholderText = Resources.list_placeholder_text;
-        _helper = new(settingsManager);
+        Name = ResourceLoaderInstance.GetString("cmd_plugin_name");
+        PlaceholderText = ResourceLoaderInstance.GetString("list_placeholder_text");
         _historyService = runHistoryService;
+        _telemetryService = telemetryService;
 
         EmptyContent = new CommandItem()
         {
-            Title = Resources.cmd_plugin_name,
+            Title = ResourceLoaderInstance.GetString("cmd_plugin_name"),
             Icon = Icons.RunV2Icon,
-            Subtitle = Resources.list_placeholder_text,
+            Subtitle = ResourceLoaderInstance.GetString("list_placeholder_text"),
         };
-
-        if (addBuiltins)
-        {
-            // here, we _could_ add built-in providers if we wanted. links to apps, calc, etc.
-            // That would be a truly run-first experience
-        }
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -123,8 +115,13 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private async Task BuildListItemsForSearchAsync(string newSearch, CancellationToken cancellationToken)
     {
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+
         // Check for cancellation at the start
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         // If the search text is the start of a path to a file (it might be a
         // UNC path), then we want to list all the files that start with that text:
@@ -136,7 +133,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
 
         // Check for cancellation after environment expansion
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         // TODO we can be smarter about only re-reading the filesystem if the
         // new search is just the oldSearch+some chars
@@ -152,13 +152,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             return;
         }
 
-        ParseExecutableAndArgs(expanded, out var exe, out var args);
-
-        // Check for cancellation before file system operations
-        cancellationToken.ThrowIfCancellationRequested();
-
         // Reset the path resolution flag
         var couldResolvePath = false;
+
+        var exe = string.Empty;
+        var args = string.Empty;
 
         var exeExists = false;
         var fullExePath = string.Empty;
@@ -175,6 +173,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var pathResolutionTask = Task.Run(
                 () =>
             {
+                ShellListPageHelpers.NormalizeCommandLineAndArgs(expanded, out exe, out args);
+
                 // Don't check cancellation token here - let the Task timeout handle it
                 exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
                 pathIsDir = Directory.Exists(expanded);
@@ -206,7 +206,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             couldResolvePath = false;
         }
 
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         _pathItems.Clear();
 
@@ -221,7 +224,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Check for cancellation before creating exe items
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         if (couldResolvePath && exeExists)
         {
@@ -245,14 +251,14 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var histItemsNotInSearch =
             _historyItems
                 .Where(kv => !kv.Key.Equals(newSearch, StringComparison.OrdinalIgnoreCase));
-        if (_exeItem != null)
+        if (_exeItem is not null)
         {
             // If we have an exe item, we want to remove it from the history items
             histItemsNotInSearch = histItemsNotInSearch
                 .Where(kv => !kv.Value.Title.Equals(_exeItem.Title, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (_uriItem != null)
+        if (_uriItem is not null)
         {
             // If we have an uri item, we want to remove it from the history items
             histItemsNotInSearch = histItemsNotInSearch
@@ -263,7 +269,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
         {
             // Fuzzy search on the key (command string)
-            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
+            var score = FuzzyStringMatcher.ScoreFuzzy(query, pair.Key);
             return score;
         };
 
@@ -278,17 +284,31 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         _currentHistoryItems.AddRange(filteredHistory);
 
         // Final cancellation check
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        timer.Stop();
+        _telemetryService?.LogRunQuery(newSearch, GetItems().Length, (ulong)timer.ElapsedMilliseconds);
     }
 
-    private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null)
+    private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null, ITelemetryService? telemetryService = null)
     {
-        var pathItem = new PathListItem(path, originalPath, addToHistory);
+        var pathItem = new PathListItem(path, originalPath, addToHistory, telemetryService);
+
+        if (pathItem.IsDirectory)
+        {
+            return pathItem;
+        }
 
         // Is this path an executable? If so, then make a RunExeItem
         if (IsExecutable(path))
         {
-            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory);
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory, telemetryService)
+            {
+                TextToSuggest = path,
+            };
 
             exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
@@ -306,37 +326,34 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             LoadInitialHistory();
         }
 
-        var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
-        List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
-        List<ListItem> exeItems = _exeItem != null ? [_exeItem] : [];
+        List<ListItem> uriItems = _uriItem is not null ? [_uriItem] : [];
+        List<ListItem> exeItems = _exeItem is not null ? [_exeItem] : [];
 
         return
             exeItems
-            .Concat(filteredTopLevel)
             .Concat(_currentHistoryItems)
             .Concat(_pathItems)
             .Concat(uriItems)
             .ToArray();
     }
 
-    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
+    internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
         // PathToListItem will return a RunExeItem if it can find a executable.
         // It will ALSO add the file search commands to the RunExeItem.
-        return PathToListItem(fullExePath, exe, args, addToHistory) as RunExeItem ??
-               new RunExeItem(exe, args, fullExePath, addToHistory);
+        return PathToListItem(fullExePath, exe, args, addToHistory, telemetryService);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
     {
         // If we already have an exe item, and the exe is the same, we can just update it
-        if (_exeItem != null && _exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
+        if (_exeItem is RunExeItem exeItem && exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
         {
-            _exeItem.UpdateArgs(args);
+            exeItem.UpdateArgs(args);
         }
         else
         {
-            _exeItem = CreateExeItem(exe, args, fullExePath, AddToHistory);
+            _exeItem = CreateExeItem(exe, args, fullExePath, AddToHistory, _telemetryService);
         }
     }
 
@@ -345,7 +362,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Is this path an executable?
         // check all the extensions in PATHEXT
         var extensions = Environment.GetEnvironmentVariable("PATHEXT")?.Split(';') ?? Array.Empty<string>();
-        return extensions.Any(ext => string.Equals(Path.GetExtension(path), ext, StringComparison.OrdinalIgnoreCase));
+        var extension = Path.GetExtension(path);
+        return string.IsNullOrEmpty(extension) || extensions.Any(ext => string.Equals(extension, ext, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task CreatePathItemsAsync(string searchPath, string originalPath, CancellationToken cancellationToken)
@@ -367,7 +385,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Easiest case: text is literally already a full directory
-        else if (Directory.Exists(trimmed))
+        else if (Directory.Exists(trimmed) && trimmed.EndsWith('\\'))
         {
             directoryPath = trimmed;
             searchPattern = $"*";
@@ -389,7 +407,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Check for cancellation before directory operations
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         var dirExists = Directory.Exists(directoryPath);
 
@@ -408,74 +429,76 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         if (dirExists)
         {
             // Check for cancellation before file system enumeration
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Get all the files in the directory that start with the search text
-            // Run this on a background thread to avoid blocking
-            var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath, searchPattern), cancellationToken);
-
-            // Check for cancellation after file enumeration
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
-            var originalBeginning = originalPath.Remove(originalPath.Length - searchPathTrailer.Length);
-            if (isDriveRoot)
+            if (cancellationToken.IsCancellationRequested)
             {
-                originalBeginning = string.Concat(originalBeginning, '\\');
+                return;
             }
 
-            // Create a list of commands for each file
-            var commands = files.Select(f => PathToListItem(f, originalBeginning)).ToList();
+            // If the directory we're in changed, then first rebuild the cache
+            // of all the items in the directory, _then_ filter them below.
+            if (directoryPath != _currentSubdir)
+            {
+                // Get all the files in the directory.
+                // Run this on a background thread to avoid blocking
+                var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath), cancellationToken);
 
-            // Final cancellation check before updating results
-            cancellationToken.ThrowIfCancellationRequested();
+                // Check for cancellation after file enumeration
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
-            // Add the commands to the list
-            _pathItems = commands;
+                var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
+                var originalBeginning = originalPath.EndsWith(searchPathTrailer, StringComparison.CurrentCultureIgnoreCase) ?
+                                            originalPath.Remove(originalPath.Length - searchPathTrailer.Length) :
+                                            originalPath;
+
+                if (isDriveRoot)
+                {
+                    originalBeginning = string.Concat(originalBeginning, '\\');
+                }
+
+                // Create a list of commands for each file
+                var newPathItems = files
+                    .Select(f => PathToListItem(f, originalBeginning))
+                    .ToDictionary(item => item.Title, item => item);
+
+                // Final cancellation check before updating results
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                // Add the commands to the list
+                _pathItems.Clear();
+                _currentSubdir = directoryPath;
+                _currentPathItems.Clear();
+                foreach ((var k, IListItem v) in newPathItems)
+                {
+                    _currentPathItems[k] = (ListItem)v;
+                }
+            }
+
+            // Filter the items from this directory
+            var fuzzyString = searchPattern.TrimEnd('*');
+            var newMatchedPathItems = new List<ListItem>();
+
+            foreach (var kv in _currentPathItems)
+            {
+                var score = string.IsNullOrEmpty(fuzzyString) ?
+                    1 :
+                    FuzzyStringMatcher.ScoreFuzzy(fuzzyString, kv.Key);
+                if (score > 0)
+                {
+                    newMatchedPathItems.Add(kv.Value);
+                }
+            }
+
+            ListHelpers.InPlaceUpdateList(_pathItems, newMatchedPathItems);
         }
         else
         {
             _pathItems.Clear();
-        }
-    }
-
-    internal static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
-    {
-        input = input.Trim();
-        executable = string.Empty;
-        arguments = string.Empty;
-
-        if (string.IsNullOrEmpty(input))
-        {
-            return;
-        }
-
-        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
-        {
-            // Find the closing quote
-            var closingQuoteIndex = input.IndexOf('\"', 1);
-            if (closingQuoteIndex > 0)
-            {
-                executable = input.Substring(1, closingQuoteIndex - 1);
-                if (closingQuoteIndex + 1 < input.Length)
-                {
-                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
-                }
-            }
-        }
-        else
-        {
-            // Executable ends at first space
-            var firstSpaceIndex = input.IndexOf(' ');
-            if (firstSpaceIndex > 0)
-            {
-                executable = input.Substring(0, firstSpaceIndex);
-                arguments = input[(firstSpaceIndex + 1)..].TrimStart();
-            }
-            else
-            {
-                executable = input;
-            }
         }
     }
 
@@ -498,8 +521,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         var hist = _historyService.GetRunHistory();
         var histItems = hist
-            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory)))
-            .Where(tuple => tuple.Item2 != null)
+            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory, _telemetryService)))
+            .Where(tuple => tuple.Item2 is not null)
             .Select(tuple => (tuple.h, tuple.Item2!))
             .ToList();
         _historyItems.Clear();

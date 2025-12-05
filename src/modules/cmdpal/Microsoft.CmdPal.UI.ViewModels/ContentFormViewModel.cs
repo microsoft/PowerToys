@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
@@ -51,7 +52,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error building card from template: {Message}", ex.Message);
+            Logger.LogError("Error building card from template", ex);
             error = ex;
             return false;
         }
@@ -96,6 +97,9 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         UpdateProperty(nameof(Card));
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveOpenUrlAction))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveSubmitAction))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveExecuteAction))]
     public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
     {
         if (action is AdaptiveOpenUrlAction openUrlAction)

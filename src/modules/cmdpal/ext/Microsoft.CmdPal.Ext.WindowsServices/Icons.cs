@@ -10,17 +10,13 @@ internal sealed class Icons
 {
     internal static IconInfo ServicesIcon { get; } = IconHelpers.FromRelativePath("Assets\\Services.svg");
 
-    internal static IconInfo StopIcon { get; } = new IconInfo("\xE71A"); // Stop icon
+    internal static IconInfo StopIcon { get; } = IconHelpers.FromRelativePath("Assets\\service_stopped.png");
 
-    internal static IconInfo PlayIcon { get; } = new IconInfo("\xEDB5"); // PlayBadge12 icon
+    internal static IconInfo PlayIcon { get; } = IconHelpers.FromRelativePath("Assets\\service_running.png");
 
     internal static IconInfo RefreshIcon { get; } = new IconInfo("\xE72C"); // Refresh icon
 
     internal static IconInfo OpenIcon { get; } = new IconInfo("\xE8A7"); // OpenInNewWindow icon
 
-    internal static IconInfo GreenCircleIcon { get; } = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
-
-    internal static IconInfo RedCircleIcon { get; } = new("\U0001F534"); // unicode LARGE RED CIRCLE
-
-    internal static IconInfo PauseIcon { get; } = new("\u23F8"); // unicode DOUBLE VERTICAL BAR, aka, "Pause"
+    internal static IconInfo PauseIcon { get; } = IconHelpers.FromRelativePath("Assets\\service_paused.png");
 }

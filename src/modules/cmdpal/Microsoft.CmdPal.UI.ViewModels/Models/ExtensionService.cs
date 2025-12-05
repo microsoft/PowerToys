@@ -2,7 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common.Services;
+using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
@@ -89,7 +90,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }).Result;
         var isExtension = isCmdPalExtensionResult.IsExtension;
         var extension = isCmdPalExtensionResult.Extension;
-        if (isExtension && extension != null)
+        if (isExtension && extension is not null)
         {
             CommandPaletteHost.Instance.DebugLog($"Installed new extension app {extension.DisplayName}");
 
@@ -151,7 +152,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
             {
                 var (cmdPalProvider, classId) = await GetCmdPalExtensionPropertiesAsync(extension);
 
-                return new(cmdPalProvider != null && classId.Count != 0, extension);
+                return new(cmdPalProvider is not null && classId.Count != 0, extension);
             }
         }
 
@@ -236,7 +237,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
     {
         var (cmdPalProvider, classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
 
-        if (cmdPalProvider == null || classIds.Count == 0)
+        if (cmdPalProvider is null || classIds.Count == 0)
         {
             return [];
         }
@@ -287,9 +288,17 @@ public partial class ExtensionService : IExtensionService, IDisposable
         var installedExtensions = await GetInstalledExtensionsAsync();
         foreach (var installedExtension in installedExtensions)
         {
-            if (installedExtension.IsRunning())
+            Logger.LogDebug($"Signaling dispose to {installedExtension.ExtensionUniqueId}");
+            try
             {
-                installedExtension.SignalDispose();
+                if (installedExtension.IsRunning())
+                {
+                    installedExtension.SignalDispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to send dispose signal to extension {installedExtension.ExtensionUniqueId}", ex);
             }
         }
     }
@@ -343,12 +352,12 @@ public partial class ExtensionService : IExtensionService, IDisposable
     {
         var propSetList = new List<string>();
         var singlePropertySet = GetSubPropertySet(activationPropSet, CreateInstanceProperty);
-        if (singlePropertySet != null)
+        if (singlePropertySet is not null)
         {
             var classId = GetProperty(singlePropertySet, ClassIdProperty);
 
             // If the instance has a classId as a single string, then it's only supporting a single instance.
-            if (classId != null)
+            if (classId is not null)
             {
                 propSetList.Add(classId);
             }
@@ -356,7 +365,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         else
         {
             var propertySetArray = GetSubPropertySetArray(activationPropSet, CreateInstanceProperty);
-            if (propertySetArray != null)
+            if (propertySetArray is not null)
             {
                 foreach (var prop in propertySetArray)
                 {
@@ -366,7 +375,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
                     }
 
                     var classId = GetProperty(propertySet, ClassIdProperty);
-                    if (classId != null)
+                    if (classId is not null)
                     {
                         propSetList.Add(classId);
                     }

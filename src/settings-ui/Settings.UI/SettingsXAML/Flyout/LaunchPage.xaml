@@ -21,8 +21,6 @@
             <Setter Property="Height" Value="32" />
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         </Style>
-
-        <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -110,10 +108,11 @@
         </Grid>
         <Grid Grid.Row="2">
             <InfoBar
-                x:Uid="UpdateAvailable"
+                x:Uid="UpdateAvailableInfoBar"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Success" />
+                Severity="Success"
+                Tapped="UpdateInfoBar_Tapped" />
 
             <StackPanel
                 Grid.Row="1"
@@ -146,7 +145,6 @@
                 <Button
                     x:Name="SettingsBtn"
                     x:Uid="SettingsBtn"
-                    Padding="8"
                     Click="SettingsBtn_Click"
                     Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>

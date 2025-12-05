@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
-public partial class WindowsSettingsCommandsProvider : CommandProvider
+public sealed partial class WindowsSettingsCommandsProvider : CommandProvider
 {
     private readonly CommandItem _searchSettingsListItem;
 
@@ -22,7 +22,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
 
     public WindowsSettingsCommandsProvider()
     {
-        Id = "Windows.Settings";
+        Id = "com.microsoft.cmdpal.builtin.windowssettings";
         DisplayName = Resources.WindowsSettingsProvider_DisplayName;
         Icon = Icons.WindowsSettingsIcon;
 

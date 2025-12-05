@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -293,7 +290,7 @@ public static partial class ClipboardHelper
         thread.Start();
         thread.Join();
 
-        if (exception != null)
+        if (exception is not null)
         {
             throw exception;
         }
