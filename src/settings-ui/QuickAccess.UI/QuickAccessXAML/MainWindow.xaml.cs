@@ -121,6 +121,12 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
         _isVisible = false;
         RemoveGlobalMouseHook();
+
+        // Reduce memory usage when hidden
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
     }
 
     internal void RequestHide()
@@ -676,6 +682,9 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
     [DllImport("user32.dll")]
     private static extern bool GetCursorPos(out NativePoint lpPoint);
+
+    [DllImport("kernel32.dll")]
+    private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
 
     private const int WmXbuttondown = 0x020B;
 
