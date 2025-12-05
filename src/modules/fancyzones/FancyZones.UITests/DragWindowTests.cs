@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using FancyZonesEditor.Models;
@@ -49,18 +50,16 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            Session.KillAllProcessesByName("PowerToys");
+            Thread.Sleep(1000);
+            ClearOpenWindows();
+
             SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-
-            // kill all processes related to FancyZones Editor to ensure a clean state
-            Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
-
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
 
-            // ClearOpenWindows - do this after file operations to ensure Session is ready
-            ClearOpenWindows();
-
             RestartScopeExe();
+            Thread.Sleep(2000);
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
