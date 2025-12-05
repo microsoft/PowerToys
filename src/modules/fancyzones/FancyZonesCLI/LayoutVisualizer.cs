@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -12,20 +12,21 @@ namespace FancyZonesCLI;
 
 public static class LayoutVisualizer
 {
-    public static void DrawTemplateLayout(TemplateLayout template)
+    public static string DrawTemplateLayout(TemplateLayout template)
     {
-        Console.WriteLine("    Visual Preview:");
+        var sb = new StringBuilder();
+        sb.AppendLine("    Visual Preview:");
 
         switch (template.Type.ToLowerInvariant())
         {
             case "focus":
-                DrawFocusLayout(template.ZoneCount > 0 ? template.ZoneCount : 3);
+                sb.Append(RenderFocusLayout(template.ZoneCount > 0 ? template.ZoneCount : 3));
                 break;
             case "columns":
-                DrawGridLayout(1, template.ZoneCount > 0 ? template.ZoneCount : 3);
+                sb.Append(RenderGridLayout(1, template.ZoneCount > 0 ? template.ZoneCount : 3));
                 break;
             case "rows":
-                DrawGridLayout(template.ZoneCount > 0 ? template.ZoneCount : 3, 1);
+                sb.Append(RenderGridLayout(template.ZoneCount > 0 ? template.ZoneCount : 3, 1));
                 break;
             case "grid":
                 // Grid layout: calculate rows and columns from zone count
@@ -45,28 +46,31 @@ public static class LayoutVisualizer
                     cols++;
                 }
 
-                DrawGridLayoutWithZoneCount(rows, cols, zoneCount);
+                sb.Append(RenderGridLayoutWithZoneCount(rows, cols, zoneCount));
                 break;
             case "priority-grid":
-                DrawPriorityGridLayout(template.ZoneCount > 0 ? template.ZoneCount : 3);
+                sb.Append(RenderPriorityGridLayout(template.ZoneCount > 0 ? template.ZoneCount : 3));
                 break;
             case "blank":
-                Console.WriteLine("    (No zones)");
+                sb.AppendLine("    (No zones)");
                 break;
             default:
-                Console.WriteLine($"    ({template.Type} layout)");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"    ({template.Type} layout)");
                 break;
         }
+
+        return sb.ToString();
     }
 
-    public static void DrawCustomLayout(CustomLayout layout)
+    public static string DrawCustomLayout(CustomLayout layout)
     {
         if (layout.Info.ValueKind == JsonValueKind.Undefined || layout.Info.ValueKind == JsonValueKind.Null)
         {
-            return;
+            return string.Empty;
         }
 
-        Console.WriteLine("    Visual Preview:");
+        var sb = new StringBuilder();
+        sb.AppendLine("    Visual Preview:");
 
         if (layout.Type == "grid" &&
             layout.Info.TryGetProperty("rows", out var rows) &&
@@ -78,12 +82,12 @@ public static class LayoutVisualizer
             // Check if there's a cell-child-map (merged cells)
             if (layout.Info.TryGetProperty("cell-child-map", out var cellMap))
             {
-                DrawGridLayoutWithMergedCells(r, c, cellMap);
+                sb.Append(RenderGridLayoutWithMergedCells(r, c, cellMap));
             }
             else
             {
                 int height = r >= 4 ? 12 : 8;
-                DrawGridLayout(r, c, 30, height);
+                sb.Append(RenderGridLayout(r, c, 30, height));
             }
         }
         else if (layout.Type == "canvas" &&
@@ -91,60 +95,61 @@ public static class LayoutVisualizer
                  layout.Info.TryGetProperty("ref-width", out var refWidth) &&
                  layout.Info.TryGetProperty("ref-height", out var refHeight))
         {
-            DrawCanvasLayout(zones, refWidth.GetInt32(), refHeight.GetInt32());
+            sb.Append(RenderCanvasLayout(zones, refWidth.GetInt32(), refHeight.GetInt32()));
         }
+
+        return sb.ToString();
     }
 
-    private static void DrawFocusLayout(int zoneCount = 3)
+    private static string RenderFocusLayout(int zoneCount = 3)
     {
+        var sb = new StringBuilder();
+
         // Focus layout: overlapping zones with cascading offset
-        // Show first 2, ellipsis, and last 1 if more than 4 zones
         if (zoneCount == 1)
         {
-            Console.WriteLine("    +-------+");
-            Console.WriteLine("    |       |");
-            Console.WriteLine("    |       |");
-            Console.WriteLine("    +-------+");
+            sb.AppendLine("    +-------+");
+            sb.AppendLine("    |       |");
+            sb.AppendLine("    |       |");
+            sb.AppendLine("    +-------+");
         }
         else if (zoneCount == 2)
         {
-            Console.WriteLine("    +-------+");
-            Console.WriteLine("    |       |");
-            Console.WriteLine("    | +-------+");
-            Console.WriteLine("    +-|       |");
-            Console.WriteLine("      |       |");
-            Console.WriteLine("      +-------+");
+            sb.AppendLine("    +-------+");
+            sb.AppendLine("    |       |");
+            sb.AppendLine("    | +-------+");
+            sb.AppendLine("    +-|       |");
+            sb.AppendLine("      |       |");
+            sb.AppendLine("      +-------+");
         }
         else
         {
-            Console.WriteLine("    +-------+");
-            Console.WriteLine("    |       |");
-            Console.WriteLine("    | +-------+");
-            Console.WriteLine("    +-|       |");
-            Console.WriteLine("      | +-------+");
-            Console.WriteLine("      +-|       |");
-
-            // Middle ellipsis
-            Console.WriteLine("        ...");
-            Console.WriteLine($"        (total: {zoneCount} zones)");
-            Console.WriteLine("        ...");
-
-            // Show indication of last zone (without full indent)
-            Console.WriteLine("        | +-------+");
-            Console.WriteLine("        +-|       |");
-            Console.WriteLine("          |       |");
-            Console.WriteLine("          +-------+");
+            sb.AppendLine("    +-------+");
+            sb.AppendLine("    |       |");
+            sb.AppendLine("    | +-------+");
+            sb.AppendLine("    +-|       |");
+            sb.AppendLine("      | +-------+");
+            sb.AppendLine("      +-|       |");
+            sb.AppendLine("        ...");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"        (total: {zoneCount} zones)");
+            sb.AppendLine("        ...");
+            sb.AppendLine("        | +-------+");
+            sb.AppendLine("        +-|       |");
+            sb.AppendLine("          |       |");
+            sb.AppendLine("          +-------+");
         }
+
+        return sb.ToString();
     }
 
-    private static void DrawPriorityGridLayout(int zoneCount = 3)
+    private static string RenderPriorityGridLayout(int zoneCount = 3)
     {
         // Priority Grid has predefined layouts for zone counts 1-11
         // Data format from GridLayoutModel._priorityData
         if (zoneCount >= 1 && zoneCount <= 11)
         {
             int[,] cellMap = GetPriorityGridCellMap(zoneCount);
-            DrawGridLayoutWithCellMap(cellMap);
+            return RenderGridLayoutWithCellMap(cellMap);
         }
         else
         {
@@ -162,7 +167,7 @@ public static class LayoutVisualizer
                 cols++;
             }
 
-            DrawGridLayoutWithZoneCount(rows, cols, zoneCount);
+            return RenderGridLayoutWithZoneCount(rows, cols, zoneCount);
         }
     }
 
@@ -186,8 +191,9 @@ public static class LayoutVisualizer
         };
     }
 
-    private static void DrawGridLayoutWithCellMap(int[,] cellMap, int width = 30, int height = 8)
+    private static string RenderGridLayoutWithCellMap(int[,] cellMap, int width = 30, int height = 8)
     {
+        var sb = new StringBuilder();
         int rows = cellMap.GetLength(0);
         int cols = cellMap.GetLength(1);
 
@@ -197,79 +203,54 @@ public static class LayoutVisualizer
         for (int r = 0; r < rows; r++)
         {
             // Top border
-            Console.Write("    +");
+            sb.Append("    +");
             for (int c = 0; c < cols; c++)
             {
-                // Check if this cell should merge with the cell above
                 bool mergeTop = r > 0 && cellMap[r, c] == cellMap[r - 1, c];
-
-                // Check if this cell should merge with the cell to the left
                 bool mergeLeft = c > 0 && cellMap[r, c] == cellMap[r, c - 1];
 
                 if (mergeTop)
                 {
-                    if (mergeLeft)
-                    {
-                        Console.Write(new string(' ', cellWidth));
-                    }
-                    else
-                    {
-                        Console.Write(new string(' ', cellWidth - 1));
-                        Console.Write("+");
-                    }
+                    sb.Append(mergeLeft ? new string(' ', cellWidth) : new string(' ', cellWidth - 1) + "+");
                 }
                 else
                 {
-                    if (mergeLeft)
-                    {
-                        Console.Write(new string('-', cellWidth));
-                    }
-                    else
-                    {
-                        Console.Write(new string('-', cellWidth - 1));
-                        Console.Write("+");
-                    }
+                    sb.Append(mergeLeft ? new string('-', cellWidth) : new string('-', cellWidth - 1) + "+");
                 }
             }
 
-            Console.WriteLine();
+            sb.AppendLine();
 
             // Cell content
             for (int h = 0; h < cellHeight - 1; h++)
             {
-                Console.Write("    ");
+                sb.Append("    ");
                 for (int c = 0; c < cols; c++)
                 {
                     bool mergeLeft = c > 0 && cellMap[r, c] == cellMap[r, c - 1];
-                    if (mergeLeft)
-                    {
-                        Console.Write(" ");
-                    }
-                    else
-                    {
-                        Console.Write("|");
-                    }
-
-                    Console.Write(new string(' ', cellWidth - 1));
+                    sb.Append(mergeLeft ? ' ' : '|');
+                    sb.Append(' ', cellWidth - 1);
                 }
 
-                Console.WriteLine("|");
+                sb.AppendLine("|");
             }
         }
 
         // Bottom border
-        Console.Write("    +");
+        sb.Append("    +");
         for (int c = 0; c < cols; c++)
         {
-            Console.Write(new string('-', cellWidth - 1));
-            Console.Write("+");
+            sb.Append('-', cellWidth - 1);
+            sb.Append('+');
         }
 
-        Console.WriteLine();
+        sb.AppendLine();
+        return sb.ToString();
     }
 
-    private static void DrawGridLayoutWithMergedCells(int rows, int cols, JsonElement cellMap)
+    private static string RenderGridLayoutWithMergedCells(int rows, int cols, JsonElement cellMap)
     {
+        var sb = new StringBuilder();
         const int displayWidth = 39;
         const int displayHeight = 12;
 
@@ -284,45 +265,20 @@ public static class LayoutVisualizer
             }
         }
 
-        // Find unique zones and their count
-        var zones = new HashSet<int>();
-        for (int r = 0; r < rows; r++)
-        {
-            for (int c = 0; c < cols; c++)
-            {
-                zones.Add(zoneMap[r, c]);
-            }
-        }
-
         int cellHeight = displayHeight / rows;
         int cellWidth = displayWidth / cols;
 
         // Draw top border
-        Console.Write("    +");
-        Console.Write(new string('-', displayWidth));
-        Console.WriteLine("+");
+        sb.Append("    +");
+        sb.Append('-', displayWidth);
+        sb.AppendLine("+");
 
         // Draw rows
         for (int r = 0; r < rows; r++)
         {
-            // For each row, find the column range of each zone
-            var zoneRanges = new Dictionary<int, (int Start, int End)>();
-            for (int c = 0; c < cols; c++)
-            {
-                int zone = zoneMap[r, c];
-                if (zoneRanges.TryGetValue(zone, out var range))
-                {
-                    zoneRanges[zone] = (range.Start, c);
-                }
-                else
-                {
-                    zoneRanges[zone] = (c, c);
-                }
-            }
-
             for (int h = 0; h < cellHeight; h++)
             {
-                Console.Write("    |");
+                sb.Append("    |");
 
                 for (int c = 0; c < cols; c++)
                 {
@@ -330,47 +286,35 @@ public static class LayoutVisualizer
                     int leftZone = c > 0 ? zoneMap[r, c - 1] : -1;
                     bool needLeftBorder = c > 0 && currentZone != leftZone;
 
-                    // Check if this zone has a top border
-                    bool zoneHasTopBorder = false;
-                    if (r > 0 && h == 0)
-                    {
-                        int topZone = zoneMap[r - 1, c];
-                        zoneHasTopBorder = currentZone != topZone;
-                    }
+                    bool zoneHasTopBorder = r > 0 && h == 0 && currentZone != zoneMap[r - 1, c];
 
-                    // Draw left border if needed
                     if (needLeftBorder)
                     {
-                        Console.Write("|");
-
-                        // Fill rest of cell
-                        for (int w = 1; w < cellWidth; w++)
-                        {
-                            Console.Write(zoneHasTopBorder ? "-" : " ");
-                        }
+                        sb.Append('|');
+                        sb.Append(zoneHasTopBorder ? '-' : ' ', cellWidth - 1);
                     }
                     else
                     {
-                        // No left border, fill entire cell
-                        for (int w = 0; w < cellWidth; w++)
-                        {
-                            Console.Write(zoneHasTopBorder ? "-" : " ");
-                        }
+                        sb.Append(zoneHasTopBorder ? '-' : ' ', cellWidth);
                     }
                 }
 
-                Console.WriteLine("|");
+                sb.AppendLine("|");
             }
         }
 
         // Draw bottom border
-        Console.Write("    +");
-        Console.Write(new string('-', displayWidth));
-        Console.WriteLine("+");
+        sb.Append("    +");
+        sb.Append('-', displayWidth);
+        sb.AppendLine("+");
+
+        return sb.ToString();
     }
 
-    public static void DrawGridLayoutWithZoneCount(int rows, int cols, int zoneCount, int width = 30, int height = 8)
+    public static string RenderGridLayoutWithZoneCount(int rows, int cols, int zoneCount, int width = 30, int height = 8)
     {
+        var sb = new StringBuilder();
+
         // Build zone map like Editor's InitGrid
         int[,] zoneMap = new int[rows, cols];
         int index = 0;
@@ -392,103 +336,93 @@ public static class LayoutVisualizer
         for (int r = 0; r < rows; r++)
         {
             // Top border
-            Console.Write("    +");
+            sb.Append("    +");
             for (int c = 0; c < cols; c++)
             {
-                // Check if this cell should merge with the previous one (same zone)
                 bool mergeLeft = c > 0 && zoneMap[r, c] == zoneMap[r, c - 1];
-                if (mergeLeft)
+                sb.Append('-', mergeLeft ? cellWidth : cellWidth - 1);
+                if (!mergeLeft)
                 {
-                    Console.Write(new string('-', cellWidth));
-                }
-                else
-                {
-                    Console.Write(new string('-', cellWidth - 1));
-                    Console.Write("+");
+                    sb.Append('+');
                 }
             }
 
-            Console.WriteLine();
+            sb.AppendLine();
 
             // Cell content
             for (int h = 0; h < cellHeight - 1; h++)
             {
-                Console.Write("    ");
+                sb.Append("    ");
                 for (int c = 0; c < cols; c++)
                 {
-                    // Check if this cell should merge with the previous one
                     bool mergeLeft = c > 0 && zoneMap[r, c] == zoneMap[r, c - 1];
-                    if (mergeLeft)
-                    {
-                        Console.Write(" ");
-                    }
-                    else
-                    {
-                        Console.Write("|");
-                    }
-
-                    Console.Write(new string(' ', cellWidth - 1));
+                    sb.Append(mergeLeft ? ' ' : '|');
+                    sb.Append(' ', cellWidth - 1);
                 }
 
-                Console.WriteLine("|");
+                sb.AppendLine("|");
             }
         }
 
         // Bottom border
-        Console.Write("    +");
+        sb.Append("    +");
         for (int c = 0; c < cols; c++)
         {
-            Console.Write(new string('-', cellWidth - 1));
-            Console.Write("+");
+            sb.Append('-', cellWidth - 1);
+            sb.Append('+');
         }
 
-        Console.WriteLine();
+        sb.AppendLine();
+        return sb.ToString();
     }
 
-    public static void DrawGridLayout(int rows, int cols, int width = 30, int height = 8)
+    public static string RenderGridLayout(int rows, int cols, int width = 30, int height = 8)
     {
+        var sb = new StringBuilder();
         int cellWidth = width / cols;
         int cellHeight = height / rows;
 
         for (int r = 0; r < rows; r++)
         {
             // Top border
-            Console.Write("    +");
+            sb.Append("    +");
             for (int c = 0; c < cols; c++)
             {
-                Console.Write(new string('-', cellWidth - 1));
-                Console.Write("+");
+                sb.Append('-', cellWidth - 1);
+                sb.Append('+');
             }
 
-            Console.WriteLine();
+            sb.AppendLine();
 
             // Cell content
             for (int h = 0; h < cellHeight - 1; h++)
             {
-                Console.Write("    ");
+                sb.Append("    ");
                 for (int c = 0; c < cols; c++)
                 {
-                    Console.Write("|");
-                    Console.Write(new string(' ', cellWidth - 1));
+                    sb.Append('|');
+                    sb.Append(' ', cellWidth - 1);
                 }
 
-                Console.WriteLine("|");
+                sb.AppendLine("|");
             }
         }
 
         // Bottom border
-        Console.Write("    +");
+        sb.Append("    +");
         for (int c = 0; c < cols; c++)
         {
-            Console.Write(new string('-', cellWidth - 1));
-            Console.Write("+");
+            sb.Append('-', cellWidth - 1);
+            sb.Append('+');
         }
 
-        Console.WriteLine();
+        sb.AppendLine();
+        return sb.ToString();
     }
 
-    private static void DrawCanvasLayout(JsonElement zones, int refWidth, int refHeight)
+    private static string RenderCanvasLayout(JsonElement zones, int refWidth, int refHeight)
     {
+        var sb = new StringBuilder();
         const int displayWidth = 49;
         const int displayHeight = 15;
 
@@ -518,7 +452,6 @@ public static class LayoutVisualizer
             int dw = Math.Max(3, w * displayWidth / refWidth);
             int dh = Math.Max(2, h * displayHeight / refHeight);
 
-            // Clamp to display bounds
             if (dx + dw > displayWidth)
             {
                 dw = displayWidth - dx;
@@ -531,7 +464,6 @@ public static class LayoutVisualizer
 
             zoneList.Add((dx, dy, dw, dh, zoneId));
 
-            // Fill the grid for this zone
             for (int r = dy; r < dy + dh && r < displayHeight; r++)
             {
                 for (int c = dx; c < dx + dw && c < displayWidth; c++)
@@ -544,82 +476,75 @@ public static class LayoutVisualizer
         }
 
         // Draw top border
-        Console.Write("    +");
-        Console.Write(new string('-', displayWidth));
-        Console.WriteLine("+");
+        sb.Append("    +");
+        sb.Append('-', displayWidth);
+        sb.AppendLine("+");
 
         // Draw each row
+        char[] shades = { '.', ':', '░', '▒', '▓', '█', '◆', '●', '■', '▪' };
+
         for (int r = 0; r < displayHeight; r++)
         {
-            Console.Write("    |");
+            sb.Append("    |");
             for (int c = 0; c < displayWidth; c++)
             {
                 var zonesHere = zoneGrid[r, c];
 
                 if (zonesHere.Count == 0)
                 {
-                    Console.Write(" ");
+                    sb.Append(' ');
                 }
                 else
                 {
-                    // Get the topmost zone at this position
                     int topZone = zonesHere[zonesHere.Count - 1];
                     var rect = zoneList[topZone];
 
-                    int x = rect.X;
-                    int y = rect.Y;
-                    int w = rect.Width;
-                    int h = rect.Height;
+                    bool isTopEdge = r == rect.Y;
+                    bool isBottomEdge = r == rect.Y + rect.Height - 1;
+                    bool isLeftEdge = c == rect.X;
+                    bool isRightEdge = c == rect.X + rect.Width - 1;
 
-                    bool isTopEdge = r == y;
-                    bool isBottomEdge = r == y + h - 1;
-                    bool isLeftEdge = c == x;
-                    bool isRightEdge = c == x + w - 1;
-
-                    // Draw borders
                     if ((isTopEdge || isBottomEdge) && (isLeftEdge || isRightEdge))
                     {
-                        Console.Write("+");
+                        sb.Append('+');
                     }
                     else if (isTopEdge || isBottomEdge)
                     {
-                        Console.Write("-");
+                        sb.Append('-');
                     }
                     else if (isLeftEdge || isRightEdge)
                     {
-                        Console.Write("|");
+                        sb.Append('|');
                     }
                     else
                     {
-                        // Use shading to show different zones
-                        char[] shades = { '.', ':', '░', '▒', '▓', '█', '◆', '●', '■', '▪' };
-                        Console.Write(shades[topZone % shades.Length]);
+                        sb.Append(shades[topZone % shades.Length]);
                     }
                 }
             }
 
-            Console.WriteLine("|");
+            sb.AppendLine("|");
         }
 
         // Draw bottom border
-        Console.Write("    +");
-        Console.Write(new string('-', displayWidth));
-        Console.WriteLine("+");
+        sb.Append("    +");
+        sb.Append('-', displayWidth);
+        sb.AppendLine("+");
 
         // Draw legend
-        Console.WriteLine();
-        Console.Write("    Legend: ");
-        char[] legendShades = { '.', ':', '░', '▒', '▓', '█', '◆', '●', '■', '▪' };
-        for (int i = 0; i < Math.Min(zoneId, legendShades.Length); i++)
+        sb.AppendLine();
+        sb.Append("    Legend: ");
+        for (int i = 0; i < Math.Min(zoneId, shades.Length); i++)
         {
             if (i > 0)
             {
-                Console.Write(", ");
+                sb.Append(", ");
             }
 
-            Console.Write($"Zone {i} = {legendShades[i]}");
+            sb.Append(CultureInfo.InvariantCulture, $"Zone {i} = {shades[i]}");
         }
 
-        Console.WriteLine();
+        sb.AppendLine();
+        return sb.ToString();
     }
 }
