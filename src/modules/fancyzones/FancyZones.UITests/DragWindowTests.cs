@@ -54,7 +54,7 @@ namespace UITests_FancyZones
             Thread.Sleep(1000);
             ClearOpenWindows();
 
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+            // SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
 
