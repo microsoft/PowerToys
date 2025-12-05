@@ -11,20 +11,18 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using KeystrokeOverlayUI.Controls;
+using KeystrokeOverlayUI.Models;
 
 namespace KeystrokeOverlayUI
 {
+    /// <summary>
+    /// Connects to the native KeystrokeOverlayPipe and converts native JSON
+    /// batches into KeystrokeEvent objects for the overlay UI.
+    /// </summary>
     public class KeystrokeListener : IDisposable
     {
-        private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        public void Dispose()
-        {
-            Stop();
-            GC.SuppressFinalize(this);
-        }
-
         private const string PipeName = "KeystrokeOverlayPipe";
+
         private CancellationTokenSource _cts;
 
         public event Action<KeystrokeEvent> OnBatchReceived;
@@ -40,62 +38,98 @@ namespace KeystrokeOverlayUI
             _cts?.Cancel();
         }
 
+        public void Dispose()
+        {
+            Stop();
+            GC.SuppressFinalize(this);
+        }
+
         private async Task ListenLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.In);
-                    await client.ConnectAsync(token);
+                    using var client = new NamedPipeClientStream(
+                        serverName: ".",
+                        pipeName: PipeName,
+                        direction: PipeDirection.In,
+                        options: PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 
-                    using var reader = new BinaryReader(client);
+                    await client.ConnectAsync(token).ConfigureAwait(false);
+
+                    using var reader = new BinaryReader(client, Encoding.UTF8, leaveOpen: false);
 
                     while (client.IsConnected && !token.IsCancellationRequested)
                     {
-                        // 1. Read Length (4 bytes / DWORD) matching PipeServer.cpp
+                        // Length-prefixed frame
                         int length = reader.ReadInt32();
-
-                        // Sanity-check length (same guard as native side)
                         const int MaxFrameSize = 8 * 1024 * 1024;
+
                         if (length <= 0 || length > MaxFrameSize)
                         {
                             Debug.WriteLine($"KeystrokeListener: invalid frame length {length}, reconnecting");
-                            break; // break inner loop and reconnect
+                            break;
                         }
 
-                        // 2. Read JSON Payload
+                        // Read JSON payload
                         byte[] buffer = reader.ReadBytes(length);
                         if (buffer.Length != length)
                         {
-                            Debug.WriteLine($"KeystrokeListener: short read {buffer.Length} of {length}, reconnecting");
-                            break; // broken frame/connection, reconnect
-                    }
+                            Debug.WriteLine($"KeystrokeListener: short read {buffer.Length}/{length}, reconnecting");
+                            break;
+                        }
 
                         string json = Encoding.UTF8.GetString(buffer);
 
-                        // 3. Deserialize (case-insensitive to match native lowercase keys)
                         try
                         {
-                            var batch = JsonSerializer.Deserialize(json, KeystrokeEventJsonContext.Default.KeystrokeEvent);
+                            // Deserialize batch
+                            var root = JsonSerializer.Deserialize(
+                                json,
+                                KeystrokeEventJsonContext.Default.KeystrokeBatchRoot);
 
-                            if (!batch.Equals(default(KeystrokeEvent)))
+                            if (root?.Events == null || root.Events.Length == 0)
                             {
-                                OnBatchReceived?.Invoke(batch);
+                                continue;
+                            }
+
+                            // Process only DOWN events to avoid duplicates
+                            foreach (var e in root.Events)
+                            {
+                                if (!string.Equals(e.Type, "down", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Ignore char + up events
+                                    continue;
+                                }
+
+                                var uiEvent = new KeystrokeEvent
+                                {
+                                    VirtualKey = (uint)e.VirtualKey,
+                                    IsPressed = true,
+                                };
+
+                                OnBatchReceived?.Invoke(uiEvent);
                             }
                         }
                         catch (JsonException je)
                         {
-                            Debug.WriteLine($"KeystrokeListener: JSON deserialization failed: {je.Message}");
-
-                        // Skip this frame and continue reading
+                            Debug.WriteLine($"KeystrokeListener: JSON parse error: {je.Message}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"KeystrokeListener: error processing frame: {ex}");
                         }
                     }
                 }
-                catch (Exception)
+                catch (OperationCanceledException)
                 {
-                    // Pipe broke or server not ready. Wait and retry.
-                    await Task.Delay(1000, token);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"KeystrokeListener: connect error: {ex}");
+                    await Task.Delay(1000, token).ConfigureAwait(false);
                 }
             }
         }

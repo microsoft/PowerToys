@@ -4,14 +4,15 @@
 
 using System.Text.Json.Serialization;
 using KeystrokeOverlayUI.Controls;
+using KeystrokeOverlayUI.Models;
 
-namespace KeystrokeOverlayUI;
-
-/// <summary>
-/// JSON source-generated metadata for KeystrokeEvent to support trimming-safe deserialization.
-/// </summary>
-[JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
-[JsonSerializable(typeof(KeystrokeEvent))]
-internal sealed partial class KeystrokeEventJsonContext : JsonSerializerContext
+namespace KeystrokeOverlayUI
 {
+    [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+    [JsonSerializable(typeof(KeystrokeEvent))]
+    [JsonSerializable(typeof(KeystrokeBatchRoot))]
+    [JsonSerializable(typeof(KeystrokeBatchEvent))]
+    internal sealed partial class KeystrokeEventJsonContext : JsonSerializerContext
+    {
+    }
 }

@@ -33,8 +33,6 @@ namespace KeystrokeOverlayUI
     {
         public MainViewModel ViewModel { get; set; } = new();
 
-        private const bool DEBUGMODE = true;
-
         private readonly KeystrokeListener _keystrokeListener = new();
 
         private readonly OverlaySettings _overlaySettings = new();
@@ -132,10 +130,6 @@ namespace KeystrokeOverlayUI
 
             // start simulating test keys
             // change this to false to disable test keys on startup
-            if (DEBUGMODE)
-            {
-                SimulateTestKeys();
-            }
         }
 
         private async void SimulateTestKeys()
