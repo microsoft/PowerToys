@@ -16,10 +16,11 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         DisplayName = "Performance Monitor";
         Id = "PerformanceMonitor";
+        Icon = Icons.StackedAreaIcon;
 
-        // Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
-        var page = new PerformanceMonitorPage(true);
-        _band = new CommandItem(page);
+        var page = new PerformanceMonitorPage(false);
+        var band = new PerformanceMonitorPage(true);
+        _band = new CommandItem(band) { Title = "Performance monitor" }; // TODO!Loc
         _commands = [
             new CommandItem(page) { Title = DisplayName },
         ];

@@ -550,10 +550,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             _settings.DockSettings.StartBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
             _settings.DockSettings.EndBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
 
-            // _topLevelCommandManager.UnpinDockBand(_topLevelViewModel.Id);
-
-            // Surgically just update the dock view model
-            _dockViewModel.UpdateSettings(_settings.DockSettings);
+            _topLevelViewModel.Save();
         }
     }
 }

@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
@@ -48,13 +47,12 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
     private ListItem _diskItem;
     private ListItem? _networkItem;
 
-    public override string Id => _isBandPage ? "com.crloewen.performanceMonitor.dockband" : "com.crloewen.PerformanceMonitor";
+    public override string Id => "com.microsoft.cmdpal.PerformanceMonitor";
 
     public override string Title => "Performance monitor";
 
-    public override string PlaceholderText => "Performance monitor";
-
-    public override IconInfo Icon => new IconInfo("\uE9D2"); // switch
+    // public override string PlaceholderText => "Performance monitor";
+    public override IconInfo Icon => Icons.StackedAreaIcon;
 
     private Task? _updateTask;
 
@@ -62,29 +60,15 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
     public PerformanceMonitorPage(bool asBandPage = false)
     {
         _isBandPage = asBandPage;
+        ShowDetails = !_isBandPage;
 
+        // Create all the perf counters
         // Initialize CPU counter
         _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
         _cpuCounter.NextValue(); // First call always returns 0
 
-        _cpuItem = new ListItem(new NoOpCommand() { Name = _isBandPage ? "CPU" : string.Empty })
-        {
-            Icon = new IconInfo("\uE9D9"), // CPU icon
-            Title = "CPU",
-            Details = new Details() { Body = "Loading..." },
-        };
-        _items.Add(_cpuItem);
-
-        // Initialize Memory counter
         _memoryCounter = new PerformanceCounter("Memory", "Available MBytes");
-
-        _memoryItem = new ListItem(new NoOpCommand() { Name = _isBandPage ? "Memory" : string.Empty })
-        {
-            Icon = new IconInfo("\uE964"), // Memory icon
-            Title = "Memory",
-            Details = new Details() { Body = "Loading..." },
-        };
-        _items.Add(_memoryItem);
+        _memoryCounter.NextValue(); // First call always returns 0
 
         // Initialize Disk counters (for all physical disks)
         var diskNames = GetPhysicalDiskNames();
@@ -95,12 +79,26 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
             _diskCounters[i].NextValue(); // First call always returns 0
         }
 
+        // Also, instantiate all the items we'll need
+        _cpuItem = new ListItem(new NoOpCommand() { Name = _isBandPage ? "CPU" : string.Empty })
+        {
+            Icon = Icons.CpuIcon,
+            Title = "CPU",
+        };
+
+        _memoryItem = new ListItem(new NoOpCommand() { Name = _isBandPage ? "Memory" : string.Empty })
+        {
+            Icon = Icons.MemoryIcon,
+            Title = "Memory",
+        };
+
         _diskItem = new ListItem(new NoOpCommand() { Name = _isBandPage ? "Disk" : string.Empty })
         {
-            Icon = new IconInfo("\uE977"), // Disk icon
+            Icon = Icons.HardDriveIcon,
             Title = "Disk",
-            Details = new Details() { Body = "Loading..." },
         };
+        _items.Add(_cpuItem);
+        _items.Add(_memoryItem);
         _items.Add(_diskItem);
 
         // Try to initialize Network counters (may not be available on all systems)
@@ -116,9 +114,8 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
 
                 _networkItem = new ListItem(new NoOpCommand() { Name = _isBandPage ? "Network" : string.Empty })
                 {
-                    Icon = new IconInfo("\uEC05"), // Network icon
+                    Icon = Icons.NetworkIcon,
                     Title = "Network",
-                    Details = new Details() { Body = "Loading..." },
                 };
 
                 _items.Add(_networkItem);
@@ -126,6 +123,11 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
         }
         catch (Exception)
         {
+        }
+
+        if (!_isBandPage)
+        {
+            InitializeDetailsToLoading();
         }
 
         // Initialize performance data
@@ -146,6 +148,17 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
         _loadCount--;
 
         // TODO! cancel the update task
+    }
+
+    private void InitializeDetailsToLoading()
+    {
+        _cpuItem.Details ??= new Details() { Body = "Loading..." };
+        _memoryItem.Details ??= new Details() { Body = "Loading..." };
+        _diskItem.Details ??= new Details() { Body = "Loading..." };
+        if (_networkItem != null)
+        {
+            _networkItem.Details ??= new Details() { Body = "Loading..." };
+        }
     }
 
     private Details GetCPUDetails()
@@ -208,7 +221,7 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
     private async void UpdateValues()
     {
         // Update interval in milliseconds
-        const int updateInterval = 500;
+        const int updateInterval = 1000;
 
         // TODO: Fix this behaviour which is needed cause of a bug
         while (_loadCount > 0)
@@ -239,7 +252,11 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
                 tasks.Add(Task.Run(() => UpdateNetworkValues()));
             }
 
-            // tasks.Add(GetProcessInfo());
+            if (!_isBandPage)
+            {
+                // TODO!: This is unbelievably loud
+                tasks.Add(GetProcessInfo());
+            }
 
             // Wait for all tasks to complete
             await Task.WhenAll(tasks);
@@ -631,133 +648,6 @@ public struct IO_COUNTERS
     public ulong ReadTransferCount;
     public ulong WriteTransferCount;
     public ulong OtherTransferCount;
-}
-
-internal abstract partial class OnLoadStaticPage : Page, IListPage
-{
-    private string _placeholderText = string.Empty;
-    private string _searchText = string.Empty;
-    private bool _showDetails;
-    private bool _hasMore;
-    private IFilters? _filters;
-    private IGridProperties? _gridProperties;
-    private ICommandItem? _emptyContent;
-    private int _loadCount;
-
-#pragma warning disable CS0067 // The event is never used
-
-    private event TypedEventHandler<object, IItemsChangedEventArgs>? InternalItemsChanged;
-#pragma warning restore CS0067 // The event is never used
-
-    public event TypedEventHandler<object, IItemsChangedEventArgs> ItemsChanged
-    {
-        add
-        {
-            InternalItemsChanged += value;
-            if (_loadCount == 0)
-            {
-                Loaded();
-            }
-
-            _loadCount++;
-        }
-
-        remove
-        {
-            InternalItemsChanged -= value;
-            _loadCount--;
-            _loadCount = Math.Max(0, _loadCount);
-            if (_loadCount == 0)
-            {
-                Unloaded();
-            }
-        }
-    }
-
-    protected abstract void Loaded();
-
-    protected abstract void Unloaded();
-
-    public virtual string PlaceholderText
-    {
-        get => _placeholderText;
-        set
-        {
-            _placeholderText = value;
-            OnPropertyChanged(nameof(PlaceholderText));
-        }
-    }
-
-    public virtual string SearchText
-    {
-        get => _searchText;
-        set
-        {
-            _searchText = value;
-            OnPropertyChanged(nameof(SearchText));
-        }
-    }
-
-    public virtual bool ShowDetails
-    {
-        get => _showDetails;
-        set
-        {
-            _showDetails = value;
-            OnPropertyChanged(nameof(ShowDetails));
-        }
-    }
-
-    public virtual bool HasMoreItems
-    {
-        get => _hasMore;
-        set
-        {
-            _hasMore = value;
-            OnPropertyChanged(nameof(HasMoreItems));
-        }
-    }
-
-    public virtual IFilters? Filters
-    {
-        get => _filters;
-        set
-        {
-            _filters = value;
-            OnPropertyChanged(nameof(Filters));
-        }
-    }
-
-    public virtual IGridProperties? GridProperties
-    {
-        get => _gridProperties;
-        set
-        {
-            _gridProperties = value;
-            OnPropertyChanged(nameof(GridProperties));
-        }
-    }
-
-    public virtual ICommandItem? EmptyContent
-    {
-        get => _emptyContent;
-        set
-        {
-            _emptyContent = value;
-            OnPropertyChanged(nameof(EmptyContent));
-        }
-    }
-
-    public void LoadMore()
-    {
-    }
-
-    protected void SetSearchNoUpdate(string newSearchText)
-    {
-        _searchText = newSearchText;
-    }
-
-    public abstract IListItem[] GetItems();
 }
 
 #pragma warning restore SA1402 // File may only contain a single type
