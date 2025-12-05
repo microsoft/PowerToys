@@ -45,7 +45,7 @@ std::wstring get_json(const std::vector<ProcessResult>& results)
     }
 
     root.SetNamedValue(L"processes", processes);
-    return root.Stringify();
+    return root.Stringify().c_str();
 }
 
 std::wstring get_text(const std::vector<ProcessResult>& results)
