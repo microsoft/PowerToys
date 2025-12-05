@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -374,6 +375,8 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
         return _items.ToArray();
     }
 
+    internal sealed record ProcessPerfData(int Id, string Name, ulong ReadVal, ulong WriteVal, TimeSpan TotalProcessTime, long WorkingSet);
+
     // === Helper functions ===
     private async Task<bool> GetProcessInfo()
     {
@@ -383,37 +386,7 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
         {
             var initialProcessValues = Process.GetProcesses()
             .Where(p => !string.IsNullOrEmpty(p.ProcessName))
-            .Select(p =>
-            {
-                try
-                {
-                    if (p.HasExited)
-                    {
-                        return null;
-                    }
-
-                    if (GetProcessIoCounters(p.Handle, out var counters))
-                    {
-                        var readVal = counters.ReadTransferCount;
-                        var writeVal = counters.WriteTransferCount;
-                        return new
-                        {
-                            Id = p.Id,
-                            Name = p.ProcessName,
-                            readVal,
-                            writeVal,
-                            totalProcessTime = p.TotalProcessorTime,
-                            workingSet = p.WorkingSet64,
-                        };
-                    }
-                }
-                catch
-                {
-                    return null;
-                }
-
-                return null;
-            })
+            .Select(GetPerfData)
             .Where(p => p != null)
             .Select(p => p!)
             .ToDictionary(p => p.Id, p => p);
@@ -422,41 +395,13 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
 
             var finalProcessValues = Process.GetProcesses()
             .Where(p => !string.IsNullOrEmpty(p.ProcessName))
-            .Select(p =>
-            {
-                try
-                {
-                    if (p.HasExited)
-                    {
-                        return null;
-                    }
-
-                    if (GetProcessIoCounters(p.Handle, out var counters))
-                    {
-                        var readVal = counters.ReadTransferCount;
-                        var writeVal = counters.WriteTransferCount;
-                        return new
-                        {
-                            Id = p.Id,
-                            readVal,
-                            writeVal,
-                            totalProcessTime = p.TotalProcessorTime,
-                        };
-                    }
-                }
-                catch
-                {
-                    return null;
-                }
-
-                return null;
-            })
+            .Select(GetPerfData)
             .Where(p => p != null)
             .Select(p => p!)
             .ToDictionary(p => p.Id, p => p);
 
             // Make new dictionary with finalizedProcesses
-            var finalizedProcesses = new Dictionary<int, (string Name, ulong ReadVal, ulong WriteVal, double TotalProcessTime, long WorkingSet)>();
+            var finalizedProcesses = new Dictionary<int, ProcessPerfData>();
 
             foreach (var (key, value) in finalProcessValues)
             {
@@ -467,10 +412,10 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
 
                 if (initialProcessValues.TryGetValue(key, out var initialValue))
                 {
-                    var readVal = value.readVal - initialValue.readVal;
-                    var writeVal = value.writeVal - initialValue.writeVal;
-                    var totalProcessTime = (value.totalProcessTime - initialValue.totalProcessTime).TotalMilliseconds;
-                    finalizedProcesses[key] = (initialValue.Name, readVal, writeVal, totalProcessTime, initialValue.workingSet);
+                    var readVal = value.ReadVal - initialValue.ReadVal;
+                    var writeVal = value.WriteVal - initialValue.WriteVal;
+                    var totalProcessTime = value.TotalProcessTime - initialValue.TotalProcessTime;
+                    finalizedProcesses[key] = new ProcessPerfData(initialValue.Id, initialValue.Name, readVal, writeVal, totalProcessTime, initialValue.WorkingSet);
                 }
             }
 
@@ -486,7 +431,7 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
 
             foreach (var (key, value) in topCPUProcesses)
             {
-                var cpuUsage = value.TotalProcessTime * 100.0 / (pollingTime * Environment.ProcessorCount);
+                var cpuUsage = value.TotalProcessTime.TotalMilliseconds * 100.0 / (pollingTime * Environment.ProcessorCount);
                 cpuUsage = Math.Min(100, Math.Max(0, cpuUsage)); // Clamp between 0-100%
                 var line = $"- {value.Name}: {cpuUsage:0.0}% CPU";
                 cpuString.AppendLine(line);
@@ -532,6 +477,40 @@ internal sealed partial class PerformanceMonitorPage : OnLoadStaticPage, IDispos
         }
 
         return true;
+    }
+
+    private ProcessPerfData? GetPerfData(Process p)
+    {
+        try
+        {
+            if (p.HasExited)
+            {
+                return null;
+            }
+
+            if (GetProcessIoCounters(p.Handle, out var counters))
+            {
+                var readVal = counters.ReadTransferCount;
+                var writeVal = counters.WriteTransferCount;
+                return new ProcessPerfData(
+                    p.Id,
+                    p.ProcessName,
+                    readVal,
+                    writeVal,
+                    p.TotalProcessorTime,
+                    p.WorkingSet64);
+            }
+        }
+        catch (Win32Exception)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+
+        return null;
     }
 
     private float GetTotalPhysicalMemoryGB()
