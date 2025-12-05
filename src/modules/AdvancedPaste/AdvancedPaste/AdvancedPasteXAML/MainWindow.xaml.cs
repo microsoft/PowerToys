@@ -3,27 +3,62 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
+
+using System.Linq;
+using AdvancedPaste.Converters;
 using AdvancedPaste.Helpers;
+using AdvancedPaste.Models;
+using AdvancedPaste.Settings;
+using AdvancedPaste.ViewModels;
+
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.Graphics;
 using WinUIEx;
 using WinUIEx.Messaging;
-using static AdvancedPaste.Helpers.NativeMethods;
 
 namespace AdvancedPaste
 {
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private WindowMessageMonitor _msgMonitor;
+        private readonly WindowMessageMonitor _msgMonitor;
+        private readonly IUserSettings _userSettings;
+        private readonly OptionsViewModel _optionsViewModel;
 
         private bool _disposedValue;
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+
+            _userSettings = App.GetService<IUserSettings>();
+            _optionsViewModel = App.GetService<OptionsViewModel>();
+
+            var baseHeight = MinHeight;
+            var coreActionCount = PasteFormat.MetadataDict.Values.Count(metadata => metadata.IsCoreAction);
+
+            void UpdateHeight()
+            {
+                double GetHeight(int maxCustomActionCount) =>
+                    baseHeight +
+                    new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
+
+                MinHeight = GetHeight(1);
+                Height = GetHeight(5);
+            }
+
+            UpdateHeight();
+
+            _userSettings.Changed += (_, _) => UpdateHeight();
+            _optionsViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(_optionsViewModel.IsCustomAIServiceEnabled))
+                {
+                    UpdateHeight();
+                }
+            };
 
             AppWindow.SetIcon("Assets/AdvancedPaste/AdvancedPaste.ico");
             this.ExtendsContentIntoTitleBar = true;
@@ -31,6 +66,8 @@ namespace AdvancedPaste
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             Title = loader.GetString("WindowTitle");
+
+            Activated += OnActivated;
 
             _msgMonitor = new WindowMessageMonitor(this);
             _msgMonitor.WindowMessageReceived += (_, e) =>
@@ -45,6 +82,15 @@ namespace AdvancedPaste
             };
 
             WindowHelpers.BringToForeground(this.GetWindowHandle());
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
+        }
+
+        private void OnActivated(object sender, WindowActivatedEventArgs args)
+        {
+            if (_userSettings.CloseAfterLosingFocus && args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                Hide();
+            }
         }
 
         private void Dispose(bool disposing)
@@ -52,6 +98,7 @@ namespace AdvancedPaste
             if (!_disposedValue)
             {
                 _msgMonitor?.Dispose();
+                (Application.Current as App).EtwTrace?.Dispose();
 
                 _disposedValue = true;
             }
@@ -64,11 +111,16 @@ namespace AdvancedPaste
             GC.SuppressFinalize(this);
         }
 
-        private void WindowEx_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
+        private async void WindowEx_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
         {
-            Windows.Win32.PInvoke.ShowWindow((Windows.Win32.Foundation.HWND)this.GetWindowHandle(), Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
-
+            await _optionsViewModel.CancelPasteActionAsync();
+            Hide();
             args.Handled = true;
+        }
+
+        private void Hide()
+        {
+            Windows.Win32.PInvoke.ShowWindow(new Windows.Win32.Foundation.HWND(this.GetWindowHandle()), Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
         }
 
         public void SetFocus()

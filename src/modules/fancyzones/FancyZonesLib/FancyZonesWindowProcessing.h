@@ -17,5 +17,6 @@ namespace FancyZonesWindowProcessing
     };
     
     ProcessabilityType DefineWindowType(HWND window) noexcept;
-    bool IsProcessable(HWND window) noexcept;
+    bool IsProcessableAutomatically(HWND window) noexcept;
+    bool IsProcessableManually(HWND window) noexcept;
 }

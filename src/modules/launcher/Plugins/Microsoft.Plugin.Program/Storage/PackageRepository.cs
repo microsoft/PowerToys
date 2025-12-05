@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Programs;
 using Windows.ApplicationModel;
@@ -82,7 +83,7 @@ namespace Microsoft.Plugin.Program.Storage
 
             // InitializeAppInfo will throw if there is no AppxManifest.xml for the package.
             // Note there are sometimes multiple packages per product and this doesn't necessarily mean that we haven't found the app.
-            // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
+            // e.g. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
             catch (System.IO.FileNotFoundException e)
             {
                 ProgramLogger.Exception(e.Message, e, GetType(), package.InstalledLocation.ToString());

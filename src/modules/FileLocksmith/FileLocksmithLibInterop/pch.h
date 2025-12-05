@@ -17,3 +17,5 @@
 #include <set>
 #include <algorithm>
 #include <fstream>
+
+#include <winrt/PowerToys.Interop.h>

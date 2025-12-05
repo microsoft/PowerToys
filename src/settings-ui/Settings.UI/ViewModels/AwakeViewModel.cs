@@ -4,14 +4,14 @@
 
 using System;
 using System.Runtime.CompilerServices;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AwakeViewModel : Observable
+    public partial class AwakeViewModel : Observable
     {
         public AwakeViewModel()
         {
@@ -33,7 +33,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsEnabled
         {
-            get => _isEnabled;
+            get
+            {
+                if (_enabledStateIsGPOConfigured)
+                {
+                    return _enabledGPOConfiguration;
+                }
+                else
+                {
+                    return _isEnabled;
+                }
+            }
+
             set
             {
                 if (_isEnabled != value)
@@ -66,20 +77,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsExpirationConfigurationEnabled
+        public bool EnabledGPOConfiguration
         {
-            get => ModuleSettings.Properties.Mode == AwakeMode.EXPIRABLE && IsEnabled;
+            get => _enabledGPOConfiguration;
+            set
+            {
+                if (_enabledGPOConfiguration != value)
+                {
+                    _enabledGPOConfiguration = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
-        public bool IsTimeConfigurationEnabled
-        {
-            get => ModuleSettings.Properties.Mode == AwakeMode.TIMED && IsEnabled;
-        }
+        public bool IsExpirationConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.EXPIRABLE && IsEnabled;
 
-        public bool IsScreenConfigurationPossibleEnabled
-        {
-            get => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
-        }
+        public bool IsTimeConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.TIMED && IsEnabled;
+
+        public bool IsScreenConfigurationPossibleEnabled => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
 
         public AwakeMode Mode
         {
@@ -89,6 +104,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.Mode != value)
                 {
                     ModuleSettings.Properties.Mode = value;
+
+                    if (value == AwakeMode.TIMED && IntervalMinutes == 0 && IntervalHours == 0)
+                    {
+                        // Handle the special case where both hours and minutes are zero.
+                        // Otherwise, this will reset to passive very quickly in the UI.
+                        ModuleSettings.Properties.IntervalMinutes = 1;
+                        OnPropertyChanged(nameof(IntervalMinutes));
+                    }
+                    else if (value == AwakeMode.EXPIRABLE && ExpirationDateTime <= DateTimeOffset.Now)
+                    {
+                        // To make sure that we're not tracking expirable keep-awake in the past,
+                        // let's make sure that every time it's enabled from the settings UI, it's
+                        // five (5) minutes into the future.
+                        ExpirationDateTime = DateTimeOffset.Now.AddMinutes(5);
+
+                        // The expiration date/time is updated and will send the notification
+                        // but we need to do this manually for the expiration time that is
+                        // bound to the time control on the settings page.
+                        OnPropertyChanged(nameof(ExpirationTime));
+                    }
 
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
@@ -187,6 +222,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         private bool _enabledStateIsGPOConfigured;
+        private bool _enabledGPOConfiguration;
         private AwakeSettings _moduleSettings;
         private bool _isEnabled;
     }

@@ -69,7 +69,8 @@ Settings Settings::LoadFromFile()
 
         try
         {
-            result.units = static_cast<Measurement::Unit>(props.GetNamedObject(JSON_KEY_UNITS_OF_MEASURE).GetNamedNumber(JSON_KEY_VALUE));
+            auto index = static_cast<int>(props.GetNamedObject(JSON_KEY_UNITS_OF_MEASURE).GetNamedNumber(JSON_KEY_VALUE));
+            result.units = Measurement::GetUnitFromIndex(index);
         }
         catch (...)
         {

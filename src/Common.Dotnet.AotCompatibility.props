@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Some items may be set in Directory.Build.props in root -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
+
+    <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
+    <!-- Suppress CA1416 for Windows-specific APIs that are used in PowerToys which only runs on Windows 10.0.19041.0+ -->
+    <WarningsNotAsErrors>IL2081;CsWinRT1028;CA1416;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+  </PropertyGroup>
+</Project>

@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Windows.Input;
+
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Keyboard
@@ -68,17 +70,10 @@ namespace ColorPicker.Keyboard
             var virtualCode = e.KeyboardData.VirtualCode;
 
             // ESC pressed
-            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape)
-                && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown
-                )
+            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
             {
-                if (_appStateHandler.IsColorPickerVisible()
-                    || !AppStateHandler.BlockEscapeKeyClosingColorPickerEditor
-                    )
-                {
-                    e.Handled = _appStateHandler.EndUserSession();
-                    return;
-                }
+                e.Handled = _appStateHandler.HandleEscPressed();
+                return;
             }
 
             if ((virtualCode == KeyInterop.VirtualKeyFromKey(Key.Space) || virtualCode == KeyInterop.VirtualKeyFromKey(Key.Enter)) && (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown))

@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 using Microsoft.Plugin.WindowWalker.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 

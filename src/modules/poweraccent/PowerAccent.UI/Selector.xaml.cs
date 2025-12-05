@@ -5,7 +5,9 @@
 using System;
 using System.ComponentModel;
 using System.Windows;
+
 using Wpf.Ui.Controls;
+
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
 
@@ -42,7 +44,6 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         Application.Current.MainWindow.ShowActivated = false;
-        Application.Current.MainWindow.Topmost = true;
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -58,10 +59,14 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         _selectedIndex = index;
         characters.SelectedIndex = _selectedIndex;
         characterName.Text = _powerAccent.CharacterDescriptions[_selectedIndex];
+        characters.ScrollIntoView(character);
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
+        // Topmost is conditionally set here to address hybrid graphics issues on laptops.
+        this.Topmost = isActive;
+
         CharacterNameVisibility = _powerAccent.ShowUnicodeDescription ? Visibility.Visible : Visibility.Collapsed;
 
         if (isActive)
@@ -69,6 +74,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
             characters.ItemsSource = chars;
             characters.SelectedIndex = _selectedIndex;
             this.UpdateLayout(); // Required for filling the actual width/height before positioning.
+            SetWindowsSize();
             SetWindowPosition();
             Show();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
@@ -92,8 +98,14 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         this.Top = position.Y;
     }
 
+    private void SetWindowsSize()
+    {
+        this.characters.MaxWidth = _powerAccent.GetDisplayMaxWidth();
+    }
+
     protected override void OnClosed(EventArgs e)
     {
+        _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
         base.OnClosed(e);
     }

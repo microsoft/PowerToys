@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -23,12 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             get
             {
-                if (frame == null)
-                {
-                    frame = Window.Current.Content as Frame;
-                    RegisterFrameEvents();
-                }
-
                 return frame;
             }
 

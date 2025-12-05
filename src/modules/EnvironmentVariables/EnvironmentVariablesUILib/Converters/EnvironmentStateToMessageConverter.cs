@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using Microsoft.UI.Xaml.Data;
 
 namespace EnvironmentVariablesUILib.Converters;
 
-public class EnvironmentStateToMessageConverter : IValueConverter
+public partial class EnvironmentStateToMessageConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

@@ -59,7 +59,7 @@
                     x:Name="AppTitle_FileName"
                     Grid.Column="1"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Item.Name, Mode=OneWay}"
+                    Text="{x:Bind FileName, Mode=OneWay}"
                     TextWrapping="NoWrap" />
             </Grid>
         </Grid>
@@ -93,6 +93,7 @@
             Grid.Column="4"
             VerticalAlignment="Center"
             Command="{x:Bind PinCommand, Mode=OneWay}"
+            Style="{StaticResource SubtleButtonStyle}"
             ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
             <Button.Content>
                 <FontIcon

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>UnitTests-StlThumbnailProvider</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-StlThumbnailProvider</AssemblyDescription>
+    <AssemblyTitle>UnitTests-StlThumbnailProvider</AssemblyTitle>
+    <Description>PowerToys UnitTests-StlThumbnailProvider</Description>
+    <ProjectGuid>{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}</ProjectGuid>
+    <RootNamespace>StlThumbnailProviderUnitTests</RootNamespace>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="HelperFiles\sample.stl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\StlThumbnailProvider\StlThumbnailProvider.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\sample.stl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

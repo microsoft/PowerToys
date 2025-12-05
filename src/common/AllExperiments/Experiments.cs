@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Text.Json;
+
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.VariantAssignment.Client;

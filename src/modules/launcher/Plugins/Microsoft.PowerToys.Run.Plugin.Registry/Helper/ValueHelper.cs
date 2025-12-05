@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
 using Microsoft.Win32;
 

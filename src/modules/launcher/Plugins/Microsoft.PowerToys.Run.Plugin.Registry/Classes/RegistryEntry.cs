@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.Win32;
 

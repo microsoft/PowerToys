@@ -6,7 +6,7 @@
   "Author": "Microsoft",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "http://aka.ms/PowerToys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.Plugin.Uri.dll",
   "IcoPathDark": "Images\\uri.dark.png",
   "IcoPathLight": "Images\\uri.light.png"

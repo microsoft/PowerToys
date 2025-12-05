@@ -5,6 +5,7 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+
 using Common;
 using Common.Utilities;
 using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
@@ -73,7 +74,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         private RichTextBox _textBox;
 
         /// <summary>
-        /// Represent if an text box info bar is added for showing message.
+        /// Represent if a text box info bar is added for showing message.
         /// </summary>
         private bool _infoBarAdded;
 

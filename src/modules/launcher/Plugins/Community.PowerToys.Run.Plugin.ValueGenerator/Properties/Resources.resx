@@ -126,6 +126,63 @@
   <data name="error_title" xml:space="preserve">
     <value>Value Generator Error</value>
   </data>
+  <data name="generator_description_base64" xml:space="preserve">
+    <value>Encode a string with Base64</value>
+  </data>
+  <data name="generator_description_base64d" xml:space="preserve">
+    <value>Decode a string with Base64</value>
+  </data>
+  <data name="generator_description_esc_data" xml:space="preserve">
+    <value>Escape a data string</value>
+  </data>
+  <data name="generator_description_esc_hex" xml:space="preserve">
+    <value>Escape a single hex character</value>
+  </data>
+  <data name="generator_description_hash" xml:space="preserve">
+    <value>Hash a string with {0}</value>
+  </data>
+  <data name="generator_description_uesc_data" xml:space="preserve">
+    <value>Unescape a data string</value>
+  </data>
+  <data name="generator_description_uesc_hex" xml:space="preserve">
+    <value>Unescape a single hex character</value>
+  </data>
+  <data name="generator_description_url" xml:space="preserve">
+    <value>Encode a URL</value>
+  </data>
+  <data name="generator_description_urld" xml:space="preserve">
+    <value>Decode a URL</value>
+  </data>
+  <data name="generator_description_uuid" xml:space="preserve">
+    <value>Generate a random UUID</value>
+  </data>
+  <data name="generator_description_uuidv1" xml:space="preserve">
+    <value>Generate a version 1: Time based UUID</value>
+  </data>
+  <data name="generator_description_uuidv3" xml:space="preserve">
+    <value>Generate a version 3 (MD5): Namespace and name based UUID</value>
+  </data>
+  <data name="generator_description_uuidv4" xml:space="preserve">
+    <value>Generate a version 4: Randomly generated UUID</value>
+  </data>
+  <data name="generator_description_uuidv5" xml:space="preserve">
+    <value>Generate a version 5 (SHA1): Namespace and name based UUID</value>
+  </data>
+  <data name="generator_description_uuidv7" xml:space="preserve">
+    <value>Generate a version 7: Time-ordered randomly generated UUID</value>
+  </data>
+  <data name="generator_description_your_input" xml:space="preserve">
+    <value>your input</value>
+    <comment>Usage example: "md5 &lt;your input&gt;"</comment>
+  </data>
+  <data name="generator_example" xml:space="preserve">
+    <value>Example: {0}</value>
+    <comment>The arg following is the usage example</comment>
+  </data>
+  <data name="or" xml:space="preserve">
+    <value>or</value>
+    <comment>Used to indicate alternatives or options available</comment>
+  </data>
   <data name="plugin_description" xml:space="preserve">
     <value>Calculates hashes and generate values</value>
   </data>

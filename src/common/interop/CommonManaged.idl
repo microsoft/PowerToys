@@ -1,0 +1,9 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] static runtimeclass CommonManaged {
+            static String GetProductVersion();
+        }
+    }
+}

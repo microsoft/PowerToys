@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
@@ -113,6 +114,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                     // Couldn't read the settings.
                     // Assume default of true.
                     return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the minimap should be enabled. Set by PT settings.
+        /// </summary>
+        public bool Minimap
+        {
+            get
+            {
+                try
+                {
+                    return moduleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.MonacoPreviewMinimap;
+                }
+                catch (FileNotFoundException)
+                {
+                    // Couldn't read the settings
+                    // Assume default of false
+                    return false;
                 }
             }
         }

@@ -13,10 +13,12 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 
 // <summary>
@@ -28,7 +30,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
+
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 // Log is enough
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckClipboard()", Justification = "Dotnet port with style preservation")]
@@ -77,7 +83,7 @@ namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private Common()
+        internal Common()
         {
         }
 
@@ -85,9 +91,11 @@ namespace MouseWithoutBorders
         private static FrmMatrix matrixForm;
         private static FrmInputCallback inputCallbackForm;
         private static FrmAbout aboutForm;
-        private static Thread helper;
-        private static int screenWidth;
-        private static int screenHeight;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static Thread helper;
+        internal static int screenWidth;
+        internal static int screenHeight;
+#pragma warning restore SA1307
         private static int lastX;
         private static int lastY;
 
@@ -95,8 +103,10 @@ namespace MouseWithoutBorders
         private static bool runOnLogonDesktop;
         private static bool runOnScrSaverDesktop;
 
-        private static int[] toggleIcons;
-        private static int toggleIconsIndex;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static int[] toggleIcons;
+        internal static int toggleIconsIndex;
+#pragma warning restore SA1307
         internal const int TOGGLE_ICONS_SIZE = 4;
         internal const int ICON_ONE = 0;
         internal const int ICON_ALL = 1;
@@ -106,11 +116,15 @@ namespace MouseWithoutBorders
         internal const int JUST_GOT_BACK_FROM_SCREEN_SAVER = 9999;
 
         internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
-        private static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
+        internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
         private static Point lastPos;
-        private static int switchCount;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static int switchCount;
+#pragma warning restore SA1307
         private static long lastReconnectByHotKeyTime;
-        private static int tcpPort;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static int tcpPort;
+#pragma warning restore SA1307
         private static bool secondOpenSocketTry;
         private static string binaryName;
 
@@ -199,7 +213,7 @@ namespace MouseWithoutBorders
 
         internal static bool Is64bitOS
         {
-            get; private set;
+            get; set;
 
             // set { Common.is64bitOS = value; }
         }
@@ -230,12 +244,12 @@ namespace MouseWithoutBorders
 
         internal static ID DesMachineID
         {
-            get => Common.desMachineID;
+            get => MachineStuff.desMachineID;
 
             set
             {
-                Common.desMachineID = value;
-                Common.DesMachineName = Common.NameFromID(Common.desMachineID);
+                MachineStuff.desMachineID = value;
+                MachineStuff.DesMachineName = MachineStuff.NameFromID(MachineStuff.desMachineID);
             }
         }
 
@@ -258,7 +272,7 @@ namespace MouseWithoutBorders
         {
             if (SocketMutex != null)
             {
-                LogDebug("SOCKET MUTEX BEGIN RELEASE.");
+                Logger.LogDebug("SOCKET MUTEX BEGIN RELEASE.");
 
                 try
                 {
@@ -268,14 +282,14 @@ namespace MouseWithoutBorders
                 catch (ApplicationException e)
                 {
                     // The current thread does not own the mutex, the thread acquired it will own it.
-                    TelemetryLogTrace($"{nameof(ReleaseSocketMutex)}: {e.Message}. {Thread.CurrentThread.ManagedThreadId}/{UIThreadID}.", SeverityLevel.Warning);
+                    Logger.TelemetryLogTrace($"{nameof(ReleaseSocketMutex)}: {e.Message}. {Thread.CurrentThread.ManagedThreadId}/{UIThreadID}.", SeverityLevel.Warning);
                 }
 
-                LogDebug("SOCKET MUTEX RELEASED.");
+                Logger.LogDebug("SOCKET MUTEX RELEASED.");
             }
             else
             {
-                LogDebug("SOCKET MUTEX NULL.");
+                Logger.LogDebug("SOCKET MUTEX NULL.");
             }
         }
 
@@ -283,7 +297,7 @@ namespace MouseWithoutBorders
         {
             if (SocketMutex != null)
             {
-                LogDebug("SOCKET MUTEX BEGIN WAIT.");
+                Logger.LogDebug("SOCKET MUTEX BEGIN WAIT.");
                 int waitTimeout = 60000; // TcpListener.Stop may take very long to complete for some reason.
 
                 int socketMutexBalance = int.MinValue;
@@ -301,14 +315,14 @@ namespace MouseWithoutBorders
                 if (!acquireMutex)
                 {
                     Process[] ps = Process.GetProcessesByName(Common.BinaryName);
-                    TelemetryLogTrace($"Balance: {socketMutexBalance}, Active: {IsMyDesktopActive()}, Sid/Console: {Process.GetCurrentProcess().SessionId}/{NativeMethods.WTSGetActiveConsoleSessionId()}, Desktop/Input: {GetMyDesktop()}/{GetInputDesktop()}, count: {ps?.Length}.", SeverityLevel.Warning);
+                    Logger.TelemetryLogTrace($"Balance: {socketMutexBalance}, Active: {WinAPI.IsMyDesktopActive()}, Sid/Console: {Process.GetCurrentProcess().SessionId}/{NativeMethods.WTSGetActiveConsoleSessionId()}, Desktop/Input: {WinAPI.GetMyDesktop()}/{WinAPI.GetInputDesktop()}, count: {ps?.Length}.", SeverityLevel.Warning);
                 }
 
-                LogDebug("SOCKET MUTEX ENDED.");
+                Logger.LogDebug("SOCKET MUTEX ENDED.");
             }
             else
             {
-                LogDebug("SOCKET MUTEX NULL.");
+                Logger.LogDebug("SOCKET MUTEX NULL.");
             }
         }
 
@@ -317,7 +331,7 @@ namespace MouseWithoutBorders
         internal static bool ExecuteAndTrace(string actionName, Action action, TimeSpan timeout, bool restart = false)
         {
             bool rv = true;
-            LogDebug(actionName);
+            Logger.LogDebug(actionName);
             bool done = false;
 
             BlockingUI = true;
@@ -342,12 +356,12 @@ namespace MouseWithoutBorders
                         }
                     }
 
-                    TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}, restarting the process.", SeverityLevel.Warning, true);
+                    Logger.TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}, restarting the process.", SeverityLevel.Warning, true);
 
-                    string desktop = Common.GetMyDesktop();
-                    oneInstanceCheck?.Close();
+                    string desktop = WinAPI.GetMyDesktop();
+                    MachineStuff.oneInstanceCheck?.Close();
                     _ = Process.Start(Application.ExecutablePath, desktop);
-                    LogDebug($"Started on desktop {desktop}");
+                    Logger.LogDebug($"Started on desktop {desktop}");
 
                     Process.GetCurrentProcess().KillProcess(true);
                 },
@@ -378,7 +392,7 @@ namespace MouseWithoutBorders
 
                     if (!restart)
                     {
-                        TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}: {(long)timer.Elapsed.TotalSeconds}.", SeverityLevel.Warning);
+                        Logger.TelemetryLogTrace($"[{actionName}] took more than {(long)timeout.TotalSeconds}: {(long)timer.Elapsed.TotalSeconds}.", SeverityLevel.Warning);
                     }
                 }
             }
@@ -444,7 +458,7 @@ namespace MouseWithoutBorders
                             }
                             catch (Exception e)
                             {
-                                Log(e);
+                                Logger.Log(e);
                             }
                             finally
                             {
@@ -456,7 +470,7 @@ namespace MouseWithoutBorders
                     catch (Exception e)
                     {
                         done = true;
-                        Log(e);
+                        Logger.Log(e);
                     }
 
                     while (blocking && !done)
@@ -472,7 +486,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static readonly object InputSimulationLock = new();
+        private static readonly Lock InputSimulationLock = new();
 
         internal static void DoSomethingInTheInputSimulationThread(ThreadStart target)
         {
@@ -500,18 +514,18 @@ namespace MouseWithoutBorders
 
         internal static void SendHeartBeat(bool initial = false)
         {
-            SendPackage(ID.ALL, initial && Common.GeneratedKey ? PackageType.Heartbeat_ex : PackageType.Heartbeat);
+            SendPackage(ID.ALL, initial && Encryption.GeneratedKey ? PackageType.Heartbeat_ex : PackageType.Heartbeat);
         }
 
         private static long lastSendNextMachine;
 
         internal static void SendNextMachine(ID hostMachine, ID nextMachine, Point requestedXY)
         {
-            LogDebug($"SendNextMachine: Host machine: {hostMachine}, Next machine: {nextMachine}, Requested XY: {requestedXY}");
+            Logger.LogDebug($"SendNextMachine: Host machine: {hostMachine}, Next machine: {nextMachine}, Requested XY: {requestedXY}");
 
             if (GetTick() - lastSendNextMachine < 100)
             {
-                LogDebug("Machine switching in progress."); // "Move Mouse relatively" mode, slow machine/network, quick/busy hand.
+                Logger.LogDebug("Machine switching in progress."); // "Move Mouse relatively" mode, slow machine/network, quick/busy hand.
                 return;
             }
 
@@ -528,7 +542,7 @@ namespace MouseWithoutBorders
 
             SkSend(package, null, false);
 
-            LogDebug("SendNextMachine done.");
+            Logger.LogDebug("SendNextMachine done.");
         }
 
         private static ulong lastInputEventCount;
@@ -536,8 +550,8 @@ namespace MouseWithoutBorders
 
         internal static void SendAwakeBeat()
         {
-            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() &&
-                Setting.Values.BlockScreenSaver && lastRealInputEventCount != Common.RealInputEventCount)
+            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive() &&
+                Setting.Values.BlockScreenSaver && lastRealInputEventCount != Event.RealInputEventCount)
             {
                 SendPackage(ID.ALL, PackageType.Awake);
             }
@@ -546,36 +560,36 @@ namespace MouseWithoutBorders
                 SendHeartBeat();
             }
 
-            lastInputEventCount = Common.InputEventCount;
-            lastRealInputEventCount = Common.RealInputEventCount;
+            lastInputEventCount = Event.InputEventCount;
+            lastRealInputEventCount = Event.RealInputEventCount;
         }
 
-        private static void HumanBeingDetected()
+        internal static void HumanBeingDetected()
         {
-            if (lastInputEventCount == Common.InputEventCount)
+            if (lastInputEventCount == Event.InputEventCount)
             {
-                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive())
+                if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive())
                 {
                     PokeMyself();
                 }
             }
 
-            lastInputEventCount = Common.InputEventCount;
+            lastInputEventCount = Event.InputEventCount;
         }
 
-        private static void PokeMyself()
+        internal static void PokeMyself()
         {
             int x, y = 0;
 
             for (int i = 0; i < 10; i++)
             {
-                x = Ran.Next(-9, 10);
+                x = Encryption.Ran.Next(-9, 10);
                 InputSimulation.MoveMouseRelative(x, y);
                 Thread.Sleep(50);
                 InputSimulation.MoveMouseRelative(-x, -y);
                 Thread.Sleep(50);
 
-                if (lastInputEventCount != Common.InputEventCount)
+                if (lastInputEventCount != Event.InputEventCount)
                 {
                     break;
                 }
@@ -584,8 +598,8 @@ namespace MouseWithoutBorders
 
         internal static void InitLastInputEventCount()
         {
-            lastInputEventCount = Common.InputEventCount;
-            lastRealInputEventCount = Common.RealInputEventCount;
+            lastInputEventCount = Event.InputEventCount;
+            lastRealInputEventCount = Event.RealInputEventCount;
         }
 
         internal static void SendHello()
@@ -600,9 +614,9 @@ namespace MouseWithoutBorders
         }
          * */
 
-        private static void SendByeBye()
+        internal static void SendByeBye()
         {
-            LogDebug($"{nameof(SendByeBye)}");
+            Logger.LogDebug($"{nameof(SendByeBye)}");
             SendPackage(ID.ALL, PackageType.ByeBye);
         }
 
@@ -611,14 +625,14 @@ namespace MouseWithoutBorders
             SendPackage(ID.ALL, PackageType.Clipboard);
         }
 
-        private static void ProcessByeByeMessage(DATA package)
+        internal static void ProcessByeByeMessage(DATA package)
         {
-            if (package.Src == desMachineID)
+            if (package.Src == MachineStuff.desMachineID)
             {
-                SwitchToMachine(MachineName.Trim());
+                MachineStuff.SwitchToMachine(MachineName.Trim());
             }
 
-            _ = RemoveDeadMachines(package.Src);
+            _ = MachineStuff.RemoveDeadMachines(package.Src);
         }
 
         internal static long GetTick() // ms
@@ -628,7 +642,7 @@ namespace MouseWithoutBorders
 
         internal static void SetToggleIcon(int[] toggleIcons)
         {
-            Common.LogDebug($"{nameof(SetToggleIcon)}: {toggleIcons?.FirstOrDefault()}");
+            Logger.LogDebug($"{nameof(SetToggleIcon)}: {toggleIcons?.FirstOrDefault()}");
             Common.toggleIcons = toggleIcons;
             toggleIconsIndex = 0;
         }
@@ -638,19 +652,19 @@ namespace MouseWithoutBorders
             try
             {
                 string fileName = GetMyStorageDir() + @"ScreenCaptureByMouseWithoutBorders.png";
-                int w = desktopBounds.Right - desktopBounds.Left;
-                int h = desktopBounds.Bottom - desktopBounds.Top;
+                int w = MachineStuff.desktopBounds.Right - MachineStuff.desktopBounds.Left;
+                int h = MachineStuff.desktopBounds.Bottom - MachineStuff.desktopBounds.Top;
                 Bitmap bm = new(w, h);
                 Graphics g = Graphics.FromImage(bm);
                 Size s = new(w, h);
-                g.CopyFromScreen(desktopBounds.Left, desktopBounds.Top, 0, 0, s);
+                g.CopyFromScreen(MachineStuff.desktopBounds.Left, MachineStuff.desktopBounds.Top, 0, 0, s);
                 bm.Save(fileName, ImageFormat.Png);
                 bm.Dispose();
                 return fileName;
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
                 return null;
             }
         }
@@ -659,27 +673,27 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInUIThread(() =>
             {
-                if (!MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
+                if (!DragDrop.MouseDown && Helper.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });
-                    InputSimulation.SendKey(new KEYBDDATA() { dwFlags = (int)Common.LLKHF.UP, wVk = (int)VK.SNAPSHOT });
+                    InputSimulation.SendKey(new KEYBDDATA() { dwFlags = (int)WM.LLKHF.UP, wVk = (int)VK.SNAPSHOT });
 
-                    Common.LogDebug("PrepareScreenCapture: SNAPSHOT simulated.");
+                    Logger.LogDebug("PrepareScreenCapture: SNAPSHOT simulated.");
 
                     _ = NativeMethods.MoveWindow(
-                        (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT),
-                        Common.DesktopBounds.Left,
-                        Common.DesktopBounds.Top,
-                        Common.DesktopBounds.Right - Common.DesktopBounds.Left,
-                        Common.DesktopBounds.Bottom - Common.DesktopBounds.Top,
+                        (IntPtr)NativeMethods.FindWindow(null, Helper.HELPER_FORM_TEXT),
+                        MachineStuff.DesktopBounds.Left,
+                        MachineStuff.DesktopBounds.Top,
+                        MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left,
+                        MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top,
                         false);
 
-                    _ = Common.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
+                    _ = Helper.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
                 }
                 else
                 {
-                    Common.Log("PrepareScreenCapture: Validation failed.");
+                    Logger.Log("PrepareScreenCapture: Validation failed.");
                 }
             });
         }
@@ -692,11 +706,11 @@ namespace MouseWithoutBorders
             // {
             //    Process.Start("explorer", "\"" + file + "\"");
             // });
-            _ = CreateProcessInInputDesktopSession(
+            _ = Launch.CreateProcessInInputDesktopSession(
                 "\"" + Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
                 "\"",
                 "\"" + file + "\"",
-                GetInputDesktop(),
+                WinAPI.GetInputDesktop(),
                 1);
 
             // CreateNormalIntegrityProcess(Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
@@ -714,7 +728,7 @@ namespace MouseWithoutBorders
 
         internal static void SendImage(string machine, string file)
         {
-            LastDragDropFile = file;
+            Clipboard.LastDragDropFile = file;
 
             // Send ClipboardCapture
             if (machine.Equals("All", StringComparison.OrdinalIgnoreCase))
@@ -723,7 +737,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                ID id = Common.MachinePool.ResolveID(machine);
+                ID id = MachineStuff.MachinePool.ResolveID(machine);
                 if (id != ID.NONE)
                 {
                     SendPackage(id, PackageType.ClipboardCapture);
@@ -733,7 +747,7 @@ namespace MouseWithoutBorders
 
         internal static void SendImage(ID src, string file)
         {
-            LastDragDropFile = file;
+            Clipboard.LastDragDropFile = file;
 
             // Send ClipboardCapture
             SendPackage(src, PackageType.ClipboardCapture);
@@ -747,7 +761,7 @@ namespace MouseWithoutBorders
                 {
                     if (Setting.Values.FirstRun)
                     {
-                        Common.Settings?.ShowTip(icon, tip, timeOutInMilliseconds);
+                        MachineStuff.Settings?.ShowTip(icon, tip, timeOutInMilliseconds);
                     }
 
                     Common.MatrixForm?.ShowTip(icon, tip, timeOutInMilliseconds);
@@ -760,7 +774,7 @@ namespace MouseWithoutBorders
                         }
                         else
                         {
-                            Log(tip);
+                            Logger.Log(tip);
                         }
                     }
                 });
@@ -876,7 +890,7 @@ namespace MouseWithoutBorders
 
             if (updateClientSockets)
             {
-                UpdateClientSockets(nameof(IsConnectedTo));
+                MachineStuff.UpdateClientSockets(nameof(IsConnectedTo));
             }
 
             return false;
@@ -905,7 +919,7 @@ namespace MouseWithoutBorders
 
                 try
                 {
-                    data.Id = Interlocked.Increment(ref PackageID);
+                    data.Id = Interlocked.Increment(ref Package.PackageID);
 
                     bool updateClientSockets = false;
 
@@ -915,7 +929,7 @@ namespace MouseWithoutBorders
                         {
                             if (t != null && t.BackingSocket != null && (t.Status == SocketStatus.Connected || (t.Status == SocketStatus.Handshaking && includeHandShakingSockets)))
                             {
-                                if (t.MachineId == (uint)data.Des || (data.Des == ID.ALL && t.MachineId != exceptDes && InMachineMatrix(t.MachineName)))
+                                if (t.MachineId == (uint)data.Des || (data.Des == ID.ALL && t.MachineId != exceptDes && MachineStuff.InMachineMatrix(t.MachineName)))
                                 {
                                     try
                                     {
@@ -933,7 +947,7 @@ namespace MouseWithoutBorders
                                     }
                                     catch (Exception e)
                                     {
-                                        Log(e);
+                                        Logger.Log(e);
                                         t.BackingSocket = null; // To be removed at CloseAnUnusedSocket()
                                         updateClientSockets = true;
                                     }
@@ -944,27 +958,27 @@ namespace MouseWithoutBorders
 
                     if (!connected && data.Des != ID.ALL)
                     {
-                        LogDebug("********** No active connection found for the remote machine! **********" + data.Des.ToString());
+                        Logger.LogDebug("********** No active connection found for the remote machine! **********" + data.Des.ToString());
 
-                        if (data.Des == ID.NONE || RemoveDeadMachines(data.Des))
+                        if (data.Des == ID.NONE || MachineStuff.RemoveDeadMachines(data.Des))
                         {
                             // SwitchToMachine(MachineName.Trim());
-                            NewDesMachineID = DesMachineID = MachineID;
-                            SwitchLocation.X = XY_BY_PIXEL + myLastX;
-                            SwitchLocation.Y = XY_BY_PIXEL + myLastY;
-                            SwitchLocation.ResetCount();
+                            MachineStuff.NewDesMachineID = DesMachineID = MachineID;
+                            MachineStuff.SwitchLocation.X = Event.XY_BY_PIXEL + Event.myLastX;
+                            MachineStuff.SwitchLocation.Y = Event.XY_BY_PIXEL + Event.myLastY;
+                            MachineStuff.SwitchLocation.ResetCount();
                             EvSwitch.Set();
                         }
                     }
 
                     if (updateClientSockets)
                     {
-                        UpdateClientSockets("SkSend");
+                        MachineStuff.UpdateClientSockets("SkSend");
                     }
                 }
                 catch (Exception e)
                 {
-                    Log(e);
+                    Logger.Log(e);
                 }
 
 #if DEBUG
@@ -985,7 +999,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                PackageSent.Nil++;
+                Package.PackageSent.Nil++;
             }
         }
 
@@ -1005,7 +1019,7 @@ namespace MouseWithoutBorders
                         {
                             if ((t.Status != SocketStatus.Connected && t.BirthTime < GetTick() - SocketStuff.CONNECT_TIMEOUT) || t.BackingSocket == null)
                             {
-                                LogDebug("CloseAnUnusedSocket: " + t.MachineName + ":" + t.MachineId + "|" + t.Status.ToString());
+                                Logger.LogDebug("CloseAnUnusedSocket: " + t.MachineName + ":" + t.MachineId + "|" + t.Status.ToString());
                                 tobeRemoved = t;
 
                                 if (t.BackingSocket != null)
@@ -1016,7 +1030,7 @@ namespace MouseWithoutBorders
                                     }
                                     catch (Exception e)
                                     {
-                                        Log(e);
+                                        Logger.Log(e);
                                     }
                                 }
 
@@ -1047,7 +1061,7 @@ namespace MouseWithoutBorders
                         {
                             if (t.Status == SocketStatus.Connected)
                             {
-                                LogDebug("AtLeastOneSocketConnected returning true: " + t.MachineName);
+                                Logger.LogDebug("AtLeastOneSocketConnected returning true: " + t.MachineName);
                                 return true;
                             }
                         }
@@ -1055,7 +1069,7 @@ namespace MouseWithoutBorders
                 }
             }
 
-            LogDebug("AtLeastOneSocketConnected returning false.");
+            Logger.LogDebug("AtLeastOneSocketConnected returning false.");
             return false;
         }
 
@@ -1073,7 +1087,7 @@ namespace MouseWithoutBorders
                         {
                             if (!t.IsClient && t.Status == SocketStatus.Connected)
                             {
-                                LogDebug("AtLeastOneServerSocketConnected returning true: " + t.MachineName);
+                                Logger.LogDebug("AtLeastOneServerSocketConnected returning true: " + t.MachineName);
                                 return t.BackingSocket;
                             }
                         }
@@ -1081,7 +1095,7 @@ namespace MouseWithoutBorders
                 }
             }
 
-            LogDebug("AtLeastOneServerSocketConnected returning false.");
+            Logger.LogDebug("AtLeastOneServerSocketConnected returning false.");
             return null;
         }
 
@@ -1118,7 +1132,7 @@ namespace MouseWithoutBorders
                             {
                                 if (TestSend(t))
                                 {
-                                    LogDebug($"{nameof(AtLeastOneSocketEstablished)} returning true: {t.MachineName}");
+                                    Logger.LogDebug($"{nameof(AtLeastOneSocketEstablished)} returning true: {t.MachineName}");
                                     return true;
                                 }
                             }
@@ -1127,7 +1141,7 @@ namespace MouseWithoutBorders
                 }
             }
 
-            LogDebug($"{nameof(AtLeastOneSocketEstablished)} returning false.");
+            Logger.LogDebug($"{nameof(AtLeastOneSocketEstablished)} returning false.");
             return false;
         }
 
@@ -1197,7 +1211,7 @@ namespace MouseWithoutBorders
         {
             int machineCt = 0;
 
-            foreach (string m in Common.MachineMatrix)
+            foreach (string m in MachineStuff.MachineMatrix)
             {
                 if (!string.IsNullOrEmpty(m.Trim()))
                 {
@@ -1205,15 +1219,15 @@ namespace MouseWithoutBorders
                 }
             }
 
-            if (machineCt < 2 && Common.Settings != null && (Common.Settings.GetCurrentPage() is SetupPage1 || Common.Settings.GetCurrentPage() is SetupPage2b))
+            if (machineCt < 2 && MachineStuff.Settings != null && (MachineStuff.Settings.GetCurrentPage() is SetupPage1 || MachineStuff.Settings.GetCurrentPage() is SetupPage2b))
             {
-                Common.MachineMatrix = new string[Common.MAX_MACHINE] { Common.MachineName.Trim(), desMachine, string.Empty, string.Empty };
-                Common.LogDebug("UpdateSetupMachineMatrix: " + string.Join(",", Common.MachineMatrix));
+                MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { Common.MachineName.Trim(), desMachine, string.Empty, string.Empty };
+                Logger.LogDebug("UpdateSetupMachineMatrix: " + string.Join(",", MachineStuff.MachineMatrix));
 
                 Common.DoSomethingInUIThread(
                     () =>
                     {
-                        Common.Settings.SetControlPage(new SetupPage4());
+                        MachineStuff.Settings.SetControlPage(new SetupPage4());
                     },
                     true);
             }
@@ -1239,7 +1253,7 @@ namespace MouseWithoutBorders
                 catch (Exception e)
                 {
                     Sk = null;
-                    Log(e);
+                    Logger.Log(e);
                 }
 
                 if (Sk != null)
@@ -1249,7 +1263,7 @@ namespace MouseWithoutBorders
                         SocketStuff.ClearBadIPs();
                     }
 
-                    UpdateClientSockets("ReopenSockets");
+                    MachineStuff.UpdateClientSockets("ReopenSockets");
                 }
             },
                 true);
@@ -1280,7 +1294,7 @@ namespace MouseWithoutBorders
             });
         }
 
-        private static string GetMyStorageDir()
+        internal static string GetMyStorageDir()
         {
             string st = string.Empty;
 
@@ -1308,7 +1322,7 @@ namespace MouseWithoutBorders
                 }
                 else
                 {
-                    _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
                         st = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + Common.BinaryName;
                         if (!Directory.Exists(st))
@@ -1324,7 +1338,7 @@ namespace MouseWithoutBorders
                     });
                 }
 
-                LogDebug("GetMyStorageDir: " + st);
+                Logger.LogDebug("GetMyStorageDir: " + st);
 
                 // Delete old files.
                 foreach (FileInfo fi in new DirectoryInfo(st).GetFiles())
@@ -1339,7 +1353,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
 
                 if (string.IsNullOrEmpty(st) || !st.Contains(Common.BinaryName))
                 {
@@ -1357,15 +1371,15 @@ namespace MouseWithoutBorders
             try
             {
                 machine_Name = Dns.GetHostName();
-                LogDebug("GetHostName = " + machine_Name);
+                Logger.LogDebug("GetHostName = " + machine_Name);
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
 
                 if (string.IsNullOrEmpty(machine_Name))
                 {
-                    machine_Name = "RANDOM" + Ran.Next().ToString(CultureInfo.CurrentCulture);
+                    machine_Name = "RANDOM" + Encryption.Ran.Next().ToString(CultureInfo.CurrentCulture);
                 }
             }
 
@@ -1376,7 +1390,7 @@ namespace MouseWithoutBorders
 
             Common.MachineName = machine_Name.Trim();
 
-            LogDebug($"========== {nameof(GetMachineName)} ended!");
+            Logger.LogDebug($"========== {nameof(GetMachineName)} ended!");
         }
 
         private static string GetNetworkName(NetworkInterface networkInterface)
@@ -1404,7 +1418,7 @@ namespace MouseWithoutBorders
             }
             catch (ObjectDisposedException e)
             {
-                Log($"{nameof(GetRemoteStringIP)}: The socket could have been disposed by other threads, error: {e.Message}");
+                Logger.Log($"{nameof(GetRemoteStringIP)}: The socket could have been disposed by other threads, error: {e.Message}");
 
                 if (throwException)
                 {
@@ -1415,7 +1429,7 @@ namespace MouseWithoutBorders
             }
             catch (SocketException e)
             {
-                Log($"{nameof(GetRemoteStringIP)}: {e.Message}");
+                Logger.Log($"{nameof(GetRemoteStringIP)}: {e.Message}");
 
                 if (throwException)
                 {
@@ -1465,23 +1479,23 @@ namespace MouseWithoutBorders
 
         internal static void MoveMouseToCenter()
         {
-            LogDebug("+++++ MoveMouseToCenter");
+            Logger.LogDebug("+++++ MoveMouseToCenter");
             InputSimulation.MoveMouse(
-                Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2),
-                Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2));
+                MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2),
+                MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2));
         }
 
         internal static void HideMouseCursor(bool byHideMouseMessage)
         {
             Common.LastPos = new Point(
-                Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2),
-                Setting.Values.HideMouse ? 4 : Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2));
+                MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2),
+                Setting.Values.HideMouse ? 4 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2));
 
-            if ((desMachineID != MachineID && desMachineID != ID.ALL) || byHideMouseMessage)
+            if ((MachineStuff.desMachineID != MachineID && MachineStuff.desMachineID != ID.ALL) || byHideMouseMessage)
             {
                 _ = NativeMethods.SetCursorPos(Common.LastPos.X, Common.LastPos.Y);
                 _ = NativeMethods.GetCursorPos(ref Common.lastPos);
-                LogDebug($"+++++ HideMouseCursor, byHideMouseMessage = {byHideMouseMessage}");
+                Logger.LogDebug($"+++++ HideMouseCursor, byHideMouseMessage = {byHideMouseMessage}");
             }
 
             CustomCursor.ShowFakeMouseCursor(int.MinValue, int.MinValue);
@@ -1492,7 +1506,7 @@ namespace MouseWithoutBorders
             int length = NativeMethods.GetWindowTextLength(hWnd);
             StringBuilder sb = new(length + 1);
             int rv = NativeMethods.GetWindowText(hWnd, sb, sb.Capacity);
-            LogDebug("GetWindowText returned " + rv.ToString(CultureInfo.CurrentCulture));
+            Logger.LogDebug("GetWindowText returned " + rv.ToString(CultureInfo.CurrentCulture));
             return sb.ToString();
         }
 
@@ -1519,13 +1533,13 @@ namespace MouseWithoutBorders
 
         internal static void SendOrReceiveARandomDataBlockPerInitialIV(Stream st, bool send = true)
         {
-            byte[] ranData = new byte[SymAlBlockSize];
+            byte[] ranData = new byte[Encryption.SymAlBlockSize];
 
             try
             {
                 if (send)
                 {
-                    ranData = RandomNumberGenerator.GetBytes(SymAlBlockSize);
+                    ranData = RandomNumberGenerator.GetBytes(Encryption.SymAlBlockSize);
                     st.Write(ranData, 0, ranData.Length);
                 }
                 else
@@ -1535,20 +1549,113 @@ namespace MouseWithoutBorders
 
                     if (read != toRead)
                     {
-                        Common.LogDebug("Stream has no more data after reading {0} bytes.", read);
+                        Logger.LogDebug("Stream has no more data after reading {0} bytes.", read);
                     }
                 }
             }
             catch (IOException e)
             {
                 string log = $"{nameof(SendOrReceiveARandomDataBlockPerInitialIV)}: Exception {(send ? "writing" : "reading")} to the socket stream: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                Common.Log(log);
+                Logger.Log(log);
 
                 if (e.InnerException is not (SocketException or ObjectDisposedException))
                 {
                     throw;
                 }
             }
+        }
+
+        private static bool DisableEasyMouseWhenForegroundWindowIsFullscreenSetting()
+        {
+            return Setting.Values.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+        }
+
+        private static bool IsAppIgnoredByEasyMouseFullscreenCheck(IntPtr foregroundWindowHandle)
+        {
+            if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out var processId) == 0)
+            {
+                Logger.LogDebug($"GetWindowThreadProcessId failed with error : {Marshal.GetLastWin32Error()}");
+                return false;
+            }
+
+            var processHandle = NativeMethods.OpenProcess(0x1000, false, processId);
+            if (processHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            uint maxPath = 260;
+            var nameBuffer = new char[maxPath];
+            if (!NativeMethods.QueryFullProcessImageName(
+                    processHandle, NativeMethods.QUERY_FULL_PROCESS_NAME_FLAGS.DEFAULT, nameBuffer, ref maxPath))
+            {
+                Logger.LogDebug($"QueryFullProcessImageName failed with error : {Marshal.GetLastWin32Error()}");
+                NativeMethods.CloseHandle(processHandle);
+                return false;
+            }
+
+            NativeMethods.CloseHandle(processHandle);
+
+            var name = new string(nameBuffer, 0, (int)maxPath);
+
+            var excludedApps = Setting.Values.EasyMouseFullscreenSwitchBlockExcludedApps;
+
+            return excludedApps.Contains(Path.GetFileNameWithoutExtension(name), StringComparer.OrdinalIgnoreCase)
+                || excludedApps.Contains(Path.GetFileName(name), StringComparer.OrdinalIgnoreCase);
+        }
+
+        internal static bool IsEasyMouseBlockedByFullscreenWindow()
+        {
+            var shellHandle = NativeMethods.GetShellWindow();
+            var desktopHandle = NativeMethods.GetDesktopWindow();
+            var foregroundHandle = NativeMethods.GetForegroundWindow();
+
+            // If the foreground window is either the desktop or the Windows shell, we are not in fullscreen mode.
+            if (foregroundHandle.Equals(shellHandle) || foregroundHandle.Equals(desktopHandle))
+            {
+                return false;
+            }
+
+            if (NativeMethods.SHQueryUserNotificationState(out var userNotificationState) != 0)
+            {
+                Logger.LogDebug($"SHQueryUserNotificationState failed with error : {Marshal.GetLastWin32Error()}");
+                return false;
+            }
+
+            switch (userNotificationState)
+            {
+                // An application running in full screen mode, check if the foreground window is
+                // listed as ignored in the settings.
+                case NativeMethods.USER_NOTIFICATION_STATE.BUSY:
+                case NativeMethods.USER_NOTIFICATION_STATE.RUNNING_D3D_FULL_SCREEN:
+                case NativeMethods.USER_NOTIFICATION_STATE.PRESENTATION_MODE:
+                    return !IsAppIgnoredByEasyMouseFullscreenCheck(foregroundHandle);
+
+                // No full screen app running.
+                case NativeMethods.USER_NOTIFICATION_STATE.NOT_PRESENT:
+                case NativeMethods.USER_NOTIFICATION_STATE.ACCEPTS_NOTIFICATIONS:
+                case NativeMethods.USER_NOTIFICATION_STATE.QUIET_TIME:
+                // Cannot determine
+                case NativeMethods.USER_NOTIFICATION_STATE.APP:
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Check if a machine switch triggered by EasyMouse would be allowed to proceed due to other settings.
+        /// </summary>
+        /// <returns>A boolean that tells us if the switch isn't blocked by any other settings</returns>
+        internal static bool IsEasyMouseSwitchAllowed()
+        {
+            // Never prevent a switch if we are not moving out of the host machine.
+            if (!DisableEasyMouseWhenForegroundWindowIsFullscreenSetting() || DesMachineID != MachineID)
+            {
+                return true;
+            }
+
+            // Check if the switch is blocked by a full-screen window running in the foreground
+            return !IsEasyMouseBlockedByFullscreenWindow();
         }
     }
 }

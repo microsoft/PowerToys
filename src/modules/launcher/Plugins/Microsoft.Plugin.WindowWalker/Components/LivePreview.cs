@@ -4,6 +4,7 @@
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
 using System;
+
 using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -19,13 +20,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="hwnd">handle to the window to exclude</param>
         public static void SetWindowExclusionFromLivePreview(IntPtr hwnd)
         {
-            int renderPolicy = (int)DwmNCRenderingPolicies.Enabled;
+            uint renderPolicy = (uint)DwmNCRenderingPolicies.Enabled;
 
             _ = NativeMethods.DwmSetWindowAttribute(
                 hwnd,
                 12,
                 ref renderPolicy,
-                sizeof(int));
+                sizeof(uint));
         }
 
         /// <summary>

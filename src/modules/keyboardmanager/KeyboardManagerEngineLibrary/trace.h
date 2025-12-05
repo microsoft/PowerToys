@@ -2,12 +2,11 @@
 
 #include "State.h"
 
-class Trace
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
     // Log if a key to key remap has been invoked today.
     static void DailyKeyToKeyRemapInvoked() noexcept;
 

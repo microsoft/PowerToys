@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+
 using FancyZonesEditorCommon.Data;
 
 namespace FancyZonesEditor.Models
@@ -70,11 +71,21 @@ namespace FancyZonesEditor.Models
                 {
                     _name = value;
                     FirePropertyChanged(nameof(Name));
+                    FirePropertyChanged(nameof(AutomationId));
                 }
             }
         }
 
         private string _name;
+
+        // AutomationId - used for UI automation testing
+        public virtual string AutomationId
+        {
+            get
+            {
+                return _name?.Replace(" ", string.Empty) + "Card";
+            }
+        }
 
         public LayoutType Type { get; set; }
 
@@ -327,12 +338,16 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
+            var customModels = MainWindowSettingsModel.CustomModels;
             if (_quickKey != -1)
             {
                 MainWindowSettingsModel.LayoutHotkeys.FreeKey(QuickKey);
+                foreach (var module in customModels)
+                {
+                    module.FirePropertyChanged(nameof(QuickKeysAvailable));
+                }
             }
 
-            var customModels = MainWindowSettingsModel.CustomModels;
             int i = customModels.IndexOf(this);
             if (i != -1)
             {

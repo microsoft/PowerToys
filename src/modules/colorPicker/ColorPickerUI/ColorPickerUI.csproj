@@ -1,5 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.ColorPickerUI</AssemblyTitle>
     <AssemblyDescription>PowerToys ColorPicker</AssemblyDescription>
@@ -9,39 +12,13 @@
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <UseWPF>true</UseWPF>
     <StartupObject>ColorPicker.Program</StartupObject>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <ProjectGuid>{BA58206B-1493-4C75-BFEA-A85768A1E156}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ColorPicker</RootNamespace>
     <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <DefineConstants>TRACE</DefineConstants>
-    <DebugType>pdbonly</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
+
   <PropertyGroup>
     <ApplicationIcon>Assets\ColorPicker\icon.ico</ApplicationIcon>
     <NeutralLanguage>en-US</NeutralLanguage>
@@ -57,12 +34,10 @@
     <Resource Include="Shaders\GridShader.cso" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
     <PackageReference Include="System.Drawing.Common" />
-    <PackageReference Include="WPF-UI" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Properties\Settings.settings">

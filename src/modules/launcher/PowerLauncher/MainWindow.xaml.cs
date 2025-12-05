@@ -13,18 +13,20 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+
 using Common.UI;
-using interop;
+using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.Telemetry.Events;
 using PowerLauncher.ViewModel;
+using PowerToys.Interop;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
 using Wox.Plugin.Interfaces;
-using Wpf.Ui.Appearance;
+
 using CancellationToken = System.Threading.CancellationToken;
 using Image = Wox.Infrastructure.Image;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -48,6 +50,31 @@ namespace PowerLauncher
         private Point _mouseDownPosition;
         private ResultViewModel _mouseDownResultViewModel;
 
+        // The enum flag for DwmSetWindowAttribute's second parameter, which tells the function what attribute to set.
+        public enum DWMWINDOWATTRIBUTE
+        {
+            DWMWA_WINDOW_CORNER_PREFERENCE = 33,
+        }
+
+        // The DWM_WINDOW_CORNER_PREFERENCE enum for DwmSetWindowAttribute's third parameter, which tells the function
+        // what value of the enum to set.
+        // Copied from dwmapi.h
+        public enum DWM_WINDOW_CORNER_PREFERENCE
+        {
+            DWMWCP_DEFAULT = 0,
+            DWMWCP_DONOTROUND = 1,
+            DWMWCP_ROUND = 2,
+            DWMWCP_ROUNDSMALL = 3,
+        }
+
+        // Import dwmapi.dll and define DwmSetWindowAttribute in C# corresponding to the native function.
+        [DllImport("dwmapi.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
+        internal static extern void DwmSetWindowAttribute(
+            IntPtr hwnd,
+            DWMWINDOWATTRIBUTE attribute,
+            ref DWM_WINDOW_CORNER_PREFERENCE pvAttribute,
+            uint cbAttribute);
+
         public MainWindow(PowerToysRunSettings settings, MainViewModel mainVM, CancellationToken nativeWaiterCancelToken)
             : this()
         {
@@ -60,17 +87,6 @@ namespace PowerLauncher
             AppContext.SetSwitch("Switch.System.Windows.Controls.Grid.StarDefinitionsCanExceedAvailableSpace", true);
 
             InitializeComponent();
-
-            if (OSVersionHelper.IsWindows11())
-            {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.Mica;
-            }
-            else
-            {
-                WindowBackdropType = Wpf.Ui.Controls.WindowBackdropType.None;
-            }
-
-            SystemThemeWatcher.Watch(this, WindowBackdropType);
 
             _firstDeleteTimer.Elapsed += CheckForFirstDelete;
             _firstDeleteTimer.Interval = 1000;
@@ -177,6 +193,20 @@ namespace PowerLauncher
 
             // Call RegisterHotKey only after a window handle can be used, so that a global hotkey can be registered.
             _viewModel.RegisterHotkey(_hwndSource.Handle);
+            if (OSVersionHelper.IsGreaterThanWindows11_21H2())
+            {
+                // ResizeMode="NoResize" removes rounded corners. So force them to rounded.
+                IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+                DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+                DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+                DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+            }
+            else
+            {
+                // On Windows10 ResizeMode="NoResize" removes the border so we add a new one.
+                // Also on 22000 it crashes due to DWMWA_WINDOW_CORNER_PREFERENCE https://github.com/microsoft/PowerToys/issues/36558
+                MainBorder.BorderThickness = new System.Windows.Thickness(0.5);
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -299,7 +329,7 @@ namespace PowerLauncher
             var result = ((FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
             {
-                // This may be null if the tapped item was one of the context buttons (run as admin etc).
+                // This may be null if the tapped item was one of the context buttons (run as admin, etc.).
                 if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
@@ -411,8 +441,8 @@ namespace PowerLauncher
 
         private void InitializePosition()
         {
-            Top = WindowTop();
-            Left = WindowLeft();
+            MoveToDesiredPosition();
+
             _settings.WindowTop = Top;
             _settings.WindowLeft = Left;
         }
@@ -434,40 +464,46 @@ namespace PowerLauncher
             }
             else
             {
-                Top = WindowTop();
-                Left = WindowLeft();
+                MoveToDesiredPosition();
             }
+        }
+
+        private void MoveToDesiredPosition()
+        {
+            // Hack: After switching to PerMonitorV2, this operation seems to require a three-step operation
+            // to ensure a stable position: First move to top-left of desired screen, then centralize twice.
+            // More straightforward ways of doing this don't seem to work well for unclear reasons, but possibly related to
+            // https://github.com/dotnet/wpf/issues/4127
+            // In any case, there does not seem to be any big practical downside to doing it this way. As a bonus, it can be
+            // done in pure WPF without any native calls and without too much DPI-based fiddling.
+            // In terms of the hack itself, removing any of these three steps seems to fail in certain scenarios only,
+            // so be careful with testing!
+            var desiredScreen = GetScreen();
+            var workingArea = desiredScreen.WorkingArea;
+            Point ToDIP(double unitX, double unitY) => WindowsInteropHelper.TransformPixelsToDIP(this, unitX, unitY);
+
+            // Move to top-left of desired screen.
+            Top = workingArea.Top;
+            Left = workingArea.Left;
+
+            // Centralize twice.
+            void MoveToScreenTopCenter()
+            {
+                Left = ((ToDIP(workingArea.Width, 0).X - ActualWidth) / 2) + ToDIP(workingArea.X, 0).X;
+                Top = ((ToDIP(0, workingArea.Height).Y - SearchBox.ActualHeight) / 4) + ToDIP(0, workingArea.Y).Y;
+            }
+
+            MoveToScreenTopCenter();
+            MoveToScreenTopCenter();
         }
 
         private void OnLocationChanged(object sender, EventArgs e)
         {
-            if (_settings.RememberLastLaunchLocation)
+            if (_settings != null && _settings.RememberLastLaunchLocation)
             {
                 _settings.WindowLeft = Left;
                 _settings.WindowTop = Top;
             }
-        }
-
-        /// <summary>
-        /// Calculates X co-ordinate of main window top left corner.
-        /// </summary>
-        /// <returns>X co-ordinate of main window top left corner</returns>
-        private double WindowLeft()
-        {
-            var screen = GetScreen();
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.X, 0);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, screen.WorkingArea.Width, 0);
-            var left = ((dip2.X - ActualWidth) / 2) + dip1.X;
-            return left;
-        }
-
-        private double WindowTop()
-        {
-            var screen = GetScreen();
-            var dip1 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Y);
-            var dip2 = WindowsInteropHelper.TransformPixelsToDIP(this, 0, screen.WorkingArea.Height);
-            var top = ((dip2.Y - SearchBox.ActualHeight) / 4) + dip1.Y;
-            return top;
         }
 
         private Screen GetScreen()
@@ -609,7 +645,7 @@ namespace PowerLauncher
                 catch (ArgumentOutOfRangeException ex)
                 {
                     // Due to virtualization being enabled for the listview, the layout system updates elements in a deferred manner using an algorithm that balances performance and concurrency.
-                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for it's parent control.
+                    // Hence, there can be a situation where the element index that we want to scroll into view is out of range for its parent control.
                     // To mitigate this we use the UpdateLayout function, which forces layout update to ensure that the parent element contains the latest properties.
                     // However, it has a performance impact and is therefore not called each time.
                     Log.Exception("The parent element layout is not updated yet", ex, GetType());

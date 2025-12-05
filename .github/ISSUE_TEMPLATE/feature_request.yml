@@ -1,5 +1,6 @@
 name: "⭐ Feature or enhancement request"
 description: Propose something new.
+type: Feature
 labels:
 - Needs-Triage
 body:
@@ -12,7 +13,7 @@ body:
 - type: textarea
   attributes:
     label: Scenario when this would be used?
-    placeholder: What is the scenario this would be used? Why is this important to your workflow as a power user?
+    placeholder: What is the scenario this would be used in? Why is this important to your workflow as a power user?
   validations:
     required: true
 - type: textarea

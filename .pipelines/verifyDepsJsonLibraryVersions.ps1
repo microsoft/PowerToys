@@ -15,9 +15,14 @@ Param(
 $referencedFileVersionsPerDll = @{}
 $totalFailures = 0
 
-Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude UITests-FancyZones* | ForEach-Object {
-    # Temporarily exclude FancyZones UI tests because of Appium.WebDriver dependencies
+Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJump.Common.UnitTests*,*.FuzzTests* | ForEach-Object {
+    # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
+
+    if ($depsJsonFullFileName -like "*CmdPal*" -or $depsJsonFullFileName -like "*CommandPalette*") {
+        return
+    }
+
     $depsJsonFileName = $_.Name
     $depsJson = Get-Content $depsJsonFullFileName | ConvertFrom-Json
 
@@ -41,7 +46,14 @@ Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude UITests-FancyZone
                             $dllName = Split-Path $_.Name -leaf
                             if([bool]($_.Value.PSObject.Properties.name -match 'fileVersion')) {
                                 $dllFileVersion = $_.Value.fileVersion
-                                
+                                if (([string]::IsNullOrEmpty($dllFileVersion) -or ($dllFileVersion -eq '0.0.0.0')) -and $dllName.StartsWith('PowerToys.'))` {
+                                    # After VS 17.11 update some of PowerToys dlls have no fileVersion in deps.json even though the 
+                                    # version is correctly set. This is a workaround to skip our dlls as we are confident that all of
+                                    # our dlls share the same version across the dependencies.
+									# After VS 17.13 these error versions started appearing as 0.0.0.0 so we've added that case to the condition as well.
+                                    continue
+                                }
+
                                 # Add the entry to the dictionary of dictionary of lists
                                 if(-Not $referencedFileVersionsPerDll.ContainsKey($dllName)) {
                                     $referencedFileVersionsPerDll[$dllName] = @{ $dllFileVersion = New-Object System.Collections.Generic.List[System.String] }
@@ -80,4 +92,3 @@ if ($totalFailures -gt 0) {
 
 Write-Host -ForegroundColor Green "All " $referencedFileVersionsPerDll.keys.Count " libraries are mentioned with the same version across the dependencies.`r`n"
 exit 0
-

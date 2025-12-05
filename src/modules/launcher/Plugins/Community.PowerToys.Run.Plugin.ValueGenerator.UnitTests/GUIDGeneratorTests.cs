@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers.Binary;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
@@ -53,6 +55,39 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
 
             Assert.IsNotNull(guid);
             Assert.AreEqual(0x5000, GetGUIDVersion(guid));
+        }
+
+        [TestMethod]
+        public void GUIDv7Generator()
+        {
+            var guidRequest = new GUID.GUIDRequest(7);
+            guidRequest.Compute();
+            var guid = guidRequest.Result;
+
+            Assert.IsNotNull(guid);
+            Assert.AreEqual(0x7000, GetGUIDVersion(guid));
+        }
+
+        [TestMethod]
+        public void GUIDv7GeneratorTimeOrdered()
+        {
+            const int numberOfSamplesToCheck = 10;
+            ulong previousTimestampWithTrailingRandomData = 0uL;
+            for (int i = 0; i < numberOfSamplesToCheck; i++)
+            {
+                var guidRequest = new GUID.GUIDRequest(7);
+                guidRequest.Compute();
+                var guid = guidRequest.Result;
+
+                // can't hurt to assert invariants again
+                Assert.IsNotNull(guid);
+                Assert.AreEqual(0x7000, GetGUIDVersion(guid));
+                ulong timestampWithTrailingRandomData = BinaryPrimitives.ReadUInt64BigEndian(guid.AsSpan());
+                Assert.IsTrue(timestampWithTrailingRandomData > previousTimestampWithTrailingRandomData, "UUIDv7 wasn't time-ordered");
+
+                // ensure at least one millisecond passes for consistent time-ordering. we wait 10 ms just to be sure.
+                Thread.Sleep(10);
+            }
         }
 
         [DataTestMethod]

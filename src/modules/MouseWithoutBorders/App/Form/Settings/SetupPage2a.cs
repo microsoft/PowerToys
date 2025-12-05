@@ -4,7 +4,9 @@
 
 using System.Globalization;
 using System.Text.RegularExpressions;
+
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
@@ -87,16 +89,16 @@ namespace MouseWithoutBorders
         {
             if (GetSecureKey() != SecurityCodeField.Text)
             {
-                Common.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
-                SecurityCode = Common.MyKey;
+                Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+                SecurityCode = Encryption.MyKey;
             }
 
-            Common.MachineMatrix = new string[Common.MAX_MACHINE] { ComputerNameField.Text.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
+            MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { ComputerNameField.Text.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
 
-            string[] machines = Common.MachineMatrix;
-            Common.MachinePool.Initialize(machines);
+            string[] machines = MachineStuff.MachineMatrix;
+            MachineStuff.MachinePool.Initialize(machines);
 
-            Common.UpdateMachinePoolStringSetting();
+            MachineStuff.UpdateMachinePoolStringSetting();
             SendNextPage(new SetupPage3a { ReturnToSettings = !Setting.Values.FirstRun });
         }
 

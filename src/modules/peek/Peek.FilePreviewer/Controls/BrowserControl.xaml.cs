@@ -3,20 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Constants;
+using Peek.Common.Helpers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
 
+using Control = System.Windows.Controls.Control;
+
 namespace Peek.FilePreviewer.Controls
 {
-    public sealed partial class BrowserControl : UserControl, IDisposable
+    public sealed partial class BrowserControl : Microsoft.UI.Xaml.Controls.UserControl, IDisposable
     {
         /// <summary>
         /// Helper private Uri where we cache the last navigated page
@@ -67,6 +74,25 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
+        public static readonly DependencyProperty CustomContextMenuProperty = DependencyProperty.Register(
+            nameof(CustomContextMenu),
+            typeof(bool),
+            typeof(BrowserControl),
+            null);
+
+        public bool CustomContextMenu
+        {
+            get
+            {
+                return (bool)GetValue(CustomContextMenuProperty);
+            }
+
+            set
+            {
+                SetValue(CustomContextMenuProperty, value);
+            }
+        }
+
         public BrowserControl()
         {
             this.InitializeComponent();
@@ -78,6 +104,7 @@ namespace Peek.FilePreviewer.Controls
             if (PreviewBrowser.CoreWebView2 != null)
             {
                 PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
+                PreviewBrowser.CoreWebView2.ContextMenuRequested -= CoreWebView2_ContextMenuRequested;
             }
         }
 
@@ -137,7 +164,7 @@ namespace Peek.FilePreviewer.Controls
                 if (!_originalBackgroundColor.HasValue)
                 {
                     // HACK: We used to store PreviewBrowser.DefaultBackgroundColor here, but WebView started returning transparent when running without a debugger attached. We want html files to be seen as in the browser, which has white as a default background color.
-                    _originalBackgroundColor = Colors.White;
+                    _originalBackgroundColor = Microsoft.UI.Colors.White;
                 }
 
                 // Setting the background color to transparent when initially loading the WebView2 component.
@@ -145,7 +172,7 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
 
                 PreviewBrowser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                PreviewBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                 PreviewBrowser.CoreWebView2.Settings.AreDevToolsEnabled = false;
                 PreviewBrowser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
                 PreviewBrowser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
@@ -164,6 +191,7 @@ namespace Peek.FilePreviewer.Controls
 
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+                PreviewBrowser.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
             }
             catch (Exception ex)
             {
@@ -171,6 +199,88 @@ namespace Peek.FilePreviewer.Controls
             }
 
             Navigate();
+        }
+
+        private List<Control> GetContextMenuItems(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
+        {
+            var menuItems = args.MenuItems;
+
+            if (menuItems.IsReadOnly)
+            {
+                return [];
+            }
+
+            if (CustomContextMenu)
+            {
+                MenuItem CreateCommandMenuItem(string resourceId, string commandName)
+                {
+                    MenuItem commandMenuItem = new()
+                    {
+                        Header = ResourceLoaderInstance.ResourceLoader.GetString(resourceId),
+                        IsEnabled = true,
+                    };
+
+                    commandMenuItem.Click += async (s, ex) =>
+                    {
+                        await sender.ExecuteScriptAsync($"{commandName}()");
+                    };
+
+                    return commandMenuItem;
+                }
+
+                // When using Monaco, we show menu items that call the appropriate JS functions -
+                // WebView2 isn't able to show a "Copy" menu item of its own.
+                return [
+                    CreateCommandMenuItem("ContextMenu_Copy", "runCopyCommand"),
+                    new Separator(),
+                    CreateCommandMenuItem("ContextMenu_ToggleTextWrapping", "runToggleTextWrapCommand"),
+                    CreateCommandMenuItem("ContextMenu_ToggleMinimap", "runToggleMinimap")
+                ];
+            }
+            else
+            {
+                MenuItem CreateMenuItemFromWebViewMenuItem(CoreWebView2ContextMenuItem webViewMenuItem)
+                {
+                    MenuItem menuItem = new()
+                    {
+                        Header = webViewMenuItem.Label.Replace('&', '_'),  // replace with '_' so it is underlined in the label
+                        IsEnabled = webViewMenuItem.IsEnabled,
+                        InputGestureText = webViewMenuItem.ShortcutKeyDescription,
+                    };
+
+                    menuItem.Click += (_, _) =>
+                    {
+                        args.SelectedCommandId = webViewMenuItem.CommandId;
+                    };
+
+                    return menuItem;
+                }
+
+                // When not using Monaco, we keep the "Copy" menu item from WebView2's default context menu.
+                return menuItems.Where(menuItem => menuItem.Name == "copy")
+                                .Select(CreateMenuItemFromWebViewMenuItem)
+                                .ToList<Control>();
+            }
+        }
+
+        private void CoreWebView2_ContextMenuRequested(CoreWebView2 sender, CoreWebView2ContextMenuRequestedEventArgs args)
+        {
+            var deferral = args.GetDeferral();
+            args.Handled = true;
+
+            var menuItems = GetContextMenuItems(sender, args);
+
+            if (menuItems.Count != 0)
+            {
+                var contextMenu = new ContextMenu();
+                contextMenu.Closed += (_, _) => deferral.Complete();
+                contextMenu.IsOpen = true;
+
+                foreach (var menuItem in menuItems)
+                {
+                    contextMenu.Items.Add(menuItem);
+                }
+            }
         }
 
         private void CoreWebView2_DOMContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
@@ -202,7 +312,7 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        private async void PreviewBrowser_NavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
+        private async void PreviewBrowser_NavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
             if (_navigatedUri == null)
             {
@@ -218,7 +328,7 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        private void PreviewWV2_NavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
+        private void PreviewWV2_NavigationCompleted(WebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
             if (args.IsSuccess)
             {

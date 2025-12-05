@@ -4,6 +4,8 @@
 
 using System;
 using System.Text;
+using System.Threading;
+
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
 
@@ -14,15 +16,15 @@ namespace Wox.Plugin.Common
     /// </summary>
     public static class DefaultBrowserInfo
     {
-        private static readonly object _updateLock = new object();
+        private static readonly Lock _updateLock = new Lock();
 
         /// <summary>Gets the path to the MS Edge browser executable.</summary>
-        public static string MSEdgePath =>
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) +
-            @"\Microsoft\Edge\Application\msedge.exe";
+        public static string MSEdgePath => System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            @"Microsoft\Edge\Application\msedge.exe");
 
         /// <summary>Gets the command line pattern of the MS Edge.</summary>
-        public static string MSEdgeArgumentsPattern => "--single-argument %1";
+        public const string MSEdgeArgumentsPattern = "--single-argument %1";
 
         public const string MSEdgeName = "Microsoft Edge";
 
@@ -44,7 +46,8 @@ namespace Wox.Plugin.Common
 
         private static long _lastUpdateTickCount = -UpdateTimeout;
 
-        private static bool haveIRanUpdateOnce;
+        private static bool _updatedOnce;
+        private static bool _errorLogged;
 
         /// <summary>
         /// Updates only if at least more than 300ms has passed since the last update, to avoid multiple calls to <see cref="Update"/>.
@@ -68,17 +71,20 @@ namespace Wox.Plugin.Common
         {
             lock (_updateLock)
             {
-                if (!haveIRanUpdateOnce)
+                if (!_updatedOnce)
                 {
-                    Log.Warn("I've tried updating the chosen Web Browser info at least once.", typeof(DefaultBrowserInfo));
-                    haveIRanUpdateOnce = true;
+                    Log.Info("I've tried updating the chosen Web Browser info at least once.", typeof(DefaultBrowserInfo));
+                    _updatedOnce = true;
                 }
 
                 try
                 {
                     string progId = GetRegistryValue(
-                        @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
-                        "ProgId");
+                        @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoiceLatest\ProgId",
+                        "ProgId")
+                        ?? GetRegistryValue(
+                            @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
+                            "ProgId");
                     string appName = GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}\Application", "ApplicationName")
                         ?? GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}", "FriendlyTypeName");
 
@@ -145,6 +151,14 @@ namespace Wox.Plugin.Common
                         }
                     }
 
+                    // Packaged applications could be an URI. Example: shell:AppsFolder\Microsoft.MicrosoftEdge.Stable_8wekyb3d8bbwe!App
+                    if (!System.IO.Path.Exists(Path) && !Uri.TryCreate(Path, UriKind.Absolute, out _))
+                    {
+                        throw new ArgumentException(
+                            $"Command validation failed: {commandPattern}",
+                            nameof(commandPattern));
+                    }
+
                     if (string.IsNullOrEmpty(Path))
                     {
                         throw new ArgumentOutOfRangeException(
@@ -154,11 +168,16 @@ namespace Wox.Plugin.Common
                 }
                 catch (Exception e)
                 {
-                    // fallback to MS Edge
+                    // Fallback to MS Edge
                     Path = MSEdgePath;
                     Name = MSEdgeName;
                     ArgumentsPattern = MSEdgeArgumentsPattern;
-                    Log.Exception("Exception when retrieving browser path/name. Path and Name are set to use Microsoft Edge.", e, typeof(DefaultBrowserInfo));
+
+                    if (!_errorLogged)
+                    {
+                        Log.Exception("Exception when retrieving browser path/name. Path and Name are set to use Microsoft Edge.", e, typeof(DefaultBrowserInfo));
+                        _errorLogged = true;
+                    }
                 }
 
                 string GetRegistryValue(string registryLocation, string valueName)

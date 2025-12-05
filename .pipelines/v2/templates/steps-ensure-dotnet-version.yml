@@ -1,0 +1,32 @@
+parameters:
+- name: version
+  type: string
+  default: "9.0"
+- name: sdk
+  type: boolean
+  default: false
+
+# You might be wondering, "Why didn't they use UseDotNet?"
+# Azure Pipelines is practically unmaintained, that's why.
+#
+# "[BUG]: UseDotNet task installs x86 build on Windows arm64"
+# https://github.com/microsoft/azure-pipelines-tasks/issues/20300
+#
+# Herein we replicate 90% of the meaningful logic in that task.
+steps:
+- pwsh: |-
+    curl.exe -J -L -O "https://dot.net/v1/dotnet-install.ps1"
+    if (-not (Test-Path dotnet-install.ps1)) {
+      Write-Error "Failed to download dotnet-install.ps1"
+      exit 1
+    }
+    $NEW_DOTNET_ROOT = "$(Agent.ToolsDirectory)\dotnet"
+    & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
+    Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
+    Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
+    Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
+  ${{ if eq(parameters.sdk, true) }}:
+    displayName: "Install .NET ${{parameters.version}} SDK"
+  ${{ else }}:
+    displayName: "Install .NET ${{parameters.version}}"
+  retryCountOnTaskFailure: 3

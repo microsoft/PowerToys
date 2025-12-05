@@ -6,8 +6,8 @@ using System;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.PreviewHandler.Markdown;
-using Microsoft.PowerToys.STATestExtension;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Web.WebView2.WinForms;
 

@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage

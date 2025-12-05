@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading;
 using System.Windows.Threading;
 
 namespace ColorPicker.Helpers
@@ -11,7 +12,7 @@ namespace ColorPicker.Helpers
     [Export(typeof(IThrottledActionInvoker))]
     public sealed class ThrottledActionInvoker : IThrottledActionInvoker
     {
-        private object _invokerLock = new object();
+        private Lock _invokerLock = new Lock();
         private Action _actionToRun;
 
         private DispatcherTimer _timer;

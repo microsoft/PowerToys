@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources;
 using Wox.Infrastructure.Storage;

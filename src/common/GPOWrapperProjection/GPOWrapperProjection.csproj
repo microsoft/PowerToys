@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TargetName>PowerToys.GPOWrapperProjection</TargetName>
@@ -19,12 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\GPOWrapper\GPOWrapper.vcxproj">
-    </ProjectReference>
+    <ProjectReference Include="..\GPOWrapper\GPOWrapper.vcxproj" />
   </ItemGroup>
 
 </Project>

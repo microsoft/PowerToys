@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Plugin;
 
@@ -67,13 +68,23 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 
         [DataTestMethod]
         [DataRow(new string[] { "5", "CeLsIuS", "in", "faHrenheiT" }, new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" })]
-        [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°f", "in", "DegreeCelsius" })]
-        [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
-        [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
-#pragma warning restore CA1861 // Avoid constant arrays as arguments
+        [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°F", "in", "DegreeCelsius" })]
+        [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°C", "in", "°F" })]
+        [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°F", "in", "°C" })]
         public void PrefixesDegrees(string[] input, string[] expectedResult)
         {
             InputInterpreter.DegreePrefixer(ref input);
+            CollectionAssert.AreEqual(expectedResult, input);
+        }
+
+        [DataTestMethod]
+        [DataRow(new string[] { "7", "cm/sqs", "in", "m/s^2" }, new string[] { "7", "cm/s²", "in", "m/s^2" })]
+        [DataRow(new string[] { "7", "sqft", "in", "sqcm" }, new string[] { "7", "ft²", "in", "cm²" })]
+        [DataRow(new string[] { "7", "BTU/s·sqin", "in", "cal/h·sqcm" }, new string[] { "7", "BTU/s·in²", "in", "cal/h·cm²" })]
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
+        public void HandlesSquareNotation(string[] input, string[] expectedResult)
+        {
+            InputInterpreter.SquareHandler(ref input);
             CollectionAssert.AreEqual(expectedResult, input);
         }
 

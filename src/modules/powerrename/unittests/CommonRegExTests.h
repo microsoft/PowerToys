@@ -466,6 +466,187 @@ TEST_METHOD (VerifyCounterAllCustomizations)
     CoTaskMemFree(result);
 }
 
+TEST_METHOD (VerifyRandomizerDefaultFlags)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = 0;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=9}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    Assert::AreEqual(L"foo$1bar_${rstringalnum=9}", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerNoRegex)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    Assert::AreEqual(L"foo$1bar_${}", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerNoRandomizerRegEx)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=9}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    Assert::AreEqual(L"foobar_${rstringalnum=9}", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerRegEx)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=9}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    std::wstring resultStr(result);
+    std::wregex pattern(L"foobar_\\w{9}");
+    Assert::IsTrue(std::regex_match(resultStr, pattern));
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerRegExZeroValue)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=0}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    Assert::AreEqual(L"foobar_", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerRegExChar)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalpha=9}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    std::wstring resultStr(result);
+    std::wregex pattern(L"foobar_[A-Za-z]{9}");
+    Assert::IsTrue(std::regex_match(resultStr, pattern));
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerRegExNum)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringdigit=9}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    std::wstring resultStr(result);
+    std::wregex pattern(L"foobar_\\d{9}");
+    Assert::IsTrue(std::regex_match(resultStr, pattern));
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerRegExUuid)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${ruuidv4}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    std::wstring resultStr(result);
+    std::wregex pattern(L"foobar_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
+    Assert::IsTrue(std::regex_match(resultStr, pattern));
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD (VerifyRandomizerRegExAllBackToBack)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = RandomizeItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"bar") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"$1bar_${rstringalnum=2}${rstringalpha=2}${rstringdigit=2}${ruuidv4}") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"foobar", &result, index) == S_OK);
+    std::wstring resultStr(result);
+    std::wregex pattern(L"foobar_\\w{2}[A-Za-z]{2}\\d{2}[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
+    Assert::IsTrue(std::regex_match(resultStr, pattern));
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD(VerifyCounterIncrementsWhenResultIsUnchanged)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = EnumerateItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    renameRegEx->PutSearchTerm(L"(.*)");
+    renameRegEx->PutReplaceTerm(L"NewFile-${start=1}");
+
+    PWSTR result = nullptr;
+    unsigned long index = 0;
+
+    renameRegEx->Replace(L"DocA", &result, index);
+    Assert::AreEqual(1ul, index, L"Counter should advance to 1 on first match.");
+    Assert::AreEqual(L"NewFile-1", result, L"First file should be renamed correctly.");
+    CoTaskMemFree(result);
+
+    renameRegEx->Replace(L"DocB", &result, index);
+    Assert::AreEqual(2ul, index, L"Counter should advance to 2 on second match.");
+    Assert::AreEqual(L"NewFile-2", result, L"Second file should be renamed correctly.");
+    CoTaskMemFree(result);
+
+    // The original term and the replacement are identical.
+    renameRegEx->Replace(L"NewFile-3", &result, index);
+    Assert::AreEqual(3ul, index, L"Counter must advance on a match, even if the new name is identical to the old one.");
+    Assert::AreEqual(L"NewFile-3", result, L"Filename should be unchanged on a coincidental match.");
+    CoTaskMemFree(result);
+
+    // Test that there wasn't a "stall" in the numbering.
+    renameRegEx->Replace(L"DocC", &result, index);
+    Assert::AreEqual(4ul, index, L"Counter should continue sequentially after the coincidental match.");
+    Assert::AreEqual(L"NewFile-4", result, L"The subsequent file should receive the correct next number.");
+    CoTaskMemFree(result);
+}
+
 #ifndef TESTS_PARTIAL
 };
 }

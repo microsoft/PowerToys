@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Peek.FilePreviewer.Models;
 
 namespace Peek.FilePreviewer.Previewers

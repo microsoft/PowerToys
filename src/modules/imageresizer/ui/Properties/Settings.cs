@@ -1,6 +1,8 @@
-﻿// Copyright (c) Brice Lambson
+﻿#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
 using System.Collections;
@@ -15,7 +17,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Windows.Media.Imaging;
+
 using ImageResizer.Models;
+using ManagedCommon;
 
 namespace ImageResizer.Properties
 {
@@ -60,10 +64,10 @@ namespace ImageResizer.Properties
             FileName = "%1 (%2)";
             Sizes = new ObservableCollection<ResizeSize>
             {
-                new ResizeSize("$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
-                new ResizeSize("$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
-                new ResizeSize("$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
-                new ResizeSize("$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+                new ResizeSize(0, "$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ResizeSize(1, "$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ResizeSize(2, "$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ResizeSize(3, "$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
             };
             KeepDateModified = false;
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
@@ -251,6 +255,7 @@ namespace ImageResizer.Properties
             {
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 
@@ -420,7 +425,7 @@ namespace ImageResizer.Properties
             string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
             // Create directory if it doesn't exist
-            IFileInfo file = _fileSystem.FileInfo.FromFileName(SettingsPath);
+            IFileInfo file = _fileSystem.FileInfo.New(SettingsPath);
             file.Directory.Create();
 
             // write string to file
@@ -456,30 +461,42 @@ namespace ImageResizer.Properties
             {
             }
 
-            // Needs to be called on the App UI thread as the properties are bound to the UI.
-            App.Current.Dispatcher.Invoke(() =>
+            if (App.Current?.Dispatcher != null)
             {
-                ShrinkOnly = jsonSettings.ShrinkOnly;
-                Replace = jsonSettings.Replace;
-                IgnoreOrientation = jsonSettings.IgnoreOrientation;
-                RemoveMetadata = jsonSettings.RemoveMetadata;
-                JpegQualityLevel = jsonSettings.JpegQualityLevel;
-                PngInterlaceOption = jsonSettings.PngInterlaceOption;
-                TiffCompressOption = jsonSettings.TiffCompressOption;
-                FileName = jsonSettings.FileName;
-                KeepDateModified = jsonSettings.KeepDateModified;
-                FallbackEncoder = jsonSettings.FallbackEncoder;
-                CustomSize = jsonSettings.CustomSize;
-                SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-
-                if (jsonSettings.Sizes.Count > 0)
-                {
-                    Sizes.Clear();
-                    Sizes.AddRange(jsonSettings.Sizes);
-                }
-            });
+                // Needs to be called on the App UI thread as the properties are bound to the UI.
+                App.Current.Dispatcher.Invoke(() => ReloadCore(jsonSettings));
+            }
+            else
+            {
+                ReloadCore(jsonSettings);
+            }
 
             _jsonMutex.ReleaseMutex();
+        }
+
+        private void ReloadCore(Settings jsonSettings)
+        {
+            ShrinkOnly = jsonSettings.ShrinkOnly;
+            Replace = jsonSettings.Replace;
+            IgnoreOrientation = jsonSettings.IgnoreOrientation;
+            RemoveMetadata = jsonSettings.RemoveMetadata;
+            JpegQualityLevel = jsonSettings.JpegQualityLevel;
+            PngInterlaceOption = jsonSettings.PngInterlaceOption;
+            TiffCompressOption = jsonSettings.TiffCompressOption;
+            FileName = jsonSettings.FileName;
+            KeepDateModified = jsonSettings.KeepDateModified;
+            FallbackEncoder = jsonSettings.FallbackEncoder;
+            CustomSize = jsonSettings.CustomSize;
+            SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+
+            if (jsonSettings.Sizes.Count > 0)
+            {
+                Sizes.Clear();
+                Sizes.AddRange(jsonSettings.Sizes);
+
+                // Ensure Ids are unique and handle missing Ids
+                IdRecoveryHelper.RecoverInvalidIds(Sizes);
+            }
         }
     }
 }

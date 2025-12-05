@@ -4,12 +4,15 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
+
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+
 using static ColorPicker.Helpers.NativeMethodsHelper;
 
 namespace ColorPicker.Helpers
@@ -21,7 +24,7 @@ namespace ColorPicker.Helpers
         private readonly IUserSettings _userSettings;
         private ColorEditorWindow _colorEditorWindow;
         private bool _colorPickerShown;
-        private object _colorPickerVisibilityLock = new object();
+        private Lock _colorPickerVisibilityLock = new Lock();
 
         private HwndSource _hwndSource;
         private const int _globalHotKeyId = 0x0001;
@@ -104,21 +107,14 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public void OnColorPickerMouseDown()
+        public void OpenColorEditor()
         {
-            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            lock (_colorPickerVisibilityLock)
             {
-                lock (_colorPickerVisibilityLock)
-                {
-                    HideColorPicker();
-                }
+                HideColorPicker();
+            }
 
-                ShowColorPickerEditor();
-            }
-            else
-            {
-                EndUserSession();
-            }
+            ShowColorPickerEditor();
         }
 
         public static void SetTopMost()
@@ -219,7 +215,7 @@ namespace ColorPicker.Helpers
 
         public bool HandleEnterPressed()
         {
-            if (!IsColorPickerVisible())
+            if (!_colorPickerShown)
             {
                 return false;
             }
@@ -230,14 +226,13 @@ namespace ColorPicker.Helpers
 
         public bool HandleEscPressed()
         {
-            if (!BlockEscapeKeyClosingColorPickerEditor)
+            if (!BlockEscapeKeyClosingColorPickerEditor
+                && (_colorPickerShown || (_colorEditorWindow != null && _colorEditorWindow.IsActive)))
             {
                 return EndUserSession();
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         internal void MoveCursor(int xOffset, int yOffset)

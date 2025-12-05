@@ -20,20 +20,11 @@ namespace Peek.Common.Models
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct NativeSize
+    public struct NativeSize(int width, int height)
     {
-        private int width;
-        private int height;
+        public int Width { get; set; } = width;
 
-        public int Width
-        {
-            set { width = value; }
-        }
-
-        public int Height
-        {
-            set { height = value; }
-        }
+        public int Height { get; set; } = height;
     }
 
     [Flags]

@@ -5,6 +5,7 @@
 using System.Drawing;
 
 using System.Windows.Forms;
+
 using Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -145,7 +146,7 @@ namespace PreviewHandlerCommonUnitTests
         }
 
         [TestMethod]
-        public void FormHandlerControlShouldSetVisibletrueWhenDoPreviewCalled()
+        public void FormHandlerControlShouldSetVisibleTrueWhenDoPreviewCalled()
         {
             // Arrange
             using (var testFormHandlerControl = new TestFormControl())

@@ -5,8 +5,10 @@
 using System;
 using System.IO;
 using System.Reflection;
+
 using Microsoft.Plugin.Program.Logger;
 using Windows.Foundation.Metadata;
+
 using Package = Windows.ApplicationModel.Package;
 
 namespace Microsoft.Plugin.Program.Programs

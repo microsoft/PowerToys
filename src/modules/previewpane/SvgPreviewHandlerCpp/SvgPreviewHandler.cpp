@@ -149,6 +149,7 @@ IFACEMETHODIMP SvgPreviewHandler::SetRect(const RECT* prc)
                 }
             }
         }
+        m_rcParent = *prc;
         hr = S_OK;
     }
     return hr;
@@ -158,9 +159,9 @@ IFACEMETHODIMP SvgPreviewHandler::DoPreview()
 {
     try
     {
-        if (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0)
+        if (m_hwndParent == NULL || (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0))
         {
-            // Postponing Start SvgPreviewHandler.exe, position not yet initialized. preview will be done after initialisation
+            // Postponing Start SvgPreviewHandler.exe, parent and position not yet initialized. Preview will be done after initialisation.
             return S_OK;
         }
         Logger::info(L"Starting SvgPreviewHandler.exe");
@@ -188,6 +189,13 @@ IFACEMETHODIMP SvgPreviewHandler::DoPreview()
         sei.lpParameters = cmdLine.c_str();
         sei.nShow = SW_SHOWDEFAULT;
         ShellExecuteEx(&sei);
+
+        // Prevent to leak processes: preview is called multiple times when minimizing and restoring Explorer window
+        if (m_process)
+        {
+            TerminateProcess(m_process, 0);
+        }
+
         m_process = sei.hProcess;
     }
     catch (std::exception& e)

@@ -5,10 +5,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -22,7 +25,7 @@ using Microsoft.Win32;
 
 namespace Awake.Core
 {
-    public delegate bool ConsoleEventHandler(Models.ControlType ctrlType);
+    public delegate bool ConsoleEventHandler(ControlType ctrlType);
 
     /// <summary>
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
@@ -30,29 +33,41 @@ namespace Awake.Core
     /// </summary>
     public class Manager
     {
-        private static readonly CompositeFormat AwakeMinutes = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_MINUTES);
-        private static readonly CompositeFormat AwakeHours = System.Text.CompositeFormat.Parse(Properties.Resources.AWAKE_HOURS);
+        internal static bool IsUsingPowerToysConfig { get; set; }
 
-        private static BlockingCollection<ExecutionState> _stateQueue;
+        internal static SettingsUtils? ModuleSettings { get; set; }
 
+        private static AwakeMode CurrentOperatingMode { get; set; }
+
+        private static bool IsDisplayOn { get; set; }
+
+        private static uint TimeRemaining { get; set; }
+
+        private static string ScreenStateString => IsDisplayOn ? Resources.AWAKE_SCREEN_ON : Resources.AWAKE_SCREEN_OFF;
+
+        private static int ProcessId { get; set; }
+
+        private static DateTimeOffset ExpireAt { get; set; }
+
+        private static readonly CompositeFormat AwakeMinute = CompositeFormat.Parse(Resources.AWAKE_MINUTE);
+        private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
+        private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
+        private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
+        private static readonly BlockingCollection<ExecutionState> _stateQueue;
         private static CancellationTokenSource _tokenSource;
-
-        private static SettingsUtils? _moduleSettings;
-
-        private static SettingsUtils? ModuleSettings { get => _moduleSettings; set => _moduleSettings = value; }
 
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
-            _stateQueue = new BlockingCollection<ExecutionState>();
+            _stateQueue = [];
             ModuleSettings = new SettingsUtils();
         }
 
-        public static void StartMonitor()
+        internal static void StartMonitor()
         {
             Thread monitorThread = new(() =>
             {
-                Thread.CurrentThread.IsBackground = true;
+                Thread.CurrentThread.IsBackground = false;
                 while (true)
                 {
                     ExecutionState state = _stateQueue.Take();
@@ -70,11 +85,11 @@ namespace Awake.Core
             Bridge.SetConsoleCtrlHandler(handler, addHandler);
         }
 
-        public static void AllocateConsole()
+        internal static void AllocateConsole()
         {
             Bridge.AllocConsole();
 
-            var outputFilePointer = Bridge.CreateFile("CONOUT$", Native.Constants.GENERIC_READ | Native.Constants.GENERIC_WRITE, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
+            nint outputFilePointer = Bridge.CreateFile("CONOUT$", Native.Constants.GENERIC_READ | Native.Constants.GENERIC_WRITE, FileShare.Write, IntPtr.Zero, FileMode.OpenOrCreate, 0, IntPtr.Zero);
 
             Bridge.SetStdHandle(Native.Constants.STD_OUTPUT_HANDLE, outputFilePointer);
 
@@ -92,7 +107,7 @@ namespace Awake.Core
         {
             try
             {
-                var stateResult = Bridge.SetThreadExecutionState(state);
+                ExecutionState stateResult = Bridge.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
             catch
@@ -103,125 +118,292 @@ namespace Awake.Core
 
         private static ExecutionState ComputeAwakeState(bool keepDisplayOn)
         {
-            if (keepDisplayOn)
+            return keepDisplayOn
+                ? ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS
+                : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
+        }
+
+        internal static void CancelExistingThread()
+        {
+            Logger.LogInfo("Ensuring the thread is properly cleaned up...");
+
+            // Reset the thread state and handle cancellation.
+            _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
+
+            if (_tokenSource != null)
             {
-                return ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS;
+                _tokenSource.Cancel();
+                _tokenSource.Dispose();
             }
             else
             {
-                return ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
+                Logger.LogWarning("Token source is null.");
             }
-        }
-
-        public static void CancelExistingThread()
-        {
-            Logger.LogInfo($"Attempting to ensure that the thread is properly cleaned up...");
-
-            // Resetting the thread state.
-            _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
-
-            // Next, make sure that any existing background threads are terminated.
-            _tokenSource.Cancel();
-            _tokenSource.Dispose();
 
             _tokenSource = new CancellationTokenSource();
-            Logger.LogInfo("Instantiating of new token source and thread token completed.");
+
+            Logger.LogInfo("New token source and thread token instantiated.");
         }
 
-        public static void SetIndefiniteKeepAwake(bool keepDisplayOn = false)
+        internal static void SetModeShellIcon(bool forceAdd = false)
+        {
+            string iconText = string.Empty;
+            Icon? icon = null;
+
+            switch (CurrentOperatingMode)
+            {
+                case AwakeMode.INDEFINITE:
+                    string processText = ProcessId == 0
+                        ? string.Empty
+                        : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {ProcessId}";
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}][{ScreenStateString}]";
+                    icon = TrayHelper.IndefiniteIcon;
+                    break;
+
+                case AwakeMode.PASSIVE:
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]";
+                    icon = TrayHelper.DisabledIcon;
+                    break;
+
+                case AwakeMode.EXPIRABLE:
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}][{ScreenStateString}][{ExpireAt:yyyy-MM-dd HH:mm:ss}]";
+                    icon = TrayHelper.ExpirableIcon;
+                    break;
+
+                case AwakeMode.TIMED:
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]";
+                    icon = TrayHelper.TimedIcon;
+                    break;
+            }
+
+            TrayHelper.SetShellIcon(
+                TrayHelper.WindowHandle,
+                iconText,
+                icon,
+                forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+        }
+
+        internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
         {
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
 
             CancelExistingThread();
 
+            if (IsUsingPowerToysConfig)
+            {
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.INDEFINITE ||
+                                          currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.INDEFINITE;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are saved, they will be automatically
+                        // processed. That means that when they are processed, the indefinite keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle indefinite keep awake command invoked by {callerName}: {ex.Message}");
+                }
+            }
+
+            Logger.LogInfo($"Indefinite keep-awake starting, invoked by {callerName}...");
+
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.INDEFINITE;
+            ProcessId = processId;
+
+            SetModeShellIcon();
         }
 
-        public static void SetNoKeepAwake()
+        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
-
-            CancelExistingThread();
-        }
-
-        public static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true)
-        {
+            Logger.LogInfo($"Expirable keep-awake invoked by {callerName}. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
             CancelExistingThread();
 
-            if (expireAt > DateTime.Now && expireAt != null)
+            if (IsUsingPowerToysConfig)
             {
-                Logger.LogInfo($"Starting expirable log for {expireAt}");
-                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
-
-                Observable.Timer(expireAt).Subscribe(
-                _ =>
+                try
                 {
-                    Logger.LogInfo($"Completed expirable keep-awake.");
-                    CancelExistingThread();
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.EXPIRABLE ||
+                                          currentSettings.Properties.ExpirationDateTime != expireAt ||
+                                          currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
 
-                    SetPassiveKeepAwakeMode(Constants.AppName);
-                },
-                _tokenSource.Token);
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.EXPIRABLE;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        currentSettings.Properties.ExpirationDateTime = expireAt;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are saved, they will be automatically
+                        // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle indefinite keep awake command: {ex.Message}");
+                }
             }
-            else
+
+            Logger.LogInfo($"Expirable keep-awake starting...");
+
+            if (expireAt <= DateTimeOffset.Now)
             {
-                // The target date is not in the future.
-                Logger.LogError("The specified target date and time is not in the future.");
-                Logger.LogError($"Current time: {DateTime.Now}\tTarget time: {expireAt}");
+                Logger.LogError($"The specified target date and time is not in the future. Current time: {DateTimeOffset.Now}, Target time: {expireAt}");
+                return;
             }
+
+            Logger.LogInfo($"Starting expirable log for {expireAt}");
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.EXPIRABLE;
+            ExpireAt = expireAt;
+
+            SetModeShellIcon();
+
+            TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
+
+            Observable.Timer(remainingTime).Subscribe(
+                _ => HandleTimerCompletion("expirable"),
+                _tokenSource.Token);
         }
 
-        public static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true)
+        internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
+            Logger.LogInfo($"Timed keep-awake invoked by {callerName}. Expected runtime: {seconds} seconds with display on setting set to {keepDisplayOn}.");
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeTimedKeepAwakeEvent());
 
             CancelExistingThread();
 
-            Logger.LogInfo($"Timed keep awake started for {seconds} seconds.");
+            if (IsUsingPowerToysConfig)
+            {
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
+
+                    uint totalHours = (uint)timeSpan.TotalHours;
+                    uint remainingMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+
+                    bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
+                                          currentSettings.Properties.IntervalHours != totalHours ||
+                                          currentSettings.Properties.IntervalMinutes != remainingMinutes;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.TIMED;
+                        currentSettings.Properties.IntervalHours = totalHours;
+                        currentSettings.Properties.IntervalMinutes = remainingMinutes;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are saved, they will be automatically
+                        // processed. That means that when they are processed, the timed keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle timed keep awake command: {ex.Message}");
+                }
+            }
+
+            Logger.LogInfo($"Timed keep-awake starting...");
 
             _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            Observable.Timer(TimeSpan.FromSeconds(seconds)).Subscribe(
-            _ =>
-            {
-                Logger.LogInfo($"Completed timed thread.");
-                CancelExistingThread();
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.TIMED;
 
-                SetPassiveKeepAwakeMode(Constants.AppName);
-            },
-            _tokenSource.Token);
+            SetModeShellIcon();
+
+            var targetExpiryTime = DateTimeOffset.Now.AddSeconds(seconds);
+
+            Observable.Interval(TimeSpan.FromSeconds(1))
+                .Select(_ => targetExpiryTime - DateTimeOffset.Now)
+                .TakeWhile(remaining => remaining.TotalSeconds > 0)
+                .Subscribe(
+                    remainingTimeSpan =>
+                    {
+                        TimeRemaining = (uint)remainingTimeSpan.TotalSeconds;
+
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]",
+                            TrayHelper.TimedIcon,
+                            TrayIconAction.Update);
+                    },
+                    () => HandleTimerCompletion("timed"),
+                    _tokenSource.Token);
         }
 
-        internal static void CompleteExit(int exitCode, ManualResetEvent? exitSignal, bool force = false)
+        /// <summary>
+        /// Handles the common logic that should execute when a keep-awake timer completes. Resets
+        /// the application state to Passive if configured; otherwise it exits.
+        /// </summary>
+        private static void HandleTimerCompletion(string timerType)
         {
-            SetNoKeepAwake();
+            Logger.LogInfo($"Completed {timerType} keep-awake.");
+            CancelExistingThread();
 
-            IntPtr windowHandle = GetHiddenWindow();
-
-            if (windowHandle != IntPtr.Zero)
+            if (IsUsingPowerToysConfig)
             {
-                Bridge.SendMessage(windowHandle, Native.Constants.WM_CLOSE, 0, 0);
+                // If running under PowerToys settings, just revert to the default Passive state.
+                SetPassiveKeepAwake();
             }
-
-            if (force)
+            else
             {
-                Bridge.PostQuitMessage(exitCode);
-            }
-
-            try
-            {
-                exitSignal?.Set();
-                Bridge.DestroyWindow(windowHandle);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Exit signal error ${ex}");
+                // If running as a standalone process, exit cleanly.
+                Logger.LogInfo($"Exiting after {timerType} keep-awake.");
+                CompleteExit(Environment.ExitCode);
             }
         }
 
-        public static string GetOperatingSystemBuild()
+        /// <summary>
+        /// Performs a clean exit from Awake.
+        /// </summary>
+        /// <param name="exitCode">Exit code to exit with.</param>
+        internal static void CompleteExit(int exitCode)
+        {
+            SetPassiveKeepAwake(updateSettings: false);
+
+            if (TrayHelper.WindowHandle != IntPtr.Zero)
+            {
+                // Delete the icon.
+                TrayHelper.SetShellIcon(TrayHelper.WindowHandle, string.Empty, null, TrayIconAction.Delete);
+
+                // Close the message window that we used for the tray.
+                Bridge.SendMessage(TrayHelper.WindowHandle, Native.Constants.WM_CLOSE, 0, 0);
+
+                Bridge.DestroyWindow(TrayHelper.WindowHandle);
+            }
+
+            Bridge.PostQuitMessage(exitCode);
+            Environment.Exit(exitCode);
+        }
+
+        /// <summary>
+        /// Gets the operating system for logging purposes.
+        /// </summary>
+        /// <returns>Returns the string representing the current OS build.</returns>
+        internal static string GetOperatingSystemBuild()
         {
             try
             {
@@ -229,7 +411,7 @@ namespace Awake.Core
 
                 if (registryKey != null)
                 {
-                    var versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
+                    string versionString = $"{registryKey.GetValue("ProductName")} {registryKey.GetValue("DisplayVersion")} {registryKey.GetValue("BuildLabEx")}";
                     return versionString;
                 }
                 else
@@ -245,84 +427,106 @@ namespace Awake.Core
             }
         }
 
-        [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Function returns DWORD value that identifies the current thread, but we do not need it.")]
-        internal static IEnumerable<IntPtr> EnumerateWindowsForProcess(int processId)
+        /// <summary>
+        /// Generates the default system tray options in situations where no custom options are provided.
+        /// </summary>
+        /// <returns>Returns a dictionary of default Awake timed interval options.</returns>
+        internal static Dictionary<string, uint> GetDefaultTrayOptions()
         {
-            var handles = new List<IntPtr>();
-            var hCurrentWnd = IntPtr.Zero;
-
-            do
-            {
-                hCurrentWnd = Bridge.FindWindowEx(IntPtr.Zero, hCurrentWnd, null as string, null);
-                Bridge.GetWindowThreadProcessId(hCurrentWnd, out uint targetProcessId);
-
-                if (targetProcessId == processId)
-                {
-                    handles.Add(hCurrentWnd);
-                }
-            }
-            while (hCurrentWnd != IntPtr.Zero);
-
-            return handles;
-        }
-
-        [SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "In this context, the string is only converted to a hex value.")]
-        internal static IntPtr GetHiddenWindow()
-        {
-            IEnumerable<IntPtr> windowHandles = EnumerateWindowsForProcess(Environment.ProcessId);
-            var domain = AppDomain.CurrentDomain.GetHashCode().ToString("x");
-            string targetClass = $"{Constants.TrayWindowId}{domain}";
-
-            foreach (var handle in windowHandles)
-            {
-                StringBuilder className = new(256);
-                int classQueryResult = Bridge.GetClassName(handle, className, className.Capacity);
-                if (classQueryResult != 0 && className.ToString().StartsWith(targetClass, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return handle;
-                }
-            }
-
-            return IntPtr.Zero;
-        }
-
-        public static Dictionary<string, int> GetDefaultTrayOptions()
-        {
-            Dictionary<string, int> optionsList = new Dictionary<string, int>
+            Dictionary<string, uint> optionsList = new()
             {
                 { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
-                { Resources.AWAKE_1_HOUR, 3600 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeHour, 1), 3600 },
                 { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;
         }
 
-        public static void SetPassiveKeepAwakeMode(string moduleName)
+        /// <summary>
+        /// Resets the computer to standard power settings.
+        /// </summary>
+        /// <param name="updateSettings">In certain cases, such as exits, we want to make sure that settings are not reset for the passive mode but rather retained based on previous execution. Default is to save settings, but otherwise it can be overridden.</param>
+        internal static void SetPassiveKeepAwake(bool updateSettings = true, [CallerMemberName] string callerName = "")
         {
-            AwakeSettings currentSettings;
+            Logger.LogInfo($"Operating in passive mode (computer's standard power plan). Invoked by {callerName}. No custom keep awake settings enabled.");
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeNoKeepAwakeEvent());
 
-            try
+            CancelExistingThread();
+
+            if (IsUsingPowerToysConfig && updateSettings)
             {
-                currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(moduleName);
-            }
-            catch (Exception ex)
-            {
-                string? errorString = $"Failed to reset Awake mode GetSettings: {ex.Message}";
-                Logger.LogError(errorString);
-                currentSettings = new AwakeSettings();
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+
+                    if (currentSettings.Properties.Mode != AwakeMode.PASSIVE)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        // We return here because when the settings are saved, they will be automatically
+                        // processed. That means that when they are processed, the passive keep-awake will kick-in properly
+                        // and we avoid double execution.
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to reset Awake mode: {ex.Message}");
+                }
             }
 
-            currentSettings.Properties.Mode = AwakeMode.PASSIVE;
+            Logger.LogInfo($"Passive keep-awake starting...");
 
-            try
+            CurrentOperatingMode = AwakeMode.PASSIVE;
+
+            SetModeShellIcon();
+        }
+
+        /// <summary>
+        /// Sets the display settings.
+        /// </summary>
+        internal static void SetDisplay([CallerMemberName] string callerName = "")
+        {
+            Logger.LogInfo($"Setting display configuration from settings. Invoked by {callerName}.");
+            if (IsUsingPowerToysConfig)
             {
-                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), moduleName);
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
+
+                    // We want to make sure that if the display setting changes (e.g., through the tray)
+                    // then we do not reset the counter from zero. Because the settings are only storing
+                    // hours and minutes, we round up the minutes value up when changes occur.
+                    if (CurrentOperatingMode == AwakeMode.TIMED && TimeRemaining > 0)
+                    {
+                        TimeSpan timeSpan = TimeSpan.FromSeconds(TimeRemaining);
+
+                        currentSettings.Properties.IntervalHours = (uint)timeSpan.TotalHours;
+                        currentSettings.Properties.IntervalMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+                    }
+
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle display setting command: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                string? errorString = $"Failed to reset Awake mode SaveSettings: {ex.Message}";
-                Logger.LogError(errorString);
-            }
+        }
+
+        public static Process? GetParentProcess()
+        {
+            return GetParentProcess(Process.GetCurrentProcess().Handle);
+        }
+
+        private static Process? GetParentProcess(IntPtr handle)
+        {
+            ProcessBasicInformation pbi = default;
+            int status = Bridge.NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf<ProcessBasicInformation>(), out _);
+
+            return status != 0 ? null : Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
         }
     }
 }

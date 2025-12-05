@@ -88,6 +88,168 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Encode a string with Base64.
+        /// </summary>
+        public static string generator_description_base64 {
+            get {
+                return ResourceManager.GetString("generator_description_base64", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decode a string with Base64.
+        /// </summary>
+        public static string generator_description_base64d {
+            get {
+                return ResourceManager.GetString("generator_description_base64d", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Escape a data string.
+        /// </summary>
+        public static string generator_description_esc_data {
+            get {
+                return ResourceManager.GetString("generator_description_esc_data", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Escape a single hex character.
+        /// </summary>
+        public static string generator_description_esc_hex {
+            get {
+                return ResourceManager.GetString("generator_description_esc_hex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hash a string with {0}.
+        /// </summary>
+        public static string generator_description_hash {
+            get {
+                return ResourceManager.GetString("generator_description_hash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unescape a data string.
+        /// </summary>
+        public static string generator_description_uesc_data {
+            get {
+                return ResourceManager.GetString("generator_description_uesc_data", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unescape a single hex character.
+        /// </summary>
+        public static string generator_description_uesc_hex {
+            get {
+                return ResourceManager.GetString("generator_description_uesc_hex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Encode a URL.
+        /// </summary>
+        public static string generator_description_url {
+            get {
+                return ResourceManager.GetString("generator_description_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decode a URL.
+        /// </summary>
+        public static string generator_description_urld {
+            get {
+                return ResourceManager.GetString("generator_description_urld", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a random UUID.
+        /// </summary>
+        public static string generator_description_uuid {
+            get {
+                return ResourceManager.GetString("generator_description_uuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a version 1: Time based UUID.
+        /// </summary>
+        public static string generator_description_uuidv1 {
+            get {
+                return ResourceManager.GetString("generator_description_uuidv1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a version 3 (MD5): Namespace and name based UUID.
+        /// </summary>
+        public static string generator_description_uuidv3 {
+            get {
+                return ResourceManager.GetString("generator_description_uuidv3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a version 4: Randomly generated UUID.
+        /// </summary>
+        public static string generator_description_uuidv4 {
+            get {
+                return ResourceManager.GetString("generator_description_uuidv4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a version 5 (SHA1): Namespace and name based UUID.
+        /// </summary>
+        public static string generator_description_uuidv5 {
+            get {
+                return ResourceManager.GetString("generator_description_uuidv5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generate a version 7: Time-ordered randomly generated UUID.
+        /// </summary>
+        public static string generator_description_uuidv7 {
+            get {
+                return ResourceManager.GetString("generator_description_uuidv7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to your input.
+        /// </summary>
+        public static string generator_description_your_input {
+            get {
+                return ResourceManager.GetString("generator_description_your_input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Example: {0}.
+        /// </summary>
+        public static string generator_example {
+            get {
+                return ResourceManager.GetString("generator_example", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to or.
+        /// </summary>
+        public static string or {
+            get {
+                return ResourceManager.GetString("or", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calculates hashes and generate values.
         /// </summary>
         public static string plugin_description {

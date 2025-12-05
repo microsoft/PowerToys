@@ -14,6 +14,7 @@ using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
@@ -21,6 +22,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -80,7 +82,7 @@ namespace Microsoft.Plugin.Program.Programs
         public ApplicationType AppType { get; set; }
 
         // Wrappers for File Operations
-        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
+        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new Wox.Infrastructure.FileSystemHelper.FileVersionInfoWrapper();
 
         public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
@@ -989,7 +991,7 @@ namespace Microsoft.Plugin.Program.Programs
                 var paths = new HashSet<string>(defaultHashsetSize);
                 var runCommandPaths = new HashSet<string>(defaultHashsetSize);
 
-                // Parallelize multiple sources, and priority based on paths which most likely contain .lnks which are formatted
+                // Parallelize multiple sources, and priority based on paths which most likely contain .lnk files which are formatted
                 var sources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
                 {
                     (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),

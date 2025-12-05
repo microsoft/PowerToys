@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure
@@ -70,8 +71,8 @@ namespace Wox.Infrastructure
                 }
                 else
                 {
-                    var time1 = FileInfo.FromFileName(bundledDataPath).LastWriteTimeUtc;
-                    var time2 = FileInfo.FromFileName(dataPath).LastWriteTimeUtc;
+                    var time1 = FileInfo.New(bundledDataPath).LastWriteTimeUtc;
+                    var time2 = FileInfo.New(dataPath).LastWriteTimeUtc;
                     if (time1 != time2)
                     {
                         File.Copy(bundledDataPath, dataPath, true);

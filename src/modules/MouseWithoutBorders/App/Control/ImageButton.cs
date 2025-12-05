@@ -19,12 +19,14 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("Image to show when Mouse is pressed on button")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Image DownImage { get; set; }
 
         private Image _normalImage;
 
         [Category("Appearance")]
         [Description("Image to show when button is in normal state")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Image NormalImage
         {
             get => _normalImage;
@@ -37,10 +39,12 @@ namespace MouseWithoutBorders
 
         [Category("Appearance")]
         [Description("Image to show when Mouse hovers over button")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Image HoverImage { get; set; }
 
         [Category("Appearance")]
         [Description("Image to show when button is disabled")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Image DisabledImage { get; set; }
 
         private bool _hovering;

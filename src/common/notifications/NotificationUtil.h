@@ -1,40 +1,22 @@
 #pragma once
 
-#include <common/notifications/notifications.h>
-#include <common/notifications/dont_show_again.h>
-#include <common/utils/resources.h>
-#include <common/SettingsAPI/settings_helpers.h>
-
-#include "Generated Files/resource.h"
+#include <common/SettingsAPI/FileWatcher.h>
 
 namespace notifications
 {
-    // Non-Localizable strings
-    namespace NonLocalizable
+    class NotificationUtil
     {
-        const wchar_t RunAsAdminInfoPage[] = L"https://aka.ms/powertoysDetectedElevatedHelp";
-        const wchar_t ToastNotificationButtonUrl[] = L"powertoys://cant_drag_elevated_disable/";
-    }
+    public:
+        NotificationUtil();
+        ~NotificationUtil();
 
-    inline void WarnIfElevationIsRequired(std::wstring title, std::wstring message, std::wstring button1, std::wstring button2)
-    {
-        using namespace NonLocalizable;
+        void WarnIfElevationIsRequired(std::wstring title, std::wstring message, std::wstring button1, std::wstring button2);
 
-        auto settings = PTSettingsHelper::load_general_settings();
-        auto enableWarningsElevatedApps = settings.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+    private:
+        std::unique_ptr<FileWatcher> m_settingsFileWatcher;
+        bool m_warningsElevatedApps;
+        bool m_warningShown = false;
 
-        static bool warning_shown = false;
-        if (enableWarningsElevatedApps && !warning_shown && !is_toast_disabled(ElevatedDontShowAgainRegistryPath, ElevatedDisableIntervalInDays))
-        {
-            std::vector<action_t> actions = {
-                link_button{ button1, RunAsAdminInfoPage },
-                link_button{ button2, ToastNotificationButtonUrl }
-            };
-            show_toast_with_activations(message,
-                                        title,
-                                        {},
-                                        std::move(actions));
-            warning_shown = true;
-        }
-    }
+        void ReadSettings();
+    };
 }

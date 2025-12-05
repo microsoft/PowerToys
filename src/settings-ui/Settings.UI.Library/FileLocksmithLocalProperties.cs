@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -20,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.FileLocksmithLocalProperties);
         }
 
         // This function is required to implement the ISettingsConfig interface and obtain the settings configurations.

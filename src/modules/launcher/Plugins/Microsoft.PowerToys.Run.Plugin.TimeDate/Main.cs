@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows.Input;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;

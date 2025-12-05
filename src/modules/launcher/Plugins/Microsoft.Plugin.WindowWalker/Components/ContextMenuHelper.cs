@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -38,7 +39,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     {
                         if (!windowData.IsWindow)
                         {
-                            Log.Debug($"Can not close the window '{windowData.Title}' ({windowData.Hwnd}), because it doesn't exist.", typeof(ContextMenuHelper));
+                            Log.Debug($"Cannot close the window '{windowData.Title}' ({windowData.Hwnd}), because it doesn't exist.", typeof(ContextMenuHelper));
                             return false;
                         }
 
@@ -72,13 +73,13 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// Method to initiate killing the process of a window
         /// </summary>
         /// <param name="window">Window data</param>
-        /// <returns>True if the PT Run window should close, otherwise false.</returns>
+        /// <returns>True if the PT Run window should close; otherwise, false.</returns>
         private static bool KillProcessCommand(Window window)
         {
             // Validate process
             if (!window.IsWindow || !window.Process.DoesExist || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
             {
-                Log.Debug($"Can not kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist.", typeof(ContextMenuHelper));
+                Log.Debug($"Cannot kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist.", typeof(ContextMenuHelper));
                 return false;
             }
 

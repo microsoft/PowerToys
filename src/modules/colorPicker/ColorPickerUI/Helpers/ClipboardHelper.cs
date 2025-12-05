@@ -5,7 +5,9 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
+
 using ManagedCommon;
+
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Helpers

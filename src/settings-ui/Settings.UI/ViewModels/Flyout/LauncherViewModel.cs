@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -14,7 +15,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class LauncherViewModel : Observable
+    public partial class LauncherViewModel : Observable
     {
         public bool IsUpdateAvailable { get; set; }
 
@@ -39,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
             AddFlyoutMenuItem(ModuleType.ColorPicker);
+            AddFlyoutMenuItem(ModuleType.CmdPal);
             AddFlyoutMenuItem(ModuleType.EnvironmentVariables);
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);
@@ -47,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
             AddFlyoutMenuItem(ModuleType.MeasureTool);
             AddFlyoutMenuItem(ModuleType.ShortcutGuide);
+            AddFlyoutMenuItem(ModuleType.Workspaces);
 
             updatingSettingsConfig = UpdatingSettings.LoadSettings();
             if (updatingSettingsConfig == null)
@@ -89,6 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
                 ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                ModuleType.Workspaces => SettingsRepository<WorkspacesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Hotkey.Value.ToString(),
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
                 _ => string.Empty,

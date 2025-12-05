@@ -4,6 +4,7 @@
 
 using System.Collections;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.Registry.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.UnitTest.Helper
         [TestMethod]
         public void GetRegistryBaseKeyTestMoreThanOneBaseKey()
         {
-            var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility"); /* #no-spell-check-line */
+            var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey("HKC\\Control Panel\\Accessibility");
 
             Assert.IsNotNull(baseKeyList);
             Assert.IsTrue(baseKeyList.Count() > 1);

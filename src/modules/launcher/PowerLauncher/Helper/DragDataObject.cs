@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+
 using DrawingImaging = System.Drawing.Imaging;
 using MediaImaging = System.Windows.Media.Imaging;
 

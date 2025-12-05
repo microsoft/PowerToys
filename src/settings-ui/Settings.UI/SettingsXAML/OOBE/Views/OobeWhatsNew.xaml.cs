@@ -4,43 +4,98 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CommunityToolkit.WinUI.UI.Controls;
+using CommunityToolkit.WinUI.Controls;
+using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Text;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class OobeWhatsNew : Page
+    public sealed partial class OobeWhatsNew : Page, INotifyPropertyChanged
     {
-        // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private sealed class PowerToysReleaseInfo
+        public OobePowerToysModule ViewModel { get; set; }
+
+        private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
+
+        public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
+
+        private int _conflictCount;
+
+        public AllHotkeyConflictsData AllHotkeyConflictsData
         {
-            [JsonPropertyName("published_at")]
-            public DateTimeOffset PublishedDate { get; set; }
+            get => _allHotkeyConflictsData;
+            set
+            {
+                if (_allHotkeyConflictsData != value)
+                {
+                    _allHotkeyConflictsData = value;
 
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
+                    UpdateConflictCount();
 
-            [JsonPropertyName("tag_name")]
-            public string TagName { get; set; }
-
-            [JsonPropertyName("body")]
-            public string ReleaseNotes { get; set; }
+                    OnPropertyChanged(nameof(AllHotkeyConflictsData));
+                    OnPropertyChanged(nameof(HasConflicts));
+                }
+            }
         }
 
-        public OobePowerToysModule ViewModel { get; set; }
+        public bool HasConflicts => _conflictCount > 0;
+
+        private void UpdateConflictCount()
+        {
+            int count = 0;
+            if (AllHotkeyConflictsData == null)
+            {
+                _conflictCount = count;
+            }
+
+            if (AllHotkeyConflictsData.InAppConflicts != null)
+            {
+                foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
+                {
+                    if (!inAppConflict.ConflictIgnored)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            if (AllHotkeyConflictsData.SystemConflicts != null)
+            {
+                foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
+                {
+                    if (!systemConflict.ConflictIgnored)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            _conflictCount = count;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
@@ -49,7 +104,69 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
-            DataContext = ViewModel;
+            DataContext = this;
+
+            // Subscribe to hotkey conflict updates
+            if (GlobalHotkeyConflictManager.Instance != null)
+            {
+                GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
+                GlobalHotkeyConflictManager.Instance.RequestAllConflicts();
+            }
+        }
+
+        private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                var allConflictData = e.Conflicts;
+                foreach (var inAppConflict in allConflictData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    inAppConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                foreach (var systemConflict in allConflictData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    systemConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
+            });
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private bool GetShowDataDiagnosticsInfoBar()
+        {
+            var isDataDiagnosticsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
+
+            if (isDataDiagnosticsGpoDisallowed)
+            {
+                return false;
+            }
+
+            bool userActed = DataDiagnosticsSettings.GetUserActionValue();
+
+            if (userActed)
+            {
+                return false;
+            }
+
+            bool registryValue = DataDiagnosticsSettings.GetEnabledValue();
+
+            bool isFirstRunAfterUpdate = (App.Current as Microsoft.PowerToys.Settings.UI.App).ShowScoobe;
+            if (isFirstRunAfterUpdate && registryValue == false)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -58,6 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
         private const string RemoveHotFixInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+$";
         private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+        private bool _loadingReleaseNotes;
 
         private static async Task<string> GetReleaseNotesMarkdown()
         {
@@ -77,7 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             // https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required
             getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
             releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
-            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);
+            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
             // Get the latest releases
             var latestReleases = releases.OrderByDescending(release => release.PublishedDate).Take(5);
@@ -89,11 +207,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
             Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
-
+            int counter = 0;
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
+                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n### Highlights");
+
+                // Add a unique counter to [github-current-release-work] to distinguish each release,
+                // since this variable is used for all latest releases when they are merged.
+                notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");
                 notes = removeHotfixHashRegex.Replace(notes, string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
@@ -104,12 +226,19 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private async Task Reload()
         {
+            if (_loadingReleaseNotes)
+            {
+                return;
+            }
+
             try
             {
+                _loadingReleaseNotes = true;
+                ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
-
-                ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                ProxyWarningInfoBar.IsOpen = false;
+                ErrorInfoBar.IsOpen = false;
 
                 ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
                 ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
@@ -120,21 +249,22 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Logger.LogError("Exception when loading the release notes", httpEx);
                 if (httpEx.Message.Contains("407", StringComparison.CurrentCulture))
                 {
-                    ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    ProxyWarningInfoBar.IsOpen = true;
                 }
                 else
                 {
-                    ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    ErrorInfoBar.IsOpen = true;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
-                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                ErrorInfoBar.IsOpen = true;
             }
             finally
             {
                 LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                _loadingReleaseNotes = false;
             }
         }
 
@@ -153,17 +283,77 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             ViewModel.LogClosingModuleEvent();
+
+            // Unsubscribe from conflict updates when leaving the page
+            if (GlobalHotkeyConflictManager.Instance != null)
+            {
+                GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
+            }
         }
 
-        private void ReleaseNotesMarkdown_LinkClicked(object sender, LinkClickedEventArgs e)
+        private void DataDiagnostics_InfoBar_YesNo_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
+            string commandArg = string.Empty;
+            if (sender is Button senderBtn)
             {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
-                });
+                commandArg = senderBtn.CommandParameter.ToString();
             }
+            else if (sender is HyperlinkButton senderLink)
+            {
+                commandArg = senderLink.CommandParameter.ToString();
+            }
+
+            if (string.IsNullOrEmpty(commandArg))
+            {
+                return;
+            }
+
+            // Update UI
+            if (commandArg == "Yes")
+            {
+                WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title");
+            }
+            else
+            {
+                WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title");
+            }
+
+            WhatsNewDataDiagnosticsInfoBarDescText.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            WhatsNewDataDiagnosticsInfoBarDescTextYesClicked.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            DataDiagnosticsButtonYes.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            DataDiagnosticsButtonNo.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+
+            // Set Data Diagnostics registry values
+            if (commandArg == "Yes")
+            {
+                DataDiagnosticsSettings.SetEnabledValue(true);
+            }
+            else
+            {
+                DataDiagnosticsSettings.SetEnabledValue(false);
+            }
+
+            DataDiagnosticsSettings.SetUserActionValue(true);
+
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                ShellPage.ShellHandler?.SignalGeneralDataUpdate();
+            });
+        }
+
+        private void DataDiagnostics_InfoBar_Close_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            WhatsNewDataDiagnosticsInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        }
+
+        private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
+        }
+
+        private async void LoadReleaseNotes_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            await Reload();
         }
     }
 }

@@ -9,15 +9,17 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using interop;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using Windows.UI.Popups;
 using WinRT.Interop;
 using WinUIEx;
@@ -69,6 +71,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object. This is the first line of authored code
@@ -76,9 +80,29 @@ namespace Microsoft.PowerToys.Settings.UI
         /// </summary>
         public App()
         {
-            Logger.InitializeLogger("\\Settings\\Logs");
+            Logger.InitializeLogger(@"\Settings\Logs");
 
-            this.InitializeComponent();
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
+            InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.PowerToysRunnerTerminateSettingsEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)
@@ -144,7 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
             try
             {
-                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName));
+                var requestedSettings = JsonSerializer.Deserialize<Dictionary<string, List<string>>>(File.ReadAllText(ipcFileName), SourceGenerationContextContext.Default.DictionaryStringListString);
                 File.WriteAllText(ipcFileName, GetSettingCommandLineCommand.Execute(requestedSettings));
             }
             catch (Exception ex)
@@ -208,6 +232,12 @@ namespace Microsoft.PowerToys.Settings.UI
             });
             ipcmanager.Start();
 
+            GlobalHotkeyConflictManager.Initialize(message =>
+            {
+                ipcmanager.Send(message);
+                return 0;
+            });
+
             if (!ShowOobe && !ShowScoobe && !ShowFlyout)
             {
                 settingsWindow = new MainWindow();
@@ -218,6 +248,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                 // Need to call SetForegroundWindow to actually gain focus.
                 WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
+
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/8948 - A window's top border incorrectly
+                // renders as black on Windows 10.
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
             }
             else
             {
@@ -232,6 +266,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
                     oobeWindow.Activate();
                     oobeWindow.ExtendsContentIntoTitleBar = true;
+                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(oobeWindow);
                 }
                 else if (ShowScoobe)
@@ -240,6 +275,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                     scoobeWindow.Activate();
                     scoobeWindow.ExtendsContentIntoTitleBar = true;
+                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(scoobeWindow);
                 }
                 else if (ShowFlyout)
@@ -287,40 +323,23 @@ namespace Microsoft.PowerToys.Settings.UI
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
                 settingsWindow.ExtendsContentIntoTitleBar = true;
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
-                ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
+
+                // In DEBUG mode, we might not have IPC set up, so provide a dummy implementation
+                GlobalHotkeyConflictManager.Initialize(message =>
+                {
+                    // In debug mode, just log or do nothing
+                    System.Diagnostics.Debug.WriteLine($"IPC Message: {message}");
+                    return 0;
+                });
 #else
-                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-                Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
-                Exit();
+        /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Exit();
 #endif
             }
-        }
-
-#if !DEBUG
-        private async void ShowMessageDialogAndExit(string content, string title = null)
-#else
-        private async void ShowMessageDialog(string content, string title = null)
-#endif
-        {
-            await ShowDialogAsync(content, title);
-#if !DEBUG
-            this.Exit();
-#endif
-        }
-
-        public static Task<IUICommand> ShowDialogAsync(string content, string title = null)
-        {
-            var dialog = new MessageDialog(content, title ?? string.Empty);
-            var handle = NativeMethods.GetActiveWindow();
-            if (handle == IntPtr.Zero)
-            {
-                throw new InvalidOperationException();
-            }
-
-            InitializeWithWindow.Initialize(dialog, handle);
-            return dialog.ShowAsync().AsTask<IUICommand>();
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
@@ -398,6 +417,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
+                case "LightSwitch": return typeof(LightSwitchPage);
                 case "FancyZones": return typeof(FancyZonesPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);
                 case "Run": return typeof(PowerLauncherPage);
@@ -405,18 +425,24 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "KBM": return typeof(KeyboardManagerPage);
                 case "MouseUtils": return typeof(MouseUtilsPage);
                 case "MouseWithoutBorders": return typeof(MouseWithoutBordersPage);
+                case "Peek": return typeof(PeekPage);
+                case "PowerAccent": return typeof(PowerAccentPage);
+                case "PowerLauncher": return typeof(PowerLauncherPage);
+                case "PowerPreview": return typeof(PowerPreviewPage);
                 case "PowerRename": return typeof(PowerRenamePage);
                 case "QuickAccent": return typeof(PowerAccentPage);
                 case "FileExplorer": return typeof(PowerPreviewPage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
                 case "PowerOcr": return typeof(PowerOcrPage);
-                case "VideoConference": return typeof(VideoConferencePage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
-                case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
+                case "NewPlus": return typeof(NewPlusPage);
+                case "Workspaces": return typeof(WorkspacesPage);
+                case "CmdPal": return typeof(CmdPalPage);
+                case "ZoomIt": return typeof(ZoomItPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

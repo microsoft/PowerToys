@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Text;
+
 using Settings.UI.Library.Enumerations;
 
 namespace SvgPreviewHandler

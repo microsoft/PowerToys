@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using ColorPicker.Common;
 using ColorPicker.Helpers;
 using ColorPicker.Models;
@@ -303,14 +304,26 @@ namespace ColorPicker.ViewModels
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
+                    FormatName = ColorRepresentationType.CIEXYZ.ToString(),
+                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ.ToString()),
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
                     FormatName = ColorRepresentationType.CIELAB.ToString(),
                     Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELAB.ToString()),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
-                    FormatName = ColorRepresentationType.CIEXYZ.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIEXYZ.ToString()),
+                    FormatName = ColorRepresentationType.Oklab.ToString(),
+                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Oklab.ToString()),
+                });
+            _allColorRepresentations.Add(
+                new ColorFormatModel()
+                {
+                    FormatName = ColorRepresentationType.Oklch.ToString(),
+                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Oklch.ToString()),
                 });
             _allColorRepresentations.Add(
                 new ColorFormatModel()

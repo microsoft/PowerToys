@@ -5,9 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerOCR.Settings;
 using PowerOCR.Utilities;
+
 using static PowerOCR.OSInterop;
 
 namespace PowerOCR.Keyboard;

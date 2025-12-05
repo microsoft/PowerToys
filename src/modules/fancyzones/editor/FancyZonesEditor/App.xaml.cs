@@ -4,12 +4,16 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using Common.UI;
+using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace FancyZonesEditor
 {
@@ -54,6 +58,22 @@ namespace FancyZonesEditor
 
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
+            var languageTag = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Logger.LogError("CultureNotFoundException: " + ex.Message);
+                }
+            }
+
             Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
 
             // DebugModeCheck();
@@ -145,7 +165,7 @@ namespace FancyZonesEditor
         private void App_WaitExit()
         {
             NativeEventWaiter.WaitForEventLoop(
-            interop.Constants.FZEExitEvent(),
+            PowerToys.Interop.Constants.FZEExitEvent(),
             () =>
             {
                 Logger.LogInfo("Exit event triggered");

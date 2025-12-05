@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <ProjectGuid>{9BAFFC28-E1EF-4C14-A101-EEBFC0A50D83}</ProjectGuid>
+    <RootNamespace>Microsoft.FancyZonesEditor.UITests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    
+    <!-- This is a UI test, so don't run as part of MSBuild -->
+    <RunVSTest>false</RunVSTest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-FancyZonesEditor\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" />
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Private.Uri" />
+    <PackageReference Include="System.Text.RegularExpressions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+  </ItemGroup>
+</Project>

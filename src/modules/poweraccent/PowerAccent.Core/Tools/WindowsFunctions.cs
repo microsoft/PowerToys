@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using Vanara.PInvoke;
+
+using Windows.Win32;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PowerAccent.Core.Tools;
 
@@ -16,72 +20,98 @@ internal static class WindowsFunctions
             if (back)
             {
                 // Split in 2 different SendInput (Powershell doesn't take back issue)
-                var inputsBack = new User32.INPUT[]
+                var inputsBack = new INPUT[]
                 {
-                    new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = (ushort)User32.VK.VK_BACK } },
-                    new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = (ushort)User32.VK.VK_BACK, dwFlags = User32.KEYEVENTF.KEYEVENTF_KEYUP } },
+                    new INPUT
+                    {
+                        type = INPUT_TYPE.INPUT_KEYBOARD,
+                        Anonymous = new INPUT._Anonymous_e__Union
+                        {
+                            ki = new KEYBDINPUT
+                            {
+                                wVk = VIRTUAL_KEY.VK_BACK,
+                            },
+                        },
+                    },
+                    new INPUT
+                    {
+                        type = INPUT_TYPE.INPUT_KEYBOARD,
+                        Anonymous = new INPUT._Anonymous_e__Union
+                        {
+                            ki = new KEYBDINPUT
+                            {
+                                wVk = VIRTUAL_KEY.VK_BACK,
+                                dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                            },
+                        },
+                    },
                 };
 
-                var temp1 = User32.SendInput((uint)inputsBack.Length, inputsBack, sizeof(User32.INPUT));
-                System.Threading.Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
+                _ = PInvoke.SendInput(inputsBack, Marshal.SizeOf<INPUT>());
+                Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
             }
 
             foreach (char c in s)
             {
                 // Letter
-                var inputsInsert = new User32.INPUT[]
+                var inputsInsert = new INPUT[]
                 {
-                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE, wScan = c } },
-                new User32.INPUT { type = User32.INPUTTYPE.INPUT_KEYBOARD, ki = new User32.KEYBDINPUT { wVk = 0, dwFlags = User32.KEYEVENTF.KEYEVENTF_UNICODE | User32.KEYEVENTF.KEYEVENTF_KEYUP, wScan = c } },
+                    new INPUT
+                    {
+                        type = INPUT_TYPE.INPUT_KEYBOARD,
+                        Anonymous = new INPUT._Anonymous_e__Union
+                        {
+                            ki = new KEYBDINPUT
+                            {
+                                wScan = c,
+                                dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE,
+                            },
+                        },
+                    },
+                    new INPUT
+                    {
+                        type = INPUT_TYPE.INPUT_KEYBOARD,
+                        Anonymous = new INPUT._Anonymous_e__Union
+                        {
+                            ki = new KEYBDINPUT
+                            {
+                                wScan = c,
+                                dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                            },
+                        },
+                    },
                 };
-                var temp2 = User32.SendInput((uint)inputsInsert.Length, inputsInsert, sizeof(User32.INPUT));
+
+                _ = PInvoke.SendInput(inputsInsert, Marshal.SizeOf<INPUT>());
             }
         }
     }
 
-    public static Point GetCaretPosition()
-    {
-        User32.GUITHREADINFO guiInfo = default;
-        guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
-        User32.GetGUIThreadInfo(0, ref guiInfo);
-        POINT caretPosition = new POINT(guiInfo.rcCaret.left, guiInfo.rcCaret.top);
-        User32.ClientToScreen(guiInfo.hwndCaret, ref caretPosition);
-
-        if (caretPosition.X == 0)
-        {
-            POINT testPoint;
-            User32.GetCaretPos(out testPoint);
-            return testPoint;
-        }
-
-        return caretPosition;
-    }
-
     public static (Point Location, Size Size, double Dpi) GetActiveDisplay()
     {
-        User32.GUITHREADINFO guiInfo = default;
+        GUITHREADINFO guiInfo = default;
         guiInfo.cbSize = (uint)Marshal.SizeOf(guiInfo);
-        User32.GetGUIThreadInfo(0, ref guiInfo);
-        var res = User32.MonitorFromWindow(guiInfo.hwndActive, User32.MonitorFlags.MONITOR_DEFAULTTONEAREST);
+        PInvoke.GetGUIThreadInfo(0, ref guiInfo);
+        var res = PInvoke.MonitorFromWindow(guiInfo.hwndActive, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
 
-        User32.MONITORINFO monitorInfo = default;
+        MONITORINFO monitorInfo = default;
         monitorInfo.cbSize = (uint)Marshal.SizeOf(monitorInfo);
-        User32.GetMonitorInfo(res, ref monitorInfo);
+        PInvoke.GetMonitorInfo(res, ref monitorInfo);
 
-        double dpi = User32.GetDpiForWindow(guiInfo.hwndActive) / 96d;
-
-        return (monitorInfo.rcWork.Location, monitorInfo.rcWork.Size, dpi);
+        double dpi = PInvoke.GetDpiForWindow(guiInfo.hwndActive) / 96d;
+        var location = new Point(monitorInfo.rcWork.left, monitorInfo.rcWork.top);
+        return (location, monitorInfo.rcWork.Size, dpi);
     }
 
     public static bool IsCapsLockState()
     {
-        var capital = User32.GetKeyState((int)User32.VK.VK_CAPITAL);
+        var capital = PInvoke.GetKeyState((int)VIRTUAL_KEY.VK_CAPITAL);
         return capital != 0;
     }
 
     public static bool IsShiftState()
     {
-        var shift = User32.GetKeyState((int)User32.VK.VK_SHIFT);
+        var shift = PInvoke.GetKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
     }
 }

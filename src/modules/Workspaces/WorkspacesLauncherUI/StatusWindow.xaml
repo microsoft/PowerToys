@@ -1,0 +1,114 @@
+﻿<Window
+    x:Class="WorkspacesLauncherUI.StatusWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:WorkspacesLauncherUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WorkspacesLauncherUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:WorkspacesLauncherUI.Properties"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Title="{x:Static props:Resources.LauncherWindowTitle}"
+    Width="350"
+    Height="340"
+    ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
+    ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    Background="{DynamicResource PrimaryBackgroundBrush}"
+    BorderBrush="Red"
+    BorderThickness="5"
+    Closing="Window_Closing"
+    ResizeMode="NoResize"
+    Topmost="True"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+    </Window.Resources>
+
+    <Grid Margin="5" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.ColumnSpan="2">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding AppsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding IconBitmapImage}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    FontSize="14"
+                                    FontWeight="Normal"
+                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ui:ProgressRing
+                                    x:Name="ProgressRing"
+                                    Grid.Column="2"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    IsActive="True"
+                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                    FontSize="20"
+                                    Foreground="{Binding StateColor}"
+                                    Text="{Binding StateGlyph}"
+                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+        <Button
+            x:Name="CancelButton"
+            Grid.Row="1"
+            Height="36"
+            Margin="5,5,5,5"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Static props:Resources.CancelLaunch}"
+            Background="{DynamicResource SecondaryBackgroundBrush}"
+            Click="CancelButtonClicked"
+            Content="{x:Static props:Resources.CancelLaunch}" />
+        <Button
+            x:Name="DismissButton"
+            Grid.Row="1"
+            Grid.Column="1"
+            Height="36"
+            Margin="5,5,5,5"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Static props:Resources.Dismiss}"
+            Click="DismissButtonClicked"
+            Content="{x:Static props:Resources.Dismiss}"
+            Style="{StaticResource AccentButtonStyle}" />
+    </Grid>
+</Window>

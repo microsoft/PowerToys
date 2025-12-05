@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -53,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PowerRenameLocalProperties);
         }
 
         // This function is required to implement the ISettingsConfig interface and obtain the settings configurations.

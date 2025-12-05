@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
@@ -83,22 +84,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     LogTelemetryEvent(value);
                     shortcutGuide = value;
                     NotifyChange();
-                }
-            }
-        }
-
-        private bool videoConference; // defaulting to off https://github.com/microsoft/PowerToys/issues/14507
-
-        [JsonPropertyName("Video Conference")]
-        public bool VideoConference
-        {
-            get => this.videoConference;
-            set
-            {
-                if (this.videoConference != value)
-                {
-                    LogTelemetryEvent(value);
-                    this.videoConference = value;
                 }
             }
         }
@@ -458,6 +443,105 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     environmentVariables = value;
+                }
+            }
+        }
+
+        private bool newPlus;
+
+        [JsonPropertyName("NewPlus")] // This key must match newplus::constants::non_localizable
+        public bool NewPlus
+        {
+            get => newPlus;
+            set
+            {
+                if (newPlus != value)
+                {
+                    LogTelemetryEvent(value);
+                    newPlus = value;
+                }
+            }
+        }
+
+        private bool workspaces = true;
+
+        [JsonPropertyName("Workspaces")]
+        public bool Workspaces
+        {
+            get => workspaces;
+            set
+            {
+                if (workspaces != value)
+                {
+                    LogTelemetryEvent(value);
+                    workspaces = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool cmdPal = true;
+
+        [JsonPropertyName("CmdPal")]
+        public bool CmdPal
+        {
+            get => cmdPal;
+            set
+            {
+                if (cmdPal != value)
+                {
+                    LogTelemetryEvent(value);
+                    cmdPal = value;
+                }
+            }
+        }
+
+        private bool zoomIt;
+
+        [JsonPropertyName("ZoomIt")]
+        public bool ZoomIt
+        {
+            get => zoomIt;
+            set
+            {
+                if (zoomIt != value)
+                {
+                    LogTelemetryEvent(value);
+                    zoomIt = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool cursorWrap; // defaulting to off
+
+        [JsonPropertyName("CursorWrap")]
+        public bool CursorWrap
+        {
+            get => cursorWrap;
+            set
+            {
+                if (cursorWrap != value)
+                {
+                    LogTelemetryEvent(value);
+                    cursorWrap = value;
+                }
+            }
+        }
+
+        private bool lightSwitch;
+
+        [JsonPropertyName("LightSwitch")]
+        public bool LightSwitch
+        {
+            get => lightSwitch;
+            set
+            {
+                if (lightSwitch != value)
+                {
+                    LogTelemetryEvent(value);
+                    lightSwitch = value;
+                    NotifyChange();
                 }
             }
         }

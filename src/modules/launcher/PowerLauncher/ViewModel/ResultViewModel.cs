@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
+
 using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using Wox.Infrastructure.Image;
@@ -279,7 +280,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         ///  Triggers the action on the selected context button
         /// </summary>
-        /// <returns>False if there is nothing selected, otherwise true</returns>
+        /// <returns>False if there is nothing selected; otherwise, true</returns>
         public bool ExecuteSelectedContextButton()
         {
             if (HasSelectedContextButton())

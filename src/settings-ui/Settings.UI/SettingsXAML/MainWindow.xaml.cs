@@ -13,6 +13,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
+using WinRT.Interop;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
@@ -27,18 +28,15 @@ namespace Microsoft.PowerToys.Settings.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
+            this.Activated += Window_Activated_SetIcon;
+
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
 
             ShellPage.SetElevationStatus(App.IsElevated);
             ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
-            // Set window icon
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
-
             var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
@@ -106,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview));
+                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
                 }
 
                 App.GetOobeWindow().Activate();
@@ -117,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
+                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew));
                 }
                 else
                 {
@@ -162,6 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
+            SetAppTitleBar();
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -186,6 +185,13 @@ namespace Microsoft.PowerToys.Settings.UI
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+        }
+
+        private void SetAppTitleBar()
+        {
+            // We need to assign the window here so it can configure the custom title bar area correctly.
+            shellPage.TitleBar.Window = this;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
         }
 
         public void NavigateToSection(System.Type type)
@@ -218,6 +224,15 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
+        }
+
+        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        {
+            // Set window icon
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)

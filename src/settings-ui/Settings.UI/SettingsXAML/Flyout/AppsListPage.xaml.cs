@@ -4,14 +4,15 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading;
+
 using global::Windows.System;
-using interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
 {

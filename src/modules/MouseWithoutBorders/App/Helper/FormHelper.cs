@@ -19,7 +19,7 @@ namespace MouseWithoutBorders
     public partial class FormHelper : System.Windows.Forms.Form
     {
         private readonly List<FocusArea> focusZone = new();
-        private readonly object bmScreenLock = new();
+        private readonly Lock bmScreenLock = new();
         private long lastClipboardEventTime;
 
         private IClipboardHelper remoteClipboardHelper;
@@ -100,7 +100,7 @@ namespace MouseWithoutBorders
 
                 if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
                 {
-                    Logger.LogEvent(Application.ProductName + " cannot be used in a remote desktop or virtual machine session.");
+                    EventLogger.LogEvent(Application.ProductName + " cannot be used in a remote desktop or virtual machine session.");
                 }
                 else
                 {
@@ -135,7 +135,7 @@ namespace MouseWithoutBorders
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogEvent("FormHelper_DragEnter: " + ex.Message, EventLogEntryType.Error);
+                        EventLogger.LogEvent("FormHelper_DragEnter: " + ex.Message, EventLogEntryType.Error);
                         QuitDueToCommunicationError();
                     }
                 }
@@ -164,11 +164,11 @@ namespace MouseWithoutBorders
         {
             try
             {
-                Logger.LogEvent(log, EventLogEntryType.Warning);
+                EventLogger.LogEvent(log, EventLogEntryType.Warning);
             }
             catch (Exception e)
             {
-                Logger.LogEvent(log + " ==> SendLog Exception: " + e.Message, EventLogEntryType.Warning);
+                EventLogger.LogEvent(log + " ==> SendLog Exception: " + e.Message, EventLogEntryType.Warning);
             }
         }
 
@@ -343,7 +343,7 @@ namespace MouseWithoutBorders
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogEvent("WM_DRAWCLIPBOARD: " + ex.Message, EventLogEntryType.Error);
+                            EventLogger.LogEvent("WM_DRAWCLIPBOARD: " + ex.Message, EventLogEntryType.Error);
                             QuitDueToCommunicationError();
                         }
 

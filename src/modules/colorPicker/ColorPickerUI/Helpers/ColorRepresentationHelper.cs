@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Globalization;
+
 using ColorPicker.Properties;
 using ManagedCommon;
 
@@ -33,7 +34,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
+        public static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
         {
             if (string.IsNullOrEmpty(colorFormat))
             {
@@ -240,6 +241,40 @@ namespace ColorPicker.Helpers
             return $"CIELab({lightness.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
                    $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a Oklab color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the Oklab color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a Oklab color</returns>
+        private static string ColorToOklab(Color color)
+        {
+            var (lightness, chromaticityA, chromaticityB) = ColorFormatHelper.ConvertToOklabColor(color);
+            lightness = Math.Round(lightness, 2);
+            chromaticityA = Math.Round(chromaticityA, 2);
+            chromaticityB = Math.Round(chromaticityB, 2);
+
+            return $"oklab({lightness.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityA.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chromaticityB.ToString(CultureInfo.InvariantCulture)})";
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string"/> representation of a CIE LCh color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> for the CIE LCh color presentation</param>
+        /// <returns>A <see cref="string"/> representation of a CIE LCh color</returns>
+        private static string ColorToOklch(Color color)
+        {
+            var (lightness, chroma, hue) = ColorFormatHelper.ConvertToOklchColor(color);
+            lightness = Math.Round(lightness, 2);
+            chroma = Math.Round(chroma, 2);
+            hue = Math.Round(hue, 2);
+
+            return $"oklch({lightness.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {chroma.ToString(CultureInfo.InvariantCulture)}" +
+                   $", {hue.ToString(CultureInfo.InvariantCulture)})";
         }
 
         /// <summary>

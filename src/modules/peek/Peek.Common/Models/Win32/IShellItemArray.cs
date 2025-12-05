@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
 using Windows.Win32.UI.Shell;
 
 namespace Peek.Common.Models

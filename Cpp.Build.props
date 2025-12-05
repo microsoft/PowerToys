@@ -26,6 +26,7 @@
   <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+    <CAExcludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(CAExcludePath)</CAExcludePath>
   </PropertyGroup>
 
   <!-- C++ source compile-specific things for all configurations -->
@@ -33,7 +34,8 @@
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
-    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
+    <ReplaceWildcardsInProjectItems>true</ReplaceWildcardsInProjectItems>
+    <ExternalIncludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(ExternalIncludePath)</ExternalIncludePath>
     <!-- Enable control flow guard for C++ projects that don't consume any C++ files -->
     <!-- This covers the case where a .dll exports a .lib, but doesn't have any ClCompile entries. -->
     <LinkControlFlowGuard>Guard</LinkControlFlowGuard>
@@ -93,17 +95,16 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <!-- Global props -->
-  <PropertyGroup Label="Globals"
-    Condition="'$(OverrideWindowsTargetPlatformVersion)'!='True'">
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
-    <TargetPlatformVersion>10.0.20348.0</TargetPlatformVersion>
+  <!-- Global props OverrideWindowsTargetPlatformVersion-->
+  <PropertyGroup Label="Globals">
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <TargetPlatformVersion>10.0.26100.0</TargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
 
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
-    <PlatformToolset Condition="'$(OverridePlatformToolset)'!='True'">v143</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>

@@ -1,5 +1,6 @@
 name: "🌐 Localization/Translation issue"
 description: Report incorrect translations.
+type: Bug
 labels:
 - Issue-Bug
 - Area-Localization
@@ -13,7 +14,7 @@ body:
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.70.0
-    description: Hover over system tray icon or look at Settings
+    description: Hover over the system tray icon or look at Settings
   validations:
     required: true
 - type: dropdown
@@ -37,8 +38,10 @@ body:
     - Image Resizer
     - Installer
     - Keyboard Manager
+    - Light Switch
     - Mouse Utilities
     - Mouse Without Borders
+    - New+
     - Peek
     - PowerRename
     - PowerToys Run
@@ -49,8 +52,9 @@ body:
     - Shortcut Guide
     - System tray interaction
     - TextExtractor
-    - Video Conference Mute
+    - Workspaces
     - Welcome / PowerToys Tour window
+    - ZoomIt
   validations:
     required: true
 - type: input
@@ -62,7 +66,7 @@ body:
 - type: textarea
   attributes: 
     label: ❌ Actual phrase(s)
-    placeholder: What is there? Please include a screenshot as that is extremely helpful.
+    placeholder: What is there? Please include a screenshot, as that is extremely helpful.
   validations:
     required: true
 - type: textarea

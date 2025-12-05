@@ -8,8 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -20,6 +20,12 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+        // Indicator if we loaded/reloaded/saved a file and need to skip TextChanged event one time.
+        // (Solves the problem that enabling the event handler fires it one time.)
+        private static bool editorContentChangedScripted;
+
         /// <summary>
         /// Event that is will prevent the app from closing if the "save file" flag is active
         /// </summary>
@@ -39,43 +45,25 @@ namespace RegistryPreviewUILib
                     resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
                     resourceLoader.GetString("YesNoCancelDialogCloseButtonText"));
             }
-
-            // Check to see if the textbox's context menu is open
-            if (textBox.ContextFlyout != null && textBox.ContextFlyout.IsOpen)
-            {
-                textBox.ContextFlyout.Hide();
-
-                // if true, the app will not close yet
-                args.Handled = true;
-
-                // HACK: To fix https://github.com/microsoft/PowerToys/issues/28820, wait a bit for the close animation of the flyout to run before closing the application.
-                // This might be called many times if the flyout still hasn't been closed, as Window_Closed will be called again by App.Current.Exit
-                DispatcherQueue.TryEnqueue(async () =>
-                {
-                    await Task.Delay(100);
-                    Application.Current.Exit();
-                });
-                return;
-            }
         }
 
         /// <summary>
         /// Event that gets fired after the visual tree has been fully loaded; the app opens the reg file from here so it can show a message box successfully
         /// </summary>
-        private void GridPreview_Loaded(object sender, RoutedEventArgs e)
+        private async void GridPreview_Loaded(object sender, RoutedEventArgs e)
         {
             // static flag to track whether the Visual Tree is ready - if the main Grid has been loaded, the tree is ready.
             visualTreeReady = true;
 
             // Check to see if the REG file was opened and parsed successfully
-            if (OpenRegistryFile(_appFileName) == false)
+            if (await OpenRegistryFile(_appFileName) == false)
             {
                 if (File.Exists(_appFileName))
                 {
                     // Allow Refresh and Edit to be enabled because a broken Reg file might be fixable
                     UpdateToolBarAndUI(false, true, true);
                     _updateWindowTitleFunction(resourceLoader.GetString("InvalidRegistryFileTitle"));
-                    textBox.TextChanged += TextBox_TextChanged;
+                    MonacoEditor.TextChanged += MonacoEditor_TextChanged;
                     return;
                 }
                 else
@@ -86,10 +74,71 @@ namespace RegistryPreviewUILib
             }
             else
             {
-                textBox.TextChanged += TextBox_TextChanged;
+                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
             }
 
-            textBox.Focus(FocusState.Programmatic);
+            MonacoEditor.Focus(FocusState.Programmatic);
+        }
+
+        /// <summary>
+        /// New button action: Ask to save last changes and reset editor content to reg header only
+        /// </summary>
+        private async void NewButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Check to see if the current file has been saved
+            if (saveButton.IsEnabled)
+            {
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    Content = resourceLoader.GetString("YesNoCancelDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
+                    SecondaryButtonText = resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Save, then continue the new action
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
+                        break;
+                    case ContentDialogResult.Secondary:
+                        // Don't save and continue the new action!
+                        break;
+                    default:
+                        // Don't open the new action!
+                        return;
+                }
+            }
+
+            // mute the TextChanged handler to make for clean UI
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
+
+            // reset editor, file info and ui.
+            _appFileName = string.Empty;
+            ResetEditorAndFile();
+
+            // disable buttons that do not make sense
+            UpdateUnsavedFileState(false);
+            refreshButton.IsEnabled = false;
+
+            // restore the TextChanged handler
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
@@ -122,11 +171,15 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        SaveFile();
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
                         break;
                     default:
                         // Don't open the new file!
@@ -152,16 +205,17 @@ namespace RegistryPreviewUILib
             if (storageFile != null)
             {
                 // mute the TextChanged handler to make for clean UI
-                textBox.TextChanged -= TextBox_TextChanged;
+                MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
+                // update file name
                 _appFileName = storageFile.Path;
-                UpdateToolBarAndUI(OpenRegistryFile(_appFileName));
+                UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
 
                 // disable the Save button as it's a new file
-                saveButton.IsEnabled = false;
+                UpdateUnsavedFileState(false);
 
                 // Restore the event handler as we're loaded
-                textBox.TextChanged += TextBox_TextChanged;
+                ButtonAction_RestoreTextChangedEvent();
             }
         }
 
@@ -170,48 +224,82 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            SaveFile();
+            if (!AskFileName(string.Empty))
+            {
+                return;
+            }
+
+            // save and update window title
+            // error handling and ui update happens in SaveFile() method
+            _ = SaveFile();
         }
 
         /// <summary>
         /// Uses a picker to save out a copy of the current reg file
         /// </summary>
-        private void SaveAsButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
-            // called while running as admin
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-            string filename = SaveFilePicker.ShowDialog(
-                windowHandle,
-                resourceLoader.GetString("SuggestFileName"),
-                resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
-                resourceLoader.GetString("SaveDialogTitle"));
+            // mute the TextChanged handler to make for clean UI
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
-            if (filename == string.Empty)
+            if (!AskFileName(_appFileName) || !SaveFile())
             {
                 return;
             }
 
-            _appFileName = filename;
-            SaveFile();
-            UpdateToolBarAndUI(OpenRegistryFile(_appFileName));
+            UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
+
+            // restore the TextChanged handler
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
         /// Reloads the current REG file from storage
         /// </summary>
-        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
+            // Check to see if the current file has been saved
+            if (saveButton.IsEnabled)
+            {
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    Content = resourceLoader.GetString("ReloadDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("ReloadDialogPrimaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("ReloadDialogCloseButtonText"),
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Don't save and continue the reload action!
+                        break;
+                    default:
+                        // Don't continue the reload action!
+                        return;
+                }
+            }
+
             // mute the TextChanged handler to make for clean UI
-            textBox.TextChanged -= TextBox_TextChanged;
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
             // reload the current Registry file and update the toolbar accordingly.
-            UpdateToolBarAndUI(OpenRegistryFile(_appFileName), true, true);
+            UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
 
-            saveButton.IsEnabled = false;
+            // disable the Save button as it's a new file
+            UpdateUnsavedFileState(false);
 
             // restore the TextChanged handler
-            textBox.TextChanged += TextBox_TextChanged;
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
@@ -272,15 +360,20 @@ namespace RegistryPreviewUILib
                 switch (contentDialogResult)
                 {
                     case ContentDialogResult.Primary:
-                        // Save, then continue the file open
-                        SaveFile();
+                        // Save, then continue the merge action
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
                         break;
                     case ContentDialogResult.Secondary:
-                        // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
+                        // Don't save and continue the merge action!
+                        UpdateUnsavedFileState(false);
                         break;
                     default:
-                        // Don't open the new file!
+                        // Don't merge the file!
                         return;
                 }
             }
@@ -363,12 +456,77 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// When the text in textBox changes, reload treeView and possibly dataGrid and reset the save button
+        /// When the text in editor changes, reload treeView and possibly dataGrid and reset the save button
         /// </summary>
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void MonacoEditor_TextChanged(object sender, EventArgs e)
         {
-            RefreshRegistryFile();
-            saveButton.IsEnabled = true;
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                RefreshRegistryFile();
+                if (!editorContentChangedScripted)
+                {
+                    UpdateUnsavedFileState(true);
+                }
+
+                editorContentChangedScripted = false;
+            });
+        }
+
+        /// <summary>
+        /// Sets indicator for programatic text change and adds text changed handler
+        /// </summary>
+        /// <remarks>
+        /// Use this always, if button actions temporary disable the text changed event
+        /// </remarks>
+        private void ButtonAction_RestoreTextChangedEvent()
+        {
+            // Solves the problem that enabling the event handler fires it one time.
+            // These one time fired event would causes wrong unsaved changes state.
+            editorContentChangedScripted = true;
+            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+        }
+
+        // Commands to show data preview
+        public void ButtonExtendedPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var data = ((Button)sender).DataContext as RegistryValue;
+            InvokeExtendedDataPreview(data);
+        }
+
+        public void MenuExtendedPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var data = ((MenuFlyoutItem)sender).DataContext as RegistryValue;
+            InvokeExtendedDataPreview(data);
+        }
+
+        private async void InvokeExtendedDataPreview(RegistryValue valueData)
+        {
+            // Only one content dialog can be open at the same time and multiple instances of data preview can crash the app.
+            if (_dialogSemaphore.CurrentCount == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                // Lock ui and request dialog lock
+                _dialogSemaphore.Wait();
+                ChangeCursor(gridPreview, true);
+
+                await ShowExtendedDataPreview(valueData.Name, valueData.Type, valueData.Value);
+            }
+            catch
+            {
+#if DEBUG
+                throw;
+#endif
+            }
+            finally
+            {
+                // Unblock ui and release dialog lock
+                ChangeCursor(gridPreview, false);
+                _dialogSemaphore.Release();
+            }
         }
     }
 }

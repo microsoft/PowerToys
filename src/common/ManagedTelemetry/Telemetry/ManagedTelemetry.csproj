@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
-  <Import Project="..\..\..\Version.props" />
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-	<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-    <Version>$(Version).0</Version>
-    <Authors>Microsoft Corporation</Authors>
-    <Product>PowerToys</Product>
     <Description>PowerToys Telemetry</Description>
     <AssemblyName>PowerToys.ManagedTelemetry</AssemblyName>
   </PropertyGroup>
@@ -15,4 +11,8 @@
     <Compile Include="..\..\Telemetry\TelemetryBase.cs" Link="TelemetryBase.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
+  </ItemGroup>
 </Project>

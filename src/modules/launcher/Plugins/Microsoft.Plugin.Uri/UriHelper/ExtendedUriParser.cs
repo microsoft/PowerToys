@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Microsoft.Plugin.Uri.Interfaces;
 
 namespace Microsoft.Plugin.Uri.UriHelper

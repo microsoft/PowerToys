@@ -194,5 +194,14 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
                 return ResourceManager.GetString("Text_Extractor", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspaces Editor.
+        /// </summary>
+        internal static string Workspaces_Editor {
+            get {
+                return ResourceManager.GetString("Workspaces_Editor", resourceCulture);
+            }
+        }
     }
 }

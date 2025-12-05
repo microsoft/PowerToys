@@ -18,6 +18,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml;
+
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Infrastructure;
@@ -26,6 +27,7 @@ using Wox.Plugin;
 using Wox.Plugin.Common;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
+
 using PackageVersion = Microsoft.Plugin.Program.Programs.UWP.PackageVersion;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -113,7 +115,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            // To set the title to always be the displayname of the packaged application
+            // To set the title to always be the display name of the packaged application
             result.Title = DisplayName;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
@@ -250,10 +252,10 @@ namespace Microsoft.Plugin.Program.Programs
             logoUri = LogoUriFromManifest(manifestApp);
 
             Enabled = true;
-            CanRunElevated = IfApplicationcanRunElevated();
+            CanRunElevated = IfApplicationCanRunElevated();
         }
 
-        private bool IfApplicationcanRunElevated()
+        private bool IfApplicationCanRunElevated()
         {
             if (EntryPoint == "Windows.FullTrustApplication")
             {
@@ -594,7 +596,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                // for C:\Windows\MiracastView etc
+                // for C:\Windows\MiracastView, etc.
                 path = Path.Combine(Package.Location, "Assets", uri);
             }
 

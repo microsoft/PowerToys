@@ -9,6 +9,8 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Storage
@@ -22,7 +24,7 @@ namespace Wox.Infrastructure.Storage
         private static readonly IPath Path = FileSystem.Path;
         private static readonly IFile File = FileSystem.File;
 
-        private readonly object _saveLock = new object();
+        private readonly Lock _saveLock = new Lock();
 
         // use property initialization instead of DefaultValueAttribute
         // easier and flexible for default value of object

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+
 using Wox.Plugin.Common.Interfaces;
 using Wox.Plugin.Common.Win32;
 

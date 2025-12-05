@@ -66,7 +66,7 @@ WindowsColors::Color WindowsColors::get_background_color()
 
 bool WindowsColors::is_dark_mode()
 {
-    return ThemeHelpers::GetAppTheme() == AppTheme::Dark;
+    return ThemeHelpers::GetAppTheme() == Theme::Dark;
 }
 
 bool WindowsColors::update()

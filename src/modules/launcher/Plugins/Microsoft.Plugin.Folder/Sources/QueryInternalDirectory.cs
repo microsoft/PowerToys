@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
 
@@ -100,7 +101,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
             if (isRecursive)
             {
-                // match everything before and after search term using supported wildcard '*', ie. *searchterm*
+                // match everything before and after search term using supported wildcard '*', i.e. *searchterm*
                 if (string.IsNullOrEmpty(incompleteName))
                 {
                     incompleteName = "*";

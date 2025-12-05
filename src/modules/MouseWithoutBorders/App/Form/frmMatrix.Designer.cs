@@ -1,6 +1,7 @@
 ﻿using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Drawing;
+using Windows.UI.Notifications;
 
 namespace MouseWithoutBorders
 {
@@ -88,6 +89,8 @@ namespace MouseWithoutBorders
             this.linkLabelReConfigure = new System.Windows.Forms.LinkLabel();
             this.tabControlSetting = new System.Windows.Forms.TabControl();
             this.tabPageAdvancedSettings = new System.Windows.Forms.TabPage();
+            this.groupBoxName2IPPolicyList = new System.Windows.Forms.GroupBox();
+            this.textBoxMachineName2IPPolicyList = new System.Windows.Forms.TextBox();
             this.pictureBoxMouseWithoutBorders = new System.Windows.Forms.PictureBox();
             this.groupBoxDNS = new System.Windows.Forms.GroupBox();
             this.textBoxMachineName2IP = new System.Windows.Forms.TextBox();
@@ -103,6 +106,7 @@ namespace MouseWithoutBorders
             this.groupBoxMachineMatrix.SuspendLayout();
             this.tabControlSetting.SuspendLayout();
             this.tabPageAdvancedSettings.SuspendLayout();
+            this.groupBoxName2IPPolicyList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxMouseWithoutBorders)).BeginInit();
             this.groupBoxDNS.SuspendLayout();
             this.SuspendLayout();
@@ -977,6 +981,7 @@ namespace MouseWithoutBorders
             // tabPageAdvancedSettings
             // 
             this.tabPageAdvancedSettings.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(246)))), ((int)(((byte)(245)))), ((int)(((byte)(242)))));
+            this.tabPageAdvancedSettings.Controls.Add(this.groupBoxName2IPPolicyList);
             this.tabPageAdvancedSettings.Controls.Add(this.pictureBoxMouseWithoutBorders);
             this.tabPageAdvancedSettings.Controls.Add(this.groupBoxDNS);
             this.tabPageAdvancedSettings.Controls.Add(this.textBoxDNS);
@@ -986,6 +991,33 @@ namespace MouseWithoutBorders
             this.tabPageAdvancedSettings.Size = new System.Drawing.Size(563, 362);
             this.tabPageAdvancedSettings.TabIndex = 2;
             this.tabPageAdvancedSettings.Text = "IP Mappings";
+            //
+            // groupBoxName2IPPolicyList
+            // 
+            this.groupBoxName2IPPolicyList.Controls.Add(this.textBoxMachineName2IPPolicyList);
+            this.groupBoxName2IPPolicyList.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBoxName2IPPolicyList.Location = new System.Drawing.Point(3, 241);
+            this.groupBoxName2IPPolicyList.Name = "groupBoxName2IPPolicyList";
+            this.groupBoxName2IPPolicyList.Size = new System.Drawing.Size(357, 150);
+            this.groupBoxName2IPPolicyList.TabIndex = 1;
+            this.groupBoxName2IPPolicyList.TabStop = false;
+            this.groupBoxName2IPPolicyList.Text = " Policy defined machine name to IP address mappings [Managed]";
+            this.groupBoxName2IPPolicyList.ForeColor = Color.DimGray;
+            this.groupBoxName2IPPolicyList.Visible = false;
+            //
+            // textBoxMachineName2IPPolicyList
+            // 
+            this.textBoxMachineName2IPPolicyList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBoxMachineName2IPPolicyList.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxMachineName2IPPolicyList.Location = new System.Drawing.Point(3, 172); // 3,172
+            this.textBoxMachineName2IPPolicyList.MaxLength = 1024;
+            this.textBoxMachineName2IPPolicyList.Multiline = true;
+            this.textBoxMachineName2IPPolicyList.Name = "textBoxMachineName2IPPolicyList";
+            this.textBoxMachineName2IPPolicyList.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBoxMachineName2IPPolicyList.Size = new System.Drawing.Size(351, 131);
+            this.textBoxMachineName2IPPolicyList.TabIndex = 1;
+            this.textBoxMachineName2IPPolicyList.ReadOnly = true;
+            this.textBoxMachineName2IPPolicyList.Visible = false;
             // 
             // pictureBoxMouseWithoutBorders
             // 
@@ -1098,12 +1130,13 @@ namespace MouseWithoutBorders
             this.tabControlSetting.ResumeLayout(false);
             this.tabPageAdvancedSettings.ResumeLayout(false);
             this.tabPageAdvancedSettings.PerformLayout();
+            this.groupBoxName2IPPolicyList.ResumeLayout(false);
+            this.groupBoxName2IPPolicyList.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxMouseWithoutBorders)).EndInit();
             this.groupBoxDNS.ResumeLayout(false);
             this.groupBoxDNS.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -1140,6 +1173,8 @@ namespace MouseWithoutBorders
         private GroupBox groupBoxDNS;
         private TextBox textBoxDNS;
         private TextBox textBoxMachineName2IP;
+        private GroupBox groupBoxName2IPPolicyList;
+        private TextBox textBoxMachineName2IPPolicyList;
         private PictureBox pictureBoxMouseWithoutBorders;
         private GroupBox groupBoxOtherOptions;
         private CheckBox checkBoxDrawMouse;

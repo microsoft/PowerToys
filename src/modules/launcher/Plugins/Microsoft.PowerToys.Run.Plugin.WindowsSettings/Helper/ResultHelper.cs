@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -103,7 +104,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// Open the settings page of the given <see cref="IWindowsSetting"/>.
         /// </summary>
         /// <param name="entry">The <see cref="WindowsSetting"/> that contain the information to open the setting on command level.</param>
-        /// <returns><see langword="true"/> if the settings could be opened, otherwise <see langword="false"/>.</returns>
+        /// <returns><see langword="true"/> if the settings could be opened; otherwise, <see langword="false"/>.</returns>
         private static bool DoOpenSettingsAction(WindowsSetting entry)
         {
             ProcessStartInfo processStartInfo;

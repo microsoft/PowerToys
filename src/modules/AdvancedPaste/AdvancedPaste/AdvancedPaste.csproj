@@ -1,23 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <SelfContained>true</SelfContained>
     <AssemblyName>PowerToys.AdvancedPaste</AssemblyName>
     <AssemblyDescription>PowerToys AdvancedPaste</AssemblyDescription>
     <RootNamespace>AdvancedPaste</RootNamespace>
@@ -28,14 +25,6 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
   </PropertyGroup>
 
-  <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-  <PropertyGroup Condition="'$(Platform)'=='x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-  </PropertyGroup>
-
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
     <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
@@ -44,11 +33,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />
+    <None Remove="AdvancedPasteXAML\Styles\Button.xaml" />
     <None Remove="Assets\AdvancedPaste\AIIcon.png" />
     <None Remove="Assets\AdvancedPaste\Gradient.png" />
     <None Remove="AdvancedPasteXAML\Controls\AnimatedContentControl\AnimatedBorderBrush.xaml" />
     <None Remove="AdvancedPasteXAML\Views\MainPage.xaml" />
+    <None Remove="Assets\AdvancedPaste\SemanticKernel.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,22 +51,35 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" />
+    <PackageReference Include="OpenAI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
-	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAIInference" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.MistralAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="System.ClientModel" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="ReverseMarkdown" />
-    <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with PowerToys.Settings.csproj. -->
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="WinUIEx" />
-
+    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
+    <PackageReference Include="System.Text.Json" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+    <PackageReference Include="CommunityToolkit.Common" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -95,9 +100,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>AdvancedPaste.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
@@ -111,8 +123,37 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="AdvancedPasteXAML\Controls\PromptBox.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AdvancedPasteXAML\Styles\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Share AI Model Provider Icons from Settings.UI to avoid duplication -->
+    <!-- These icons are included from Settings.UI project -->
+    <Content Include="..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\Models\*.svg">
+      <Link>Assets\Settings\Icons\Models\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- AdvancedPaste specific assets -->
+    <Content Include="Assets\AdvancedPaste\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\AdvancedPaste\*.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Keep SemanticKernel.svg as it's specific to AdvancedPaste -->
+    <Content Include="Assets\AdvancedPaste\SemanticKernel.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

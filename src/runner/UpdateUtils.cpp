@@ -53,8 +53,9 @@ void ShowNewVersionAvailable(const new_version_download_info& info)
                                 { link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_UPDATE_NOW),
                                                L"powertoys://update_now/" },
                                   link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
-                                               L"powertoys://open_settings/" } },
-                                std::move(toast_params));
+                                               L"powertoys://open_overview/" } },
+                                std::move(toast_params),
+                                L"powertoys://open_overview/");
 }
 
 void ShowOpenSettingsForUpdate()
@@ -65,13 +66,14 @@ void ShowOpenSettingsForUpdate()
 
     std::vector<action_t> actions = {
         link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
-                     L"powertoys://open_settings/" },
+                     L"powertoys://open_overview/" },
     };
     show_toast_with_activations(GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE),
                                 GET_RESOURCE_STRING(IDS_TOAST_TITLE),
                                 {},
                                 std::move(actions),
-                                std::move(toast_params));
+                                std::move(toast_params),
+                                L"powertoys://open_overview/");
 }
 
 SHELLEXECUTEINFOW LaunchPowerToysUpdate(const wchar_t* cmdline)

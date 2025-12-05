@@ -6,7 +6,7 @@
   "Author": "cxfksword",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Microsoft.PowerToys.Run.Plugin.Calculator.dll",
   "IcoPathDark": "Images\\calculator.dark.png",
   "IcoPathLight": "Images\\calculator.light.png"

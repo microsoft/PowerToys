@@ -29,18 +29,25 @@
             x:Name="ImagePreview"
             MaxWidth="{x:Bind ImagePreviewer.MaxImageSize.Width, Mode=OneWay}"
             MaxHeight="{x:Bind ImagePreviewer.MaxImageSize.Height, Mode=OneWay}"
+            PointerMoved="ToolTipParentControl_PointerMoved"
             Source="{x:Bind ImagePreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
-            Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}" />
+            Visibility="{x:Bind IsPreviewVisible(ImagePreviewer, Previewer.State), Mode=OneWay}">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind InfoTooltip, Mode=OneWay}" />
+            </ToolTipService.ToolTip>
+        </Image>
 
         <MediaPlayerElement
             x:Name="VideoPreview"
             AreTransportControlsEnabled="True"
             AutoPlay="True"
             FlowDirection="LeftToRight"
+            PointerMoved="ToolTipParentControl_PointerMoved"
             Source="{x:Bind VideoPreviewer.Preview, Mode=OneWay}"
-            ToolTipService.ToolTip="{x:Bind InfoTooltip, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind InfoTooltip, Mode=OneWay}" />
+            </ToolTipService.ToolTip>
             <MediaPlayerElement.KeyboardAccelerators>
                 <KeyboardAccelerator Key="Space" Invoked="KeyboardAccelerator_Space_Invoked" />
             </MediaPlayerElement.KeyboardAccelerators>
@@ -53,6 +60,21 @@
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
 
+        <RichTextBlock
+            x:Name="VideoWarningMessage"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            Visibility="{x:Bind IsWarningMessageVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <Paragraph>
+                <Run Text="{x:Bind GetWarningMessage(VideoPreviewer.MissingCodecName), Mode=OneWay}" />
+                <Hyperlink Click="CodecSearchHyperlink_Click">
+                    <Run x:Uid="VideoCodecStoreLink" />
+                </Hyperlink>
+            </Paragraph>
+        </RichTextBlock>
+
+
         <controls:AudioControl
             x:Name="AudioPreview"
             Source="{x:Bind AudioPreviewer.Preview, Mode=OneWay}"
@@ -62,6 +84,7 @@
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"
+            CustomContextMenu="{x:Bind BrowserPreviewer.CustomContextMenu, Mode=OneWay}"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             FlowDirection="LeftToRight"
             IsDevFilePreview="{x:Bind BrowserPreviewer.IsDevFilePreview, Mode=OneWay}"
@@ -83,11 +106,27 @@
             Source="{x:Bind DrivePreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(DrivePreviewer, Previewer.State), Mode=OneWay}" />
 
+        <controls:SpecialFolderPreview
+            x:Name="SpecialFolderPreview"
+            LoadingState="{x:Bind SpecialFolderPreviewer.State, Mode=OneWay}"
+            Source="{x:Bind SpecialFolderPreviewer.Preview, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(SpecialFolderPreviewer, Previewer.State), Mode=OneWay}" />
+
         <controls:UnsupportedFilePreview
             x:Name="UnsupportedFilePreview"
             LoadingState="{x:Bind UnsupportedFilePreviewer.State, Mode=OneWay}"
             Source="{x:Bind UnsupportedFilePreviewer.Preview, Mode=OneWay}"
             Visibility="{x:Bind IsUnsupportedPreviewVisible(UnsupportedFilePreviewer, Previewer.State), Mode=OneWay}" />
+
+        <TextBlock
+            x:Name="NoMoreFiles"
+            x:Uid="NoMoreFiles"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            AutomationProperties.HeadingLevel="1"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            Visibility="Collapsed" />
     </Grid>
     <UserControl.KeyboardAccelerators>
         <KeyboardAccelerator

@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+
 using Windows.Management.Deployment;
 using Wox.Plugin.Logger;
 

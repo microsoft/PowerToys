@@ -4,16 +4,23 @@
 #include "CropAndLockWindow.h"
 #include "ThumbnailCropAndLockWindow.h"
 #include "ReparentCropAndLockWindow.h"
-#include <common/interop/shared_constants.h>
-#include <common/utils/winapi_error.h>
-#include <common/utils/logger_helper.h>
-#include <common/utils/UnhandledExceptionHandler.h>
-#include <common/utils/gpo.h>
 #include "ModuleConstants.h"
-#include <common/utils/ProcessWaiter.h>
 #include "trace.h"
 
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#include <common/interop/shared_constants.h>
+
+#include <common/utils/gpo.h>
+#include <common/utils/logger_helper.h>
+#include <common/utils/ProcessWaiter.h>
+#include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/winapi_error.h>
+
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
+#include <common/Themes/theme_helpers.h>
+#include <common/Themes/theme_listener.h>
+
+#pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 namespace winrt
 {
@@ -31,10 +38,34 @@ namespace util
 const std::wstring instanceMutexName = L"Local\\PowerToys_CropAndLock_InstanceMutex";
 bool m_running = true;
 
+// Theming
+ThemeListener theme_listener{};
+// Keep a list of our cropped windows
+std::vector<std::shared_ptr<CropAndLockWindow>> croppedWindows;
+
+void handleTheme()
+{
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == Theme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    for (auto&& croppedWindow : croppedWindows)
+    {
+        ThemeHelpers::SetImmersiveDarkMode(croppedWindow->Handle(), isDark);
+    }
+}
+
+
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _In_ int)
 {
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+    Trace::CropAndLock::RegisterProvider();
+
+    theme_listener.AddChangedHandler(handleTheme);
+
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
 
     // Initialize logger automatic logging of exceptions.
     LoggerHelpers::init_logger(NonLocalizable::ModuleKey, L"", LogSettings::cropAndLockLoggerName);
@@ -98,8 +129,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Create our overlay window
     std::unique_ptr<OverlayWindow> overlayWindow;
 
-    // Keep a list of our cropped windows
-    std::vector<std::shared_ptr<CropAndLockWindow>> croppedWindows;
 
     // Handles and thread for the events sent from runner
     HANDLE m_reparent_event_handle;
@@ -107,8 +136,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     HANDLE m_exit_event_handle;
     std::thread m_event_triggers_thread;
 
-    std::function<void(HWND)> removeWindowCallback = [&](HWND windowHandle)
-    {
+    std::function<void(HWND)> removeWindowCallback = [&](HWND windowHandle) {
         if (!m_running)
         {
             // If we're not running, the reference to croppedWindows might no longer be valid and cause a crash at exit time, due to being called by destructors after wWinMain returns.
@@ -122,8 +150,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
         }
     };
 
-    std::function<void(CropAndLockType)> ProcessCommand = [&](CropAndLockType mode)
-    {
+    std::function<void(CropAndLockType)> ProcessCommand = [&](CropAndLockType mode) {
         std::function<void(HWND, RECT)> windowCroppedCallback = [&, mode](HWND targetWindow, RECT cropRect) {
             auto targetInfo = util::WindowInfo(targetWindow);
             // TODO: Fix WindowInfo.h to not contain the null char at the end.
@@ -160,6 +187,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             croppedWindow->CropAndLock(targetWindow, cropRect);
             croppedWindow->OnClosed(removeWindowCallback);
             croppedWindows.push_back(croppedWindow);
+            handleTheme();
         };
 
         overlayWindow.reset();
@@ -196,7 +224,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
 
     m_event_triggers_thread = std::thread([&]() {
         MSG msg;
-        HANDLE event_handles[3] = {m_reparent_event_handle, m_thumbnail_event_handle, m_exit_event_handle};
+        HANDLE event_handles[3] = { m_reparent_event_handle, m_thumbnail_event_handle, m_exit_event_handle };
         while (m_running)
         {
             DWORD dwEvt = MsgWaitForMultipleObjects(3, event_handles, false, INFINITE, QS_ALLINPUT);
@@ -257,6 +285,10 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+
+    trace.Flush();
+
+    Trace::CropAndLock::UnregisterProvider();
 
     m_running = false;
     // Needed to unblock MsgWaitForMultipleObjects one last time

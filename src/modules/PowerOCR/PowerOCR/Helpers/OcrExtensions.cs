@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+
 using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;

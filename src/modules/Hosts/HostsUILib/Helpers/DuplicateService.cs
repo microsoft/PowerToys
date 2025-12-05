@@ -7,13 +7,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+
 using HostsUILib.Models;
 using HostsUILib.Settings;
 using Microsoft.UI.Dispatching;
 
 namespace HostsUILib.Helpers
 {
-    public class DuplicateService : IDuplicateService, IDisposable
+    public partial class DuplicateService : IDuplicateService, IDisposable
     {
         private record struct Check(string Address, string[] Hosts);
 

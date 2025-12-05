@@ -22,7 +22,7 @@ namespace Microsoft.Plugin.Program
 
         public string Location { get; set; }
 
-        public string Name { get => name ?? FileSystem.DirectoryInfo.FromDirectoryName(Location).Name; set => name = value; }
+        public string Name { get => name ?? FileSystem.DirectoryInfo.New(Location).Name; set => name = value; }
 
         public bool Enabled { get; set; } = true;
 

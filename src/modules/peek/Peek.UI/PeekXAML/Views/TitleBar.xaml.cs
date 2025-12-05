@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -54,7 +55,7 @@ namespace Peek.UI.Views
                nameof(NumberOfFiles),
                typeof(int),
                typeof(TitleBar),
-               new PropertyMetadata(null, null));
+               new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnNumberOfFilesPropertyChanged()));
 
         [ObservableProperty]
         private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
@@ -64,6 +65,9 @@ namespace Peek.UI.Views
 
         [ObservableProperty]
         private string? fileCountText;
+
+        [ObservableProperty]
+        private string fileName = string.Empty;
 
         [ObservableProperty]
         private string defaultAppName = string.Empty;
@@ -230,7 +234,7 @@ namespace Peek.UI.Views
             if (AppWindowTitleBar.IsCustomizationSupported())
             {
                 AppWindow appWindow = mainWindow.AppWindow;
-                appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+                mainWindow.ExtendsContentIntoTitleBar = true;
                 appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
                 appWindow.TitleBar.ButtonForegroundColor = ThemeHelpers.GetAppTheme() == AppTheme.Light ? Colors.DarkSlateGray : Colors.White;
@@ -241,13 +245,14 @@ namespace Peek.UI.Views
 
         private void OnFilePropertyChanged()
         {
-            if (Item == null)
-            {
-                return;
-            }
-
             UpdateFileCountText();
+            UpdateFilename();
             UpdateDefaultAppToLaunch();
+        }
+
+        private void UpdateFilename()
+        {
+            FileName = Item?.Name ?? string.Empty;
         }
 
         private void OnFileIndexPropertyChanged()
@@ -255,13 +260,24 @@ namespace Peek.UI.Views
             UpdateFileCountText();
         }
 
+        private void OnNumberOfFilesPropertyChanged()
+        {
+            UpdateFileCountText();
+        }
+
+        /// <summary>
+        /// Respond to a change in the current file being previewed or the number of files available.
+        /// </summary>
         private void UpdateFileCountText()
         {
-            // Update file count
-            if (NumberOfFiles > 1)
+            if (NumberOfFiles >= 1)
             {
                 string fileCountTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("AppTitle_FileCounts_Text");
                 FileCountText = string.Format(CultureInfo.InvariantCulture, fileCountTextFormat, FileIndex + 1, NumberOfFiles);
+            }
+            else
+            {
+                FileCountText = string.Empty;
             }
         }
 

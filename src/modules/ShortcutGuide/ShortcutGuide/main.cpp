@@ -9,6 +9,8 @@
 #include <common/utils/EventWaiter.h>
 #include <common/utils/gpo.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include "shortcut_guide.h"
 #include "target_state.h"
 #include "ShortcutGuideConstants.h"
@@ -47,6 +49,9 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInst
 {
     winrt::init_apartment();
     LoggerHelpers::init_logger(ShortcutGuideConstants::ModuleKey, L"ShortcutGuide", LogSettings::shortcutGuideLoggerName);
+
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
 
     if (powertoys_gpo::getConfiguredShortcutGuideEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
@@ -132,6 +137,8 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInst
 
     window.ShowWindow();
     run_message_loop();
+
+    trace.Flush();
     Trace::UnregisterProvider();
     return 0;
 }

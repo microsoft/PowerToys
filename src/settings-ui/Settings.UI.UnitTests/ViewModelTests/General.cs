@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace ViewModelTests
@@ -220,6 +222,36 @@ namespace ViewModelTests
 
             // act
             viewModel.ThemeIndex = 0;
+        }
+
+        [TestMethod]
+        public void IsShowSysTrayIconEnabledByDefaultShouldDisableWhenSuccessful()
+        {
+            // Arrange
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                Assert.IsFalse(snd.GeneralSettings.ShowSysTrayIcon);
+                return 0;
+            };
+
+            Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            GeneralViewModel viewModel = new(
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                sendMockIPCConfigMSG,
+                sendRestartAdminIPCMessage,
+                sendCheckForUpdatesIPCMessage,
+                GeneralSettingsFileName);
+            Assert.IsTrue(viewModel.ShowSysTrayIcon);
+
+            // Act
+            viewModel.ShowSysTrayIcon = false;
         }
 
         [TestMethod]

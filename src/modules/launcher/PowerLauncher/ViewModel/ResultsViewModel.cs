@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+
 using PowerLauncher.Helper;
 using Wox.Infrastructure.UserSettings;
 using Wox.Plugin;
@@ -281,11 +282,11 @@ namespace PowerLauncher.ViewModel
 
             if (options.SearchQueryTuningEnabled)
             {
-                sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * options.SearchClickedItemWeight))).ToList();
+                sorted = Results.OrderByDescending(x => x.Result.GetSortOrderScore(options.SearchClickedItemWeight)).ToList();
             }
             else
             {
-                sorted = Results.OrderByDescending(x => (x.Result.Metadata.WeightBoost + x.Result.Score + (x.Result.SelectedCount * 5))).ToList();
+                sorted = Results.OrderByDescending(x => x.Result.GetSortOrderScore(5)).ToList();
             }
 
             // remove history items in they are in the list as non-history items

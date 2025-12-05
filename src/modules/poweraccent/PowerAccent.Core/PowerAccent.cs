@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using System.Unicode;
 using System.Windows;
+
 using ManagedCommon;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
@@ -13,12 +14,13 @@ using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core;
 
-public class PowerAccent : IDisposable
+public partial class PowerAccent : IDisposable
 {
     private readonly SettingsService _settingService;
 
     // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
     private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
+    private const double ScreenMinPadding = 150;
 
     private bool _visible;
     private string[] _characters = Array.Empty<string>();
@@ -116,8 +118,8 @@ public class PowerAccent : IDisposable
         if (_settingService.SortByUsageFrequency)
         {
             characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
-                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character)).
-                ToArray<string>();
+                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character))
+                .ToArray<string>();
         }
         else if (!_usageInfo.Empty())
         {
@@ -322,18 +324,30 @@ public class PowerAccent : IDisposable
     public Point GetDisplayCoordinates(Size window)
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
-        double primaryDPI = Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
-        Rect screen = new Rect(activeDisplay.Location, activeDisplay.Size) / primaryDPI;
+        Rect screen = new(activeDisplay.Location, activeDisplay.Size);
         Position position = _settingService.Position;
 
         /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
 
-        return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
+        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi) / activeDisplay.Dpi;
+    }
+
+    public double GetDisplayMaxWidth()
+    {
+        return WindowsFunctions.GetActiveDisplay().Size.Width - ScreenMinPadding;
     }
 
     public Position GetToolbarPosition()
     {
         return _settingService.Position;
+    }
+
+    public void SaveUsageInfo()
+    {
+        if (_settingService.SortByUsageFrequency)
+        {
+            _usageInfo.Save();
+        }
     }
 
     public void Dispose()
@@ -347,7 +361,15 @@ public class PowerAccent : IDisposable
         string[] result = new string[array.Length];
         for (int i = 0; i < array.Length; i++)
         {
-            result[i] = array[i].Contains('ß') ? "ẞ" : array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture);
+            switch (array[i])
+            {
+                case "ß": result[i] = "ẞ"; break;
+                case "ǰ": result[i] = "J\u030c"; break;
+                case "ı\u0307\u0304": result[i] = "İ\u0304"; break;
+                case "ı": result[i] = "İ"; break;
+                case "ᵛ": result[i] = "ⱽ"; break;
+                default: result[i] = array[i].ToUpper(System.Globalization.CultureInfo.InvariantCulture); break;
+            }
         }
 
         return result;

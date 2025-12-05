@@ -3,13 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.UI;
-using Microsoft.UI.Xaml;
+
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class StringToInfoBarSeverityConverter : IValueConverter
+    public sealed partial class StringToInfoBarSeverityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

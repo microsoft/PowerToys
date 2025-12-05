@@ -9,7 +9,6 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Composition.Desktop.h>
-#include <ProjectTelemetry.h>
 #include <thread>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>

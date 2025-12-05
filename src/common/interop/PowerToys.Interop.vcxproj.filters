@@ -18,48 +18,69 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyboardHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HotkeyManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="shared_constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard_layout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard_layout_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LayoutMapManaged.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonManaged.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="two_way_pipe_message_ipc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="two_way_pipe_message_ipc_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="async_message_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HotkeyManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="interop.cpp">
+    <ClCompile Include="keyboard_layout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Generated Files\AssemblyInfo.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyboardHook.cpp">
+    <ClCompile Include="Constants.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LayoutMapManaged.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HotkeyManager.cpp">
+    <ClCompile Include="CommonManaged.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="two_way_pipe_message_ipc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard_layout.cpp">
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp">
+    <ClCompile Include="HotkeyManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.cpp">
+    <ClCompile Include="Constants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,9 +90,33 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <None Include="packages.config" />
+    <None Include="PowerToys.Interop.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Midl Include="HotkeyManager.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="Constants.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="LayoutMapManaged.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="CommonManaged.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="KeyboardHook.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+    <Midl Include="TwoWayPipeMessageIPCManaged.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

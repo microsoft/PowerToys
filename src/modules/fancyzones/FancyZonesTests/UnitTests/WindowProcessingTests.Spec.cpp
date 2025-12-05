@@ -4,6 +4,8 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/WindowUtils.h>
 
+#include <modules/Workspaces/WindowProperties/WorkspacesWindowPropertyUtils.h>
+
 #include "Util.h"
 
 #include <CppUnitTestLogger.h>
@@ -45,7 +47,8 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(IsIconic(window));
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Minimized, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ToolWindow)
@@ -53,7 +56,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", WS_EX_TOOLWINDOW);
             
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::ToolWindow, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (InvisibleWindow)
@@ -63,7 +67,8 @@ namespace FancyZonesUnitTests
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // let ShowWindow finish
             
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NotVisible, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD(NonRootWindow)
@@ -75,7 +80,8 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(FancyZonesWindowUtils::IsRoot(window));
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonRootWindow, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (Popup_App)
@@ -83,7 +89,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW | WS_POPUP);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (Popup_Menu)
@@ -91,7 +98,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonProcessablePopupWindow, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (Popup_MenuEdge)
@@ -99,7 +107,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_POPUP | WS_TILED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_THICKFRAME | WS_SIZEBOX);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::NonProcessablePopupWindow, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (Popup_Calculator)
@@ -107,7 +116,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_BORDER | WS_CLIPSIBLINGS | WS_DLGFRAME | WS_GROUP | WS_POPUP | WS_POPUPWINDOW | WS_SIZEBOX | WS_TABSTOP | WS_TILEDWINDOW);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (Popup_CalculatorTopmost)
@@ -115,7 +125,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_BORDER | WS_CAPTION | WS_CLIPSIBLINGS | WS_DLGFRAME | WS_OVERLAPPED | WS_POPUP | WS_POPUPWINDOW | WS_SIZEBOX | WS_SYSMENU | WS_THICKFRAME);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD(Popup_FacebookMessenger)
@@ -123,7 +134,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_GROUP | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_POPUP | WS_TABSTOP | WS_THICKFRAME);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ChildWindow_OptionDisabled)
@@ -142,7 +154,8 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(FancyZonesWindowUtils::HasVisibleOwner(window), L"Child window doesn't have visible owner");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::ChildWindow, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ChildWindow_OptionEnabled)
@@ -159,7 +172,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, 0, parentWindow);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ExcludedApp_ByDefault)
@@ -168,7 +182,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"SysListView32");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ExcludedApp_ByDefault_SplashScreen)
@@ -176,19 +191,31 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"MsoSplash");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ExcludedApp_ByUser)
         {
-            // case sensitive, should be uppercase
+            // case-sensitive, should be uppercase
             FancyZonesSettings::instance().SetSettings(Settings{ .excludedAppsArray = { L"TEST_EXCLUDED" } });
 
             // exclude by window title
             HWND window = Mocks::WindowCreate(hInst, L"Test_Excluded");
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Excluded, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableManually(window));
+        }
+
+        TEST_METHOD (LaunchedByWorkspaces)
+        {
+            HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW);
+            WorkspacesWindowProperties::StampWorkspacesLaunchedProperty(window);
+
+            Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
+            Assert::IsFalse(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
 
         TEST_METHOD (ProcessableWindow)
@@ -196,7 +223,8 @@ namespace FancyZonesUnitTests
             HWND window = Mocks::WindowCreate(hInst, L"", L"", 0, WS_TILEDWINDOW);
 
             Assert::AreEqual(FancyZonesWindowProcessing::ProcessabilityType::Processable, FancyZonesWindowProcessing::DefineWindowType(window));
-            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessable(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableAutomatically(window));
+            Assert::IsTrue(FancyZonesWindowProcessing::IsProcessableManually(window));
         }
     };
 }

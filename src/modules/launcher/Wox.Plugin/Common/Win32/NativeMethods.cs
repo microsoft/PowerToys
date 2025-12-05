@@ -5,7 +5,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+
 using Wox.Plugin.Common.Interfaces;
+
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 #pragma warning disable SA1649, CA1051, CA1707, CA1028, CA1714, CA1069, SA1402
@@ -66,7 +68,7 @@ namespace Wox.Plugin.Common.Win32
         public static extern int DwmpActivateLivePreview([MarshalAs(UnmanagedType.Bool)] bool fActivate, IntPtr hWndExclude, IntPtr hWndInsertBefore, LivePreviewTrigger lpt, IntPtr prcFinalRect);
 
         [DllImport("dwmapi.dll", PreserveSig = false)]
-        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref uint attrValue, int attrSize);
 
         [DllImport("dwmapi.dll", PreserveSig = false)]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
@@ -493,28 +495,28 @@ namespace Wox.Plugin.Common.Win32
     public enum DwmWindowAttributes
     {
         NCRenderingEnabled = 1,
-        NCRenderingPolicy,
-        TransitionsForceDisabled,
-        AllowNCPaint,
-        CaptionButtonBounds,
-        NonClientRtlLayout,
-        ForceIconicRepresentation,
-        Flip3DPolicy,
-        ExtendedFrameBounds,
-        HasIconicBitmap,
-        DisallowPeek,
-        ExcludedFromPeek,
-        Cloak,
-        Cloaked,
-        FreezeRepresentation,
-        PassiveUpdateMode,
-        UseHostbackdropbrush,
-        UseImmersiveDarkMode,
-        WindowCornerPreference,
-        BorderColor,
-        CaptionColor,
-        TextColor,
-        VisibleFrameBorderThickness,
+        NCRenderingPolicy = 2,
+        TransitionsForceDisabled = 3,
+        AllowNCPaint = 4,
+        CaptionButtonBounds = 5,
+        NonClientRtlLayout = 6,
+        ForceIconicRepresentation = 7,
+        Flip3DPolicy = 8,
+        ExtendedFrameBounds = 9,
+        HasIconicBitmap = 10,
+        DisallowPeek = 11,
+        ExcludedFromPeek = 12,
+        Cloak = 13,
+        Cloaked = 14,
+        FreezeRepresentation = 15,
+        PassiveUpdateMode = 16,
+        UseHostbackdropbrush = 17,
+        UseImmersiveDarkMode = 20,
+        WindowCornerPreference = 33,
+        BorderColor = 34,
+        CaptionColor = 35,
+        TextColor = 36,
+        VisibleFrameBorderThickness = 37,
         Last,
     }
 
@@ -1046,7 +1048,7 @@ namespace Wox.Plugin.Common.Win32
 
         /// <summary>
         /// The window has generic "right-aligned" properties. This depends on the window class. This style has
-        /// an effect only if the shell language supports reading-order alignment, otherwise is ignored.
+        /// an effect only if the shell language supports reading-order alignment; otherwise, is ignored.
         /// </summary>
         WS_EX_RIGHT = 0x1000,
 

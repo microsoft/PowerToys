@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
+
 using Wox.Plugin.Logger;
 
 namespace Microsoft.Plugin.Program.Logger
@@ -18,7 +19,7 @@ namespace Microsoft.Plugin.Program.Logger
     internal static class ProgramLogger
     {
         /// <summary>
-        /// Logs an warning
+        /// Logs a warning
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
         internal static void Warn(string message, Exception ex, Type fullClassName, string loadingProgramPath, [CallerMemberName] string methodName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)

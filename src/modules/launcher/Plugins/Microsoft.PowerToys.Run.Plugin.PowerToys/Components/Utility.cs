@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Input;
+
 using Common.UI;
-using interop;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
+using PowerToys.Interop;
 using Wox.Infrastructure;
 using Wox.Plugin;
 

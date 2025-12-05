@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+
 using Common.UI;
 
 namespace Peek.FilePreviewer.Previewers

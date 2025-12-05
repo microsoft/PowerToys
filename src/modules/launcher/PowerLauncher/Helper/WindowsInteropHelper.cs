@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
+
 using Point = System.Windows.Point;
 
 namespace PowerLauncher.Helper
@@ -197,21 +198,23 @@ namespace PowerLauncher.Helper
         /// <returns>point containing device independent pixels</returns>
         public static Point TransformPixelsToDIP(Visual visual, double unitX, double unitY)
         {
-            Matrix matrix;
-            var source = PresentationSource.FromVisual(visual);
-            if (source != null)
+            var matrix = GetCompositionTarget(visual).TransformFromDevice;
+
+            return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
+        }
+
+        private static CompositionTarget GetCompositionTarget(Visual visual)
+        {
+            var presentationSource = PresentationSource.FromVisual(visual);
+            if (presentationSource != null)
             {
-                matrix = source.CompositionTarget.TransformFromDevice;
+                return presentationSource.CompositionTarget;
             }
             else
             {
-                using (var src = new HwndSource(default))
-                {
-                    matrix = src.CompositionTarget.TransformFromDevice;
-                }
+                using var hwndSource = new HwndSource(default);
+                return hwndSource.CompositionTarget;
             }
-
-            return new Point((int)(matrix.M11 * unitX), (int)(matrix.M22 * unitY));
         }
 
         [StructLayout(LayoutKind.Sequential)]

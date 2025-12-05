@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -18,6 +19,7 @@ using HostsUILib.Helpers;
 using HostsUILib.Models;
 using HostsUILib.Settings;
 using Microsoft.UI.Dispatching;
+
 using static HostsUILib.Settings.IUserSettings;
 
 namespace HostsUILib.ViewModels
@@ -200,7 +202,9 @@ namespace HostsUILib.ViewModels
                     }
 
                     _entries.CollectionChanged += Entries_CollectionChanged;
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                     Entries = new AdvancedCollectionView(_entries, true);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                     Entries.SortDescriptions.Add(new SortDescription(nameof(Entry.Id), SortDirection.Ascending));
                     ApplyFilters();
                     OnPropertyChanged(nameof(Entries));
@@ -283,7 +287,7 @@ namespace HostsUILib.ViewModels
         [RelayCommand]
         public void OverwriteHosts()
         {
-            _hostsService.RemoveReadOnly();
+            _hostsService.RemoveReadOnlyAttribute();
             _ = Task.Run(SaveAsync);
         }
 

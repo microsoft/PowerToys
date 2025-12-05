@@ -5,6 +5,7 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+
 using UtfUnknown;
 
 namespace Peek.FilePreviewer.Previewers
@@ -16,7 +17,7 @@ namespace Peek.FilePreviewer.Previewers
             DetectionResult result = CharsetDetector.DetectFromFile(path);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            // Check if the detected encoding is not null, otherwise default to UTF-8
+            // Check if the detected encoding is not null; otherwise, default to UTF-8
             Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
 
             using var fs = OpenReadOnly(path);

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
+
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -14,7 +15,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ColorPickerPage : Page, IRefreshablePage
+    public sealed partial class ColorPickerPage : NavigablePage, IRefreshablePage
     {
         public ColorPickerViewModel ViewModel { get; set; }
 
@@ -30,10 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ColorPickerViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                null,
+                SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         /// <summary>

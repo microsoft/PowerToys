@@ -130,23 +130,105 @@ IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
     return hr;
 }
 
-HRESULT CPowerRenameRegEx::_OnEnumerateItemsChanged()
+HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
 {
     m_enumerators.clear();
-    const auto options = parseEnumOptions(m_RawReplaceTerm);
-    for (const auto e : options)
-        m_enumerators.emplace_back(e);
+    m_randomizer.clear();
 
+    if (m_flags & RandomizeItems)
+    {
+        const auto options = parseRandomizerOptions(m_RawReplaceTerm);
+
+        for (const auto& option : options)
+        {
+            m_randomizer.emplace_back(option);
+        }
+    }
+
+    if (m_flags & EnumerateItems)
+    {
+        const auto options = parseEnumOptions(m_RawReplaceTerm);
+        for (const auto& option : options)
+        {
+            if (m_randomizer.end() ==
+                std::find_if(
+                    m_randomizer.begin(),
+                    m_randomizer.end(),
+                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }))
+            {
+                // Only add as enumerator if we didn't find a randomizer already at this offset.
+                // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allows any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
+                m_enumerators.emplace_back(option);
+            }
+        }
+    }
+
+    m_replaceWithRandomizerOffsets.clear();
     m_replaceWithEnumeratorOffsets.clear();
+
+    int32_t offset = 0;
+    int ei = 0; // Enumerators index
+    int ri = 0; // Randomizer index
+
     std::wstring replaceWith{ m_RawReplaceTerm };
     // Remove counter expressions and calculate their offsets in replaceWith string.
-    int32_t offset = 0;
-    for (const auto& e : options)
+
+    if ((m_flags & EnumerateItems) && (m_flags & RandomizeItems))
     {
-        replaceWith.erase(e.replaceStrSpan.offset + offset, e.replaceStrSpan.length);
-        m_replaceWithEnumeratorOffsets.push_back(offset);
-        offset -= static_cast<int32_t>(e.replaceStrSpan.length);
+        // Both flags are on, we need to merge which ones should be applied.
+        while ((ei < m_enumerators.size()) && (ri < m_randomizer.size()))
+        {
+            const auto& e = m_enumerators[ei];
+            const auto& r = m_randomizer[ri];
+            if (e.replaceStrSpan.offset < r.options.replaceStrSpan.offset)
+            {
+                // if the enumerator is next in line, remove counter expression and calculate offset with it.
+                replaceWith.erase(e.replaceStrSpan.offset + offset, e.replaceStrSpan.length);
+                m_replaceWithEnumeratorOffsets.push_back(offset);
+                offset -= static_cast<int32_t>(e.replaceStrSpan.length);
+
+                ei++;
+            }
+            else
+            {
+                // if the randomizer is next in line, remove randomizer expression and calculate offset with it.
+                replaceWith.erase(r.options.replaceStrSpan.offset + offset, r.options.replaceStrSpan.length);
+                m_replaceWithRandomizerOffsets.push_back(offset);
+                offset -= static_cast<int32_t>(r.options.replaceStrSpan.length);
+
+                ri++;
+            }
+        }
     }
+
+    if (m_flags & EnumerateItems)
+    {
+        // Continue with all remaining enumerators
+        while (ei < m_enumerators.size())
+        {
+            const auto& e = m_enumerators[ei];
+            replaceWith.erase(e.replaceStrSpan.offset + offset, e.replaceStrSpan.length);
+            m_replaceWithEnumeratorOffsets.push_back(offset);
+            offset -= static_cast<int32_t>(e.replaceStrSpan.length);
+
+            ei++;
+        }
+    }
+
+    if (m_flags & RandomizeItems)
+    {
+        // Continue with all remaining randomizer instances
+        while (ri < m_randomizer.size())
+        {
+            const auto& r = m_randomizer[ri];
+            replaceWith.erase(r.options.replaceStrSpan.offset + offset, r.options.replaceStrSpan.length);
+            m_replaceWithRandomizerOffsets.push_back(offset);
+            offset -= static_cast<int32_t>(r.options.replaceStrSpan.length);
+
+            ri++;
+        }
+    }
+
     return SHStrDup(replaceWith.data(), &m_replaceTerm);
 }
 
@@ -163,8 +245,8 @@ IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool f
             CoTaskMemFree(m_replaceTerm);
             m_RawReplaceTerm = replaceTerm;
 
-            if (m_flags & EnumerateItems)
-                hr = _OnEnumerateItemsChanged();
+            if ((m_flags & RandomizeItems) || (m_flags & EnumerateItems))
+                hr = _OnEnumerateOrRandomizeItemsChanged();
             else
                 hr = SHStrDup(replaceTerm, &m_replaceTerm);
         }
@@ -189,13 +271,20 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     if (m_flags != flags)
     {
         const bool newEnumerate = flags & EnumerateItems;
-        const bool refreshReplaceTerm = !!(m_flags & EnumerateItems) != newEnumerate;
+        const bool newRandomizer = flags & RandomizeItems;
+        const bool refreshReplaceTerm =
+            (!!(m_flags & EnumerateItems) != newEnumerate) ||
+            (!!(m_flags & RandomizeItems) != newRandomizer);
+
         m_flags = flags;
+
         if (refreshReplaceTerm)
         {
             CSRWExclusiveAutoLock lock(&m_lock);
-            if (newEnumerate)
-                _OnEnumerateItemsChanged();
+            if (newEnumerate || newRandomizer)
+            {
+                _OnEnumerateOrRandomizeItemsChanged();
+            }
             else
             {
                 CoTaskMemFree(m_replaceTerm);
@@ -236,6 +325,22 @@ IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
     m_fileTime = ZERO;
     m_useFileTime = false;
     _OnFileTimeChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    m_metadataPatterns = patterns;
+    m_useMetadata = true;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetMetadata()
+{
+    m_metadataPatterns.clear();
+    m_useMetadata = false;
+    _OnMetadataChanged();
     return S_OK;
 }
 
@@ -298,24 +403,50 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         // TODO: creating the regex could be costly.  May want to cache this.
         wchar_t newReplaceTerm[MAX_PATH] = { 0 };
         bool fileTimeErrorOccurred = false;
+        bool metadataErrorOccurred = false;
+        bool appliedTemplateTransform = false;
+
+        std::wstring replaceTemplate;
+        if (m_replaceTerm)
+        {
+            replaceTemplate = m_replaceTerm;
+        }
+
         if (m_useFileTime)
         {
-            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
+            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_fileTime)))
+            {
                 fileTimeErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
+        }
+
+        if (m_useMetadata)
+        {
+            if (FAILED(GetMetadataFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_metadataPatterns)))
+            {
+                metadataErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
         }
 
         std::wstring sourceToUse;
-        std::wstring originalSource;
         sourceToUse.reserve(MAX_PATH);
-        originalSource.reserve(MAX_PATH);
         sourceToUse = source;
-        originalSource = sourceToUse;
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
-        if (m_useFileTime && !fileTimeErrorOccurred)
+        if (appliedTemplateTransform)
         {
-            replaceTerm = newReplaceTerm;
+            replaceTerm = replaceTemplate;
         }
         else if (m_replaceTerm)
         {
@@ -325,41 +456,118 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         static const std::wregex zeroGroupRegex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]");
         static const std::wregex otherGroupsRegex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])");
 
-        if (m_flags & EnumerateItems)
+        if ((m_flags & EnumerateItems) || (m_flags & RandomizeItems))
         {
+            int ei = 0; // Enumerators index
+            int ri = 0; // Randomizer index
             std::array<wchar_t, MAX_PATH> buffer;
             int32_t offset = 0;
 
-            for (size_t ei = 0; ei < m_enumerators.size(); ++ei)
+            if ((m_flags & EnumerateItems) && (m_flags & RandomizeItems))
             {
-                const auto& e = m_enumerators[ei];
-                const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
-                replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
-                offset += replacementLength;
+                // Both flags are on, we need to merge which ones should be applied.
+                while ((ei < m_enumerators.size()) && (ri < m_randomizer.size()))
+                {
+                    const auto& e = m_enumerators[ei];
+                    const auto& r = m_randomizer[ri];
+                    if (e.replaceStrSpan.offset < r.options.replaceStrSpan.offset)
+                    {
+                        // if the enumerator is next in line, apply it.
+                        const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
+                        replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
+                        offset += replacementLength;
+
+                        ei++;
+                    }
+                    else
+                    {
+                        // if the randomizer is next in line, apply it.
+                        std::string randomValue = r.randomize();
+                        std::wstring wRandomValue(randomValue.begin(), randomValue.end());
+                        replaceTerm.insert(r.options.replaceStrSpan.offset + offset + m_replaceWithRandomizerOffsets[ri], wRandomValue);
+                        offset += static_cast<int32_t>(wRandomValue.length());
+
+                        if (e.replaceStrSpan.offset == r.options.replaceStrSpan.offset)
+                        {
+                            // In theory, this shouldn't happen here as we were guarding against it when filling the randomizer and enumerator structures, but it's still here as a fail safe.
+                            // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allow any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
+                            ei++;
+                        }
+
+                        ri++;
+                    }
+                }
+            }
+
+            if (m_flags & EnumerateItems)
+            {
+                // Replace all remaining enumerators
+                while (ei < m_enumerators.size())
+                {
+                    const auto& e = m_enumerators[ei];
+                    const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
+                    replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
+                    offset += replacementLength;
+
+                    ei++;
+                }
+            }
+            if (m_flags & RandomizeItems)
+            {
+                // Replace all remaining randomizer instances
+                while (ri < m_randomizer.size())
+                {
+                    const auto& r = m_randomizer[ri];
+                    std::string randomValue = r.randomize();
+                    std::wstring wRandomValue(randomValue.begin(), randomValue.end());
+                    replaceTerm.insert(r.options.replaceStrSpan.offset + offset + m_replaceWithRandomizerOffsets[ri], wRandomValue);
+                    offset += static_cast<int32_t>(wRandomValue.length());
+
+                    ri++;
+                }
             }
         }
 
-        bool replacedSomething = false;
+        bool shouldIncrementCounter = false;
+        const bool isCaseInsensitive = !(m_flags & CaseSensitive);
+
         if (m_flags & UseRegularExpressions)
         {
             replaceTerm = regex_replace(replaceTerm, zeroGroupRegex, L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, otherGroupsRegex, L"$1$0$4");
 
-            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, !(m_flags & CaseSensitive));
-            replacedSomething = originalSource != res;
+            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, isCaseInsensitive);
+
+            // Use regex search to determine if a match exists. This is the basis for incrementing
+            // the counter.
+            if (_useBoostLib)
+            {
+                boost::wregex pattern(m_searchTerm, boost::wregex::ECMAScript | (isCaseInsensitive ? boost::wregex::icase : boost::wregex::normal));
+                shouldIncrementCounter = boost::regex_search(sourceToUse, pattern);
+            }
+            else
+            {
+                auto regexFlags = std::wregex::ECMAScript;
+                if (isCaseInsensitive)
+                {
+                    regexFlags |= std::wregex::icase;
+                }
+                std::wregex pattern(m_searchTerm, regexFlags);
+                shouldIncrementCounter = std::regex_search(sourceToUse, pattern);
+            }
         }
         else
         {
-            // Simple search and replace
+            // Simple search and replace.
             size_t pos = 0;
             do
             {
-                pos = _Find(sourceToUse, searchTerm, (!(m_flags & CaseSensitive)), pos);
+                pos = _Find(sourceToUse, searchTerm, isCaseInsensitive, pos);
                 if (pos != std::string::npos)
                 {
                     res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
                     pos += replaceTerm.length();
-                    replacedSomething = true;
+                    shouldIncrementCounter = true;
                 }
                 if (!(m_flags & MatchAllOccurrences))
                 {
@@ -368,7 +576,8 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             } while (pos != std::string::npos);
         }
         hr = SHStrDup(res.c_str(), result);
-        if (replacedSomething)
+
+        if (shouldIncrementCounter)
             enumIndex++;
     }
     catch (regex_error e)
@@ -442,3 +651,43 @@ void CPowerRenameRegEx::_OnFileTimeChanged()
         }
     }
 }
+
+void CPowerRenameRegEx::_OnMetadataChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnMetadataChanged();
+        }
+    }
+}
+
+PowerRenameLib::MetadataType CPowerRenameRegEx::_GetMetadataTypeFromFlags() const
+{
+    if (m_flags & MetadataSourceXMP)
+        return PowerRenameLib::MetadataType::XMP;
+    
+    // Default to EXIF
+    return PowerRenameLib::MetadataType::EXIF;
+}
+
+// Interface method implementation  
+IFACEMETHODIMP CPowerRenameRegEx::GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType)
+{
+    if (metadataType == nullptr)
+        return E_POINTER;
+        
+    *metadataType = _GetMetadataTypeFromFlags();
+    return S_OK;
+}
+
+// Convenience method for internal use
+PowerRenameLib::MetadataType CPowerRenameRegEx::GetMetadataType() const
+{
+    return _GetMetadataTypeFromFlags();
+}
+
+

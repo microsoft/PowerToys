@@ -1,7 +1,10 @@
 #pragma once
 #include "pch.h"
+#include "MetadataTypes.h"
+#include "MetadataPatternExtractor.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 enum PowerRenameFlags
 {
@@ -17,7 +20,14 @@ enum PowerRenameFlags
     Uppercase = 0x200,
     Lowercase = 0x400,
     Titlecase = 0x800,
-    Capitalized = 0x1000
+    Capitalized = 0x1000,
+    RandomizeItems = 0x2000,
+    CreationTime = 0x4000,
+    ModificationTime = 0x8000,
+    AccessTime = 0x10000,
+    // Metadata source flags
+    MetadataSourceEXIF = 0x20000,    // Default
+    MetadataSourceXMP = 0x40000,
 };
 
 enum PowerRenameFilters
@@ -43,6 +53,7 @@ public:
     IFACEMETHOD(OnReplaceTermChanged)(_In_ PCWSTR replaceTerm) = 0;
     IFACEMETHOD(OnFlagsChanged)(_In_ DWORD flags) = 0;
     IFACEMETHOD(OnFileTimeChanged)(_In_ SYSTEMTIME fileTime) = 0;
+    IFACEMETHOD(OnMetadataChanged)() = 0;
 };
 
 interface __declspec(uuid("E3ED45B5-9CE0-47E2-A595-67EB950B9B72")) IPowerRenameRegEx : public IUnknown
@@ -58,6 +69,9 @@ public:
     IFACEMETHOD(PutFlags)(_In_ DWORD flags) = 0;
     IFACEMETHOD(PutFileTime)(_In_ SYSTEMTIME fileTime) = 0;
     IFACEMETHOD(ResetFileTime)() = 0;
+    IFACEMETHOD(PutMetadataPatterns)(_In_ const PowerRenameLib::MetadataPatternMap& patterns) = 0;
+    IFACEMETHOD(ResetMetadata)() = 0;
+    IFACEMETHOD(GetMetadataType)(_Out_ PowerRenameLib::MetadataType* metadataType) = 0;
     IFACEMETHOD(Replace)(_In_ PCWSTR source, _Outptr_ PWSTR* result, unsigned long& enumIndex) = 0;
 };
 
@@ -66,7 +80,7 @@ interface __declspec(uuid("C7F59201-4DE1-4855-A3A2-26FC3279C8A5")) IPowerRenameI
 public:
     IFACEMETHOD(PutPath)(_In_opt_ PCWSTR newPath) = 0;
     IFACEMETHOD(GetPath)(_Outptr_ PWSTR * path) = 0;
-    IFACEMETHOD(GetTime)(_Outptr_ SYSTEMTIME* time) = 0;
+    IFACEMETHOD(GetTime)(_In_ DWORD flags, _Outptr_ SYSTEMTIME * time) = 0;
     IFACEMETHOD(GetShellItem)(_Outptr_ IShellItem** ppsi) = 0;
     IFACEMETHOD(GetOriginalName)(_Outptr_ PWSTR * originalName) = 0;
     IFACEMETHOD(PutOriginalName)(_In_opt_ PCWSTR originalName) = 0;
@@ -149,4 +163,13 @@ public:
     IFACEMETHOD(Start)
     (_In_ IEnumShellItems * enumShellItems) = 0;
     IFACEMETHOD(Cancel)() = 0;
+};
+
+interface __declspec(uuid("FAB18E93-2E76-436B-8E26-B1240519AF12")) IPowerRenameRand : public IUnknown
+{
+public:
+    IFACEMETHOD(Start)
+    (_In_ IEnumShellItems * enumShellItems) = 0;
+    IFACEMETHOD(Cancel)
+    () = 0;
 };

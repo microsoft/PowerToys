@@ -6,6 +6,8 @@
 #include <common/utils/winapi_error.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include "KeyboardManagerState.h"
 #include "Dialog.h"
 #include "KeyDropDownControl.h"
@@ -17,8 +19,6 @@
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
 #include <common/Themes/theme_listener.h>
-
-using namespace winrt::Windows::Foundation;
 
 static UINT g_currentDPI = DPIAware::DEFAULT_DPI;
 
@@ -43,7 +43,7 @@ static ThemeListener theme_listener{};
 static void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
-    auto isDark = theme == AppTheme::Dark;
+    auto isDark = theme == Theme::Dark;
     Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
     if (hwndEditShortcutsNativeWindow != nullptr)
     {
@@ -51,7 +51,7 @@ static void handleTheme()
     }
 }
 
-static IAsyncAction OnClickAccept(
+static winrt::Windows::Foundation::IAsyncAction OnClickAccept(
     KBMEditor::KeyboardManagerState& keyboardManagerState,
     XamlRoot root,
     std::function<void()> ApplyRemappings)
@@ -90,7 +90,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         windowClass.lpfnWndProc = EditShortcutsWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == Theme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
@@ -348,7 +348,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         auto indexToDelete = -1;
         for (int i = 0; i < ShortcutControl::shortcutRemapBuffer.size(); i++)
         {
-            auto tempShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].first[0]);
+            auto tempShortcut = std::get<Shortcut>(ShortcutControl::shortcutRemapBuffer[i].mapping[0]);
             if (tempShortcut.ToHstringVK() == keysForShortcutToEdit)
             {
                 indexToDelete = i;
@@ -449,11 +449,15 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
 
 void CreateEditShortcutsWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration, std::wstring keysForShortcutToEdit, std::wstring action)
 {
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
+
     // Move implementation into the separate method so resources get destroyed correctly
     CreateEditShortcutsWindowImpl(hInst, keyboardManagerState, mappingConfiguration, keysForShortcutToEdit, action);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
+    trace.Flush();
     Logger::trace("Terminating process {}", GetCurrentProcessId());
     Logger::flush();
     TerminateProcess(GetCurrentProcess(), 0);
@@ -519,7 +523,7 @@ LRESULT CALLBACK EditShortcutsWindowProc(HWND hWnd, UINT messageCode, WPARAM wPa
     }
     break;
     default:
-        // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
+        // If the Xaml Bridge object exists, then use its message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
         {
             return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);

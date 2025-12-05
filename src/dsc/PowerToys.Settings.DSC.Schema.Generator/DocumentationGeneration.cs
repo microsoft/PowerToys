@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using static PowerToys.Settings.DSC.Schema.Introspection;
 
 namespace PowerToys.Settings.DSC.Schema;

@@ -1,12 +1,11 @@
 #pragma once
 
+#include <common/Telemetry/TraceBase.h>
+
 class Trace
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
-    class MouseWithoutBorders
+    class MouseWithoutBorders : public telemetry::TraceBase
     {
     public:
         static void Enable(bool enabled) noexcept;

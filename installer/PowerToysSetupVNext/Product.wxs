@@ -1,0 +1,297 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <!-- WiX Components with multiple files cause issues due to the way Windows installs them. 
+         Windows decides whether to install a component by checking the existence of KeyPath file and its version.
+         Thus, if some files were updated but KeyPath file was not, the component wouldn't be updated.
+         Some resource files, e.g. images, do not have version, so even if Component has only a single image and a static GUID, it won't be updated.
+         
+         Considering all of the above, it's much simpler to just have one file per Component with an implicit Guid.
+
+         More info:
+         - https://stackoverflow.com/a/1604348/657390
+         - https://stackoverflow.com/a/1422121/657390
+         - https://robmensching.com/blog/posts/2003/10/18/component-rules-101/
+         - https://robmensching.com/blog/posts/2003/10/4/windows-installer-components-introduction/
+           -->
+
+  <Package Name="PowerToys (Preview)" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCodeGUID)" Scope="$(var.InstallScope)">
+
+
+      
+
+    <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
+
+    <Upgrade Id="$(var.UpgradeCodeGUID)">
+      <UpgradeVersion Minimum="0.0.0" Maximum="$(var.Version)" Property="PREVIOUSVERSIONSINSTALLED" IncludeMinimum="yes" IncludeMaximum="no" />
+    </Upgrade>
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="REINSTALLMODE" Value="amus" />
+    <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
+      <RegistrySearch Id="BuildNumberSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" />
+    </Property>
+    <Launch Condition="(WINDOWSBUILDNUMBER &gt;= 19041)" Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher." />
+
+    <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico" />
+
+    <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
+
+    <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" TypicalDefault="install" Description="Contains all PowerToys features." AllowAbsent="no">
+      <ComponentGroupRef Id="CoreComponents" />
+      <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
+      <ComponentGroupRef Id="WinUI3ApplicationsComponentGroup" />
+      <ComponentGroupRef Id="AwakeComponentGroup" />
+      <ComponentGroupRef Id="ColorPickerComponentGroup" />
+      <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />
+      <ComponentGroupRef Id="FileLocksmithComponentGroup" />
+      <ComponentGroupRef Id="HostsComponentGroup" />
+      <ComponentGroupRef Id="ImageResizerComponentGroup" />
+      <ComponentGroupRef Id="KeyboardManagerComponentGroup" />
+      <ComponentGroupRef Id="LightSwitchComponentGroup" />
+      <ComponentGroupRef Id="PeekComponentGroup" />
+      <ComponentGroupRef Id="PowerRenameComponentGroup" />
+      <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
+      <ComponentGroupRef Id="RunComponentGroup" />
+      <ComponentGroupRef Id="SettingsComponentGroup" />
+      <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
+      <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
+      <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
+      <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
+      <ComponentGroupRef Id="NewPlusComponentGroup" />
+      <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
+      <ComponentGroupRef Id="ResourcesComponentGroup" />
+      <ComponentGroupRef Id="DscResourcesComponentGroup" />
+      <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
+      <ComponentGroupRef Id="ToolComponentGroup" />
+      <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
+      <ComponentGroupRef Id="WorkspacesComponentGroup" />
+      <ComponentGroupRef Id="CmdPalComponentGroup" />
+    </Feature>
+
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" Sequence="execute" />
+    
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+    <UI>
+      <ui:WixUI Id="WixUI_InstallDir" />
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="99" />
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="99" />
+
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Condition="NOT Installed" />
+      <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Property="_REMOVE_ALL" Value="Yes" />
+      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogInstallCancel" Condition="NOT Installed" />
+      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogInstallFail" Condition="NOT Installed" />
+      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogUninstallCancel" Condition="Installed AND _REMOVE_ALL=&quot;Yes&quot;" />
+      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogUninstallFail" Condition="Installed AND _REMOVE_ALL=&quot;Yes&quot;" />
+      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogRepairCancel" Condition="Installed AND NOT (_REMOVE_ALL=&quot;Yes&quot;)" />
+      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogRepairFail" Condition="Installed AND NOT (_REMOVE_ALL=&quot;Yes&quot;)" />
+    </UI>
+
+    <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Images\banner.png" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Images\dialog.png" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
+    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
+    <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
+
+    <SetProperty Action="SetDEFAULTBOOTSTRAPPERINSTALLFOLDER" Id="DEFAULTBOOTSTRAPPERINSTALLFOLDER" Value="[$(var.DefaultInstallDir)]PowerToys" Before="SetBOOTSTRAPPERINSTALLFOLDER" Sequence="execute"></SetProperty>
+
+    <!-- In case we didn't receive a value from the bootstrapper. -->
+    <SetProperty Action="SetBOOTSTRAPPERINSTALLFOLDER" Id="BOOTSTRAPPERINSTALLFOLDER" Value="[DEFAULTBOOTSTRAPPERINSTALLFOLDER]" Before="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER = &quot;&quot;" />
+    <!-- Have to compare value sent by bootstrapper to default to avoid using it, as a check to verify it's not default. This hack can be removed if it's possible to set the bootstrapper option to the previous install folder--> 
+    <SetProperty Action="SetINSTALLFOLDERTOPREVIOUSINSTALLFOLDER" Id="INSTALLFOLDER" Value="[PREVIOUSINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER = DEFAULTBOOTSTRAPPERINSTALLFOLDER AND PREVIOUSINSTALLFOLDER &lt;&gt; &quot;&quot;" />
+    <SetProperty Action="SetINSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER" Id="INSTALLFOLDER" Value="[BOOTSTRAPPERINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER &lt;&gt; DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = &quot;&quot;" />
+
+    <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallPath" Sequence="execute"></SetProperty>
+    <InstallExecuteSequence>
+      <Custom Action="DetectPrevInstallPath" After="AppSearch" />
+      <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
+      <Custom Action="SetInstallCmdPalPackageParam" Before="InstallCmdPalPackage" />
+      <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
+      <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
+      <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
+      <Custom Action="SetInstallPackageIdentityMSIXParam" Before="InstallPackageIdentityMSIX" />
+
+      <?if $(var.PerUser) = "true" ?>
+      <Custom Action="SetInstallDSCModuleParam" Before="InstallDSCModule" />
+      <?endif?>
+
+      <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
+      <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
+      <Custom Action="SetBundleInstallLocationData" Before="SetBundleInstallLocation" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
+      <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
+      <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="InstallPackageIdentityMSIX" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
+      <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
+      <!-- TODO: Use to activate embedded MSIX -->
+      <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
+        NOT Installed
+      </Custom>-->
+        <?if $(var.PerUser) = "true" ?>
+        <Custom Action="InstallDSCModule" After="InstallFiles" />
+        <?endif?>
+        <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize" Condition="NOT Installed" />
+      <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize" Condition="Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="CleanImageResizerRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="CleanFileLocksmithRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="CleanPowerRenameRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="CleanNewPlusRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
+      <Custom Action="UninstallPackageIdentityMSIX" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UninstallServicesTask" After="InstallFinalize" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+        <!-- TODO: Use to activate embedded MSIX -->
+      <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
+        Installed AND (REMOVE="ALL")
+      </Custom>-->
+      <?if $(var.PerUser) = "true" ?>
+      <Custom Action="UninstallDSCModule" After="InstallFinalize" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <?endif?>
+      <Custom Action="TerminateProcesses" Before="InstallValidate" />
+      <Custom Action="LaunchPowerToys" Before="InstallFinalize" Condition="NOT Installed" />
+
+      <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
+      <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize" Condition="NOT Installed" />
+
+    </InstallExecuteSequence>
+
+    <CustomAction Id="SetLaunchPowerToysParam" Property="LaunchPowerToys" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetInstallCmdPalPackageParam" Property="InstallCmdPalPackage" Value="[INSTALLFOLDER]" />
+
+    <!-- Set InstallLocation for Bundle entry as well -->
+    <CustomAction Id="SetBundleInstallLocationData" Property="SetBundleInstallLocation" Value="[INSTALLFOLDER];[BUNDLEINFO];[InstallScope]" />
+
+    <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TerminateProcesses" Return="ignore" Execute="immediate" DllEntry="TerminateProcessesCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="SetApplyModulesRegistryChangeSetsParam" Property="ApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam" Property="UnApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetInstallDSCModuleParam" Property="InstallDSCModule" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUninstallCommandNotFoundParam" Property="UninstallCommandNotFound" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetUpgradeCommandNotFoundParam" Property="UpgradeCommandNotFound" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetCreateWinAppSDKHardlinksParam" Property="CreateWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeleteWinAppSDKHardlinksParam" Property="DeleteWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetCreatePTInteropHardlinksParam" Property="CreatePTInteropHardlinks" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeletePTInteropHardlinksParam" Property="DeletePTInteropHardlinks" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetCreateDotnetRuntimeHardlinksParam" Property="CreateDotnetRuntimeHardlinks" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetDeleteDotnetRuntimeHardlinksParam" Property="DeleteDotnetRuntimeHardlinks" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="RemovePowerToysSchTasks" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="RemoveScheduledTasksCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="InstallEmbeddedMSIXTask" Return="ignore" Impersonate="yes" DllEntry="InstallEmbeddedMSIXCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UninstallEmbeddedMSIXTask" Return="ignore" Impersonate="yes" DllEntry="UninstallEmbeddedMSIXCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="SetInstallPackageIdentityMSIXParam" Property="InstallPackageIdentityMSIX" Value="[INSTALLFOLDER];[InstallScope]" />
+
+    <CustomAction Id="InstallPackageIdentityMSIX" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallPackageIdentityMSIXCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UninstallPackageIdentityMSIX" Return="ignore" Impersonate="yes" DllEntry="UninstallPackageIdentityMSIXCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="InstallDSCModule" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallDSCModuleCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UninstallDSCModule" Return="ignore" Impersonate="yes" DllEntry="UninstallDSCModuleCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UninstallServicesTask" Return="ignore" Impersonate="yes" DllEntry="UninstallServicesCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UninstallCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UninstallCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
+    
+    <CustomAction Id="UpgradeCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UpgradeCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UnsetAdvancedPasteAPIKey" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnsetAdvancedPasteAPIKeyCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogInstallSuccess" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallSuccessCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogInstallCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallCancelCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogInstallFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallFailCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogUninstallSuccess" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogUninstallSuccessCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogUninstallCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogUninstallCancelCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogUninstallFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogUninstallFailCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogRepairCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogRepairCancelCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="TelemetryLogRepairFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogRepairFailCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="DetectPrevInstallPath" Return="check" Impersonate="yes" DllEntry="DetectPrevInstallPathCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CleanVideoConferenceRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanVideoConferenceRegistryCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="ApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="ApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UnApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="UnApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UnRegisterContextMenuPackages" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterContextMenuPackagesCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CleanImageResizerRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanImageResizerRuntimeRegistryCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CleanFileLocksmithRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanFileLocksmithRuntimeRegistryCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CleanPowerRenameRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanPowerRenameRuntimeRegistryCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CleanNewPlusRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanNewPlusRuntimeRegistryCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UnRegisterCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterCmdPalPackageCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="SetBundleInstallLocation" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="SetBundleInstallLocationCA" BinaryRef="PTCustomActions" />
+
+    <!-- Close 'PowerToys.exe' before uninstall-->
+    <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
+    <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
+    <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
+  </Package>
+
+  <Fragment>
+    <Binary Id="PTCustomActions" SourceFile="$(var.PowerToysSetupCustomActionsVNext.TargetPath)" />
+  </Fragment>
+
+  <!-- Installation directory structure -->
+  <Fragment>
+      <StandardDirectory Id="$(var.DefaultInstallDir)">
+        <Directory Id="INSTALLFOLDER" Name="PowerToys">
+          <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
+          </Directory>
+          <Directory Id="DSCModulesReferenceFolder" Name="DSCModules" />
+          <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
+              <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+                <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
+              </Directory>
+            <Directory Id="WinUI3AppsAssetsFolder" Name="Assets">
+            </Directory>
+          </Directory>
+          <Directory Id="ToolsFolder" Name="Tools" />
+        </Directory>
+      </StandardDirectory>
+      <StandardDirectory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)" />
+      </StandardDirectory>
+      <StandardDirectory Id="DesktopFolder" />
+    </Fragment>
+</Wix>

@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+
 using static PowerLauncher.Helper.WindowsInteropHelper;
 
 // http://blogs.microsoft.co.il/arik/2010/05/28/wpf-single-instance-application/

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using HostsUILib.Models;
 
 namespace HostsUILib.Helpers
@@ -21,10 +22,8 @@ namespace HostsUILib.Helpers
 
         Task<bool> PingAsync(string address);
 
-        void CleanupBackup();
-
         void OpenHostsFile();
 
-        void RemoveReadOnly();
+        void RemoveReadOnlyAttribute();
     }
 }

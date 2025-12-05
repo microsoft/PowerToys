@@ -10,6 +10,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+
 using ColorPicker.Helpers;
 using ColorPicker.Models;
 

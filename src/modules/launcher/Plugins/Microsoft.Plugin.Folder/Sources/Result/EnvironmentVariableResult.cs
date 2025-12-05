@@ -4,6 +4,7 @@
 
 using System.Globalization;
 using System.Text;
+
 using Wox.Infrastructure;
 using Wox.Plugin;
 

@@ -35,5 +35,20 @@ namespace ManagedCommon
                 }
             }
         }
+
+        /// <summary>
+        /// Workaround for a WinUI bug on Windows 10 in which a window's top border is always
+        /// black. Calls <c>DwmExtendFrameIntoClientArea()</c> with a <c>cyTopHeight</c> of 2 to force
+        /// the window's top border to be visible.<br/><br/>
+        /// Is a no-op on versions other than Windows 10.
+        /// </summary>
+        public static void ForceTopBorder1PixelInsetOnWindows10(IntPtr handle)
+        {
+            if (OSVersionHelper.IsWindows10())
+            {
+                var margins = new NativeMethods.MARGINS { cxLeftWidth = 0, cxRightWidth = 0, cyBottomHeight = 0, cyTopHeight = 2 };
+                NativeMethods.DwmExtendFrameIntoClientArea(handle, ref margins);
+            }
+        }
     }
 }

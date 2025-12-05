@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows.Forms;
+
 using MouseWithoutBorders.Class;
 
 namespace MouseWithoutBorders

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -14,8 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public struct ConnectionRequest
 #pragma warning restore SA1649 // File name should match first type name
     {
-        public string PCName;
-        public string SecurityKey;
+        public string PCName { get; set; }
+
+        public string SecurityKey { get; set; }
     }
 
     public struct NewKeyGenerationRequest
@@ -90,6 +92,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool MatrixOneRow { get; set; }
 
         public IntProperty EasyMouse { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool DisableEasyMouseWhenForegroundWindowIsFullscreen { get; set; }
+
+        // Apps that are to be excluded when using DisableEasyMouseWhenForegroundWindowIsFullscreen
+        // meaning that it is possible to switch screen when these apps are running in fullscreen.
+        [CmdConfigureIgnore]
+        public GenericProperty<HashSet<string>> EasyMouseFullscreenSwitchBlockExcludedApps { get; set; }
 
         [CmdConfigureIgnore]
         public IntProperty MachineID { get; set; }
@@ -171,6 +181,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DeviceID = new StringProperty(string.Empty);
             ShowOriginalUI = false;
             UseService = false;
+
+            DisableEasyMouseWhenForegroundWindowIsFullscreen = true;
+            EasyMouseFullscreenSwitchBlockExcludedApps = new GenericProperty<HashSet<string>>(new HashSet<string>(StringComparer.OrdinalIgnoreCase));
 
             HotKeySwitchMachine = new IntProperty(0x70); // VK.F1
             ToggleEasyMouseShortcut = DefaultHotKeyToggleEasyMouse;

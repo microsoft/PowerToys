@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using HtmlAgilityPack;
 using ManagedCommon;
 using Windows.ApplicationModel.DataTransfer;
@@ -14,67 +15,15 @@ namespace AdvancedPaste.Helpers
 {
     internal static class MarkdownHelper
     {
-        public static string ToMarkdown(DataPackageView clipboardData)
+        public static async Task<string> ToMarkdownAsync(DataPackageView clipboardData)
         {
             Logger.LogTrace();
 
-            if (clipboardData == null)
-            {
-                Logger.LogWarning("Clipboard does not contain data");
+            var data = clipboardData.Contains(StandardDataFormats.Html) ? await clipboardData.GetHtmlFormatAsync()
+                     : clipboardData.Contains(StandardDataFormats.Text) ? await clipboardData.GetTextAsync()
+                     : string.Empty;
 
-                return string.Empty;
-            }
-
-            string data = string.Empty;
-
-            if (clipboardData.Contains(StandardDataFormats.Html))
-            {
-                data = Task.Run(async () =>
-                {
-                    string data = await clipboardData.GetHtmlFormatAsync() as string;
-                    return data;
-                }).Result;
-            }
-            else if (clipboardData.Contains(StandardDataFormats.Text))
-            {
-                data = Task.Run(async () =>
-                {
-                    string plainText = await clipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
-            }
-
-            if (!string.IsNullOrEmpty(data))
-            {
-                string cleanedHtml = CleanHtml(data);
-
-                return ConvertHtmlToMarkdown(cleanedHtml);
-            }
-
-            return string.Empty;
-        }
-
-        public static string PasteAsPlainTextFromClipboard(DataPackageView clipboardData)
-        {
-            Logger.LogTrace();
-
-            if (clipboardData != null)
-            {
-                if (!clipboardData.Contains(StandardDataFormats.Text))
-                {
-                    Logger.LogWarning("Clipboard does not contain text data");
-
-                    return string.Empty;
-                }
-
-                return Task.Run(async () =>
-                {
-                    string plainText = await clipboardData.GetTextAsync() as string;
-                    return plainText;
-                }).Result;
-            }
-
-            return string.Empty;
+            return string.IsNullOrEmpty(data) ? string.Empty : ConvertHtmlToMarkdown(CleanHtml(data));
         }
 
         private static string CleanHtml(string html)

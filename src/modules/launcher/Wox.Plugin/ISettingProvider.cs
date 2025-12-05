@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Windows.Controls;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Wox.Plugin

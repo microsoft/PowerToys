@@ -5,8 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.ViewModels;
@@ -24,21 +25,14 @@ namespace AdvancedPaste.Pages
     public sealed partial class MainPage : Page
     {
         private readonly ObservableCollection<ClipboardItem> clipboardHistory;
-        private readonly ObservableCollection<PasteFormat> pasteFormats;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+        private (VirtualKey Key, DateTime Timestamp) _lastKeyEvent = (VirtualKey.None, DateTime.MinValue);
 
         public OptionsViewModel ViewModel { get; private set; }
 
         public MainPage()
         {
             this.InitializeComponent();
-
-            pasteFormats =
-            [
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE8E9" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsPlainText"), Format = PasteFormats.PlainText },
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\ue8a5" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsMarkdown"), Format = PasteFormats.Markdown },
-                new PasteFormat { Icon = new FontIcon() { Glyph = "\uE943" }, Name = ResourceLoaderInstance.ResourceLoader.GetString("PasteAsJson"), Format = PasteFormats.Json },
-            ];
 
             ViewModel = App.GetService<OptionsViewModel>();
 
@@ -74,11 +68,22 @@ namespace AdvancedPaste.Pages
                             if (item.Content.Contains(StandardDataFormats.Text))
                             {
                                 string text = await item.Content.GetTextAsync();
-                                items.Add(new ClipboardItem { Content = text, Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Content = text,
+                                    Format = ClipboardFormat.Text,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                             else if (item.Content.Contains(StandardDataFormats.Bitmap))
                             {
-                                items.Add(new ClipboardItem { Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Format = ClipboardFormat.Image,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                         }
                     }
@@ -86,6 +91,11 @@ namespace AdvancedPaste.Pages
 
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
+                    // Clear to avoid leaks due to Garbage Collection not clearing the bitmap from memory. Fix for https://github.com/microsoft/PowerToys/issues/33423
+                    clipboardHistory.Where(x => x.Image is not null)
+                                    .ToList()
+                                    .ForEach(x => x.Image.ClearValue(BitmapImage.UriSourceProperty));
+
                     clipboardHistory.Clear();
 
                     foreach (var item in items)
@@ -115,6 +125,8 @@ namespace AdvancedPaste.Pages
             }
         }
 
+        private static MainWindow GetMainWindow() => (App.Current as App)?.GetMainWindow();
+
         private void ClipboardHistoryItemDeleteButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
@@ -129,83 +141,49 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private void PasteAsPlain()
-        {
-            ViewModel.ToPlainTextFunction();
-        }
-
-        private void PasteAsMarkdown()
-        {
-            ViewModel.ToMarkdownFunction();
-        }
-
-        private void PasteAsJson()
-        {
-            ViewModel.ToJsonFunction();
-        }
-
-        private void PasteOptionsListView_ItemClick(object sender, ItemClickEventArgs e)
+        private async void PasteFormat_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is PasteFormat format)
             {
-                switch (format.Format)
-                {
-                    case PasteFormats.PlainText:
-                        {
-                            PasteAsPlain();
-                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.PlainText));
-                            break;
-                        }
-
-                    case PasteFormats.Markdown:
-                        {
-                            PasteAsMarkdown();
-                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.Markdown));
-                            break;
-                        }
-
-                    case PasteFormats.Json:
-                        {
-                            PasteAsJson();
-                            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteFormatClickedEvent(PasteFormats.Json));
-                            break;
-                        }
-                }
+                await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.ContextMenu);
             }
         }
 
-        private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+        private async void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
         {
+            if (GetMainWindow()?.Visible is false)
+            {
+                return;
+            }
+
             Logger.LogTrace();
+
+            var thisKeyEvent = (sender.Key, Timestamp: DateTime.Now);
+            if (thisKeyEvent.Key == _lastKeyEvent.Key && (thisKeyEvent.Timestamp - _lastKeyEvent.Timestamp) < TimeSpan.FromMilliseconds(200))
+            {
+                // Sometimes, multiple keyboard accelerator events are raised for a single Ctrl + VirtualKey press.
+                return;
+            }
+
+            _lastKeyEvent = thisKeyEvent;
 
             switch (sender.Key)
             {
                 case VirtualKey.Escape:
-                    {
-                        (App.Current as App).GetMainWindow().Close();
-                        break;
-                    }
+                    GetMainWindow()?.Close();
+                    break;
 
                 case VirtualKey.Number1:
-                    {
-                        PasteAsPlain();
-                        PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(PasteFormats.PlainText));
-                        break;
-                    }
-
                 case VirtualKey.Number2:
-                    {
-                        PasteAsMarkdown();
-                        PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(PasteFormats.Markdown));
-                        break;
-                    }
-
                 case VirtualKey.Number3:
-                    {
-                        PasteAsJson();
-                        PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteInAppKeyboardShortcutEvent(PasteFormats.Json));
-                        break;
-                    }
+                case VirtualKey.Number4:
+                case VirtualKey.Number5:
+                case VirtualKey.Number6:
+                case VirtualKey.Number7:
+                case VirtualKey.Number8:
+                case VirtualKey.Number9:
+                    await ViewModel.ExecutePasteFormatAsync(sender.Key);
+                    break;
 
                 default:
                     break;
@@ -216,24 +194,23 @@ namespace AdvancedPaste.Pages
         {
             if (e.Key == VirtualKey.Escape)
             {
-                (App.Current as App).GetMainWindow().Close();
+                GetMainWindow()?.Close();
             }
         }
 
-        private async void ClipboardHistory_ItemClick(object sender, ItemClickEventArgs e)
+        private async void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
         {
-            var item = e.ClickedItem as ClipboardItem;
-            if (item is not null)
+            if (args.InvokedItem is ClipboardItem item)
             {
+                PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
                 if (!string.IsNullOrEmpty(item.Content))
                 {
-                    ClipboardHelper.SetClipboardTextContent(item.Content);
+                    ClipboardHelper.SetTextContent(item.Content);
                 }
                 else if (item.Image is not null)
                 {
-                    RandomAccessStreamReference image = null;
-                    image = await item.Item.Content.GetBitmapAsync();
-                    ClipboardHelper.SetClipboardImageContent(image);
+                    RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
+                    ClipboardHelper.SetImageContent(image);
                 }
             }
         }

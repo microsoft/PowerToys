@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+
 using Peek.FilePreviewer.Previewers.Archives.Models;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces

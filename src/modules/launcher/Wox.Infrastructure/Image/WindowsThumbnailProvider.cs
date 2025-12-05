@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+
 using Microsoft.Win32;
 using Wox.Plugin.Logger;
 
@@ -254,7 +255,7 @@ namespace Wox.Infrastructure.Image
                     Log.Exception("Got an exception while trying to detect Adobe Reader / Adobe Acrobat Pro as PDF thumbnail provider. To prevent PT Run from a Dispatcher crash, we report that Adobe Reader / Adobe Acrobat Pro is used and show only the PDF icon in the results.", ex, MethodBase.GetCurrentMethod().DeclaringType);
                 }
 
-                // If we fail to detect it, we return that Adobe is used. Otherwise we could run into the Dispatcher crash.
+                // If we fail to detect it, we return that Adobe is used. Otherwise, we could run into the Dispatcher crash.
                 // (This only results in showing the icon instead of a thumbnail. It has no other functional impact.)
                 return true;
             }

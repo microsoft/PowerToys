@@ -7,7 +7,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.PowerToys.STATestExtension;
+
 using Microsoft.PowerToys.ThumbnailHandler.Svg;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

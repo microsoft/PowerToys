@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure.Image

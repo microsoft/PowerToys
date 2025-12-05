@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+
 using Microsoft.Win32;
 using Wox.Plugin;
 using Wox.Plugin.Logger;

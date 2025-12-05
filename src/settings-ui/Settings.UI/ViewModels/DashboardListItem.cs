@@ -6,18 +6,21 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
 using ManagedCommon;
 using Microsoft.UI;
 using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class DashboardListItem : INotifyPropertyChanged
+    public partial class DashboardListItem : INotifyPropertyChanged
     {
         private bool _visible;
         private bool _isEnabled;
 
         public string Label { get; set; }
+
+        public bool IsNew { get; set; }
 
         public string Icon { get; set; }
 

@@ -3,6 +3,11 @@
 #include "srwlock.h"
 
 #include "Enumerating.h"
+
+#include "Randomizer.h"
+#include "MetadataTypes.h"
+#include "MetadataPatternExtractor.h"
+
 #include "PowerRenameInterfaces.h"
 
 #define DEFAULT_FLAGS 0
@@ -26,7 +31,13 @@ public:
     IFACEMETHODIMP PutFlags(_In_ DWORD flags);
     IFACEMETHODIMP PutFileTime(_In_ SYSTEMTIME fileTime);
     IFACEMETHODIMP ResetFileTime();
+    IFACEMETHODIMP PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns);
+    IFACEMETHODIMP ResetMetadata();
+    IFACEMETHODIMP GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType);
     IFACEMETHODIMP Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, unsigned long& enumIndex);
+    
+    // Get current metadata type based on flags
+    PowerRenameLib::MetadataType GetMetadataType() const;
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx);
 
@@ -38,7 +49,9 @@ protected:
     void _OnReplaceTermChanged();
     void _OnFlagsChanged();
     void _OnFileTimeChanged();
-    HRESULT _OnEnumerateItemsChanged();
+    void _OnMetadataChanged();
+    HRESULT _OnEnumerateOrRandomizeItemsChanged();
+    PowerRenameLib::MetadataType _GetMetadataTypeFromFlags() const;
 
     size_t _Find(std::wstring data, std::wstring toSearch, bool caseInsensitive, size_t pos);
 
@@ -51,6 +64,9 @@ protected:
     SYSTEMTIME m_fileTime = { 0 };
     bool m_useFileTime = false;
 
+    PowerRenameLib::MetadataPatternMap m_metadataPatterns;
+    bool m_useMetadata = false;
+
     CSRWLock m_lock;
     CSRWLock m_lockEvents;
 
@@ -58,6 +74,9 @@ protected:
 
     std::vector<Enumerator> m_enumerators;
     std::vector<int32_t> m_replaceWithEnumeratorOffsets;
+
+    std::vector<Randomizer> m_randomizer;
+    std::vector<int32_t> m_replaceWithRandomizerOffsets;
 
     struct RENAME_REGEX_EVENT
     {

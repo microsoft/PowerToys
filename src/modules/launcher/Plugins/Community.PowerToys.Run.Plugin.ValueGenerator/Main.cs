@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+
+using Community.PowerToys.Run.Plugin.ValueGenerator.Helper;
 using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 using ManagedCommon;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -59,6 +62,19 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
         }
 
+        private static string GetIcoPath(bool isWarning = false)
+        {
+            var imageName = isWarning ? "Warning" : "ValueGenerator";
+            if (_isLightTheme)
+            {
+                return $"Images/{imageName}.light.png";
+            }
+            else
+            {
+                return $"Images/{imageName}.dark.png";
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -90,6 +106,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             ArgumentNullException.ThrowIfNull(query);
 
             var results = new List<Result>();
+            if (string.IsNullOrWhiteSpace(query?.Search) && !string.IsNullOrEmpty(query?.ActionKeyword))
+            {
+                return GetSuggestionResults(query, results);
+            }
+
             try
             {
                 IComputeRequest computeRequest = _inputParser.ParseInput(query);
@@ -110,7 +131,33 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             }
             catch (FormatException e)
             {
-               Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
+                Log.Debug(GetTranslatedPluginTitle() + ": " + e.Message, GetType());
+                if (!string.IsNullOrEmpty(query.ActionKeyword))
+                {
+                    return GetSuggestionFuzzyResults(query, results);
+                }
+            }
+
+            return results;
+        }
+
+        private List<Result> GetSuggestionResults(Query query, List<Result> results)
+        {
+            foreach (var generatorData in QueryHelper.GeneratorDataList)
+            {
+                results.Add(new Result
+                {
+                    Title = QueryHelper.GetResultTitle(generatorData),
+                    SubTitle = QueryHelper.GetResultSubtitle(generatorData),
+                    IcoPath = GetIcoPath(),
+                    ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
+                    QueryTextDisplay = generatorData.Keyword + " ",
+                    Action = c =>
+                    {
+                        _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword} ", true);
+                        return false;
+                    },
+                });
             }
 
             return results;
@@ -124,7 +171,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             {
                 ContextData = request.Result,
                 Title = request.ResultToString(),
-                IcoPath = _isLightTheme ? "Images/ValueGenerator.light.png" : "Images/ValueGenerator.dark.png",
+                IcoPath = GetIcoPath(),
                 Score = 300,
                 SubTitle = request.Description,
                 Action = c =>
@@ -137,9 +184,10 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                             Clipboard.SetText(request.ResultToString());
                             ret = true;
                         }
-                        catch (ExternalException)
+                        catch (ExternalException ex)
                         {
-                            MessageBox.Show(Properties.Resources.copy_failed);
+                            Log.Exception("Copy failed", ex, GetType());
+                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
                         }
                     });
                     thread.SetApartmentState(ApartmentState.STA);
@@ -150,13 +198,42 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
             };
         }
 
+        private List<Result> GetSuggestionFuzzyResults(Query query, List<Result> results)
+        {
+            foreach (var generatorData in QueryHelper.GeneratorDataList)
+            {
+                var matchScore = StringMatcher.FuzzySearch(query.Search.Trim(), generatorData.Keyword).Score;
+
+                if (matchScore > 0)
+                {
+                    results.Add(new Result
+                    {
+                        Title = QueryHelper.GetResultTitle(generatorData),
+                        SubTitle = QueryHelper.GetResultSubtitle(generatorData),
+                        IcoPath = GetIcoPath(),
+                        Score = matchScore,
+                        ToolTipData = new ToolTipData(QueryHelper.GetResultTitle(generatorData), QueryHelper.GetResultSubtitle(generatorData)),
+                        QueryTextDisplay = generatorData.Keyword + " ",
+                        Action = c =>
+                        {
+                            _context.API.ChangeQuery($"{query.ActionKeyword} {generatorData.Keyword} ", true);
+                            return false;
+                        },
+                    });
+                }
+            }
+
+            return results;
+        }
+
         private Result GetErrorResult(string errorMessage)
         {
             return new Result
             {
                 Title = Resources.error_title,
                 SubTitle = errorMessage,
-                IcoPath = _isLightTheme ? "Images/Warning.light.png" : "Images/Warning.dark.png",
+                ToolTipData = new ToolTipData(Resources.error_title, errorMessage),
+                IcoPath = GetIcoPath(isWarning: true),
                 Action = _ => { return true; },
             };
         }

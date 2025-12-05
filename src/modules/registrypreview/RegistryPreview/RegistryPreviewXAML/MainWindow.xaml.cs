@@ -4,10 +4,13 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using RegistryPreview.Telemetry;
 using RegistryPreviewUILib;
 using Windows.Data.Json;
 using Windows.Graphics;
@@ -21,7 +24,6 @@ namespace RegistryPreview
         private const string APPNAME = "RegistryPreview";
 
         // private members
-        private Microsoft.UI.Windowing.AppWindow appWindow;
         private JsonObject jsonWindowPlacement;
         private string settingsFolder = string.Empty;
         private string windowPlacementFile = "app-placement.json";
@@ -36,19 +38,15 @@ namespace RegistryPreview
             settingsFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Microsoft\PowerToys\" + APPNAME;
             OpenWindowPlacementFile(settingsFolder, windowPlacementFile);
 
-            // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            Microsoft.UI.WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
-            appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
-
             // TODO(stefan)
-            appWindow.Closing += AppWindow_Closing;
-            Activated += MainWindow_Activated;
+            AppWindow.Closing += AppWindow_Closing;
 
             // Extend the canvas to include the title bar so the app can support theming
             ExtendsContentIntoTitleBar = true;
+            IntPtr windowHandle = this.GetWindowHandle();
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(windowHandle);
             SetTitleBar(titleBar);
+            AppWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
 
             // if have settings, update the location of the window
             if (jsonWindowPlacement != null)
@@ -63,7 +61,7 @@ namespace RegistryPreview
                     // check to make sure the size values are reasonable before attempting to restore the last saved size
                     if (size.Width >= 320 && size.Height >= 240)
                     {
-                        appWindow.Resize(size);
+                        AppWindow.Resize(size);
                     }
                 }
 
@@ -77,7 +75,7 @@ namespace RegistryPreview
                     // check to make sure the move values are reasonable before attempting to restore the last saved location
                     if (point.X >= 0 && point.Y >= 0)
                     {
-                        appWindow.Move(point);
+                        AppWindow.Move(point);
                     }
                 }
             }
@@ -85,20 +83,8 @@ namespace RegistryPreview
             MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
 
             WindowHelpers.BringToForeground(windowHandle);
-        }
 
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            if (args.WindowActivationState == WindowActivationState.Deactivated)
-            {
-                titleBarText.Foreground =
-                    (SolidColorBrush)Application.Current.Resources["WindowCaptionForegroundDisabled"];
-            }
-            else
-            {
-                titleBarText.Foreground =
-                    (SolidColorBrush)Application.Current.Resources["WindowCaptionForeground"];
-            }
+            PowerToysTelemetry.Log.WriteEvent(new RegistryPreviewEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
@@ -113,23 +99,23 @@ namespace RegistryPreview
 
             if (string.IsNullOrEmpty(filename))
             {
-                titleBarText.Text = APPNAME;
-                appWindow.Title = APPNAME;
+                titleBar.Title = APPNAME;
+                AppWindow.Title = APPNAME;
             }
             else
             {
                 string[] file = filename.Split('\\');
                 if (file.Length > 0)
                 {
-                    titleBarText.Text = file[file.Length - 1] + " - " + APPNAME;
+                    titleBar.Title = file[file.Length - 1] + " - " + APPNAME;
                 }
                 else
                 {
-                    titleBarText.Text = filename + " - " + APPNAME;
+                    titleBar.Title = filename + " - " + APPNAME;
                 }
 
                 // Continue to update the window's title, after updating the custom title bar
-                appWindow.Title = titleBarText.Text;
+                AppWindow.Title = titleBar.Title;
             }
         }
     }

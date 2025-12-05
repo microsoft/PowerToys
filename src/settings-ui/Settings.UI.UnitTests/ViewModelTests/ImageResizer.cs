@@ -6,6 +6,7 @@ using System;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text.Json;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
@@ -204,7 +205,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AddRowShouldAddNewImageSizeWhenSuccessful()
+        public void AddImageSizeShouldAddNewImageSizeWhenSuccessful()
         {
             // arrange
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
@@ -213,7 +214,7 @@ namespace ViewModelTests
             int sizeOfOriginalArray = viewModel.Sizes.Count;
 
             // act
-            viewModel.AddRow("New size");
+            viewModel.AddImageSize();
 
             // Assert
             Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
@@ -228,15 +229,15 @@ namespace ViewModelTests
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
 
             // act
-            viewModel.AddRow("New size");
+            viewModel.AddImageSize("New size");
 
             // Assert
             ImageSize newTestSize = viewModel.Sizes.First(x => x.Id == 0);
-            Assert.AreEqual(newTestSize.Name, "New size 1");
-            Assert.AreEqual(newTestSize.Fit, (int)ResizeFit.Fit);
-            Assert.AreEqual(newTestSize.Width, 854);
-            Assert.AreEqual(newTestSize.Height, 480);
-            Assert.AreEqual(newTestSize.Unit, (int)ResizeUnit.Pixel);
+            Assert.AreEqual("New size 1", newTestSize.Name);
+            Assert.AreEqual(ResizeFit.Fit, newTestSize.Fit);
+            Assert.AreEqual(1024, newTestSize.Width);
+            Assert.AreEqual(640, newTestSize.Height);
+            Assert.AreEqual(ResizeUnit.Pixel, newTestSize.Unit);
         }
 
         [TestMethod]
@@ -246,7 +247,7 @@ namespace ViewModelTests
             var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
             Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
-            viewModel.AddRow("New Size");
+            viewModel.AddImageSize("New Size");
             int sizeOfOriginalArray = viewModel.Sizes.Count;
             ImageSize deleteCandidate = viewModel.Sizes.First(x => x.Id == 0);
 
@@ -267,16 +268,16 @@ namespace ViewModelTests
             ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
 
             // act
-            viewModel.AddRow("New size"); // Add: "New size 1"
-            viewModel.AddRow("New size"); // Add: "New size 2"
-            viewModel.AddRow("New size"); // Add: "New size 3"
+            viewModel.AddImageSize("New size"); // Add: "New size 1"
+            viewModel.AddImageSize("New size"); // Add: "New size 2"
+            viewModel.AddImageSize("New size"); // Add: "New size 3"
             viewModel.DeleteImageSize(1); // Delete: "New size 2"
-            viewModel.AddRow("New size"); // Add: "New Size 4"
+            viewModel.AddImageSize("New size"); // Add: "New Size 4"
 
             // Assert
-            Assert.AreEqual(viewModel.Sizes[0].Name, "New size 1");
-            Assert.AreEqual(viewModel.Sizes[1].Name, "New size 3");
-            Assert.AreEqual(viewModel.Sizes[2].Name, "New size 4");
+            Assert.AreEqual("New size 1", viewModel.Sizes[0].Name);
+            Assert.AreEqual("New size 3", viewModel.Sizes[1].Name);
+            Assert.AreEqual("New size 4", viewModel.Sizes[2].Name);
         }
 
         [TestMethod]
@@ -287,10 +288,10 @@ namespace ViewModelTests
             {
                 Id = 0,
                 Name = "Test",
-                Fit = (int)ResizeFit.Fit,
+                Fit = ResizeFit.Fit,
                 Width = 30,
                 Height = 30,
-                Unit = (int)ResizeUnit.Pixel,
+                Unit = ResizeUnit.Pixel,
             };
 
             double negativeWidth = -2.0;

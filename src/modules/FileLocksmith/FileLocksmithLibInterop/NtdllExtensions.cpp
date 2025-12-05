@@ -35,7 +35,7 @@ namespace
             return long_filename;
         }
 
-        return { buffer, (UINT)lstrlenW(buffer) };
+        return { buffer, static_cast<UINT>(lstrlenW(buffer)) };
     }
 
     constexpr size_t DefaultModulesResultSize = 512;
@@ -94,7 +94,7 @@ NtdllExtensions::MemoryLoopResult NtdllExtensions::NtQuerySystemInformationMemor
     while (result.memory.size() <= MaxResultBufferSize)
     {
         ULONG result_len;
-        result.status = NtQuerySystemInformation(SystemInformationClass, result.memory.data(), (ULONG)result.memory.size(), &result_len);
+        result.status = NtQuerySystemInformation(SystemInformationClass, result.memory.data(), static_cast<ULONG>(result.memory.size()), &result_len);
 
         if (result.status == STATUS_INFO_LENGTH_MISMATCH)
         {
@@ -123,10 +123,10 @@ std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle, std
     }
 
     ULONG return_length;
-    auto status = NtQueryObject(file_handle, ObjectNameInformation, buffer.data(), (ULONG)buffer.size(), &return_length);
+    auto status = NtQueryObject(file_handle, ObjectNameInformation, buffer.data(), static_cast<ULONG>(buffer.size()), &return_length);
     if (NT_SUCCESS(status))
     {
-        auto object_name_info = (UNICODE_STRING*)buffer.data();
+        auto object_name_info = reinterpret_cast<UNICODE_STRING*>(buffer.data());
         return unicode_to_str(*object_name_info);
     }
 
@@ -160,7 +160,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
         return {};
     }
 
-    auto info_ptr = (SYSTEM_HANDLE_INFORMATION_EX*)get_info_result.memory.data();
+    auto info_ptr = reinterpret_cast<SYSTEM_HANDLE_INFORMATION_EX*>(get_info_result.memory.data());
 
     std::map<ULONG_PTR, HANDLE> pid_to_handle;
     std::vector<HandleInfo> result;
@@ -197,7 +197,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 }
                 else
                 {
-                    process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, (DWORD)pid);
+                    process_handle = OpenProcess(PROCESS_DUP_HANDLE, FALSE, static_cast<DWORD>(pid));
                     if (!process_handle)
                     {
                         continue;
@@ -215,7 +215,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 // }
 
                 HANDLE local_handle_copy;
-                auto dh_result = DuplicateHandle(process_handle, (HANDLE)handle_info->HandleValue, GetCurrentProcess(), &local_handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
+                auto dh_result = DuplicateHandle(process_handle, reinterpret_cast<HANDLE>(handle_info->HandleValue), GetCurrentProcess(), &local_handle_copy, 0, 0, DUPLICATE_SAME_ACCESS);
                 if (dh_result == 0)
                 {
                     // Ignore this handle.
@@ -224,7 +224,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                 handle_copy = local_handle_copy;
 
                 ULONG return_length;
-                auto status = NtQueryObject(handle_copy, ObjectTypeInformation, object_info_buffer.data(), (ULONG)object_info_buffer.size(), &return_length);
+                auto status = NtQueryObject(handle_copy, ObjectTypeInformation, object_info_buffer.data(), static_cast<ULONG>(object_info_buffer.size()), &return_length);
                 if (NT_ERROR(status))
                 {
                     // Ignore this handle.
@@ -233,7 +233,7 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
                     continue;
                 }
 
-                auto object_type_info = (OBJECT_TYPE_INFORMATION*)object_info_buffer.data();
+                auto object_type_info = reinterpret_cast<OBJECT_TYPE_INFORMATION*>(object_info_buffer.data());
                 auto type_name = unicode_to_str(object_type_info->Name);
 
                 std::wstring file_name;
@@ -317,7 +317,7 @@ std::wstring NtdllExtensions::pid_to_user(DWORD pid)
 
     std::vector<BYTE> token_buffer(token_size);
     GetTokenInformation(token, TokenUser, token_buffer.data(), token_size, &token_size);
-    TOKEN_USER* user_ptr = (TOKEN_USER*)token_buffer.data();
+    TOKEN_USER* user_ptr = reinterpret_cast<TOKEN_USER*>(token_buffer.data());
     PSID psid = user_ptr->User.Sid;
     DWORD user_buf_size = 0;
     DWORD domain_buf_size = 0;
@@ -350,15 +350,15 @@ std::vector<NtdllExtensions::ProcessInfo> NtdllExtensions::processes() noexcept
     }
 
     std::vector<ProcessInfo> result;
-    auto info_ptr = (PSYSTEM_PROCESS_INFORMATION)get_info_result.memory.data();
+    auto info_ptr = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(get_info_result.memory.data());
 
     while (info_ptr->NextEntryOffset)
     {
-        info_ptr = decltype(info_ptr)((LPBYTE)info_ptr + info_ptr->NextEntryOffset);
+        info_ptr = reinterpret_cast<decltype(info_ptr)>(reinterpret_cast<LPBYTE>(info_ptr) + info_ptr->NextEntryOffset);
 
         ProcessInfo item;
         item.name = unicode_to_str(info_ptr->ImageName);
-        item.pid = (DWORD)(uintptr_t)info_ptr->UniqueProcessId;
+        item.pid = static_cast<DWORD>(reinterpret_cast<uintptr_t>(info_ptr->UniqueProcessId));
         item.modules = process_modules(item.pid);
         item.user = pid_to_user(item.pid);
 

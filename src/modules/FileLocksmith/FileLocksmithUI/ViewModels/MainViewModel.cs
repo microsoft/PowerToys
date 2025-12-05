@@ -9,10 +9,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FileLocksmith.Interop;
 using ManagedCommon;
+using PowerToys.FileLocksmithLib.Interop;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
 {
@@ -95,10 +96,14 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
             _cancelProcessWatching = new CancellationTokenSource();
 
-            foreach (ProcessResult p in await FindProcesses(paths))
+            var processes_found = await FindProcesses(paths);
+            if (processes_found is not null)
             {
-                Processes.Add(p);
-                WatchProcess(p, _cancelProcessWatching.Token);
+                foreach (ProcessResult p in processes_found)
+                {
+                    Processes.Add(p);
+                    WatchProcess(p, _cancelProcessWatching.Token);
+                }
             }
 
             IsLoading = false;
@@ -109,7 +114,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             var results = new List<ProcessResult>();
             await Task.Run(() =>
             {
-                results = NativeMethods.FindProcessesRecursive(paths).ToList();
+                results = NativeMethods.FindProcessesRecursive(paths)?.ToList();
             });
             return results;
         }
@@ -136,7 +141,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError($"Couldn't add a waiter to wait for a process to exit. PID = {process.pid} and Name = {process.name}.", ex);
-                Processes.Remove(process); // If we couldn't get an handle to the process or it has exited in the meanwhile, don't show it.
+                Processes.Remove(process); // If we couldn't get a handle to the process or it has exited in the meanwhile, don't show it.
             }
         }
 
@@ -157,8 +162,8 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Couldn't get an handle to kill process {selectedProcess.name} with PID {selectedProcess.pid}. Likely has been killed already.", ex);
-                Processes.Remove(selectedProcess); // If we couldn't get an handle to the process, remove it from the list, since it's likely been killed already.
+                Logger.LogError($"Couldn't get a handle to kill process {selectedProcess.name} with PID {selectedProcess.pid}. Likely has been killed already.", ex);
+                Processes.Remove(selectedProcess); // If we couldn't get a handle to the process, remove it from the list, since it's likely been killed already.
             }
         }
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using UnitsNet;
 using Wox.Plugin;
 
@@ -43,7 +44,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'.
+        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2", etc.) to 'x foot in cm'.
         /// </summary>
         public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture)
         {
@@ -91,7 +92,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
                             if (!isFeet || !isInches)
                             {
-                                // atleast one could not be parsed correctly
+                                // at least one could not be parsed correctly
                                 break;
                             }
 
@@ -114,7 +115,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °c in DegreeFahrenheit'.
+        /// Adds degree prefixes to degree units for shorthand notation. E.g. '10 c in fahrenheit' becomes '10 °C in DegreeFahrenheit'.
         /// </summary>
         public static void DegreePrefixer(ref string[] split)
         {
@@ -129,11 +130,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
 
                 case "c":
-                    split[1] = "°c";
+                    split[1] = "°C";
                     break;
 
                 case "f":
-                    split[1] = "°f";
+                    split[1] = "°F";
                     break;
 
                 default:
@@ -151,11 +152,11 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     break;
 
                 case "c":
-                    split[3] = "°c";
+                    split[3] = "°C";
                     break;
 
                 case "f":
-                    split[3] = "°f";
+                    split[3] = "°F";
                     break;
 
                 default:
@@ -164,19 +165,19 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// The plural form "feet" is not recognized by UniteNets. Replace it with "ft".
+        /// Converts spelling "kph" to "km/h"
         /// </summary>
-        public static void FeetToFt(ref string[] split)
+        public static void KPHHandler(ref string[] split)
         {
-            if (string.Equals(split[1], "feet", StringComparison.OrdinalIgnoreCase))
-            {
-                split[1] = "ft";
-            }
+            split[1] = split[1].Replace("cph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[1] = split[1].Replace("kph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[1] = split[1].Replace("kmph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[1] = split[1].Replace("cmph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
 
-            if (string.Equals(split[3], "feet", StringComparison.OrdinalIgnoreCase))
-            {
-                split[3] = "ft";
-            }
+            split[3] = split[3].Replace("cph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[3] = split[3].Replace("kph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[3] = split[3].Replace("kmph", "km/h", System.StringComparison.CurrentCultureIgnoreCase);
+            split[3] = split[3].Replace("cmph", "cm/h", System.StringComparison.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -221,6 +222,49 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
         }
 
+        /// <summary>
+        /// Choose "UsOunce" or "ImperialOunce" according to current culture when the input contains "o.z", "o.z.", "oz" or "ounce".
+        /// </summary>
+        public static void OunceHandler(ref string[] split, CultureInfo culture)
+        {
+            HashSet<string> britishCultureNames = new HashSet<string>() { "en-AI", "en-VG", "en-GB", "en-KY", "en-MS", "en-AG", "en-DM", "en-GD", "en-KN", "en-LC", "en-VC", "en-IE", "en-GY", "en-AE" };
+            if (string.Equals(split[1], "o.z", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[1], "ounce", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[1], "o.z.", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[1], "oz", StringComparison.OrdinalIgnoreCase))
+            {
+                if (britishCultureNames.Contains(culture.Name))
+                {
+                    split[1] = "ImperialOunce";
+                }
+                else
+                {
+                    split[1] = "UsOunce";
+                }
+            }
+
+            if (string.Equals(split[3], "o.z", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[3], "ounce", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[3], "o.z.", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(split[3], "oz", StringComparison.OrdinalIgnoreCase))
+            {
+                if (britishCultureNames.Contains(culture.Name))
+                {
+                    split[3] = "ImperialOunce";
+                }
+                else
+                {
+                    split[3] = "UsOunce";
+                }
+            }
+        }
+
+        public static void SquareHandler(ref string[] split)
+        {
+            split[1] = Regex.Replace(split[1], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
+            split[3] = Regex.Replace(split[3], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
+        }
+
         public static ConvertModel Parse(Query query)
         {
             string[] split = query.Search.Split(' ');
@@ -238,8 +282,10 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
             InputInterpreter.DegreePrefixer(ref split);
             InputInterpreter.MetreToMeter(ref split);
-            InputInterpreter.FeetToFt(ref split);
+            InputInterpreter.KPHHandler(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
+            InputInterpreter.OunceHandler(ref split, CultureInfo.CurrentCulture);
+            InputInterpreter.SquareHandler(ref split);
             if (!double.TryParse(split[0], out double value))
             {
                 return null;

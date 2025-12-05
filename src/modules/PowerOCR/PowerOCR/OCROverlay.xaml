@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerOCR.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="TextExtractorWindow"
     Title="TextExtractor"
     ui:Design.Background="Transparent"
     AllowsTransparency="True"
@@ -87,6 +88,7 @@
                     <Separator />
                     <MenuItem
                         Name="CancelMenuItem"
+                        AutomationProperties.AutomationId="CancelMenuItem"
                         Click="CancelMenuItem_Click"
                         Header="{x:Static p:Resources.Cancel}" />
                 </ContextMenu>
@@ -95,7 +97,7 @@
         <Border
             x:Name="TopButtonsStackPanel"
             Margin="12"
-            Padding="4,8,12,8"
+            Padding="4,8,4,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             d:Visibility="Visible"
@@ -116,8 +118,8 @@
                 Orientation="Horizontal">
                 <ComboBox
                     x:Name="LanguagesComboBox"
-                    Height="32"
                     Margin="4,0"
+                    AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
                     AutomationProperties.Name="{x:Static p:Resources.SelectedLang}"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>
@@ -156,6 +158,7 @@
                 </Button>
                 <Button
                     x:Name="CancelButton"
+                    AutomationProperties.Name="{x:Static p:Resources.Cancel}"
                     Click="CancelMenuItem_Click"
                     ToolTip="{x:Static p:Resources.CancelShortcut}">
                     <ui:SymbolIcon FontSize="18" Symbol="Dismiss24" />

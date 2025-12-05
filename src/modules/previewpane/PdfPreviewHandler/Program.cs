@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 using System.Globalization;
 using System.Windows.Threading;
+
 using Common.UI;
-using interop;
+using Microsoft.PowerToys.Telemetry;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.PreviewHandler.Pdf
 {
@@ -25,6 +27,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             {
                 if (args.Length == 6)
                 {
+                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
+
                     string filePath = args[0];
                     IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
@@ -35,18 +39,31 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     Rectangle s = new Rectangle(left, top, right - left, bottom - top);
 
                     _previewHandlerControl = new PdfPreviewHandlerControl();
-                    _previewHandlerControl.SetWindow(hwnd, s);
+
+                    if (!_previewHandlerControl.SetWindow(hwnd, s))
+                    {
+                        return;
+                    }
+
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(
                         Constants.PdfPreviewResizeEvent(),
                         () =>
                         {
-                            Rectangle s = default(Rectangle);
-                            _previewHandlerControl.SetRect(s);
+                            Rectangle s = default;
+                            if (!_previewHandlerControl.SetRect(s))
+                            {
+                                etwTrace?.Dispose();
+
+                                // When the parent HWND became invalid, the application won't respond to Application.Exit().
+                                Environment.Exit(0);
+                            }
                         },
                         Dispatcher.CurrentDispatcher,
                         _tokenSource.Token);
+
+                    etwTrace?.Dispose();
                 }
                 else
                 {

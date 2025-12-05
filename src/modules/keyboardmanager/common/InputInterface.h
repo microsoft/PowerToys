@@ -1,5 +1,9 @@
 #pragma once
 
+#include <string>
+#include <vector>
+#include <Windows.h>
+
 namespace KeyboardManagerInput
 {
     // Interface used to wrap keyboard input library methods
@@ -7,7 +11,7 @@ namespace KeyboardManagerInput
     {
     public:
         // Function to simulate input
-        virtual UINT SendVirtualInput(UINT cInputs, LPINPUT pInputs, int cbSize) = 0;
+        virtual void SendVirtualInput(const std::vector<INPUT>& inputs) = 0;
 
         // Function to get the state of a particular key
         virtual bool GetVirtualKeyState(int key) = 0;

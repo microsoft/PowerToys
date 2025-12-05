@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
+
 using ManagedCommon;
 using Microsoft.Plugin.Indexer.DriveDetection;
 using Microsoft.Plugin.Indexer.Interop;
@@ -162,7 +163,7 @@ namespace Microsoft.Plugin.Indexer
                             };
                             r.ContextData = searchResult;
 
-                            // If the result is a directory, then it's display should show a directory.
+                            // If the result is a directory, then its display should show a directory.
                             if (_fileSystem.Directory.Exists(path))
                             {
                                 r.QueryTextDisplay = path;

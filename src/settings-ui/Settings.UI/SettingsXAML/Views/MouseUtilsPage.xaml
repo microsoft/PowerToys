@@ -1,41 +1,44 @@
-﻿<Page
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.MouseUtilsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:panels="using:Microsoft.PowerToys.Settings.UI.Panels"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Page.Resources>
+    <local:NavigablePage.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
-    </Page.Resources>
+    </local:NavigablePage.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
-                    <tkcontrols:SettingsCard
-                        x:Uid="MouseUtils_Enable_FindMyMouse"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}"
-                        IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableFindMyMouse"
+                            x:Uid="MouseUtils_Enable_FindMyMouse"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_FindMyMouseToggleId"
+                                IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                     <tkcontrols:SettingsExpander
+                        Name="MouseUtilsFindMyMouseActivationMethod"
                         x:Uid="MouseUtils_FindMyMouse_ActivationMethod"
+                        AutomationProperties.AutomationId="MouseUtils_FindMyMouseActivationMethodId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE961;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="True">
@@ -50,7 +53,10 @@
                                 <!--  Visible for both Press Left Control twice and Press Right Control twice activation methods  -->
                                 <CheckBox x:Uid="MouseUtils_Include_Win_Key" IsChecked="{x:Bind ViewModel.FindMyMouseIncludeWinKey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsFindMyMouseShakingMinimumDistance"
+                                x:Uid="MouseUtils_FindMyMouse_ShakingMinimumDistance"
+                                Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
                                 <!--  Visible for the Shake Mouse activation method  -->
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -61,7 +67,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseShakingMinimumDistance, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingIntervalMs" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsFindMyMouseShakingIntervalMs"
+                                x:Uid="MouseUtils_FindMyMouse_ShakingIntervalMs"
+                                Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
                                 <!--  Visible for the Shake Mouse activation method  -->
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -72,7 +81,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseShakingIntervalMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_ShakingFactor" Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsFindMyMouseShakingFactor"
+                                x:Uid="MouseUtils_FindMyMouse_ShakingFactor"
+                                Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x4}">
                                 <!--  Visible for the Shake Mouse activation method  -->
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -84,6 +96,7 @@
                                     Value="{x:Bind ViewModel.FindMyMouseShakingFactor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
+                                Name="MouseUtilsFindMyMouseActivationShortcut"
                                 x:Uid="MouseUtils_FindMyMouse_ActivationShortcut"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x8}">
@@ -97,43 +110,42 @@
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
+                        Name="FindMyMouseAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_FindMyMouseAppearanceBehaviorId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100"
-                                    Minimum="1"
-                                    Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
+                            <!--  Overlay opacity removed; alpha now encoded in colors  -->
+                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseBackgroundColor" x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightColor" x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
+                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightRadius" x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightRadiusId"
                                     LargeChange="10"
                                     Minimum="5"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseSpotlightRadius, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
+                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightInitialZoom" x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightZoomId"
                                     Maximum="40"
                                     Minimum="1"
                                     Value="{x:Bind ViewModel.FindMyMouseSpotlightInitialZoom, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
+                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseAnimationDurationMs" x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseAnimationDurationId"
                                     IsEnabled="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay}"
                                     LargeChange="100"
                                     Minimum="0"
@@ -148,9 +160,15 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                        <InfoBar.ActionButton>
+                            <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
                     <tkcontrols:SettingsExpander
+                        Name="MouseUtilsFindMyMouseExcludedApps"
                         x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
+                        AutomationProperties.AutomationId="MouseUtils_FindMyMouseExcludedAppsId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
@@ -171,21 +189,22 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
-                    <tkcontrols:SettingsCard
-                        x:Uid="MouseUtils_Enable_MouseHighlighter"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}"
-                        IsEnabled="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter" AutomationProperties.AutomationId="MouseUtils_MouseHighlighterTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableMouseHighlighter"
+                            x:Uid="MouseUtils_Enable_MouseHighlighter"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_MouseHighlighterToggleId"
+                                IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                     <tkcontrols:SettingsExpander
+                        Name="MouseUtilsMouseHighlighterActivationShortcut"
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
+                        AutomationProperties.AutomationId="MouseUtils_MouseHighlighterActivationShortcutId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
                         IsExpanded="True">
@@ -197,18 +216,29 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsExpander
+                        Name="MouseHighlighterAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_MouseHighlighterAppearanceBehaviorId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
-                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
-                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
-                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterAlwaysColor" x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="HighlightMode">
+                                <ComboBox
+                                    x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
+                                    <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
+                                </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
@@ -219,7 +249,7 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterRadius, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterFadeDelayMs" x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -228,7 +258,7 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterFadeDelayMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterFadeDurationMs" x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -241,116 +271,50 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
-                    <tkcontrols:SettingsCard
-                        x:Uid="MouseUtils_Enable_MouseJump"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}"
-                        IsEnabled="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
-                    <tkcontrols:SettingsCard
-                        x:Uid="MouseUtils_MouseJump_ActivationShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
-                        IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="MouseUtils_MouseJump_ThumbnailSize"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE740;}"
-                        IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard.Description>
-                            <StackPanel
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Margin="0,4,0,0"
-                                Orientation="Horizontal">
-                                <TextBlock
-                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix"
-                                    Margin="0,0,4,0"
-                                    Style="{ThemeResource SecondaryTextStyle}" />
-                                <TextBlock
-                                    Margin="0,0,4,0"
-                                    FontWeight="SemiBold"
-                                    Style="{ThemeResource SecondaryTextStyle}"
-                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=OneWay}" />
-                                <TextBlock
-                                    Margin="0,5,4,0"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    FontSize="10"
-                                    Foreground="{ThemeResource SystemBaseMediumColor}"
-                                    Style="{ThemeResource SecondaryTextStyle}"
-                                    Text="&#xE947;" />
-                                <TextBlock
-                                    Margin="0,0,4,0"
-                                    FontWeight="SemiBold"
-                                    Style="{ThemeResource SecondaryTextStyle}"
-                                    Text="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=OneWay}" />
-                                <TextBlock
-                                    x:Uid="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix"
-                                    Margin="0,0,4,0"
-                                    Foreground="{ThemeResource SystemBaseMediumColor}"
-                                    Style="{ThemeResource SecondaryTextStyle}" />
-                            </StackPanel>
-                        </tkcontrols:SettingsCard.Description>
-                        <StackPanel
-                            Grid.Column="2"
-                            HorizontalAlignment="Right"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <Button
-                                x:Uid="EditButton"
-                                Width="40"
-                                Height="36"
-                                Content="&#xE70F;"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Style="{StaticResource SubtleButtonStyle}">
-                                <ToolTipService.ToolTip>
-                                    <TextBlock x:Uid="EditTooltip" />
-                                </ToolTipService.ToolTip>
-                                <Button.Flyout>
-                                    <Flyout x:Uid="MouseJumpThumbnailSize_Edit" ShouldConstrainToRootBounds="False">
-                                        <StackPanel Spacing="16">
-                                            <NumberBox
-                                                x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Width"
-                                                Width="140"
-                                                Minimum="160"
-                                                SpinButtonPlacementMode="Compact"
-                                                Value="{x:Bind ViewModel.MouseJumpThumbnailSize.Width, Mode=TwoWay}" />
-                                            <NumberBox
-                                                x:Uid="MouseUtils_MouseJump_ThumbnailSize_Edit_Height"
-                                                Width="140"
-                                                Minimum="120"
-                                                SpinButtonPlacementMode="Compact"
-                                                Value="{x:Bind ViewModel.MouseJumpThumbnailSize.Height, Mode=TwoWay}" />
-                                        </StackPanel>
-                                    </Flyout>
-                                </Button.Flyout>
-                            </Button>
-                        </StackPanel>
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+                <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
-                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
-                    <tkcontrols:SettingsCard
-                        x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}"
-                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                <controls:SettingsGroup x:Uid="MouseUtils_CursorWrap" AutomationProperties.AutomationId="MouseUtils_CursorWrapTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableCursorWrap"
+                            x:Uid="MouseUtils_Enable_CursorWrap"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorWrap.png}"
+                            IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
                     <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorWrapSettingsExpander"
+                        x:Uid="MouseUtils_CursorWrap_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.CursorWrapActivationShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.CursorWrapAutoActivate, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
+                                <CheckBox x:Uid="MouseUtils_CursorWrap_DisableWrapDuringDrag" IsChecked="{x:Bind ViewModel.CursorWrapDisableWrapDuringDrag, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableMousePointerCrosshairs"
+                            x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsToggleId"
+                                IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsMousePointerCrosshairsActivationShortcut"
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
@@ -364,14 +328,16 @@
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
+                        Name="MousePointerCrosshairsAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsAppearanceBehaviorId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsColor" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsColor">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsOpacity" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOpacity">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
@@ -379,18 +345,18 @@
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsRadius" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsRadius">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
                                     Maximum="500"
-                                    Minimum="1"
+                                    Minimum="0"
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsRadius, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsThickness" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsThickness">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -401,11 +367,11 @@
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsThickness, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsBorderColor" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MousePointerCrosshairsBorderColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsBorderSize" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="2"
@@ -416,15 +382,26 @@
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsBorderSize, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsOrientation" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.MousePointerCrosshairsOrientation, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both" />
+                                    <ComboBoxItem x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Vertical" />
+                                    <ComboBoxItem x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Horizontal" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsIsCrosshairsFixedLengthEnabled" x:Uid="MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled">
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength" IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMousePointerCrosshairsCrosshairsFixedLength"
+                                x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength"
+                                IsEnabled="{x:Bind ViewModel.MousePointerCrosshairsIsFixedLengthEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -432,6 +409,27 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsFixedLength, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        x:Uid="MouseUtils_GlidingCursor"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_InitialSpeed">
+                                <Slider
+                                    Maximum="60"
+                                    Minimum="5"
+                                    Value="{x:Bind ViewModel.GlidingCursorTravelSpeed, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_DelaySpeed">
+                                <Slider
+                                    Maximum="60"
+                                    Minimum="5"
+                                    Value="{x:Bind ViewModel.GlidingCursorDelaySpeed, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -446,4 +444,4 @@
             <controls:PageLink Link="https://michael-clayton.com/projects/fancymouse" Text="Michael Clayton's Mouse Jump (FancyMouse)" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
-</Page>
+</local:NavigablePage>

@@ -16,11 +16,13 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 using PowerOCR.Helpers;
 using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
+
 using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
 
 namespace PowerOCR;

@@ -41,15 +41,23 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"remapShortcuts/appSpecific/runProgramStartInDir",
         L"remapShortcuts/appSpecific/openUri",
         } }, // avoid leaking personal information from text, URI or application mappings
+    { L"Workspaces/workspaces.json", { L"workspaces/applications/command-line-arguments" } },
+    { L"AdvancedPaste/settings.json", {
+        L"properties/custom-actions/value/name",
+        L"properties/custom-actions/value/prompt"
+        } },
 };
 
 vector<wstring> filesToDelete = {
     L"AdvancedPaste\\lastQuery.json",
+    L"AdvancedPaste\\kernelQueryCache.json",
     L"PowerToys Run\\Cache",
     L"PowerRename\\replace-mru.json",
     L"PowerRename\\search-mru.json",
     L"PowerToys Run\\Settings\\UserSelectedRecord.json",
-    L"PowerToys Run\\Settings\\QueryHistory.json"
+    L"PowerToys Run\\Settings\\QueryHistory.json",
+    L"NewPlus\\Templates",
+    L"etw",
 };
 
 vector<wstring> GetXpathArray(wstring xpath)
@@ -261,13 +269,6 @@ void ReportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
-void ReportVCMLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
-{
-    error_code ec;
-    copy(tmpDir / "PowerToysVideoConference_x86.log", reportDir, ec);
-    copy(tmpDir / "PowerToysVideoConference_x64.log", reportDir, ec);
-}
-
 void ReportInstallerLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
 {
     const char* bootstrapperLogFilePrefix = "powertoys-bootstrapper-msi-";
@@ -380,8 +381,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Write event viewer logs info to the temporary folder
     EventViewer::ReportEventViewerInfo(reportDir);
 
-    ReportVCMLogs(tempDir, reportDir);
-    
+    // Write AppXDeployment-Server event logs to the temporary folder
+    EventViewer::ReportAppXDeploymentLogs(reportDir);
+
     ReportInstallerLogs(tempDir, reportDir);
 
     ReportInstalledContextMenuPackages(reportDir);

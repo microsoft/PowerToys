@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -23,6 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string PreferredLanguage { get; set; }
 
         public override string ToString()
-            => JsonSerializer.Serialize(this);
+            => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PowerOcrProperties);
     }
 }

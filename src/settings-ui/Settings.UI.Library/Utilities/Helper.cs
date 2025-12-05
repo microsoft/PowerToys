@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Security.Principal;
+
 using Microsoft.PowerToys.Settings.UI.Library.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
@@ -53,16 +53,39 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return sendCustomAction.ToJsonString();
         }
 
-        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback)
+        public static IFileSystemWatcher GetFileWatcher(string path, Action onChangedCallback, IFileSystem fileSystem = null)
         {
-            var path = FileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+            fileSystem ??= FileSystem;
 
-            if (!FileSystem.Directory.Exists(path))
+            var dirPath = Path.GetDirectoryName(path);
+            if (!fileSystem.Directory.Exists(dirPath))
             {
-                FileSystem.Directory.CreateDirectory(path);
+                return null;
             }
 
-            var watcher = FileSystem.FileSystemWatcher.CreateNew();
+            var watcher = fileSystem.FileSystemWatcher.New();
+            watcher.Path = dirPath;
+            watcher.Filter = Path.GetFileName(path);
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
+            watcher.EnableRaisingEvents = true;
+
+            watcher.Changed += (o, e) => onChangedCallback();
+
+            return watcher;
+        }
+
+        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback, IFileSystem fileSystem = null)
+        {
+            fileSystem ??= FileSystem;
+
+            var path = fileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+
+            if (!fileSystem.Directory.Exists(path))
+            {
+                fileSystem.Directory.CreateDirectory(path);
+            }
+
+            var watcher = fileSystem.FileSystemWatcher.New();
             watcher.Path = path;
             watcher.Filter = fileName;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -96,7 +119,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return Directory.GetParent(settingsPath).FullName;
         }
 
-        private static readonly interop.LayoutMapManaged LayoutMap = new interop.LayoutMapManaged();
+        public static string GetPowerToysInstallationWinUI3AppsAssetsFolder()
+        {
+            // return .\PowerToys\WinUI3Apps\Assets
+            return Path.Combine(GetPowerToysInstallationFolder(), "WinUI3Apps", "Assets");
+        }
+
+        private static readonly global::PowerToys.Interop.LayoutMapManaged LayoutMap = new global::PowerToys.Interop.LayoutMapManaged();
 
         public static string GetKeyName(uint key)
         {
@@ -110,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         public static string GetProductVersion()
         {
-            return interop.CommonManaged.GetProductVersion();
+            return global::PowerToys.Interop.CommonManaged.GetProductVersion();
         }
 
         public static int CompareVersions(string version1, string version2)
@@ -148,6 +177,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             }
         }
 
-        public const uint VirtualKeyWindows = interop.Constants.VK_WIN_BOTH;
+        public static void CopyDirectory(string source_directory, string destination_directory, bool copy_recursively)
+        {
+            var current_directory_info = new DirectoryInfo(source_directory);
+
+            DirectoryInfo[] source_subdirectories = current_directory_info.GetDirectories();
+
+            Directory.CreateDirectory(destination_directory);
+
+            foreach (FileInfo file in current_directory_info.GetFiles())
+            {
+                string destination_file_path = Path.Combine(destination_directory, file.Name);
+                file.CopyTo(destination_file_path, true);
+            }
+
+            if (copy_recursively)
+            {
+                foreach (DirectoryInfo subdirectory in source_subdirectories)
+                {
+                    string newDestinationDir = Path.Combine(destination_directory, subdirectory.Name);
+                    CopyDirectory(subdirectory.FullName, newDestinationDir, true);
+                }
+            }
+        }
+
+        public static readonly uint VirtualKeyWindows = global::PowerToys.Interop.Constants.VK_WIN_BOTH;
     }
 }

@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+
 using Common;
 using ManagedCommon;
 using Microsoft.PowerToys.PreviewHandler.Monaco.Properties;
@@ -28,7 +29,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private RichTextBox _textBox;
 
         /// <summary>
-        /// Represent if an text box info bar is added for showing message.
+        /// Represent if a text box info bar is added for showing message.
         /// </summary>
         private bool _infoBarAdded;
 
@@ -363,7 +364,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             DetectionResult result = CharsetDetector.DetectFromFile(filePath);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            // Check if the detected encoding is not null, otherwise default to UTF-8
+            // Check if the detected encoding is not null; otherwise, default to UTF-8
             Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
 
             using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), encodingToUse))
@@ -388,20 +389,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 }
 
                 fileReader.Close();
-                _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                _base64FileCode = Convert.ToBase64String(encodingToUse.GetBytes(fileContent));
                 Logger.LogInfo("Reading requested file ended");
             }
 
             // prepping index html to load in
             _html = FilePreviewCommon.MonacoHelper.ReadIndexHtml();
             _html = _html.Replace("[[PT_LANG]]", _vsCodeLangSet, StringComparison.InvariantCulture);
-            _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "1" : "0", StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_WRAP]]", _settings.Wrap ? "true" : "false", StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_CONTEXTMENU]]", "true", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_THEME]]", Settings.GetTheme(), StringComparison.InvariantCulture);
-            _html = _html.Replace("[[PT_STICKY_SCROLL]]", _settings.StickyScroll ? "1" : "0", StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_STICKY_SCROLL]]", _settings.StickyScroll ? "true" : "false", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_FONT_SIZE]]", _settings.FontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_CODE]]", _base64FileCode, StringComparison.InvariantCulture);
-            _html = _html.Replace("[[PT_STICKY_SCROLL]]", _settings.StickyScroll ? "1" : "0", StringComparison.InvariantCulture);
             _html = _html.Replace("[[PT_URL]]", FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
+            _html = _html.Replace("[[PT_MINIMAP]]", _settings.Minimap ? "true" : "false", StringComparison.InvariantCulture);
         }
 
         private async void DownloadLink_Click(object sender, EventArgs e)

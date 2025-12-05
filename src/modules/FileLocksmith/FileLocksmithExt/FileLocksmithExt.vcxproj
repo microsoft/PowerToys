@@ -73,6 +73,7 @@
     <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="ExplorerCommand.h" />
+    <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="pch.h" />
     <None Include="packages.config" />
     <None Include="resource.base.h" />
@@ -102,6 +103,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>

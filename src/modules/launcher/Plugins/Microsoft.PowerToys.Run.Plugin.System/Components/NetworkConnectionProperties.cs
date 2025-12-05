@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.Components

@@ -6,7 +6,6 @@
 #include <common/notifications/dont_show_again.h>
 #include <common/notifications/notifications.h>
 
-#include <common/utils/elevation.h>
 #include <common/utils/resources.h>
 #include <common/utils/os-detect.h>
 #include <common/utils/process_path.h>
@@ -51,6 +50,11 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredGcodePreviewEnabledValue,
                                       .registryChanges = getGcodePreviewHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"bgcode-previewer-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_BGCODE_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredBgcodePreviewEnabledValue,
+                                      .registryChanges = getBgcodePreviewHandlerChangeSet(installationDir, installPerUser) });
+
     m_fileExplorerModules.push_back({ .settingName = L"svg-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue,
@@ -65,6 +69,11 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .settingDescription = GET_RESOURCE_STRING(IDS_GCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue,
                                       .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
+
+    m_fileExplorerModules.push_back({ .settingName = L"bgcode-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_BGCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue,
+                                      .registryChanges = getBgcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
     m_fileExplorerModules.push_back({ .settingName = L"stl-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_STL_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),

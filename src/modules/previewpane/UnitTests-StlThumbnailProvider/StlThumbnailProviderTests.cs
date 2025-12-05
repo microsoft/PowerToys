@@ -4,7 +4,7 @@
 
 using System.Drawing;
 using System.IO;
-using Microsoft.PowerToys.STATestExtension;
+
 using Microsoft.PowerToys.ThumbnailHandler.Stl;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

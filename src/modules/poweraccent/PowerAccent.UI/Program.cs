@@ -7,8 +7,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using interop;
+
 using ManagedCommon;
+using PowerToys.Interop;
 
 namespace PowerAccent.UI;
 

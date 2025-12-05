@@ -27,7 +27,7 @@
     <ClCompile>
       <PreprocessorDefinitions>_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\;..\..\..\;..\..\..\common\telemetry;..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /Zm200</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -54,6 +54,7 @@
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerConstants.h" />
+    <ClInclude Include="Modifiers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />

@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 
@@ -52,9 +53,9 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             }
         }
 
-        public void Seek(long dlibMove, STREAM_SEEK dwOrigin, [Optional] ulong* plibNewPosition)
+        public void Seek(long dlibMove, SeekOrigin dwOrigin, [Optional] ulong* plibNewPosition)
         {
-            long position = Stream.Seek(dlibMove, (SeekOrigin)dwOrigin);
+            long position = Stream.Seek(dlibMove, dwOrigin);
             if (plibNewPosition != null)
             {
                 *plibNewPosition = (ulong)position;
@@ -81,7 +82,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             throw new NotSupportedException();
         }
 
-        public void LockRegion(ulong libOffset, ulong cb, uint dwLockType)
+        public void LockRegion(ulong libOffset, ulong cb, LOCKTYPE dwLockType)
         {
             throw new NotSupportedException();
         }
@@ -91,7 +92,7 @@ namespace Peek.FilePreviewer.Previewers.Helpers
             throw new NotSupportedException();
         }
 
-        public void Stat(STATSTG* pstatstg, uint grfStatFlag)
+        public void Stat(STATSTG* pstatstg, STATFLAG grfStatFlag)
         {
             throw new NotSupportedException();
         }

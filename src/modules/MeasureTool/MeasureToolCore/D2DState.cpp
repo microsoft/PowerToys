@@ -65,7 +65,7 @@ D2DState::D2DState(const DxgiAPI* dxgi,
 
 void D2DState::DrawTextBox(const wchar_t* text,
                            const size_t textLen,
-                           const std::optional<size_t> halfOpaqueSymbolPos,
+                           const size_t halfOpaqueSymbolPos[2],
                            const D2D_POINT_2F center,
                            const bool screenQuadrantAware,
                            const HWND window) const
@@ -80,8 +80,7 @@ void D2DState::DrawTextBox(const wchar_t* text,
                                                 &textLayout));
     DWRITE_TEXT_METRICS textMetrics = {};
     winrt::check_hresult(textLayout->GetMetrics(&textMetrics));
-    // Assumes text doesn't contain new lines
-    const float lineHeight = textMetrics.height;
+    const float lineHeight = textMetrics.height / (textMetrics.lineCount ? textMetrics.lineCount : 1);
     textMetrics.width += lineHeight;
     textMetrics.height += lineHeight * .5f;
     winrt::check_hresult(textLayout->SetMaxWidth(textMetrics.width));
@@ -147,12 +146,17 @@ void D2DState::DrawTextBox(const wchar_t* text,
     // Draw text & its box
     dxgiWindowState.rt->FillRoundedRectangle(textBoxRect, solidBrushes[Brush::background].get());
 
-    if (halfOpaqueSymbolPos.has_value())
+    if (halfOpaqueSymbolPos[0] > 0)
     {
         DWRITE_TEXT_RANGE textRange = { static_cast<uint32_t>(*halfOpaqueSymbolPos), 2 };
         auto opacityEffect = winrt::make_self<OpacityEffect>();
         opacityEffect->alpha = consts::CROSS_OPACITY;
         winrt::check_hresult(textLayout->SetDrawingEffect(opacityEffect.get(), textRange));
+        if (halfOpaqueSymbolPos[1] > halfOpaqueSymbolPos[0])
+        {
+            textRange = { static_cast<uint32_t>(halfOpaqueSymbolPos[1]), 2 };
+            winrt::check_hresult(textLayout->SetDrawingEffect(opacityEffect.get(), textRange));
+        }
     }
     winrt::check_hresult(textLayout->Draw(nullptr, textRenderer.get(), textRect.left, textRect.top));
 }

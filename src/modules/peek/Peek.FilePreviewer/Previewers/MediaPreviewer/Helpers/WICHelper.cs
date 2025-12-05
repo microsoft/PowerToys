@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Peek.Common.WIC;
 
 namespace Peek.FilePreviewer.Previewers

@@ -4,7 +4,7 @@
 
 #include <initguid.h>
 #include <windows.h>
-#include <unknwn.h>
+#include <Unknwn.h>
 #include <restrictederrorinfo.h>
 #include <hstring.h>
 #include <dxgi.h>
@@ -30,7 +30,6 @@
 #include <string_view>
 #include <chrono>
 #include <stdio.h>
-#include <ProjectTelemetry.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
@@ -50,6 +49,7 @@
 #include <winrt/Microsoft.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.Windows.ApplicationModel.Resources.h>
 #include <winrt/Windows.Graphics.DirectX.h>
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
 #include <winrt/Windows.Graphics.Capture.h>
@@ -74,6 +74,7 @@ namespace winrt
     using namespace Microsoft::UI::Xaml;
     using namespace Microsoft::UI::Xaml::Controls;
     using namespace Microsoft::UI::Xaml::Navigation;
+    using namespace Microsoft::Windows::ApplicationModel::Resources;
 }
 
 template<typename Func>

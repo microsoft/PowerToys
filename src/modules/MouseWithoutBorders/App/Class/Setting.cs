@@ -12,8 +12,11 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
@@ -26,7 +29,11 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 //     2023- Included in PowerToys.
 // </history>
 using Microsoft.Win32;
+using MouseWithoutBorders.Core;
 using Settings.UI.Library.Attributes;
+
+using Lock = System.Threading.Lock;
+using SettingsHelper = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#LoadIntSetting(System.String,System.Int32)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#SaveSetting(System.String,System.Object)", Justification = "Dotnet port with style preservation")]
@@ -40,7 +47,7 @@ namespace MouseWithoutBorders.Class
         internal bool Changed;
 
         private readonly SettingsUtils _settingsUtils;
-        private readonly object _loadingSettingsLock = new object();
+        private readonly Lock _loadingSettingsLock = new Lock();
         private readonly IFileSystemWatcher _watcher;
 
         private MouseWithoutBordersProperties _properties;
@@ -96,28 +103,28 @@ namespace MouseWithoutBorders.Class
                         if (!Enumerable.SequenceEqual(last_properties.MachineMatrixString, _settings.Properties.MachineMatrixString))
                         {
                             _properties.MachineMatrixString = _settings.Properties.MachineMatrixString;
-                            Common.MachineMatrix = null; // Forces read next time it's needed.
+                            MachineStuff.MachineMatrix = null; // Forces read next time it's needed.
                             shouldSendMachineMatrix = true;
                         }
 
                         var shouldReopenSockets = false;
 
-                        if (Common.MyKey != _properties.SecurityKey.Value)
+                        if (Encryption.MyKey != _properties.SecurityKey.Value)
                         {
-                            Common.MyKey = _properties.SecurityKey.Value;
+                            Encryption.MyKey = _properties.SecurityKey.Value;
                             shouldReopenSockets = true;
                         }
 
                         if (shouldReopenSockets)
                         {
                             SocketStuff.InvalidKeyFound = false;
-                            Common.ReopenSocketDueToReadError = true;
+                            InitAndCleanup.ReopenSocketDueToReadError = true;
                             Common.ReopenSockets(true);
                         }
 
                         if (shouldSendMachineMatrix)
                         {
-                            Common.SendMachineMatrix();
+                            MachineStuff.SendMachineMatrix();
                             shouldSaveNewSettingsValues = true;
                         }
 
@@ -130,7 +137,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (IOException ex)
             {
-                Logger.LogEvent($"Failed to read settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                EventLogger.LogEvent($"Failed to read settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
             }
 
             PauseInstantSaving = false;
@@ -165,7 +172,7 @@ namespace MouseWithoutBorders.Class
                     }
                     catch (IOException ex)
                     {
-                        Logger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                        EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                     }
 
                     if (saved)
@@ -187,7 +194,7 @@ namespace MouseWithoutBorders.Class
         {
             _settingsUtils = new SettingsUtils();
 
-            _watcher = Helper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
+            _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
             {
                 try
                 {
@@ -195,7 +202,7 @@ namespace MouseWithoutBorders.Class
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogEvent($"Failed to update settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
+                    EventLogger.LogEvent($"Failed to update settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                 }
             });
 
@@ -259,6 +266,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.ShareClipboard;
@@ -267,6 +279,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (ShareClipboardIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.ShareClipboard = value;
@@ -274,10 +291,19 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool ShareClipboardIsGpoConfigured => GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue() == GpoRuleConfigured.Disabled;
+
         internal bool TransferFile
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbFileTransferEnabledValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.TransferFile;
@@ -286,9 +312,18 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (TransferFileIsGpoConfigured)
+                {
+                    return;
+                }
+
                 _properties.TransferFile = value;
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool TransferFileIsGpoConfigured => GPOWrapper.GetConfiguredMwbFileTransferEnabledValue() == GpoRuleConfigured.Disabled;
 
         internal bool MatrixOneRow
         {
@@ -379,6 +414,44 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal bool DisableEasyMouseWhenForegroundWindowIsFullscreen
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.DisableEasyMouseWhenForegroundWindowIsFullscreen = value;
+                }
+            }
+        }
+
+        internal HashSet<string> EasyMouseFullscreenSwitchBlockExcludedApps
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value;
+                }
+            }
+        }
+
         internal string Enc(string st, bool dec, DataProtectionScope protectionScope)
         {
             if (st == null || st.Length < 1)
@@ -411,12 +484,12 @@ namespace MouseWithoutBorders.Class
                 {
                     if (_properties.SecurityKey.Value.Length != 0)
                     {
-                        Common.LogDebug("GETSECKEY: Key was already loaded/set: " + _properties.SecurityKey.Value);
+                        Logger.LogDebug("GETSECKEY: Key was already loaded/set: " + _properties.SecurityKey.Value);
                         return _properties.SecurityKey.Value;
                     }
                     else
                     {
-                        string randomKey = Common.CreateDefaultKey();
+                        string randomKey = Encryption.CreateDefaultKey();
                         _properties.SecurityKey.Value = randomKey;
 
                         return randomKey;
@@ -448,6 +521,8 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
+        // Note(@htcfreek): If this settings gets implemented in the future we need a Group Policy for it!
         internal bool DisableCAD
         {
             get
@@ -456,6 +531,8 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
+        // Note(@htcfreek): If this settings gets implemented in the future we need a Group Policy for it!
         internal bool HideLogonLogo
         {
             get
@@ -487,6 +564,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.BlockScreenSaverOnOtherMachines;
@@ -495,12 +577,21 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (BlockScreenSaverIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.BlockScreenSaverOnOtherMachines = value;
                 }
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool BlockScreenSaverIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled;
 
         internal bool MoveMouseRelatively
         {
@@ -791,6 +882,15 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Enabled)
+                {
+                    return true;
+                }
+                else if (GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.ValidateRemoteMachineIP;
@@ -799,6 +899,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (ReverseLookupIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.ValidateRemoteMachineIP = value;
@@ -806,10 +911,23 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool ReverseLookupIsGpoConfigured => GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Enabled || GPOWrapper.GetConfiguredMwbValidateRemoteIpValue() == GpoRuleConfigured.Disabled;
+
         internal bool SameSubNetOnly
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled)
+                {
+                    return true;
+                }
+                else if (GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.SameSubnetOnly;
@@ -818,6 +936,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (SameSubNetOnlyIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.SameSubnetOnly = value;
@@ -825,10 +948,19 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool SameSubNetOnlyIsGpoConfigured => GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Enabled || GPOWrapper.GetConfiguredMwbSameSubnetOnlyValue() == GpoRuleConfigured.Disabled;
+
         internal string Name2IP
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled)
+                {
+                    return string.Empty;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.Name2IP.Value;
@@ -837,12 +969,29 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (Name2IpIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.Name2IP.Value = value;
                 }
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool Name2IpIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisableUserDefinedIpMappingRulesValue() == GpoRuleConfigured.Enabled;
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal string Name2IpPolicyList => GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules();
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool Name2IpPolicyListIsGpoConfigured => !string.IsNullOrWhiteSpace(Name2IpPolicyList);
 
         internal bool FirstCtrlShiftS
         {
@@ -906,8 +1055,13 @@ namespace MouseWithoutBorders.Class
 
                     if (machineId == 0)
                     {
-                        _properties.MachineID.Value = Common.Ran.Next();
-                        machineId = _properties.MachineID.Value;
+                        var newMachineId = Encryption.Ran.Next();
+                        _properties.MachineID.Value = newMachineId;
+                        machineId = newMachineId;
+                        if (!PauseInstantSaving)
+                        {
+                            SaveSettings();
+                        }
                     }
                 }
 
@@ -919,6 +1073,11 @@ namespace MouseWithoutBorders.Class
                 lock (_loadingSettingsLock)
                 {
                     _properties.MachineID.Value = value;
+                    machineId = value;
+                    if (!PauseInstantSaving)
+                    {
+                        SaveSettings();
+                    }
                 }
             }
         }
@@ -950,6 +1109,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.ShowOriginalUI;
@@ -958,6 +1122,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (GPOWrapper.GetConfiguredMwbUseOriginalUserInterfaceValue() == GpoRuleConfigured.Disabled)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.ShowOriginalUI = value;
@@ -970,6 +1139,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.UseService;
@@ -978,6 +1152,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (AllowServiceModeIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.UseService = value;
@@ -989,6 +1168,11 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool AllowServiceModeIsGpoConfigured => GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == GpoRuleConfigured.Disabled;
+
+        // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
         internal bool SendErrorLogV2
         {
             get

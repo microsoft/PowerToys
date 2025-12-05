@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Folder.Sources.Result;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -50,7 +51,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
         [DataRow(@"c:", 2, 1, false, DisplayName = "Root without \\")]
         [DataRow(@"c:\", 2, 1, false, DisplayName = "Normal root")]
         [DataRow(@"c:\Test", 2, 2, false, DisplayName = "Select yourself")]
-        [DataRow(@"c:\not-exist", 2, 1, false, DisplayName = "Folder not exist, return root")]
+        [DataRow(@"c:\not-exist", 2, 0, false, DisplayName = "Folder not exist, return root")]
         [DataRow(@"c:\not-exist\not-exist2", 0, 0, false, DisplayName = "Folder not exist, return root")]
         [DataRow(@"c:\bla.t", 2, 1, false, DisplayName = "Partial match file")]
         [DataRow(@"c:/bla.t", 2, 1, false, DisplayName = "Partial match file with /")]
@@ -87,8 +88,8 @@ namespace Microsoft.Plugin.Folder.UnitTests
 
         [DataTestMethod]
         [DataRow(@"c:\>", 3, 3, true, DisplayName = "Max Folder test recursive")]
-        [DataRow(@"c:\Test>", 3, 3, true, DisplayName = "2 Folders recursive")]
-        [DataRow(@"c:\not-exist>", 3, 3, true, DisplayName = "Folder not exist, return root recursive")]
+        [DataRow(@"c:\Test>", 3, 0, true, DisplayName = "2 Folders recursive")]
+        [DataRow(@"c:\not-exist>", 3, 0, true, DisplayName = "Folder not exist, return root recursive")]
         [DataRow(@"c:\not-exist\not-exist2>", 0, 0, false, DisplayName = "Folder not exist, return root recursive")]
         public void Query_Recursive_WhenCalled(string search, int folders, int files, bool truncated)
         {

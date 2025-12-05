@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Common.UI;
-using interop;
 using PowerOCR.Utilities;
+using PowerToys.Interop;
 
 namespace PowerOCR.Keyboard
 {

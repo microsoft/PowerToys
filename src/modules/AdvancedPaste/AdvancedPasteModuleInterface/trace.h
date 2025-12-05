@@ -1,12 +1,11 @@
 #pragma once
+#include <common/Telemetry/TraceBase.h>
 #include <interface/powertoy_module_interface.h>
+#include <unordered_map> 
 
-class Trace
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider();
-    static void UnregisterProvider();
-
     // Log if the user has AdvancedPaste enabled or disabled
     static void AdvancedPaste_Enable(const bool enabled) noexcept;
 
@@ -21,5 +20,7 @@ public:
                                          const PowertoyModuleIface::Hotkey& advancedPasteUIHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteMarkdownHotkey,
                                          const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
-                                         const bool preview_custom_format_output) noexcept;
+                                         const bool is_advanced_ai_enabled,
+                                         const bool preview_custom_format_output,
+                                         const std::unordered_map<std::wstring, PowertoyModuleIface::Hotkey>& additionalActionsHotkeys) noexcept;
 };

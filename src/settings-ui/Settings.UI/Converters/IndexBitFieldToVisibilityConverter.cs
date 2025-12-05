@@ -3,12 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed class IndexBitFieldToVisibilityConverter : IValueConverter
+    public sealed partial class IndexBitFieldToVisibilityConverter : IValueConverter
     {
         // Receives a hexadecimal bit mask as a parameter. Will check the value against that bitmask.
         public object Convert(object value, Type targetType, object parameter, string language)

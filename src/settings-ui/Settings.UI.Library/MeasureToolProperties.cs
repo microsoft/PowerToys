@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Settings.UI.Library.Attributes;
 using Settings.UI.Library.Enumerations;
 
@@ -12,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class MeasureToolProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4D);
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x4D);
 
         public MeasureToolProperties()
         {
@@ -37,7 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool PerColorChannelEdgeDetection { get; set; }
 
-        [CmdConfigureIgnore]
         public IntProperty UnitsOfMeasure { get; set; }
 
         public IntProperty PixelTolerance { get; set; }
@@ -46,6 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public IntProperty DefaultMeasureStyle { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.MeasureToolProperties);
     }
 }

@@ -6,7 +6,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace MouseWithoutBorders
 {
@@ -37,8 +39,11 @@ namespace MouseWithoutBorders
                 return;
             }
 
+            ETWTrace etwTrace = new ETWTrace();
+
             RunnerHelper.WaitForPowerToysRunnerExitFallback(() =>
             {
+                etwTrace?.Dispose();
                 Application.Exit();
             });
 
@@ -75,6 +80,8 @@ namespace MouseWithoutBorders
 
             dotForm = new FormDot();
             Application.Run(FormHelper = new FormHelper());
+
+            etwTrace?.Dispose();
         }
     }
 }

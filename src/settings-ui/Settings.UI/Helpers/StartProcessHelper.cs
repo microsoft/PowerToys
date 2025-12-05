@@ -3,12 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public static class StartProcessHelper
     {
         public const string ColorsSettings = "ms-settings:colors";
+        public const string DiagnosticsAndFeedback = "ms-settings:privacy-feedback";
+
+        public static string AnimationsSettings => OSVersionHelper.IsWindows11()
+            ? "ms-settings:easeofaccess-visualeffects"
+            : "ms-settings:easeofaccess-display";
 
         public static void Start(string process)
         {

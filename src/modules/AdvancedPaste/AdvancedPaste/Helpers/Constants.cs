@@ -7,6 +7,5 @@ namespace AdvancedPaste.Helpers
     internal static class Constants
     {
         internal static readonly string AdvancedPasteModuleName = "AdvancedPaste";
-        internal static readonly string LastQueryJsonFileName = "lastQuery.json";
     }
 }

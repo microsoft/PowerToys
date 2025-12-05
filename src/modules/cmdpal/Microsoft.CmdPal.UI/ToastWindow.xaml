@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.ToastWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winuiex="using:WinUIEx"
+    Title="Command Palette Toast"
+    mc:Ignorable="d">
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
+    <Grid x:Name="ToastGrid">
+        <!--  This padding is used to calculate the dimensions of the ToastWindow  -->
+        <TextBlock
+            x:Name="ToastText"
+            Padding="12,12,24,20"
+            Text="{x:Bind ViewModel.ToastMessage, Mode=OneWay}"
+            TextAlignment="Center" />
+    </Grid>
+</winuiex:WindowEx>

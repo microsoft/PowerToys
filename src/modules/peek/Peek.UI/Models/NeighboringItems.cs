@@ -4,12 +4,13 @@
 
 using System.Collections;
 using System.Collections.Generic;
+
 using Peek.Common.Models;
 using Peek.UI.Extensions;
 
 namespace Peek.UI.Models
 {
-    public class NeighboringItems : IReadOnlyList<IFileSystemItem>
+    public partial class NeighboringItems : IReadOnlyList<IFileSystemItem>
     {
         public IFileSystemItem this[int index] => Items[index] = Items[index] ?? ShellItemArray.GetItemAt(index).ToIFileSystemItem();
 
@@ -26,14 +27,8 @@ namespace Peek.UI.Models
             Items = new IFileSystemItem[Count];
         }
 
-        public IEnumerator<IFileSystemItem> GetEnumerator()
-        {
-            return new NeighboringItemsEnumerator(this);
-        }
+        public IEnumerator<IFileSystemItem> GetEnumerator() => new NeighboringItemsEnumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

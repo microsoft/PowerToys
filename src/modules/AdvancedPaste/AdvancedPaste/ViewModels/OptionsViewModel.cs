@@ -3,63 +3,267 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
-using System.Net;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
+
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services;
 using AdvancedPaste.Settings;
 using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using WinUIEx;
+
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AdvancedPaste.ViewModels
 {
-    public partial class OptionsViewModel : ObservableObject
+    public sealed partial class OptionsViewModel : ObservableObject, IProgress<double>, IDisposable
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly DispatcherTimer _clipboardTimer;
+        private readonly IUserSettings _userSettings;
+        private readonly IPasteFormatExecutor _pasteFormatExecutor;
+        private readonly IAICredentialsProvider _credentialsProvider;
 
-        private App app = App.Current as App;
+        private CancellationTokenSource _pasteActionCancellationTokenSource;
 
-        private AICompletionsHelper aiHelper;
-
-        private UserSettings _userSettings;
+        private string _currentClipboardHistoryId;
+        private DateTimeOffset? _currentClipboardTimestamp;
+        private ClipboardFormat _lastClipboardFormats = ClipboardFormat.None;
+        private bool _clipboardHistoryUnavailableLogged;
 
         public DataPackageView ClipboardData { get; set; }
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
-        [NotifyPropertyChangedFor(nameof(IsCustomAIEnabled))]
-        private bool _isClipboardDataText;
+        private ClipboardItem _currentClipboardItem;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
+        [NotifyPropertyChangedFor(nameof(ClipboardHasData))]
+        [NotifyPropertyChangedFor(nameof(ClipboardHasDataForCustomAI))]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
-        private bool _isCustomAIEnabled;
+        [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
+        private ClipboardFormat _availableClipboardFormats;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowClipboardHistoryButton))]
         private bool _clipboardHistoryEnabled;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(InputTxtBoxErrorText))]
-        private int _apiRequestStatus;
+        [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIServiceEnabled))]
+        [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
+        [NotifyPropertyChangedFor(nameof(AllowedAIProviders))]
+        [NotifyPropertyChangedFor(nameof(ActiveAIProvider))]
+        [NotifyPropertyChangedFor(nameof(ActiveAIProviderTooltip))]
+        [NotifyPropertyChangedFor(nameof(TermsLinkUri))]
+        [NotifyPropertyChangedFor(nameof(PrivacyLinkUri))]
+        [NotifyPropertyChangedFor(nameof(HasTermsLink))]
+        [NotifyPropertyChangedFor(nameof(HasPrivacyLink))]
+        [NotifyPropertyChangedFor(nameof(HasLegalLinks))]
+        private bool _isAllowedByGPO;
 
-        public OptionsViewModel()
+        [ObservableProperty]
+        private PasteActionError _pasteActionError = PasteActionError.None;
+
+        [ObservableProperty]
+        private string _query = string.Empty;
+
+        private bool _pasteFormatsDirty;
+
+        [ObservableProperty]
+        private bool _isBusy;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasIndeterminateTransformProgress))]
+        private double _transformProgress = double.NaN;
+
+        public ObservableCollection<PasteFormat> StandardPasteFormats { get; } = [];
+
+        public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
+
+        public bool IsCustomAIServiceEnabled
         {
-            aiHelper = new AICompletionsHelper();
-            _userSettings = new UserSettings();
+            get
+            {
+                if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
+                {
+                    return false;
+                }
 
-            IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
+                // Check if there are any allowed providers
+                if (!AllowedAIProviders.Any())
+                {
+                    return false;
+                }
 
-            ApiRequestStatus = (int)HttpStatusCode.OK;
+                // We should handle the IsAIEnabled logic in settings, don't check again here.
+                // If setting says yes, and here should pass check, and if error happens, it happens.
+                return true;
+            }
+        }
 
-            GeneratedResponses = new ObservableCollection<string>();
+        public bool IsCustomAIAvailable => IsCustomAIServiceEnabled && ClipboardHasDataForCustomAI;
+
+        public bool IsAdvancedAIEnabled
+        {
+            get
+            {
+                if (!IsAllowedByGPO || !_userSettings.IsAIEnabled)
+                {
+                    return false;
+                }
+
+                if (!TryResolveAdvancedAIProvider(out _))
+                {
+                    return false;
+                }
+
+                return _credentialsProvider.IsConfigured();
+            }
+        }
+
+        public ObservableCollection<PasteAIProviderDefinition> AIProviders => _userSettings?.PasteAIConfiguration?.Providers ?? new ObservableCollection<PasteAIProviderDefinition>();
+
+        public IEnumerable<PasteAIProviderDefinition> AllowedAIProviders
+        {
+            get
+            {
+                var providers = AIProviders;
+                if (providers is null || providers.Count == 0)
+                {
+                    return Enumerable.Empty<PasteAIProviderDefinition>();
+                }
+
+                return providers.Where(IsProviderAllowedByGPO);
+            }
+        }
+
+        public PasteAIProviderDefinition ActiveAIProvider
+        {
+            get
+            {
+                var provider = _userSettings?.PasteAIConfiguration?.ActiveProvider;
+                if (provider is null || !IsProviderAllowedByGPO(provider))
+                {
+                    return null;
+                }
+
+                return provider;
+            }
+        }
+
+        public string ActiveAIProviderTooltip
+        {
+            get
+            {
+                var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                var provider = ActiveAIProvider;
+
+                if (provider is null)
+                {
+                    return resourceLoader.GetString("AIProviderButtonTooltipEmpty");
+                }
+
+                var format = resourceLoader.GetString("AIProviderButtonTooltipFormat");
+                var displayName = provider.DisplayName;
+
+                if (!string.IsNullOrEmpty(format))
+                {
+                    return string.Format(CultureInfo.CurrentCulture, format, displayName);
+                }
+
+                return displayName;
+            }
+        }
+
+        private AIServiceTypeMetadata GetActiveProviderMetadata()
+        {
+            var provider = ActiveAIProvider ?? AllowedAIProviders.FirstOrDefault();
+            var serviceType = provider?.ServiceTypeKind ?? AIServiceType.OpenAI;
+            return AIServiceTypeRegistry.GetMetadata(serviceType);
+        }
+
+        public Uri TermsLinkUri
+        {
+            get
+            {
+                var metadata = GetActiveProviderMetadata();
+                return metadata.HasTermsLink ? metadata.TermsUri : null;
+            }
+        }
+
+        public Uri PrivacyLinkUri
+        {
+            get
+            {
+                var metadata = GetActiveProviderMetadata();
+                return metadata.HasPrivacyLink ? metadata.PrivacyUri : null;
+            }
+        }
+
+        public bool HasTermsLink => GetActiveProviderMetadata().HasTermsLink;
+
+        public bool HasPrivacyLink => GetActiveProviderMetadata().HasPrivacyLink;
+
+        public bool HasLegalLinks => HasTermsLink || HasPrivacyLink;
+
+        public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
+
+        public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
+
+        public bool ShowClipboardPreview => _userSettings.EnableClipboardPreview;
+
+        public bool ShowClipboardHistoryButton => ClipboardHistoryEnabled;
+
+        public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
+
+        private PasteFormats CustomAIFormat =>
+            _userSettings.IsAIEnabled && TryResolveAdvancedAIProvider(out _)
+                ? PasteFormats.KernelQuery
+                : PasteFormats.CustomTextTransformation;
+
+        private bool Visible
+        {
+            get
+            {
+                try
+                {
+                    return GetMainWindow()?.Visible is true;
+                }
+                catch (COMException)
+                {
+                    return false; // window is closed
+                }
+            }
+        }
+
+        public event EventHandler PreviewRequested;
+
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        {
+            _credentialsProvider = credentialsProvider;
+            _userSettings = userSettings;
+            _pasteFormatExecutor = pasteFormatExecutor;
+
+            GeneratedResponses = [];
             GeneratedResponses.CollectionChanged += (s, e) =>
             {
                 OnPropertyChanged(nameof(HasMultipleResponses));
@@ -67,53 +271,281 @@ namespace AdvancedPaste.ViewModels
             };
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
-            GetClipboardData();
-        }
+            UpdateOpenAIKey();
+            _clipboardTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+            _clipboardTimer.Tick += ClipboardTimer_Tick;
+            _clipboardTimer.Start();
 
-        public void GetClipboardData()
-        {
-            ClipboardData = Clipboard.GetContent();
-            IsClipboardDataText = ClipboardData.Contains(StandardDataFormats.Text);
-        }
-
-        public void OnShow()
-        {
-            GetClipboardData();
-
-            if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            RefreshPasteFormats();
+            UpdateAIProviderActiveFlags();
+            _userSettings.Changed += UserSettings_Changed;
+            PropertyChanged += (_, e) =>
             {
-                IsCustomAIEnabled = false;
-                OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
+                string[] dirtyingProperties = [nameof(Query), nameof(IsCustomAIServiceEnabled), nameof(IsCustomAIAvailable), nameof(AvailableClipboardFormats)];
+
+                if (dirtyingProperties.Contains(e.PropertyName))
+                {
+                    EnqueueRefreshPasteFormats();
+                }
+            };
+
+            try
+            {
+                // Delete file that is no longer needed but might have been written by previous version and contain sensitive information.
+                fileSystem.File.Delete(new SettingsUtils(fileSystem).GetSettingsFilePath(Constants.AdvancedPasteModuleName, "lastQuery.json"));
             }
-            else
+            catch
             {
-                var openAIKey = AICompletionsHelper.LoadOpenAIKey();
-                var currentKey = aiHelper.GetKey();
-                bool keyChanged = openAIKey != currentKey;
+            }
+        }
 
-                if (keyChanged)
+        private static MainWindow GetMainWindow() => (App.Current as App)?.GetMainWindow();
+
+        private async void ClipboardTimer_Tick(object sender, object e)
+        {
+            if (Visible)
+            {
+                await ReadClipboardAsync();
+            }
+        }
+
+        private void UserSettings_Changed(object sender, EventArgs e)
+        {
+            UpdateAIProviderActiveFlags();
+            OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
+            OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
+            OnPropertyChanged(nameof(IsCustomAIAvailable));
+            OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+            OnPropertyChanged(nameof(AIProviders));
+            OnPropertyChanged(nameof(AllowedAIProviders));
+            OnPropertyChanged(nameof(ShowClipboardPreview));
+
+            NotifyActiveProviderChanged();
+
+            EnqueueRefreshPasteFormats();
+        }
+
+        private void EnqueueRefreshPasteFormats()
+        {
+            if (_pasteFormatsDirty)
+            {
+                return;
+            }
+
+            _pasteFormatsDirty = true;
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                RefreshPasteFormats();
+                _pasteFormatsDirty = false;
+            });
+        }
+
+        private PasteFormat CreateStandardPasteFormat(PasteFormats format) =>
+            PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+
+        private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
+            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
+
+        private void UpdateAIProviderActiveFlags()
+        {
+            var providers = _userSettings?.PasteAIConfiguration?.Providers;
+            if (providers is not null)
+            {
+                var activeId = ActiveAIProvider?.Id;
+
+                foreach (var provider in providers)
                 {
-                    app.GetMainWindow().StartLoading();
+                    provider.IsActive = !string.IsNullOrEmpty(activeId) && string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
+                }
+            }
 
-                    Task.Run(() =>
+            NotifyActiveProviderChanged();
+        }
+
+        private void NotifyActiveProviderChanged()
+        {
+            OnPropertyChanged(nameof(ActiveAIProvider));
+            OnPropertyChanged(nameof(ActiveAIProviderTooltip));
+            OnPropertyChanged(nameof(TermsLinkUri));
+            OnPropertyChanged(nameof(PrivacyLinkUri));
+            OnPropertyChanged(nameof(HasTermsLink));
+            OnPropertyChanged(nameof(HasPrivacyLink));
+            OnPropertyChanged(nameof(HasLegalLinks));
+        }
+
+        private void RefreshPasteFormats()
+        {
+            var ctrlString = ResourceLoaderInstance.ResourceLoader.GetString("CtrlKey");
+            int shortcutNum = 0;
+
+            string GetNextShortcutText()
+            {
+                shortcutNum++;
+                return shortcutNum <= 9 ? $"{ctrlString}+{shortcutNum}" : string.Empty;
+            }
+
+            IEnumerable<PasteFormat> FilterAndSort(IEnumerable<PasteFormat> pasteFormats) =>
+                from pasteFormat in pasteFormats
+                let comparison = StringComparison.CurrentCultureIgnoreCase
+                where pasteFormat.Name.Contains(Query, comparison) || pasteFormat.Prompt.Contains(Query, comparison)
+                orderby pasteFormat.IsEnabled descending
+                select pasteFormat;
+
+            void UpdateFormats(ObservableCollection<PasteFormat> collection, IEnumerable<PasteFormat> pasteFormats)
+            {
+                // Hack: Clear collection via repeated RemoveAt to avoid this crash, which seems to occasionally occur when using Clear:
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/8684
+                while (collection.Count > 0)
+                {
+                    collection.RemoveAt(collection.Count - 1);
+                }
+
+                foreach (var format in FilterAndSort(pasteFormats))
+                {
+                    if (format.IsEnabled)
                     {
-                        aiHelper.SetOpenAIKey(openAIKey);
-                    }).ContinueWith(
-                        (t) =>
-                        {
-                            _dispatcherQueue.TryEnqueue(() =>
-                            {
-                                app.GetMainWindow().FinishLoading(aiHelper.IsAIEnabled);
-                                OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
-                                IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
-                            });
-                        },
-                        TaskScheduler.Default);
+                        format.ShortcutText = GetNextShortcutText();
+                    }
+
+                    collection.Add(format);
                 }
-                else
+            }
+
+            UpdateFormats(StandardPasteFormats, Enum.GetValues<PasteFormats>()
+                                                    .Where(format => PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format))
+                                                    .Select(CreateStandardPasteFormat));
+
+            UpdateFormats(
+                CustomActionPasteFormats,
+                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
+        }
+
+        public void Dispose()
+        {
+            _clipboardTimer.Stop();
+            _pasteActionCancellationTokenSource?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        public async Task ReadClipboardAsync()
+        {
+            if (IsBusy)
+            {
+                return;
+            }
+
+            try
+            {
+                ClipboardData = Clipboard.GetContent();
+                AvailableClipboardFormats = ClipboardData != null ? await ClipboardData.GetAvailableFormatsAsync() : ClipboardFormat.None;
+            }
+            catch (Exception ex) when (ex is COMException or InvalidOperationException)
+            {
+                // Logger.LogDebug("Failed to read clipboard content", ex);
+                ClipboardData = null;
+                AvailableClipboardFormats = ClipboardFormat.None;
+            }
+
+            await UpdateClipboardPreviewAsync();
+        }
+
+        private async Task UpdateClipboardPreviewAsync()
+        {
+            if (ClipboardData is null || !ClipboardHasData)
+            {
+                ResetClipboardPreview();
+                _currentClipboardHistoryId = null;
+                _currentClipboardTimestamp = null;
+                _lastClipboardFormats = ClipboardFormat.None;
+                return;
+            }
+
+            var formatsChanged = AvailableClipboardFormats != _lastClipboardFormats;
+            _lastClipboardFormats = AvailableClipboardFormats;
+
+            var clipboardChanged = await UpdateClipboardTimestampAsync(formatsChanged);
+
+            // Create ClipboardItem directly from current clipboard data using helper
+            CurrentClipboardItem = await ClipboardItemHelper.CreateFromCurrentClipboardAsync(
+                ClipboardData,
+                AvailableClipboardFormats,
+                _currentClipboardTimestamp,
+                clipboardChanged ? null : CurrentClipboardItem?.Image);
+        }
+
+        private async Task<bool> UpdateClipboardTimestampAsync(bool formatsChanged)
+        {
+            bool clipboardChanged = formatsChanged;
+
+            if (Clipboard.IsHistoryEnabled())
+            {
+                try
                 {
-                    IsCustomAIEnabled = IsClipboardDataText && aiHelper.IsAIEnabled;
+                    var historyItems = await Clipboard.GetHistoryItemsAsync();
+                    if (historyItems.Status == ClipboardHistoryItemsResultStatus.Success && historyItems.Items.Count > 0)
+                    {
+                        var latest = historyItems.Items[0];
+                        if (_currentClipboardHistoryId != latest.Id)
+                        {
+                            clipboardChanged = true;
+                            _currentClipboardHistoryId = latest.Id;
+                        }
+
+                        _currentClipboardTimestamp = latest.Timestamp;
+                        _clipboardHistoryUnavailableLogged = false;
+                        return clipboardChanged;
+                    }
                 }
+                catch (Exception ex)
+                {
+                    if (!_clipboardHistoryUnavailableLogged)
+                    {
+                        Logger.LogDebug("Failed to access clipboard history timestamp", ex.Message);
+                        _clipboardHistoryUnavailableLogged = true;
+                    }
+                }
+            }
+
+            if (!_currentClipboardTimestamp.HasValue || clipboardChanged)
+            {
+                _currentClipboardTimestamp = DateTimeOffset.Now;
+                clipboardChanged = true;
+            }
+
+            return clipboardChanged;
+        }
+
+        private void ResetClipboardPreview()
+        {
+            // Clear to avoid leaks due to Garbage Collection not clearing the bitmap from memory
+            if (CurrentClipboardItem?.Image is not null)
+            {
+                CurrentClipboardItem.Image.ClearValue(BitmapImage.UriSourceProperty);
+            }
+
+            CurrentClipboardItem = null;
+        }
+
+        public async Task OnShowAsync()
+        {
+            PasteActionError = PasteActionError.None;
+            Query = string.Empty;
+
+            await ReadClipboardAsync();
+
+            if (UpdateOpenAIKey())
+            {
+                GetMainWindow()?.StartLoading();
+
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    GetMainWindow()?.FinishLoading(IsCustomAIServiceEnabled);
+                    OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
+                    OnPropertyChanged(nameof(CustomAIUnavailableErrorText));
+                    OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
+                    OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+                    OnPropertyChanged(nameof(IsCustomAIAvailable));
+                });
             }
 
             ClipboardHistoryEnabled = IsClipboardHistoryEnabled();
@@ -121,7 +553,7 @@ namespace AdvancedPaste.ViewModels
         }
 
         // List to store generated responses
-        public ObservableCollection<string> GeneratedResponses { get; set; } = new ObservableCollection<string>();
+        public ObservableCollection<string> GeneratedResponses { get; set; } = [];
 
         // Index to keep track of the current response
         private int _currentResponseIndex;
@@ -140,59 +572,35 @@ namespace AdvancedPaste.ViewModels
             }
         }
 
-        public bool HasMultipleResponses
-        {
-            get => GeneratedResponses.Count > 1;
-        }
+        public bool HasMultipleResponses => GeneratedResponses.Count > 1;
 
         public string CurrentIndexDisplay => $"{CurrentResponseIndex + 1}/{GeneratedResponses.Count}";
 
         public string InputTxtBoxPlaceholderText
+            => ResourceLoaderInstance.ResourceLoader.GetString(ClipboardHasData ? "CustomFormatTextBox/PlaceholderText" : "ClipboardEmptyWarning");
+
+        public string CustomAIUnavailableErrorText
         {
             get
             {
-                app.GetMainWindow().ClearInputText();
-
-                if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                if (!IsAllowedByGPO)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIGpoDisabled");
                 }
-                else if (!aiHelper.IsAIEnabled)
+
+                if (!IsCustomAIServiceEnabled)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAINotConfigured");
                 }
-                else if (!IsClipboardDataText)
+
+                if (!ClipboardHasDataForCustomAI)
                 {
-                    return ResourceLoaderInstance.ResourceLoader.GetString("ClipboardDataTypeMismatchWarning");
+                    return ResourceLoaderInstance.ResourceLoader.GetString("ClipboardEmptyWarning");
                 }
                 else
                 {
-                    return ResourceLoaderInstance.ResourceLoader.GetString("CustomFormatTextBox/PlaceholderText");
+                    return string.Empty;
                 }
-            }
-        }
-
-        public string InputTxtBoxErrorText
-        {
-            get
-            {
-                if (ApiRequestStatus != (int)HttpStatusCode.OK)
-                {
-                    if (ApiRequestStatus == (int)HttpStatusCode.TooManyRequests)
-                    {
-                        return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIApiKeyTooManyRequests");
-                    }
-                    else if (ApiRequestStatus == (int)HttpStatusCode.Unauthorized)
-                    {
-                        return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIApiKeyUnauthorized");
-                    }
-                    else
-                    {
-                        return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIApiKeyError") + ApiRequestStatus.ToString(CultureInfo.InvariantCulture);
-                    }
-                }
-
-                return string.Empty;
             }
         }
 
@@ -200,9 +608,24 @@ namespace AdvancedPaste.ViewModels
         private string _customFormatResult;
 
         [RelayCommand]
-        public void PasteCustom()
+        public async Task PasteCustomAsync()
         {
-            PasteCustomFunction(GeneratedResponses[CurrentResponseIndex]);
+            var text = GeneratedResponses.ElementAtOrDefault(CurrentResponseIndex);
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                await CopyPasteAndHideAsync(DataPackageHelpers.CreateFromText(text));
+            }
+        }
+
+        private async Task CopyPasteAndHideAsync(DataPackage package)
+        {
+            await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
+            Query = string.Empty;
+
+            // Delete any temp files created. A delay is needed to ensure the file is not in use by the target application -
+            // for example, when pasting onto File Explorer, the paste operation will trigger a file copy.
+            _ = Task.Run(() => package.GetView().TryCleanupAfterDelayAsync(TimeSpan.FromSeconds(30)));
         }
 
         // Command to select the previous custom format
@@ -230,178 +653,116 @@ namespace AdvancedPaste.ViewModels
         public void OpenSettings()
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste, true);
-            (App.Current as App).GetMainWindow().Close();
+            GetMainWindow()?.Close();
         }
 
-        private void SetClipboardContentAndHideWindow(string content)
+        internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source)
         {
-            if (!string.IsNullOrEmpty(content))
-            {
-                ClipboardHelper.SetClipboardTextContent(content);
-            }
-
-            if (app.GetMainWindow() != null)
-            {
-                Windows.Win32.Foundation.HWND hwnd = (Windows.Win32.Foundation.HWND)app.GetMainWindow().GetWindowHandle();
-                Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
-            }
+            await ReadClipboardAsync();
+            await ExecutePasteFormatAsync(CreateStandardPasteFormat(format), source);
         }
 
-        internal void ToPlainTextFunction()
+        internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
         {
-            try
+            if (IsBusy)
             {
-                Logger.LogTrace();
-
-                string outputString = MarkdownHelper.PasteAsPlainTextFromClipboard(ClipboardData);
-
-                SetClipboardContentAndHideWindow(outputString);
-
-                if (_userSettings.SendPasteKeyCombination)
-                {
-                    ClipboardHelper.SendPasteKeyCombination();
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        internal void ToMarkdownFunction(bool pasteAlways = false)
-        {
-            try
-            {
-                Logger.LogTrace();
-
-                string outputString = MarkdownHelper.ToMarkdown(ClipboardData);
-
-                SetClipboardContentAndHideWindow(outputString);
-
-                if (pasteAlways || _userSettings.SendPasteKeyCombination)
-                {
-                    ClipboardHelper.SendPasteKeyCombination();
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        internal void ToJsonFunction(bool pasteAlways = false)
-        {
-            try
-            {
-                Logger.LogTrace();
-
-                string jsonText = JsonHelper.ToJsonFromXmlOrCsv(ClipboardData);
-
-                SetClipboardContentAndHideWindow(jsonText);
-
-                if (pasteAlways || _userSettings.SendPasteKeyCombination)
-                {
-                    ClipboardHelper.SendPasteKeyCombination();
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        internal async Task<string> GenerateCustomFunction(string inputInstructions)
-        {
-            Logger.LogTrace();
-
-            if (string.IsNullOrWhiteSpace(inputInstructions))
-            {
-                return string.Empty;
-            }
-
-            if (ClipboardData == null || !ClipboardData.Contains(StandardDataFormats.Text))
-            {
-                Logger.LogWarning("Clipboard does not contain text data");
-                return string.Empty;
-            }
-
-            string currentClipboardText = await Task.Run(async () =>
-            {
-                try
-                {
-                    string text = await ClipboardData.GetTextAsync() as string;
-                    return text;
-                }
-                catch (Exception)
-                {
-                    // Couldn't get text from the clipboard. Resume with empty text.
-                    return string.Empty;
-                }
-            });
-
-            if (string.IsNullOrWhiteSpace(currentClipboardText))
-            {
-                Logger.LogWarning("Clipboard has no usable text data");
-                return string.Empty;
-            }
-
-            var aiResponse = await Task.Run(() => aiHelper.AIFormatString(inputInstructions, currentClipboardText));
-
-            string aiOutput = aiResponse.Response;
-            ApiRequestStatus = aiResponse.ApiRequestStatus;
-
-            GeneratedResponses.Add(aiOutput);
-            CurrentResponseIndex = GeneratedResponses.Count - 1;
-            return aiOutput;
-        }
-
-        internal void PasteCustomFunction(string text)
-        {
-            Logger.LogTrace();
-
-            SetClipboardContentAndHideWindow(text);
-
-            if (_userSettings.SendPasteKeyCombination)
-            {
-                ClipboardHelper.SendPasteKeyCombination();
-            }
-        }
-
-        internal CustomQuery RecallPreviousCustomQuery()
-        {
-            return LoadPreviousQuery();
-        }
-
-        internal void SaveQuery(string inputQuery)
-        {
-            Logger.LogTrace();
-
-            DataPackageView clipboardData = Clipboard.GetContent();
-
-            if (clipboardData == null || !clipboardData.Contains(StandardDataFormats.Text))
-            {
-                Logger.LogWarning("Clipboard does not contain text data");
+                Logger.LogWarning($"Execution of {pasteFormat.Format} from {source} suppressed as busy");
                 return;
             }
 
-            string currentClipboardText = Task.Run(async () =>
+            if (!pasteFormat.IsEnabled)
             {
-                string text = await clipboardData.GetTextAsync() as string;
-                return text;
-            }).Result;
+                PasteActionError = PasteActionError.FromResourceId(pasteFormat.SupportsClipboardFormats(AvailableClipboardFormats) ? "PasteError" : "ClipboardEmptyWarning");
+                return;
+            }
 
-            var queryData = new CustomQuery
+            var elapsedWatch = Stopwatch.StartNew();
+            Logger.LogDebug($"Started executing {pasteFormat.Format} from source {source}");
+
+            IsBusy = true;
+            _pasteActionCancellationTokenSource = new();
+            TransformProgress = double.NaN;
+            PasteActionError = PasteActionError.None;
+            Query = pasteFormat.Query;
+
+            try
             {
-                Query = inputQuery,
-                ClipboardData = currentClipboardText,
-            };
+                // Minimum time to show busy spinner for AI actions when triggered by global keyboard shortcut.
+                var aiActionMinTaskTime = TimeSpan.FromSeconds(1.5);
+                var delayTask = (Visible && source == PasteActionSource.GlobalKeyboardShortcut) ? Task.Delay(aiActionMinTaskTime) : Task.CompletedTask;
+                var dataPackage = await _pasteFormatExecutor.ExecutePasteFormatAsync(pasteFormat, source, _pasteActionCancellationTokenSource.Token, this);
 
-            SettingsUtils utils = new SettingsUtils();
-            utils.SaveSettings(queryData.ToString(), Constants.AdvancedPasteModuleName, Constants.LastQueryJsonFileName);
+                await delayTask;
+
+                var outputText = await dataPackage.GetView().GetTextOrEmptyAsync();
+                bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(outputText) && source != PasteActionSource.GlobalKeyboardShortcut;
+
+                if (shouldPreview)
+                {
+                    GeneratedResponses.Add(outputText);
+                    CurrentResponseIndex = GeneratedResponses.Count - 1;
+                    PreviewRequested?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    await CopyPasteAndHideAsync(dataPackage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error executing paste format", ex);
+                PasteActionError = PasteActionError.FromException(ex);
+            }
+
+            IsBusy = false;
+            _pasteActionCancellationTokenSource?.Dispose();
+            _pasteActionCancellationTokenSource = null;
+            elapsedWatch.Stop();
+            Logger.LogDebug($"Finished executing {pasteFormat.Format} from source {source}; timeTakenMs={elapsedWatch.ElapsedMilliseconds}");
         }
 
-        internal CustomQuery LoadPreviousQuery()
+        internal async Task ExecutePasteFormatAsync(VirtualKey key)
         {
-            SettingsUtils utils = new SettingsUtils();
-            var query = utils.GetSettings<CustomQuery>(Constants.AdvancedPasteModuleName, Constants.LastQueryJsonFileName);
-            return query;
+            var pasteFormat = StandardPasteFormats.Concat(CustomActionPasteFormats)
+                                                  .Where(pasteFormat => pasteFormat.IsEnabled)
+                                                  .ElementAtOrDefault(key - VirtualKey.Number1);
+
+            if (pasteFormat != null)
+            {
+                await ExecutePasteFormatAsync(pasteFormat, PasteActionSource.InAppKeyboardShortcut);
+            }
+        }
+
+        internal async Task ExecuteCustomActionAsync(int customActionId, PasteActionSource source)
+        {
+            Logger.LogTrace();
+
+            var customAction = _userSettings.CustomActions.FirstOrDefault(customAction => customAction.Id == customActionId);
+
+            if (customAction != null)
+            {
+                await ReadClipboardAsync();
+                await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true), source);
+            }
+        }
+
+        internal async Task ExecuteCustomAIFormatFromCurrentQueryAsync(PasteActionSource triggerSource)
+        {
+            var customAction = _userSettings.CustomActions
+                                            .FirstOrDefault(customAction => Models.KernelQueryCache.CacheKey.PromptComparer.Equals(customAction.Prompt, Query));
+
+            await ExecutePasteFormatAsync(CreateCustomAIPasteFormat(customAction?.Name ?? "Default", Query, isSavedQuery: customAction != null), triggerSource);
+        }
+
+        private void HideWindow()
+        {
+            var mainWindow = GetMainWindow();
+
+            if (mainWindow != null)
+            {
+                Windows.Win32.Foundation.HWND hwnd = (Windows.Win32.Foundation.HWND)mainWindow.GetWindowHandle();
+                Windows.Win32.PInvoke.ShowWindow(hwnd, Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD.SW_HIDE);
+            }
         }
 
         private bool IsClipboardHistoryEnabled()
@@ -416,6 +777,141 @@ namespace AdvancedPaste.ViewModels
             {
                 return false;
             }
+        }
+
+        private void UpdateAllowedByGPO()
+        {
+            IsAllowedByGPO = PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOnlineAIModelsValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled;
+        }
+
+        private bool IsProviderAllowedByGPO(PasteAIProviderDefinition provider)
+        {
+            if (provider is null)
+            {
+                return false;
+            }
+
+            var serviceType = provider.ServiceType.ToAIServiceType();
+            var metadata = AIServiceTypeRegistry.GetMetadata(serviceType);
+
+            // Check global online AI GPO for online services
+            if (metadata.IsOnlineService && !IsAllowedByGPO)
+            {
+                return false;
+            }
+
+            // Check individual endpoint GPO
+            return serviceType switch
+            {
+                AIServiceType.OpenAI => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOpenAIValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.AzureOpenAI => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAzureOpenAIValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.AzureAIInference => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteAzureAIInferenceValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Mistral => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteMistralValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Google => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteGoogleValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.Ollama => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteOllamaValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                AIServiceType.FoundryLocal => PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPasteFoundryLocalValue() != PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                _ => true, // Allow unknown types by default
+            };
+        }
+
+        private bool TryResolveAdvancedAIProvider(out PasteAIProviderDefinition provider)
+        {
+            provider = null;
+
+            var configuration = _userSettings?.PasteAIConfiguration;
+            if (configuration is null)
+            {
+                return false;
+            }
+
+            var activeProvider = configuration.ActiveProvider;
+            if (IsAdvancedAIProvider(activeProvider))
+            {
+                provider = activeProvider;
+                return true;
+            }
+
+            if (activeProvider is not null)
+            {
+                return false;
+            }
+
+            var fallback = configuration.Providers?.FirstOrDefault(IsAdvancedAIProvider);
+            if (fallback is not null)
+            {
+                provider = fallback;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsAdvancedAIProvider(PasteAIProviderDefinition provider)
+        {
+            return provider is not null && provider.EnableAdvancedAI && SupportsAdvancedAI(provider.ServiceTypeKind);
+        }
+
+        private static bool SupportsAdvancedAI(AIServiceType serviceType)
+        {
+            return serviceType is AIServiceType.OpenAI
+                or AIServiceType.AzureOpenAI;
+        }
+
+        private bool UpdateOpenAIKey()
+        {
+            UpdateAllowedByGPO();
+
+            return _credentialsProvider.Refresh();
+        }
+
+        [RelayCommand]
+        private async Task SetActiveProviderAsync(PasteAIProviderDefinition provider)
+        {
+            if (provider is null || string.IsNullOrEmpty(provider.Id))
+            {
+                return;
+            }
+
+            if (string.Equals(ActiveAIProvider?.Id, provider.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            try
+            {
+                await _userSettings.SetActiveAIProviderAsync(provider.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to activate AI provider", ex);
+                return;
+            }
+
+            UpdateAIProviderActiveFlags();
+            OnPropertyChanged(nameof(AIProviders));
+            NotifyActiveProviderChanged();
+            EnqueueRefreshPasteFormats();
+        }
+
+        public async Task CancelPasteActionAsync()
+        {
+            if (_pasteActionCancellationTokenSource != null)
+            {
+                await _pasteActionCancellationTokenSource.CancelAsync();
+            }
+        }
+
+        void IProgress<double>.Report(double value)
+        {
+            ReportProgress(value);
+        }
+
+        private void ReportProgress(double value)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                TransformProgress = value;
+            });
         }
     }
 }
