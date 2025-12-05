@@ -1529,6 +1529,7 @@ SOFTWARE.
 - ReverseMarkdown
 - ScipBe.Common.Office.OneNote
 - SharpCompress
+- Shmuelie.WinRTServer
 - SkiaSharp.Views.WinUI
 - StreamJsonRpc
 - StyleCop.Analyzers

@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<RootNamespace>PowerToysExtension</RootNamespace>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
+		<PackageVersion>$(Version)</PackageVersion>
+		<!-- Keep the MSIX version in sync with the PowerToys version -->
+		<AppxPackageVersion>$(Version)</AppxPackageVersion>
+		<ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Nullable>enable</Nullable>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+		<AppxBundle>Never</AppxBundle>
+		<AppxPackageTestDir>$(OutputPath)\AppPackages\$(MSBuildProjectName)_$(AppxPackageVersion)_Test\</AppxPackageTestDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Assets\SplashScreen.scale-200.png" />
+		<Content Include="Assets\LockScreenLogo.scale-200.png" />
+		<Content Include="Assets\Square150x150Logo.scale-200.png" />
+		<Content Include="Assets\Square44x44Logo.scale-200.png" />
+		<Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+		<Content Include="Assets\StoreLogo.png" />
+		<Content Include="Assets\Wide310x150Logo.scale-200.png" />
+		<Content Include="Assets\FileLocksmith.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<PackageReference Include="Microsoft.Windows.CsWin32">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Shmuelie.WinRTServer" />
+	</ItemGroup>
+
+	<!-- Enable Single-project MSIX packaging support -->
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
+		<ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\..\Awake\Awake.ModuleServices\Awake.ModuleServices.csproj" />
+		<ProjectReference Include="..\..\..\colorPicker\ColorPicker.ModuleServices\ColorPicker.ModuleServices.csproj" />
+		<ProjectReference Include="..\..\..\Workspaces\Workspaces.ModuleServices\Workspaces.ModuleServices.csproj" />
+	</ItemGroup>
+
+	<!-- Exclude legacy Helper folder in favor of Helpers -->
+
+	<PropertyGroup>
+		<!-- Always build/publish AOT so the extension ships as native code -->
+		<SelfContained>true</SelfContained>
+		<PublishAot>true</PublishAot>
+		<PublishSingleFile>false</PublishSingleFile>
+		<PublishTrimmed>true</PublishTrimmed>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+	</PropertyGroup>
+</Project>

@@ -69,6 +69,7 @@
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
       <ComponentGroupRef Id="CmdPalComponentGroup" />
+      <ComponentGroupRef Id="CmdPalExtPowerToysComponentGroup" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" Sequence="execute" />
@@ -109,6 +110,7 @@
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
       <Custom Action="SetInstallCmdPalPackageParam" Before="InstallCmdPalPackage" />
+      <Custom Action="SetInstallCmdPalExtPowerToysPackageParam" Before="InstallCmdPalExtPowerToysPackage" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
@@ -124,6 +126,7 @@
       <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="InstallCmdPalExtPowerToysPackage" After="InstallCmdPalPackage" Condition="NOT Installed" />
       <Custom Action="InstallPackageIdentityMSIX" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
@@ -143,6 +146,7 @@
       <Custom Action="CleanPowerRenameRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="CleanNewPlusRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnRegisterCmdPalExtPowerToysPackage" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
@@ -166,6 +170,7 @@
     <CustomAction Id="SetLaunchPowerToysParam" Property="LaunchPowerToys" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetInstallCmdPalPackageParam" Property="InstallCmdPalPackage" Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetInstallCmdPalExtPowerToysPackageParam" Property="InstallCmdPalExtPowerToysPackage" Value="[INSTALLFOLDER]" />
 
     <!-- Set InstallLocation for Bundle entry as well -->
     <CustomAction Id="SetBundleInstallLocationData" Property="SetBundleInstallLocation" Value="[INSTALLFOLDER];[BUNDLEINFO];[InstallScope]" />
@@ -255,10 +260,12 @@
     <CustomAction Id="CleanNewPlusRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanNewPlusRuntimeRegistryCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="UnRegisterCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterCmdPalPackageCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="UnRegisterCmdPalExtPowerToysPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterCmdPalExtPowerToysPackageCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="InstallCmdPalExtPowerToysPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalExtPowerToysPackageCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="SetBundleInstallLocation" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="SetBundleInstallLocationCA" BinaryRef="PTCustomActions" />
 

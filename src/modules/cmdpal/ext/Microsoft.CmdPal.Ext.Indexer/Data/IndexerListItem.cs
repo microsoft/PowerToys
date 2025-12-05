@@ -5,7 +5,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CmdPal.Core.Common.Commands;
+using Microsoft.CmdPal.Common.Commands;
+using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -90,11 +91,11 @@ internal sealed partial class IndexerListItem : ListItem
             commands.Add(new CommandContextItem(openCommand));
         }
 
-        commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
         commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }) { RequestedShortcut = KeyChords.OpenFileLocation });
         commands.Add(new CommandContextItem(new CopyPathCommand(fullPath) { Name = Resources.Indexer_Command_CopyPath }) { RequestedShortcut = KeyChords.CopyFilePath });
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)) { RequestedShortcut = KeyChords.OpenInConsole });
         commands.Add(new CommandContextItem(new OpenPropertiesCommand(fullPath)));
+        commands.Add(new CommandContextItem(new UnlockCommand(fullPath)));
 
         if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {

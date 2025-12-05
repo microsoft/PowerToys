@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Microsoft.CmdPal.Ext.PowerToys (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true,
+      "nativeDebugging": false
+    },
+    "Microsoft.CmdPal.Ext.PowerToys (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
