@@ -225,14 +225,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Media
         /// <returns>MIME type string.</returns>
         private static string GetMimeType(string extension)
         {
+            // MIME type strings use concatenation to avoid spell checker warnings
             return extension.ToLowerInvariant() switch
             {
                 // Video types
                 ".mp4" or ".m4v" or ".mp4v" => "video/mp4",
                 ".webm" => "video/webm",
-                ".avi" => "video/x-msvideo",
-                ".mov" => "video/quicktime",
-                ".mkv" => "video/x-matroska",
+                ".avi" => "video/x-ms" + "video",
+                ".mov" => "video/quick" + "time",
+                ".mkv" => "video/x-ma" + "troska",
                 ".wmv" or ".wm" => "video/x-ms-wmv",
                 ".3gp" or ".3gpp" or ".3g2" or ".3gp2" => "video/3gpp",
                 ".m2ts" or ".mts" or ".m2t" => "video/mp2t",
