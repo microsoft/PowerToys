@@ -1,11 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <PathToRoot>..\..\..\..\..\</PathToRoot>
     <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.8.250907003</WasdkNuget>
-    <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
-    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188</WindowsSdkBuildToolsNuget>
-    <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2903.40</WebView2Nuget>
+    <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1</CppWinRTNuget>
+    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.6901</WindowsSdkBuildToolsNuget>
+    <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.3179.45</WebView2Nuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
   <Import Project="$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props')" />
@@ -51,7 +51,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
