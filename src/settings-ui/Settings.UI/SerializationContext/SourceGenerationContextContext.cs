@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(FindMyMouseSettings))]
 [JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
 [JsonSerializable(typeof(LightSwitchSettings))]
+[JsonSerializable(typeof(KeystrokeOverlaySettings))]
 [JsonSerializable(typeof(MeasureToolSettings))]
 [JsonSerializable(typeof(MouseHighlighterSettings))]
 [JsonSerializable(typeof(MouseJumpSettings))]

@@ -23,13 +23,13 @@ namespace KeystrokeOverlayUI
         // Event to notify ViewModel when settings change
         public event Action<ModuleProperties> SettingsUpdated;
 
-        private const string ModuleName = "Keystroke Overlay";
+        private const string ModuleName = "KeystrokeOverlay";
         private readonly string _settingsFilePath;
         private FileSystemWatcher _watcher;
 
         public OverlaySettings()
         {
-            // Path: %LOCALAPPDATA%\Microsoft\PowerToys\Keystroke Overlay\settings.json
+            // Path: %LOCALAPPDATA%\Microsoft\PowerToys\KeystrokeOverlay\settings.json
             string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             _settingsFilePath = Path.Combine(localAppData, "Microsoft", "PowerToys", ModuleName, "settings.json");
         }

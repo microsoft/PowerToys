@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class KeystrokeOverlaySettings : BasePTModuleSettings, ISettingsConfig, IHotkeyConfig
     {
-        public const string ModuleName = "Keystroke Overlay";
+        public const string ModuleName = "KeystrokeOverlay";
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
