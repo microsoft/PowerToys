@@ -8,7 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
+
 using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
@@ -35,8 +37,10 @@ namespace KeystrokeOverlayUI
 
         private readonly KeystrokeListener _keystrokeListener = new();
         private readonly OverlaySettings _overlaySettings = new();
+        private CancellationTokenSource _startupCancellationSource;
         private bool _disposed;
 
+        // for draggable overlay
         private const int WMNCLBUTTONDOWN = 0xA1;
         private const int HTCAPTION = 0x2;
 
@@ -107,21 +111,54 @@ namespace KeystrokeOverlayUI
 
         private async void RunStartupSequence(bool isDraggable)
         {
-            if (isDraggable)
+            _startupCancellationSource?.Cancel();
+            _startupCancellationSource?.Dispose();
+            _startupCancellationSource = new CancellationTokenSource();
+
+            var token = _startupCancellationSource.Token;
+
+            try
             {
-                for (int index = 10; index > 0; index--)
+                if (isDraggable)
                 {
-                    ViewModel.RegisterKey($"Drag to Position ({index})", durationMs: 1000, textSize: 30);
-                    await Task.Delay(1000);
+                    // Loop with cancellation check
+                    for (int index = 10; index > 0; index--)
+                    {
+                        // 2. Pass the token to Task.Delay
+                        // If cancelled, this throws OperationCanceledException immediately
+                        ViewModel.RegisterKey($"Drag to Position ({index})", durationMs: 1000, textSize: 30);
+                        await Task.Delay(1000, token);
+                    }
+                }
+
+                // Normal completion cleanup
+                ViewModel.ClearKeys();
+                await Task.Delay(500, token);
+            }
+            catch (OperationCanceledException)
+            {
+                // 3. Logic for when a key interrupts the sequence
+                // We clear immediately so the new key can take over
+                ViewModel.ClearKeys();
+            }
+            finally
+            {
+                // Clean up the source
+                if (_startupCancellationSource != null)
+                {
+                    _startupCancellationSource.Dispose();
+                    _startupCancellationSource = null;
                 }
             }
-
-            ViewModel.ClearKeys();
-            await Task.Delay(500);
         }
 
         private void OnKeyReceived(KeystrokeEvent kEvent)
         {
+            if (_startupCancellationSource != null && !_startupCancellationSource.IsCancellationRequested)
+            {
+                _startupCancellationSource.Cancel();
+            }
+
             DispatcherQueue.TryEnqueue(() =>
             {
                 if (kEvent.IsPressed)
