@@ -1028,6 +1028,7 @@ public sealed partial class MainWindow : WindowEx,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
                 Cloak();
                 this.Hide();
+                WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
                 return;
             }

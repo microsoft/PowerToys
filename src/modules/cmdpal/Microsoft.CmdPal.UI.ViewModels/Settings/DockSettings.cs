@@ -31,7 +31,12 @@ public class DockSettings
     public DockSettings()
     {
         // Initialize with default values
+        PinnedCommands = [
+            "com.microsoft.cmdpal.winget"
+        ];
+
         StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.home" });
+        StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.winget", ShowLabels = false });
 
         EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceMonitor" });
         EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockband" });
