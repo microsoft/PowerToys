@@ -51,9 +51,6 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableChinesePinYinSupport_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.EnableChinesePinYinSupport, Mode=TwoWay}" />
-                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AutoGoHome_Item_Never" />

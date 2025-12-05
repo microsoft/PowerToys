@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+
 using ToolGood.Words.Pinyin;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
@@ -12,9 +14,18 @@ public static class FuzzyStringMatcher
     private const int NOMATCH = 0;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to support Chinese PinYin
+    /// Gets a value indicating whether to support Chinese PinYin.
+    /// Automatically enabled when the system UI culture is Simplified Chinese.
     /// </summary>
-    public static bool ChinesePinYinSupport { get; set; }
+    public static bool ChinesePinYinSupport { get; } = IsSimplifiedChinese();
+
+    private static bool IsSimplifiedChinese()
+    {
+        var culture = CultureInfo.CurrentUICulture;
+        // Detect Simplified Chinese: zh-CN, zh-Hans, zh-Hans-*
+        return culture.Name.StartsWith("zh-CN", StringComparison.OrdinalIgnoreCase)
+            || culture.Name.StartsWith("zh-Hans", StringComparison.OrdinalIgnoreCase);
+    }
 
     public static int ScoreFuzzy(string needle, string haystack, bool allowNonContiguousMatches = true)
     {

@@ -46,18 +46,6 @@ public partial class SettingsModel : ObservableObject
 
     public bool AllowExternalReload { get; set; }
 
-    public bool EnableChinesePinYinSupport
-    {
-        get => field;
-        set
-        {
-            if (SetProperty(ref field, value))
-            {
-                FuzzyStringMatcher.ChinesePinYinSupport = value;
-            }
-        }
-    }
-
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];

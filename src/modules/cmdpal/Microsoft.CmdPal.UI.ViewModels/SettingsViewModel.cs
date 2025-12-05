@@ -141,15 +141,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool EnableChinesePinYinSupport
-    {
-        get => _settings.EnableChinesePinYinSupport;
-        set
-        {
-            _settings.EnableChinesePinYinSupport = value;
-            Save();
-        }
-    }
 
     public int AutoGoBackIntervalIndex
     {
