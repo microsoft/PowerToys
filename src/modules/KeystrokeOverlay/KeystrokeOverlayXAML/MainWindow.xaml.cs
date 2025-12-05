@@ -27,19 +27,16 @@ using WinRT.Interop;
 namespace KeystrokeOverlayUI
 {
     /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// Main overlay window.
     /// </summary>
     public sealed partial class MainWindow : Window, IDisposable
     {
         public MainViewModel ViewModel { get; set; } = new();
 
         private readonly KeystrokeListener _keystrokeListener = new();
-
         private readonly OverlaySettings _overlaySettings = new();
-
         private bool _disposed;
 
-        // P/Invoke constants and methods to allow dragging a borderless window
         private const int WMNCLBUTTONDOWN = 0xA1;
         private const int HTCAPTION = 0x2;
 
@@ -51,10 +48,11 @@ namespace KeystrokeOverlayUI
 
         public MainWindow()
         {
-            this.SystemBackdrop = null;
-            this.Content = new Grid()
+            SystemBackdrop = null;
+
+            Content = new Grid
             {
-                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
             };
 
             InitializeComponent();
@@ -67,6 +65,7 @@ namespace KeystrokeOverlayUI
             {
                 DispatcherQueue.TryEnqueue(() => ViewModel.ApplySettings(props));
             };
+
             _overlaySettings.Initialize();
 
             _keystrokeListener.OnBatchReceived += OnKeyReceived;
@@ -76,7 +75,6 @@ namespace KeystrokeOverlayUI
 
             RunStartupSequence(isDraggable: ViewModel.IsDraggable);
 
-            // listener for changes to IsDraggable to re-run startup sequence
             ViewModel.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.IsDraggable))
@@ -88,35 +86,29 @@ namespace KeystrokeOverlayUI
 
         private void ConfigureOverlayWindow()
         {
-            // get app window
             var appWindow = GetAppWindow();
 
             if (appWindow != null)
             {
-                // Set the presenter to Overlapped to manipulate window chrome
-                var presenter = appWindow.Presenter as OverlappedPresenter;
-                if (presenter == null)
-                {
-                    presenter = OverlappedPresenter.Create();
-                    appWindow.SetPresenter(presenter);
-                }
+                var presenter = appWindow.Presenter as OverlappedPresenter
+                                ?? OverlappedPresenter.Create();
 
-                // KEY SETTINGS FOR OVERLAY:
-                presenter.IsAlwaysOnTop = true;       // Keep above other apps
-                presenter.IsResizable = false;        // Fixed size (optional)
-                presenter.IsMinimizable = false;      // Don't allow minimize
-                presenter.IsMaximizable = false;      // Don't allow maximize
-                presenter.SetBorderAndTitleBar(false, false); // Remove standard Windows chrome
+                appWindow.SetPresenter(presenter);
+
+                presenter.IsAlwaysOnTop = true;
+                presenter.IsResizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsMaximizable = false;
+                presenter.SetBorderAndTitleBar(false, false);
             }
 
             HideAppWindow();
         }
 
-        private async void RunStartupSequence(bool isDraggable = false)
+        private async void RunStartupSequence(bool isDraggable)
         {
             if (isDraggable)
             {
-                // 10 second duration for the "Drag to Position" message + positioning time
                 for (int index = 10; index > 0; index--)
                 {
                     ViewModel.RegisterKey($"Drag to Position ({index})", durationMs: 1000, textSize: 30);
@@ -124,31 +116,14 @@ namespace KeystrokeOverlayUI
                 }
             }
 
-            // clear instructions + pause briefly
             ViewModel.ClearKeys();
             await Task.Delay(500);
-
-            // start simulating test keys
-            // change this to false to disable test keys on startup
-        }
-
-        private async void SimulateTestKeys()
-        {
-            // Simulate some test key presses for demonstration
-            string[] testKeys = { "A", "B", "C", "D", "E", "F", "G" };
-            foreach (var key in testKeys)
-            {
-                ViewModel.RegisterKey(key);
-                await Task.Delay(300);
-            }
         }
 
         private void OnKeyReceived(KeystrokeEvent kEvent)
         {
             DispatcherQueue.TryEnqueue(() =>
             {
-                // We typically only want to show the key when it is pressed down (IsPressed = true)
-                // If you want to show releases, remove this check.
                 if (kEvent.IsPressed)
                 {
                     string keyName = GetKeyName(kEvent.VirtualKey);
@@ -159,7 +134,6 @@ namespace KeystrokeOverlayUI
 
         private string GetKeyName(uint virtualKey)
         {
-            // Simple conversion using built-in WinUI/System enums
             var key = (Windows.System.VirtualKey)virtualKey;
 
             return key switch
@@ -167,15 +141,10 @@ namespace KeystrokeOverlayUI
                 Windows.System.VirtualKey.Space => "Space",
                 Windows.System.VirtualKey.Enter => "Enter",
                 Windows.System.VirtualKey.Back => "Backspace",
-
-                // Add other special cases here
                 _ => key.ToString(),
             };
         }
 
-        // ---------------------------
-        // XAML Event Handlers
-        // ---------------------------
         private void RootGrid_Loaded(object sender, RoutedEventArgs e)
         {
             RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
@@ -183,29 +152,18 @@ namespace KeystrokeOverlayUI
             ResizeAppWindow(desiredSize.Width, desiredSize.Height);
         }
 
-        private void RootGrid_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void RootGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            // Check if the left mouse button is pressed
             var properties = e.GetCurrentPoint(RootGrid).Properties;
+
             if (ViewModel.IsDraggable && properties.IsLeftButtonPressed)
             {
-                // 1. Get the handle (hWnd) of the current window
                 IntPtr hWnd = WindowNative.GetWindowHandle(this);
 
-                // 2. Release the mouse capture from the XAML element
-                // This is critical: XAML usually holds the mouse, preventing the OS from taking over.
                 ReleaseCapture();
 
-                // 3. Send the "Title Bar Clicked" message to the OS
-                // This tricks Windows into thinking the user clicked a standard title bar,
-                // so the OS handles the dragging logic natively.
-                int result = SendMessage(hWnd, WMNCLBUTTONDOWN, HTCAPTION, 0);
-                if (result == 0)
-                {
-                    ManagedCommon.Logger.LogWarning("SendMessage failed to initiate window drag.");
-                }
+                _ = SendMessage(hWnd, WMNCLBUTTONDOWN, HTCAPTION, 0);
 
-                // Mark event as handled so it doesn't bubble up
                 e.Handled = true;
             }
         }
@@ -217,34 +175,28 @@ namespace KeystrokeOverlayUI
                 return;
             }
 
-            // measure the StackPanel to get its desired size
             stackPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             var desiredSize = stackPanel.DesiredSize;
 
-            // hide window if no content
-            if (desiredSize.Width == 0 || desiredSize.Height == 0 || ViewModel.PressedKeys.Count == 0)
+            if (desiredSize.Width == 0 ||
+                desiredSize.Height == 0 ||
+                ViewModel.PressedKeys.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine("No content to display, hiding overlay.");
                 HideAppWindow();
                 return;
             }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("Showing Overlay Content");
-                ShowAppWindow();
-            }
 
-            // calculate total size including padding
-            double totalWidth = desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right;
-            double totalHeight = desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
+            ShowAppWindow();
 
-            // resize the app window
+            double totalWidth =
+                desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right;
+
+            double totalHeight =
+                desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
+
             ResizeAppWindow(totalWidth, totalHeight);
         }
 
-        // ---------------------------
-        // AppWindow Helper Methods
-        // ---------------------------
         private AppWindow GetAppWindow()
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
@@ -272,20 +224,17 @@ namespace KeystrokeOverlayUI
             {
                 double scale = RootGrid.XamlRoot.RasterizationScale;
 
-                // Always round UP (Ceiling) to prevent cutting off pixels
                 int windowWidth = (int)Math.Ceiling(widthDIPs * scale);
                 int windowHeight = (int)Math.Ceiling(heightDIPs * scale);
 
-                if (appWindow.Size.Width != windowWidth || appWindow.Size.Height != windowHeight)
+                if (appWindow.Size.Width != windowWidth ||
+                    appWindow.Size.Height != windowHeight)
                 {
                     appWindow.Resize(new Windows.Graphics.SizeInt32(windowWidth, windowHeight));
                 }
             }
         }
 
-        // ---------------------------
-        // General Dispose Pattern
-        // ---------------------------
         public void Dispose()
         {
             Dispose(true);
