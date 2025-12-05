@@ -69,6 +69,7 @@
                     Tag="Extensions" />
                 <!--  xF596 is HolePunchLandscapeTop  -->
                 <NavigationViewItem
+                    x:Name="DockSettingsPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Dock"
                     Icon="{ui:FontIcon Glyph=&#xF596;}"
                     Tag="Dock" />

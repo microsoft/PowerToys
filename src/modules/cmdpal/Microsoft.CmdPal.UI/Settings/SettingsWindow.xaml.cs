@@ -275,6 +275,12 @@ public sealed partial class SettingsWindow : WindowEx,
             var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
             BreadCrumbs.Add(new(pageType, pageType));
         }
+        else if (e.SourcePageType == typeof(DockSettingsPage))
+        {
+            NavView.SelectedItem = DockSettingsPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_DockPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
         {
             NavView.SelectedItem = ExtensionPageNavItem;

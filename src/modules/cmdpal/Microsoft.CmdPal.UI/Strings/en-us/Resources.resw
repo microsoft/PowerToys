@@ -571,4 +571,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
     <value>Extensions</value>
   </data>
+  <data name="Settings_PageTitles_DockPage" xml:space="preserve">
+    <value>Dock</value>
+  </data>
 </root>
