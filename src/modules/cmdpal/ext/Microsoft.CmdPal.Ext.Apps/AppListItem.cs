@@ -13,7 +13,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-public sealed partial class AppListItem : ListItem
+public sealed partial class AppListItem : ListItem, INormalizedTitles
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
@@ -21,6 +21,39 @@ public sealed partial class AppListItem : ListItem
     private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
 
     private InterlockedBoolean _isLoadingIcon;
+
+    private FuzzyMatchTarget? _normalizedTitle;
+    private FuzzyMatchTarget? _normalizedSubtitle;
+
+    public override string Title
+    {
+        get => base.Title;
+        set
+        {
+            if (base.Title != value)
+            {
+                base.Title = value;
+                _normalizedTitle = null;
+            }
+        }
+    }
+
+    public override string Subtitle
+    {
+        get => base.Subtitle;
+        set
+        {
+            if (base.Subtitle != value)
+            {
+                base.Subtitle = value;
+                _normalizedSubtitle = null;
+            }
+        }
+    }
+
+    public FuzzyMatchTarget NormalizedTitle => _normalizedTitle ??= new FuzzyMatchTarget(Title);
+
+    public FuzzyMatchTarget NormalizedSubtitle => _normalizedSubtitle ??= new FuzzyMatchTarget(Subtitle);
 
     public override IDetails? Details { get => _details.Value; set => base.Details = value; }
 
