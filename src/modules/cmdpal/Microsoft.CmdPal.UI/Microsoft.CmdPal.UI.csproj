@@ -15,7 +15,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-  <LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>
 
     <Version>$(CmdPalVersion)</Version>
 
@@ -25,12 +25,12 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <UseWinRT>true</UseWinRT>
   </PropertyGroup>
-  
+
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-   <!--<PropertyGroup>
+  <!--<PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
-  </PropertyGroup>--> 
+  </PropertyGroup>-->
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
@@ -46,10 +46,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- This lets us actually reference types from CmdPalKeyboardService -->
+    <!-- This lets us actually reference types from Microsoft.Terminal.UI and CmdPalKeyboardService -->
     <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -152,7 +151,7 @@
     <!-- Native implementation DLL -->
     <None Include="$(OutputPath)\Microsoft.Terminal.UI.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>    
+    </None>
     <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
       <Private>True</Private>

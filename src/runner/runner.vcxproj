@@ -5,8 +5,6 @@
   </Target>
   <PropertyGroup>
     <NoWarn>81010002</NoWarn>
-    <!-- Skip code analysis for all files in NuGet cache -->
-    <CodeAnalysisExcludePaths>$(NuGetPackageRoot)**\*</CodeAnalysisExcludePaths>
   </PropertyGroup>
   <PropertyGroup Label="NuGet">
     <!-- Tell NuGet this is PackageReference style -->
@@ -150,7 +148,7 @@
     <ItemGroup>
       <!-- Remove ALL injected versions of the file -->
       <ClCompile Remove="@(ClCompile)" Condition="'%(Filename)' == 'WindowsAppRuntimeAutoInitializer'" />
-    
+
       <!-- Add ONE copy back manually -->
       <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
         <PrecompiledHeader>NotUsing</PrecompiledHeader>

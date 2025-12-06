@@ -11,11 +11,6 @@
     <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
     <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <NoWarn>$(NoWarn);81010002</NoWarn>
-    <!-- Skip code analysis for all files in NuGet cache -->
-    <CodeAnalysisExcludePaths>$(NuGetPackageRoot)**\*</CodeAnalysisExcludePaths>
-  </PropertyGroup>
   <PropertyGroup Label="Globals">
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
@@ -41,7 +36,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
-		<PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

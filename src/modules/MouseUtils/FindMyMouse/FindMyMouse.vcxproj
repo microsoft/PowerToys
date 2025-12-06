@@ -138,7 +138,7 @@
     <ItemGroup>
       <!-- Remove ALL injected versions of the file -->
       <ClCompile Remove="@(ClCompile)" Condition="'%(Filename)' == 'WindowsAppRuntimeAutoInitializer'" />
-    
+
       <!-- Add ONE copy back manually -->
       <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
         <PrecompiledHeader>NotUsing</PrecompiledHeader>

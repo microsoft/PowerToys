@@ -11,7 +11,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>$(RootNamespace).pri</ProjectPriFileName>
-    
+
     <!-- Disable SA1313 for Primary Constructor fields conflict https://learn.microsoft.com/dotnet/csharp/programming-guide/classes-and-structs/instance-constructors#primary-constructors  -->
     <NoWarn>SA1313;</NoWarn>
 
@@ -42,5 +42,5 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-		
+
 </Project>

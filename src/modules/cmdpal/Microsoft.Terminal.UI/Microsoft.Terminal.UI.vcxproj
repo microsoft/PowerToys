@@ -12,7 +12,6 @@
   <PropertyGroup>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <PlatformToolset>v143</PlatformToolset>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
