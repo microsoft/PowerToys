@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
@@ -11,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
     /// Converts an integer index to a boolean value for use with RadioButton groups.
     /// The ConverterParameter specifies which index value should return true.
     /// </summary>
-    public partial class IndexToBoolConverter : IValueConverter
+    public sealed partial class IndexToBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -38,8 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                 }
             }
 
-            // Return -1 to indicate no change (RadioButton unchecked)
-            return -1;
+            // Return UnsetValue to indicate no update should occur (RadioButton unchecked)
+            return DependencyProperty.UnsetValue;
         }
     }
 }
+
