@@ -73,6 +73,13 @@
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-    <ProjectReference Include="..\MeasureToolCore\PowerToys.MeasureToolCore.vcxproj" />
+    <ProjectReference Include="..\MeasureToolCore\PowerToys.MeasureToolCore.vcxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <BuildProject>true</BuildProject>
+    </ProjectReference>
+    <CsWinRTInputs Include="$(OutputPath)\PowerToys.MeasureToolCore.winmd" />
+    <None Include="$(OutputPath)\PowerToys.MeasureToolCore.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
