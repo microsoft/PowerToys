@@ -38,6 +38,7 @@ namespace Peek.UI
                     _settings = value;
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
+                    _mediaVolume = _settings.Properties.MediaVolume.Value;
                 }
             }
         }
@@ -48,6 +49,8 @@ namespace Peek.UI
         public bool CloseAfterLosingFocus { get; private set; }
 
         private bool _confirmFileDelete;
+
+        private double _mediaVolume = 1.0;
 
         /// <summary>
         /// Gets or sets a value indicating whether the user is prompted before a file is recycled.
@@ -69,6 +72,29 @@ namespace Peek.UI
                     lock (_settingsLock)
                     {
                         _settings.Properties.ConfirmFileDelete.Value = _confirmFileDelete;
+                        _settingsUtils.SaveSettings(_settings.ToJsonString(), PeekModuleName);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the volume level for media playback (0.0 to 1.0).
+        /// </summary>
+        public double MediaVolume
+        {
+            get => _mediaVolume;
+            set
+            {
+                // Clamp value between 0 and 1
+                var clampedValue = Math.Max(0.0, Math.Min(1.0, value));
+                if (Math.Abs(_mediaVolume - clampedValue) > 0.001)
+                {
+                    _mediaVolume = clampedValue;
+
+                    lock (_settingsLock)
+                    {
+                        _settings.Properties.MediaVolume.Value = _mediaVolume;
                         _settingsUtils.SaveSettings(_settings.ToJsonString(), PeekModuleName);
                     }
                 }

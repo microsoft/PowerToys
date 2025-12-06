@@ -9,5 +9,7 @@ namespace Peek.UI
         public bool CloseAfterLosingFocus { get; }
 
         public bool ConfirmFileDelete { get; set; }
+
+        public double MediaVolume { get; set; }
     }
 }
