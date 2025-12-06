@@ -169,27 +169,50 @@ namespace Microsoft.PowerToys.UITest
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
         {
-            try
+            const int maxTries = 3;
+            const int delayMs = 5000;
+            const int maxRetries = 2;
+
+            for (int tryCount = 1; tryCount <= maxTries; tryCount++)
             {
-                var runnerProcessInfo = new ProcessStartInfo
+                try
                 {
-                    FileName = locationPath + runnerPath,
-                    Verb = "runas",
-                    Arguments = "--open-settings",
-                };
+                    var runnerProcessInfo = new ProcessStartInfo
+                    {
+                        FileName = locationPath + runnerPath,
+                        Verb = "runas",
+                        Arguments = "--open-settings",
+                    };
 
-                ExitExe(runnerProcessInfo.FileName);
-                runner = Process.Start(runnerProcessInfo);
+                    ExitExe(runnerProcessInfo.FileName);
+                    runner = Process.Start(runnerProcessInfo);
 
-                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
+                    if (WaitForWindowAndSetCapability(opts, "PowerToys Settings", delayMs, maxRetries))
+                    {
+                        // Exit CmdPal UI before launching new process if use installer for test
+                        ExitExeByName("Microsoft.CmdPal.UI");
+                        return;
+                    }
 
-                // Exit CmdPal UI before launching new process if use installer for test
-                ExitExeByName("Microsoft.CmdPal.UI");
+                    // Window not found, kill all PowerToys processes and retry
+                    if (tryCount < maxTries)
+                    {
+                        KillPowerToysProcesses();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (tryCount == maxTries)
+                    {
+                        throw new InvalidOperationException($"Failed to launch PowerToys Settings after {maxTries} attempts: {ex.Message}", ex);
+                    }
+
+                    // Kill processes and retry
+                    KillPowerToysProcesses();
+                }
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Failed to launch PowerToys Settings: {ex.Message}", ex);
-            }
+
+            throw new InvalidOperationException($"Failed to launch PowerToys Settings: Window not found after {maxTries} attempts.");
         }
 
         private void TryLaunchCommandPalette(AppiumOptions opts)
@@ -211,7 +234,10 @@ namespace Microsoft.PowerToys.UITest
                 var process = Process.Start(processStartInfo);
                 process?.WaitForExit();
 
-                WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10);
+                if (!WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10))
+                {
+                    throw new TimeoutException("Failed to find Command Palette window after multiple attempts.");
+                }
             }
             catch (Exception ex)
             {
@@ -219,7 +245,7 @@ namespace Microsoft.PowerToys.UITest
             }
         }
 
-        private void WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
+        private bool WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
         {
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
@@ -230,18 +256,16 @@ namespace Microsoft.PowerToys.UITest
                 {
                     var hexHwnd = window[0].HWnd.ToString("x");
                     opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
-                    return;
+                    return true;
                 }
 
                 if (attempt < maxRetries)
                 {
                     Thread.Sleep(delayMs);
                 }
-                else
-                {
-                    throw new TimeoutException($"Failed to find {windowName} window after multiple attempts.");
-                }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -326,6 +350,27 @@ namespace Microsoft.PowerToys.UITest
 
             this.ExitExe(winAppDriverProcessInfo.FileName);
             SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
+        }
+
+        private void KillPowerToysProcesses()
+        {
+            var powerToysProcessNames = new[] { "PowerToys", "Microsoft.CmdPal.UI" };
+
+            foreach (var processName in powerToysProcessNames)
+            {
+                try
+                {
+                    foreach (var process in Process.GetProcessesByName(processName))
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to kill process {processName}: {ex.Message}");
+                }
+            }
         }
     }
 }
