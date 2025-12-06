@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.State;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -44,7 +45,7 @@ public partial class MainListPage : DynamicListPage,
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private List<Scored<IListItem>>? _fallbackItems;
-    private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
+    private List<Scored<IListItem>>? _scoredFallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -155,42 +156,18 @@ public partial class MainListPage : DynamicListPage,
 
     public override IListItem[] GetItems()
     {
-        if (string.IsNullOrEmpty(SearchText))
+        lock (_tlcManager.TopLevelCommands)
         {
-            lock (_tlcManager.TopLevelCommands)
-            {
-                return _tlcManager
-                    .TopLevelCommands
-                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
-                    .ToArray();
-            }
-        }
-        else
-        {
-            lock (_tlcManager.TopLevelCommands)
-            {
-                var limitedApps = new List<Scored<IListItem>>();
-
-                // Fuzzy matching can produce a lot of results, so we want to limit the
-                // number of apps we show at once if it's a large set.
-                if (_filteredApps?.Count > 0)
-                {
-                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit).ToList();
-                }
-
-                var items = Enumerable.Empty<Scored<IListItem>>()
-                                .Concat(_filteredItems is not null ? _filteredItems : [])
-                                .Concat(_scoredFallbackItems is not null ? _scoredFallbackItems : [])
-                                .Concat(limitedApps)
-                                .OrderByDescending(o => o.Score)
-
-                                // Add fallback items post-sort so they are always at the end of the list
-                                // and eventually ordered based on user preference
-                                .Concat(_fallbackItems is not null ? _fallbackItems.Where(w => !string.IsNullOrEmpty(w.Item.Title)) : [])
-                                .Select(s => s.Item)
-                                .ToArray();
-                return items;
-            }
+            // Either return the top-level commands (no search text), or the merged and
+            // filtered results.
+            return string.IsNullOrEmpty(SearchText)
+                ? _tlcManager.TopLevelCommands.Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title)).ToArray()
+                : MainListPageResultFactory.Create(
+                    _filteredItems,
+                    _scoredFallbackItems,
+                    _filteredApps,
+                    _fallbackItems,
+                    _appResultLimit);
         }
     }
 
@@ -407,7 +384,7 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
+            _scoredFallbackItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem)];
 
             if (token.IsCancellationRequested)
             {
