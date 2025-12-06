@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
@@ -50,6 +51,31 @@ namespace KeystrokeOverlayUI
         [DllImport("user32.dll")]
         private static extern bool ReleaseCapture();
 
+        // always on top
+        // P/Invoke for Win32 APIs
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        private static readonly IntPtr HWNDTOPMOST = new IntPtr(-1);
+        private const uint SWPNOSIZE = 0x0001;
+        private const uint SWPNOMOVE = 0x0002;
+        private const uint SWPNOACTIVATE = 0x0010;
+        private const uint SWPSHOWWINDOW = 0x0040;
+
+        private const int GWLEXSTYLE = -20;
+        private const int EXNOACTIVATE = 0x08000000;
+        private const int EXTOPMOST = 0x00000008;
+        private const int EXTOOLWINDOW = 0x00000080;
+
+        private readonly DispatcherTimer _zOrderEnforcer = new();
+
         public MainWindow()
         {
             SystemBackdrop = null;
@@ -60,8 +86,6 @@ namespace KeystrokeOverlayUI
             };
 
             InitializeComponent();
-
-            HideAppWindow();
 
             RootGrid.DataContext = ViewModel;
 
@@ -76,7 +100,6 @@ namespace KeystrokeOverlayUI
             _keystrokeListener.Start();
 
             ConfigureOverlayWindow();
-
             RunStartupSequence(isDraggable: ViewModel.IsDraggable);
 
             ViewModel.PropertyChanged += (s, e) =>
@@ -86,6 +109,23 @@ namespace KeystrokeOverlayUI
                     RunStartupSequence(isDraggable: ViewModel.IsDraggable);
                 }
             };
+
+            Activated += (s, e) => ApplyOverlayStyles();
+            _zOrderEnforcer.Interval = TimeSpan.FromMilliseconds(500);
+            _zOrderEnforcer.Tick += (s, e) => ForceWindowOnTop();
+        }
+
+        private void ApplyOverlayStyles()
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(this);
+
+            int exStyle = GetWindowLong(hWnd, GWLEXSTYLE);
+
+            // WS_EX_NOACTIVATE: Prevents the window from stealing focus when clicked/updated
+            // WS_EX_TOOLWINDOW: Hides it from the Alt+Tab menu (optional, good for overlays)
+            _ = SetWindowLong(hWnd, GWLEXSTYLE, exStyle | EXNOACTIVATE | EXTOOLWINDOW);
+
+            ForceWindowOnTop();
         }
 
         private void ConfigureOverlayWindow()
@@ -105,8 +145,6 @@ namespace KeystrokeOverlayUI
                 presenter.IsMaximizable = false;
                 presenter.SetBorderAndTitleBar(false, false);
             }
-
-            HideAppWindow();
         }
 
         private async void RunStartupSequence(bool isDraggable)
@@ -162,9 +200,17 @@ namespace KeystrokeOverlayUI
             DispatcherQueue.TryEnqueue(() =>
             {
                 ViewModel.HandleKeystrokeEvent(kEvent);
+
+                if (!_zOrderEnforcer.IsEnabled)
+                {
+                    _zOrderEnforcer.Start();
+                }
             });
         }
 
+        // ----------------------
+        // WinUI Event Handlers
+        // ----------------------
         private void RootGrid_Loaded(object sender, RoutedEventArgs e)
         {
             RootGrid.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
@@ -203,6 +249,7 @@ namespace KeystrokeOverlayUI
                 ViewModel.PressedKeys.Count == 0)
             {
                 HideAppWindow();
+                _zOrderEnforcer.Stop();
                 return;
             }
 
@@ -215,8 +262,12 @@ namespace KeystrokeOverlayUI
                 desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
 
             ResizeAppWindow(totalWidth, totalHeight);
+            ForceWindowOnTop();
         }
 
+        // ----------------------
+        // Window Helper Methods
+        // ----------------------
         private AppWindow GetAppWindow()
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
@@ -255,6 +306,23 @@ namespace KeystrokeOverlayUI
             }
         }
 
+        private void ForceWindowOnTop()
+        {
+            if (ViewModel.PressedKeys.Count == 0)
+            {
+                _zOrderEnforcer.Stop();
+                return;
+            }
+
+            IntPtr hWnd = WindowNative.GetWindowHandle(this);
+
+            // SWP_NOACTIVATE is important here to ensure we don't steal focus while typing
+            SetWindowPos(hWnd, HWNDTOPMOST, 0, 0, 0, 0, SWPNOMOVE | SWPNOSIZE | SWPSHOWWINDOW | SWPNOACTIVATE);
+        }
+
+        // -------------------
+        // Other Methods
+        // -------------------
         public void Dispose()
         {
             Dispose(true);
