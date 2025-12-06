@@ -23,16 +23,10 @@ namespace KeystrokeOverlayUI.Models
         [JsonPropertyName("text_size")]
         public IntProperty TextSize { get; set; } = new() { Value = 24 };
 
-        [JsonPropertyName("text_opacity")]
-        public IntProperty TextOpacity { get; set; } = new() { Value = 100 };
-
-        [JsonPropertyName("background_opacity")]
-        public IntProperty BackgroundOpacity { get; set; } = new() { Value = 50 };
-
         [JsonPropertyName("text_color")]
-        public StringProperty TextColor { get; set; } = new() { Value = "#FFFFFF" };
+        public StringProperty TextColor { get; set; } = new() { Value = "#FF000000" };
 
         [JsonPropertyName("background_color")]
-        public StringProperty BackgroundColor { get; set; } = new() { Value = "#000000" };
+        public StringProperty BackgroundColor { get; set; } = new() { Value = "#00000000" };
     }
 }

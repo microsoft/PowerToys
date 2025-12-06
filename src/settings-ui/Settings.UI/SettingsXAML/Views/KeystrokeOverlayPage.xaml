@@ -72,11 +72,11 @@
                                         FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
                                         <controls:KeyVisual.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Background>
 
                                         <controls:KeyVisual.Foreground>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Foreground>
 
                                     </controls:KeyVisual>
@@ -90,11 +90,11 @@
                                         FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
                                         <controls:KeyVisual.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Background>
 
                                         <controls:KeyVisual.Foreground>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Foreground>
 
                                     </controls:KeyVisual>
@@ -108,11 +108,11 @@
                                         FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}">
 
                                         <controls:KeyVisual.Background>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Background>
 
                                         <controls:KeyVisual.Foreground>
-                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColorWithAlpha, Mode=OneWay}" />
+                                            <SolidColorBrush Color="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
                                         </controls:KeyVisual.Foreground>
 
                                     </controls:KeyVisual>
@@ -135,14 +135,14 @@
 
                     <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_TextAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE8D3;}">                
                         <controls:ColorPickerButton x:Name="TextColorPicker"
-                            SelectedColor="{x:Bind Path=ViewModel.TextColorWithAlpha, Mode=TwoWay}"
+                            SelectedColor="{x:Bind Path=ViewModel.TextColor, Mode=TwoWay}"
                             IsAlphaEnabled="True"
                         />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_BackgroundAppearance" HeaderIcon="{ui:FontIcon Glyph=&#xE97C;}">                
                         <controls:ColorPickerButton x:Name="BackgroundColorPicker"
-                            SelectedColor="{x:Bind Path=ViewModel.BackgroundColorWithAlpha, Mode=TwoWay}"
+                            SelectedColor="{x:Bind Path=ViewModel.BackgroundColor, Mode=TwoWay}"
                             IsAlphaEnabled="True"
                         />
                     </tkcontrols:SettingsCard>

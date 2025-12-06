@@ -35,14 +35,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("text_color")]
         public StringProperty TextColor { get; set; }
 
-        [JsonPropertyName("text_opacity")]
-        public IntProperty TextOpacity { get; set; }
-
         [JsonPropertyName("background_color")]
         public StringProperty BackgroundColor { get; set; }
-
-        [JsonPropertyName("background_opacity")]
-        public IntProperty BackgroundOpacity { get; set; }
 
         public KeystrokeOverlayProperties()
         {
@@ -53,9 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             OverlayTimeout = new IntProperty(3000);
             TextSize = new IntProperty(24);
             TextColor = new StringProperty("#FFFFFF");
-            TextOpacity = new IntProperty(100);
             BackgroundColor = new StringProperty("#000000");
-            BackgroundOpacity = new IntProperty(50);
         }
 
         public string ToJsonString()

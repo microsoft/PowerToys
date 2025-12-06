@@ -155,100 +155,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // =========================================================
-        //  UPDATED COLOR LOGIC
+        //  COLOR SETTINGS (Hex String #AARRGGBB)
         // =========================================================
-        private static Color ParseColor(string hex)
-        {
-            if (string.IsNullOrEmpty(hex))
-            {
-                return Colors.Black;
-            }
-
-            // Convert to Span to avoid allocations
-            ReadOnlySpan<char> hexSpan = hex.AsSpan();
-
-            // Skip the '#' if it exists
-            if (hexSpan.Length > 0 && hexSpan[0] == '#')
-            {
-                hexSpan = hexSpan.Slice(1);
-            }
-
-            // Sanity check: Ensure we have exactly 6 characters left (RRGGBB)
-            if (hexSpan.Length != 6)
-            {
-                return Colors.Black;
-            }
-
-            try
-            {
-                // Parse directly from the span slices
-                byte r = byte.Parse(hexSpan.Slice(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                byte g = byte.Parse(hexSpan.Slice(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                byte b = byte.Parse(hexSpan.Slice(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-                return Color.FromArgb(255, r, g, b);
-            }
-            catch
-            {
-                return Colors.Black;
-            }
-        }
-
-        // Helper: Convert Windows.UI.Color to "#RRGGBB" string
-        private static string ColorToHex(Color c)
-        {
-            return $"#{c.R:X2}{c.G:X2}{c.B:X2}";
-        }
-
-        public Color TextColorWithAlpha
-        {
-            get
-            {
-                // Convert string hex to Color struct
-                Color color = ParseColor(_settings.Properties.TextColor.Value);
-
-                // Apply the separate Opacity setting
-                byte alpha = (byte)(_settings.Properties.TextOpacity.Value * 2.55);
-                return Color.FromArgb(alpha, color.R, color.G, color.B);
-            }
-
-            set
-            {
-                string newColorHex = ColorToHex(value);
-                int newOpacity = (int)(value.A / 2.55);
-
-                bool changed = false;
-
-                // Compare Strings
-                if (_settings.Properties.TextColor.Value != newColorHex)
-                {
-                    _settings.Properties.TextColor.Value = newColorHex;
-                    OnPropertyChanged(nameof(TextColor));
-                    changed = true;
-                }
-
-                if (_settings.Properties.TextOpacity.Value != newOpacity)
-                {
-                    _settings.Properties.TextOpacity.Value = newOpacity;
-                    OnPropertyChanged(nameof(TextOpacity));
-                    changed = true;
-                }
-
-                if (changed)
-                {
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(TextColorWithAlpha));
-                }
-            }
-        }
-
-        // Changed type from int to string
         public string TextColor
         {
             get => _settings.Properties.TextColor.Value;
             set
             {
-                if (_settings.Properties.TextColor.Value != value)
+                // Ensure value is a valid Hex string; default to Black if null
+                value = (value != null) ? SettingsUtilities.ToARGBHex(value) : "#FF000000";
+
+                if (!_settings.Properties.TextColor.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
                 {
                     _settings.Properties.TextColor.Value = value;
                     NotifySettingsChanged();
@@ -256,82 +173,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int TextOpacity
-        {
-            get => _settings.Properties.TextOpacity.Value;
-            set
-            {
-                if (_settings.Properties.TextOpacity.Value != value)
-                {
-                    _settings.Properties.TextOpacity.Value = value;
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(TextOpacity));
-                }
-            }
-        }
-
-        public Color BackgroundColorWithAlpha
-        {
-            get
-            {
-                Color color = ParseColor(_settings.Properties.BackgroundColor.Value);
-                byte alpha = (byte)(_settings.Properties.BackgroundOpacity.Value * 2.55);
-                return Color.FromArgb(alpha, color.R, color.G, color.B);
-            }
-
-            set
-            {
-                string newColorHex = ColorToHex(value);
-                int newOpacity = (int)(value.A / 2.55);
-
-                bool changed = false;
-
-                if (_settings.Properties.BackgroundColor.Value != newColorHex)
-                {
-                    _settings.Properties.BackgroundColor.Value = newColorHex;
-                    OnPropertyChanged(nameof(BackgroundColor));
-                    changed = true;
-                }
-
-                if (_settings.Properties.BackgroundOpacity.Value != newOpacity)
-                {
-                    _settings.Properties.BackgroundOpacity.Value = newOpacity;
-                    OnPropertyChanged(nameof(BackgroundOpacity));
-                    changed = true;
-                }
-
-                if (changed)
-                {
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(BackgroundColorWithAlpha));
-                }
-            }
-        }
-
-        // Changed type from int to string
         public string BackgroundColor
         {
             get => _settings.Properties.BackgroundColor.Value;
             set
             {
-                if (_settings.Properties.BackgroundColor.Value != value)
+                // Ensure value is a valid Hex string; default to Transparent if null
+                value = (value != null) ? SettingsUtilities.ToARGBHex(value) : "#00000000";
+
+                if (!_settings.Properties.BackgroundColor.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
                 {
                     _settings.Properties.BackgroundColor.Value = value;
                     NotifySettingsChanged();
-                }
-            }
-        }
-
-        public int BackgroundOpacity
-        {
-            get => _settings.Properties.BackgroundOpacity.Value;
-            set
-            {
-                if (_settings.Properties.BackgroundOpacity.Value != value)
-                {
-                    _settings.Properties.BackgroundOpacity.Value = value;
-                    NotifySettingsChanged();
-                    OnPropertyChanged(nameof(BackgroundOpacity));
                 }
             }
         }

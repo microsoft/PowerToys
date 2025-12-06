@@ -28,16 +28,10 @@ namespace KeystrokeOverlayUI
         private int _textSize = 24;
 
         [ObservableProperty]
-        private double _textOpacity = 100;
-
-        [ObservableProperty]
-        private double _backgroundOpacity = 50;
-
-        [ObservableProperty]
         private SolidColorBrush _textColor = new(Colors.White);
 
         [ObservableProperty]
-        private SolidColorBrush _backgroundColor = new(Colors.Black);
+        private SolidColorBrush _backgroundColor = new(Colors.Transparent);
 
         [ObservableProperty]
         private bool _isDraggable = true;
@@ -50,10 +44,6 @@ namespace KeystrokeOverlayUI
             TimeoutMs = props.OverlayTimeout.Value;
             TextSize = props.TextSize.Value;
 
-            // Opacity in JSON is 0-100, XAML needs 0.0-1.0
-            TextOpacity = props.TextOpacity.Value / 100.0;
-            BackgroundOpacity = props.BackgroundOpacity.Value / 100.0;
-
             TextColor = GetBrushFromHex(props.TextColor.Value);
             BackgroundColor = GetBrushFromHex(props.BackgroundColor.Value);
 
@@ -65,6 +55,11 @@ namespace KeystrokeOverlayUI
         {
             try
             {
+                if (string.IsNullOrEmpty(hex))
+                {
+                    return new SolidColorBrush(Colors.Transparent);
+                }
+
                 // Handles #RRGGBB or #AARRGGBB
                 hex = hex.Replace("#", string.Empty);
                 byte a = 255;
@@ -74,24 +69,25 @@ namespace KeystrokeOverlayUI
 
                 if (hex.Length == 6)
                 {
-                    r = byte.Parse(hex.AsSpan(0, 2), System.Globalization.NumberStyles.HexNumber, provider);
-                    g = byte.Parse(hex.AsSpan(2, 2), System.Globalization.NumberStyles.HexNumber, provider);
-                    b = byte.Parse(hex.AsSpan(4, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    r = byte.Parse(hex.AsSpan(0, 2), NumberStyles.HexNumber, provider);
+                    g = byte.Parse(hex.AsSpan(2, 2), NumberStyles.HexNumber, provider);
+                    b = byte.Parse(hex.AsSpan(4, 2), NumberStyles.HexNumber, provider);
                 }
                 else if (hex.Length == 8)
                 {
-                    a = byte.Parse(hex.AsSpan(0, 2), System.Globalization.NumberStyles.HexNumber, provider);
-                    r = byte.Parse(hex.AsSpan(2, 2), System.Globalization.NumberStyles.HexNumber, provider);
-                    g = byte.Parse(hex.AsSpan(4, 2), System.Globalization.NumberStyles.HexNumber, provider);
-                    b = byte.Parse(hex.AsSpan(6, 2), System.Globalization.NumberStyles.HexNumber, provider);
+                    a = byte.Parse(hex.AsSpan(0, 2), NumberStyles.HexNumber, provider);
+                    r = byte.Parse(hex.AsSpan(2, 2), NumberStyles.HexNumber, provider);
+                    g = byte.Parse(hex.AsSpan(4, 2), NumberStyles.HexNumber, provider);
+                    b = byte.Parse(hex.AsSpan(6, 2), NumberStyles.HexNumber, provider);
                 }
 
                 return new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
             catch
             {
+                // Error fallback
                 return new SolidColorBrush(Colors.Magenta);
-            } // Error fallback
+            }
         }
 
         // ---------------------------
@@ -141,8 +137,8 @@ namespace KeystrokeOverlayUI
                 // Calculate index from the end (Newest = 0)
                 int indexFromEnd = PressedKeys.Count - 1 - i;
 
-                // Decrease 10% for every step back
-                double targetOpacity = 1.0 - (0.10 * indexFromEnd);
+                // Decrease 15% for every step back
+                double targetOpacity = 1.0 - (0.15 * indexFromEnd);
 
                 // Clamp to valid range (e.g. don't go below 0.1 visible)
                 item.Opacity = Math.Max(0.1, targetOpacity);
@@ -151,7 +147,7 @@ namespace KeystrokeOverlayUI
 
         private async Task RemoveKeyAfterDelayAsync(KeyVisualItem item, int durationMs)
         {
-            // Wait the 2 seconds life time
+            // Wait the defined lifetime
             await Task.Delay(durationMs);
 
             // Mark as exiting so UpdateOpacities doesn't fight us
