@@ -90,6 +90,16 @@ namespace KeystrokeOverlayUI
             }
         }
 
+        public void HandleKeystrokeEvent(KeystrokeEvent keystroke)
+        {
+            string formattedText = keystroke.ToString();
+
+            if (!string.IsNullOrEmpty(formattedText))
+            {
+                RegisterKey(formattedText);
+            }
+        }
+
         // ---------------------------
         // New API for adding a key
         // ---------------------------

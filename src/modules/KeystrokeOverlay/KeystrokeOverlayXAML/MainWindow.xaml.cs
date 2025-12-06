@@ -161,25 +161,8 @@ namespace KeystrokeOverlayUI
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                if (kEvent.IsPressed)
-                {
-                    string keyName = GetKeyName(kEvent.VirtualKey);
-                    ViewModel.RegisterKey(keyName);
-                }
+                ViewModel.HandleKeystrokeEvent(kEvent);
             });
-        }
-
-        private string GetKeyName(uint virtualKey)
-        {
-            var key = (Windows.System.VirtualKey)virtualKey;
-
-            return key switch
-            {
-                Windows.System.VirtualKey.Space => "Space",
-                Windows.System.VirtualKey.Enter => "Enter",
-                Windows.System.VirtualKey.Back => "Backspace",
-                _ => key.ToString(),
-            };
         }
 
         private void RootGrid_Loaded(object sender, RoutedEventArgs e)

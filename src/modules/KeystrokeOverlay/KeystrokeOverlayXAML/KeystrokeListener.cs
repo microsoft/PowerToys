@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -10,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
 
@@ -97,16 +99,21 @@ namespace KeystrokeOverlayUI
                             // Process only DOWN events to avoid duplicates
                             foreach (var e in root.Events)
                             {
-                                if (!string.Equals(e.Type, "down", StringComparison.OrdinalIgnoreCase))
+                                bool isDown = string.Equals(e.Type, "down", StringComparison.OrdinalIgnoreCase);
+                                bool isChar = string.Equals(e.Type, "char", StringComparison.OrdinalIgnoreCase);
+
+                                if (!isDown && !isChar)
                                 {
-                                    // Ignore char + up events
                                     continue;
                                 }
 
                                 var uiEvent = new KeystrokeEvent
                                 {
                                     VirtualKey = (uint)e.VirtualKey,
-                                    IsPressed = true,
+                                    IsPressed = true, // Both down and char imply a press for UI purposes
+                                    Modifiers = e.Modifiers != null ? new List<string>(e.Modifiers) : new List<string>(),
+                                    Text = e.Text,       // Capture the text from backend
+                                    EventType = e.Type,   // Capture the type
                                 };
 
                                 OnBatchReceived?.Invoke(uiEvent);
