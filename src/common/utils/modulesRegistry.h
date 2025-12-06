@@ -20,6 +20,8 @@ namespace NonLocalizable
     const static std::vector<std::wstring> ExtBGCode   = { L".bgcode" };
     const static std::vector<std::wstring> ExtSTL      = { L".stl" };
     const static std::vector<std::wstring> ExtQOI      = { L".qoi" };
+    const static std::vector<std::wstring> ExtVideo    = { L".mp4", L".avi", L".mkv", L".mov", L".webm", L".wmv", L".m4v", L".3gp", L".3g2" };
+    const static std::vector<std::wstring> ExtAudio    = { L".mp3", L".wav", L".flac", L".m4a", L".aac", L".ogg", L".wma" };
     const static std::vector<std::wstring> ExtNoNoNo   = {
         L".svgz" //Monaco cannot handle this file type at all; it's a binary file.
     };
@@ -171,6 +173,24 @@ inline registry::ChangeSet getQoiPreviewHandlerChangeSet(const std::wstring inst
                                   L"QoiPreviewHandler",
                                   L"Qoi Preview Handler",
                                   NonLocalizable::ExtQOI);
+}
+
+inline registry::ChangeSet getMediaPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    using namespace registry::shellex;
+    // Combine video and audio extensions
+    std::vector<std::wstring> mediaExtensions;
+    mediaExtensions.insert(mediaExtensions.end(), NonLocalizable::ExtVideo.begin(), NonLocalizable::ExtVideo.end());
+    mediaExtensions.insert(mediaExtensions.end(), NonLocalizable::ExtAudio.begin(), NonLocalizable::ExtAudio.end());
+    
+    return generatePreviewHandler(PreviewHandlerType::preview,
+                                  perUser,
+                                  L"{D3A86E9B-5F4C-4A8D-9E76-2B1F8C7E3A4D}",
+                                  get_std_product_version(),
+                                  (fs::path{ installationDir } / LR"d(PowerToys.MediaPreviewHandlerCpp.dll)d").wstring(),
+                                  L"MediaPreviewHandler",
+                                  L"Media Preview Handler",
+                                  mediaExtensions);
 }
 
 inline registry::ChangeSet getSvgThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)

@@ -38,6 +38,7 @@ namespace PowerToys
             static String MarkdownPreviewResizeEvent();
             static String PdfPreviewResizeEvent();
             static String SvgPreviewResizeEvent();
+            static String MediaPreviewResizeEvent();
             static String ShowHostsSharedEvent();
             static String ShowHostsAdminSharedEvent();
             static String TerminateHostsSharedEvent();

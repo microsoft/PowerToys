@@ -854,6 +854,11 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProviderCpp.vcxproj" Id="2bbc9e33-21ec-401c-84da-bb6590a9b2aa" />
+    <Project Path="src/modules/previewpane/MediaPreviewHandler/MediaPreviewHandler.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/MediaPreviewHandlerCpp/MediaPreviewHandlerCpp.vcxproj" Id="8f7a2b1c-3d4e-5f6a-7b8c-9d0e1f2a3b4d" />
   </Folder>
   <Folder Name="/modules/previewpane/Tests/">
     <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
