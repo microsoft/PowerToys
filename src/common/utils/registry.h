@@ -16,9 +16,54 @@
 
 namespace registry
 {
+    namespace detail
+    {
+        struct on_exit
+        {
+            std::function<void()> f;
+
+            on_exit(std::function<void()> f) :
+                f{ std::move(f) } {}
+            ~on_exit() { f(); }
+        };
+
+        template<class... Ts>
+        struct overloaded : Ts...
+        {
+            using Ts::operator()...;
+        };
+
+        template<class... Ts>
+        overloaded(Ts...) -> overloaded<Ts...>;
+
+        inline const wchar_t* getScopeName(HKEY scope)
+        {
+            if (scope == HKEY_LOCAL_MACHINE)
+            {
+                return L"HKLM";
+            }
+            else if (scope == HKEY_CURRENT_USER)
+            {
+                return L"HKCU";
+            }
+            else if (scope == HKEY_CLASSES_ROOT)
+            {
+                return L"HKCR";
+            }
+            else
+            {
+                return L"HK??";
+            }
+        }
+    }
+
     namespace install_scope
     {
         const wchar_t INSTALL_SCOPE_REG_KEY[] = L"Software\\Classes\\powertoys\\";
+        const wchar_t UNINSTALL_REG_KEY[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+        
+        // Bundle UpgradeCode from PowerToys.wxs (with braces as stored in registry)
+        const wchar_t BUNDLE_UPGRADE_CODE[] = L"{6341382D-C0A9-4238-9188-BE9607E3FAB2}";
 
         enum class InstallScope
         {
@@ -26,8 +71,67 @@ namespace registry
             PerUser,
         };
 
+        // Helper function to find PowerToys bundle in Windows Uninstall registry by BundleUpgradeCode
+        inline bool find_powertoys_bundle_in_uninstall_registry(HKEY rootKey)
+        {
+            HKEY uninstallKey{};
+            if (RegOpenKeyExW(rootKey, UNINSTALL_REG_KEY, 0, KEY_READ, &uninstallKey) != ERROR_SUCCESS)
+            {
+                return false;
+            }
+            detail::on_exit closeUninstallKey{ [uninstallKey] { RegCloseKey(uninstallKey); } };
+
+            DWORD index = 0;
+            wchar_t subKeyName[256];
+
+            // Enumerate all subkeys under Uninstall
+            while (RegEnumKeyW(uninstallKey, index++, subKeyName, 256) == ERROR_SUCCESS)
+            {
+                HKEY productKey{};
+                if (RegOpenKeyExW(uninstallKey, subKeyName, 0, KEY_READ, &productKey) != ERROR_SUCCESS)
+                {
+                    continue;
+                }
+                detail::on_exit closeProductKey{ [productKey] { RegCloseKey(productKey); } };
+
+                // Check BundleUpgradeCode value (specific to WiX Bundle installations)
+                wchar_t bundleUpgradeCode[256]{};
+                DWORD bundleUpgradeCodeSize = sizeof(bundleUpgradeCode);
+
+                if (RegQueryValueExW(productKey, L"BundleUpgradeCode", nullptr, nullptr,
+                                    reinterpret_cast<LPBYTE>(bundleUpgradeCode), &bundleUpgradeCodeSize) == ERROR_SUCCESS)
+                {
+                    if (_wcsicmp(bundleUpgradeCode, BUNDLE_UPGRADE_CODE) == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         inline const InstallScope get_current_install_scope()
         {
+            // 1. Check HKCU Uninstall registry first (user-level bundle)
+            // Note: MSI components are always in HKLM regardless of install scope,
+            // but the Bundle entry will be in HKCU for per-user installations
+            if (find_powertoys_bundle_in_uninstall_registry(HKEY_CURRENT_USER))
+            {
+                Logger::info(L"Found user-level PowerToys bundle via BundleUpgradeCode in HKCU");
+                return InstallScope::PerUser;
+            }
+
+            // 2. Check HKLM Uninstall registry (machine-level bundle)
+            if (find_powertoys_bundle_in_uninstall_registry(HKEY_LOCAL_MACHINE))
+            {
+                Logger::info(L"Found machine-level PowerToys bundle via BundleUpgradeCode in HKLM");
+                return InstallScope::PerMachine;
+            }
+
+            // 3. Fallback to legacy custom registry key detection
+            Logger::info(L"PowerToys bundle not found in Uninstall registry, falling back to legacy detection");
+
             // Open HKLM key
             HKEY perMachineKey{};
             if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
@@ -45,6 +149,7 @@ namespace registry
                                   &perUserKey) != ERROR_SUCCESS)
                 {
                     // both keys are missing
+                    Logger::warn(L"No PowerToys installation detected, defaulting to PerMachine");
                     return InstallScope::PerMachine;
                 }
                 else
@@ -95,47 +200,6 @@ namespace registry
 
     template<class>
     inline constexpr bool always_false_v = false;
-
-    namespace detail
-    {
-        struct on_exit
-        {
-            std::function<void()> f;
-
-            on_exit(std::function<void()> f) :
-                f{ std::move(f) } {}
-            ~on_exit() { f(); }
-        };
-
-        template<class... Ts>
-        struct overloaded : Ts...
-        {
-            using Ts::operator()...;
-        };
-
-        template<class... Ts>
-        overloaded(Ts...) -> overloaded<Ts...>;
-
-        inline const wchar_t* getScopeName(HKEY scope)
-        {
-            if (scope == HKEY_LOCAL_MACHINE)
-            {
-                return L"HKLM";
-            }
-            else if (scope == HKEY_CURRENT_USER)
-            {
-                return L"HKCU";
-            }
-            else if (scope == HKEY_CLASSES_ROOT)
-            {
-                return L"HKCR";
-            }
-            else
-            {
-                return L"HK??";
-            }
-        }
-    }
 
     struct ValueChange
     {
