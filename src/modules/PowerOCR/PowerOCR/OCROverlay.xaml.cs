@@ -67,6 +67,25 @@ public partial class OCROverlay : Window
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
 
         PopulateLanguageMenu();
+        ApplyDefaultOutputMode();
+    }
+
+    private void ApplyDefaultOutputMode()
+    {
+        // 0 = Default (no mode selected), 1 = SingleLine, 2 = Table
+        int defaultMode = userSettings.DefaultOutputMode.Value;
+        switch (defaultMode)
+        {
+            case 1:
+                SingleLineMenuItem.IsChecked = true;
+                break;
+            case 2:
+                TableMenuItem.IsChecked = true;
+                break;
+            default:
+                // Default mode - no pre-selection
+                break;
+        }
     }
 
     private void PopulateLanguageMenu()
