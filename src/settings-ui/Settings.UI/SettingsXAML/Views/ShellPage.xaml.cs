@@ -151,7 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
             SetWindowTitle();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
             ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
             ShellHandler = this;

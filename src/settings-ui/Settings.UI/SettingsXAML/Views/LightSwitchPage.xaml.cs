@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public LightSwitchPage()
         {
-            this.settingsUtils = new SettingsUtils();
+            this.settingsUtils = SettingsUtils.GlobalDefaultInstance;
             this.sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
             this.generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(this.settingsUtils);

@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public CmdPalPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
             ViewModel = new CmdPalViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

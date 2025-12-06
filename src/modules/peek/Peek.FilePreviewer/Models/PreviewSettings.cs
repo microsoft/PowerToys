@@ -34,7 +34,7 @@ namespace Peek.FilePreviewer.Models
 
         public PreviewSettings()
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.GlobalDefaultInstance;
             SourceCodeWrapText = false;
             SourceCodeTryFormat = false;
             SourceCodeFontSize = 14;
