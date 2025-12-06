@@ -14,12 +14,6 @@
 	<NoWarn>SA1313;</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup>
-	<CsWinRTIncludes>AdaptiveCards.ObjectModel.WinUI3;AdaptiveCards.Rendering.WinUI3</CsWinRTIncludes>
-	<CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
-  </PropertyGroup>
-
-
   <ItemGroup>
 	<PackageReference Include="CommunityToolkit.Common" />
 	<PackageReference Include="CommunityToolkit.Mvvm" />

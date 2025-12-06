@@ -165,6 +165,11 @@
     <ProjectReference Include="..\Microsoft.CommandPalette.UI.ViewModels\Microsoft.CommandPalette.UI.ViewModels.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="ToastWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Pages\ShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
