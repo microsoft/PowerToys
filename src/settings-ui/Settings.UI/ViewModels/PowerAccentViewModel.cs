@@ -284,6 +284,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                // Validate index is within bounds to prevent crash
+                if (value < 0 || value >= _toolbarOptions.Length)
+                {
+                    return;
+                }
+
                 if (_toolbarPositionIndex != value)
                 {
                     _toolbarPositionIndex = value;
