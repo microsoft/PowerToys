@@ -370,6 +370,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/fancyzones/FancyZones/FancyZones.vcxproj" Id="ff1d7936-842a-4bbb-8bea-e9fe796de700" />
+    <Project Path="src/modules/fancyzones/FancyZonesCLI/FancyZonesCLI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/fancyzones/FancyZonesEditorCommon/FancyZonesEditorCommon.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
