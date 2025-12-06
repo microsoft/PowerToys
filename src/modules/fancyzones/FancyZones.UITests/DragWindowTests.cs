@@ -86,6 +86,8 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #3")]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
+            TestInitialize();
+
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
 
             var windowRect = Session.GetMainWindowRect();
