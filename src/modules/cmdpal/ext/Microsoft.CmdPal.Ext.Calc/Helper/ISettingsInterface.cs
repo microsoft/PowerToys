@@ -15,4 +15,6 @@ public interface ISettingsInterface
     public bool OutputUseEnglishFormat { get; }
 
     public bool CloseOnEnter { get; }
+
+    public bool ReplaceInputOnEquals { get; }
 }

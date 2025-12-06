@@ -45,6 +45,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Properties.Resources.calculator_settings_close_on_enter_description,
         true);
 
+    private readonly ToggleSetting _replaceInputOnEquals = new(
+        Namespaced(nameof(ReplaceInputOnEquals)),
+        Properties.Resources.calculator_settings_replace_input,
+        Properties.Resources.calculator_settings_replace_input_description,
+        true);
+
     public CalculateEngine.TrigMode TrigUnit
     {
         get
@@ -81,6 +87,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool CloseOnEnter => _closeOnEnter.Value;
 
+    public bool ReplaceInputOnEquals => _replaceInputOnEquals.Value;
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -98,6 +106,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_inputUseEnNumberFormat);
         Settings.Add(_outputUseEnNumberFormat);
         Settings.Add(_closeOnEnter);
+        Settings.Add(_replaceInputOnEquals);
 
         // Load settings from file upon initialization
         LoadSettings();

@@ -33,6 +33,7 @@ public class SettingsManagerTests
         Assert.IsFalse(settings.InputUseEnglishFormat);
         Assert.IsFalse(settings.OutputUseEnglishFormat);
         Assert.IsTrue(settings.CloseOnEnter);
+        Assert.IsTrue(settings.ReplaceInputOnEquals);
     }
 
     [TestMethod]
@@ -43,7 +44,8 @@ public class SettingsManagerTests
             trigUnit: CalculateEngine.TrigMode.Degrees,
             inputUseEnglishFormat: true,
             outputUseEnglishFormat: true,
-            closeOnEnter: false);
+            closeOnEnter: false,
+            replaceInputOnEquals: false);
 
         // Assert
         Assert.IsNotNull(settings);
@@ -51,5 +53,6 @@ public class SettingsManagerTests
         Assert.IsTrue(settings.InputUseEnglishFormat);
         Assert.IsTrue(settings.OutputUseEnglishFormat);
         Assert.IsFalse(settings.CloseOnEnter);
+        Assert.IsFalse(settings.ReplaceInputOnEquals);
     }
 }
