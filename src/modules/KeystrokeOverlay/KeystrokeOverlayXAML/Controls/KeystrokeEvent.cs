@@ -84,6 +84,27 @@ namespace KeystrokeOverlayUI.Controls
             return string.Empty;
         }
 
+        public bool IsShortcut
+        {
+            get
+            {
+                // 1. If it has modifiers (Ctrl, Alt, Win), it is definitely a shortcut
+                if (Modifiers != null && Modifiers.Count > 0)
+                {
+                    return true;
+                }
+
+                // 2. If it is a "Command Key" (Enter, Esc, F1), treat it as a shortcut
+                if (IsCommandKey(VirtualKey))
+                {
+                    return true;
+                }
+
+                // 3. Otherwise, it is just a standard character (A, 1, !)
+                return false;
+            }
+        }
+
         private static bool IsCommandKey(uint virtualKey)
         {
             var key = (Windows.System.VirtualKey)virtualKey;

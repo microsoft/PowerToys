@@ -94,10 +94,37 @@ namespace KeystrokeOverlayUI
         {
             string formattedText = keystroke.ToString();
 
-            if (!string.IsNullOrEmpty(formattedText))
+            if (string.IsNullOrEmpty(formattedText))
             {
-                RegisterKey(formattedText);
+                return;
             }
+
+            // 2. Filter based on DisplayMode
+            bool isShortcut = keystroke.IsShortcut;
+
+            switch (DisplayMode)
+            {
+                case 0: // "Last 5" (Both / All)
+                    break;
+
+                case 1: // "Single Characters Only"
+                    if (isShortcut)
+                    {
+                        return;
+                    }
+
+                    break;
+
+                case 2: // "Shortcuts Only"
+                    if (!isShortcut)
+                    {
+                        return;
+                    }
+
+                    break;
+            }
+
+            RegisterKey(formattedText);
         }
 
         // ---------------------------
