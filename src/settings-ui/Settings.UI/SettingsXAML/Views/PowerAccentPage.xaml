@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,6 +13,54 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
+        <converters:IndexToBoolConverter x:Key="IndexToBoolConverter" />
+        <Style x:Key="PositionRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="MinWidth" Value="32"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid x:Name="RootGrid" Background="{ThemeResource ControlFillColorDefaultBrush}" 
+                              BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" 
+                              BorderThickness="1" CornerRadius="4">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Checked">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
+                                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}"/>
+                                            <Setter Target="CheckMark.Visibility" Value="Visible"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Unchecked"/>
+                                    <VisualState x:Name="Indeterminate"/>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource ControlFillColorSecondaryBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource ControlFillColorTertiaryBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Ellipse x:Name="CheckMark" Width="8" Height="8" 
+                                     Fill="{ThemeResource TextOnAccentFillColorPrimaryBrush}" 
+                                     Visibility="Collapsed"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <CollectionViewSource
             x:Name="LanguagesCustomViewSource"
             IsSourceGrouped="True"
@@ -154,17 +203,76 @@
                         Name="QuickAccentToolbarPosition"
                         x:Uid="QuickAccent_ToolbarPosition"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Left" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Right" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopRightCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
-                        </ComboBox>
+                        <!-- 3x3 Grid for toolbar position selection -->
+                        <Grid Width="108" Height="108">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Top Left (index 5) -->
+                            <RadioButton Grid.Row="0" Grid.Column="0" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=5}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Top left corner"
+                                         ToolTipService.ToolTip="Top left corner"/>
+                            <!-- Top Center (index 0) -->
+                            <RadioButton Grid.Row="0" Grid.Column="1" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Top center"
+                                         ToolTipService.ToolTip="Top center"/>
+                            <!-- Top Right (index 4) -->
+                            <RadioButton Grid.Row="0" Grid.Column="2" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=4}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Top right corner"
+                                         ToolTipService.ToolTip="Top right corner"/>
+                            
+                            <!-- Left (index 2) -->
+                            <RadioButton Grid.Row="1" Grid.Column="0" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Left"
+                                         ToolTipService.ToolTip="Left"/>
+                            <!-- Center (index 8) -->
+                            <RadioButton Grid.Row="1" Grid.Column="1" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=8}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Center"
+                                         ToolTipService.ToolTip="Center"/>
+                            <!-- Right (index 3) -->
+                            <RadioButton Grid.Row="1" Grid.Column="2" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Right"
+                                         ToolTipService.ToolTip="Right"/>
+                            
+                            <!-- Bottom Left (index 7) -->
+                            <RadioButton Grid.Row="2" Grid.Column="0" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=7}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Bottom left corner"
+                                         ToolTipService.ToolTip="Bottom left corner"/>
+                            <!-- Bottom Center (index 1) -->
+                            <RadioButton Grid.Row="2" Grid.Column="1" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Bottom center"
+                                         ToolTipService.ToolTip="Bottom center"/>
+                            <!-- Bottom Right (index 6) -->
+                            <RadioButton Grid.Row="2" Grid.Column="2" GroupName="ToolbarPosition"
+                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=6}"
+                                         Style="{StaticResource PositionRadioButtonStyle}"
+                                         AutomationProperties.Name="Bottom right corner"
+                                         ToolTipService.ToolTip="Bottom right corner"/>
+                        </Grid>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="QuickAccentDescriptionIndicator"
