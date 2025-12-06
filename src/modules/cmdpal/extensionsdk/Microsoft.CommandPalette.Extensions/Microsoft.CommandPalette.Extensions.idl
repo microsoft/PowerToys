@@ -160,6 +160,15 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsData {}
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum ContentSize
+    {
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsElement {
         String Key { get; };
