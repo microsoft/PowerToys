@@ -674,7 +674,9 @@ HKCC
 HKCOMB
 HKCR
 HKCU
+hkcu
 hkey
+hklm
 HKLM
 HKM
 hkmng
@@ -1057,9 +1059,9 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
 msvcp
 MT
-mstsc
 MTND
 MULTIPLEUSE
 multizone
@@ -1203,7 +1205,9 @@ oldtheme
 oleaut
 OLECHAR
 ollama
+ollama
 onebranch
+onnx
 onnx
 OOBEUI
 openas
@@ -1212,8 +1216,6 @@ OPENFILENAME
 openrdp
 opensource
 openxmlformats
-ollama
-onnx
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
 ORSCANS
@@ -1426,7 +1428,6 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
-remotedesktop
 rdp
 RDW
 READMODE
@@ -1455,6 +1456,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
