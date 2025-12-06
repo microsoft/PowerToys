@@ -3507,6 +3507,61 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_ToolbarPosition_Right.Content" xml:space="preserve">
     <value>Right</value>
   </data>
+  <!-- Toolbar position ToolTip and Accessibility strings -->
+  <data name="QuickAccent_ToolbarPosition_TopCenter.ToolTip" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopCenter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopLeftCorner.ToolTip" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopLeftCorner.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopRightCorner.ToolTip" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopRightCorner.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomLeftCorner.ToolTip" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomLeftCorner.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomCenter.ToolTip" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomCenter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomRightCorner.ToolTip" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomRightCorner.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Center.ToolTip" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Center.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Left.ToolTip" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Left.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Right.ToolTip" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Right.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Right</value>
+  </data>
   <data name="QuickAccent_Behavior.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
