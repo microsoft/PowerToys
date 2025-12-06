@@ -638,23 +638,17 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
     <value>I have read and accept the information above.</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
-    <value>Enable OpenAI content moderation</value>
-  </data>
   <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
     <value>Enable OpenAI content moderation</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Header" xml:space="preserve">
-    <value>Enable Advanced AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAdvancedAI_SettingsCard.Description" xml:space="preserve">
+  <data name="AdvancedPaste_EnableAdvancedAIDescription.Text" xml:space="preserve">
     <value>Use built-in functions to handle complex tasks. Token consumption may increase.</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
     <value>Access Clipboard History</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
-    <value>Clipboard History shows a list of previously copied items.</value>
+    <value>View and select previously copied items</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
@@ -2095,9 +2089,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="TranscodeToMp4.Header" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
-    <value>OpenAI API key:</value>
-  </data>
   <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -2688,10 +2679,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
-  </data>
-  <data name="MouseUtils_CursorWrap_ActivationShortcut_Description.Text" xml:space="preserve">
-    <value>Hotkey to toggle cursor wrapping on/off</value>
+    <value>Activation and behavior</value>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
@@ -2709,7 +2697,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
@@ -2833,7 +2821,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_FindMyMouse.Description" xml:space="preserve">
-    <value>Find My Mouse highlights the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
+    <value>Highlight the position of the cursor when pressing the Ctrl key twice, using a custom shortcut or when shaking the mouse.</value>
     <comment>"Ctrl" is a keyboard key. "Find My Mouse" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_Enable_FindMyMouse.Header" xml:space="preserve">
@@ -2922,7 +2910,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
-    <value>Mouse Highlighter mode will highlight mouse clicks.</value>
+    <value>Highlight mouse clicks.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
@@ -2967,7 +2955,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
-    <value>Mouse Pointer Crosshairs draws crosshairs centered on the mouse pointer.</value>
+    <value>Draw crosshairs centered on the mouse pointer.</value>
     <comment>"Mouse Pointer Crosshairs" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MousePointerCrosshairs.Header" xml:space="preserve">
@@ -3416,7 +3404,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
-    <value>Transform your clipboard content with the power of AI. An cloud or local endpoint is required.</value>
+    <value>Transform your clipboard content with the power of AI. A cloud or local endpoint is required.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -4035,7 +4023,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
+    <value>Formats clipboard content into plain text, Markdown, JSON, and more. Advanced formatting can use an online or local language model endpoint.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4058,11 +4046,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
-    <value>Advanced AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Supports advanced workflows by chaining transformations and working with files and images. May use additional API credits.</value>
+  <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
+    <value>Enable Advanced AI</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4568,17 +4553,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_Description.Text" xml:space="preserve">
-    <value>Paste with AI allows you to format your clipboard content into any format you need. Learn more about the terms of conditions while using OpenAI and privacy at Microsoft:</value>
-  </data>
   <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
     <value>• Login into your</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
-    <value>Configure OpenAI key</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
-    <value>OpenAI API keys overview</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
     <value>• Create a new secret key and paste it in the field below</value>
@@ -4597,15 +4573,16 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
     <value>Font size</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsText.Text" xml:space="preserve">
-    <value>• NOTE: You need to have available paid credits in your OpenAI account to use this feature. If you do not have credits you will see an 'API key quota exceeded' error</value>
-  </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
   <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
-    <value>Automatically close the Advanced Paste window after it loses focus</value>
+    <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
+  </data>
+  <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
+    <value>Show clipboard preview</value>
+    <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
@@ -5164,25 +5141,12 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
-  <data name="CmdPal.ModuleTitle" xml:space="preserve">
-    <value>Command Palette</value>
-  </data>
-  <data name="CmdPal_ShortDescription" xml:space="preserve">
-    <value>A better quick launcher</value>
-  </data>
-  <data name="CmdPal_ActivationDescription" xml:space="preserve">
-    <value>Open Command Palette</value>
-  </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
     <value>Enable Command Palette</value>
-    <comment>"Command Palette" is the name of the utility.</comment>
-  </data>
-  <data name="CmdPal.ModuleDescription" xml:space="preserve">
-    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
-    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
@@ -5190,11 +5154,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Oobe_CmdPal.Description" xml:space="preserve">
     <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal.Title" xml:space="preserve">
     <value>Command Palette</value>
-    <comment>"Command Palette" is a product name</comment>
+    <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
     <value>and start typing!</value>
@@ -5227,14 +5191,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="RetryLabel.Text" xml:space="preserve">
     <value>Retry</value>
   </data>
-  <data name="CmdPal_Activation_GroupSettings.Header" xml:space="preserve">
-    <value>Activation</value>
-  </data>
-  <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
-    <value>Activation shortcut</value>
-  </data>
-  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
-    <value>Open Command Palette settings to customize the activation shortcut</value>
+  <data name="CmdPal_Settings.Header" xml:space="preserve">
+    <value>Settings</value>
   </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>
@@ -5678,5 +5636,131 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="LightSwitch_SetLocationButton.Content" xml:space="preserve">
     <value>Set Location</value>
+  </data>
+  <data name="AdvancedPaste_FL_OpenFoundryModelList.Content" xml:space="preserve">
+    <value>Open Foundry Local model list</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_RunFoundryLocalText.Text" xml:space="preserve">
+    <value>Run Foundry Local to download or add a local model</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_NoModelsDownloaded.Text" xml:space="preserve">
+    <value>No models downloaded</value>
+  </data>
+  <data name="AdvancedPaste_FL_LoadingStatus.Text" xml:space="preserve">
+    <value>Loading Foundry Local status..</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_LocalModel.Text" xml:space="preserve">
+    <value>Foundry Local model</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_UseCliToDownloadModels.Text" xml:space="preserve">
+    <value>Use the Foundry Local CLI to download models that run locally on-device. They'll appear here.</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_RefreshModelList.Text" xml:space="preserve">
+    <value>Refresh model list</value>
+  </data>
+  <data name="AdvancedPaste_FL_FLNotAvailableYet.Text" xml:space="preserve">
+    <value>Foundry Local is not available on this device yet.</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_FL_StartService.Text" xml:space="preserve">
+    <value>Start the Foundry Local service before returning to PowerToys.</value>
+  </data>
+  <data name="AdvancedPaste_FL_CLIGuide.Content" xml:space="preserve">
+    <value>Follow the Foundry Local CLI guide</value>
+    <comment>Do not localize "Foundry Local", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_ModelProviders.Header" xml:space="preserve">
+    <value>Model providers</value>
+  </data>
+  <data name="AdvancedPaste_ModelProviders.Description" xml:space="preserve">
+    <value>Add online or local models</value>
+  </data>
+  <data name="AdvancedPaste_Edit.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="AdvancedPaste_Remove.Text" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="AdvancedPaste_ModelName.Header" xml:space="preserve">
+    <value>Model name</value>
+  </data>
+  <data name="AdvancedPaste_EndpointURL.Header" xml:space="preserve">
+    <value>Endpoint URL</value>
+  </data>
+  <data name="AdvancedPaste_APIKey.Header" xml:space="preserve">
+    <value>API key</value>
+  </data>
+  <data name="AdvancedPaste_APIKey.PlaceholderText" xml:space="preserve">
+    <value>Enter API key</value>
+  </data>
+  <data name="AdvancedPaste_APIVersion.Header" xml:space="preserve">
+    <value>API version</value>
+  </data>
+  <data name="AdvancedPaste_DeploymentName.Header" xml:space="preserve">
+    <value>Deployment name</value>
+  </data>
+  <data name="AdvancedPaste_SystemPrompt.Header" xml:space="preserve">
+    <value>System prompt</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
+    <value>Display a preview of the current clipboard content</value>
+  </data>
+  <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="AdvancedPaste_FL_PreviewMessage.Message" xml:space="preserve">
+    <value>Foundry Local is still in public preview</value>
+    <comment>Do not loc "Foundry Local"</comment>
+  </data>
+  <data name="CmdPal_Settings.Description" xml:space="preserve">
+    <value>Configure the activation shortcut, extensions, behavior and much more</value>
+  </data>
+  <data name="CmdPal_Launch.Header" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ShortDescription" xml:space="preserve">
+    <value>A better quick launcher</value>
+  </data>
+  <data name="CmdPal_Description.Text" xml:space="preserve">
+    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+  </data>
+  <data name="CmdPal.ModuleTitle" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
+    <value>Powerful extensions help you do more</value>
+  </data>
+  <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
+    <value>Extensible</value>
+  </data>
+  <data name="CmdPal_FastDescription.Text" xml:space="preserve">
+    <value>Find files and launch apps in an instant</value>
+  </data>
+  <data name="CmdPal_FastHeader.Text" xml:space="preserve">
+    <value>Fast</value>
+  </data>
+  <data name="CmdPal_ModernHeader.Text" xml:space="preserve">
+    <value>Beautiful</value>
+  </data>
+  <data name="CmdPal_ModernDescription.Text" xml:space="preserve">
+    <value>A modern UI built with Fluent Design</value>
+    <comment>Fluent Design is a product name, do not loc</comment>
   </data>
 </root>

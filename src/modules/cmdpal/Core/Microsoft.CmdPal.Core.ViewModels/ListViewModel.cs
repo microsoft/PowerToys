@@ -24,8 +24,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
-    [ObservableProperty]
-    public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
+    public ObservableCollection<ListItemViewModel> FilteredItems { get; } = [];
 
     public FiltersViewModel? Filters { get; set; }
 
@@ -224,6 +223,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
+            var showsTitle = GridProperties?.ShowTitle ?? true;
+            var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
             foreach (var item in newItems)
             {
                 // Check for cancellation during item processing
@@ -237,6 +238,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
                 {
+                    viewModel.LayoutShowsTitle = showsTitle;
+                    viewModel.LayoutShowsSubtitle = showsSubtitle;
                     newViewModels.Add(viewModel);
                 }
             }
@@ -583,6 +586,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
         GridProperties?.InitializeProperties();
         UpdateProperty(nameof(GridProperties));
+        ApplyLayoutToItems();
 
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
@@ -608,22 +612,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         model.ItemsChanged += Model_ItemsChanged;
     }
 
-    private IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
+    private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
     {
-        if (gridProperties is IMediumGridLayout mediumGridLayout)
+        return gridProperties switch
         {
-            return new MediumGridPropertiesViewModel(mediumGridLayout);
-        }
-        else if (gridProperties is IGalleryGridLayout galleryGridLayout)
-        {
-            return new GalleryGridPropertiesViewModel(galleryGridLayout);
-        }
-        else if (gridProperties is ISmallGridLayout smallGridLayout)
-        {
-            return new SmallGridPropertiesViewModel(smallGridLayout);
-        }
-
-        return null;
+            IMediumGridLayout mediumGridLayout => new MediumGridPropertiesViewModel(mediumGridLayout),
+            IGalleryGridLayout galleryGridLayout => new GalleryGridPropertiesViewModel(galleryGridLayout),
+            ISmallGridLayout smallGridLayout => new SmallGridPropertiesViewModel(smallGridLayout),
+            _ => null,
+        };
     }
 
     public void LoadMoreIfNeeded()
@@ -685,6 +682,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
                 GridProperties?.InitializeProperties();
                 UpdateProperty(nameof(IsGridView));
+                ApplyLayoutToItems();
                 break;
             case nameof(ShowDetails):
                 ShowDetails = model.ShowDetails;
@@ -728,6 +726,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
            });
+    }
+
+    private void ApplyLayoutToItems()
+    {
+        lock (_listLock)
+        {
+            var showsTitle = GridProperties?.ShowTitle ?? true;
+            var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+
+            foreach (var item in Items)
+            {
+                item.LayoutShowsTitle = showsTitle;
+                item.LayoutShowsSubtitle = showsSubtitle;
+            }
+        }
     }
 
     public void Dispose()

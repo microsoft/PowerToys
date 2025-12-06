@@ -1498,6 +1498,7 @@ SOFTWARE.
 - CoenM.ImageSharp.ImageHash
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
+- CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView
 - CommunityToolkit.Mvvm
 - CommunityToolkit.WinUI.Animations
 - CommunityToolkit.WinUI.Collections

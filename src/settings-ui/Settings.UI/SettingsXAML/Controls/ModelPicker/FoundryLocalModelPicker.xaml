@@ -30,6 +30,24 @@
     </UserControl.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <InfoBar
+            x:Uid="AdvancedPaste_FL_PreviewMessage"
+            Grid.Row="1"
+            Padding="4"
+            IsClosable="False"
+            IsOpen="True"
+            Message="Foundry Local is still in Public Preview">
+            <InfoBar.ActionButton>
+                <HyperlinkButton
+                    x:Uid="AdvancedPaste_FL_LearnMoreFoundryLocal"
+                    Content="Learn more"
+                    NavigateUri="https://learn.microsoft.com/azure/ai-foundry/foundry-local/what-is-foundry-local" />
+            </InfoBar.ActionButton>
+        </InfoBar>
         <StackPanel
             x:Name="LoadingPanel"
             HorizontalAlignment="Center"
@@ -42,8 +60,9 @@
                 HorizontalAlignment="Center" />
             <TextBlock
                 x:Name="LoadingStatusTextBlock"
+                x:Uid="AdvancedPaste_FL_LoadingStatus"
+                HorizontalAlignment="Center"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Loading Foundry Local status..."
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
@@ -56,7 +75,6 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
                 <StackPanel
                     x:Name="NoModelsPanel"
                     Grid.Row="0"
@@ -64,24 +82,28 @@
                     HorizontalAlignment="Center"
                     Orientation="Vertical"
                     Spacing="4">
-                    <FontIcon FontSize="24" Glyph="&#xE74E;" />
+                    <FontIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="24"
+                        Glyph="&#xF158;" />
                     <TextBlock
+                        x:Uid="AdvancedPaste_FL_NoModelsDownloaded"
                         HorizontalAlignment="Center"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
-                        Text="No models downloaded"
                         TextAlignment="Center" />
                     <TextBlock
+                        x:Uid="AdvancedPaste_FL_RunFoundryLocalText"
                         HorizontalAlignment="Center"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Run Foundry Local to download or add a local model below."
                         TextAlignment="Center"
                         TextWrapping="Wrap" />
                     <Button
                         x:Name="LaunchFoundryModelListButton"
+                        x:Uid="AdvancedPaste_FL_OpenFoundryModelList"
+                        Margin="0,8,0,0"
                         HorizontalAlignment="Center"
                         Click="LaunchFoundryModelListButton_Click"
-                        Content="Open Foundry model list"
                         Style="{StaticResource AccentButtonStyle}" />
                 </StackPanel>
 
@@ -101,10 +123,10 @@
                             SelectionChanged="CachedModelsComboBox_SelectionChanged">
                             <ComboBox.Header>
                                 <TextBlock>
-                                    <Run Text="Foundry Local model" /><LineBreak /><Run
+                                    <Run x:Uid="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run
+                                        x:Uid="AdvancedPaste_FL_UseCliToDownloadModels"
                                         FontSize="12"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="Use the Foundry Local CLI to download models that run locally on-device. They'll appear here." />
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </TextBlock>
                             </ComboBox.Header>
                         </ComboBox>
@@ -114,9 +136,11 @@
                             MinHeight="32"
                             VerticalAlignment="Bottom"
                             Click="RefreshModelsButton_Click"
-                            Style="{StaticResource SubtleButtonStyle}"
-                            ToolTipService.ToolTip="Refresh model list">
+                            Style="{StaticResource SubtleButtonStyle}">
                             <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="AdvancedPaste_FL_RefreshModelList" />
+                            </ToolTipService.ToolTip>
                         </Button>
                     </Grid>
                     <StackPanel
@@ -146,24 +170,28 @@
                 Spacing="8">
                 <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg" />
                 <TextBlock
+                    x:Uid="AdvancedPaste_FL_FLNotAvailableYet"
+                    HorizontalAlignment="Center"
                     FontWeight="SemiBold"
-                    Text="Foundry Local is not available on this device yet."
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
                 <TextBlock
+                    x:Uid="AdvancedPaste_FL_StartService"
+                    HorizontalAlignment="Center"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     IsTextSelectionEnabled="True"
                     TextAlignment="Center"
-                    TextWrapping="Wrap">
-                    <Run Text="Start the Foundry Local service before returning to PowerToys." />
-                </TextBlock>
-                <HyperlinkButton Content="Follow the Foundry Local CLI guide" NavigateUri="https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-local/get-started" />
+                    TextWrapping="Wrap" />
+                <HyperlinkButton
+                    x:Uid="AdvancedPaste_FL_CLIGuide"
+                    HorizontalAlignment="Center"
+                    NavigateUri="https://learn.microsoft.com/azure/ai-foundry/foundry-local/get-started" />
                 <TextBlock
                     x:Uid="FoundryLocal_RestartRequiredNote"
+                    HorizontalAlignment="Center"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Note: After installing the Foundry Local CLI, restart PowerToys to use it."
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
             </StackPanel>

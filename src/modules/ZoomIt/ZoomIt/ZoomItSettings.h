@@ -44,11 +44,11 @@ LOGFONT	g_LogFont;
 BOOLEAN g_DemoTypeUserDriven = false;
 TCHAR   g_DemoTypeFile[MAX_PATH] = {0};
 DWORD	g_DemoTypeSpeedSlider = static_cast<int>(((MIN_TYPING_SPEED - MAX_TYPING_SPEED) / 2) + MAX_TYPING_SPEED);
-DWORD	g_RecordFrameRate = 30;
+DWORD   g_RecordFrameRate = 30; // We default to 30 here, but g_RecordFrameRate can be different depending on recording format and gets set accordingly
 DWORD	g_RecordScaling = 100;
 DWORD	g_RecordScalingGIF = 50;
 DWORD	g_RecordScalingMP4 = 100;
-RecordingFormat g_RecordingFormat = RecordingFormat::GIF;
+RecordingFormat g_RecordingFormat = RecordingFormat::MP4;
 BOOLEAN g_CaptureAudio = FALSE;
 TCHAR	g_MicrophoneDeviceId[MAX_PATH] = {0};
 
@@ -87,8 +87,7 @@ REG_SETTING RegSettings[] = {
     { L"SnapToGrid", SETTING_TYPE_BOOLEAN, 0, &g_SnapToGrid, static_cast<DOUBLE>(g_SnapToGrid) },
     { L"ZoominSliderLevel", SETTING_TYPE_DWORD, 0, &g_SliderZoomLevel, static_cast<DOUBLE>(g_SliderZoomLevel) },
     { L"Font", SETTING_TYPE_BINARY, sizeof g_LogFont, &g_LogFont, static_cast<DOUBLE>(0) },
-    { L"RecordFrameRate", SETTING_TYPE_DWORD, 0, &g_RecordFrameRate, static_cast<DOUBLE>(g_RecordFrameRate) },
-    { L"RecordingFormat", SETTING_TYPE_DWORD, 0, &g_RecordingFormat, static_cast<DOUBLE>(0) },
+    { L"RecordingFormat", SETTING_TYPE_DWORD, 0, &g_RecordingFormat, static_cast<DOUBLE>(g_RecordingFormat) },
     { L"RecordScalingGIF", SETTING_TYPE_DWORD, 0, &g_RecordScalingGIF, static_cast<DOUBLE>(g_RecordScalingGIF) },
     { L"RecordScalingMP4", SETTING_TYPE_DWORD, 0, &g_RecordScalingMP4, static_cast<DOUBLE>(g_RecordScalingMP4) },
     { L"CaptureAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureAudio, static_cast<DOUBLE>(g_CaptureAudio) },

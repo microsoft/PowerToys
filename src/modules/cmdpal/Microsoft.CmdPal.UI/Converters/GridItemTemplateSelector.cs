@@ -20,21 +20,12 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
-        DataTemplate? dataTemplate = Medium;
-
-        if (GridProperties is SmallGridPropertiesViewModel)
+        return GridProperties switch
         {
-            dataTemplate = Small;
-        }
-        else if (GridProperties is MediumGridPropertiesViewModel)
-        {
-            dataTemplate = Medium;
-        }
-        else if (GridProperties is GalleryGridPropertiesViewModel)
-        {
-            dataTemplate = Gallery;
-        }
-
-        return dataTemplate;
+            SmallGridPropertiesViewModel => Small,
+            MediumGridPropertiesViewModel => Medium,
+            GalleryGridPropertiesViewModel => Gallery,
+            _ => Medium,
+        };
     }
 }
