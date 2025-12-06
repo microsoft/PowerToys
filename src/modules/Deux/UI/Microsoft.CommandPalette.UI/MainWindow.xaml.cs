@@ -13,8 +13,6 @@ using Microsoft.CommandPalette.UI.Models;
 using Microsoft.CommandPalette.UI.Models.Messages;
 using Microsoft.CommandPalette.UI.Pages;
 using Microsoft.CommandPalette.UI.ViewModels.Helpers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
@@ -36,15 +34,22 @@ using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinRT;
 using WinUIEx;
 using RS_ = Microsoft.CommandPalette.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CommandPalette.UI;
 
-public sealed partial class MainWindow : WindowEx
+public sealed partial class MainWindow : WindowEx,
+    IRecipient<ShowWindowMessage>,
+    IRecipient<HideWindowMessage>,
+    IRecipient<QuitMessage>,
+    IRecipient<DismissMessage>
 {
     private readonly ILogger logger;
-    private readonly ShellPage shellPage;
+    private readonly ShellPage _shellPage;
+    private readonly SettingsModel _settingsModel;
+    private readonly TrayIconService _trayIconService;
     private const int DefaultWidth = 800;
     private const int DefaultHeight = 480;
 
@@ -68,10 +73,16 @@ public sealed partial class MainWindow : WindowEx
 
     private WindowPosition _currentWindowPosition = new();
 
-    public MainWindow(ShellPage shellPage, ILogger logger)
+    public MainWindow(ShellPage shellPage, SettingsModel settingsModel, TrayIconService trayIconService, ILogger logger)
     {
+        InitializeComponent();
+
         this.logger = logger;
-        this.shellPage = shellPage;
+        _shellPage = shellPage;
+        _settingsModel = settingsModel;
+        _trayIconService = trayIconService;
+
+        RootElement.Children.Add(_shellPage);
 
         _autoGoHomeTimer = new DispatcherTimer();
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
@@ -94,10 +105,11 @@ public sealed partial class MainWindow : WindowEx
 
         SetAcrylic();
 
-        // WeakReferenceMessenger.Default.Register<DismissMessage>(this);
-        // WeakReferenceMessenger.Default.Register<QuitMessage>(this);
-        // WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
-        // WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<DismissMessage>(this);
+        WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
         // to hide the old caption buttons. Then, in UpdateRegionsForCustomTitleBar,
@@ -119,7 +131,7 @@ public sealed partial class MainWindow : WindowEx
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+        _settingsModel.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateAcrylic);
@@ -137,11 +149,39 @@ public sealed partial class MainWindow : WindowEx
         HideWindow();
     }
 
+    public void Receive(ShowWindowMessage message)
+    {
+        ShowHwnd(message.Hwnd, _settingsModel.SummonOn);
+    }
+
+    public void Receive(HideWindowMessage message)
+    {
+        // This might come in off the UI thread. Make sure to hop back.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            HideWindow();
+        });
+    }
+
+    public void Receive(QuitMessage message) =>
+
+        // This might come in on a background thread
+        DispatcherQueue.TryEnqueue(() => Close());
+
+    public void Receive(DismissMessage message)
+    {
+        // This might come in off the UI thread. Make sure to hop back.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            HideWindow();
+        });
+    }
+
     private void OnAutoGoHomeTimerOnTick(object? s, object e)
     {
         _autoGoHomeTimer.Stop();
 
-        // BEAR LOADING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
+        // LOAD BEARING: Focus Search must be suppressed here; otherwise it may steal focus (for example, from the system tray icon)
         // and prevent the user from opening its context menu.
         WeakReferenceMessenger.Default.Send(new GoHomeMessage(WithAnimation: false, FocusSearch: false));
     }
@@ -178,8 +218,7 @@ public sealed partial class MainWindow : WindowEx
 
     private void RestoreWindowPosition()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
-        if (settings?.LastWindowPosition is not WindowPosition savedPosition)
+        if (_settingsModel.LastWindowPosition is not WindowPosition savedPosition)
         {
             PositionCentered();
             return;
@@ -226,14 +265,12 @@ public sealed partial class MainWindow : WindowEx
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SetupHotkey(_settingsModel);
+        _trayIconService.SetupTrayIcon(_settingsModel.ShowSystemTrayIcon);
 
-        SetupHotkey(settings);
-        App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
+        _ignoreHotKeyWhenFullScreen = _settingsModel.IgnoreShortcutWhenFullscreen;
 
-        _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
-
-        _autoGoHomeInterval = settings.AutoGoHomeInterval;
+        _autoGoHomeInterval = _settingsModel.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
     }
 
@@ -497,36 +534,6 @@ public sealed partial class MainWindow : WindowEx
         return DisplayArea.Primary;
     }
 
-    public void Receive(ShowWindowMessage message)
-    {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
-
-        ShowHwnd(message.Hwnd, settings.SummonOn);
-    }
-
-    public void Receive(HideWindowMessage message)
-    {
-        // This might come in off the UI thread. Make sure to hop back.
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            HideWindow();
-        });
-    }
-
-    public void Receive(QuitMessage message) =>
-
-        // This might come in on a background thread
-        DispatcherQueue.TryEnqueue(() => Close());
-
-    public void Receive(DismissMessage message)
-    {
-        // This might come in off the UI thread. Make sure to hop back.
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            HideWindow();
-        });
-    }
-
     private void HideWindow()
     {
         // Cloak our HWND to avoid all animations.
@@ -580,7 +587,7 @@ public sealed partial class MainWindow : WindowEx
             var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
             if (hr.Failed)
             {
-                Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
+                Log_DwmCloakingFailed(hr);
             }
 
             wasCloaked = hr.Succeeded;
@@ -607,13 +614,11 @@ public sealed partial class MainWindow : WindowEx
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        var serviceProvider = App.Current.Services;
         UpdateWindowPositionInMemory();
 
-        var settings = serviceProvider.GetService<SettingsModel>();
-        if (settings is not null)
+        if (_settingsModel is not null)
         {
-            settings.LastWindowPosition = new WindowPosition
+            _settingsModel.LastWindowPosition = new WindowPosition
             {
                 X = _currentWindowPosition.X,
                 Y = _currentWindowPosition.Y,
@@ -624,12 +629,12 @@ public sealed partial class MainWindow : WindowEx
                 ScreenHeight = _currentWindowPosition.ScreenHeight,
             };
 
-            SettingsModel.SaveSettings(settings, logger);
+            SettingsModel.SaveSettings(_settingsModel, logger);
         }
 
         // var extensionService = serviceProvider.GetService<IExtensionService>()!;
         // extensionService.SignalStopExtensionsAsync();
-        App.Current.Services.GetService<TrayIconService>()!.Destroy();
+        _trayIconService.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
@@ -767,8 +772,7 @@ public sealed partial class MainWindow : WindowEx
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            var settings = App.Current.Services.GetService<SettingsModel>();
-                            if (settings?.AllowExternalReload == true)
+                            if (_settingsModel.AllowExternalReload == true)
                             {
                                 Log_ExternalReloadTriggered();
                                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
@@ -815,13 +819,13 @@ public sealed partial class MainWindow : WindowEx
 
     private void UnregisterHotkeys()
     {
-        _keyboardListener.ClearHotkeys();
+        // _keyboardListener.ClearHotkeys();
 
-        while (_hotkeys.Count > 0)
-        {
-            PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
-            _hotkeys.RemoveAt(_hotkeys.Count - 1);
-        }
+        // while (_hotkeys.Count > 0)
+        // {
+        //     PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
+        //     _hotkeys.RemoveAt(_hotkeys.Count - 1);
+        // }
     }
 
     private void SetupHotkey(SettingsModel settings)
@@ -833,9 +837,8 @@ public sealed partial class MainWindow : WindowEx
         {
             if (settings.UseLowLevelGlobalHotkey)
             {
-                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
-
-                _hotkeys.Add(new(globalHotkey, string.Empty));
+                // _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
+                // _hotkeys.Add(new(globalHotkey, string.Empty));
             }
             else
             {
@@ -847,44 +850,41 @@ public sealed partial class MainWindow : WindowEx
                                 (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
                                 ;
 
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
-                {
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
+                // var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                // if (success)
+                // {
+                //    _hotkeys.Add(new(globalHotkey, string.Empty));
+                // }
             }
         }
 
-        foreach (var commandHotkey in settings.CommandHotkeys)
-        {
-            var key = commandHotkey.Hotkey;
-
-            if (key is not null)
-            {
-                if (settings.UseLowLevelGlobalHotkey)
-                {
-                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
-
-                    _hotkeys.Add(new(globalHotkey, string.Empty));
-                }
-                else
-                {
-                    var vk = key.Code;
-                    var modifiers =
-                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                        ;
-
-                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                    if (success)
-                    {
-                        _hotkeys.Add(commandHotkey);
-                    }
-                }
-            }
-        }
+        // foreach (var commandHotkey in settings.CommandHotkeys)
+        // {
+        //     var key = commandHotkey.Hotkey;
+        //     if (key is not null)
+        //     {
+        //         if (settings.UseLowLevelGlobalHotkey)
+        //         {
+        //             _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+        //             _hotkeys.Add(new(globalHotkey, string.Empty));
+        //         }
+        //         else
+        //         {
+        //             var vk = key.Code;
+        //             var modifiers =
+        //                 (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+        //                 (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+        //                 (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+        //                 (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+        //                 ;
+        //             var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+        //             if (success)
+        //             {
+        //                 _hotkeys.Add(commandHotkey);
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     private void HandleSummon(string commandId)
@@ -904,7 +904,7 @@ public sealed partial class MainWindow : WindowEx
     private void HandleSummonCore(string commandId)
     {
         var isRootHotkey = string.IsNullOrEmpty(commandId);
-        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+        PowerToysTelemetry.Log.WriteEvent(new HotkeySummonedEvent(isRootHotkey));
 
         var isVisible = this.Visible;
 
@@ -959,12 +959,12 @@ public sealed partial class MainWindow : WindowEx
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
-                    if (hotkeyIndex < _hotkeys.Count)
-                    {
-                        var hotkey = _hotkeys[hotkeyIndex];
-                        HandleSummon(hotkey.CommandId);
-                    }
 
+                    // if (hotkeyIndex < _hotkeys.Count)
+                    // {
+                    //     var hotkey = _hotkeys[hotkeyIndex];
+                    //     HandleSummon(hotkey.CommandId);
+                    // }
                     return (LRESULT)IntPtr.Zero;
                 }
 
@@ -982,7 +982,7 @@ public sealed partial class MainWindow : WindowEx
 
     public void Dispose()
     {
-        _localKeyboardListener.Dispose();
+        // _localKeyboardListener.Dispose();
         DisposeAcrylic();
     }
 
