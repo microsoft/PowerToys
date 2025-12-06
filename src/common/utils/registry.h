@@ -28,64 +28,71 @@ namespace registry
 
         inline const InstallScope get_current_install_scope()
         {
-            // Open HKLM key
-            HKEY perMachineKey{};
-            if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
-                              INSTALL_SCOPE_REG_KEY,
-                              0,
-                              KEY_READ,
-                              &perMachineKey) != ERROR_SUCCESS)
+            // First, check HKLM for explicit per-machine install scope
+            HKEY hklmKey{};
+            if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, INSTALL_SCOPE_REG_KEY, 0, KEY_READ, &hklmKey) == ERROR_SUCCESS)
             {
-                // Open HKCU key
-                HKEY perUserKey{};
-                if (RegOpenKeyExW(HKEY_CURRENT_USER,
-                                  INSTALL_SCOPE_REG_KEY,
-                                  0,
-                                  KEY_READ,
-                                  &perUserKey) != ERROR_SUCCESS)
+                DWORD dataSize{};
+                if (RegGetValueW(hklmKey, nullptr, L"InstallScope", RRF_RT_REG_SZ, nullptr, nullptr, &dataSize) == ERROR_SUCCESS)
                 {
-                    // both keys are missing
-                    return InstallScope::PerMachine;
+                    std::wstring data;
+                    data.resize(dataSize / sizeof(wchar_t));
+                    if (RegGetValueW(hklmKey, nullptr, L"InstallScope", RRF_RT_REG_SZ, nullptr, &data[0], &dataSize) == ERROR_SUCCESS)
+                    {
+                        RegCloseKey(hklmKey);
+                        if (data.find(L"perMachine") != std::wstring::npos)
+                        {
+                            return InstallScope::PerMachine;
+                        }
+                    }
+                    else
+                    {
+                        RegCloseKey(hklmKey);
+                    }
                 }
                 else
                 {
-                    DWORD dataSize{};
-                    if (RegGetValueW(
-                        perUserKey,
-                        nullptr,
-                        L"InstallScope",
-                        RRF_RT_REG_SZ,
-                        nullptr,
-                        nullptr,
-                        &dataSize) != ERROR_SUCCESS)
-                    {
-                        // HKCU key is missing
-                        RegCloseKey(perUserKey);
-                        return InstallScope::PerMachine;
-                    }
+                    RegCloseKey(hklmKey);
+                }
+            }
 
+            // Then check HKCU for per-user install
+            HKEY hkcuKey{};
+            if (RegOpenKeyExW(HKEY_CURRENT_USER, INSTALL_SCOPE_REG_KEY, 0, KEY_READ, &hkcuKey) == ERROR_SUCCESS)
+            {
+                DWORD dataSize{};
+                if (RegGetValueW(hkcuKey, nullptr, L"InstallScope", RRF_RT_REG_SZ, nullptr, nullptr, &dataSize) == ERROR_SUCCESS)
+                {
                     std::wstring data;
                     data.resize(dataSize / sizeof(wchar_t));
-
-                    if (RegGetValueW(
-                            perUserKey,
-                            nullptr,
-                            L"InstallScope",
-                            RRF_RT_REG_SZ,
-                            nullptr,
-                            &data[0],
-                            &dataSize) != ERROR_SUCCESS)
+                    if (RegGetValueW(hkcuKey, nullptr, L"InstallScope", RRF_RT_REG_SZ, nullptr, &data[0], &dataSize) == ERROR_SUCCESS)
                     {
-                        // HKCU key is missing
-                        RegCloseKey(perUserKey);
-                        return InstallScope::PerMachine;
+                        RegCloseKey(hkcuKey);
+                        if (data.find(L"perUser") != std::wstring::npos)
+                        {
+                            return InstallScope::PerUser;
+                        }
                     }
-                    RegCloseKey(perUserKey);
-
-                    if (data.contains(L"perUser"))
+                    else
                     {
-                        return InstallScope::PerUser;
+                        RegCloseKey(hkcuKey);
                     }
+                }
+                else
+                {
+                    RegCloseKey(hkcuKey);
+                }
+            }
+
+            // Fallback: Check if running from LocalAppData (per-user) vs Program Files (per-machine)
+            wchar_t modulePath[MAX_PATH];
+            if (GetModuleFileNameW(nullptr, modulePath, MAX_PATH) > 0)
+            {
+                std::wstring path(modulePath);
+                std::transform(path.begin(), path.end(), path.begin(), ::towlower);
+                if (path.find(L"\\appdata\\local\\") != std::wstring::npos)
+                {
+                    return InstallScope::PerUser;
                 }
             }
 
