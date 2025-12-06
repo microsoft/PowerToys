@@ -50,16 +50,16 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            Session.KillAllProcessesByName("PowerToys");
-            Thread.Sleep(1000);
-            ClearOpenWindows();
+            // Session.KillAllProcessesByName("PowerToys");
+            // Thread.Sleep(1000);
+            // ClearOpenWindows();
 
             // SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
 
-            RestartScopeExe();
-            Thread.Sleep(2000);
+            // RestartScopeExe();
+            // Thread.Sleep(2000);
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
@@ -86,8 +86,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #3")]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
-            TestInitialize();
-
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
 
             var windowRect = Session.GetMainWindowRect();
