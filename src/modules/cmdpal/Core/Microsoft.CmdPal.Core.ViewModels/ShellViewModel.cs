@@ -378,7 +378,7 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     // Reset the palette to the main page and dismiss
                     GoHome(withAnimation: false, focusSearch: false);
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 
@@ -398,7 +398,7 @@ public partial class ShellViewModel : ObservableObject,
             case CommandResultKind.Hide:
                 {
                     // Keep this page open, but hide the palette.
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    WeakReferenceMessenger.Default.Send(new DismissMessage());
                     break;
                 }
 

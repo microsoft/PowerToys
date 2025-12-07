@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.BoolProperty);
         }
 
         public bool TryToCmdRepresentable(out string result)

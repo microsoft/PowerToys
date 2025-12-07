@@ -4,14 +4,19 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
+using Windows.System;
+using Windows.UI.Core;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
@@ -19,9 +24,12 @@ using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class SettingsWindow : WindowEx,
+    IDisposable,
     IRecipient<NavigateToExtensionSettingsMessage>,
     IRecipient<QuitMessage>
 {
+    private readonly LocalKeyboardListener _localKeyboardListener;
+
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
@@ -41,6 +49,12 @@ public sealed partial class SettingsWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
+        _localKeyboardListener = new LocalKeyboardListener();
+        _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
+        _localKeyboardListener.Start();
+        Closed += SettingsWindow_Closed;
+        RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+
         #if DEBUG
         NavView.MenuItems.Add(new NavigationViewItem
         {
@@ -49,6 +63,11 @@ public sealed partial class SettingsWindow : WindowEx,
             Tag = "Internal",
         });
         #endif
+    }
+
+    private void SettingsWindow_Closed(object sender, WindowEventArgs args)
+    {
+        Dispose();
     }
 
     // Handles NavigationView loaded event.
@@ -95,10 +114,9 @@ public sealed partial class SettingsWindow : WindowEx,
             "Internal" => typeof(InternalPage),
             _ => null,
         };
+
         if (pageType is not null)
         {
-            BreadCrumbs.Clear();
-            BreadCrumbs.Add(new(page, page));
             NavFrame.Navigate(pageType);
         }
     }
@@ -106,7 +124,6 @@ public sealed partial class SettingsWindow : WindowEx,
     private void Navigate(ProviderSettingsViewModel extension)
     {
         NavFrame.Navigate(typeof(ExtensionPage), extension);
-        BreadCrumbs.Add(new(extension.DisplayName, string.Empty));
     }
 
     private void PositionCentered()
@@ -137,9 +154,9 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    private void Window_Activated(object sender, WindowActivatedEventArgs args)
+    private void Window_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
     {
-        WeakReferenceMessenger.Default.Send<WindowActivatedEventArgs>(args);
+        WeakReferenceMessenger.Default.Send<Microsoft.UI.Xaml.WindowActivatedEventArgs>(args);
     }
 
     private void Window_Closed(object sender, WindowEventArgs args)
@@ -151,7 +168,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
     {
-        if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+        if (args.DisplayMode is NavigationViewDisplayMode.Compact or NavigationViewDisplayMode.Minimal)
         {
             AppTitleBar.IsPaneToggleButtonVisible = true;
             WorkAroundIcon.Margin = new Thickness(8, 0, 16, 0); // Required for workaround, see XAML comment
@@ -159,7 +176,7 @@ public sealed partial class SettingsWindow : WindowEx,
         else
         {
             AppTitleBar.IsPaneToggleButtonVisible = false;
-            WorkAroundIcon.Margin = new Thickness(16, 0, 0, 0); // Required for workaround, see XAML comment
+            WorkAroundIcon.Margin = new Thickness(16, 0, 8, 0); // Required for workaround, see XAML comment
         }
     }
 
@@ -172,6 +189,93 @@ public sealed partial class SettingsWindow : WindowEx,
     private void AppTitleBar_PaneToggleRequested(TitleBar sender, object args)
     {
         NavView.IsPaneOpen = !NavView.IsPaneOpen;
+    }
+
+    private void TryGoBack()
+    {
+        if (NavFrame.CanGoBack)
+        {
+            NavFrame.GoBack();
+        }
+    }
+
+    private void TitleBar_BackRequested(TitleBar sender, object args)
+    {
+        TryGoBack();
+    }
+
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case VirtualKey.GoBack:
+            case VirtualKey.XButton1:
+                TryGoBack();
+                break;
+
+            case VirtualKey.Left:
+                var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+                if (altPressed)
+                {
+                    TryGoBack();
+                }
+
+                break;
+        }
+    }
+
+    private void RootElement_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        try
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+            {
+                var ptrPt = e.GetCurrentPoint(RootElement);
+                if (ptrPt.Properties.IsXButton1Pressed)
+                {
+                    TryGoBack();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error handling mouse button press event", ex);
+        }
+    }
+
+    public void Dispose()
+    {
+        _localKeyboardListener?.Dispose();
+    }
+
+    private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
+    {
+        BreadCrumbs.Clear();
+
+        if (e.SourcePageType == typeof(GeneralPage))
+        {
+            NavView.SelectedItem = GeneralPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionsPage))
+        {
+            NavView.SelectedItem = ExtensionPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        {
+            NavView.SelectedItem = ExtensionPageNavItem;
+            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
+            BreadCrumbs.Add(new(vm.DisplayName, vm));
+        }
+        else
+        {
+            BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
+            Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
+        }
     }
 }
 
