@@ -53,6 +53,11 @@ namespace UITests_FancyZones
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
 
+            if (TestContext.TestName == "TestWarmup")
+            {
+                return;
+            }
+
             // Session.KillAllProcessesByName("PowerToys");
             // Thread.Sleep(1000);
             // ClearOpenWindows();
