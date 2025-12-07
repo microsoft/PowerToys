@@ -9,7 +9,7 @@ namespace WorkspacesEditor.Utils
     public class Settings
     {
         private const string WorkspacesModuleName = "Workspaces";
-        private static readonly SettingsUtils _settingsUtils = SettingsUtils.GlobalDefaultInstance;
+        private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
 
         public static WorkspacesSettings ReadSettings()
         {

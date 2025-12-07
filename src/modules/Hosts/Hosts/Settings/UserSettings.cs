@@ -62,7 +62,7 @@ namespace Hosts.Settings
 
         public UserSettings()
         {
-            _settingsUtils = SettingsUtils.GlobalDefaultInstance;
+            _settingsUtils = SettingsUtils.Default;
             var defaultSettings = new HostsProperties();
             ShowStartupWarning = defaultSettings.ShowStartupWarning;
             LoopbackDuplicates = defaultSettings.LoopbackDuplicates;

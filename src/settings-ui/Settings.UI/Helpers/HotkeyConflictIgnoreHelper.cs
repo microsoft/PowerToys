@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         static HotkeyConflictIgnoreHelper()
         {
-            _settingsUtils = SettingsUtils.GlobalDefaultInstance;
+            _settingsUtils = SettingsUtils.Default;
             _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
         }
 

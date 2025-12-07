@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
         public ShortcutConflictWindow()
         {
-            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new ShortcutConflictViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

@@ -104,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ZoomItPage()
         {
-            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new ZoomItViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, PickFileDialog, PickFontDialog);
             DataContext = ViewModel;
             InitializeComponent();

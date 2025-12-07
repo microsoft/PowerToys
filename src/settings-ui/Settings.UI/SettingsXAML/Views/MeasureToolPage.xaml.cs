@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public MeasureToolPage()
         {
-            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new MeasureToolViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

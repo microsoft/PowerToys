@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public DashboardPage()
         {
             InitializeComponent();
-            var settingsUtils = SettingsUtils.GlobalDefaultInstance;
+            var settingsUtils = SettingsUtils.Default;
 
             ViewModel = new DashboardViewModel(
                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);

@@ -67,7 +67,7 @@ namespace ViewModelTests
             using (var viewModel = new ColorPickerViewModel(
                 ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object),
-                SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.GlobalDefaultInstance),
+                SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default),
                 ColorPickerIsEnabledByDefaultIPC))
             {
                 Assert.IsTrue(viewModel.IsEnabled);
