@@ -38,6 +38,11 @@ namespace KeystrokeOverlayUI.Controls
 
             if (isCharEvent)
             {
+                if (string.IsNullOrWhiteSpace(Text))
+                {
+                    return string.Empty;
+                }
+
                 if (!string.IsNullOrEmpty(Text))
                 {
                     keyName = Text;
