@@ -230,7 +230,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
-                LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "±", "∓", "≅", "≡", "₊", "⁺" },
+                LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "±", "≅", "≡", "₊", "⁺" },
                 LetterKey.VK_BACKSLASH => new[] { "`", "~" },
                 _ => Array.Empty<string>(),
             };
