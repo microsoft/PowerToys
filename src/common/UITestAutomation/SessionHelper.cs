@@ -169,6 +169,8 @@ namespace Microsoft.PowerToys.UITest
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
         {
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+
             const int maxTries = 3;
             const int delayMs = 5000;
             const int maxRetries = 3;
