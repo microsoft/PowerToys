@@ -209,6 +209,7 @@
                         x:Uid="QuickAccent_ToolbarPosition"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
                         <!-- 3x3 Grid for toolbar position selection -->
+                        <!-- TEST: Grid restored, x:Uid present, NO BINDINGS -->
                         <Grid Width="108" Height="108">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
@@ -222,52 +223,52 @@
                             </Grid.ColumnDefinitions>
                             
                             <!-- Top Left (index 5) -->
-                            <RadioButton Grid.Row="0" Grid.Column="0" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=5}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="0" Grid.Column="0"
+                                         x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=5}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             <!-- Top Center (index 0) -->
-                            <RadioButton Grid.Row="0" Grid.Column="1" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_TopCenter"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="0" Grid.Column="1"
+                                         x:Uid="QuickAccent_ToolbarPosition_TopCenter_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=0}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             <!-- Top Right (index 4) -->
-                            <RadioButton Grid.Row="0" Grid.Column="2" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_TopRightCorner"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=4}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="0" Grid.Column="2"
+                                         x:Uid="QuickAccent_ToolbarPosition_TopRightCorner_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=4}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             
                             <!-- Left (index 2) -->
-                            <RadioButton Grid.Row="1" Grid.Column="0" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_Left"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="1" Grid.Column="0"
+                                         x:Uid="QuickAccent_ToolbarPosition_Left_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=2}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             <!-- Center (index 8) -->
-                            <RadioButton Grid.Row="1" Grid.Column="1" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_Center"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=8}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="1" Grid.Column="1"
+                                         x:Uid="QuickAccent_ToolbarPosition_Center_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=8}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             <!-- Right (index 3) -->
-                            <RadioButton Grid.Row="1" Grid.Column="2" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_Right"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="1" Grid.Column="2"
+                                         x:Uid="QuickAccent_ToolbarPosition_Right_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=3}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             
                             <!-- Bottom Left (index 7) -->
-                            <RadioButton Grid.Row="2" Grid.Column="0" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=7}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="2" Grid.Column="0"
+                                         x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=7}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             <!-- Bottom Center (index 1) -->
-                            <RadioButton Grid.Row="2" Grid.Column="1" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_BottomCenter"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="2" Grid.Column="1"
+                                         x:Uid="QuickAccent_ToolbarPosition_BottomCenter_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=1}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                             <!-- Bottom Right (index 6) -->
-                            <RadioButton Grid.Row="2" Grid.Column="2" GroupName="ToolbarPosition"
-                                         x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner"
-                                         IsChecked="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=6}"
-                                         Style="{StaticResource PositionRadioButtonStyle}"/>
+                            <RadioButton Grid.Row="2" Grid.Column="2"
+                                         x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner_New"
+                                         IsChecked="{Binding Path=ToolbarPositionIndex, Mode=TwoWay, Converter={StaticResource IndexToBoolConverter}, ConverterParameter=6}"
+                                         Width="32" Height="32" MinWidth="32" MinHeight="32"/>
                         </Grid>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard

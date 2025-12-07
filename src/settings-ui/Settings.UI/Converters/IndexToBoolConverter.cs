@@ -31,12 +31,19 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool isChecked && isChecked && parameter != null)
+            try
             {
-                if (int.TryParse(parameter.ToString(), out int paramIndex))
+                if (value is bool isChecked && isChecked && parameter != null)
                 {
-                    return paramIndex;
+                    if (int.TryParse(parameter.ToString(), out int paramIndex))
+                    {
+                        return paramIndex;
+                    }
                 }
+            }
+            catch
+            {
+                // Ignore exceptions
             }
 
             // Return UnsetValue to indicate no update should occur (RadioButton unchecked)

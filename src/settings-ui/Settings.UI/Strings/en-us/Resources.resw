@@ -5818,4 +5818,58 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
+  <data name="QuickAccent_ToolbarPosition_TopLeftCorner_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopLeftCorner_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopCenter_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopCenter_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopRightCorner_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_TopRightCorner_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Left_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Left_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Center_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Center_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Right_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_Right_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomLeftCorner_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomLeftCorner_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomCenter_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomCenter_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomRightCorner_New.AutomationProperties.Name" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="QuickAccent_ToolbarPosition_BottomRightCorner_New.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
 </root>

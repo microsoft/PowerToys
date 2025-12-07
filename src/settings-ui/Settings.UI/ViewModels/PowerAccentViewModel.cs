@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
@@ -293,9 +294,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (_toolbarPositionIndex != value)
                 {
-                    _toolbarPositionIndex = value;
-                    _powerAccentSettings.Properties.ToolbarPosition.Value = _toolbarOptions[value];
-                    RaisePropertyChanged(nameof(ToolbarPositionIndex));
+                    try
+                    {
+                        _toolbarPositionIndex = value;
+                        _powerAccentSettings.Properties.ToolbarPosition.Value = _toolbarOptions[value];
+                        OnPropertyChanged(nameof(ToolbarPositionIndex));
+                    }
+                    catch (Exception ex)
+                    {
+                        // Swallow exception to prevent crash
+                        System.Diagnostics.Debug.WriteLine($"Error setting ToolbarPositionIndex: {ex.Message}");
+                    }
                 }
             }
         }
