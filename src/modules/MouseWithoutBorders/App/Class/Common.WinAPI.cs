@@ -32,6 +32,7 @@ namespace MouseWithoutBorders
     {
         private static MyRectangle newDesktopBounds;
         private static MyRectangle newPrimaryScreenBounds;
+
         // temporary list used during enumeration
         private static List<MyRectangle> newMonitorBounds;
         private static string activeDesktop;
@@ -45,9 +46,9 @@ namespace MouseWithoutBorders
 
         internal static readonly List<Point> SensitivePoints = new();
 
-            // List of monitor rectangles (in desktop coordinate space) populated by GetScreenConfig()
-            // Each entry describes a monitor's bounds: Left/Top/Right/Bottom
-            internal static List<MyRectangle> MonitorRects = new();
+        // List of monitor rectangles (in desktop coordinate space) populated by GetScreenConfig()
+        // Each entry describes a monitor's bounds: Left/Top/Right/Bottom
+        internal static List<MyRectangle> MonitorRects = new();
 
         private static bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref NativeMethods.RECT lprcMonitor, IntPtr dwData)
         {
@@ -90,7 +91,7 @@ namespace MouseWithoutBorders
                 Left = mi.rcMonitor.Left,
                 Top = mi.rcMonitor.Top,
                 Right = mi.rcMonitor.Right,
-                Bottom = mi.rcMonitor.Bottom
+                Bottom = mi.rcMonitor.Bottom,
             };
 
             newMonitorBounds.Add(thisRect);
@@ -237,15 +238,21 @@ namespace MouseWithoutBorders
 
         internal static bool MonitorBelowExists(MyRectangle r, int x)
         {
-            if (r == null) return false;
-            lock (SensitivePoints)
+            if (r == null) 
             {
-                foreach (MyRectangle m in MonitorRects)
+                return false;
+            }
+            else
+            {
+                lock (SensitivePoints)
                 {
-                    if (m == r) continue;
-                    if (x >= m.Left && x < m.Right && m.Top >= r.Bottom)
+                    foreach (MyRectangle m in MonitorRects)
                     {
-                        return true;
+                        if (m == r) continue;
+                        if (x >= m.Left && x < m.Right && m.Top >= r.Bottom)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
