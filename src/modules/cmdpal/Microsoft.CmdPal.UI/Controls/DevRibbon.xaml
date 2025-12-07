@@ -211,7 +211,7 @@
                                 </Border>
                             </StackPanel>
 
-                                <!--  Footer  -->
+                            <!--  Footer  -->
                             <Border
                                 Grid.Row="1"
                                 Padding="16"
