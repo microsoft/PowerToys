@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.UI.Core;
+using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -718,5 +719,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
+    }
+
+    private void OpenErrorReportButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        var window = new ErrorReportWindow(new()
+        {
+            ErrorReport = ViewModel.CurrentPage.ErrorMessage,
+            Mode = ErrorReportWindow.TroubleMode.Recoverable,
+            Summary = ResourceLoaderInstance.GetString("ErrorReportWindow_Summary_ErrorOnPage"),
+        });
+        window.Show();
     }
 }
