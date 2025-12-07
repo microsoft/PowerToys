@@ -45,7 +45,10 @@ public partial class MainListPage : DynamicListPage,
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private List<Scored<IListItem>>? _fallbackItems;
-    private List<Scored<IListItem>>? _scoredFallbackItems;
+
+    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
+    // asynchronously, so scoring must happen lazily when GetItems is called.
+    private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -164,7 +167,7 @@ public partial class MainListPage : DynamicListPage,
                 ? _tlcManager.TopLevelCommands.Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title)).ToArray()
                 : MainListPageResultFactory.Create(
                     _filteredItems,
-                    _scoredFallbackItems,
+                    _scoredFallbackItems?.ToList(),
                     _filteredApps,
                     _fallbackItems,
                     _appResultLimit);
@@ -384,7 +387,7 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            _scoredFallbackItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem)];
+            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
 
             if (token.IsCancellationRequested)
             {
