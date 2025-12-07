@@ -30,6 +30,8 @@ public sealed partial class SettingsWindow : WindowEx,
 {
     private readonly LocalKeyboardListener _localKeyboardListener;
 
+    private readonly NavigationViewItem? _internalNavItem;
+
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
@@ -56,12 +58,13 @@ public sealed partial class SettingsWindow : WindowEx,
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
 
         #if DEBUG
-        NavView.MenuItems.Add(new NavigationViewItem
+        _internalNavItem = new NavigationViewItem
         {
             Content = "Internal Tools",
             Icon = new FontIcon { Glyph = "\uEC7A" },
             Tag = "Internal",
-        });
+        };
+        NavView.MenuItems.Add(_internalNavItem);
         #endif
     }
 
@@ -270,6 +273,12 @@ public sealed partial class SettingsWindow : WindowEx,
             var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
             BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
             BreadCrumbs.Add(new(vm.DisplayName, vm));
+        }
+        else if (e.SourcePageType == typeof(InternalPage))
+        {
+            NavView.SelectedItem = _internalNavItem;
+            var pageType = "Internal";
+            BreadCrumbs.Add(new(pageType, pageType));
         }
         else
         {
