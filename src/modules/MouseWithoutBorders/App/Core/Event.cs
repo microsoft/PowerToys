@@ -70,7 +70,7 @@ internal static class Event
             // Check if easy mouse setting is enabled.
             bool isEasyMouseEnabled = IsSwitchingByMouseEnabled();
 
-            if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
+            if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == WM.WM_MOUSEMOVE)
             {
                 Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
 
@@ -115,7 +115,7 @@ internal static class Event
 
                 Common.SkSend(MousePackage, null, false);
 
-                if (MousePackage.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
+                if (MousePackage.Md.dwFlags is WM.WM_LBUTTONUP or WM.WM_RBUTTONUP)
                 {
                     Thread.Sleep(10);
                 }
@@ -265,7 +265,7 @@ internal static class Event
                 KeybdPackage.Kd = e;
                 KeybdPackage.DateTime = Common.GetTick();
                 Common.SkSend(KeybdPackage, null, false);
-                if (KeybdPackage.Kd.dwFlags is Common.WM_KEYUP or Common.WM_SYSKEYUP)
+                if (KeybdPackage.Kd.dwFlags is WM.WM_KEYUP or WM.WM_SYSKEYUP)
                 {
                     Thread.Sleep(10);
                 }

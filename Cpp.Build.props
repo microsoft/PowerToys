@@ -26,6 +26,7 @@
   <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>$(MsbuildThisFileDirectory)\CppRuleSet.ruleset</CodeAnalysisRuleSet>
+    <CAExcludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(CAExcludePath)</CAExcludePath>
   </PropertyGroup>
 
   <!-- C++ source compile-specific things for all configurations -->
@@ -34,7 +35,7 @@
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
     <VcpkgEnabled>false</VcpkgEnabled>
     <ReplaceWildcardsInProjectItems>true</ReplaceWildcardsInProjectItems>
-    <ExternalIncludePath>$(MSBuildThisFileFullPath)\..\deps\;$(MSBuildThisFileFullPath)\..\packages\;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(ExternalIncludePath)</ExternalIncludePath>
     <!-- Enable control flow guard for C++ projects that don't consume any C++ files -->
     <!-- This covers the case where a .dll exports a .lib, but doesn't have any ClCompile entries. -->
     <LinkControlFlowGuard>Guard</LinkControlFlowGuard>

@@ -95,6 +95,7 @@ OTP
 Yubi
 Yubico
 Perplexity
+Groq
 svgl
 
 # KEYS
@@ -321,3 +322,16 @@ REGSTR
 
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
+
+# PowerRename metadata pattern abbreviations (used in tests and regex patterns)
+DDDD
+FFF
+HHH
+riday
+YYY
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug

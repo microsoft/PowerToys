@@ -36,31 +36,34 @@
   </Capabilities>
 
   <Applications>
-    <Application Id="PowerToys.OCR" Executable="PowerToys.PowerOCR.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.OCR" Executable="PowerToys.PowerOCR.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.OCR"
         Description="PowerToys OCR Module"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.SettingsUI" Executable="PowerToys.Settings.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.SettingsUI" Executable="WinUI3Apps\PowerToys.Settings.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.SettingsUI"
         Description="PowerToys Settings UI"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+    <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.ImageResizer"
         Description="PowerToys Image Resizer UI"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
-        Square44x44Logo="Images\Square44x44Logo.png">
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
       </uap:VisualElements>
     </Application>
   </Applications>

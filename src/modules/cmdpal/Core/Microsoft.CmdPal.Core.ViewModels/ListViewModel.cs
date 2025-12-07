@@ -24,8 +24,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
-    [ObservableProperty]
-    public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
+    public ObservableCollection<ListItemViewModel> FilteredItems { get; } = [];
 
     public FiltersViewModel? Filters { get; set; }
 
@@ -95,6 +94,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
+    }
+
+    private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FiltersViewModel.Filters))
+        {
+            var filtersViewModel = sender as FiltersViewModel;
+            var hasFilters = filtersViewModel?.Filters.Length > 0;
+            HasFilters = hasFilters;
+            UpdateProperty(nameof(HasFilters));
+        }
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -213,6 +223,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
+            var showsTitle = GridProperties?.ShowTitle ?? true;
+            var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
             foreach (var item in newItems)
             {
                 // Check for cancellation during item processing
@@ -226,6 +238,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
                 {
+                    viewModel.LayoutShowsTitle = showsTitle;
+                    viewModel.LayoutShowsSubtitle = showsSubtitle;
                     newViewModels.Add(viewModel);
                 }
             }
@@ -572,6 +586,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
         GridProperties?.InitializeProperties();
         UpdateProperty(nameof(GridProperties));
+        ApplyLayoutToItems();
 
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
@@ -586,30 +601,26 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
+        Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters = new(new(model.Filters), PageContext);
-        Filters.InitializeProperties();
+        Filters?.PropertyChanged += FiltersPropertyChanged;
+
+        Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
     }
 
-    private IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
+    private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
     {
-        if (gridProperties is IMediumGridLayout mediumGridLayout)
+        return gridProperties switch
         {
-            return new MediumGridPropertiesViewModel(mediumGridLayout);
-        }
-        else if (gridProperties is IGalleryGridLayout galleryGridLayout)
-        {
-            return new GalleryGridPropertiesViewModel(galleryGridLayout);
-        }
-        else if (gridProperties is ISmallGridLayout smallGridLayout)
-        {
-            return new SmallGridPropertiesViewModel(smallGridLayout);
-        }
-
-        return null;
+            IMediumGridLayout mediumGridLayout => new MediumGridPropertiesViewModel(mediumGridLayout),
+            IGalleryGridLayout galleryGridLayout => new GalleryGridPropertiesViewModel(galleryGridLayout),
+            ISmallGridLayout smallGridLayout => new SmallGridPropertiesViewModel(smallGridLayout),
+            _ => null,
+        };
     }
 
     public void LoadMoreIfNeeded()
@@ -671,6 +682,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
                 GridProperties?.InitializeProperties();
                 UpdateProperty(nameof(IsGridView));
+                ApplyLayoutToItems();
                 break;
             case nameof(ShowDetails):
                 ShowDetails = model.ShowDetails;
@@ -686,8 +698,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(Filters):
+                Filters?.PropertyChanged -= FiltersPropertyChanged;
                 Filters = new(new(model.Filters), PageContext);
-                Filters.InitializeProperties();
+                Filters?.PropertyChanged += FiltersPropertyChanged;
+                Filters?.InitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -712,6 +726,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
            });
+    }
+
+    private void ApplyLayoutToItems()
+    {
+        lock (_listLock)
+        {
+            var showsTitle = GridProperties?.ShowTitle ?? true;
+            var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+
+            foreach (var item in Items)
+            {
+                item.LayoutShowsTitle = showsTitle;
+                item.LayoutShowsSubtitle = showsSubtitle;
+            }
+        }
     }
 
     public void Dispose()
@@ -757,6 +786,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             FilteredItems.Clear();
         }
 
+        Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters?.SafeCleanup();
 
         var model = _model.Unsafe;

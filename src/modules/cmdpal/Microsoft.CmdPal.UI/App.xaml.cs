@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
+using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.Ext.TimeDate;
@@ -40,6 +41,8 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public partial class App : Application
 {
+    private readonly GlobalErrorHandler _globalErrorHandler = new();
+
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
@@ -61,6 +64,10 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+#if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
+        _globalErrorHandler.Register(this);
+#endif
+
         Services = ConfigureServices();
 
         this.InitializeComponent();
@@ -128,8 +135,9 @@ public partial class App : Application
         try
         {
             var winget = new WinGetExtensionCommandsProvider();
-            var callback = allApps.LookupApp;
-            winget.SetAllLookup(callback);
+            winget.SetAllLookup(
+                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
             services.AddSingleton<ICommandProvider>(winget);
         }
         catch (Exception ex)
@@ -145,6 +153,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+        services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();

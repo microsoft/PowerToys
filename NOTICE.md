@@ -1526,10 +1526,10 @@ SOFTWARE.
 - AdaptiveCards.Rendering.WinUI3
 - AdaptiveCards.Templating
 - Appium.WebDriver
-- Azure.AI.OpenAI
 - CoenM.ImageSharp.ImageHash
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
+- CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView
 - CommunityToolkit.Mvvm
 - CommunityToolkit.WinUI.Animations
 - CommunityToolkit.WinUI.Collections

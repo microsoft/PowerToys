@@ -253,7 +253,7 @@ _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 # hit-count: 1 file-count: 1
 # Amazon
-\bamazon\.com/[-\w]+/(?:dp/[0-9A-Z]+|)[^"'\s]+
+\bamazon\.com/[-\w]+/(?:dp/[0-9A-Z]+|)
 
 # hit-count: 3 file-count: 3
 # imgur

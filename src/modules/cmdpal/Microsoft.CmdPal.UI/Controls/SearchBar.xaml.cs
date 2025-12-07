@@ -7,8 +7,10 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -48,6 +50,8 @@ public sealed partial class SearchBar : UserControl,
 
     // 0.6+ suggestions
     private string? _textToSuggest;
+
+    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -131,20 +135,39 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            if (string.IsNullOrEmpty(FilterBox.Text))
+            switch (Settings.EscapeKeyBehaviorSetting)
             {
-                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-            }
-            else
-            {
-                // Clear the search box
-                FilterBox.Text = string.Empty;
+                case EscapeKeyBehavior.AlwaysGoBack:
+                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    break;
 
-                // hack TODO GH #245
-                if (CurrentPageViewModel is not null)
-                {
-                    CurrentPageViewModel.SearchTextBox = FilterBox.Text;
-                }
+                case EscapeKeyBehavior.AlwaysDismiss:
+                    WeakReferenceMessenger.Default.Send<DismissMessage>(new(ForceGoHome: true));
+                    break;
+
+                case EscapeKeyBehavior.AlwaysHide:
+                    WeakReferenceMessenger.Default.Send<HideWindowMessage>(new());
+                    break;
+
+                case EscapeKeyBehavior.ClearSearchFirstThenGoBack:
+                default:
+                    if (string.IsNullOrEmpty(FilterBox.Text))
+                    {
+                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    }
+                    else
+                    {
+                        // Clear the search box
+                        FilterBox.Text = string.Empty;
+
+                        // hack TODO GH #245
+                        if (CurrentPageViewModel is not null)
+                        {
+                            CurrentPageViewModel.SearchTextBox = FilterBox.Text;
+                        }
+                    }
+
+                    break;
             }
 
             e.Handled = true;
@@ -214,6 +237,16 @@ public sealed partial class SearchBar : UserControl,
         {
             WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageUp)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
             e.Handled = true;
         }
 
