@@ -5543,4 +5543,15 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ScreencastMode_TextColor.Description" xml:space="preserve">
     <value>Customize the text color of the keystrokes</value>
   </data>
+  <data name="ScreencastMode_TextSize.Header" xml:space="preserve">
+    <value>Text size</value>
+    <comment>Change the size of the text inside the screencast mode overlay</comment>
+  </data>
+  <data name="ScreencastMode_TextSize.Description" xml:space="preserve">
+    <value>Customize the size of the keystroke text</value>
+  </data>
+  <data name="ScreencastMode_Preview.Header" xml:space="preserve">
+    <value>Preview</value>
+    <comment>Shows a preview of what the overlay will look like based on selected settings</comment>
+  </data>
 </root>
