@@ -222,6 +222,7 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
+CLITo
 closesocket
 clp
 CLSCTX
@@ -730,9 +731,9 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
+icf
 IDCANCEL
 IDD
 idk
@@ -775,6 +776,7 @@ INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
+Inno
 INPC
 inproc
 INPUTHARDWARE
@@ -1074,6 +1076,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1850,6 +1853,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter

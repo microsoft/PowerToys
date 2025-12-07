@@ -62,6 +62,8 @@ public partial class SettingsModel : ObservableObject
 
     public TimeSpan AutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
 
+    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; set; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+
     public UserTheme Theme { get; set; } = UserTheme.Default;
 
     public ColorizationMode ColorizationMode { get; set; }
@@ -301,4 +303,12 @@ public enum MonitorBehavior
     ToFocusedWindow = 2,
     InPlace = 3,
     ToLast = 4,
+}
+
+public enum EscapeKeyBehavior
+{
+    ClearSearchFirstThenGoBack = 0,
+    AlwaysGoBack = 1,
+    AlwaysDismiss = 2,
+    AlwaysHide = 3,
 }

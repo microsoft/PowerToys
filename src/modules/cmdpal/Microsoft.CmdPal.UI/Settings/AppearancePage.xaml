@@ -195,6 +195,15 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EscapeKeyBehaviorIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
