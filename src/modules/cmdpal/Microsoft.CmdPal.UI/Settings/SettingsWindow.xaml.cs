@@ -57,15 +57,20 @@ public sealed partial class SettingsWindow : WindowEx,
         Closed += SettingsWindow_Closed;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
 
-#if DEBUG
-        _internalNavItem = new NavigationViewItem
+        if (!BuildInfo.IsCiBuild)
         {
-            Content = "Internal Tools",
-            Icon = new FontIcon { Glyph = "\uEC7A" },
-            Tag = "Internal",
-        };
-        NavView.MenuItems.Add(_internalNavItem);
-#endif
+            _internalNavItem = new NavigationViewItem
+            {
+                Content = "Internal Tools",
+                Icon = new FontIcon { Glyph = "\uEC7A" },
+                Tag = "Internal",
+            };
+            NavView.MenuItems.Add(_internalNavItem);
+        }
+        else
+        {
+            _internalNavItem = null;
+        }
 
         Navigate("General");
     }
@@ -273,7 +278,7 @@ public sealed partial class SettingsWindow : WindowEx,
             BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
             BreadCrumbs.Add(new(vm.DisplayName, vm));
         }
-        else if (e.SourcePageType == typeof(InternalPage))
+        else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
             NavView.SelectedItem = _internalNavItem;
             var pageType = "Internal";
