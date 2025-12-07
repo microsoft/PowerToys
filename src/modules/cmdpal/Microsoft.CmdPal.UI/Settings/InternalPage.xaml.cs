@@ -2,13 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using ManagedCommon;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
+using Windows.System;
+using Page = Microsoft.UI.Xaml.Controls.Page;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -44,23 +42,14 @@ public sealed partial class InternalPage : Page
         throw new InvalidOperationException(SampleData.ExceptionMessageWithPii);
     }
 
-    private void OpenLogsCardClicked(object sender, RoutedEventArgs e)
+    private async void OpenLogsCardClicked(object sender, RoutedEventArgs e)
     {
         try
         {
-            var logDirPath = Logger.CurrentVersionLogDirectoryPath;
-            if (!string.IsNullOrWhiteSpace(logDirPath) && Directory.Exists(logDirPath))
+            var logFolderPath = Logger.CurrentVersionLogDirectoryPath;
+            if (Directory.Exists(logFolderPath))
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = logDirPath,
-                    UseShellExecute = true,
-                });
-            }
-            else
-            {
-                PInvoke.MessageBox(HWND.Null, $"Can't find the log directory: {logDirPath}", "Error", MESSAGEBOX_STYLE.MB_OK);
+                await Launcher.LaunchFolderPathAsync(logFolderPath);
             }
         }
         catch (Exception ex)
@@ -69,27 +58,35 @@ public sealed partial class InternalPage : Page
         }
     }
 
-    private void OpenCurrentLogCardClicked(object sender, RoutedEventArgs e)
+    private async void OpenCurrentLogCardClicked(object sender, RoutedEventArgs e)
     {
         try
         {
-            var logFile = Logger.CurrentLogFile;
-            if (!File.Exists(logFile))
+            var logPath = Logger.CurrentLogFile;
+            if (File.Exists(logPath))
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = logFile,
-                    UseShellExecute = true,
-                });
-            }
-            else
-            {
-                PInvoke.MessageBox(HWND.Null, $"Can't find the log file: {logFile}", "Error", MESSAGEBOX_STYLE.MB_OK);
+                await Launcher.LaunchUriAsync(new Uri(logPath));
             }
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to open log file", ex);
+        }
+    }
+
+    private async void OpenConfigFolderCardClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+            if (Directory.Exists(directory))
+            {
+                await Launcher.LaunchFolderPathAsync(directory);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open directory in Explorer", ex);
         }
     }
 }

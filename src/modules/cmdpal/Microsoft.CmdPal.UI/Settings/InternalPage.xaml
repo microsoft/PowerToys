@@ -21,7 +21,7 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="Tools on this page are for internal use only. This page is not visible in Release builds." />
+                    <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="Tools on this page are for internal use only. This page is not visible in CI builds." />
 
                     <!--  Exception Handling Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Exception Handling" />
@@ -46,16 +46,25 @@
                     <!--  Diagnostics Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Diagnostics" />
                     <controls:SettingsCard
-                        Description="Opens the folder with Command Palette logs"
-                        Header="Open logs folder"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}">
+                        x:Name="LogsSettingsCard"
+                        Header="Logs folder"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
                         <Button Click="OpenLogsCardClicked" Content="Open folder" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
-                        Description="Opens the current log file"
-                        Header="Open log"
+                        x:Name="CurrentLogFileSettingsCard"
+                        Header="Current log file"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}">
                         <Button Click="OpenCurrentLogCardClicked" Content="Open log" />
+                    </controls:SettingsCard>
+
+                    <!--  Data Section  -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Data and Files" />
+                    <controls:SettingsCard
+                        x:Name="ConfigurationFolderSettingsCard"
+                        Header="Configuration folder"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF73D;}">
+                        <Button Click="OpenConfigFolderCardClick" Content="Open folder" />
                     </controls:SettingsCard>
 
 
