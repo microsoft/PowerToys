@@ -129,7 +129,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SelectedLanguageOptions = Array.Empty<PowerAccentLanguageModel>();
             }
 
-            _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
+            var positionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);
+            _toolbarPositionIndex = positionIndex >= 0 ? positionIndex : 0; // Default to "Top center" if not found
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;

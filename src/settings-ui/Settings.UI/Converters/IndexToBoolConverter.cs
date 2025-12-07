@@ -44,4 +44,3 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         }
     }
 }
-
