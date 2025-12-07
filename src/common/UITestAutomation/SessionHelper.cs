@@ -177,6 +177,8 @@ namespace Microsoft.PowerToys.UITest
             {
                 try
                 {
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Attempt {tryCount}/{maxTries}");
+
                     var runnerProcessInfo = new ProcessStartInfo
                     {
                         FileName = locationPath + runnerPath,
@@ -184,34 +186,53 @@ namespace Microsoft.PowerToys.UITest
                         Arguments = "--open-settings",
                     };
 
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Killing existing runner process: {runnerProcessInfo.FileName}");
                     ExitExe(runnerProcessInfo.FileName);
-                    runner = Process.Start(runnerProcessInfo);
 
+                    // Verify process was killed
+                    string exeName = Path.GetFileNameWithoutExtension(runnerProcessInfo.FileName);
+                    var remainingProcesses = Process.GetProcessesByName(exeName);
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] After ExitExe, remaining '{exeName}' processes: {remainingProcesses.Length}");
+
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Starting runner process: {runnerProcessInfo.FileName} {runnerProcessInfo.Arguments}");
+                    runner = Process.Start(runnerProcessInfo);
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Process.Start returned: {(runner != null ? $"PID={runner.Id}" : "null")}");
+
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Waiting for 'PowerToys Settings' window...");
                     if (WaitForWindowAndSetCapability(opts, "PowerToys Settings", delayMs, maxRetries))
                     {
+                        Debug.WriteLine($"[TryLaunchPowerToysSettings] Window found successfully on attempt {tryCount}");
+
                         // Exit CmdPal UI before launching new process if use installer for test
                         ExitExeByName("Microsoft.CmdPal.UI");
                         return;
                     }
 
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Window not found on attempt {tryCount}");
+
                     // Window not found, kill all PowerToys processes and retry
                     if (tryCount < maxTries)
                     {
+                        Debug.WriteLine($"[TryLaunchPowerToysSettings] Killing all PowerToys processes before retry...");
                         KillPowerToysProcesses();
                     }
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Exception on attempt {tryCount}: {ex.Message}");
+
                     if (tryCount == maxTries)
                     {
                         throw new InvalidOperationException($"Failed to launch PowerToys Settings after {maxTries} attempts: {ex.Message}", ex);
                     }
 
                     // Kill processes and retry
+                    Debug.WriteLine($"[TryLaunchPowerToysSettings] Killing all PowerToys processes after exception...");
                     KillPowerToysProcesses();
                 }
             }
 
+            Debug.WriteLine($"[TryLaunchPowerToysSettings] All {maxTries} attempts failed");
             throw new InvalidOperationException($"Failed to launch PowerToys Settings: Window not found after {maxTries} attempts.");
         }
 
@@ -356,21 +377,34 @@ namespace Microsoft.PowerToys.UITest
         {
             var powerToysProcessNames = new[] { "PowerToys", "Microsoft.CmdPal.UI" };
 
+            Debug.WriteLine($"[KillPowerToysProcesses] Starting to kill PowerToys-related processes...");
+
             foreach (var processName in powerToysProcessNames)
             {
                 try
                 {
-                    foreach (var process in Process.GetProcessesByName(processName))
+                    var processes = Process.GetProcessesByName(processName);
+                    Debug.WriteLine($"[KillPowerToysProcesses] Found {processes.Length} process(es) with name '{processName}'");
+
+                    foreach (var process in processes)
                     {
+                        Debug.WriteLine($"[KillPowerToysProcesses] Killing process '{processName}' (PID: {process.Id})...");
                         process.Kill();
                         process.WaitForExit();
+                        Debug.WriteLine($"[KillPowerToysProcesses] Process '{processName}' (PID: {process.Id}) killed and exited");
                     }
+
+                    // Verify processes are actually gone
+                    var remainingProcesses = Process.GetProcessesByName(processName);
+                    Debug.WriteLine($"[KillPowerToysProcesses] After killing, remaining '{processName}' processes: {remainingProcesses.Length}");
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to kill process {processName}: {ex.Message}");
+                    Debug.WriteLine($"[KillPowerToysProcesses] Failed to kill process {processName}: {ex.Message}");
                 }
             }
+
+            Debug.WriteLine($"[KillPowerToysProcesses] Finished killing processes");
         }
     }
 }
