@@ -43,9 +43,11 @@ namespace KeystrokeOverlayUI
         [ObservableProperty]
         private bool _isActive = true;
 
-        // 2. The Shortcut: Loaded from your settings JSON
         public HotkeySettings ActivationShortcut { get; set; }
-            = new HotkeySettings(true, false, false, true, 0x4B); // Default: Win + Shift + K
+            = new HotkeySettings(true, false, false, true, 0x4B);
+
+        public HotkeySettings SwitchMonitorHotkey { get; set; }
+            = new HotkeySettings(true, true, false, false, 0x4B);
 
         public void ApplySettings(ModuleProperties props)
         {
@@ -59,6 +61,7 @@ namespace KeystrokeOverlayUI
             DisplayMode = props.DisplayMode.Value;
 
             ActivationShortcut = props.ActivationShortcut;
+            SwitchMonitorHotkey = props.SwitchMonitorHotkey;
         }
 
         private SolidColorBrush GetBrushFromHex(string hex)
@@ -107,12 +110,10 @@ namespace KeystrokeOverlayUI
             {
                 IsActive = !IsActive;
 
-                // Optional: Show a temporary status message
                 RegisterKey(IsActive ? "Overlay On" : "Overlay Off", durationMs: 1000);
-                return; // Don't show the shortcut key itself
+                return;
             }
 
-            // B. The Gatekeeper
             // If the overlay is "OFF", stop here.
             if (!IsActive)
             {
@@ -161,14 +162,13 @@ namespace KeystrokeOverlayUI
                 return false;
             }
 
-            // 1. Compare the Main Key Code
+            // Compare the Main Key Code
             if (kEvent.VirtualKey != settings.Code)
             {
                 return false;
             }
 
-            // 2. Compare Modifiers
-            // We need to check if the event modifiers match the settings booleans EXACTLY.
+            // Compare Modifiers
             bool hasWin = kEvent.Modifiers?.Contains("Win") ?? false;
             bool hasCtrl = kEvent.Modifiers?.Contains("Ctrl") ?? false;
             bool hasAlt = kEvent.Modifiers?.Contains("Alt") ?? false;
