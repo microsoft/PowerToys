@@ -171,7 +171,7 @@ namespace Microsoft.PowerToys.UITest
         {
             const int maxTries = 3;
             const int delayMs = 5000;
-            const int maxRetries = 2;
+            const int maxRetries = 3;
 
             for (int tryCount = 1; tryCount <= maxTries; tryCount++)
             {
