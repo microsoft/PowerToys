@@ -24,10 +24,16 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="KeystrokeOverlay_Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
                     <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_SwitchMonitorHotkey" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SwitchMonitorHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="KeystrokeOverlay_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_DraggableOverlay" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsDraggableOverlayEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
@@ -39,7 +45,7 @@
                             <ComboBoxItem x:Uid="Radio_KeystrokeOverlay_DisplayMode_ShortcutsOnly" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                   
+
                     <tkcontrols:SettingsCard x:Uid="KeystrokeOverlay_OverlayTimeout" HeaderIcon="{ui:FontIcon Glyph=&#xE823;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"

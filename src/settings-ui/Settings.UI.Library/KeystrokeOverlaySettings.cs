@@ -51,6 +51,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.SwitchMonitorHotkey,
                     value => Properties.SwitchMonitorHotkey = value ?? Properties.DefaultSwitchMonitorHotkey,
                     "SwitchMonitor_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.ActivationShortcut,
+                    value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
+                    "Activation_Shortcut"),
             };
 
             return hotkeyAccessors.ToArray();

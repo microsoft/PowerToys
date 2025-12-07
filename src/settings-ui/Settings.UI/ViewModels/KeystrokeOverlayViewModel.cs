@@ -60,7 +60,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [SwitchMonitorHotkey],
+                [ModuleName] = new[] { SwitchMonitorHotkey },
+                [ModuleName + "_Activation"] = new[] { ActivationShortcut },
             };
 
             return hotkeysDict;
@@ -88,6 +89,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public bool IsEnabledGpoConfigured => _enabledStateIsGPOConfigured;
+
+        public HotkeySettings ActivationShortcut
+        {
+            get => _settings.Properties.ActivationShortcut;
+            set
+            {
+                if (_settings.Properties.ActivationShortcut != value)
+                {
+                    _settings.Properties.ActivationShortcut = value ?? _settings.Properties.ActivationShortcut;
+                    NotifySettingsChanged();
+                }
+            }
+        }
 
         public HotkeySettings SwitchMonitorHotkey
         {

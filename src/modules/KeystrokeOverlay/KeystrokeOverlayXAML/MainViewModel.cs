@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
@@ -39,6 +40,13 @@ namespace KeystrokeOverlayUI
         [ObservableProperty]
         private int _displayMode = 0;
 
+        [ObservableProperty]
+        private bool _isActive = true;
+
+        // 2. The Shortcut: Loaded from your settings JSON
+        public HotkeySettings ActivationShortcut { get; set; }
+            = new HotkeySettings(true, false, false, true, 0x4B); // Default: Win + Shift + K
+
         public void ApplySettings(ModuleProperties props)
         {
             TimeoutMs = props.OverlayTimeout.Value;
@@ -49,6 +57,8 @@ namespace KeystrokeOverlayUI
 
             IsDraggable = props.IsDraggable.Value;
             DisplayMode = props.DisplayMode.Value;
+
+            ActivationShortcut = props.ActivationShortcut;
         }
 
         private SolidColorBrush GetBrushFromHex(string hex)
@@ -92,6 +102,23 @@ namespace KeystrokeOverlayUI
 
         public void HandleKeystrokeEvent(KeystrokeEvent keystroke)
         {
+            bool isDown = string.Equals(keystroke.EventType, "down", StringComparison.OrdinalIgnoreCase);
+            if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, ActivationShortcut))
+            {
+                IsActive = !IsActive;
+
+                // Optional: Show a temporary status message
+                RegisterKey(IsActive ? "Overlay On" : "Overlay Off", durationMs: 1000);
+                return; // Don't show the shortcut key itself
+            }
+
+            // B. The Gatekeeper
+            // If the overlay is "OFF", stop here.
+            if (!IsActive)
+            {
+                return;
+            }
+
             string formattedText = keystroke.ToString();
 
             if (string.IsNullOrEmpty(formattedText))
@@ -125,6 +152,32 @@ namespace KeystrokeOverlayUI
             }
 
             RegisterKey(formattedText);
+        }
+
+        private bool IsHotkeyMatch(KeystrokeEvent kEvent, HotkeySettings settings)
+        {
+            if (settings == null || !settings.IsValid())
+            {
+                return false;
+            }
+
+            // 1. Compare the Main Key Code
+            if (kEvent.VirtualKey != settings.Code)
+            {
+                return false;
+            }
+
+            // 2. Compare Modifiers
+            // We need to check if the event modifiers match the settings booleans EXACTLY.
+            bool hasWin = kEvent.Modifiers?.Contains("Win") ?? false;
+            bool hasCtrl = kEvent.Modifiers?.Contains("Ctrl") ?? false;
+            bool hasAlt = kEvent.Modifiers?.Contains("Alt") ?? false;
+            bool hasShift = kEvent.Modifiers?.Contains("Shift") ?? false;
+
+            return hasWin == settings.Win &&
+                   hasCtrl == settings.Ctrl &&
+                   hasAlt == settings.Alt &&
+                   hasShift == settings.Shift;
         }
 
         // ---------------------------

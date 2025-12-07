@@ -2695,9 +2695,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_MouseUtils_MouseHighlighter_Description.Text" xml:space="preserve">
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
-  </data>	
-
-  <!-- CursorWrap Module -->
+  </data>
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
     <value>Enable CursorWrap</value>
   </data>
@@ -2707,8 +2705,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
-	
-  <!-- Activation Shortcut -->
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
@@ -2718,19 +2714,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
     <value>Set shortcut</value>
   </data>
-	
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
-  </data>	
-
-  <!-- Auto-activate -->
+  </data>
   <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
     <value>Auto-activate on startup</value>
   </data>
   <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
     <value>Automatically activate on utility startup</value>
-  </data>	
-	
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -5582,7 +5574,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ShortcutConflictControl_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut conflicts</value>
-  </data>	
+  </data>
   <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
     <value>No conflicts found</value>
   </data>
@@ -5652,6 +5644,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="KeystrokeOverlay_SwitchMonitor" xml:space="preserve">
     <value>Switch Monitor Shortcut</value>
   </data>
+  <data name="KeystrokeOverlay_Activation" xml:space="preserve">
+    <value>Activation Shortcut</value>
+  </data>
   <data name="KeystrokeOverlay_Enable.Header" xml:space="preserve">
     <value>Enable Keystroke Overlay</value>
   </data>
@@ -5701,7 +5696,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Appearance</value>
   </data>
   <data name="KeystrokeOverlay_Shortcut.Header" xml:space="preserve">
-    <value>Shortcut Specifics</value>
+    <value>Shortcuts</value>
   </data>
   <data name="KeystrokeOverlay.ModuleTitle" xml:space="preserve">
     <value>Keystroke Overlay</value>
@@ -5711,6 +5706,15 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="KeystrokeOverlay_Appearance.Description" xml:space="preserve">
     <value>This is a preview of how the overlay will look like on your screen.</value>
+  </data>
+  <data name="KeystrokeOverlay_Behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="KeystrokeOverlay_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation Shortcut</value>
+  </data>
+  <data name="KeystrokeOverlay_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to activate this module</value>
   </data>
   <data name="Shell_KeystrokeOverlay.Content" xml:space="preserve">
     <value>Keystroke Overlay</value>

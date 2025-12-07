@@ -12,10 +12,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class KeystrokeOverlayProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultSwitchMonitorHotkey => new HotkeySettings(true, false, false, true, 0xBF);
+        public HotkeySettings DefaultSwitchMonitorHotkey => new HotkeySettings(true, true, false, false, 0x4B);
+
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x4B);
 
         [JsonPropertyName("enable_keystrokeoverlay")]
         public BoolProperty IsEnabled { get; set; }
+
+        [JsonPropertyName("activation_shortcut")]
+        public HotkeySettings ActivationShortcut { get; set; }
 
         [JsonPropertyName("switch_monitor_hotkey")]
         public HotkeySettings SwitchMonitorHotkey { get; set; }
@@ -42,6 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             IsEnabled = new BoolProperty(true);
             SwitchMonitorHotkey = DefaultSwitchMonitorHotkey;
+            ActivationShortcut = DefaultActivationShortcut;
             IsDraggableOverlayEnabled = new BoolProperty(true);
             DisplayMode = new IntProperty(0);
             OverlayTimeout = new IntProperty(3000);
