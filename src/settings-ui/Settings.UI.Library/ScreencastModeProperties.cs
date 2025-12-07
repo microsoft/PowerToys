@@ -25,12 +25,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("background_color")]
         public StringProperty BackgroundColor { get; set; }
 
+        [JsonPropertyName("text_size")]
+        public IntProperty TextSize { get; set; }
+
         public ScreencastModeProperties()
         {
             ScreencastModeShortcut = new HotkeySettings(true, false, true, false, 83); // Win + Alt + S
             DisplayPosition = new StringProperty("TopRight");
             TextColor = new StringProperty("#FFFFFF");
             BackgroundColor = new StringProperty("#000000");
+            TextSize = new IntProperty(18); // Default font size
         }
     }
 }

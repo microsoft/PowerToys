@@ -118,6 +118,21 @@ public partial class ScreencastModeViewModel : Observable
         }
     }
 
+    public int TextSize
+    {
+        get => this.screencastModeSettings.Properties.TextSize.Value;
+        set
+        {
+            if (this.screencastModeSettings.Properties.TextSize.Value != value)
+            {
+                this.screencastModeSettings.Properties.TextSize.Value = value;
+                OnPropertyChanged(nameof(this.TextSize));
+
+                this.SaveAndNotifySettings();
+            }
+        }
+    }
+
     public void RefreshEnabledState()
     {
         OnPropertyChanged(nameof(this.IsEnabled));
