@@ -155,24 +155,6 @@ namespace ScreencastModeUI.Keyboard
         }
 
         /// <summary>
-        /// Gets the display order priority for modifier keys.
-        /// Lower values appear first in the shortcut display.
-        /// </summary>
-        /// <param name="key">The modifier key.</param>
-        /// <returns>An integer representing the display order (0 = highest priority).</returns>
-        public static int GetModifierOrder(VirtualKey key)
-        {
-            return key switch
-            {
-                VirtualKey.LeftWindows => 0,
-                VirtualKey.Control => 1,
-                VirtualKey.Menu => 2,
-                VirtualKey.Shift => 3,
-                _ => 4,
-            };
-        }
-
-        /// <summary>
         /// Gets the key name from LayoutMap with shortened verbose names for better screen display.
         /// </summary>
         /// <param name="key">The virtual key to look up.</param>
