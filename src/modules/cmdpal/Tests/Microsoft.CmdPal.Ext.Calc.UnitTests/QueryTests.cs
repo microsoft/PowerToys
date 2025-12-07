@@ -83,4 +83,39 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         Assert.IsTrue(result.Title.Contains(expected, System.StringComparison.Ordinal), $"Calc trigMode convert result isn't correct. Current result: {result.Title}");
     }
+
+    [DataTestMethod]
+    [DataRow("2+2=", "4")]
+    [DataRow("5*3=", "15")]
+    [DataRow("10/2=", "5")]
+    public void ReplaceInputOnEqualsTest(string input, string expectedResult)
+    {
+        var settings = new Settings(replaceInputOnEquals: true);
+        var page = new CalculatorListPage(settings);
+
+        // Simulate query with trailing '='
+        page.UpdateSearchText(string.Empty, input);
+
+        // SearchText should be replaced with the result
+        Assert.AreEqual(expectedResult, page.SearchText);
+
+        // Result should also be displayed
+        var result = page.GetItems();
+        Assert.IsTrue(result.Length == 1);
+        Assert.AreEqual(expectedResult, result[0].Title);
+    }
+
+    [TestMethod]
+    public void ReplaceInputOnEquals_Disabled_DoesNotReplace()
+    {
+        var settings = new Settings(replaceInputOnEquals: false);
+        var page = new CalculatorListPage(settings);
+
+        // Simulate query with trailing '=' but feature disabled
+        page.UpdateSearchText(string.Empty, "2+2=");
+
+        // SearchText should NOT be replaced (still has the trailing '=')
+        // The feature strips '=' only when enabled
+        Assert.AreEqual("2+2=", page.SearchText);
+    }
 }

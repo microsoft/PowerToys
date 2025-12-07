@@ -31,5 +31,17 @@ public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IF
 
     public virtual string DisplayTitle { get; }
 
+    public virtual string TextToSuggest
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(TextToSuggest));
+        }
+    }
+
+= string.Empty;
+
     public virtual void UpdateQuery(string query) => _fallbackHandler?.UpdateQuery(query);
 }

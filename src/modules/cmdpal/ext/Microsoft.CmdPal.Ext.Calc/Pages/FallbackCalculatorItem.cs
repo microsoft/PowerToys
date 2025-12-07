@@ -26,7 +26,11 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        var result = QueryHelper.Query(query, _settings, true, null);
+        // Check if query ends with '=' and setting is enabled - strip trailing = for calculation
+        bool replaceInput = _settings.ReplaceInputOnEquals && query.EndsWith('=');
+        string queryToProcess = replaceInput ? query[..^1] : query;
+
+        var result = QueryHelper.Query(queryToProcess, _settings, true, null);
 
         if (result is null)
         {
@@ -34,6 +38,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
             _copyCommand.Name = string.Empty;
             Title = string.Empty;
             Subtitle = string.Empty;
+            TextToSuggest = string.Empty;
             MoreCommands = [];
             return;
         }
@@ -45,7 +50,10 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         // we have to make the subtitle into an equation,
         // so that we will still string match the original query
         // Otherwise, something like 1+2 will have a title of "3" and not match
-        Subtitle = query;
+        Subtitle = queryToProcess;
+
+        // If replace input is enabled, suggest the result to replace the query
+        TextToSuggest = replaceInput ? result.Title : string.Empty;
 
         MoreCommands = result.MoreCommands;
     }

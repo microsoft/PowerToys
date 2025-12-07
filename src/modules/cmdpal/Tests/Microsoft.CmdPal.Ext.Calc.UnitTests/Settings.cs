@@ -12,17 +12,20 @@ public class Settings : ISettingsInterface
     private readonly bool inputUseEnglishFormat;
     private readonly bool outputUseEnglishFormat;
     private readonly bool closeOnEnter;
+    private readonly bool replaceInputOnEquals;
 
     public Settings(
         CalculateEngine.TrigMode trigUnit = CalculateEngine.TrigMode.Radians,
         bool inputUseEnglishFormat = false,
         bool outputUseEnglishFormat = false,
-        bool closeOnEnter = true)
+        bool closeOnEnter = true,
+        bool replaceInputOnEquals = true)
     {
         this.trigUnit = trigUnit;
         this.inputUseEnglishFormat = inputUseEnglishFormat;
         this.outputUseEnglishFormat = outputUseEnglishFormat;
         this.closeOnEnter = closeOnEnter;
+        this.replaceInputOnEquals = replaceInputOnEquals;
     }
 
     public CalculateEngine.TrigMode TrigUnit => trigUnit;
@@ -32,4 +35,6 @@ public class Settings : ISettingsInterface
     public bool OutputUseEnglishFormat => outputUseEnglishFormat;
 
     public bool CloseOnEnter => closeOnEnter;
+
+    public bool ReplaceInputOnEquals => replaceInputOnEquals;
 }
