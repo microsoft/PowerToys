@@ -10,8 +10,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="Screencast Mode"
-    Width="400"
-    Height="60"
     MinWidth="200"
     MinHeight="40"
     IsShownInSwitchers="False">
@@ -37,7 +35,8 @@
                 x:Name="KeystrokeText"
                 FontSize="18"
                 FontWeight="SemiBold"
-                TextAlignment="Center" />
+                TextAlignment="Center"
+                TextWrapping="NoWrap" />
         </Border>
     </Grid>
 </winuiex:WindowEx>
