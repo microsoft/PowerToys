@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         /// <summary>
         /// Gets the default instance of the <see cref="SettingsUtils"/> class for general use.
-        /// Same as instantiating a new instance with the <see cref="SettingsUtils(IFileSystem?, JsonSerializerOptions?)"/> constructor with with a new <see cref="FileSystem"/> as first argument and <c>null</c> as second argument.
+        /// Same as instantiating a new instance with the <see cref="SettingsUtils(IFileSystem?, JsonSerializerOptions?)"/> constructor with a new <see cref="FileSystem"/> object as the first argument and <c>null</c> as the second argument.
         /// </summary>
         /// <remarks>For using in tests, you should use one of the public constructors.</remarks>
         public static SettingsUtils Default { get; } = new SettingsUtils();
