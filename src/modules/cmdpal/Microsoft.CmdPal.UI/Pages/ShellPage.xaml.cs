@@ -254,11 +254,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            OpenSettings();
+            OpenSettings(message.SettingsPageTag);
         });
     }
 
-    public void OpenSettings()
+    public void OpenSettings(string pageTag)
     {
         if (_settingsWindow is null)
         {
@@ -267,6 +267,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
+        _settingsWindow.Navigate(pageTag);
     }
 
     public void Receive(ShowDetailsMessage message)

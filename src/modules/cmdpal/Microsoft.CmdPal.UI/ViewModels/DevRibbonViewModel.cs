@@ -8,8 +8,10 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.UI;
 using Windows.System;
 using Windows.UI;
@@ -97,6 +99,12 @@ internal sealed partial class DevRibbonViewModel : ObservableObject
         WarningCount = 0;
         ErrorCount = 0;
         LatestLogs.Clear();
+    }
+
+    [RelayCommand]
+    private void OpenInternalTools()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Internal"));
     }
 
     private sealed partial class DevRibbonTraceListener(DevRibbonViewModel viewModel) : TraceListener
