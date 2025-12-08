@@ -449,7 +449,8 @@ namespace UITests_FancyZones
             int endY = startY + 100;
 
             Session.MoveMouseTo(startX, startY);
-            Session.PerformMouseAction(MouseActionType.LeftDoubleClick);
+
+            // Session.PerformMouseAction(MouseActionType.LeftDoubleClick);
             Session.PressKey(Key.Shift);
             Session.PerformMouseAction(MouseActionType.LeftDown);
             Session.MoveMouseTo(endX, endY);
