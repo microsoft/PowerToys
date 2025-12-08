@@ -1,9 +1,11 @@
 #pragma once
 
-class Trace
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-    static void EnableMouseScrollRemap(bool enabled) noexcept;
+    static void RegisterProvider();
+    static void UnregisterProvider();
+    static void EnableMouseScrollRemap(const bool enabled) noexcept;
 };

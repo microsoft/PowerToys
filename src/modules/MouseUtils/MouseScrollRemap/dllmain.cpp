@@ -181,13 +181,16 @@ private:
                 auto* pMouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
                 
                 // Check if Shift is pressed but Ctrl is NOT pressed
+                // Using GetAsyncKeyState is acceptable here as this hook is not on a critical path
+                // and only triggers when the user actively scrolls
                 bool shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
                 bool ctrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
                 
                 if (shiftPressed && !ctrlPressed)
                 {
-                    // Get the wheel delta from mouseData
-                    short wheelDelta = GET_WHEEL_DELTA_WPARAM(pMouseStruct->mouseData);
+                    // Extract the wheel delta correctly from the MSLLHOOKSTRUCT
+                    // mouseData is a DWORD, wheel delta is in the high word
+                    DWORD mouseData = pMouseStruct->mouseData;
                     
                     Logger::trace(L"MouseScrollRemap: Intercepted Shift+MouseWheel, converting to Shift+Ctrl+MouseWheel");
                     
@@ -201,11 +204,11 @@ private:
                     inputs[0].ki.wVk = VK_CONTROL;
                     inputs[0].ki.dwFlags = 0;
                     
-                    // Mouse wheel event
+                    // Mouse wheel event - preserve the original mouseData format
                     inputs[1].type = INPUT_MOUSE;
                     inputs[1].mi.dx = 0;
                     inputs[1].mi.dy = 0;
-                    inputs[1].mi.mouseData = wheelDelta;
+                    inputs[1].mi.mouseData = mouseData;
                     inputs[1].mi.dwFlags = MOUSEEVENTF_WHEEL;
                     inputs[1].mi.time = 0;
                     inputs[1].mi.dwExtraInfo = 0;
@@ -215,9 +218,17 @@ private:
                     inputs[2].ki.wVk = VK_CONTROL;
                     inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
                     
-                    SendInput(3, inputs, sizeof(INPUT));
+                    // Send the input and check for success
+                    UINT eventsSent = SendInput(3, inputs, sizeof(INPUT));
+                    if (eventsSent != 3)
+                    {
+                        // If SendInput failed, log the error and don't block the original event
+                        Logger::error(L"MouseScrollRemap: SendInput failed, sent {} of 3 events", eventsSent);
+                        // Don't block the event if injection failed
+                        return CallNextHookEx(nullptr, nCode, wParam, lParam);
+                    }
                     
-                    // Block the original Shift+MouseWheel event
+                    // Block the original Shift+MouseWheel event only if injection succeeded
                     return 1;
                 }
             }
