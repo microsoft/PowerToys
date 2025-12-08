@@ -35,6 +35,9 @@ const static wchar_t* MODULE_NAME = L"MouseScrollRemap";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"Remap Shift+MouseWheel to horizontal scrolling";
 
+// Signature to identify our own injected mouse events and prevent infinite loops
+constexpr ULONG_PTR INJECTED_EVENT_SIGNATURE = 0x123456;
+
 // Forward declaration
 class MouseScrollRemap;
 
@@ -181,7 +184,7 @@ private:
                 auto* pMouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
                 
                 // Check if this is our own injected event to prevent infinite loops
-                if (pMouseStruct != nullptr && pMouseStruct->dwExtraInfo == 0x123456)
+                if (pMouseStruct != nullptr && pMouseStruct->dwExtraInfo == INJECTED_EVENT_SIGNATURE)
                 {
                     // This is our own injected event, ignore it
                     return CallNextHookEx(nullptr, nCode, wParam, lParam);
@@ -217,7 +220,7 @@ private:
                     inputs[1].mi.mouseData = mouseData;
                     inputs[1].mi.dwFlags = MOUSEEVENTF_WHEEL;
                     inputs[1].mi.time = 0;
-                    inputs[1].mi.dwExtraInfo = 0x123456; // Tag our own event to prevent infinite loops
+                    inputs[1].mi.dwExtraInfo = INJECTED_EVENT_SIGNATURE; // Tag our own event to prevent infinite loops
                     
                     // Ctrl up
                     inputs[2].type = INPUT_KEYBOARD;
