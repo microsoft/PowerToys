@@ -34,8 +34,6 @@ namespace PowerDisplay.Helpers
 
         public IReadOnlyList<Monitor> Monitors => _monitors.AsReadOnly();
 
-        public event EventHandler<MonitorListChangedEventArgs>? MonitorsChanged;
-
         public MonitorManager()
         {
             // Initialize controllers
@@ -313,16 +311,6 @@ namespace PowerDisplay.Helpers
             }
 
             // Trigger change events
-            var addedMonitors = newMonitors.Where(m => !oldMonitors.Any(o => o.Id == m.Id)).ToList();
-            var removedMonitors = oldMonitors.Where(o => !newMonitors.Any(m => m.Id == o.Id)).ToList();
-
-            if (addedMonitors.Count > 0 || removedMonitors.Count > 0)
-            {
-                MonitorsChanged?.Invoke(this, new MonitorListChangedEventArgs(
-                    addedMonitors.AsReadOnly(),
-                    removedMonitors.AsReadOnly(),
-                    _monitors.AsReadOnly()));
-            }
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace PowerDisplay.Helpers
     /// <param name="hwnd">Handle to the window.</param>
     /// <param name="msg">The message.</param>
     /// <param name="wParam">Additional message information.</param>
-    /// <param name="lParam">Additional message information.</param>
+    /// <param name="lParam">Additional message.</param>
     /// <returns>The result of the message processing.</returns>
     internal delegate nint WndProcDelegate(nint hwnd, uint msg, nuint wParam, nint lParam);
 
@@ -36,7 +36,6 @@ namespace PowerDisplay.Helpers
         private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
 
         private readonly ISettingsUtils _settingsUtils;
-        private readonly Action _showWindowAction;
         private readonly Action _toggleWindowAction;
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
@@ -58,7 +57,6 @@ namespace PowerDisplay.Helpers
             Action openSettingsAction)
         {
             _settingsUtils = settingsUtils;
-            _showWindowAction = showWindowAction;
             _toggleWindowAction = toggleWindowAction;
             _exitAction = exitAction;
             _openSettingsAction = openSettingsAction;
@@ -175,14 +173,7 @@ namespace PowerDisplay.Helpers
             }
             catch
             {
-                // Fallback if resource not found
-                return key switch
-                {
-                    "AppName" => "PowerDisplay",
-                    "TrayMenu_Settings" => "Settings",
-                    "TrayMenu_Exit" => "Exit",
-                    _ => key,
-                };
+                return "unknown";
             }
         }
 

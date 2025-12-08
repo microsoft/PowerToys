@@ -200,55 +200,6 @@ public partial class MainViewModel
         }
     }
 
-    private void OnMonitorsChanged(object? sender, MonitorListChangedEventArgs e)
-    {
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            // Load settings to check for hidden monitors
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-            var hiddenMonitorIds = GetHiddenMonitorIds(settings);
-
-            // Handle monitors being added or removed
-            if (e.AddedMonitors.Count > 0)
-            {
-                foreach (var monitor in e.AddedMonitors)
-                {
-                    // Skip monitors that are marked as hidden
-                    if (hiddenMonitorIds.Contains(monitor.Id))
-                    {
-                        Logger.LogInfo($"[OnMonitorsChanged] Skipping hidden monitor (added): {monitor.Name} ({monitor.Id})");
-                        continue;
-                    }
-
-                    var existingVm = GetMonitorViewModel(monitor.Id);
-                    if (existingVm == null)
-                    {
-                        var vm = new MonitorViewModel(monitor, _monitorManager, this);
-                        Monitors.Add(vm);
-                    }
-                }
-            }
-
-            if (e.RemovedMonitors.Count > 0)
-            {
-                foreach (var monitor in e.RemovedMonitors)
-                {
-                    var vm = GetMonitorViewModel(monitor.Id);
-                    if (vm != null)
-                    {
-                        Monitors.Remove(vm);
-                        vm.Dispose();
-                    }
-                }
-            }
-
-            StatusText = $"Monitor list updated ({Monitors.Count} total)";
-
-            // Note: SaveMonitorsToSettings() is called by UpdateMonitorList() after full scan completes
-            // to avoid double-firing the refresh event during re-scan operations
-        });
-    }
-
     private MonitorViewModel? GetMonitorViewModel(string monitorId)
         => Monitors.FirstOrDefault(vm => vm.Id == monitorId);
 

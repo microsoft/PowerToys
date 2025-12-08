@@ -68,9 +68,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
 
-        // Subscribe to events
-        _monitorManager.MonitorsChanged += OnMonitorsChanged;
-
         // Initialize and start LightSwitch integration listener
         _lightSwitchListener = new LightSwitchListener();
         _lightSwitchListener.ThemeChanged += OnLightSwitchThemeChanged;

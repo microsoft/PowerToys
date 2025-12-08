@@ -25,6 +25,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     private CancellationTokenSource? _debounceCts;
     private bool _isRunning;
     private bool _disposed;
+    private bool _initialEnumerationComplete;
 
     /// <summary>
     /// Event triggered when display configuration changes (after debounce period).
@@ -74,9 +75,12 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             _deviceWatcher.EnumerationCompleted += OnEnumerationCompleted;
             _deviceWatcher.Stopped += OnWatcherStopped;
 
+            // Reset state before starting (must be before Start() to avoid race)
+            _initialEnumerationComplete = false;
+            _isRunning = true;
+
             // Start watching
             _deviceWatcher.Start();
-            _isRunning = true;
 
             Logger.LogInfo("[DisplayChangeWatcher] Started watching for display changes");
         }
@@ -115,14 +119,36 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void OnDeviceAdded(DeviceWatcher sender, DeviceInformation args)
     {
-        Logger.LogInfo($"[DisplayChangeWatcher] Display added: {args.Name} ({args.Id})");
-        ScheduleDisplayChanged();
+        // Dispatch to UI thread to ensure thread-safe state access
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            // Ignore events during initial enumeration or after disposal
+            if (_disposed || !_initialEnumerationComplete)
+            {
+                Logger.LogDebug($"[DisplayChangeWatcher] Ignoring add: {args.Name} (disposed={_disposed}, enumComplete={_initialEnumerationComplete})");
+                return;
+            }
+
+            Logger.LogInfo($"[DisplayChangeWatcher] Display added: {args.Name} ({args.Id})");
+            ScheduleDisplayChanged();
+        });
     }
 
     private void OnDeviceRemoved(DeviceWatcher sender, DeviceInformationUpdate args)
     {
-        Logger.LogInfo($"[DisplayChangeWatcher] Display removed: {args.Id}");
-        ScheduleDisplayChanged();
+        // Dispatch to UI thread to ensure thread-safe state access
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            // Ignore events during initial enumeration or after disposal
+            if (_disposed || !_initialEnumerationComplete)
+            {
+                Logger.LogDebug($"[DisplayChangeWatcher] Ignoring remove: {args.Id} (disposed={_disposed}, enumComplete={_initialEnumerationComplete})");
+                return;
+            }
+
+            Logger.LogInfo($"[DisplayChangeWatcher] Display removed: {args.Id}");
+            ScheduleDisplayChanged();
+        });
     }
 
     private void OnDeviceUpdated(DeviceWatcher sender, DeviceInformationUpdate args)
@@ -136,15 +162,23 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void OnEnumerationCompleted(DeviceWatcher sender, object args)
     {
-        Logger.LogInfo("[DisplayChangeWatcher] Initial enumeration completed");
-
-        // Don't trigger refresh on initial enumeration - MainViewModel handles initial discovery
+        // Dispatch to UI thread to ensure thread-safe state access
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            _initialEnumerationComplete = true;
+            Logger.LogInfo("[DisplayChangeWatcher] Initial enumeration completed, now responding to display changes");
+        });
     }
 
     private void OnWatcherStopped(DeviceWatcher sender, object args)
     {
-        _isRunning = false;
-        Logger.LogInfo("[DisplayChangeWatcher] Watcher stopped");
+        // Dispatch to UI thread to ensure thread-safe state access
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            _isRunning = false;
+            _initialEnumerationComplete = false;
+            Logger.LogInfo("[DisplayChangeWatcher] Watcher stopped");
+        });
     }
 
     /// <summary>
