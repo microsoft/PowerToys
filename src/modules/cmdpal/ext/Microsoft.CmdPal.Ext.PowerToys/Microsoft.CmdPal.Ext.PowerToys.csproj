@@ -12,6 +12,11 @@
 		<!-- Keep the MSIX version in sync with the PowerToys version -->
 		<AppxPackageVersion>$(Version)</AppxPackageVersion>
 		<ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+		<VersionMajor>$([System.Version]::Parse($(Version)).Major)</VersionMajor>
+		<VersionMinor>$([System.Version]::Parse($(Version)).Minor)</VersionMinor>
+		<VersionBuild>$([System.Version]::Parse($(Version)).Build)</VersionBuild>
+		<VersionRevision>0</VersionRevision>
+		<ApplicationVersion>$(VersionMajor).$(VersionMinor).$(VersionBuild).$(VersionRevision)</ApplicationVersion>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -30,13 +35,6 @@
 		<AppxBundle>Never</AppxBundle>
 		<AppxPackageTestDir>$(OutputPath)\AppPackages\$(MSBuildProjectName)_$(AppxPackageVersion)_Test\</AppxPackageTestDir>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<AppxManifest Include="Package.appxmanifest">
-			<Version>$(AppxPackageVersion)</Version>
-		</AppxManifest>
-	</ItemGroup>
-
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
 		<Content Include="Assets\LockScreenLogo.scale-200.png" />
