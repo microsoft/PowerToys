@@ -84,9 +84,12 @@ internal static class FancyZonesData
         result = null;
         error = null;
 
+        Logger.LogDebug($"Reading file: {filePath}");
+
         if (!File.Exists(filePath))
         {
             error = $"File not found: {Path.GetFileName(filePath)}";
+            Logger.LogWarning(error);
             return false;
         }
 
@@ -97,19 +100,23 @@ internal static class FancyZonesData
             if (result == null)
             {
                 error = $"Failed to parse {Path.GetFileName(filePath)}";
+                Logger.LogError(error);
                 return false;
             }
 
+            Logger.LogDebug($"Successfully read {Path.GetFileName(filePath)}");
             return true;
         }
         catch (JsonException ex)
         {
             error = $"JSON parse error in {Path.GetFileName(filePath)}: {ex.Message}";
+            Logger.LogError(error, ex);
             return false;
         }
         catch (IOException ex)
         {
             error = $"Failed to read {Path.GetFileName(filePath)}: {ex.Message}";
+            Logger.LogError(error, ex);
             return false;
         }
     }
@@ -127,7 +134,9 @@ internal static class FancyZonesData
 
     private static void WriteJsonFile<T>(string filePath, T data, JsonTypeInfo<T> jsonTypeInfo)
     {
+        Logger.LogDebug($"Writing file: {filePath}");
         var json = JsonSerializer.Serialize(data, jsonTypeInfo);
         File.WriteAllText(filePath, json);
+        Logger.LogInfo($"Successfully wrote {Path.GetFileName(filePath)}");
     }
 }

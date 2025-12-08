@@ -142,6 +142,8 @@ internal static class LayoutCommands
 
     public static (int ExitCode, string Output) SetLayout(string[] args, Action<uint> notifyFancyZones, uint wmPrivAppliedLayoutsFileUpdate)
     {
+        Logger.LogInfo($"SetLayout called with args: [{string.Join(", ", args)}]");
+
         if (args.Length == 0)
         {
             return (1, "Error: set-layout requires a UUID parameter");
@@ -251,9 +253,11 @@ internal static class LayoutCommands
 
         // Write back to file
         FancyZonesData.WriteAppliedLayouts(appliedLayouts);
+        Logger.LogInfo($"Applied layouts file updated for {monitorsToUpdate.Count} monitor(s)");
 
         // Notify FancyZones to reload
         notifyFancyZones(wmPrivAppliedLayoutsFileUpdate);
+        Logger.LogInfo("FancyZones notified of layout change");
 
         string layoutName = targetCustomLayout?.Name ?? targetTemplate?.Type ?? uuid;
         if (applyToAll)

@@ -13,6 +13,10 @@ internal sealed class Program
 {
     private static int Main(string[] args)
     {
+        // Initialize logger
+        Logger.InitializeLogger();
+        Logger.LogInfo($"CLI invoked with args: [{string.Join(", ", args)}]");
+
         // Initialize Windows messages
         NativeMethods.InitializeWindowMessages();
 
@@ -46,6 +50,16 @@ internal sealed class Program
                 "help" or "--help" or "-h" => (0, GetUsageText()),
                 _ => (1, $"Error: Unknown command: {command}\n\n{GetUsageText()}"),
             };
+        }
+
+        // Log result
+        if (result.ExitCode == 0)
+        {
+            Logger.LogInfo($"Command completed successfully");
+        }
+        else
+        {
+            Logger.LogWarning($"Command failed with exit code {result.ExitCode}: {result.Output}");
         }
 
         // Output result
