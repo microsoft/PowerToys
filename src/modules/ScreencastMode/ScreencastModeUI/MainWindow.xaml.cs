@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -14,15 +14,14 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using ScreencastModeUI.Keyboard;
-using Windows.Graphics;
 using Windows.System;
 using WinUIEx;
 
 namespace ScreencastModeUI
 {
     /// <summary>
-    /// Main window that displays keystrokes for screencast mode.
-    /// This is a simple overlay that shows keystrokes during presentations and screen recordings.
+    /// Main window that displays keystrokes for screencast mode
+    /// This is a simple overlay that shows keystrokes during presentations and screen recordings
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
@@ -34,21 +33,35 @@ namespace ScreencastModeUI
 
         // private const int MaxKeysToDisplay = 22;
         private const int DefaultHideDelayMs = 2000;
-        private const int WindowWidth = 400;
-        private const int WindowHeight = 60;
+        private const int MinWindowWidth = 200;
+        private const int MinWindowHeight = 40;
         private const int EdgeMargin = 20;
+
+        // Extra buffer to prevent text clipping (accounts for rendering differences, corner radius, etc.)
+        private const double ExtraWidthBuffer = 20;
+        private const double ExtraHeightBuffer = 20;
 
         private readonly SettingsUtils _settingsUtils = new();
         private readonly DispatcherTimer _hideTimer;
-        private readonly List<KeyInfo> _pressedKeys = new();
+
+        // Track displayed keys in order - each entry is a display string
+        private readonly List<string> _displayedKeys = new();
+
+        // Track currently held modifiers
         private readonly HashSet<VirtualKey> _activeModifiers = new();
+
         private readonly DispatcherTimer _settingsDebounceTimer;
+
+        // Flag to track if we need to add "+" before the next key
+        private bool _needsPlusSeparator;
+
         private KeyboardListener? _keyboardListener;
         private System.IO.FileSystemWatcher? _settingsWatcher;
 
         private string _textColor = "#FFFFFF";
         private string _backgroundColor = "#000000";
         private string _displayPosition = "TopRight";
+        private int _textSize = 18;
 
         public MainWindow()
         {
@@ -101,7 +114,9 @@ namespace ScreencastModeUI
                 this.IsShownInSwitchers = false;
 
                 // Set initial window size
-                this.SetWindowSize(WindowWidth, WindowHeight);
+                this.SetWindowSize(MinWindowWidth, MinWindowHeight);
+
+                ApplyClickThroughStyle();
 
                 Logger.LogInfo("Configured window as overlay using WinUIEx");
             }
@@ -197,6 +212,9 @@ namespace ScreencastModeUI
             });
         }
 
+        /// <summary>
+        /// Add a delay before reloading settings to debounce multiple file change events
+        /// </summary>
         private void SettingsDebounceTimer_Tick(object? sender, object e)
         {
             _settingsDebounceTimer.Stop();
@@ -216,6 +234,9 @@ namespace ScreencastModeUI
             }
         }
 
+        /// <summary>
+        /// Loads settings from the ScreencastMode settings file
+        /// </summary>
         private void LoadSettings()
         {
             try
@@ -226,6 +247,7 @@ namespace ScreencastModeUI
                 _textColor = settings.Properties.TextColor.Value;
                 _backgroundColor = settings.Properties.BackgroundColor.Value;
                 _displayPosition = settings.Properties.DisplayPosition.Value;
+                _textSize = settings.Properties.TextSize.Value;
             }
             catch (Exception ex)
             {
@@ -233,12 +255,15 @@ namespace ScreencastModeUI
             }
         }
 
+        /// <summary>
+        /// Parse the color settings and apply them to the keystroke panel
+        /// </summary>
         private void ApplyColorSettings()
         {
             try
             {
                 // Parse background color
-                byte bgAlpha = 230; // Default semi-transparent
+                byte bgAlpha = 230;
                 int bgROffset = 1;
                 int bgGOffset = 3;
                 int bgBOffset = 5;
@@ -260,13 +285,13 @@ namespace ScreencastModeUI
                         byte.Parse(_backgroundColor.AsSpan(bgBOffset, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture)));
 
                 // Parse text color
-                byte txtAlpha = 255; // Default fully opaque
+                byte txtAlpha = 255;
                 int txtROffset = 1;
                 int txtGOffset = 3;
                 int txtBOffset = 5;
 
                 // Even though the color picker in the settings UI only allows #RRGGBB,
-                // the settings.json file saves it as #AARRGGBB, where #AA is always FF.
+                // the settings.json file saves it as #AARRGGBB, where #AA is always FF
                 if (_textColor.Length == 9)
                 {
                     // Format: #AARRGGBB
@@ -291,6 +316,9 @@ namespace ScreencastModeUI
             }
         }
 
+        /// <summary>
+        /// Move the overlaw to the updated position based on settings
+        /// </summary>
         private void UpdateWindowPosition()
         {
             try
@@ -301,8 +329,12 @@ namespace ScreencastModeUI
                 var workArea = displayArea.WorkArea;
 
                 double dpiScale = (float)this.GetDpiForWindow() / 96;
-                int scaledWidth = (int)(WindowWidth * dpiScale);
-                int scaledHeight = (int)(WindowHeight * dpiScale);
+
+                // Get the current actual window size (not the minimum)
+                var appWindow = AppWindow.GetFromWindowId(windowId);
+                int currentWidth = appWindow.Size.Width;
+                int currentHeight = appWindow.Size.Height;
+
                 int scaledMargin = (int)(EdgeMargin * dpiScale);
 
                 int x, y;
@@ -315,42 +347,44 @@ namespace ScreencastModeUI
                         break;
 
                     case "Top Right":
-                        x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
+                        x = workArea.X + workArea.Width - currentWidth - scaledMargin;
                         y = workArea.Y + scaledMargin;
                         break;
 
                     case "Top Center":
-                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
+                        x = workArea.X + ((workArea.Width - currentWidth) / 2);
                         y = workArea.Y + scaledMargin;
                         break;
 
                     case "Center":
-                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
-                        y = workArea.Y + ((workArea.Height - scaledHeight) / 2);
+                        x = workArea.X + ((workArea.Width - currentWidth) / 2);
+                        y = workArea.Y + ((workArea.Height - currentHeight) / 2);
                         break;
 
                     case "Bottom Left":
                         x = workArea.X + scaledMargin;
-                        y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
+                        y = workArea.Y + workArea.Height - currentHeight - scaledMargin;
                         break;
 
                     case "Bottom Center":
-                        x = workArea.X + ((workArea.Width - scaledWidth) / 2);
-                        y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
+                        x = workArea.X + ((workArea.Width - currentWidth) / 2);
+                        y = workArea.Y + workArea.Height - currentHeight - scaledMargin;
                         break;
 
                     case "Bottom Right":
                     default:
-                        x = workArea.X + workArea.Width - scaledWidth - scaledMargin;
-                        y = workArea.Y + workArea.Height - scaledHeight - scaledMargin;
+                        x = workArea.X + workArea.Width - currentWidth - scaledMargin;
+                        y = workArea.Y + workArea.Height - currentHeight - scaledMargin;
                         break;
                 }
 
-                this.MoveAndResize(x, y, WindowWidth, WindowHeight);
+                this.Move(x, y);
 
                 KeystrokePanel.HorizontalAlignment = HorizontalAlignment.Center;
                 KeystrokePanel.VerticalAlignment = VerticalAlignment.Center;
                 KeystrokePanel.Margin = new Thickness(0);
+
+                Logger.LogInfo($"Positioned window at ({x}, {y}) with size {currentWidth}x{currentHeight}");
             }
             catch (Exception ex)
             {
@@ -358,6 +392,9 @@ namespace ScreencastModeUI
             }
         }
 
+        /// <summary>
+        /// Intializes the global keyboard hook to listen for keystrokes
+        /// </summary>
         private void SetupKeyboardHook()
         {
             try
@@ -372,6 +409,9 @@ namespace ScreencastModeUI
             }
         }
 
+        /// <summary>
+        /// Enqueues processing of a keyboard event on the UI thread
+        /// </summary>
         private void OnKeyboardEvent(object? sender, KeyboardEventArgs e)
         {
             DispatcherQueue.TryEnqueue(() =>
@@ -392,78 +432,127 @@ namespace ScreencastModeUI
             }
         }
 
+        /// <summary>
+        /// Handle when a key is being pressed
+        /// </summary>
+        /// <param name="key">The key that is currently being held down</param>
         private void HandleKeyDown(VirtualKey key)
         {
-            // 1) Modifier keys (Ctrl, Win, Alt, Shift)
+            // Normalize modifier keys (e.g., LeftShift -> Shift)
+            var normalizedKey = KeyDisplayNameProvider.IsModifierKey(key)
+                ? KeyDisplayNameProvider.NormalizeModifierKey(key)
+                : key;
+
+            // Handle modifier keys
             if (KeyDisplayNameProvider.IsModifierKey(key))
             {
-                var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
-                _activeModifiers.Add(normalizedKey);
-
-                // If there is already content in the overlay, show this modifier as a separate entry
-                if (_pressedKeys.Count > 0)
+                // Only add modifier if not already held (Add returns false if already present)
+                if (_activeModifiers.Add(normalizedKey))
                 {
-                    var keyInfo = new KeyInfo
-                    {
-                        Key = normalizedKey,
-                        Modifiers = new HashSet<VirtualKey>(), // no extra modifiers for this entry
-                    };
+                    var keyName = KeyDisplayNameProvider.GetKeyDisplayName(normalizedKey);
 
-                    _pressedKeys.Add(keyInfo);
-
-                    var preview = BuildDisplayText();
-                    if (WillOverflow(preview))
+                    // Check if adding would overflow
+                    string previewText = BuildPreviewText(keyName);
+                    if (WillOverflow(previewText))
                     {
-                        _pressedKeys.Clear();
-                        _pressedKeys.Add(keyInfo);
+                        // Clear and start fresh with just this modifier
+                        _displayedKeys.Clear();
+                        _needsPlusSeparator = false;
                     }
+
+                    // Add "+" if we already have content and need separator
+                    if (_needsPlusSeparator && _displayedKeys.Count > 0)
+                    {
+                        _displayedKeys.Add("+");
+                    }
+
+                    _displayedKeys.Add(keyName);
+
+                    // Next key should have a "+" before it
+                    _needsPlusSeparator = true;
                 }
             }
 
-            // 2) Clear keys (Backspace, Esc or whatever IsClearKey returns true for)
+            // Backspace and Escape keys clear the current display
             else if (KeyDisplayNameProvider.IsClearKey(key))
             {
-                _pressedKeys.Clear();
+                // Clear keys (Backspace, Esc) - clear and show just this key
+                _displayedKeys.Clear();
                 _activeModifiers.Clear();
+                _needsPlusSeparator = false;
 
-                _pressedKeys.Add(new KeyInfo
-                {
-                    Key = key,
-                    Modifiers = new HashSet<VirtualKey>(),
-                });
+                _displayedKeys.Add(KeyDisplayNameProvider.GetKeyDisplayName(normalizedKey));
+                _needsPlusSeparator = false; // Clear keys don't expect continuation
             }
-
-            // 3) Normal keys
             else
             {
-                var keyInfo = new KeyInfo
-                {
-                    Key = key,
-                    Modifiers = new HashSet<VirtualKey>(_activeModifiers),
-                };
+                // Regular key
+                var keyName = KeyDisplayNameProvider.GetKeyDisplayName(normalizedKey);
 
-                _pressedKeys.Add(keyInfo);
-
-                var preview = BuildDisplayText();
-                if (WillOverflow(preview))
+                // Check if adding would overflow
+                string previewText = BuildPreviewText(keyName);
+                if (WillOverflow(previewText))
                 {
-                    _pressedKeys.Clear();
-                    _pressedKeys.Add(keyInfo);
+                    // Clear and start fresh - but keep active modifiers shown
+                    _displayedKeys.Clear();
+                    _needsPlusSeparator = false;
+
+                    // Re-add currently held modifiers
+                    foreach (var mod in _activeModifiers)
+                    {
+                        if (_displayedKeys.Count > 0)
+                        {
+                            _displayedKeys.Add("+");
+                        }
+
+                        _displayedKeys.Add(KeyDisplayNameProvider.GetKeyDisplayName(mod));
+                    }
+
+                    if (_displayedKeys.Count > 0)
+                    {
+                        _needsPlusSeparator = true;
+                    }
                 }
+
+                // Add "+" if we have modifiers held or previous content
+                if (_needsPlusSeparator && _displayedKeys.Count > 0)
+                {
+                    _displayedKeys.Add("+");
+                }
+
+                _displayedKeys.Add(keyName);
+
+                // If modifiers are still held, next key should have "+"
+                // If no modifiers, this is a standalone key, so start fresh next time
+                _needsPlusSeparator = _activeModifiers.Count > 0;
             }
 
             UpdateDisplay();
         }
 
+        /// <summary>
+        /// Handle key release events
+        /// </summary>
+        /// <param name="key">The key that is released</param>
         private void HandleKeyUp(VirtualKey key)
         {
             if (KeyDisplayNameProvider.IsModifierKey(key))
             {
                 var normalizedKey = KeyDisplayNameProvider.NormalizeModifierKey(key);
                 _activeModifiers.Remove(normalizedKey);
+
+                // When all modifiers are released, reset the separator flag
+                // This allows the next keystroke to start a new sequence
+                if (_activeModifiers.Count == 0)
+                {
+                    _needsPlusSeparator = false;
+                }
             }
         }
 
+        /// <summary>
+        /// Updates the displayed text and resizes the window accordingly
+        /// </summary>
         private void UpdateDisplay()
         {
             var displayText = BuildDisplayText();
@@ -476,50 +565,155 @@ namespace ScreencastModeUI
             else
             {
                 KeystrokeText.Text = displayText;
+                KeystrokeText.FontSize = _textSize;
+
+                // Update padding proportionally to text size
+                // Horizontal: ~0.9x font size per side, Vertical: ~0.45x font size per side
+                double paddingH = _textSize * 0.9;
+                double paddingV = _textSize * 0.45;
+                KeystrokePanel.Padding = new Thickness(paddingH, paddingV, paddingH, paddingV);
+
                 KeystrokePanel.Visibility = Visibility.Visible;
+
+                // Force layout update before measuring
+                KeystrokeText.UpdateLayout();
+
+                // Measure and resize window based on text content
+                ResizeWindowToFitContent();
 
                 _hideTimer.Stop();
                 _hideTimer.Start();
             }
         }
 
+        /// <summary>
+        /// Dynamically resizes the overlay window based on size and number of text characters
+        /// </summary>
+        private void ResizeWindowToFitContent()
+        {
+            try
+            {
+                // Get window and DPI info
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+                var appWindow = AppWindow.GetFromWindowId(windowId);
+                double dpiScale = (float)this.GetDpiForWindow() / 96;
+
+                // Measure the actual TextBlock after it has been updated
+                KeystrokeText.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+                double textWidth = KeystrokeText.DesiredSize.Width;
+                double textHeight = KeystrokeText.DesiredSize.Height;
+
+                // Get the current padding from the Border
+                var padding = KeystrokePanel.Padding;
+                double totalPaddingH = padding.Left + padding.Right;
+                double totalPaddingV = padding.Top + padding.Bottom;
+
+                // Calculate logical size (text + padding + extra buffer for safety)
+                double logicalWidth = textWidth + totalPaddingH + ExtraWidthBuffer;
+                double logicalHeight = textHeight + totalPaddingV + ExtraHeightBuffer;
+
+                // Convert to physical pixels for window sizing
+                int windowWidth = (int)Math.Ceiling(logicalWidth * dpiScale);
+                int windowHeight = (int)Math.Ceiling(logicalHeight * dpiScale);
+
+                // Calculate minimum sizes based on font size
+                // After testing, min height 2.5x the font is a good fit
+                int minWidth = (int)(MinWindowWidth * dpiScale);
+                int minHeight = (int)(_textSize * 2.5 * dpiScale);
+
+                // Ensure minimum size
+                windowWidth = Math.Max(windowWidth, minWidth);
+                windowHeight = Math.Max(windowHeight, minHeight);
+
+                Logger.LogInfo($"Resizing window to {windowWidth}x{windowHeight} (text: {textWidth}x{textHeight}, padding: {totalPaddingH}x{totalPaddingV}, DPI: {dpiScale})");
+
+                // Resize using AppWindow API
+                appWindow.Resize(new Windows.Graphics.SizeInt32(windowWidth, windowHeight));
+
+                // Update position after resize
+                UpdateWindowPosition();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to resize window: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Builds the display text from the displayed keys list.
+        /// Keys are shown in the exact order they were added.
+        /// </summary>
         private string BuildDisplayText()
         {
-            if (_pressedKeys.Count == 0 && _activeModifiers.Count == 0)
+            if (_displayedKeys.Count == 0)
             {
                 return string.Empty;
             }
 
-            var parts = new List<string>();
-
-            foreach (var keyInfo in _pressedKeys)
+            // Join with spaces for visual separation, but "+" entries are already in the list
+            var result = new StringBuilder();
+            foreach (var part in _displayedKeys)
             {
-                var keyText = new StringBuilder();
-
-                // Add modifiers for this key
-                foreach (var modifier in keyInfo.Modifiers.OrderBy(KeyDisplayNameProvider.GetModifierOrder))
+                if (part == "+")
                 {
-                    keyText.Append(KeyDisplayNameProvider.GetKeyDisplayName(modifier));
-                    keyText.Append(" + ");
+                    // Add space before and after the plus for readability
+                    result.Append(" + ");
                 }
+                else
+                {
+                    if (result.Length > 0 && !result.ToString().EndsWith(' '))
+                    {
+                        // Only add space if not coming right after a "+"
+                        // Check if last thing added was " + "
+                        if (!result.ToString().EndsWith("+ ", StringComparison.Ordinal))
+                        {
+                            result.Append(' ');
+                        }
+                    }
 
-                // Add the key itself
-                keyText.Append(KeyDisplayNameProvider.GetKeyDisplayName(keyInfo.Key));
-
-                parts.Add(keyText.ToString());
+                    result.Append(part);
+                }
             }
 
-            // If only modifiers are pressed
-            if (_pressedKeys.Count == 0 && _activeModifiers.Count > 0)
+            return result.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Builds a preview of what the display text would look like if we add a new key.
+        /// </summary>
+        private string BuildPreviewText(string newKey)
+        {
+            var tempList = new List<string>(_displayedKeys);
+            if (_needsPlusSeparator && tempList.Count > 0)
             {
-                var modifierText = string.Join(
-                    " + ",
-                    _activeModifiers.OrderBy(KeyDisplayNameProvider.GetModifierOrder).Select(KeyDisplayNameProvider.GetKeyDisplayName));
-
-                parts.Add(modifierText);
+                tempList.Add("+");
             }
 
-            return string.Join("  ", parts);
+            tempList.Add(newKey);
+
+            var result = new StringBuilder();
+            foreach (var part in tempList)
+            {
+                if (part == "+")
+                {
+                    result.Append(" + ");
+                }
+                else
+                {
+                    if (result.Length > 0 && !result.ToString().EndsWith(' '))
+                    {
+                        if (!result.ToString().EndsWith("+ ", StringComparison.Ordinal))
+                        {
+                            result.Append(' ');
+                        }
+                    }
+
+                    result.Append(part);
+                }
+            }
+
+            return result.ToString().Trim();
         }
 
         private bool WillOverflow(string nextText)
@@ -529,33 +723,17 @@ namespace ScreencastModeUI
             return nextText.Length > maxVisibleChars;
         }
 
-        private void ClearKeys()
-        {
-            _pressedKeys.Clear();
-            _activeModifiers.Clear();
-            UpdateDisplay();
-        }
-
         private void HideTimer_Tick(object? sender, object e)
         {
             _hideTimer.Stop();
 
             // Clear all tracked keys and modifiers when the overlay times out
-            _pressedKeys.Clear();
+            _displayedKeys.Clear();
             _activeModifiers.Clear();
+            _needsPlusSeparator = false;
 
             KeystrokeText.Text = string.Empty;
             KeystrokePanel.Visibility = Visibility.Collapsed;
-        }
-
-        /// <summary>
-        ///     Represents information about a pressed key along with its active modifiers.
-        /// </summary>
-        private sealed class KeyInfo
-        {
-            public VirtualKey Key { get; set; }
-
-            public HashSet<VirtualKey> Modifiers { get; set; } = new();
         }
     }
 }
