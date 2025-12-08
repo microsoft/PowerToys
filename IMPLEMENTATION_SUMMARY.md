@@ -85,7 +85,7 @@ cd src\modules\MouseUtils\MouseScrollRemap
 
 2. **Enable the Feature**:
    - Open PowerToys Settings
-   - Navigate to Mouse Utilities (if it has a settings page, otherwise it will auto-enable)
+   - Navigate to Mouse Utilities (if it has a settings page; otherwise it will auto-enable)
    - Enable MouseScrollRemap
 
 3. **Test Horizontal Scrolling**:
