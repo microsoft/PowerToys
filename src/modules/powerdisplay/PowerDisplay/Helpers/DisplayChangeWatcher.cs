@@ -16,7 +16,7 @@ namespace PowerDisplay.Helpers;
 /// Watches for display/monitor connection changes using WinRT DeviceWatcher.
 /// Triggers DisplayChanged event when monitors are added, removed, or updated.
 /// </summary>
-public sealed class DisplayChangeWatcher : IDisposable
+public sealed partial class DisplayChangeWatcher : IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly TimeSpan _debounceDelay = TimeSpan.FromSeconds(1);
