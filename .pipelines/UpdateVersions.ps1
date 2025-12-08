@@ -117,20 +117,21 @@ $packageVersions = @{ "Microsoft.WindowsAppSDK" = $WinAppSDKVersion }
 
 if ($WinAppSDKVersion -match "^1\.8") {
     Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
-    $tempDir = Join-Path $env:TEMP "winappsdk_deps_$(Get-Random)"
-    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-    try {
-        # Create a temporary nuget.config to avoid interference from the repo's config
-        $tempConfig = Join-Path $tempDir "nuget.config"
-        Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
+    $installDir = Join-Path $rootPath "localpackages\output"
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+    
+    # Create a temporary nuget.config to avoid interference from the repo's config
+    $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
+    Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
 
-        # Download package to inspect nuspec
-        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $tempDir -NonInteractive -NoCache"
+    try {
+        # Download package to inspect nuspec and keep it for the build
+        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
         Invoke-Expression "nuget $nugetArgs" | Out-Null
         
         # Parse dependencies from the installed folders
         # Folder structure is typically {PackageId}.{Version}
-        $directories = Get-ChildItem -Path $tempDir -Directory
+        $directories = Get-ChildItem -Path $installDir -Directory
         foreach ($dir in $directories) {
             if ($dir.Name -match "^(Microsoft\.WindowsAppSDK.*?)\.(\d.*)$") {
                 $pkgId = $Matches[1]
@@ -142,7 +143,7 @@ if ($WinAppSDKVersion -match "^1\.8") {
     } catch {
         Write-Warning "Failed to resolve dependencies: $_"
     } finally {
-        Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
     }
 }
 

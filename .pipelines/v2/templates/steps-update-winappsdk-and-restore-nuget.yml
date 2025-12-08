@@ -7,6 +7,39 @@ parameters:
     default: false
 
 steps:
+- task: PowerShell@2
+  displayName: 'Configure NuGet'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $nugetConfigPath = "$(Build.SourcesDirectory)\nuget.config"
+      $localPackagesPath = "$(Build.SourcesDirectory)\localpackages\output"
+      
+      # Ensure the directory exists so it's a valid source
+      New-Item -ItemType Directory -Path $localPackagesPath -Force | Out-Null
+      
+      Write-Host "Modifying $nugetConfigPath..."
+      [xml]$xml = Get-Content -Path $nugetConfigPath
+      
+      # Add localpackages source
+      $packageSourcesNode = $xml.configuration.packageSources
+      if (-not $packageSourcesNode.SelectSingleNode("add[@key='localpackages']")) {
+          $addNode = $xml.CreateElement("add")
+          $addNode.SetAttribute("key", "localpackages")
+          $addNode.SetAttribute("value", $localPackagesPath)
+          $packageSourcesNode.AppendChild($addNode) | Out-Null
+      }
+      
+      # Remove packageSourceMapping to ensure we can restore from both sources without restriction
+      $packageSourceMappingNode = $xml.configuration.packageSourceMapping
+      if ($packageSourceMappingNode) {
+          $xml.configuration.RemoveChild($packageSourceMappingNode) | Out-Null
+          Write-Host "Removed packageSourceMapping."
+      }
+      
+      $xml.Save($nugetConfigPath)
+      Get-Content $nugetConfigPath
+
 - task: NuGetAuthenticate@1
   displayName: 'NuGet Authenticate'
 
@@ -21,31 +54,6 @@ steps:
 
 - script: echo $(WinAppSDKVersion)
   displayName: 'Display WinAppSDK Version Found'
-
-- task: DownloadPipelineArtifact@2
-  displayName: 'Download WindowsAppSDK'
-  inputs:
-    buildType: 'specific'
-    project: '55e8140e-57ac-4e5f-8f9c-c7c15b51929d'
-    definition: '104083'
-    buildVersionToDownload: 'latestFromBranch'
-    branchName: 'refs/heads/release/${{ parameters.versionNumber }}-stable'
-    artifactName: 'WindowsAppSDK_Nuget_And_MSIX'
-    targetPath: '$(Build.SourcesDirectory)\localpackages'
-
-- script: dir $(Build.SourcesDirectory)\localpackages\NugetPackages
-  displayName: 'List downloaded packages'
-
-- task: NuGetCommand@2
-  displayName: 'Install WindowsAppSDK'
-  inputs:
-    command: 'custom'
-    arguments: >
-      install "Microsoft.WindowsAppSDK"
-      -Source "$(Build.SourcesDirectory)\localpackages\NugetPackages"
-      -Version "$(WinAppSDKVersion)"
-      -OutputDirectory "$(Build.SourcesDirectory)\localpackages\output"
-      -FallbackSource "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
 
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
