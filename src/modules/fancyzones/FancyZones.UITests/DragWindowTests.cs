@@ -50,26 +50,16 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            // SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+            Session.KillAllProcessesByName("PowerToys");
+            ClearOpenWindows();
+
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
-
-            if (TestContext.TestName == "TestWarmup")
-            {
-                return;
-            }
-
-            // Session.KillAllProcessesByName("PowerToys");
-            // Thread.Sleep(1000);
-            // ClearOpenWindows();
-
-            // SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
-
-            // RestartScopeExe();
-            // Thread.Sleep(2000);
-
-            // Set a custom layout with 1 subzones and clear app zone history
+            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
             SetupCustomLayouts();
+
+            RestartScopeExe();
+            Thread.Sleep(2000);
 
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
@@ -79,21 +69,6 @@ namespace UITests_FancyZones
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
-        }
-
-        /// <summary>
-        /// Empty Test for Warmup.
-        /// <list type="bullet">
-        /// <item>
-        /// <description>Warmup the environment to avoid first real test failing</description>
-        /// </item>
-        /// </list>
-        /// </summary>
-        [TestMethod("FancyZones.Settings.TestWarmup")]
-        [TestCategory("FancyZones_Dragging #0")]
-        public void TestWarmup()
-        {
-            Assert.AreEqual(true, true);
         }
 
         /// <summary>
