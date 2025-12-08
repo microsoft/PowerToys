@@ -115,6 +115,7 @@
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="9.0.10" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="9.0.825.36511" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.10" />
