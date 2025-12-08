@@ -36,7 +36,8 @@ const static wchar_t* MODULE_NAME = L"MouseScrollRemap";
 const static wchar_t* MODULE_DESC = L"Remap Shift+MouseWheel to horizontal scrolling";
 
 // Signature to identify our own injected mouse events and prevent infinite loops
-constexpr ULONG_PTR INJECTED_EVENT_SIGNATURE = 0x123456;
+// Using a more unique signature based on 'MSSR' (MouseScrollRemap) in hex-like format
+constexpr ULONG_PTR INJECTED_EVENT_SIGNATURE = 0x4D535352; // 'MSSR' in ASCII
 
 // Forward declaration
 class MouseScrollRemap;
@@ -183,8 +184,14 @@ private:
             {
                 auto* pMouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
                 
+                // Check if the structure is valid
+                if (pMouseStruct == nullptr)
+                {
+                    return CallNextHookEx(nullptr, nCode, wParam, lParam);
+                }
+                
                 // Check if this is our own injected event to prevent infinite loops
-                if (pMouseStruct != nullptr && pMouseStruct->dwExtraInfo == INJECTED_EVENT_SIGNATURE)
+                if (pMouseStruct->dwExtraInfo == INJECTED_EVENT_SIGNATURE)
                 {
                     // This is our own injected event, ignore it
                     return CallNextHookEx(nullptr, nCode, wParam, lParam);
