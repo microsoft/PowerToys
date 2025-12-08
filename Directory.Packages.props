@@ -7,6 +7,8 @@
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.1.0-beta" />
     <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.5" />
+    <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
+    <PackageVersion Include="boost_regex-vc143" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
@@ -69,10 +71,12 @@
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.37" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.250907003" />
+    <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.231216.1"/>
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.251104000" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.39" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.251106002" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
@@ -111,6 +115,7 @@
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="9.0.10" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="9.0.11" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.10" />
@@ -118,6 +123,7 @@
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.10" />
     <PackageVersion Include="System.Text.Json" Version="9.0.10" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageVersion Include="ToolGood.Words.Pinyin" Version="3.1.0.3" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />

@@ -27,8 +27,8 @@ public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
-    private readonly AliasManager _aliasManager;
     private readonly TopLevelCommandManager _tlcManager;
+    private readonly AliasManager _aliasManager;
     private readonly SettingsModel _settings;
     private readonly AppStateModel _appStateModel;
     private List<Scored<IListItem>>? _filteredItems;
@@ -152,7 +152,7 @@ public partial class MainListPage : DynamicListPage,
             {
                 return _tlcManager
                     .TopLevelCommands
-                    .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
+                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
         }

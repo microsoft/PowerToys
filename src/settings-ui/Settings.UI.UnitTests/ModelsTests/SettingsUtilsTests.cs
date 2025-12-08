@@ -9,6 +9,7 @@ using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.UnitTests;
 using Microsoft.PowerToys.Settings.UnitTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,7 +23,13 @@ namespace CommonLibTest
         {
             // Arrange
             var mockFileSystem = new MockFileSystem();
-            var settingsUtils = new SettingsUtils(mockFileSystem);
+            var testSerializerOptions = new JsonSerializerOptions
+            {
+                MaxDepth = 0,
+                IncludeFields = true,
+                TypeInfoResolver = TestSettingsSerializationContext.Default,
+            };
+            var settingsUtils = new SettingsUtils(mockFileSystem, testSerializerOptions);
 
             string file_name = "\\test";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
@@ -42,7 +49,13 @@ namespace CommonLibTest
         {
             // Arrange
             var mockFileSystem = new MockFileSystem();
-            var settingsUtils = new SettingsUtils(mockFileSystem);
+            var testSerializerOptions = new JsonSerializerOptions
+            {
+                MaxDepth = 0,
+                IncludeFields = true,
+                TypeInfoResolver = TestSettingsSerializationContext.Default,
+            };
+            var settingsUtils = new SettingsUtils(mockFileSystem, testSerializerOptions);
             string file_name = "test\\Test Folder";
             string file_contents_correct_json_content = "{\"name\":\"powertoy module name\",\"version\":\"powertoy version\"}";
 

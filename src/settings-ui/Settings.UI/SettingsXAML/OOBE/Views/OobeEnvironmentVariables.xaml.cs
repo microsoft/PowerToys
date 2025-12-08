@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_EnvironmentVariables_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+            bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
             string eventName = !App.IsElevated && launchAdmin
                 ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
                 : Constants.ShowEnvironmentVariablesSharedEvent();
