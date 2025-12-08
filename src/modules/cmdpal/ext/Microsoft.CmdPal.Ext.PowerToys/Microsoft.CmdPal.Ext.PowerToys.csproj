@@ -7,12 +7,6 @@
 		<RootNamespace>PowerToysExtension</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
-		<XesUseOneStoreVersioning>false</XesUseOneStoreVersioning>
-		<PackageVersion>$(Version)</PackageVersion>
-		<XES_APPXMANIFESTVERSION>$(PackageVersion)</XES_APPXMANIFESTVERSION>
-		<!-- Keep the MSIX version in sync with the PowerToys version -->
-		<AppxPackageVersion>$(Version)</AppxPackageVersion>
-		<ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
