@@ -1,7 +1,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?include $(sys.CURRENTDIR)\Common.wxi?>
   <?define CmdPalExtPowerToysBuildDir="$(var.BinDir)\WinUI3Apps\CmdPalExtensions\Microsoft.CmdPal.Ext.PowerToys\"?>
-  <?define CmdPalExtPowerToysVersion="$(var.Version)"?>
+  <?define CmdPalExtPowerToysVersion="$(var.Version).0"?>
   <Fragment>
     <DirectoryRef Id="WinUI3AppsInstallFolder">
       <Directory Id="CmdPalExtensionsInstallFolder" Name="CmdPalExtensions">
