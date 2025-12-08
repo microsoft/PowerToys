@@ -26,6 +26,12 @@ namespace ScreencastModeUI
     /// </summary>
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowLong(nint hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int SetWindowLong(nint hWnd, int nIndex, int dwNewLong);
+
         // private const int MaxKeysToDisplay = 22;
         private const int DefaultHideDelayMs = 2000;
         private const int WindowWidth = 400;
@@ -102,6 +108,36 @@ namespace ScreencastModeUI
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to configure overlay window: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Applies extended window styles to make the window click-through (transparent to mouse input)
+        /// and hidden from Task Manager's window list
+        /// </summary>
+        private void ApplyClickThroughStyle()
+        {
+            try
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+                // GWL_EXSTYLE = -20
+                int extendedStyle = GetWindowLong(hwnd, -20);
+
+                // Add extended window styles:
+                // 0x00000020 = WS_EX_TRANSPARENT - Makes window transparent to mouse input (click-through)
+                // 0x00000080 = WS_EX_TOOLWINDOW - Hides from Task Manager window list and taskbar
+                // 0x08000000 = WS_EX_NOACTIVATE - Prevents window from being activated/focused
+                // 0x00080000 = WS_EX_LAYERED - Still necesseary even though its enabled in WinUI
+                extendedStyle |= 0x00000020 | 0x00000080 | 0x08000000 | 0x00080000;
+
+                _ = SetWindowLong(hwnd, -20, extendedStyle);
+
+                Logger.LogInfo("Applied click-through and tool window styles");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to apply click-through style: {ex.Message}");
             }
         }
 
