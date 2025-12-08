@@ -14,9 +14,9 @@
         x:Uid="ScreencastMode"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/ScreencastMode.png">
         <controls:SettingsPageControl.ModuleContent>
-            
+
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                
+
                 <!-- Enable Screencast Mode -->
                 <controls:SettingsGroup x:Uid="ScreencastMode_Enable">
                     <tkcontrols:SettingsCard
@@ -71,10 +71,50 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <controls:ColorPickerButton SelectedColor="{x:Bind ViewModel.BackgroundColor, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="ScreencastMode_TextSize"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Minimum="10"
+                            Maximum="96"
+                            SpinButtonPlacementMode="Inline"
+                            Value="{x:Bind ViewModel.TextSize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                </controls:SettingsGroup>
+
+                <!-- Preview -->
+                <controls:SettingsGroup x:Uid="ScreencastMode_Preview" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <Border
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        Padding="0">
+                        <Grid MinHeight="150" Padding="20" HorizontalAlignment="Stretch">
+                            <Viewbox MaxWidth="550" MaxHeight="100" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border
+                                    x:Name="PreviewPanel"
+                                    CornerRadius="8"
+                                    Padding="16,8"
+                                    Background="{x:Bind ViewModel.BackgroundColor, Mode=OneWay}">
+                                    <TextBlock
+                                        x:Name="PreviewText"
+                                        Text="Win + Ctrl + A"
+                                        FontWeight="SemiBold"
+                                        TextAlignment="Center"
+                                        TextWrapping="NoWrap"
+                                        FontSize="{x:Bind ViewModel.TextSize, Mode=OneWay}"
+                                        Foreground="{x:Bind ViewModel.TextColor, Mode=OneWay}" />
+                                </Border>
+                            </Viewbox>
+                        </Grid>
+                    </Border>
                 </controls:SettingsGroup>
             </StackPanel>
-            
+
         </controls:SettingsPageControl.ModuleContent>
 
         <!-- Documentation Link -->
