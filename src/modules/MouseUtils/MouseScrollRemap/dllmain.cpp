@@ -36,8 +36,8 @@ const static wchar_t* MODULE_NAME = L"MouseScrollRemap";
 const static wchar_t* MODULE_DESC = L"Remap Shift+MouseWheel to horizontal scrolling";
 
 // Signature to identify our own injected mouse events and prevent infinite loops
-// Using a more unique signature based on 'MSSR' (MouseScrollRemap) in hex-like format
-constexpr ULONG_PTR INJECTED_EVENT_SIGNATURE = 0x4D535352; // 'MSSR' in ASCII
+// Using a unique signature: 0x4D535352 represents 'RSSM' in ASCII (reverse of MSSR for MouseScrollRemap)
+constexpr ULONG_PTR INJECTED_EVENT_SIGNATURE = 0x4D535352;
 
 // Forward declaration
 class MouseScrollRemap;
