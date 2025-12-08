@@ -32,7 +32,7 @@ namespace PowerDisplay
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
+        private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private AppWindow? _appWindow;
         private bool _isExiting;

@@ -32,7 +32,7 @@ namespace PowerDisplay
         /// </summary>
         private const string ProcessReadyEventName = "Local\\PowerToys_PowerDisplay_Ready";
 
-        private readonly ISettingsUtils _settingsUtils = new SettingsUtils();
+        private readonly ISettingsUtils _settingsUtils = SettingsUtils.Default;
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
         private TrayIconService? _trayIconService;

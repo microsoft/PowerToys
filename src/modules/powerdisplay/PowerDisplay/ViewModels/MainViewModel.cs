@@ -62,7 +62,7 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _isScanning = true;
 
         // Initialize settings utils
-        _settingsUtils = new SettingsUtils();
+        _settingsUtils = SettingsUtils.Default;
         _stateManager = new MonitorStateManager();
 
         // Initialize the monitor manager
