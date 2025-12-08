@@ -5,11 +5,10 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
-using Microsoft.CmdPal.UI.Events;
 using Microsoft.CommandPalette.UI.Controls;
 using Microsoft.CommandPalette.UI.Helpers;
 using Microsoft.CommandPalette.UI.Models;
+using Microsoft.CommandPalette.UI.Models.Events;
 using Microsoft.CommandPalette.UI.Models.Messages;
 using Microsoft.CommandPalette.UI.Pages;
 using Microsoft.CommandPalette.UI.ViewModels.Helpers;
@@ -230,7 +229,7 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        var newRect = EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi);
+        var newRect = EnsureWindowIsVisible(savedPosition.ToPhysicalWindowRectangle(), new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight), savedPosition.Dpi, logger);
         AppWindow.MoveAndResize(newRect);
     }
 
@@ -343,14 +342,13 @@ public sealed partial class MainWindow : WindowEx,
         if (PInvoke.IsIconic(hwnd))
         {
             // Make sure our HWND is cloaked before any possible window manipulations
-            Cloak();
-
+            // Cloak();
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
         if (target == MonitorBehavior.ToLast)
         {
-            var newRect = EnsureWindowIsVisible(_currentWindowPosition.ToPhysicalWindowRectangle(), new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight), _currentWindowPosition.Dpi);
+            var newRect = EnsureWindowIsVisible(_currentWindowPosition.ToPhysicalWindowRectangle(), new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight), _currentWindowPosition.Dpi, logger);
             AppWindow.MoveAndResize(newRect);
         }
         else
@@ -390,7 +388,7 @@ public sealed partial class MainWindow : WindowEx,
     /// A window rectangle in physical pixels, moved to the nearest display and resized
     /// if the DPI has changed.
     /// </returns>
-    private static RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi)
+    private static RectInt32 EnsureWindowIsVisible(RectInt32 windowRect, SizeInt32 originalScreen, int originalDpi, ILogger logger)
     {
         var displayArea = DisplayArea.GetFromRect(windowRect, DisplayAreaFallback.Nearest);
         if (displayArea is null)
@@ -405,7 +403,7 @@ public sealed partial class MainWindow : WindowEx,
             return windowRect;
         }
 
-        var effectiveDpi = GetEffectiveDpiFromDisplayId(displayArea);
+        var effectiveDpi = GetEffectiveDpiFromDisplayId(displayArea, logger);
         if (originalDpi <= 0)
         {
             originalDpi = effectiveDpi; // use current DPI as baseline (no scaling adjustment needed)
@@ -462,7 +460,7 @@ public sealed partial class MainWindow : WindowEx,
         return new RectInt32(targetX, targetY, targetWidth, targetHeight);
     }
 
-    private static int GetEffectiveDpiFromDisplayId(DisplayArea displayArea)
+    private static int GetEffectiveDpiFromDisplayId(DisplayArea displayArea, ILogger logger)
     {
         var effectiveDpi = 96;
 
@@ -476,7 +474,7 @@ public sealed partial class MainWindow : WindowEx,
             }
             else
             {
-                Logger.LogWarning($"GetDpiForMonitor failed with HRESULT: 0x{hr.Value:X8} on display {displayArea.DisplayId}");
+                Log_GetDpiForMonitorFailed(logger, hr, displayArea);
             }
         }
 
@@ -935,7 +933,7 @@ public sealed partial class MainWindow : WindowEx,
             {
                 // ... then manually hide our window. When debugged, we won't get the cool cloaking,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
-                Cloak();
+                // Cloak();
                 this.Hide();
 
                 return;
@@ -993,7 +991,7 @@ public sealed partial class MainWindow : WindowEx,
     partial void Log_ExternalReloadDisabled();
 
     [LoggerMessage(level: LogLevel.Warning, Message = "GetDpiForMonitor failed with HRESULT: 0x{hr.Value:X8} on display {DisplayArea.DisplayId}")]
-    partial void LogWarning_GetDpiForMonitorFailed(HRESULT hr, DisplayArea displayArea);
+    static partial void Log_GetDpiForMonitorFailed(ILogger logger, HRESULT hr, DisplayArea displayArea);
 
     [LoggerMessage(level: LogLevel.Warning, Message = "DWM cloaking of the main window failed. HRESULT: {hr.Value}.")]
     partial void Log_DwmCloakingFailed(HRESULT hr);

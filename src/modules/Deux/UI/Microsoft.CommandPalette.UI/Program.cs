@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.Events;
+using Microsoft.CommandPalette.UI.Models.Events;
 using Microsoft.CommandPalette.UI.Services;
-using Microsoft.CommandPalette.UI.Services.Telemetry;
 using Microsoft.Extensions.Logging;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using Windows.Win32;
@@ -38,7 +38,7 @@ internal sealed partial class Program
         }
 
         Log_AppStart(logger, DateTime.UtcNow);
-        TelemetryService.WriteEvent(new ProcessStartedEvent());
+        PowerToysTelemetry.Log.WriteEvent(new ProcessStartedEvent());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var isRedirect = DecideRedirection();
@@ -63,13 +63,13 @@ internal sealed partial class Program
 
         if (keyInstance.IsCurrent)
         {
-            TelemetryService.WriteEvent(new ColdLaunchEvent());
+            PowerToysTelemetry.Log.WriteEvent(new ColdLaunchEvent());
             keyInstance.Activated += OnActivated;
         }
         else
         {
             isRedirect = true;
-            TelemetryService.WriteEvent(new ReactivateInstanceEvent());
+            PowerToysTelemetry.Log.WriteEvent(new ReactivateInstanceEvent());
             RedirectActivationTo(args, keyInstance);
         }
 
