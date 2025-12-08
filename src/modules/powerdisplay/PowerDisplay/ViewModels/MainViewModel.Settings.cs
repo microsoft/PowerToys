@@ -556,8 +556,10 @@ public partial class MainViewModel
             colorTemperatureVcp: vm.ColorTemperature)
         {
             CapabilitiesRaw = vm.CapabilitiesRaw,
-            VcpCodes = BuildVcpCodesList(vm),
-            VcpCodesFormatted = BuildFormattedVcpCodesList(vm),
+            VcpCodes = vm.VcpCapabilitiesInfo?.GetVcpCodesAsHexStrings() ?? new List<string>(),
+            VcpCodesFormatted = vm.VcpCapabilitiesInfo?.GetSortedVcpCodes()
+                .Select(info => FormatVcpCodeForDisplay(info.Code, info))
+                .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
 
             // Infer support flags from VCP capabilities
             // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x60 (96) = Input Source, 0x62 (98) = Volume
@@ -571,33 +573,6 @@ public partial class MainViewModel
         };
 
         return monitorInfo;
-    }
-
-    /// <summary>
-    /// Build list of VCP codes in hex format
-    /// </summary>
-    private List<string> BuildVcpCodesList(MonitorViewModel vm)
-    {
-        return vm.VcpCapabilitiesInfo?.GetVcpCodesAsHexStrings() ?? new List<string>();
-    }
-
-    /// <summary>
-    /// Build list of formatted VCP codes with display info
-    /// </summary>
-    private List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo> BuildFormattedVcpCodesList(MonitorViewModel vm)
-    {
-        if (vm.VcpCapabilitiesInfo == null)
-        {
-            return new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>();
-        }
-
-        var result = new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>();
-        foreach (var info in vm.VcpCapabilitiesInfo.GetSortedVcpCodes())
-        {
-            result.Add(FormatVcpCodeForDisplay(info.Code, info));
-        }
-
-        return result;
     }
 
     /// <summary>

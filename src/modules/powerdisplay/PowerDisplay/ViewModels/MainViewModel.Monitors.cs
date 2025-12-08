@@ -150,7 +150,7 @@ public partial class MainViewModel
         }
     }
 
-    private async Task WaitForColorTempAndSaveAsync(List<Task> colorTempTasks)
+    private async Task WaitForColorTempAndSaveAsync(IReadOnlyList<Task> colorTempTasks)
     {
         try
         {
@@ -199,9 +199,6 @@ public partial class MainViewModel
             StatusText = $"Failed to set brightness: {ex.Message}";
         }
     }
-
-    private MonitorViewModel? GetMonitorViewModel(string monitorId)
-        => Monitors.FirstOrDefault(vm => vm.Id == monitorId);
 
     /// <summary>
     /// Get set of hidden monitor IDs from settings
