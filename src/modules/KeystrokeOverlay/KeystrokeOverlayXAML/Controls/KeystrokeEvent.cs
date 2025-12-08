@@ -36,7 +36,7 @@ namespace KeystrokeOverlayUI.Controls
             bool hasAlt = Modifiers != null && Modifiers.Contains("Alt");
             bool hasWin = Modifiers != null && Modifiers.Contains("Win");
 
-            if (isCharEvent)
+            if (isCharEvent && !hasWin)
             {
                 if (string.IsNullOrWhiteSpace(Text))
                 {
@@ -67,12 +67,17 @@ namespace KeystrokeOverlayUI.Controls
                     {
                         // Don't show "Shift" if we are displaying a Char
                         // (because the Char "!" already implies Shift was pressed)
-                        if (isCharEvent && mod == "Shift")
+                        if (isCharEvent && !hasWin && mod == "Shift" && !hasCtrl && !hasAlt)
                         {
                             continue;
                         }
 
-                        displayParts.Add(GetModifierSymbol(mod));
+                        string symbol = GetModifierSymbol(mod);
+
+                        if (!displayParts.Contains(symbol))
+                        {
+                            displayParts.Add(symbol);
+                        }
                     }
                 }
 
@@ -168,6 +173,17 @@ namespace KeystrokeOverlayUI.Controls
 
             switch (key)
             {
+                case Windows.System.VirtualKey.LeftShift:
+                case Windows.System.VirtualKey.RightShift: return "⇧";
+                case Windows.System.VirtualKey.Control:
+                case Windows.System.VirtualKey.LeftControl:
+                case Windows.System.VirtualKey.RightControl: return "Ctrl";
+                case Windows.System.VirtualKey.Menu:
+                case Windows.System.VirtualKey.LeftMenu:
+                case Windows.System.VirtualKey.RightMenu: return "Alt";
+                case Windows.System.VirtualKey.LeftWindows:
+                case Windows.System.VirtualKey.RightWindows: return "⊞";
+
                 case Windows.System.VirtualKey.Space: return "Space";
                 case Windows.System.VirtualKey.Enter: return "Enter";
                 case Windows.System.VirtualKey.Back: return "Backspace";
@@ -179,8 +195,6 @@ namespace KeystrokeOverlayUI.Controls
                 case Windows.System.VirtualKey.Right: return "→";
                 case Windows.System.VirtualKey.Up: return "↑";
                 case Windows.System.VirtualKey.Down: return "↓";
-                case Windows.System.VirtualKey.LeftWindows: return "⊞";
-                case Windows.System.VirtualKey.RightWindows: return "⊞";
             }
 
             // Handle Letters (A-Z)

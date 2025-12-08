@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
@@ -43,11 +44,58 @@ namespace KeystrokeOverlayUI
         [ObservableProperty]
         private bool _isActive = true;
 
+        [ObservableProperty]
+        private string _monitorLabelText = string.Empty;
+
+        [ObservableProperty]
+        private bool _isMonitorLabelVisible = false;
+
+        [ObservableProperty]
+        private string _activationLabelText = string.Empty;
+
+        [ObservableProperty]
+        private bool _isActivationLabelVisible = false;
+
         public HotkeySettings ActivationShortcut { get; set; }
             = new HotkeySettings(true, false, false, true, 0x4B);
 
         public HotkeySettings SwitchMonitorHotkey { get; set; }
             = new HotkeySettings(true, true, false, false, 0x4B);
+
+        public event EventHandler RequestMonitorMove;
+
+        public async void ShowLabel(string type, string text, int durationMs = 2000)
+        {
+            if (type == "monitor")
+            {
+                MonitorLabelText = text;
+                IsMonitorLabelVisible = true;
+            }
+            else
+            {
+                ActivationLabelText = text;
+                IsActivationLabelVisible = true;
+            }
+
+            try
+            {
+                await Task.Delay(durationMs);
+            }
+            catch
+            {
+                // write to logs
+                Logger.LogError("KeystrokeOverlay: Error showing label delay.");
+            }
+
+            if (type == "monitor")
+            {
+                IsMonitorLabelVisible = false;
+            }
+            else
+            {
+                IsActivationLabelVisible = false;
+            }
+        }
 
         public void ApplySettings(ModuleProperties props)
         {
@@ -103,14 +151,28 @@ namespace KeystrokeOverlayUI
             }
         }
 
-        public void HandleKeystrokeEvent(KeystrokeEvent keystroke)
+        public async Task HandleKeystrokeEvent(KeystrokeEvent keystroke)
         {
             bool isDown = string.Equals(keystroke.EventType, "down", StringComparison.OrdinalIgnoreCase);
             if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, ActivationShortcut))
             {
                 IsActive = !IsActive;
 
-                RegisterKey(IsActive ? "Overlay On" : "Overlay Off", durationMs: 1000);
+                ShowLabel("activation", IsActive ? "Overlay On" : "Overlay Off");
+
+                if (!IsActive)
+                {
+                    await Task.Delay(2000);
+                    ClearKeys();
+                }
+
+                return;
+            }
+
+            if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, SwitchMonitorHotkey))
+            {
+                // Fire the event for the View to handle
+                RequestMonitorMove?.Invoke(this, EventArgs.Empty);
                 return;
             }
 
@@ -180,9 +242,6 @@ namespace KeystrokeOverlayUI
                    hasShift == settings.Shift;
         }
 
-        // ---------------------------
-        // New API for adding a key
-        // ---------------------------
         public void RegisterKey(string key, int durationMs = 2000, int textSize = -1)
         {
             if (textSize == -1)

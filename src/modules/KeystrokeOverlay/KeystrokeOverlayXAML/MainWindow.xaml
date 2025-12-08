@@ -15,18 +15,45 @@
             Padding="15,12"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            Background="Transparent">
 
-        <ItemsControl ItemsSource="{x:Bind ViewModel.PressedKeys, Mode=OneWay}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" Spacing="10" SizeChanged="StackPanel_SizeChanged"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+        <StackPanel Orientation="Vertical" Spacing="5" 
+                    SizeChanged="StackPanel_SizeChanged">
 
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <controls:KeyVisual
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border CornerRadius="4"
+                        Padding="8,4"
+                        HorizontalAlignment="Left"
+                        Visibility="{x:Bind ViewModel.IsMonitorLabelVisible, Mode=OneWay}">
+
+                    <TextBlock Text="{x:Bind ViewModel.MonitorLabelText, Mode=OneWay}"
+                               Foreground="Black"
+                               FontSize="18"
+                               FontWeight="SemiBold"/>
+                </Border>
+
+                <Border CornerRadius="4"
+                        Padding="8,4"
+                        HorizontalAlignment="Left"
+                        Visibility="{x:Bind ViewModel.IsActivationLabelVisible, Mode=OneWay}">
+
+                    <TextBlock Text="{x:Bind ViewModel.ActivationLabelText, Mode=OneWay}"
+                       Foreground="Black"
+                       FontSize="18"
+                       FontWeight="SemiBold"/>
+                </Border>
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{x:Bind ViewModel.PressedKeys, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="10" SizeChanged="StackPanel_SizeChanged"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:KeyVisual
                         Content="{Binding Text}"
                         VerticalAlignment="Center"
                         IsTabStop="False"
@@ -38,14 +65,14 @@
                         Foreground="{Binding DataContext.TextColor, ElementName=RootGrid}"
                         Background="{Binding DataContext.BackgroundColor, ElementName=RootGrid}">
 
-                    <controls:KeyVisual.OpacityTransition>
-                        <ScalarTransition />
-                    </controls:KeyVisual.OpacityTransition>
+                            <controls:KeyVisual.OpacityTransition>
+                                <ScalarTransition />
+                            </controls:KeyVisual.OpacityTransition>
 
-                </controls:KeyVisual>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        </Border>
-    
+                        </controls:KeyVisual>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
 </Window>

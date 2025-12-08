@@ -113,6 +113,8 @@ namespace KeystrokeOverlayUI
             Activated += (s, e) => ApplyOverlayStyles();
             _zOrderEnforcer.Interval = TimeSpan.FromMilliseconds(500);
             _zOrderEnforcer.Tick += (s, e) => ForceWindowOnTop();
+
+            ViewModel.RequestMonitorMove += (s, e) => MoveToNextMonitor();
         }
 
         private void ApplyOverlayStyles()
@@ -199,13 +201,63 @@ namespace KeystrokeOverlayUI
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                ViewModel.HandleKeystrokeEvent(kEvent);
+                _ = ViewModel.HandleKeystrokeEvent(kEvent);
 
                 if (!_zOrderEnforcer.IsEnabled)
                 {
                     _zOrderEnforcer.Start();
                 }
             });
+        }
+
+        // ----------------------
+        // Hotkey Methods
+        // ----------------------
+        private void MoveToNextMonitor()
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(this);
+            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
+
+            if (appWindow == null)
+            {
+                return;
+            }
+
+            var displayAreas = DisplayArea.FindAll();
+            if (displayAreas.Count <= 1)
+            {
+                return;
+            }
+
+            // Find current display index
+            DisplayArea currentDisplay = DisplayArea.GetFromWindowId(wndId, DisplayAreaFallback.Primary);
+
+            int currentIndex = -1;
+            for (int i = 0; i < displayAreas.Count; i++)
+            {
+                if (displayAreas[i].DisplayId.Value == currentDisplay.DisplayId.Value)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+
+            // Calculate Next Index
+            int nextIndex = (currentIndex + 1) % displayAreas.Count;
+            DisplayArea nextDisplay = displayAreas[nextIndex];
+
+            // move to Top-Left of new monitor
+            int newX = nextDisplay.WorkArea.X + 15;
+            int newY = nextDisplay.WorkArea.Y + 12;
+
+            // keep relative position
+            // int offsetX = appWindow.Position.X - currentDisplay.WorkArea.X;
+            // int offsetY = appWindow.Position.Y - currentDisplay.WorkArea.Y;
+            // int newX = nextDisplay.WorkArea.X + offsetX;
+            // int newY = nextDisplay.WorkArea.Y + offsetY;
+            appWindow.Move(new Windows.Graphics.PointInt32(newX, newY));
+            ViewModel.ShowLabel("monitor", $"Monitor {nextIndex + 1}");
         }
 
         // ----------------------
