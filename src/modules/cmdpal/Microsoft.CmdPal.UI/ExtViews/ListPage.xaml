@@ -155,6 +155,8 @@
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
                 BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                BorderBrushColor="{x:Bind BorderBrush, Mode=OneWay}"
+                TagCornerRadius="{x:Bind CornerRadius, Mode=OneWay}"
                 FontSize="12"
                 ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
                 Icon="{x:Bind Icon, Mode=OneWay}"

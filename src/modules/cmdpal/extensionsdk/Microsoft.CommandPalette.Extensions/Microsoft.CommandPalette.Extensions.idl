@@ -154,6 +154,8 @@ namespace Microsoft.CommandPalette.Extensions
         String Text { get; };
         OptionalColor Foreground { get; };
         OptionalColor Background { get; };
+        OptionalColor BorderBrush { get; };
+        Double CornerRadius { get; };
         String ToolTip { get; };
     };
     

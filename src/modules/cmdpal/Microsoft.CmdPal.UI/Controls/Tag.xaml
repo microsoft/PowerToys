@@ -26,6 +26,7 @@
     </ResourceDictionary.ThemeDictionaries>
     <Thickness x:Key="TagPadding">4,2,4,2</Thickness>
     <Thickness x:Key="TagBorderThickness">1</Thickness>
+    <CornerRadius x:Key="TagCornerRadius">4,4,4,4</CornerRadius>
 
     <local:IconMarginConverter x:Key="IconMarginConverter" />
 
@@ -36,7 +37,7 @@
             <Setter Property="Background" Value="{ThemeResource TagBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource TagBorderBrush}" />
             <Setter Property="BorderThickness" Value="{ThemeResource TagBorderThickness}" />
-            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="CornerRadius" Value="{StaticResource TagCornerRadius}" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />

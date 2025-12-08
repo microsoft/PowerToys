@@ -58,6 +58,36 @@ internal sealed partial class SampleListPageWithDetails : ListPage
             },
             new ListItem(new NoOpCommand())
             {
+                Title = "This one has a customized tag",
+                Subtitle = "with BorderBrush and CornerRadius",
+                Tags = [
+                    new Tag()
+                    {
+                        Text = "Custom Border",
+                        BorderBrush = ColorHelpers.FromRgb(255, 0, 0),
+                    },
+                    new Tag()
+                    {
+                        Text = "Rounded",
+                        CornerRadius = 12,
+                    },
+                    new Tag()
+                    {
+                        Text = "Full Custom",
+                        Foreground = ColorHelpers.FromRgb(255, 255, 255),
+                        Background = ColorHelpers.FromRgb(0, 128, 0),
+                        BorderBrush = ColorHelpers.FromRgb(255, 215, 0),
+                        CornerRadius = 8,
+                    },
+                ],
+                Details = new Details()
+                {
+                    Title = "Customized Tags",
+                    Body = "Tags can have custom **BorderBrush** and **CornerRadius** properties.",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
                 Title = "This one has a hero image",
                 Tags = [],
                 Details = new Details()
@@ -118,6 +148,8 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                                     new Tag("Colored everything") { Foreground = ColorHelpers.FromRgb(255, 255, 0), Background = ColorHelpers.FromRgb(0, 0, 255) },
                                     new Tag("Icons too") { Icon = new IconInfo("\uE735"), Foreground = ColorHelpers.FromRgb(255, 255, 0) },
                                     new Tag() { Icon = new IconInfo("https://i.imgur.com/t9qgDTM.png") },
+                                    new Tag("Custom border") { BorderBrush = ColorHelpers.FromRgb(255, 0, 255) },
+                                    new Tag("Rounded corners") { CornerRadius = 10 },
                                     new Tag("this") { Foreground = RandomColor(), Background = RandomColor() },
                                     new Tag("baby") { Foreground = RandomColor(), Background = RandomColor() },
                                     new Tag("can") { Foreground = RandomColor(), Background = RandomColor() },

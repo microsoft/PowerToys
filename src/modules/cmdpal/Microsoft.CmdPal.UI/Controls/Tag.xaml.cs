@@ -29,6 +29,18 @@ public partial class Tag : Control
         set => SetValue(ForegroundColorProperty, value);
     }
 
+    public OptionalColor? BorderBrushColor
+    {
+        get => (OptionalColor?)GetValue(BorderBrushColorProperty);
+        set => SetValue(BorderBrushColorProperty, value);
+    }
+
+    public double TagCornerRadius
+    {
+        get => (double)GetValue(TagCornerRadiusProperty);
+        set => SetValue(TagCornerRadiusProperty, value);
+    }
+
     public bool HasIcon => Icon?.HasIcon(this.ActualTheme == ElementTheme.Light) ?? false;
 
     public IconInfoViewModel? Icon
@@ -49,11 +61,19 @@ public partial class Tag : Control
 
     private static Brush? OriginalBorder => Application.Current.Resources["TagBorderBrush"] as Brush;
 
+    private static CornerRadius? OriginalCornerRadius => Application.Current.Resources["TagCornerRadius"] as CornerRadius?;
+
     public static readonly DependencyProperty ForegroundColorProperty =
         DependencyProperty.Register(nameof(ForegroundColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnForegroundColorPropertyChanged));
 
     public static readonly DependencyProperty BackgroundColorProperty =
         DependencyProperty.Register(nameof(BackgroundColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnBackgroundColorPropertyChanged));
+
+    public static readonly DependencyProperty BorderBrushColorProperty =
+        DependencyProperty.Register(nameof(BorderBrushColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnBorderBrushColorPropertyChanged));
+
+    public static readonly DependencyProperty TagCornerRadiusProperty =
+        DependencyProperty.Register(nameof(TagCornerRadius), typeof(double), typeof(Tag), new PropertyMetadata(4.0, OnTagCornerRadiusPropertyChanged));
 
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(nameof(Icon), typeof(IconInfoViewModel), typeof(Tag), new PropertyMetadata(null));
@@ -148,6 +168,42 @@ public partial class Tag : Control
                 // Otherwise (no foreground), use the FG as the border
                 tag.BorderBrush = OriginalBorder;
             }
+        }
+    }
+
+    private static void OnBorderBrushColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not Tag tag)
+        {
+            return;
+        }
+
+        if (tag.BorderBrushColor is not null &&
+            tag.BorderBrushColor.Value.HasValue &&
+            OptionalColorBrushCacheProvider.Convert(tag.BorderBrushColor.Value) is SolidColorBrush brush)
+        {
+            tag.BorderBrush = brush;
+        }
+        else
+        {
+            tag.BorderBrush = OriginalBorder;
+        }
+    }
+
+    private static void OnTagCornerRadiusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not Tag tag)
+        {
+            return;
+        }
+
+        if (tag.TagCornerRadius >= 0)
+        {
+            tag.CornerRadius = new CornerRadius(tag.TagCornerRadius);
+        }
+        else if (OriginalCornerRadius is CornerRadius cr)
+        {
+            tag.CornerRadius = cr;
         }
     }
 }

@@ -8,6 +8,8 @@ public partial class Tag : BaseObservable, ITag
 {
     private OptionalColor _foreground;
     private OptionalColor _background;
+    private OptionalColor _borderBrush;
+    private double _cornerRadius = -1;
     private string _text = string.Empty;
 
     public virtual OptionalColor Foreground
@@ -27,6 +29,26 @@ public partial class Tag : BaseObservable, ITag
         {
             _background = value;
             OnPropertyChanged(nameof(Background));
+        }
+    }
+
+    public virtual OptionalColor BorderBrush
+    {
+        get => _borderBrush;
+        set
+        {
+            _borderBrush = value;
+            OnPropertyChanged(nameof(BorderBrush));
+        }
+    }
+
+    public virtual double CornerRadius
+    {
+        get => _cornerRadius;
+        set
+        {
+            _cornerRadius = value;
+            OnPropertyChanged(nameof(CornerRadius));
         }
     }
 
