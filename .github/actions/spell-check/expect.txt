@@ -221,6 +221,7 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
+CLITo
 closesocket
 clp
 CLSCTX
@@ -728,9 +729,9 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
+icf
 IDCANCEL
 IDD
 idk
@@ -1073,6 +1074,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1796,6 +1798,7 @@ tlbimp
 tlc
 tmain
 TNP
+toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
