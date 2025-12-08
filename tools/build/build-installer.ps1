@@ -42,15 +42,17 @@ param (
     [string]$Configuration = 'Release',
     [string]$PerUser = 'true',
     [switch]$Clean,
+    [switch]$SkipBuild,
     [switch]$Help
 )
 
 if ($Help) {
-    Write-Host "Usage: .\build-installer.ps1 [-Platform <x64|arm64>] [-Configuration <Release|Debug>] [-PerUser <true|false>] [-Clean]"
+    Write-Host "Usage: .\build-installer.ps1 [-Platform <x64|arm64>] [-Configuration <Release|Debug>] [-PerUser <true|false>] [-Clean] [-SkipBuild]"
     Write-Host "  -Platform       Target platform (default: auto-detect or x64)"
     Write-Host "  -Configuration  Build configuration (default: Release)"
     Write-Host "  -PerUser        Build per-user installer (default: true)"
     Write-Host "  -Clean          Clean output directories before building"
+    Write-Host "  -SkipBuild      Skip building the main solution and tools (assumes they are already built)"
     Write-Host "  -Help           Show this help message"
     exit 0
 }
@@ -127,7 +129,9 @@ if ($Clean) {
 
 $commonArgs = '/p:CIBuild=true /p:IsPipeline=true'
 # No local projects found (or continuing) - build full solution and tools
-RestoreThenBuild 'PowerToys.slnx' $commonArgs $Platform $Configuration
+if (-not $SkipBuild) {
+    RestoreThenBuild 'PowerToys.slnx' $commonArgs $Platform $Configuration
+}
 
 $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
 $msixFiles = Get-ChildItem -Path $msixSearchRoot -Recurse -Filter *.msix |
@@ -155,8 +159,10 @@ if (Test-Path $dscScriptPath) {
     Write-Warning "[DSC] DSC manifest generator script not found at: $dscScriptPath"
 }
 
-RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
-RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
+if (-not $SkipBuild) {
+    RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
+    RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
+}
 
 if ($Clean) {
     Write-Host '[CLEAN] installer (keep *.exe)'
