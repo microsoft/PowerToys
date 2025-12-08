@@ -22,6 +22,7 @@ public static class FuzzyStringMatcher
     private static bool IsSimplifiedChinese()
     {
         var culture = CultureInfo.CurrentUICulture;
+
         // Detect Simplified Chinese: zh-CN, zh-Hans, zh-Hans-*
         return culture.Name.StartsWith("zh-CN", StringComparison.OrdinalIgnoreCase)
             || culture.Name.StartsWith("zh-Hans", StringComparison.OrdinalIgnoreCase);

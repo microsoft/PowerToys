@@ -141,7 +141,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-
     public int AutoGoBackIntervalIndex
     {
         get
