@@ -107,9 +107,11 @@ namespace QuickAccessHost
 
     void start()
     {
+        Logger::info(L"QuickAccessHost::start() called");
         std::scoped_lock lock(quick_access_mutex);
         if (is_process_active_locked())
         {
+            Logger::info(L"QuickAccessHost::start: process already active");
             return;
         }
 
@@ -232,6 +234,7 @@ namespace QuickAccessHost
 
     void stop()
     {
+        Logger::info(L"QuickAccessHost::stop() called");
         std::unique_lock lock(quick_access_mutex);
         if (exit_event)
         {
@@ -241,6 +244,7 @@ namespace QuickAccessHost
         if (quick_access_process)
         {
             const DWORD wait_result = WaitForSingleObject(quick_access_process.get(), 2000);
+            Logger::info(L"QuickAccessHost::stop: WaitForSingleObject result={}", wait_result);
             if (wait_result == WAIT_TIMEOUT)
             {
                 Logger::warn(L"QuickAccessHost: Quick Access process did not exit in time, terminating.");
@@ -250,6 +254,7 @@ namespace QuickAccessHost
                 }
                 else
                 {
+                    Logger::info(L"QuickAccessHost: TerminateProcess succeeded.");
                     WaitForSingleObject(quick_access_process.get(), 5000);
                 }
             }

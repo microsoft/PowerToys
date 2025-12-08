@@ -48,6 +48,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enable_warnings_elevated_apps")]
         public bool EnableWarningsElevatedApps { get; set; }
 
+        // Gets or sets a value indicating whether Quick Access is enabled.
+        [JsonPropertyName("enable_quick_access")]
+        public bool EnableQuickAccess { get; set; }
+
+        // Gets or sets Quick Access shortcut.
+        [JsonPropertyName("quick_access_shortcut")]
+        public HotkeySettings QuickAccessShortcut { get; set; }
+
         // Gets or sets theme Name.
         [JsonPropertyName("theme")]
         public string Theme { get; set; }
@@ -94,6 +102,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowSysTrayIcon = true;
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
+            EnableQuickAccess = true;
+            QuickAccessShortcut = new HotkeySettings();
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;
             AutoDownloadUpdates = false;

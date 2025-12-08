@@ -106,7 +106,11 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
     Trace::RegisterProvider();
     start_tray_icon(isProcessElevated);
-    QuickAccessHost::start();
+    if (get_general_settings().enableQuickAccess)
+    {
+        QuickAccessHost::start();
+    }
+    update_quick_access_hotkey(get_general_settings().enableQuickAccess, get_general_settings().quickAccessShortcut);
     set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 

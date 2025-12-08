@@ -125,7 +125,14 @@ void click_timer_elapsed()
     double_click_timer_running = false;
     if (!double_clicked)
     {
-        open_quick_access_flyout_window();
+        if (get_general_settings().enableQuickAccess)
+        {
+            open_quick_access_flyout_window();
+        }
+        else
+        {
+            open_settings_window(std::nullopt);
+        }
     }
 }
 
@@ -344,5 +351,25 @@ void stop_tray_icon()
         // Clear bug report callbacks
         BugReportManager::instance().clear_callbacks();
         SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
+    }
+}
+void update_quick_access_hotkey(bool enabled, PowerToysSettings::HotkeyObject hotkey)
+{
+    static PowerToysSettings::HotkeyObject current_hotkey;
+    static bool is_registered = false;
+
+    if (is_registered)
+    {
+        CentralizedHotkeys::UnregisterHotkeysForModule(L"QuickAccess");
+        is_registered = false;
+    }
+
+    if (enabled && hotkey.get_code() != 0)
+    {
+        CentralizedHotkeys::AddHotkeyAction({ static_cast<WORD>(hotkey.get_modifiers()), static_cast<WORD>(hotkey.get_code()) }, { L"QuickAccess", [](WORD, WORD) {
+            open_quick_access_flyout_window();
+        }});
+        current_hotkey = hotkey;
+        is_registered = true;
     }
 }

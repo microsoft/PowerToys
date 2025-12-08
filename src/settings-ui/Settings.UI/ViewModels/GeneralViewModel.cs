@@ -155,6 +155,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
             _enableWarningsElevatedApps = GeneralSettingsConfig.EnableWarningsElevatedApps;
+            _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
+            _quickAccessShortcut = GeneralSettingsConfig.QuickAccessShortcut;
+            if (_quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+            }
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -236,6 +242,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _runElevated;
         private bool _isAdmin;
         private bool _enableWarningsElevatedApps;
+        private bool _enableQuickAccess;
+        private HotkeySettings _quickAccessShortcut;
         private int _themeIndex;
 
         private bool _showNewUpdatesToastNotification;
@@ -478,6 +486,57 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool EnableQuickAccess
+        {
+            get
+            {
+                return _enableQuickAccess;
+            }
+
+            set
+            {
+                if (_enableQuickAccess != value)
+                {
+                    _enableQuickAccess = value;
+                    GeneralSettingsConfig.EnableQuickAccess = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings QuickAccessShortcut
+        {
+            get
+            {
+                return _quickAccessShortcut;
+            }
+
+            set
+            {
+                if (_quickAccessShortcut != value)
+                {
+                    if (_quickAccessShortcut != null)
+                    {
+                        _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
+                    }
+
+                    _quickAccessShortcut = value;
+                    if (_quickAccessShortcut != null)
+                    {
+                        _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+                    }
+
+                    GeneralSettingsConfig.QuickAccessShortcut = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private void QuickAccessShortcut_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged(nameof(QuickAccessShortcut));
         }
 
         public bool SomeUpdateSettingsAreGpoManaged

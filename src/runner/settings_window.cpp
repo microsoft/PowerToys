@@ -180,6 +180,8 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         return;
     }
 
+    Logger::info(L"dispatch_received_json: {}", json_to_parse);
+
     for (const auto& base_element : j)
     {
         const auto name = base_element.Key();
