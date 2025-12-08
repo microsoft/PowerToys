@@ -151,7 +151,7 @@ namespace KeystrokeOverlayUI
             }
         }
 
-        public async Task HandleKeystrokeEvent(KeystrokeEvent keystroke)
+        public void HandleKeystrokeEvent(KeystrokeEvent keystroke)
         {
             bool isDown = string.Equals(keystroke.EventType, "down", StringComparison.OrdinalIgnoreCase);
             if (isDown && keystroke.IsPressed && IsHotkeyMatch(keystroke, ActivationShortcut))
@@ -162,7 +162,6 @@ namespace KeystrokeOverlayUI
 
                 if (!IsActive)
                 {
-                    await Task.Delay(2000);
                     ClearKeys();
                 }
 

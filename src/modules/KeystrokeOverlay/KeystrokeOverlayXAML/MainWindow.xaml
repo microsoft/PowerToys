@@ -9,6 +9,10 @@
     mc:Ignorable="d"
     Title="KeystrokeOverlayUI">
 
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt"/>
+    </Window.SystemBackdrop>
+
     <Border x:Name="RootGrid"
             Loaded="RootGrid_Loaded"
             PointerPressed="RootGrid_PointerPressed"
@@ -17,8 +21,7 @@
             VerticalAlignment="Top"
             Background="Transparent">
 
-        <StackPanel Orientation="Vertical" Spacing="5" 
-                    SizeChanged="StackPanel_SizeChanged">
+        <StackPanel Orientation="Vertical" Spacing="5">
 
             <StackPanel Orientation="Horizontal" Spacing="5">
                 <Border CornerRadius="4"

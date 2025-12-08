@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using KeystrokeOverlayUI.Controls;
 using KeystrokeOverlayUI.Models;
 using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -78,14 +79,8 @@ namespace KeystrokeOverlayUI
 
         public MainWindow()
         {
-            SystemBackdrop = null;
-
-            Content = new Grid
-            {
-                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
-            };
-
             InitializeComponent();
+            SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.BaseAlt };
 
             RootGrid.DataContext = ViewModel;
 
@@ -201,7 +196,7 @@ namespace KeystrokeOverlayUI
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                _ = ViewModel.HandleKeystrokeEvent(kEvent);
+                ViewModel.HandleKeystrokeEvent(kEvent);
 
                 if (!_zOrderEnforcer.IsEnabled)
                 {
@@ -300,18 +295,27 @@ namespace KeystrokeOverlayUI
                 desiredSize.Height == 0 ||
                 ViewModel.PressedKeys.Count == 0)
             {
-                HideAppWindow();
-                _zOrderEnforcer.Stop();
+                if (!ViewModel.IsActivationLabelVisible && !ViewModel.IsMonitorLabelVisible)
+                {
+                    HideAppWindow();
+                    _zOrderEnforcer.Stop();
+                }
+
                 return;
             }
 
             ShowAppWindow();
 
             double totalWidth =
-                desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right;
+                desiredSize.Width + RootGrid.Padding.Left + RootGrid.Padding.Right + 5;
 
             double totalHeight =
-                desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 5;
+                desiredSize.Height + RootGrid.Padding.Top + RootGrid.Padding.Bottom + 10;
+
+            if (ViewModel.IsMonitorLabelVisible || ViewModel.IsActivationLabelVisible)
+            {
+                totalHeight = totalHeight + 30;
+            }
 
             ResizeAppWindow(totalWidth, totalHeight);
             ForceWindowOnTop();
