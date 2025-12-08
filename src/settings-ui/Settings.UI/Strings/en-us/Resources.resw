@@ -5502,16 +5502,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>"Screencast Mode" is the name of the utility</comment>
   </data>
   <data name="ScreencastMode.ModuleDescription" xml:space="preserve">
-    <value>Visualize keystroke on your screen</value>
+    <value>Visualize keystrokes on the screen. Screencast Mode helps you create better presentations and screencasts by providing visual feedback for yourself and your audience.</value>
   </data>
   <data name="ScreencastMode_Enable.Header" xml:space="preserve">
     <value>Enable Screencast Mode</value>
   </data>
   <data name="ScreencastMode_EnableToggle.Header" xml:space="preserve">
     <value>Enable Screencast Mode</value>
-  </data>
-  <data name="ScreencastMode_Description.Message" xml:space="preserve">
-    <value>Screencast Mode helps you create better presentations and screencasts by providing visual feedback and highlighting tools.</value>
   </data>
   <data name="ScreencastMode_Activation.Header" xml:space="preserve">
     <value>Activation</value>

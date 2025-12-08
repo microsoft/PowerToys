@@ -26,14 +26,6 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <!-- Description InfoBar -->
-                <InfoBar
-                    x:Uid="ScreencastMode_Description"
-                    IsClosable="False"
-                    IsOpen="True"
-                    IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                    Severity="Informational" />
-
                 <!-- Activation -->
                 <controls:SettingsGroup x:Uid="ScreencastMode_Activation" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
