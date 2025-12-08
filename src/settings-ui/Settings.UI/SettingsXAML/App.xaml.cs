@@ -48,7 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private const int RequiredArgumentsSetAdditionalSettingsQty = 4;
         private const int RequiredArgumentsGetSettingQty = 3;
 
-        private const int RequiredArgumentsLaunchedFromRunnerQty = 12;
+        private const int RequiredArgumentsLaunchedFromRunnerQty = 10;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
