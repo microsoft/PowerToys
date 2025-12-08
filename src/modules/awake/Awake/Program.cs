@@ -51,7 +51,7 @@ namespace Awake
 
         private static async Task<int> Main(string[] args)
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.Default;
 
             LockMutex = new Mutex(true, Core.Constants.AppName, out bool instantiated);
 
