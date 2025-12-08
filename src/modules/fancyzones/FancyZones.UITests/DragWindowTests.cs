@@ -50,7 +50,7 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
+            // SettingsConfigHelper.ConfigureGlobalModuleSettings("Hosts");
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
 
