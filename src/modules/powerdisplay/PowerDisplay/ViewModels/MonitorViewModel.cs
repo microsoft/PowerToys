@@ -9,10 +9,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
-using PowerDisplay.Commands;
+
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Configuration;
@@ -574,13 +574,14 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Command to set input source
     /// </summary>
-    public ICommand SetInputSourceCommand => new RelayCommand<int?>(async (source) =>
+    [RelayCommand]
+    private async Task SetInputSource(int? source)
     {
         if (source.HasValue)
         {
             await SetInputSourceAsync(source.Value);
         }
-    });
+    }
 
     public int Contrast
     {
@@ -618,29 +619,32 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    public ICommand SetBrightnessCommand => new RelayCommand<int?>((brightness) =>
+    [RelayCommand]
+    private void SetBrightness(int? brightness)
     {
         if (brightness.HasValue)
         {
             Brightness = brightness.Value;
         }
-    });
+    }
 
-    public ICommand SetContrastCommand => new RelayCommand<int?>((contrast) =>
+    [RelayCommand]
+    private void SetContrast(int? contrast)
     {
         if (contrast.HasValue)
         {
             Contrast = contrast.Value;
         }
-    });
+    }
 
-    public ICommand SetVolumeCommand => new RelayCommand<int?>((volume) =>
+    [RelayCommand]
+    private void SetVolume(int? volume)
     {
         if (volume.HasValue)
         {
             Volume = volume.Value;
         }
-    });
+    }
 
     public int ContrastPercent
     {

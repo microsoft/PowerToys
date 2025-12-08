@@ -9,12 +9,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Windows.Input;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
-using PowerDisplay.Commands;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
@@ -168,17 +168,20 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool IsInteractionEnabled => !IsLoading && !IsScanning;
 
-    public ICommand RefreshCommand => new RelayCommand(async () => await RefreshMonitorsAsync());
+    [RelayCommand]
+    private async Task RefreshAsync() => await RefreshMonitorsAsync();
 
-    public ICommand SetAllBrightnessCommand => new RelayCommand<int?>(async (brightness) =>
+    [RelayCommand]
+    private async Task SetAllBrightness(int? brightness)
     {
         if (brightness.HasValue)
         {
             await SetAllBrightnessAsync(brightness.Value);
         }
-    });
+    }
 
-    public ICommand IdentifyMonitorsCommand => new RelayCommand(() =>
+    [RelayCommand]
+    private void IdentifyMonitors()
     {
         Logger.LogInfo("Identify monitors feature triggered");
 
@@ -217,16 +220,17 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
             Logger.LogError($"Failed to identify monitors: {ex.Message}");
             Logger.LogError($"Stack trace: {ex.StackTrace}");
         }
-    });
+    }
 
-    public ICommand ApplyProfileCommand => new RelayCommand<PowerDisplayProfile>(async profile =>
+    [RelayCommand]
+    private async Task ApplyProfile(PowerDisplayProfile? profile)
     {
         if (profile != null && profile.IsValid())
         {
             Logger.LogInfo($"[Profile] Applying profile '{profile.Name}' from quick apply");
             await ApplyProfileAsync(profile.Name, profile.MonitorSettings);
         }
-    });
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
