@@ -160,6 +160,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public int EscapeKeyBehaviorIndex
+    {
+        get => (int)_settings.EscapeKeyBehaviorSetting;
+        set
+        {
+            _settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsExtensionsViewModel Extensions { get; }
