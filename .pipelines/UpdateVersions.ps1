@@ -112,16 +112,37 @@ if ($latestVersion) {
     exit 1
 }
 
-# Update packages.config files
-Get-ChildItem -Path $rootPath -Recurse packages.config | ForEach-Object {
-    $file = Read-FileWithEncoding -Path $_.FullName
-    $content = $file.Content
-    if ($content -match 'package id="Microsoft.WindowsAppSDK"') {
-        $newVersionString = 'package id="Microsoft.WindowsAppSDK" version="' + $WinAppSDKVersion + '"'
-        $oldVersionString = 'package id="Microsoft.WindowsAppSDK" version="[-.0-9a-zA-Z]*"'
-        $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $_.FullName 
+# Resolve dependencies for 1.8+
+$packageVersions = @{ "Microsoft.WindowsAppSDK" = $WinAppSDKVersion }
+
+if ($WinAppSDKVersion -match "^1\.8") {
+    Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
+    $tempDir = Join-Path $env:TEMP "winappsdk_deps_$(Get-Random)"
+    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    try {
+        # Create a temporary nuget.config to avoid interference from the repo's config
+        $tempConfig = Join-Path $tempDir "nuget.config"
+        Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
+
+        # Download package to inspect nuspec
+        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $tempDir -NonInteractive -NoCache"
+        Invoke-Expression "nuget $nugetArgs" | Out-Null
+        
+        # Parse dependencies from the installed folders
+        # Folder structure is typically {PackageId}.{Version}
+        $directories = Get-ChildItem -Path $tempDir -Directory
+        foreach ($dir in $directories) {
+            if ($dir.Name -match "^(Microsoft\.WindowsAppSDK.*?)\.(\d.*)$") {
+                $pkgId = $Matches[1]
+                $pkgVer = $Matches[2]
+                $packageVersions[$pkgId] = $pkgVer
+                Write-Host "Found dependency: $pkgId = $pkgVer"
+            }
+        }
+    } catch {
+        Write-Warning "Failed to resolve dependencies: $_"
+    } finally {
+        Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -129,39 +150,30 @@ Get-ChildItem -Path $rootPath -Recurse packages.config | ForEach-Object {
 Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Object {
     $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
-    if ($content -match '<PackageVersion Include="Microsoft.WindowsAppSDK"') {
-        $newVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="' + $WinAppSDKVersion + '" />'
-        $oldVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*" />'
-        $content = $content -replace $oldVersionString, $newVersionString
+    $isModified = $false
+    
+    foreach ($pkgId in $packageVersions.Keys) {
+        $ver = $packageVersions[$pkgId]
+        # Escape dots in package ID for regex
+        $pkgIdRegex = $pkgId -replace '\.', '\.'
+        
+        $newVersionString = "<PackageVersion Include=""$pkgId"" Version=""$ver"" />"
+        $oldVersionString = "<PackageVersion Include=""$pkgIdRegex"" Version=""[-.0-9a-zA-Z]*"" />"
+
+        if ($content -match "<PackageVersion Include=""$pkgIdRegex""") {
+            # Update existing package
+            if ($content -notmatch [regex]::Escape($newVersionString)) {
+                $content = $content -replace $oldVersionString, $newVersionString
+                $isModified = $true
+            }
+        }
+    }
+
+    if ($isModified) {
         Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName
     }
 }
 
-# Update .vcxproj files
-Get-ChildItem -Path $rootPath -Recurse *.vcxproj | ForEach-Object {
-    $file = Read-FileWithEncoding -Path $_.FullName
-    $content = $file.Content
-    if ($content -match '\\Microsoft.WindowsAppSDK.') {
-        $newVersionString = '\Microsoft.WindowsAppSDK.' + $WinAppSDKVersion
-        $oldVersionString = '\\Microsoft.WindowsAppSDK.(?=[-.0-9a-zA-Z]*\d)[-.0-9a-zA-Z]*'    #positive lookahead for at least a digit
-        $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $_.FullName
-    }
-}
-
-# Update .csproj files
-Get-ChildItem -Path $rootPath -Recurse *.csproj | ForEach-Object {
-    $file = Read-FileWithEncoding -Path $_.FullName
-    $content = $file.Content
-    if ($content -match 'PackageReference Include="Microsoft.WindowsAppSDK"') {
-        $newVersionString = 'PackageReference Include="Microsoft.WindowsAppSDK" Version="'+ $WinAppSDKVersion + '"'
-        $oldVersionString = 'PackageReference Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*"'
-        $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $_.FullName 
-    }
-}
 
 Update-NugetConfig
