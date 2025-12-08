@@ -11,6 +11,7 @@
     <OutputType>Exe</OutputType>
     <Platforms>x64;ARM64</Platforms>
     <PublishAot>true</PublishAot>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->
