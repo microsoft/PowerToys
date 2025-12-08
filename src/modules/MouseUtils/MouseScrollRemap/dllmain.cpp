@@ -18,6 +18,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpRese
     {
     case DLL_PROCESS_ATTACH:
         Trace::RegisterProvider();
+        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseScrollRemapLoggerName);
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
@@ -55,7 +56,6 @@ public:
     // Constructor
     MouseScrollRemap()
     {
-        LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseScrollRemapLoggerName);
         g_mouseScrollRemapInstance = this; // Set global instance pointer
     };
 
@@ -180,11 +180,17 @@ private:
             {
                 auto* pMouseStruct = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
                 
+                // Check if this is our own injected event to prevent infinite loops
+                if (pMouseStruct != nullptr && pMouseStruct->dwExtraInfo == 0x123456)
+                {
+                    // This is our own injected event, ignore it
+                    return CallNextHookEx(nullptr, nCode, wParam, lParam);
+                }
+                
                 // Check if Shift is pressed but Ctrl is NOT pressed
-                // Using GetAsyncKeyState is acceptable here as this hook is not on a critical path
-                // and only triggers when the user actively scrolls
-                bool shiftPressed = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-                bool ctrlPressed = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+                // Using GetKeyState to check key state when the message was generated
+                bool shiftPressed = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+                bool ctrlPressed = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
                 
                 if (shiftPressed && !ctrlPressed)
                 {
@@ -211,7 +217,7 @@ private:
                     inputs[1].mi.mouseData = mouseData;
                     inputs[1].mi.dwFlags = MOUSEEVENTF_WHEEL;
                     inputs[1].mi.time = 0;
-                    inputs[1].mi.dwExtraInfo = 0;
+                    inputs[1].mi.dwExtraInfo = 0x123456; // Tag our own event to prevent infinite loops
                     
                     // Ctrl up
                     inputs[2].type = INPUT_KEYBOARD;
