@@ -9,14 +9,10 @@
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<XesUseOneStoreVersioning>false</XesUseOneStoreVersioning>
 		<PackageVersion>$(Version)</PackageVersion>
+		<XES_APPXMANIFESTVERSION>$(PackageVersion)</XES_APPXMANIFESTVERSION>
 		<!-- Keep the MSIX version in sync with the PowerToys version -->
 		<AppxPackageVersion>$(Version)</AppxPackageVersion>
 		<ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
-		<VersionMajor>$([System.Version]::Parse($(Version)).Major)</VersionMajor>
-		<VersionMinor>$([System.Version]::Parse($(Version)).Minor)</VersionMinor>
-		<VersionBuild>$([System.Version]::Parse($(Version)).Build)</VersionBuild>
-		<VersionRevision>0</VersionRevision>
-		<ApplicationVersion>$(VersionMajor).$(VersionMinor).$(VersionBuild).$(VersionRevision)</ApplicationVersion>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(MSBuildProjectName)\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
