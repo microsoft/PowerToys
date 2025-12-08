@@ -92,7 +92,7 @@ The module’s settings are exposed in the PowerToys Settings UI. Options includ
 3. Build the solution:
 
    ```sh
-   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.sln
+   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.slnx
    ```
 
    > Note: This may take some time.

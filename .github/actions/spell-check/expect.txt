@@ -230,6 +230,7 @@ clientside
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
+CLITo
 closesocket
 clp
 CLSCTX
@@ -757,9 +758,9 @@ HWNDPARENT
 HWNDPREV
 hyjiacan
 IAI
-icf
 ICONERROR
 ICONLOCATION
+icf
 IDCANCEL
 IDD
 idk
@@ -802,6 +803,7 @@ INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
 inlines
+Inno
 INPC
 inproc
 INPUTHARDWARE
@@ -1105,6 +1107,7 @@ MVVMTK
 MWBEx
 MYICON
 NAMECHANGE
+Notavailable
 namespaceanddescendants
 nao
 NCACTIVATE
@@ -1671,6 +1674,7 @@ SKIPOWNPROCESS
 sku
 SLGP
 sln
+slnx
 SMALLICON
 smartphone
 smileys
@@ -1839,6 +1843,7 @@ tlbimp
 tlc
 tmain
 TNP
+toolgood
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1892,6 +1897,7 @@ UNCPRIORITY
 UNDNAME
 UNICODETEXT
 unins
+Uninstaller
 uninstalls
 Uniquifies
 unitconverter

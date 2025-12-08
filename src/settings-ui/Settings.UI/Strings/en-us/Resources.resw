@@ -642,9 +642,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
     <value>I have read and accept the information above.</value>
   </data>
-  <data name="AdvancedPaste_EnableAdvancedAIModerationToggle.Content" xml:space="preserve">
-    <value>Enable OpenAI content moderation</value>
-  </data>
   <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
     <value>Enable OpenAI content moderation</value>
   </data>
@@ -2095,9 +2092,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="TranscodeToMp4.Header" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
-    <value>OpenAI API key:</value>
   </data>
   <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
     <value>Save</value>
@@ -4033,7 +4027,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
+    <value>Formats clipboard content into plain text, Markdown, JSON, and more. Advanced formatting can use an online or local language model endpoint.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4563,17 +4557,8 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_Description.Text" xml:space="preserve">
-    <value>Paste with AI allows you to format your clipboard content into any format you need. Learn more about the terms of conditions while using OpenAI and privacy at Microsoft:</value>
-  </data>
   <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
     <value>• Login into your</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey.Text" xml:space="preserve">
-    <value>Configure OpenAI key</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_OpenAIApiKeysOverviewText.Text" xml:space="preserve">
-    <value>OpenAI API keys overview</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
     <value>• Create a new secret key and paste it in the field below</value>
@@ -4591,9 +4576,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
     <value>Font size</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsText.Text" xml:space="preserve">
-    <value>• NOTE: You need to have available paid credits in your OpenAI account to use this feature. If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
