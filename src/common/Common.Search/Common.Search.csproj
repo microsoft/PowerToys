@@ -5,8 +5,4 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ToolGood.Words.Pinyin" />
-  </ItemGroup>
 </Project>

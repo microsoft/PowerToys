@@ -4,8 +4,6 @@
 
 using System.Globalization;
 
-using ToolGood.Words.Pinyin;
-
 namespace Common.Search.FuzzSearch;
 
 public class StringMatcher
@@ -40,32 +38,12 @@ public class StringMatcher
 
         var bestResult = new MatchResult(false, score);
 
-        List<string> queryList = [query];
-        List<string> stringToCompareList = [stringToCompare];
-
-        if (opt.ChinesePinYinSupport)
+        for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
         {
-            // Remove IME composition split characters.
-            var input = query.Replace("'", string.Empty);
-            queryList.Add(WordsHelper.GetPinyin(input));
-            if (WordsHelper.HasChinese(stringToCompare))
+            MatchResult result = FuzzyMatch(query, stringToCompare, opt, startIndex);
+            if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
             {
-                stringToCompareList.Add(WordsHelper.GetPinyin(stringToCompare));
-            }
-        }
-
-        foreach (var currentQuery in queryList)
-        {
-            foreach (var currentStringToCompare in stringToCompareList)
-            {
-                for (var startIndex = 0; startIndex < currentStringToCompare.Length; startIndex++)
-                {
-                    MatchResult result = FuzzyMatch(currentQuery, currentStringToCompare, opt, startIndex);
-                    if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
-                    {
-                        bestResult = result;
-                    }
-                }
+                bestResult = result;
             }
         }
 
