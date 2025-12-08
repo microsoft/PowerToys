@@ -191,38 +191,33 @@ private:
                     
                     Logger::trace(L"MouseScrollRemap: Intercepted Shift+MouseWheel, converting to Shift+Ctrl+MouseWheel");
                     
-                    // Block the original event
-                    // We'll synthesize new events with Ctrl pressed
+                    // We need to inject Ctrl key press, mouse wheel, then Ctrl key release
+                    // The Shift key is already pressed by the user, so the final result will be Shift+Ctrl+Wheel
                     
-                    // Send Ctrl key down if not already pressed
                     INPUT inputs[3] = {};
-                    int inputCount = 0;
                     
                     // Ctrl down
-                    inputs[inputCount].type = INPUT_KEYBOARD;
-                    inputs[inputCount].ki.wVk = VK_CONTROL;
-                    inputs[inputCount].ki.dwFlags = 0;
-                    inputCount++;
+                    inputs[0].type = INPUT_KEYBOARD;
+                    inputs[0].ki.wVk = VK_CONTROL;
+                    inputs[0].ki.dwFlags = 0;
                     
-                    // Mouse wheel event (as a mouse input)
-                    inputs[inputCount].type = INPUT_MOUSE;
-                    inputs[inputCount].mi.dx = 0;
-                    inputs[inputCount].mi.dy = 0;
-                    inputs[inputCount].mi.mouseData = wheelDelta;
-                    inputs[inputCount].mi.dwFlags = MOUSEEVENTF_WHEEL;
-                    inputs[inputCount].mi.time = 0;
-                    inputs[inputCount].mi.dwExtraInfo = 0;
-                    inputCount++;
+                    // Mouse wheel event
+                    inputs[1].type = INPUT_MOUSE;
+                    inputs[1].mi.dx = 0;
+                    inputs[1].mi.dy = 0;
+                    inputs[1].mi.mouseData = wheelDelta;
+                    inputs[1].mi.dwFlags = MOUSEEVENTF_WHEEL;
+                    inputs[1].mi.time = 0;
+                    inputs[1].mi.dwExtraInfo = 0;
                     
                     // Ctrl up
-                    inputs[inputCount].type = INPUT_KEYBOARD;
-                    inputs[inputCount].ki.wVk = VK_CONTROL;
-                    inputs[inputCount].ki.dwFlags = KEYEVENTF_KEYUP;
-                    inputCount++;
+                    inputs[2].type = INPUT_KEYBOARD;
+                    inputs[2].ki.wVk = VK_CONTROL;
+                    inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
                     
-                    SendInput(inputCount, inputs, sizeof(INPUT));
+                    SendInput(3, inputs, sizeof(INPUT));
                     
-                    // Block the original event
+                    // Block the original Shift+MouseWheel event
                     return 1;
                 }
             }
