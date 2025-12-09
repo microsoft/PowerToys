@@ -121,52 +121,52 @@ internal static class Logger
     {
         string log;
 
-        if (!lastPackageSent.Equals(Common.PackageSent))
+        if (!lastPackageSent.Equals(Package.PackageSent))
         {
             log = string.Format(
                 CultureInfo.CurrentCulture,
                 "SENT:" + HeaderSENT,
-                Common.PackageSent.Heartbeat,
-                Common.PackageSent.Keyboard,
-                Common.PackageSent.Mouse,
-                Common.PackageSent.Hello,
-                Common.PackageSent.Matrix,
-                Common.PackageSent.ClipboardText,
-                Common.PackageSent.ClipboardImage,
-                Common.PackageSent.ByeBye,
-                Common.PackageSent.Clipboard,
-                Common.PackageSent.ClipboardDragDrop,
-                Common.PackageSent.ClipboardDragDropEnd,
-                Common.PackageSent.ExplorerDragDrop,
+                Package.PackageSent.Heartbeat,
+                Package.PackageSent.Keyboard,
+                Package.PackageSent.Mouse,
+                Package.PackageSent.Hello,
+                Package.PackageSent.Matrix,
+                Package.PackageSent.ClipboardText,
+                Package.PackageSent.ClipboardImage,
+                Package.PackageSent.ByeBye,
+                Package.PackageSent.Clipboard,
+                Package.PackageSent.ClipboardDragDrop,
+                Package.PackageSent.ClipboardDragDropEnd,
+                Package.PackageSent.ExplorerDragDrop,
                 Event.inputEventCount,
-                Common.PackageSent.Nil);
+                Package.PackageSent.Nil);
             Log(log);
-            lastPackageSent = Common.PackageSent; // Copy data
+            lastPackageSent = Package.PackageSent; // Copy data
         }
 
-        if (!lastPackageReceived.Equals(Common.PackageReceived))
+        if (!lastPackageReceived.Equals(Package.PackageReceived))
         {
             log = string.Format(
                 CultureInfo.CurrentCulture,
                 "RECEIVED:" + HeaderRECEIVED,
-                Common.PackageReceived.Heartbeat,
-                Common.PackageReceived.Keyboard,
-                Common.PackageReceived.Mouse,
-                Common.PackageReceived.Hello,
-                Common.PackageReceived.Matrix,
-                Common.PackageReceived.ClipboardText,
-                Common.PackageReceived.ClipboardImage,
-                Common.PackageReceived.ByeBye,
-                Common.PackageReceived.Clipboard,
-                Common.PackageReceived.ClipboardDragDrop,
-                Common.PackageReceived.ClipboardDragDropEnd,
-                Common.PackageReceived.ExplorerDragDrop,
+                Package.PackageReceived.Heartbeat,
+                Package.PackageReceived.Keyboard,
+                Package.PackageReceived.Mouse,
+                Package.PackageReceived.Hello,
+                Package.PackageReceived.Matrix,
+                Package.PackageReceived.ClipboardText,
+                Package.PackageReceived.ClipboardImage,
+                Package.PackageReceived.ByeBye,
+                Package.PackageReceived.Clipboard,
+                Package.PackageReceived.ClipboardDragDrop,
+                Package.PackageReceived.ClipboardDragDropEnd,
+                Package.PackageReceived.ExplorerDragDrop,
                 Event.invalidPackageCount,
-                Common.PackageReceived.Nil,
+                Package.PackageReceived.Nil,
                 Receiver.processedPackageCount,
                 Receiver.skippedPackageCount);
             Log(log);
-            lastPackageReceived = Common.PackageReceived;
+            lastPackageReceived = Package.PackageReceived;
         }
     }
 
@@ -209,9 +209,9 @@ internal static class Logger
                 "Private Mem: " + (Process.GetCurrentProcess().PrivateMemorySize64 / 1024).ToString(CultureInfo.CurrentCulture) + "KB",
                 sb.ToString());
 
-            if (!string.IsNullOrEmpty(Common.myKey))
+            if (!string.IsNullOrEmpty(Encryption.myKey))
             {
-                log = log.Replace(Common.MyKey, Common.GetDebugInfo(Common.MyKey));
+                log = log.Replace(Encryption.MyKey, Encryption.GetDebugInfo(Encryption.MyKey));
             }
 
             log += Thread.DumpThreadsStack();
@@ -251,14 +251,18 @@ internal static class Logger
         {
             typeof(Clipboard),
             typeof(DragDrop),
+            typeof(Encryption),
             typeof(Event),
             typeof(InitAndCleanup),
             typeof(Helper),
             typeof(Launch),
             typeof(Logger),
             typeof(MachineStuff),
+            typeof(Package),
             typeof(Receiver),
             typeof(Service),
+            typeof(WinAPI),
+            typeof(WM),
         };
         foreach (var staticType in staticTypes)
         {
@@ -294,7 +298,7 @@ internal static class Logger
         // strArr[3] = t.FullName;
         strArr[4] = " = ";
         strArr[5] = objName.Equals("myKey", StringComparison.OrdinalIgnoreCase)
-            ? Common.GetDebugInfo(objString)
+            ? Encryption.GetDebugInfo(objString)
             : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
                 : objString

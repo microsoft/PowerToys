@@ -60,6 +60,8 @@
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
+            "FancyZonesCLI.exe",
+            "FancyZonesCLI.dll",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
@@ -291,6 +293,7 @@
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
                 "CommunityToolkit.WinUI.Controls.TitleBar.dll",
+                "CommunityToolkit.WinUI.Controls.OpacityMaskView.dll",
 
                 "NLog.dll",
                 "HtmlAgilityPack.dll",

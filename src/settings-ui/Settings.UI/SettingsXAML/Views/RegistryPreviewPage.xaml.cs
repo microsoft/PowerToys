@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public RegistryPreviewPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new RegistryPreviewViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 SettingsRepository<RegistryPreviewSettings>.GetInstance(settingsUtils),

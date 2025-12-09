@@ -24,8 +24,6 @@ public class ModelDetails
 
     public List<HardwareAccelerator> HardwareAccelerators { get; set; } = [];
 
-    public bool SupportedOnQualcomm { get; set; }
-
     public string License { get; set; } = string.Empty;
 
     public object? ProviderModelDetails { get; set; }

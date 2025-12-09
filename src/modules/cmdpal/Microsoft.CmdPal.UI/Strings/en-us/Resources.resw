@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -344,12 +344,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
     <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
   </data>
-  <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
-    <value>Go home when activated</value>
-  </data>
-  <data name="Settings_GeneralPage_GoHome_SettingsCard.Description" xml:space="preserve">
-    <value>Automatically opens the home page upon activation</value>
-  </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>
@@ -429,7 +423,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>More</value>
   </data>
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
-    <value>Last Position</value>
+    <value>Last position</value>
     <comment>Reopen the window where it was last closed</comment>
   </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
@@ -522,5 +516,65 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
     <value>Command Palette - Fatal error</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Immediately.Content" xml:space="preserve">
+    <value>Immediately</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After10Seconds.Content" xml:space="preserve">
+    <value>10 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After20Seconds.Content" xml:space="preserve">
+    <value>20 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After30Seconds.Content" xml:space="preserve">
+    <value>30 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After60Seconds.Content" xml:space="preserve">
+    <value>60 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After90Seconds.Content" xml:space="preserve">
+    <value>90 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After120Seconds.Content" xml:space="preserve">
+    <value>2 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After180Seconds.Content" xml:space="preserve">
+    <value>3 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Automatically return home</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
+    <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
+  </data>
+  <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
+    <value>Clear search first, then go back</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack.Content" xml:space="preserve">
+    <value>Go back</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss.Content" xml:space="preserve">
+    <value>Hide window and go home</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide.Content" xml:space="preserve">
+    <value>Hide window</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
+    <value>Escape key behavior</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Description" xml:space="preserve">
+    <value>Choose how Escape key behaves</value>
+  </data>
+  <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
+    <value>Settings</value>
   </data>
 </root>
