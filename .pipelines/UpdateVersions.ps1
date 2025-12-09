@@ -248,5 +248,35 @@ Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Obje
     }
 }
 
+# Update packages.config files
+Get-ChildItem -Path $rootPath -Recurse "packages.config" | ForEach-Object {
+    $file = Read-FileWithEncoding -Path $_.FullName
+    $content = $file.Content
+    $isModified = $false
+    
+    foreach ($pkgId in $packageVersions.Keys) {
+        $ver = $packageVersions[$pkgId]
+        # Escape dots in package ID for regex
+        $pkgIdRegex = $pkgId -replace '\.', '\.'
+        
+        # packages.config format: <package id="PackageId" version="Version" ... />
+        $newPackageString = "<package id=""$pkgId"" version=""$ver"""
+        $oldPackagePattern = "<package id=""$pkgIdRegex"" version=""[^""]+"""
+
+        if ($content -match "<package id=""$pkgIdRegex""") {
+            # Update existing package
+            if ($content -notmatch [regex]::Escape($newPackageString)) {
+                $content = $content -replace $oldPackagePattern, $newPackageString
+                $isModified = $true
+            }
+        }
+    }
+
+    if ($isModified) {
+        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
+        Write-Host "Modified " $_.FullName
+    }
+}
+
 
 
