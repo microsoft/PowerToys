@@ -46,6 +46,74 @@ function Write-FileWithEncoding {
     $writer.Close()
 }
 
+
+function Add-NuGetSourceAndMapping {
+    param (
+        [xml]$Xml,
+        [string]$Key,
+        [string]$Value,
+        [string[]]$Patterns
+    )
+
+    # Ensure packageSources exists
+    if (-not $Xml.configuration.packageSources) {
+        $Xml.configuration.AppendChild($Xml.CreateElement("packageSources")) | Out-Null
+    }
+    $sources = $Xml.configuration.packageSources
+
+    # Add/Update Source
+    $sourceNode = $sources.SelectSingleNode("add[@key='$Key']")
+    if (-not $sourceNode) {
+        $sourceNode = $Xml.CreateElement("add")
+        $sourceNode.SetAttribute("key", $Key)
+        $sources.AppendChild($sourceNode) | Out-Null
+    }
+    $sourceNode.SetAttribute("value", $Value)
+
+    # Ensure packageSourceMapping exists
+    if (-not $Xml.configuration.packageSourceMapping) {
+        $Xml.configuration.AppendChild($Xml.CreateElement("packageSourceMapping")) | Out-Null
+    }
+    $mapping = $Xml.configuration.packageSourceMapping
+
+    # Remove invalid packageSource nodes (missing key or empty key)
+    $invalidNodes = $mapping.SelectNodes("packageSource[not(@key) or @key='']")
+    if ($invalidNodes) {
+        foreach ($node in $invalidNodes) {
+            $mapping.RemoveChild($node) | Out-Null
+        }
+    }
+
+    # Add/Update Mapping Source
+    $mappingSource = $mapping.SelectSingleNode("packageSource[@key='$Key']")
+    if (-not $mappingSource) {
+        $mappingSource = $Xml.CreateElement("packageSource")
+        $mappingSource.SetAttribute("key", $Key)
+        # Insert at top for priority
+        if ($mapping.HasChildNodes) {
+            $mapping.InsertBefore($mappingSource, $mapping.FirstChild) | Out-Null
+        } else {
+            $mapping.AppendChild($mappingSource) | Out-Null
+        }
+    }
+    
+    # Double check and force attribute
+    if (-not $mappingSource.HasAttribute("key")) {
+         $mappingSource.SetAttribute("key", $Key)
+    }
+
+    # Update Patterns
+    # RemoveAll() removes all child nodes AND attributes, so we must re-set the key afterwards
+    $mappingSource.RemoveAll()
+    $mappingSource.SetAttribute("key", $Key)
+
+    foreach ($pattern in $Patterns) {
+        $pkg = $Xml.CreateElement("package")
+        $pkg.SetAttribute("pattern", $pattern)
+        $mappingSource.AppendChild($pkg) | Out-Null
+    }
+}
+
 # Execute nuget list and capture the output
 if ($useExperimentalVersion) {
     # The nuget list for experimental versions will cost more time
@@ -94,27 +162,60 @@ if ($WinAppSDKVersion -match "^1\.8") {
     Write-Host "Version $WinAppSDKVersion detected. Resolving split dependencies..."
     $installDir = Join-Path $rootPath "localpackages\output"
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null
-    
-    $nugetConfig = Join-Path $rootPath "nuget.config"
+
+    # Create a temporary nuget.config to avoid interference from the repo's config
+    $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
+    Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
 
     try {
+        # Extract BuildTools version from Directory.Packages.props to ensure we have the required version
+        $dirPackagesProps = Join-Path $rootPath "Directory.Packages.props"
+        if (Test-Path $dirPackagesProps) {
+            $propsContent = Get-Content $dirPackagesProps -Raw
+            if ($propsContent -match '<PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="([^"]+)"') {
+                $buildToolsVersion = $Matches[1]
+                Write-Host "Downloading Microsoft.Windows.SDK.BuildTools version $buildToolsVersion..."
+                $nugetArgsBuildTools = "install Microsoft.Windows.SDK.BuildTools -Version $buildToolsVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
+                Invoke-Expression "nuget $nugetArgsBuildTools" | Out-Null
+            }
+        }
+
         # Download package to inspect nuspec and keep it for the build
-        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile ""$nugetConfig"" -OutputDirectory $installDir -NonInteractive -NoCache"
+        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
         Invoke-Expression "nuget $nugetArgs" | Out-Null
-        
+
         # Parse dependencies from the installed folders
         # Folder structure is typically {PackageId}.{Version}
         $directories = Get-ChildItem -Path $installDir -Directory
+        $allLocalPackages = @()
         foreach ($dir in $directories) {
-            if ($dir.Name -match "^(Microsoft\.WindowsAppSDK.*?)\.(\d.*)$") {
+            # Match any package pattern: PackageId.Version
+            if ($dir.Name -match "^(.+?)\.(\d+\..*)$") {
                 $pkgId = $Matches[1]
                 $pkgVer = $Matches[2]
-                $packageVersions[$pkgId] = $pkgVer
-                Write-Host "Found dependency: $pkgId = $pkgVer"
+                $allLocalPackages += $pkgId
+                
+                # Only update version variables for WindowsAppSDK packages and BuildTools
+                if ($pkgId -match "^Microsoft\.WindowsAppSDK" -or $pkgId -eq "Microsoft.Windows.SDK.BuildTools") {
+                    $packageVersions[$pkgId] = $pkgVer
+                    Write-Host "Found dependency: $pkgId = $pkgVer"
+                }
             }
         }
+
+         # Update repo's nuget.config to use localpackages
+        $nugetConfig = Join-Path $rootPath "nuget.config"
+        $configData = Read-FileWithEncoding -Path $nugetConfig
+        [xml]$xml = $configData.Content
+        
+        Add-NuGetSourceAndMapping -Xml $xml -Key "localpackages" -Value "localpackages\output" -Patterns $allLocalPackages
+        
+        $xml.Save($nugetConfig)
+        Write-Host "Updated nuget.config with localpackages mapping."
     } catch {
         Write-Warning "Failed to resolve dependencies: $_"
+    } finally {
+        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -145,11 +246,6 @@ Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Obje
         Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName
     }
-}
-
-if ($installDir -and (Test-Path $installDir)) {
-    Write-Host "Cleaning up installed packages..."
-    Remove-Item -Path $installDir -Recurse -Force
 }
 
 
