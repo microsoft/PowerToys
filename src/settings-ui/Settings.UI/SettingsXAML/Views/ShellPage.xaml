@@ -292,7 +292,7 @@
                         <NavigationViewItem
                             x:Name="AssistiveTools"
                             helpers:NavHelper.NavigateTo="views:AssistiveToolsPage"
-                            Content="Assistive Tools"
+                            Content="Adaptive Tools"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}" />
                         <NavigationViewItem
                             x:Name="KeyboardManagerNavigationItem"

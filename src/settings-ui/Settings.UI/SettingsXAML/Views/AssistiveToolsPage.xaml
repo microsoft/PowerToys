@@ -27,7 +27,7 @@
                 Orientation="Vertical"
                 Spacing="2">
                 <controls:SettingsGroup Description="Navigate with external switches, using Gliding, Sweeping Cursor or Grid Overlay mode. Grid overlay also supports arrow ← ↑ → ↓ navigation." Header="Switch Control">
-                    <tkcontrols:SettingsCard Header="Enable Switch Control" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
+                    <tkcontrols:SettingsCard Header="Switch Control" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
                         <ToggleSwitch IsOn="True" />
                     </tkcontrols:SettingsCard>
 
@@ -36,17 +36,14 @@
                         Header="Activation"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Header="Initiate or next step">
+                            <tkcontrols:SettingsCard Header="Start or next step">
                                 <controls:ShortcutControl />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Previous step">
                                 <controls:ShortcutControl />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Header="End session">
+                            <tkcontrols:SettingsCard Header="Stop">
                                 <controls:ShortcutControl />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox Content="Automatically activate on utility startup" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -61,7 +58,7 @@
                             <ComboBoxItem Content="Sweeping Cursor" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Header="Default action">
+                            <tkcontrols:SettingsCard Description="The action that blablabla" Header="Final action">
                                 <ComboBox SelectedIndex="0">
                                     <ComboBoxItem Content="Show context menu" />
                                     <ComboBoxItem Content="Left click" />
@@ -75,8 +72,7 @@
                     <tkcontrols:SettingsExpander Header="Scanning method and speed" HeaderIcon="{ui:FontIcon Glyph=&#xEC49;}">
                         <ComboBox SelectedIndex="0">
                             <ComboBoxItem Content="Automatic" />
-                            <ComboBoxItem Content="Fast" />
-                            <ComboBoxItem Content="Slow" />
+                            <ComboBoxItem Content="Manual" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Delay in ms">
@@ -174,20 +170,15 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Description="Hover the cursor over an item on the screen for a specified amount of time to trigger an action." Header="Cursor Dwell">
-                    <tkcontrols:SettingsCard Header="Enable Cursor Dwell" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
+                    <tkcontrols:SettingsCard Header="Cursor Dwell" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
                         <ToggleSwitch IsOn="True" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsExpander
-                        Description="Configure how to activate Dwell Cursor"
+                        Description="Configure how to start and stop Dwell Cursor"
                         Header="Activation"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Header="Initiate">
-                                <controls:ShortcutControl />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Header="End session">
-                                <controls:ShortcutControl />
-                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox Content="Automatically activate on utility startup" />
                             </tkcontrols:SettingsCard>
@@ -265,7 +256,7 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup Description="Zoom in and out at the location of your cursor tip." Header="Magnifier Glass">
+                <!--                 <controls:SettingsGroup Description="Zoom in and out at the location of your cursor tip." Header="Magnifier Glass">
                     <tkcontrols:SettingsCard Header="Enable Magnifier Glass" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AssistiveTools.png}">
                         <ToggleSwitch IsOn="True" />
                     </tkcontrols:SettingsCard>
@@ -350,7 +341,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+
+                </controls:SettingsGroup>-->
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
