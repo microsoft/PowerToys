@@ -4,7 +4,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{12345678-1234-1234-1234-1234567890AB}</ProjectGuid>
+    <ProjectGuid>{49D456D3-F485-45AF-8875-45B44F193DDC}</ProjectGuid>
     <RootNamespace>FileLocksmithCLI</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>FileLocksmithCLI</ProjectName>
@@ -32,7 +32,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\modules\FileLocksmith\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
