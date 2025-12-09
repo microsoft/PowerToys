@@ -50,10 +50,16 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get physical monitors for a logical monitor
+        /// Get physical monitors for a logical monitor.
+        /// Filters out any monitors with NULL handles (Windows API bug workaround).
         /// </summary>
-        internal PHYSICAL_MONITOR[]? GetPhysicalMonitors(IntPtr hMonitor)
+        /// <param name="hMonitor">Handle to the logical monitor</param>
+        /// <param name="hasNullHandles">Output: true if any NULL handles were filtered out</param>
+        /// <returns>Array of valid physical monitors, or null if API call failed</returns>
+        internal PHYSICAL_MONITOR[]? GetPhysicalMonitors(IntPtr hMonitor, out bool hasNullHandles)
         {
+            hasNullHandles = false;
+
             try
             {
                 Logger.LogDebug($"GetPhysicalMonitors: hMonitor=0x{hMonitor:X}");
@@ -89,20 +95,25 @@ namespace PowerDisplay.Common.Drivers.DDC
                     return null;
                 }
 
-                // Log each physical monitor
+                // Filter out NULL handles and log each physical monitor
+                var validMonitors = new List<PHYSICAL_MONITOR>();
                 for (int i = 0; i < numMonitors; i++)
                 {
                     string desc = physicalMonitors[i].GetDescription() ?? string.Empty;
                     IntPtr handle = physicalMonitors[i].HPhysicalMonitor;
-                    Logger.LogDebug($"GetPhysicalMonitors: [{i}] Handle=0x{handle:X}, Desc='{desc}'");
 
                     if (handle == IntPtr.Zero)
                     {
-                        Logger.LogWarning($"GetPhysicalMonitors: Monitor [{i}] has NULL handle despite successful API call!");
+                        Logger.LogWarning($"GetPhysicalMonitors: Monitor [{i}] has NULL handle, filtering out");
+                        hasNullHandles = true;
+                        continue;
                     }
+
+                    Logger.LogDebug($"GetPhysicalMonitors: [{i}] Handle=0x{handle:X}, Desc='{desc}'");
+                    validMonitors.Add(physicalMonitors[i]);
                 }
 
-                return physicalMonitors;
+                return validMonitors.Count > 0 ? validMonitors.ToArray() : null;
             }
             catch (Exception ex)
             {
