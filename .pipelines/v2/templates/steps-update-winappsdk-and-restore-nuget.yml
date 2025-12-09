@@ -7,33 +7,8 @@ parameters:
     default: false
 
 steps:
-- task: PowerShell@2
-  displayName: 'Generate Temporary NuGet Config'
-  inputs:
-    targetType: 'inline'
-    script: |
-      $nugetConfigPath = "$(Build.SourcesDirectory)\nuget.config"
-      $tempConfigPath = "$(Build.SourcesDirectory)\nuget_temp.config"
-      $localPackagesPath = "$(Build.SourcesDirectory)\localpackages\output"
-      
-      # Ensure the directory exists so it's a valid source
-      New-Item -ItemType Directory -Path $localPackagesPath -Force | Out-Null
-      
-      Write-Host "Creating $tempConfigPath from $nugetConfigPath using text replacement..."
-      $content = Get-Content -Path $nugetConfigPath -Raw
-      
-      # Add localpackages source
-      # We insert it before the closing packageSources tag
-      $sourceInsert = "    <add key=""localpackages"" value=""$localPackagesPath"" />`r`n  "
-      $content = $content -replace "</packageSources>", "$sourceInsert</packageSources>"
-      
-      # Add mapping for WindowsAppSDK
-      # We insert it after the opening packageSourceMapping tag to ensure it's first (highest priority)
-      $mappingInsert = "`r`n    <packageSource key=""localpackages"">`r`n      <package pattern=""Microsoft.WindowsAppSDK*"" />`r`n    </packageSource>"
-      $content = $content -replace "<packageSourceMapping>", "<packageSourceMapping>$mappingInsert"
-      
-      Set-Content -Path $tempConfigPath -Value $content -Encoding UTF8
-      Get-Content $tempConfigPath
+- task: NuGetAuthenticate@1
+  displayName: 'NuGet Authenticate'
 
 - task: PowerShell@2
   displayName: Update WinAppSDK Versions
@@ -49,15 +24,13 @@ steps:
 
 - task: NuGetAuthenticate@1
   displayName: 'NuGet Authenticate'
-  inputs:
-    nugetConfigPath: '$(Build.SourcesDirectory)\nuget_temp.config'
 
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages'
   inputs:
     command: 'restore'
     feedsToUse: 'config'
-    nugetConfigPath: '$(build.sourcesdirectory)\nuget_temp.config'
+    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
     restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
     includeNuGetOrg: false
 
@@ -66,6 +39,6 @@ steps:
   inputs:
     command: 'restore'
     feedsToUse: 'config'
-    nugetConfigPath: '$(build.sourcesdirectory)\nuget_temp.config'
+    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
     restoreSolution: '$(build.sourcesdirectory)\**\*.slnx'
     includeNuGetOrg: false
