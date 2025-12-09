@@ -95,13 +95,11 @@ if ($WinAppSDKVersion -match "^1\.8") {
     $installDir = Join-Path $rootPath "localpackages\output"
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null
     
-    # Create a temporary nuget.config to avoid interference from the repo's config
-    $tempConfig = Join-Path $env:TEMP "nuget_$(Get-Random).config"
-    Set-Content -Path $tempConfig -Value "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear /><add key='TempSource' value='$sourceLink' /></packageSources></configuration>"
+    $nugetConfig = Join-Path $rootPath "nuget.config"
 
     try {
         # Download package to inspect nuspec and keep it for the build
-        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile $tempConfig -OutputDirectory $installDir -NonInteractive -NoCache"
+        $nugetArgs = "install Microsoft.WindowsAppSDK -Version $WinAppSDKVersion -ConfigFile ""$nugetConfig"" -OutputDirectory $installDir -NonInteractive -NoCache"
         Invoke-Expression "nuget $nugetArgs" | Out-Null
         
         # Parse dependencies from the installed folders
@@ -117,8 +115,6 @@ if ($WinAppSDKVersion -match "^1\.8") {
         }
     } catch {
         Write-Warning "Failed to resolve dependencies: $_"
-    } finally {
-        Remove-Item $tempConfig -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -149,6 +145,11 @@ Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Obje
         Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName
     }
+}
+
+if ($installDir -and (Test-Path $installDir)) {
+    Write-Host "Cleaning up installed packages..."
+    Remove-Item -Path $installDir -Recurse -Force
 }
 
 

@@ -19,21 +19,6 @@ steps:
       -useExperimentalVersion $${{ parameters.useExperimentalVersion }}
       -rootPath "$(build.sourcesdirectory)"
 
-- script: echo $(WinAppSDKVersion)
-  displayName: 'Display WinAppSDK Version Found'
-
-- task: NuGetAuthenticate@1
-  displayName: 'NuGet Authenticate'
-
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages'
-  inputs:
-    command: 'restore'
-    feedsToUse: 'config'
-    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
-    restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
-    includeNuGetOrg: false
-
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages (slnx)'
   inputs:
